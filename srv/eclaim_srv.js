@@ -1188,33 +1188,58 @@ module.exports = (srv) => {
     });
 
     /**
-     * Get number of dependents tied to employee, based on relationship type
+     * Get marriage category for employee based on marital status and number of dependents
      * @public
      * @param {String} sEmpId - Employee ID
-     * @param {String} sRelationship - if specified, used to count number of dependents based on relationship type
-     * @return {Integer} - return number of specified dependents for employee as retrieved from table
+     * @return {String} - return marriage category based on status and number of dependents
      */
-    srv.on('getEmpDependentCount', async (req) => {
-        const { sEmpId, sRelationship } = req.data;
+    srv.on('getMarriageCategory', async (req) => {
+        const { sEmpId } = req.data;
 
         try {
-            var oFilters = { EMP_ID: sEmpId }
-            if (!!sRelationship) {
-                oFilters.RELATIONSHIP = sRelationship;
-            }
-            const aDependents = await SELECT
-                .from(Constant.Entities.ZEMP_DEPENDENT)
-                .where(oFilters)
-                .orderBy([
-                    Constant.EntitiesFields.RELATIONSHIP,
-                    Constant.EntitiesFields.DEPENDENT_NO
-                ]);
-
-            if (!aDependents) {
-                return req.error(404, `Dependents not found for given employee.`);
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL').where({ EEID: sEmpId });
+            if (!oEmpData) {
+                return req.error(404, `No employee data found.`);
             }
 
-            return aDependents.length;
+            var sMarriageCategory = null;
+            if (oEmpData.MARITAL === Constant.MaritalStatus.SINGLE) {
+                sMarriageCategory = Constant.MarriageCategory.SINGLE;
+            }
+            else {
+                var oFilters = { EMP_ID: sEmpId }
+                const aDependents = await SELECT
+                    .from(Constant.Entities.ZEMP_DEPENDENT)
+                    .where({
+                        EMP_ID: sEmpId,
+                        RELATIONSHIP: Constant.Relationship.CHILD
+                    })
+                    .orderBy([
+                        Constant.EntitiesFields.DEPENDENT_NO
+                    ]);
+
+                if (!aDependents) {
+                    return req.error(404, `Dependents not found for given employee.`);
+                }
+
+                var iDependents = aDependents.length;
+
+                switch (true) {
+                    case (iDependents >= 4):
+                        sMarriageCategory = Constant.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN;
+                        break;
+                    case (iDependents >= 1 && iDependents <= 3):
+                        sMarriageCategory = Constant.MarriageCategory.MARRIED_1_TO_3_CHILDREN;
+                        break;
+                    case (iDependents == 0):
+                    default:
+                        sMarriageCategory = Constant.MarriageCategory.MARRIED_NO_CHILDREN;
+                        break;
+                }
+
+            }
+
+            return sMarriageCategory;
 
         } catch (error) {
             return req.error(500, 'An error occurred while checking Employee Dependent table.');
@@ -1224,22 +1249,27 @@ module.exports = (srv) => {
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
      * @public
-     * @param {String} sMaritalStatus - Marital status retrieved from employee data
-     * @param {String} sEmployeeType - Employee type retrieved from employee data
+     * @param {String} sEmpId - Employee ID
      * @param {String} sMarriageCategory - Marriage category based on employee marital status and dependents
      * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getEligibleAmountEPengakut', async (req) => {
-        const { sMaritalStatus, sEmployeeType, sMarriageCategory } = req.data;
+        const { sEmpId, sMarriageCategory } = req.data;
 
         try {
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL', 'EMPLOYEE_TYPE').where({ EEID: sEmpId });
+            if (!oEmpData) {
+                return req.error(404, `No employee data found.`);
+            }
+
             const sTodayDate = new Date().toISOString().slice(0, 10);
-            const aMaritalStatusValues = [sMaritalStatus, Constant.Wildcard.All];
-            const aEmployeeTypeValues = [sEmployeeType, Constant.Wildcard.All];
+            const aMaritalStatusValues = [oEmpData.MARITAL, Constant.Wildcard.All];
+            const aEmployeeTypeValues = [oEmpData.EMPLOYEE_TYPE, Constant.Wildcard.All];
             var aMarriageCategoryValues = [Constant.Wildcard.All];
             if (!!sMarriageCategory) {
                 aMarriageCategoryValues.push(sMarriageCategory);
             }
+
             const oEligibilityRule = await SELECT.one
                 .from(Constant.Entities.ZELIGIBILITY_RULE)
                 .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)

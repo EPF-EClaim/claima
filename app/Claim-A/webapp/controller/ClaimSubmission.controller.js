@@ -2315,12 +2315,7 @@ sap.ui.define([
 
 			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
-				var oEmployeeData = {
-					eeid: this._oSessionModel.getProperty("/userId"),
-					marital: oClaimSubmissionModel.getProperty("/emp_master/marital"),
-					employee_type: oClaimSubmissionModel.getProperty("/emp_master/employee_type")
-				};
-				var oEPengakutData = await ClaimUtility.fetchElaunPengangkutanData(oEmployeeData);
+				var oEPengakutData = await ClaimUtility.fetchUserElaunPengangkutanData();
 				// populate item values
 				oInputModel.setProperty("/claim_item/amount", oEPengakutData.eligible_amount);
 				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);

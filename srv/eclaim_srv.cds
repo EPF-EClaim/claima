@@ -390,14 +390,12 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
     
-    function getEmpDependentCount(
-        sEmpId:         String,
-        sRelationship:  String
-    ) returns Integer;
+    function getMarriageCategory(
+        sEmpId:         String
+    ) returns String;
     
     function getEligibleAmountEPengakut(
-        sMaritalStatus:     String,
-        sEmployeeType:      String,
+        sEmpId:             String,
         sMarriageCategory:  String,
     ) returns Decimal(16, 2);
     

@@ -237,10 +237,30 @@ const Constant = {
     },
 
     MaritalStatus: {
+        WIDOWED: "W",
         SINGLE: "S",
-        MARRIED: "M"
+        MARRIED: "M",
+        SEPARATED: "E",
+        DIVORCED: "D"
     },
 
+    Relationship: {
+        SPOUSE : "01",
+        CHILD: "02",
+        FATHER: "03",
+        MOTHER: "04",
+        SIBLING: "05",
+        RELATIVES: "06",
+        ADDITIONAL_SPOUSE: "07"
+    },
+    
+    MarriageCategory: {
+        SINGLE : "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
+    },
+    
     UnlimitedAmount: -1
 
 };

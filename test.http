@@ -192,11 +192,12 @@ Content-Type: application/json
 #      ]
 #     }
 
-POST http://localhost:4004/odata/v4/EmployeeSrv/checkExistingClaimEPengakut
+POST http://localhost:4004/odata/v4/EmployeeSrv/getEligibleAmountEPengakut
 Content-Type: application/json
 Authorization: Basic alice
  
    {
-    "sEmpId": "010320"
+    "sEmpId": "010320",
+    "sMarriageCategory": "02"
    }
 

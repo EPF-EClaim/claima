@@ -340,14 +340,14 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
-		 * @param {Object} oEmployeeData - Employee ID, Marital Status, Employee Type
-		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id and description
+		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
 		 */
-		fetchElaunPengangkutanData: async function (oEmployeeData) {
-			if (!oEmployeeData) {
-				// return zero if no employee data found
+		fetchUserElaunPengangkutanData: async function () {
+			var sEmpId = this._oSessionModel.getProperty("/userId");
+			if (!sEmpId) {
+				// return null if no employee data found
 				return {
 					eligible_amount: null,
 					marriage_category: null
@@ -355,15 +355,27 @@ sap.ui.define([
 			}
 
 			// get marriage category based marital status
-			var sMarriageCategory = await Utility._getMarriageCategory(oEmployeeData.eeid, oEmployeeData.marital);
+			var sMarriageCategory = null;
+			try {
+				const oFunctionCat = this._oOwnerComponent.getModel().bindContext("/getMarriageCategory(...)");
 
-			// get eligible amount based on marital status, employee type and retrieved marriage category
+				oFunctionCat.setParameter("sEmpId", sEmpId);
+
+				await oFunctionCat.execute();
+
+				const oContextCat = oFunctionCat.getBoundContext();
+				sMarriageCategory = oContextCat.getObject("value");
+
+			} catch (oError) {
+				sMarriageCategory = null;
+			}
+
+			// get eligible amount based on employee ID and retrieved marriage category
 			var dEligibleAmount = 0.00;
 			try {
 				const oFunctionEligible = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
 
-				oFunctionEligible.setParameter("sMaritalStatus", oEmployeeData.marital);
-				oFunctionEligible.setParameter("sEmployeeType", oEmployeeData.employee_type);
+				oFunctionEligible.setParameter("sEmpId", sEmpId);
 				if (!!sMarriageCategory) {
 					oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
 				}
@@ -390,7 +402,7 @@ sap.ui.define([
 		 */
 		fetchClaimElaunPengangkutan: async function () {
 			// get employee ID
-			var sEmpId = this._oSessionModel("/userId");
+			var sEmpId = this._oSessionModel.getProperty("/userId");
 			if (!sEmpId) {
 				return true;
 			}
