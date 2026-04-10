@@ -927,6 +927,7 @@ module.exports = (srv) => {
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
         var total_tips = 0;
+        let total_daily_allowance = 0;
 
         //get employee personal grade 
         const result = await tx.run(
@@ -968,7 +969,11 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN){
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day); 
-                return { amount: total_amt_dp };
+                if (!req.data.tips){
+                    total_tips = 0.15 * total_amt_dp;
+                    total_amt_dp += total_tips;
+                }
+                return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
             time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
@@ -984,6 +989,7 @@ module.exports = (srv) => {
                 meal_allowance = req.data.day * entitlement.AMOUNT;
                 if (time_difference >= 8.0 && time_difference < 24.0) {
                     daily_allowance = entitlement.AMOUNT / 2;
+                    total_daily_allowance = 1;
                 }
                 meal_allowance += daily_allowance;
             }
@@ -1012,11 +1018,12 @@ module.exports = (srv) => {
 
             return {
                 amount: total_meal_allowance,
-                daily_allowance: (entitlement.AMOUNT / 2),
+                daily_allowance: total_daily_allowance,
                 currency_code: entitlement.CURRENCY, 
                 tips_amount: total_tips
-            };
+            }
         }
+    }
     });
 
     /**

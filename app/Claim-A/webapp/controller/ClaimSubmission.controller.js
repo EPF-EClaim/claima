@@ -561,6 +561,8 @@ sap.ui.define([
 					study_levels_id: it.STUDY_LEVELS_ID,
 					travel_days_id: it.TRAVEL_DAYS_ID,
 					vehicle_class_id: it.VEHICLE_CLASS_ID,
+					dailyallowance: it.DAILY_ALLOWANCE,
+					tips_amount: it.TIPS,
 					descr: {},
 				}));
 
@@ -2821,8 +2823,8 @@ sap.ui.define([
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
-					DAILY_ALLOWANCE: oInputModel.getProperty("/claim_item/dailyallowance"), 
-					TIPS: oInputModel.getProperty("/claim_item/tips_amount")
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/dailyallowance"))), 
+					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips_amount")))
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -3980,7 +3982,9 @@ sap.ui.define([
 						REQUEST_APPROVAL_AMOUNT: claim_item.request_approval_amount,
 						STUDY_LEVELS_ID: claim_item.study_levels_id,
 						TRAVEL_DAYS_ID: claim_item.travel_days_id,
-						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
+						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
+						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.dailyallowance)),
+						TIPS: this._nonNan(parseInt(claim_item.tips_amount))
 					});
 
 					if (i >= itemCountDb) {
@@ -4454,7 +4458,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube", 
+				"input_claimdetails_input_tips_amount",
+				"input_claimdetails_input_excludetips",
+				"input_claimdetails_input_dailyallowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4592,7 +4599,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment_file_2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube",
+				"input_claimdetails_input_tips_amount",
+				"input_claimdetails_input_excludetips",
+				"input_claimdetails_input_dailyallowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4753,6 +4763,12 @@ sap.ui.define([
 			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
 			{
 				if (!oResult || oResult.amount === 0) {
+					//reset amount
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
+					oClaimItemInputModel.setProperty("/claim_item/tips_amount", 0);
+					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
+					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
 				}
@@ -4775,6 +4791,10 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+
+				if (this.byId("input_claimdetails_input_tips_amount").getVisible()) {
+					oClaimItemInputModel.setProperty("/claim_item/tips_amount", oResult.tips_amount);
 				}
 				
 			}).catch(err => {
