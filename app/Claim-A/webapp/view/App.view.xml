@@ -326,6 +326,11 @@
                                     text="{i18n>jobgrp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                <tnt:NavigationListItem
+                                    key="ZTRAIN_COURSE_PART"
+                                    text="{i18n>trncourseprt}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem

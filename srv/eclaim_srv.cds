@@ -358,6 +358,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         amount : Decimal(15, 2);
         daily_allowance: Decimal(15,2);
         currency_code: String;
+        tips_amount: Decimal;
     }
 
     function getAmountEntitlement(employeeid: String,
@@ -369,6 +370,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   breakfast: Integer, 
                                   lunch: Integer, 
                                   dinner: Integer,
+                                  tips: Boolean,
                                   dependent: Integer) returns perdiem;
 
     function getMeterCubeEntitlement(

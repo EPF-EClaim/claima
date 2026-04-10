@@ -926,6 +926,8 @@ module.exports = (srv) => {
         let daily_allowance = 0;
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
+        var total_tips = 0;
+        let total_daily_allowance = 0;
 
         //get employee personal grade 
         const result = await tx.run(
@@ -967,7 +969,11 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN){
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day); 
-                return { amount: total_amt_dp };
+                if (!req.data.tips){
+                    total_tips = 0.15 * total_amt_dp;
+                    total_amt_dp += total_tips;
+                }
+                return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
             time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
@@ -983,24 +989,41 @@ module.exports = (srv) => {
                 meal_allowance = req.data.day * entitlement.AMOUNT;
                 if (time_difference >= 8.0 && time_difference < 24.0) {
                     daily_allowance = entitlement.AMOUNT / 2;
+                    total_daily_allowance = 1;
                 }
                 meal_allowance += daily_allowance;
             }
-        }
 
-            //20% from breakfast, 40% from lunch, 40% from dinner 
-            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
-            
-
+            //deduction of meal allowance
+            //// no deduction for elaun makan perpindahan
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
+            } else {
+                //20% from breakfast, 40% from lunch, 40% from dinner 
+                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            }
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+
+            //to include tips calculation (15%) from total entitlement
+            // only applicable for claim submission
+            // if true, exclude tips and set total tips to be 0. Else, include 15% tips
+            if (!req.data.tips){
+                total_tips = 0.15 * total_meal_allowance;
+                total_meal_allowance += total_tips;
+            }
+
             return {
                 amount: total_meal_allowance,
-                daily_allowance: (entitlement.AMOUNT / 2),
-                currency_code: entitlement.CURRENCY
-            };
+                daily_allowance: total_daily_allowance,
+                currency_code: entitlement.CURRENCY, 
+                tips_amount: total_tips
+            }
         }
+    }
     });
 
     /**

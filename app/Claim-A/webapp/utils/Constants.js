@@ -201,7 +201,8 @@ sap.ui.define([
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
             "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
-            "ZREJECT_REASON": "/ZREJECT_REASON"
+            "ZREJECT_REASON": "/ZREJECT_REASON",
+            "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -420,7 +421,7 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE","ZTRAIN_COURSE_PART"
             ], 
         "ExcludeField":
         {
@@ -437,6 +438,14 @@ sap.ui.define([
             "SEMENANJUNG": "01",
             "SABAH_SARAWAK": "02",
             "OVERSEA": "03"
+        },
+         "FareType": 
+        {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "TRAIN": "04",
+            "TAXI": "05",
         }
     }
 });

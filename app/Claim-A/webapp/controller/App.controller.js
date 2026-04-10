@@ -531,13 +531,21 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimType: function (oEvent) {
+		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
 			// validate claim type
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+				//// get cost center from claim type if value exists
+				BusyIndicator.show(0);
+				var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+				if (!!sClaimTypeCostCenter) { // checks if claim type exists and has value for cost center
+					oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
+					oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+				}
+				BusyIndicator.hide();
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
@@ -1848,6 +1856,18 @@ sap.ui.define([
 				);
 			}
 		},
+
+		onSelect_ClaimHeader: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			//housing loan
+			if (oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await this._bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), 'HOUSING_LOAN_SCHEME_ID', 'HOUSING_LOAN_SCHEME_DESC'));
+			}
+			//lender name
+			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), 'HOUSING_LOAN_SCHLENDER_IDEME_ID', 'LENDER_NAME'));
+			}
+		}
 
 	});
 });
