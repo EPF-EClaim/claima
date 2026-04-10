@@ -437,9 +437,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 METER_CUBE_ENTITLED,
                 METER_CUBE_ACTUAL, 
                 DAILY_ALLOWANCE, 
-                TIPS, 
-                EXCLUDE_TIPS
-
+                TIPS
         };
 
     entity ZEMP_REQUEST_STATUS            as
