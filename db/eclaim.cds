@@ -511,6 +511,7 @@ entity ZCLAIM_ITEM : managed {
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         DAILY_ALLOWANCE            : Integer;
         TIPS                       : Integer;
+        EXCLUDE_TIPS               : Boolean;
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY

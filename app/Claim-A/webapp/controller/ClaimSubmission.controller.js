@@ -563,6 +563,7 @@ sap.ui.define([
 					vehicle_class_id: it.VEHICLE_CLASS_ID,
 					dailyallowance: it.DAILY_ALLOWANCE,
 					tips_amount: it.TIPS,
+					excludetips: it.EXCLUDE_TIPS,
 					descr: {},
 				}));
 
