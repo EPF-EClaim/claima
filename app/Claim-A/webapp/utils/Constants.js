@@ -445,6 +445,14 @@ sap.ui.define([
             "SEMENANJUNG": "01",
             "SABAH_SARAWAK": "02",
             "OVERSEA": "03"
+        },
+        "FareType": 
+        {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "TRAIN": "04",
+            "TAXI": "05",
         }
     }
 });
