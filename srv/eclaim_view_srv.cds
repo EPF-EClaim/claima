@@ -437,7 +437,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 METER_CUBE_ENTITLED,
                 METER_CUBE_ACTUAL,
                 DAILY_ALLOWANCE,
-                TIPS
+                TIPS,
+
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -923,7 +924,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EMP_ID,
                 modifiedAt as LAST_MODIFIED_DATE,
                 SUBMITTED_DATE,
-                CASH_ADVANCE,
+                ZREQUEST_ITEM.CASH_ADVANCE,
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
@@ -936,10 +937,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         }
 
         where
-                   ZSTATUS.STATUS_ID        =  'STAT05'
+                    ZSTATUS.STATUS_ID          =  'STAT05'
             and (
-                   ZREQUEST_ITEM.SEND_TO_SF =  TRUE
-                or ZREQUEST_ITEM.SEND_TO_SF is null
+                    ZREQUEST_ITEM.CASH_ADVANCE =  TRUE
+                and ZREQUEST_ITEM.SEND_TO_SF   is null
             );
 
 
