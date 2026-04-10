@@ -1253,7 +1253,8 @@ sap.ui.define([
 						"attachment_file_1": null,
 						"attachment_file_2": null,
 					},
-					"eligible_amount": null
+					"eligible_amount": null,
+					"no_of_hours" : null
 				},
 				"attachments": {
 					"attachment1": {
@@ -2566,6 +2567,24 @@ sap.ui.define([
 				});
 				return;
 			}
+
+			if(oInputModel.getProperty("/claim_item/departure_time") && oInputModel.getProperty("/claim_item/arrival_time")){
+				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
+				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
+				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
+
+				if (iDiffMs < 0) {
+					MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
+					return;
+				}
+
+				const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+
+				// 7. Save it back to the JSON model
+				oInputModel.setProperty("/claim_item/no_of_hours", fHours);
+			}
+
+			
 
 			// Reuben (FUT Issue 17)
 			// When creating claim for post education assistance, actual amount is used instead of amount for input
