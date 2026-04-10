@@ -422,4 +422,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
         PARTICIPANTS_ID: String;
     }
     action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
+
+    function getLodgingAmount(
+        sClaimTypeId: String,
+        sClaimTypeItemId: String,
+        sEmpId: String
+    ) returns Decimal(15, 2);
+
 };

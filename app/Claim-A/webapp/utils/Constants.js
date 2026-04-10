@@ -427,10 +427,16 @@ sap.ui.define([
             "CLAIM_TYPE_ITEM_ID": "claim_type_item_id",
             "CLAIM_TYPE_ID": "claim_type_id", 
             "CLAIM_ID": "claim_id", 
+            "CLAIM_SUB_ID": "claim_sub_id", 
             "DESCR": "descr", 
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+        },
+        "Region": {
+            "SEMENANJUNG": "01",
+            "SABAH_SARAWAK": "02",
+            "OVERSEA": "03"
         }
     }
 });

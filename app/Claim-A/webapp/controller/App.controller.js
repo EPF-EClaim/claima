@@ -141,7 +141,7 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (bDTDAdmin || bAdminSystem || bAdminCC ) {
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("Analytics");
 					} else {
@@ -167,7 +167,7 @@ sap.ui.define([
 				default:
 					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
-						if (bDTDAdmin || bAdminSystem || bAdminCC ) {
+						if (bDTDAdmin || bAdminSystem || bAdminCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
 								oKey = sEmpMasterDTD;
 							} else if (bDTDAdmin && oKey === sEmpDep) {
@@ -228,21 +228,21 @@ sap.ui.define([
 		onNav_ClaimSubmission: async function () {
 			BusyIndicator.show();
 
-			try{
+			try {
 				const oName = "claima.fragment.claimsubmission_claimprocess";
-				
+
 				this.oDialog_ClaimProcess ??= await this.loadFragment({
 					name: oName
 				})
 
 				await this._onInit_ClaimProcess();
 				this.oDialog_ClaimProcess.open();
-			}catch{
+			} catch {
 				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
-			}finally{
+			} finally {
 				BusyIndicator.hide();
 			}
-			
+
 		},
 
 		_getNewEmployeeModel: function (modelName) {
@@ -428,6 +428,11 @@ sap.ui.define([
 		_onInit_ClaimProcess: async function () {
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
+			// clear email field
+			var oFileUploader = this.byId("fileuploader_claiminput_attachment");
+			if (oFileUploader) {
+				oFileUploader.clear();
+			}
 			//// set employee data
 			var oUserModelData = this.getView().getModel('user')?.getData() || this._oSessionModel?.getData() || null;
 			if (!oUserModelData) {
@@ -447,11 +452,11 @@ sap.ui.define([
 			var oSelectClaimType = this.byId("select_claimprocess_claimtype");
 			var oBindingSelectClaimType = oSelectClaimType.getBinding("items");
 			var aFilterSelectClaimType = [
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				];
+				// ensure status is active
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+			];
 			oBindingSelectClaimType.filter(aFilterSelectClaimType);
 		},
 
@@ -526,24 +531,32 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimType: function (oEvent) {
+		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
 			// validate claim type
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oClaimType = oEvent? oEvent.getParameters().selectedItem : null;
+			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+				//// get cost center from claim type if value exists
+				BusyIndicator.show(0);
+				var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+				if (!!sClaimTypeCostCenter) { // checks if claim type exists and has value for cost center
+					oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
+					oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+				}
+				BusyIndicator.hide();
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
 				var oBindingSelectClaimItems = oSelectClaimItems.getBinding("items");
 				var aFilterSelectClaimItems = [
-						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oClaimType.getKey()),
-						// ensure status is active
-						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-					];
+					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oClaimType.getKey()),
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				];
 				oBindingSelectClaimItems.filter(aFilterSelectClaimItems);
 
 				// set filter for course code dropdown
@@ -551,11 +564,11 @@ sap.ui.define([
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
 					var aFilterSelectCourseCode = [
-							// ensure status is active
-							new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-						];
+						// ensure status is active
+						new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+					];
 					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
 				}
 			} else {
@@ -577,7 +590,7 @@ sap.ui.define([
 		onSelect_ClaimProcess_ClaimItem: function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItem = oEvent? oEvent.getParameters().selectedItem : null;
+			var oClaimItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimItem) {
 				// populate claim item values
 				oInputModel.setProperty("/claimtype/descr/item", oClaimItem.getBindingContext("employee").getObject("CLAIM_TYPE_ITEM_DESC"));
@@ -594,10 +607,10 @@ sap.ui.define([
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
 					var aFilterSelectRequestForm = [
-							new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-							new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-							new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
-						];
+						new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+						new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
+					];
 					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
 				}
 			}
@@ -615,7 +628,7 @@ sap.ui.define([
 			}
 		},
 
-		_onSelect_ClaimProcess_Category: function() {
+		_onSelect_ClaimProcess_Category: function () {
 			// reset email approval
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			if (oInputModel.getProperty("/req_emailapprove") &&
@@ -629,7 +642,7 @@ sap.ui.define([
 		onSelect_ClaimProcess_RequestForm: function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oRequestForm = oEvent? oEvent.getParameters().selectedItem : null;
+			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oRequestForm) {
 				// populate request form values
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
@@ -657,9 +670,9 @@ sap.ui.define([
 		},
 
 		/**
-        * On enabling Email Approval, reset values for request form
-        * @public
-        */
+		* On enabling Email Approval, reset values for request form
+		* @public
+		*/
 		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			if (oInputModel.getProperty("/req_emailapprove")) {
@@ -672,13 +685,13 @@ sap.ui.define([
 		},
 
 		/**
-        * On selecting course code from claim process, set description in claim submission model
-        * @public
-        */
+		* On selecting course code from claim process, set description in claim submission model
+		* @public
+		*/
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oCourseCode = oEvent? oEvent.getParameters().selectedItem : null;
+			var oCourseCode = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oCourseCode) {
 				// set course code description
 				oInputModel.setProperty("/claimtype/course_code/course_desc", oCourseCode.getBindingContext("employee_view").getObject("COURSE_DESC"));
@@ -688,12 +701,12 @@ sap.ui.define([
 					var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
 					var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
 					var aFilterSelectSessionNumber = [
-							// ensure status is active
-							new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-							new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-						];
+						// ensure status is active
+						new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
+						new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+					];
 					oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
 				}
 			}
@@ -709,12 +722,12 @@ sap.ui.define([
 		},
 
 		/**
-        * On selecting session number from claim process, set start/end date in claim submission model
-        * @public
-        */
+		* On selecting session number from claim process, set start/end date in claim submission model
+		* @public
+		*/
 		onSelect_ClaimProcess_SessionNumber: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oSessionNumber = oEvent? oEvent.getParameters().selectedItem : null;
+			var oSessionNumber = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSessionNumber) {
 				// set start/end dates
 				oInputModel.setProperty("/claimtype/course_code/start_date", oSessionNumber.getBindingContext("employee").getObject("START_DATE"));
@@ -759,31 +772,31 @@ sap.ui.define([
 
 			//check if the same Request ID has been submitted for claim submission
 			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
-			var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
-			
-			try {
-    			const oResult = await ClaimUtility.checkReusedPAR(sRequestID);
-    			if (oResult?.isUsed) {
-        			MessageBox.warning(Utility.getText("msg_claim_submitted"), 
-				{
-					actions: [
-						Utility.getText("button_acknowledge"), 
-						MessageBox.Action.CANCEL
-					], 
-					emphasizedAction:
-					Utility.getText("button_acknowledge"),
-					onClose: async function (sAction) {
-						if (sAction === Utility.getText("button_acknowledge")) {
-							await this._proceedClaim();
-						}
-					}.bind(this)
-				});
-				return;
+				var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
+
+				try {
+					const oResult = await ClaimUtility.checkReusedPAR(sRequestID);
+					if (oResult?.isUsed) {
+						MessageBox.warning(Utility.getText("msg_claim_submitted"),
+							{
+								actions: [
+									Utility.getText("button_acknowledge"),
+									MessageBox.Action.CANCEL
+								],
+								emphasizedAction:
+									Utility.getText("button_acknowledge"),
+								onClose: async function (sAction) {
+									if (sAction === Utility.getText("button_acknowledge")) {
+										await this._proceedClaim();
+									}
+								}.bind(this)
+							});
+						return;
+					}
+				} catch (err) {
+					MessageToast.show(Utility.getText("msg_error_gettingpar_status"));
 				}
-			} catch (err) {
-    			MessageToast.show(Utility.getText("msg_error_gettingpar_status"));
 			}
-		}
 
 			await this._proceedClaim();
 		},
@@ -1487,24 +1500,24 @@ sap.ui.define([
 		},
 
 		_applyReqTypeFilters: function (sUserType) {
-            var oSelect = Fragment.byId("request", "req_reqtype");
-            
-            var oBinding = oSelect.getBinding("items");
+			var oSelect = Fragment.byId("request", "req_reqtype");
 
-            if (!oBinding) {
-                return;
-            }
+			var oBinding = oSelect.getBinding("items");
 
-            var aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-            ];
+			if (!oBinding) {
+				return;
+			}
 
-            if (sUserType !== this._oConstant.Role.GA_ADMIN) {
-                aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
-            }
+			var aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			];
 
-            oBinding.filter(aFilters);
-        },
+			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
+				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
+			}
+
+			oBinding.filter(aFilters);
+		},
 
 		_loadClaimTypeSelectionData: function (sReqType) {
 			if (!sReqType) return;
@@ -1551,11 +1564,11 @@ sap.ui.define([
 					oDialogModel.setProperty('/coursecode', "");
 				}
 			} else {
-				this._oReqModel.setProperty('/req_header/coursecode', ""); 
+				this._oReqModel.setProperty('/req_header/coursecode', "");
 			}
 
 			const oSelect = Fragment.byId("request", "req_coursecode");
-			
+
 			if (oSelect) {
 				oSelect.setForceSelection(false);
 				oSelect.setSelectedKey("");
@@ -1569,13 +1582,13 @@ sap.ui.define([
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
 				const oTypeModel = new JSONModel({ types: aData });
-				
+
 				if (this.oDialogFragment) {
 					this.oDialogFragment.setModel(oTypeModel, "course_list");
 				} else {
 					this.getView().setModel(oTypeModel, "course_list");
 				}
-				
+
 			}).catch(err => console.error("Course List Load Failed", err));
 		},
 
@@ -1647,13 +1660,13 @@ sap.ui.define([
 			}
 		},
 
-		_openAndPreload: function(oDialog) {
+		_openAndPreload: function (oDialog) {
 
 			var oListBinding = this._oDataModel.bindList("/ZCOST_CENTER", null, null, null, {
 				$select: "COST_CENTER_DESC,COST_CENTER_ID"
 			});
 
-			oListBinding.requestContexts(0, 5).then(function(aContexts) {});
+			oListBinding.requestContexts(0, 5).then(function (aContexts) { });
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {
@@ -1822,27 +1835,39 @@ sap.ui.define([
 			} else {
 				this._oAvatarPopover.openBy(oAvatar);
 			}
-		}, 
+		},
 
 		_proceedClaim: async function () {
-    		// close Claim Process dialog
-    		this.oDialog_ClaimProcess.close();
+			// close Claim Process dialog
+			this.oDialog_ClaimProcess.close();
 
-    		// load Claim Input dialog
-    		const oName = "claima.fragment.claimsubmission_claiminput";
-    		this.oDialog_ClaimInput ??= await this.loadFragment({
-        	name: oName
-    		});
+			// load Claim Input dialog
+			const oName = "claima.fragment.claimsubmission_claiminput";
+			this.oDialog_ClaimInput ??= await this.loadFragment({
+				name: oName
+			});
 
-    		if (this.oDialog_ClaimInput) {
-        		this._onInit_ClaimInput();
-        		this.oDialog_ClaimInput.open();
-    		} else {
-        		MessageToast.show(
-            		Utility.getText("msg_nav_error_fragment", [oName])
-        	);
-    		}
+			if (this.oDialog_ClaimInput) {
+				this._onInit_ClaimInput();
+				this.oDialog_ClaimInput.open();
+			} else {
+				MessageToast.show(
+					Utility.getText("msg_nav_error_fragment", [oName])
+				);
+			}
 		},
+
+		onSelect_ClaimHeader: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			//housing loan
+			if (oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await this._bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), 'HOUSING_LOAN_SCHEME_ID', 'HOUSING_LOAN_SCHEME_DESC'));
+			}
+			//lender name
+			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), 'HOUSING_LOAN_SCHLENDER_IDEME_ID', 'LENDER_NAME'));
+			}
+		}
 
 	});
 });

@@ -1341,6 +1341,8 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
 				//// get descriptions
 				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
+				////get lender and housing loan 
+
 			}
 			BusyIndicator.hide(0);
 		},
@@ -3576,10 +3578,10 @@ sap.ui.define([
 				}
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-					return;
-				}
+				// CustomValidator.init(this.getOwnerComponent(), this.getView());
+				// if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+				// 	return;
+				// }
 
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
@@ -4820,6 +4822,7 @@ sap.ui.define([
 				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID ||
 					sKey === this._oConstant.ExcludeField.DESCR  ||
 					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
@@ -4830,21 +4833,9 @@ sap.ui.define([
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
-		},
+		}, 
 
-		_displaywarning: async function(iDayDifference) {
-			if (iDayDifference < 0){
-        		MessageBox.warning(Utility.getText("msg_provided_meal_exceed"),
-            	{
-                	title: Utility.getText("msg_invalid_input"),
-                	actions: [MessageBox.Action.OK],
-                	emphasizedAction: MessageBox.Action.OK,
-            	}
-       		 );
-    	    	return true;
-    		}
-    		return false;
-		}
 		
+
 	});
 });
