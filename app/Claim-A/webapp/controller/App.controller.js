@@ -541,7 +541,7 @@ sap.ui.define([
 				//// get cost center from claim type if value exists
 				BusyIndicator.show(0);
 				var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
-				if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
+				if (!!sClaimTypeCostCenter) { // checks if claim type exists and has value for cost center
 					oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 					oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
 				}
