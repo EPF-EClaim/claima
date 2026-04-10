@@ -153,6 +153,7 @@
                     forceSelection="false"
                     visible="false"
                     required="true"
+                    editable="{clclaimitem_propertyaim>/marriage_category/is_editable}"
                     items="{
                         path: 'employee>/ZMARITAL_CAT',
                         sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false }

@@ -2276,8 +2276,15 @@ sap.ui.define([
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
 					
-				await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
-				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+					break;
+
+				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
+
+					oPropertyModel.setProperty("marriage_category/is_editable", false);
+					
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2357,7 +2364,8 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id:{is_required: false},
 				bill_no:{is_required: false},
-				account_no:{is_required: false}
+				account_no:{is_required: false},
+				marriage_category:{is_editable: true}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2954,6 +2962,7 @@ sap.ui.define([
 		 * @public
 		 */
 		onChange_ClaimDetails_ActualAmount: function () {
+			//do changes here
 			// verify if property exists and 'amount' field is visible
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -2961,7 +2970,11 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
-			ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT){
+				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			}
+			
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
