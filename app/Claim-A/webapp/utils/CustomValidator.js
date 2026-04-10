@@ -65,9 +65,10 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
                     var oInputModel = this._oView.getModel("claimitem_input");
+                    var sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
                     
-                    if (!!oInputModel?.getProperty("/claim_item/claim_type_item_id")) {
-                        switch (oInputModel.getProperty("/claim_item/claim_type_item_id")) {
+                    if (!!sClaimTypeItem) {
+                        switch (sClaimTypeItem) {
                             case Constants.ClaimTypeItem.TELEFON_B:
                                 if(!oInputModel.getProperty("/claim_item/disclaimer")) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
@@ -79,7 +80,7 @@ sap.ui.define([
                         }
                     }
 
-                    if (Object.values(Constants.ClaimTypeItemMakan).includes(oInputModel?.getProperty("/claim_item/claim_type_item_id"))) {
+                    if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
                         var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
                         var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
                         var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
@@ -106,7 +107,7 @@ sap.ui.define([
                         }
                     }
                     
-                    if (!!oInputModel && oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.E_PENGAKUT) {
+                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved
                         var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan(this._oOwnerComponent.getModel("session").getProperty("/userId"));
                         if (bClaimExists) {
