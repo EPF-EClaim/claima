@@ -196,6 +196,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ENTITLED_LUNCH,
                 ENTITLED_DINNER,
                 DAILY_ALLOWANCE,
+                //Add additional field to cater on ELAUN MAKAN for PRE-APPROVAL-REQUEST
+                CURRENCY_CODE,
+                ZCURRENCY.CURRENCY_DESC,
+                CURRENCY_RATE
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -452,6 +456,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
                 METER_CUBE_ENTITLED,
                 METER_CUBE_ACTUAL,
+                DAILY_ALLOWANCE,
+                TIPS,
+                EXCLUDE_TIPS,
+
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -987,9 +995,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
                 EMP_ID,
-                modifiedAt as LAST_MODIFIED_DATE,
+                modifiedAt                 as LAST_MODIFIED_DATE,
                 SUBMITTED_DATE,
                 CASH_ADVANCE,
+                ZREQUEST_ITEM.CASH_ADVANCE as CASH_ADVANCE_ITEM,
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
@@ -1002,11 +1011,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         }
 
         where
-                   ZSTATUS.STATUS_ID        =  'STAT05'
-            and (
-                   ZREQUEST_ITEM.SEND_TO_SF =  FALSE
-                or ZREQUEST_ITEM.SEND_TO_SF is null
-            );
+                ZSTATUS.STATUS_ID          =  'STAT05'
+            and ZREQUEST_ITEM.CASH_ADVANCE =  true
+            and ZREQUEST_ITEM.SEND_TO_SF   is null;
 
 
     @cds.redirection.target
