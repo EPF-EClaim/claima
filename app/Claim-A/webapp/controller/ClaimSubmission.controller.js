@@ -30,7 +30,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/CustomDuplicationCheck"
+	"claima/utils/CustomDuplicationCheck",
+	"claima/utils/Constants",
 ], function (
 	Fragment,
 	Item,
@@ -63,8 +64,8 @@ sap.ui.define([
 	EligibilityCheck,
 	EligibleScenarioCheck,
 	CustomValidator,
-	CustomDuplicationCheck
-
+	CustomDuplicationCheck,
+	Constants
 ) {
 	"use strict";
 
@@ -125,18 +126,6 @@ sap.ui.define([
 					}
 				}
 			}), "appModel");
-
-			var oHeaderEditable = new JSONModel({
-				"startTrip": false,
-				"endTrip": false,
-				"startEvent": false,
-				"endEvent": false,
-				"location": false,
-				"comment": false,
-				"altCostCenter": false,
-				"saveHeader": false,
-			});
-			this.getView().setModel(oHeaderEditable, "editable");
 
 		},
 
@@ -217,12 +206,10 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
-				oClaimSubmissionModel.setProperty("/view_only", true);
-				this.setHeaderUnEditable();
+				oClaimSubmissionModel.setProperty("/view_only", true)
 			}
 			else {
-				oClaimSubmissionModel.setProperty("/view_only", false);
-				await this.setHeaderEditable();
+				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
 
 			// load form fragments
@@ -237,40 +224,6 @@ sap.ui.define([
 			}
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
-		},
-
-		//set editable header fields
-		setHeaderEditable: async function () {
-			const oClaimModel = this.getView().getModel("claimsubmission_input");
-			var oEditableFields = this.getView().getModel("editable");
-
-			oEditableFields.setProperty("/startEvent", true);
-			oEditableFields.setProperty("/endEvent", true);
-			oEditableFields.setProperty("/location", true);
-			oEditableFields.setProperty("/comment", true);
-			if (!oClaimModel.getProperty("/claim_header/request_id")) {
-				oEditableFields.setProperty("/startTrip", true);
-				oEditableFields.setProperty("/endTrip", true);
-			}
-			const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-			if ( !sDefaultCostCenter ){
-				oEditableFields.setProperty("/altCostCenter", true);
-			}
-			oEditableFields.setProperty("/saveHeader", true);
-		},
-
-		//set all fields uneditable
-		setHeaderUnEditable: function () {
-			var oEditableFields = this.getView().getModel("editable");
-
-			oEditableFields.setProperty("/startEvent", false);
-			oEditableFields.setProperty("/endEvent", false);
-			oEditableFields.setProperty("/location", false);
-			oEditableFields.setProperty("/comment", false);
-			oEditableFields.setProperty("/startTrip", false);
-			oEditableFields.setProperty("/endTrip", false);
-			oEditableFields.setProperty("/altCostCenter", false);
-			oEditableFields.setProperty("/saveHeader", false);
 		},
 
 		//event handle for confirm and cancel
@@ -1766,111 +1719,6 @@ sap.ui.define([
 			}
 		},
 
-		onSaveHeader: async function () {
-			const oInputModel = this.getView().getModel("claimsubmission_input");
-			const oODataModel = this.getOwnerComponent().getModel();
-
-			if ( this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")) && this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")) ) {
-				try {
-					BusyIndicator.show(0);
-
-					const sClaimId = oInputModel.getProperty("/claim_header/claim_id");
-					if (!sClaimId) {
-						throw new Error("Missing Claim ID");
-					}
-
-					// Bind to existing claim header
-					const oContextBinding = oODataModel.bindContext(
-						`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
-					);
-
-					await oContextBinding.requestObject(); 
-					const oContext = oContextBinding.getBoundContext();
-
-					const lastModifiedDate = this._getHanaDate(new Date());
-					oInputModel.setProperty(
-						"/claim_header/last_modified_date",
-						lastModifiedDate
-					);
-
-					oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
-					oContext.setProperty("COMMENT",
-						oInputModel.getProperty("/claim_header/comment")
-					);
-					oContext.setProperty("LOCATION",
-						oInputModel.getProperty("/claim_header/location")
-					);
-					oContext.setProperty("ALTERNATE_COST_CENTER",
-						oInputModel.getProperty("/claim_header/alternate_cost_center")
-					);
-
-					oContext.setProperty("TRIP_START_DATE",
-						this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date"))
-					);
-					oContext.setProperty("TRIP_END_DATE",
-						this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date"))
-					);
-					oContext.setProperty("EVENT_START_DATE",
-						this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date"))
-					);
-					oContext.setProperty("EVENT_END_DATE",
-						this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
-					);
-
-					// validate date range
-					//// trip start/end date
-					if (!this._validDateRange("text_claimsummary_claimheader_tripstartdate", "text_claimsummary_claimheader_tripenddate")) {
-						// stop claim submission if incomplete
-						return;
-					}
-					//// event start/end date (optional)
-					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
-						if (!this._validDateRange("text_claimsummary_claimheader_eventstartdate", "text_claimsummary_claimheader_eventenddate")) {
-							// stop claim submission if incomplete
-							return;
-						}
-					}
-
-					await oODataModel.submitBatch("$auto");
-
-					MessageToast.show(
-						Utility.getText("msg_claimheader_updated", [sClaimId])
-					);
-
-				} catch (e) {
-					MessageToast.show(
-						Utility.getText("msg_claimsubmission_failed", [e.message])
-					);
-					console.error(e);
-				} finally {
-					BusyIndicator.hide();
-				}
-			}	
-			else {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
-			}
-		},
-
-		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText("msg_daterange_order"));
-				return false;
-			}
-			else {
-				return true;
-			}
-		},
-
 		onDownloadExcelReport: async function () {
 			// get header data
 			const oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
@@ -2472,6 +2320,10 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
 			}
+		},
+
+		onChange_ClaimDetails_ActualMeterCube: function () {
+			ClaimUtility.calculatePengangkutanLautAmount(this.getView().getModel("claimitem_input"));
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -4555,7 +4407,6 @@ sap.ui.define([
 				"input_claimdetails_input_km",
 				"input_claimdetails_input_rate_per_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
@@ -4698,7 +4549,6 @@ sap.ui.define([
 				"select_claimdetails_input_vehicle_ownership_id",
 				"input_claimdetails_input_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
