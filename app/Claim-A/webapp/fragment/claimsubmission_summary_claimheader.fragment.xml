@@ -137,6 +137,30 @@
 					}"
                 />
 
+                <!-- Loan Scheme -->
+                <Label
+                    text="{i18n>label_claimsummary_claimheader_loan_scheme}"
+                />
+                <Text
+                    id="text_claimsummary_claimheader_loan_scheme"
+                    text="{
+						path: 'claimsubmission_input>/claim_header/housing_loan_scheme'
+					}"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                />
+
+                <!-- Lender -->
+                <Label
+                    text="{i18n>label_claimsummary_claimheader_lender}"
+                />
+                <Text
+                    id="text_claimsummary_claimheader_lender"
+                    text="{
+						path: 'claimsubmission_input>/claim_header/lender_name'
+					}"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                />
+
                 <!-- Move-In Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_move_in_date}"
