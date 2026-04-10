@@ -435,11 +435,11 @@ sap.ui.define([
         },
         "FareType": 
         {
-            "Bus": "01",
-            "EHailing": "02",
-            "Ferry": "03",
-            "Train": "04",
-            "Taxi": "05",
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "TRAIN": "04",
+            "TAXI": "05",
         },
         "Region": {
             "SEMENANJUNG": "01",
