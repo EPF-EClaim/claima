@@ -2322,10 +2322,6 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_ActualMeterCube: function () {
-			ClaimUtility.calculatePengangkutanLautAmount(this.getView().getModel("claimitem_input"));
-		},
-
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
 
 			// HARD RESET – prevents stale binding values
