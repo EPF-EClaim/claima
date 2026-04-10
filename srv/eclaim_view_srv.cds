@@ -435,9 +435,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_DAYS_ID,
                 ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
                 METER_CUBE_ENTITLED,
-                METER_CUBE_ACTUAL, 
-                DAILY_ALLOWANCE, 
-                TIPS
+                METER_CUBE_ACTUAL,
+                DAILY_ALLOWANCE,
+                TIPS,
+                EXCLUDE_TIPS,
+
         };
 
     entity ZEMP_REQUEST_STATUS            as

@@ -1347,6 +1347,8 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
 				//// get descriptions
 				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
+				////get lender and housing loan 
+
 			}
 			BusyIndicator.hide(0);
 		},
@@ -4846,7 +4848,9 @@ sap.ui.define([
 
 		onSelect_ExcludeTips: async function () {
 			await this._calculatePerDiem();
-		}
+		}, 
+
+		
 
 	});
 });
