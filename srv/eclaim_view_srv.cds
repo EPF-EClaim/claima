@@ -186,6 +186,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ENTITLED_LUNCH,
                 ENTITLED_DINNER,
                 DAILY_ALLOWANCE,
+                //Add additional field to cater on ELAUN MAKAN for PRE-APPROVAL-REQUEST
+                CURRENCY_CODE,
+                ZCURRENCY.CURRENCY_DESC,
+                CURRENCY_RATE
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -432,6 +436,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
                 METER_CUBE_ENTITLED,
                 METER_CUBE_ACTUAL,
+                DAILY_ALLOWANCE,
+                TIPS
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -932,7 +938,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         where
                    ZSTATUS.STATUS_ID        =  'STAT05'
             and (
-                   ZREQUEST_ITEM.SEND_TO_SF =  FALSE
+                   ZREQUEST_ITEM.SEND_TO_SF =  TRUE
                 or ZREQUEST_ITEM.SEND_TO_SF is null
             );
 
