@@ -32,6 +32,7 @@ sap.ui.define([
 		init: function (oOwnerComponent, oView) {
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
+			this._oSessionModel = this._oOwnerComponent.getModel("session");
 		},
 
 		/**
@@ -385,10 +386,11 @@ sap.ui.define([
 		/**
 		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
 		 * @public
-		 * @param {String} sEmpId - Employee ID
 		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
 		 */
-		fetchClaimElaunPengangkutan: async function (sEmpId) {
+		fetchClaimElaunPengangkutan: async function () {
+			// get employee ID
+			var sEmpId = this._oSessionModel("/userId");
 			if (!sEmpId) {
 				return true;
 			}

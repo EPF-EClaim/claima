@@ -109,7 +109,7 @@ sap.ui.define([
                     
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved
-                        var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan(this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                        var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan();
                         if (bClaimExists) {
                             MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
                             bCanProceed = false;
