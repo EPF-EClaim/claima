@@ -2322,22 +2322,6 @@ sap.ui.define([
 			}
 		},
 
-		/**
-		 * Set Vehicle Class field visibility based on Fare Type
-		 */
-		onSelect_ClaimDetails_FareType: async function () {
-			const oInputModel = this.getView().getModel("claimitem_input");
-			const sFareType = oInputModel.getProperty("/claim_item/fare_type_id");
-			const oVehicleField = this._resolveControl("select_claimdetails_input_vehicle_class_id", "claimsubmission_claimdetails_input");
-			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
-			if (oVehicleField && typeof oVehicleField.setVisible === "function" && ( sFareType === "03" || sFareType === "04" ) && sClaimTypeID && (sClaimTypeID !== Constants.ClaimType.ELAUN_PINDAH)) {
-				oVehicleField.setVisible(true);
-			}
-			else {
-				oVehicleField.setVisible(false);
-			}
-		},
-
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
 
 			// HARD RESET – prevents stale binding values

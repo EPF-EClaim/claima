@@ -431,6 +431,14 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+        },
+        "FareType": 
+        {
+            "Bus": "01",
+            "EHailing": "02",
+            "Ferry": "03",
+            "Train": "04",
+            "Taxi": "05",
         }
     }
 });

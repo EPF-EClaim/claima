@@ -721,8 +721,12 @@
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
                     change="onSelect_ClaimDetails_VehicleClass"
-                    liveChange="onSelect_ClaimDetails_VehicleClass"
-                    visible="false"
+                    liveChange="onSelect_ClaimDetails_VehicleClass"                 
+                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/Ferry}
+                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/Train})
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
+                    }"
 				>
 				</Select>
 
