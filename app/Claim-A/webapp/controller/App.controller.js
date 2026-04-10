@@ -531,13 +531,21 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimType: function (oEvent) {
+		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
 			// validate claim type
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+				//// get cost center from claim type if value exists
+				BusyIndicator.show(0);
+				var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+				if (!!sClaimTypeCostCenter) { // checks if claim type exists and has value for cost center
+					oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
+					oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+				}
+				BusyIndicator.hide();
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
