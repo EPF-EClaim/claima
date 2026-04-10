@@ -215,6 +215,8 @@ entity ZREQUEST_ITEM : managed {
         ENTITLED_LUNCH             : Integer;
         ENTITLED_DINNER            : Integer;
         DAILY_ALLOWANCE            : Integer;
+        CURRENCY_CODE              : String;
+        CURRENCY_RATE              : Decimal(6, 2);
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -273,6 +275,9 @@ entity ZREQUEST_ITEM : managed {
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
                                          on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
+        ZCURRENCY                  : Association to ZCURRENCY
+                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE
+                                         
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -511,6 +516,7 @@ entity ZCLAIM_ITEM : managed {
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         DAILY_ALLOWANCE            : Integer;
         TIPS                       : Integer;
+        EXCLUDE_TIPS               : Boolean;
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
