@@ -292,7 +292,7 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
-			var bTips = oClaimItemInputModel.getProperty("/claim_item/excludetips");
+			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
 			
 			var oSessionModel = this.getView().getModel("session");
     		var sEEID = oSessionModel.getProperty("/userId");
