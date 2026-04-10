@@ -151,6 +151,8 @@
                     id="select_claimdetails__input_marriagecategory"
                     selectedKey="{claimitem_input>/claim_item/marriage_category}"
                     forceSelection="false"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} }"
                     visible="false"
                     required="true"
                     items="{

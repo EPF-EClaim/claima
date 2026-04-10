@@ -2318,8 +2318,10 @@ sap.ui.define([
 					marital: oClaimSubmissionModel.getProperty("/emp_master/marital"),
 					employee_type: oClaimSubmissionModel.getProperty("/emp_master/employee_type")
 				};
-				var dAmount = await ClaimUtility.fetchAmountElaunPengangkutan(oEmployeeData);
-				oInputModel.setProperty("/claim_item/amount", dAmount);
+				var oEPengakutData = await ClaimUtility.fetchElaunPengangkutanData(oEmployeeData);
+				// populate item values
+				oInputModel.setProperty("/claim_item/amount", oEPengakutData.eligible_amount);
+				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);
 			}
 		},
 

@@ -56,26 +56,52 @@ sap.ui.define([
         },
 
 		/**
-		 * Return marriage category ID based on dependent count
+		 * Return marriage category ID based on marital status
 		 * @private
+         * @param {String} sEmpId - Employee ID
+         * @param {String} sMarital - marital status of employee
+         * 
          * @param {Integer} iDependents - number of depents under given employee
          * @return {String} - return marriage category ID based on number of dependents
 		 */
-		_getMarriageCategoryByCount: function (iDependents) {
-            if (isNaN(iDependents)) {
-                return null;
+		_getMarriageCategory: async function (sEmpId, sMarital) {
+            // determine marriage category Id
+            var sCategoryId = null;
+            if (sMarital === Constants.MaritalStatus.SINGLE) {
+                sCategoryId = Constants.MarriageCategory.SINGLE;
             }
-			
-            switch (true) {
-                case (iDependents >= 4):
-                    return Constants.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN;
-                case (iDependents >= 1 && iDependents <= 3):
-                    return Constants.MarriageCategory.MARRIED_1_TO_3_CHILDREN;
-                case (iDependents == 0):
-                    return Constants.MarriageCategory.MARRIED_NO_CHILDREN;
-                default:
-                    return null;
+            else {
+                // get number of dependents for non-single employees
+                try {
+                    // get number of dependents 
+                    const oFunctionCount = this._oOwnerComponent.getModel().bindContext("/getEmpDependentCount(...)");
+
+                    oFunctionCount.setParameter("sEmpId", sEmpId);
+                    oFunctionCount.setParameter("sRelationship", Constants.DependentType.DEPENDENT);
+
+                    await oFunctionCount.execute();
+
+                    const oContextCount = oFunctionCount.getBoundContext();
+                    const iResultCount = oContextCount.getObject("value");
+
+                    // determine marriage category by number of dependents
+                    switch (true) {
+                        case (iResultCount >= 4):
+                            sCategoryId = Constants.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN;
+                            break;
+                        case (iResultCount >= 1 && iResultCount <= 3):
+                            sCategoryId = Constants.MarriageCategory.MARRIED_1_TO_3_CHILDREN;
+                            break;
+                        case (iResultCount == 0):
+                        default:
+                            sCategoryId = Constants.MarriageCategory.MARRIED_NO_CHILDREN;
+                            break;
+                    }
+                } catch (oError) {
+                    sCategoryId = null;
+                }
             }
+            return sCategoryId;
 		},
 
         /**

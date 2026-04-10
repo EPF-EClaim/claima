@@ -1281,20 +1281,16 @@ module.exports = (srv) => {
         const { sEmpId } = req.data;
 
         try {
-            var oFilters = { EMP_ID: sEmpId }
-            if (!!sRelationship) {
-                oFilters.RELATIONSHIP = sRelationship;
-            }
             const aClaimSubmissions = await SELECT
                 .from(Constant.Entities.ZCLAIM_ITEM)
-                .columns(
-                    Constant.EntitiesFields.CLAIMID,
-                    { ref: ["STATUS_ID"], as: "ZCLAIM_HEADER" }
-                )
+                .columns(item => {
+                    item.CLAIM_ID
+                    item.ZCLAIM_HEADER(header => header.STATUS_ID)
+                })
                 .where({
                     EMP_ID: sEmpId,
                     CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.E_PENGAKUT,
-                    "ZCLAIM_HEADER/STATUS_ID": Constant.Status.APPROVED
+                    "ZCLAIM_HEADER.STATUS_ID": Constant.Status.APPROVED
                 })
                 .orderBy([
                     Constant.EntitiesFields.CLAIMID,

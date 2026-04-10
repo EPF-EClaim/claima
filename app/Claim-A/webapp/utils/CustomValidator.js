@@ -98,7 +98,7 @@ sap.ui.define([
                         }
                     }
                     
-                    if (!!oInputModel?.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.E_PENGAKUT) {
+                    if (!!oInputModel && oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved
                         var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan(this._oOwnerComponent.getModel("session").getProperty("/userId"));
                         if (bClaimExists) {

@@ -339,58 +339,46 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount for employee on Elaun Pengangkutan, based on Marital Status, Employee Type, and Marriage Category
+		 * Retrieve approved amount and marriage category data for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @param {Object} oEmployeeData - Employee ID, Marital Status, Employee Type
-		 * @return {Decimal} - return eligible amount retrieved from table
+		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id and description
 		 */
-		fetchAmountElaunPengangkutan: async function (oEmployeeData) {
+		fetchElaunPengangkutanData: async function (oEmployeeData) {
 			if (!oEmployeeData) {
 				// return zero if no employee data found
-				return 0.00;
-			}
-
-			// if marital status is not single, get eligible amount based on marital status, employee type and retrieved marriage category
-			var sMarriageCategory = null;
-			if (oEmployeeData.marital === Constant.MaritalStatus.SINGLE) {
-				sMarriageCategory = Constant.MarriageCategory.SINGLE;
-			}
-			if (oEmployeeData.marital !== Constant.MaritalStatus.SINGLE) {
-				try {
-					const oFunctionCount = this._oOwnerComponent.getModel().bindContext("/getEmpDependentCount(...)");
-
-					oFunctionCount.setParameter("sEmpId", oEmployeeData.eeid);
-					oFunctionCount.setParameter("sRelationship", Constant.DependentType.DEPENDENT);
-
-					await oFunctionCount.execute();
-
-					const oContextCount = oFunctionCount.getBoundContext();
-					const iResultCount = oContextCount.getObject("value");
-
-					sMarriageCategory = Utility._getMarriageCategoryByCount(iResultCount);
-
-				} catch (oError) {
-					sMarriageCategory = null;
+				return {
+					eligible_amount: null,
+					marriage_category: null
 				}
 			}
 
+			// get marriage category based marital status
+			var sMarriageCategory = await Utility._getMarriageCategory(oEmployeeData.eeid, oEmployeeData.marital);
+
 			// get eligible amount based on marital status, employee type and retrieved marriage category
+			var dEligibleAmount = 0.00;
 			try {
 				const oFunctionEligible = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
 
 				oFunctionEligible.setParameter("sMaritalStatus", oEmployeeData.marital);
 				oFunctionEligible.setParameter("sEmployeeType", oEmployeeData.employee_type);
-				oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
+				if (!!sMarriageCategory) {
+					oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
+				}
 
 				await oFunctionEligible.execute();
 
 				const oContextAmount = oFunctionEligible.getBoundContext();
-				const dResultAmount = oContextAmount.getObject("value");
-
-				return dResultAmount;
+				dEligibleAmount = oContextAmount.getObject("value");
 
 			} catch (oError) {
-				return 0.00;
+				dEligibleAmount = 0.00;
+			}
+
+			return {
+				eligible_amount: dEligibleAmount,
+				marriage_category: sMarriageCategory
 			}
 		},
 
