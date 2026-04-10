@@ -73,7 +73,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -213,6 +213,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
+    
     entity ZEMP_CLAIM_EE_VIEW @(restrict: [
         {
             grant: 'READ',
@@ -223,7 +224,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
+    ])             as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -496,7 +497,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY @(restrict: [
+     entity ZEMP_CLAIM_REPORT_SUMMARY @(restrict: [
         {
             grant: 'READ',
             to   : [
@@ -509,7 +510,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                         as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -556,7 +557,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_DETAILS @(restrict: [
+       entity ZEMP_CLAIM_REPORT_DETAILS @(restrict: [
         {
             grant: 'READ',
             to   : [
@@ -569,7 +570,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])       as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -735,7 +736,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
         };
 
-    entity ZEMP_REQUEST_REPORT_SUMMARY @(restrict: [
+        entity ZEMP_REQUEST_REPORT_SUMMARY @(restrict: [
         {
             grant: 'READ',
             to   : [
@@ -748,7 +749,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])          as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -807,7 +808,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -995,9 +996,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
                 EMP_ID,
-                modifiedAt as LAST_MODIFIED_DATE,
+                modifiedAt                 as LAST_MODIFIED_DATE,
                 SUBMITTED_DATE,
-                ZREQUEST_ITEM.CASH_ADVANCE,
+                CASH_ADVANCE,
+                ZREQUEST_ITEM.CASH_ADVANCE as CASH_ADVANCE_ITEM,
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
@@ -1010,11 +1012,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         }
 
         where
-                    ZSTATUS.STATUS_ID          =  'STAT05'
-            and (
-                    ZREQUEST_ITEM.CASH_ADVANCE =  TRUE
-                and ZREQUEST_ITEM.SEND_TO_SF   is null
-            );
+                ZSTATUS.STATUS_ID          =  'STAT05'
+            and ZREQUEST_ITEM.CASH_ADVANCE =  true
+            and ZREQUEST_ITEM.SEND_TO_SF   is null;
 
 
     @cds.redirection.target
@@ -1048,7 +1048,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         grant: 'READ',
         to   : ['Approver'],
         where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-    }])                                  as
+    }])                              as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
@@ -1087,17 +1087,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         message : String;
     };
 
-    entity ZROLEHIERARCHY                as
-        projection on ECLAIM.ZROLEHIERARCHY {
-            key ROLE,
-                RANK
-        };
-
-    entity ZCONSTANTS                    as
-        projection on ECLAIM.ZCONSTANTS {
-            key ID,
-                VALUE
-        };
+    entity ZROLEHIERARCHY                 as projection on ECLAIM.ZROLEHIERARCHY;
+    entity ZCONSTANTS                     as projection on ECLAIM.ZCONSTANTS;
 
     entity ZCLM_APPR_REQ_STAT_VIEW        as
         projection on ECLAIM.ZCLM_APPR_REQ_STAT {
