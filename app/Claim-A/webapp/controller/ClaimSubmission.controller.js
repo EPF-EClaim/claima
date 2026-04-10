@@ -561,6 +561,9 @@ sap.ui.define([
 					study_levels_id: it.STUDY_LEVELS_ID,
 					travel_days_id: it.TRAVEL_DAYS_ID,
 					vehicle_class_id: it.VEHICLE_CLASS_ID,
+					daily_allowance: it.DAILY_ALLOWANCE,
+					tips: it.TIPS,
+					exclude_tips: it.EXCLUDE_TIPS,
 					descr: {},
 				}));
 
@@ -1217,6 +1220,9 @@ sap.ui.define([
 					"study_levels_id": null,
 					"travel_days_id": null,
 					"vehicle_class_id": null,
+					"daily_allowance": null,
+					"exclude_tips": null,
+					"tips": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1341,8 +1347,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
 				//// get descriptions
 				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
-				////get lender and housing loan 
-
 			}
 			BusyIndicator.hide(0);
 		},
@@ -2822,7 +2826,10 @@ sap.ui.define([
 					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))), 
+					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
+					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -3991,7 +3998,10 @@ sap.ui.define([
 						REQUEST_APPROVAL_AMOUNT: claim_item.request_approval_amount,
 						STUDY_LEVELS_ID: claim_item.study_levels_id,
 						TRAVEL_DAYS_ID: claim_item.travel_days_id,
-						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
+						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
+						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
+						TIPS: this._nonNan(parseInt(claim_item.tips)), 
+						EXCLUDE_TIPS: claim_item.exclude_tips
 					});
 
 					if (i >= itemCountDb) {
@@ -4464,7 +4474,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube", 
+				"input_claimdetails_input_tips",
+				"input_claimdetails_input_exclude_tips",
+				"input_claimdetails_input_daily_allowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4601,7 +4614,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment_file_2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube",
+				"input_claimdetails_input_tips",
+				"input_claimdetails_input_exclude_tips",
+				"input_claimdetails_input_daily_allowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4762,13 +4778,19 @@ sap.ui.define([
 			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
 			{
 				if (!oResult || oResult.amount === 0) {
+					//reset amount
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
+					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
+					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
+					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
 				}
 
-				if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
 					oClaimItemInputModel.setProperty(
-						"/claim_item/dailyallowance",
+						"/claim_item/daily_allowance",
 						oResult.daily_allowance
 					);
 				}
@@ -4784,6 +4806,10 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+
+				if (this.byId("input_claimdetails_input_tips").getVisible()) {
+					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
 				}
 				
 			}).catch(err => {
@@ -4830,6 +4856,10 @@ sap.ui.define([
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
+		}, 
+
+		onSelect_ExcludeTips: async function () {
+			await this._calculatePerDiem();
 		}, 
 
 		

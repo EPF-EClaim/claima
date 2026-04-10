@@ -201,7 +201,8 @@ sap.ui.define([
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
             "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
-            "ZREJECT_REASON": "/ZREJECT_REASON"
+            "ZREJECT_REASON": "/ZREJECT_REASON",
+            "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -435,7 +436,7 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE","ZTRAIN_COURSE_PART"
             ], 
         "ExcludeField":
         {

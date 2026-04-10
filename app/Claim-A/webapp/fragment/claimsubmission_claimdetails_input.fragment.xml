@@ -1151,15 +1151,41 @@
                 />
 
                 <!-- Daily Allowance -->
-                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Label text="{i18n>label_claimdetails_input_daily_allowance}" />
                 <Input
-                    id="input_claimdetails_input_dailyallowance"
-                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
-							 type: 'Integer' 
+                    id="input_claimdetails_input_daily_allowance"
+                    value="{ path: 'claimitem_input>/claim_item/daily_allowance',
+							 type: 'Integer'
 						}"
                     visible="false"
                     editable="false"
                 />
+                
+                <!-- Checkbox: Exclude Tips -->
+                <Label text="{i18n>label_claimdetails_input_exclude_tips}" />
+                <CheckBox
+                id="input_claimdetails_input_exclude_tips"
+                selected="{claimitem_input>/claim_item/exclude_tips}"
+                select="onSelect_ExcludeTips"
+                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                />
+
+                <!-- Tips Amount -->
+                <Label text="{i18n>label_claimdetails_input_tips}" />
+                <Input
+                    id="input_claimdetails_input_tips"
+                    value="{ path: 'claimitem_input>/claim_item/tips',
+							 type: 'FloatType',
+							 formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+						}"
+                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    editable="false"
+                />
+
 
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
