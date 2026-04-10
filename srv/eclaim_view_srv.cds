@@ -438,6 +438,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 METER_CUBE_ACTUAL,
                 DAILY_ALLOWANCE,
                 TIPS,
+                EXCLUDE_TIPS,
 
         };
 
