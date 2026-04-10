@@ -722,7 +722,11 @@
                     selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
                     change="onSelect_ClaimDetails_VehicleClass"
                     liveChange="onSelect_ClaimDetails_VehicleClass"
-                    visible="false"
+                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/FERRY}
+                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN})
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
+                    }"
 				>
 				</Select>
 
@@ -1105,7 +1109,10 @@
                     id="input_claimdetails_input_entitled_breakfast"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'Integer'
+						type: 'Integer',
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
 					editable="false"
 					visible="{claimitem_property>/entitled_breakfast/is_visible}"
@@ -1117,7 +1124,10 @@
                     id="input_claimdetails_input_entitled_lunch"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'Integer'
+						type: 'Integer', 
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
                     editable="false"
                     visible="false"
@@ -1129,7 +1139,10 @@
                     id="input_claimdetails_input_entitled_dinner"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'Integer'
+						type: 'Integer',
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
                     editable="false"
                     visible="false"
