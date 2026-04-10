@@ -722,7 +722,11 @@
                     selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
                     change="onSelect_ClaimDetails_VehicleClass"
                     liveChange="onSelect_ClaimDetails_VehicleClass"
-                    visible="false"
+                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/FERRY}
+                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN})
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
+                    }"
 				>
 				</Select>
 
