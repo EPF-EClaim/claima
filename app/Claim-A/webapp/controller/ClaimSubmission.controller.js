@@ -3298,7 +3298,9 @@ sap.ui.define([
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
-				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", nTravelHours);
+				var remainingHours = nTravelHours % 24;
+				remainingHours = Math.max(0, remainingHours);
+				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
