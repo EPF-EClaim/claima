@@ -468,10 +468,17 @@ sap.ui.define([
 			const aIndividual = ['IND', 'Individual'];
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
-			oReqData.req_item = {
+			oReqData.req_item = {               
 				est_amount: 0,
+				kilometer: 0,
 				rate_per_kilometer: 0,
-				cash_advance: false
+				cash_advance: false,
+				entitled_breakfast: 0,
+				entitled_lunch: 0,
+				entitled_dinner: 0,
+				daily_allowance: 0,
+				travel_day: 0,
+				travel_hour: 0
 			};
 
 			// if group type is Individual

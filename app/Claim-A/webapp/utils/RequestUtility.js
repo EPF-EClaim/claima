@@ -159,10 +159,16 @@ sap.ui.define([
         _calculateKilometer: function (oReqItem) {
             var fKilometer  = parseFloat(oReqItem.kilometer).toFixed(2) || 0;
             var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer).toFixed(2) || 0;
+            var fTollAmt    = parseFloat(oReqItem.toll_amt).toFixed(2) || 0;
 
             if (!fKilometer || !fRatePerKm) return;
 
-            return parseFloat(fKilometer) * parseFloat(fRatePerKm);
+            var fTotalAmount = parseFloat(fKilometer) * parseFloat(fRatePerKm);
+
+            if (!isNaN(fTollAmt)) {
+                return parseFloat(fTotalAmount) + parseFloat(fTollAmt);
+            }
+            return fTotalAmount;
         },
 
 		/**
@@ -268,9 +274,6 @@ sap.ui.define([
 			const fTotalSum = aParticipantList.reduce((sum, row) => {
 				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
 			}, 0);
-
-            // add up toll amount
-            if (oReqItem.toll_amt) return parseFloat(fTotalSum) + parseFloat(oReqItem.toll_amt);
 
 			return fTotalSum;
 		},
