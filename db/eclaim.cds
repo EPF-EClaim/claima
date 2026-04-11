@@ -1287,6 +1287,7 @@ entity ZELIGIBILITY_RULE : managed {
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
         STATUS                    : String(10)     @Common.Label: 'Status';
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
+        SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1327,6 +1328,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
         ZJOB_GROUP                : Association to ZJOB_GROUP
                                         on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
+        ZNUM_RANGE                : Association to ZNUM_RANGE
+                                        on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

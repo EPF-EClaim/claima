@@ -4310,7 +4310,13 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : JOB_GROUP,
                 ![@UI.Importance]: #High,
                 Label            : 'Job Group'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type'
+            }            
         ]
     }
 );
