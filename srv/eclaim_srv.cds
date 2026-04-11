@@ -392,18 +392,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
     
-    function getMarriageCategory(
-        sEmpId:         String
-    ) returns String;
+    function getMarriageCategory() returns String;
     
     function getEligibleAmountEPengakut(
-        sEmpId:             String,
         sMarriageCategory:  String,
     ) returns Decimal(16, 2);
     
-    function checkExistingClaimEPengakut(
-        sEmpId: String,
-    ) returns Boolean;
+    function checkExistingClaimEPengakut() returns Boolean;
     
     type reminders {
         empName     : String;

@@ -1211,11 +1211,12 @@ module.exports = (srv) => {
     /**
      * Get marriage category for employee based on marital status and number of dependents
      * @public
-     * @param {String} sEmpId - Employee ID
      * @return {String} - return marriage category based on status and number of dependents
      */
     srv.on('getMarriageCategory', async (req) => {
-        const { sEmpId } = req.data;
+        const sEmpId = req.user?.id ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.email;
 
         try {
             const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL').where({ EEID: sEmpId });
@@ -1270,12 +1271,14 @@ module.exports = (srv) => {
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
      * @public
-     * @param {String} sEmpId - Employee ID
      * @param {String} sMarriageCategory - Marriage category based on employee marital status and dependents
      * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getEligibleAmountEPengakut', async (req) => {
-        const { sEmpId, sMarriageCategory } = req.data;
+        const { sMarriageCategory } = req.data;
+        const sEmpId = req.user?.id ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.email;
 
         try {
             const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL', 'EMPLOYEE_TYPE').where({ EEID: sEmpId });
@@ -1327,11 +1330,12 @@ module.exports = (srv) => {
     /**
      * Check if user has already approved claim with elaun pengangkutan claim item
      * @public
-     * @param {String} sEmpId - Employee ID
      * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
      */
     srv.on('checkExistingClaimEPengakut', async (req) => {
-        const { sEmpId } = req.data;
+        const sEmpId = req.user?.id ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.email;
 
         try {
             const aClaimSubmissions = await SELECT

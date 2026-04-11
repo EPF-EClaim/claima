@@ -361,8 +361,6 @@ sap.ui.define([
 			try {
 				const oFunctionCat = this._oOwnerComponent.getModel().bindContext("/getMarriageCategory(...)");
 
-				oFunctionCat.setParameter("sEmpId", sEmpId);
-
 				await oFunctionCat.execute();
 
 				const oContextCat = oFunctionCat.getBoundContext();
@@ -377,7 +375,6 @@ sap.ui.define([
 			try {
 				const oFunctionEligible = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
 
-				oFunctionEligible.setParameter("sEmpId", sEmpId);
 				if (!!sMarriageCategory) {
 					oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
 				}
@@ -403,17 +400,9 @@ sap.ui.define([
 		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
 		 */
 		fetchClaimElaunPengangkutan: async function () {
-			// get employee ID
-			var sEmpId = this._oSessionModel.getProperty("/userId");
-			if (!sEmpId) {
-				return true;
-			}
-
 			// check if claim exists with claim item elaun pengangkutan for employee
 			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkExistingClaimEPengakut(...)");
-
-				oFunction.setParameter("sEmpId", sEmpId);
 
 				await oFunction.execute();
 
