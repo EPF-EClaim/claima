@@ -32,7 +32,6 @@ sap.ui.define([
 		init: function (oOwnerComponent, oView) {
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
-			this._oSessionModel = this._oOwnerComponent.getModel("session");
 		},
 
 		/**
@@ -347,15 +346,6 @@ sap.ui.define([
 		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
 		 */
 		fetchUserElaunPengangkutanData: async function () {
-			var sEmpId = this._oSessionModel.getProperty("/userId");
-			if (!sEmpId) {
-				// return null if no employee data found
-				return {
-					eligible_amount: null,
-					marriage_category: null
-				}
-			}
-
 			// get marriage category based marital status
 			var sMarriageCategory = null;
 			try {
