@@ -471,14 +471,7 @@ sap.ui.define([
 			oReqData.req_item = {
 				est_amount: 0,
 				rate_per_kilometer: 0,
-				toll_amt: 0,
-				cash_advance: false,
-				entitled_breakfast: 0,
-				entitled_lunch: 0,
-				entitled_dinner: 0,
-				daily_allowance: 0,
-				travel_day: 0,
-				travel_hour: 0
+				cash_advance: false
 			};
 
 			// if group type is Individual
@@ -2040,6 +2033,32 @@ sap.ui.define([
 				return;
 			}
 
+			if (sClaimTypeItemFromSelect) {
+				const sReqSubId = this._oReqModel.getProperty("/req_item/req_subid");
+
+				const oResetItem = {
+					req_subid: sReqSubId,                 
+					claim_type_item_id: sClaimTypeItem,   
+					est_amount: 0,
+					kilometer: 0,
+					rate_per_kilometer: 0,
+					cash_advance: false,
+					entitled_breakfast: 0,
+					entitled_lunch: 0,
+					entitled_dinner: 0,
+					daily_allowance: 0,
+					travel_day: 0,
+					travel_hour: 0
+				};
+				this._oReqModel.setProperty("/req_item", oResetItem);
+
+				let aParticipants = this._oReqModel.getProperty("/participant") || [];
+				aParticipants.forEach(row => {
+					row.ALLOCATED_AMOUNT = "";
+				});
+				this._oReqModel.setProperty("/participant", aParticipants);
+			}
+
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
 				oLocationTypeSelect.setForceSelection(false);
@@ -2085,16 +2104,12 @@ sap.ui.define([
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+					this._onFilterSSS();
 
-					// special checking and prompt
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
-							break;
-
-						case Constants.ClaimTypeItem.MAKAN_O:
-							this._onFilterOversea();
 							break;
 					
 						default:
@@ -2106,9 +2121,6 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 			} finally {
 				BusyIndicator.hide();
-				if (this._oReqModel.getProperty("/view") === this._oConstant.PARMode.LIST) {
-					this._oReqModel.setProperty("/req_item/est_amount", 0);
-				}
 			}
 		},
 
@@ -2500,17 +2512,31 @@ sap.ui.define([
 
 		/**
          * Dynamic Filter for Semenanjung/Sabah/Sarawak Dropdown selection 
+		 * Check if the claim type item end with L or O to determine the filter for local or oversea
          * @private
          */
-		_onFilterOversea: function () {
+		_onFilterSSS: function () {
+			const oSelect = this.byId("item_select_sss");
+			
+			if (!oSelect || !oSelect.getBinding("items")) {
+				return;
+			}
 
-			const oSelect   = this.byId("item_select_sss");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-                                new Filter("REGION_ID", FilterOperator.EQ, Constants.Region.OVERSEA)
-                            ]: [];
+			const oBinding = oSelect.getBinding("items");
+			
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id") || "";
+
+			let aFilters = [];
+
+			if (sClaimTypeItem.endsWith("_L")) {
+				aFilters.push(new Filter("REGION_ID", FilterOperator.NE, Constants.Region.OVERSEA));
+
+			} else if (sClaimTypeItem.endsWith("_O")) {
+				aFilters.push(new Filter("REGION_ID", FilterOperator.EQ, Constants.Region.OVERSEA));
+			}
+
 			oBinding.filter(aFilters);
-		},
+		}
 
 	});
 });
