@@ -1214,12 +1214,11 @@ module.exports = (srv) => {
      * @return {String} - return marriage category based on status and number of dependents
      */
     srv.on('getMarriageCategory', async (req) => {
-        const sEmpId = req.user?.id ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.email;
+        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
+        const sEmail = String(sUserEmail).trim().toLowerCase();
 
         try {
-            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL').where({ EEID: sEmpId });
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'MARITAL').where({ EMAIL: sEmail });
             if (!oEmpData) {
                 return req.error(404, `No employee data found.`);
             }
@@ -1229,11 +1228,10 @@ module.exports = (srv) => {
                 sMarriageCategory = Constant.MarriageCategory.SINGLE;
             }
             else {
-                var oFilters = { EMP_ID: sEmpId }
                 const aDependents = await SELECT
                     .from(Constant.Entities.ZEMP_DEPENDENT)
                     .where({
-                        EMP_ID: sEmpId,
+                        EMP_ID: oEmpData,
                         RELATIONSHIP: Constant.Relationship.CHILD
                     })
                     .orderBy([
@@ -1276,12 +1274,11 @@ module.exports = (srv) => {
      */
     srv.on('getEligibleAmountEPengakut', async (req) => {
         const { sMarriageCategory } = req.data;
-        const sEmpId = req.user?.id ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.email;
+        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
+        const sEmail = String(sUserEmail).trim().toLowerCase();
 
         try {
-            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL', 'EMPLOYEE_TYPE').where({ EEID: sEmpId });
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'MARITAL', 'EMPLOYEE_TYPE').where({ EMAIL: sEmail });
             if (!oEmpData) {
                 return req.error(404, `No employee data found.`);
             }
@@ -1333,11 +1330,15 @@ module.exports = (srv) => {
      * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
      */
     srv.on('checkExistingClaimEPengakut', async (req) => {
-        const sEmpId = req.user?.id ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.email;
+        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
+        const sEmail = String(sUserEmail).trim().toLowerCase();
 
         try {
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID').where({ EMAIL: sEmail });
+            if (!oEmpData) {
+                return req.error(404, `No employee data found.`);
+            }
+
             const aClaimSubmissions = await SELECT
                 .from(Constant.Entities.ZCLAIM_ITEM)
                 .columns(item => {
@@ -1345,7 +1346,7 @@ module.exports = (srv) => {
                     item.ZCLAIM_HEADER(header => header.STATUS_ID)
                 })
                 .where({
-                    EMP_ID: sEmpId,
+                    EMP_ID: oEmpData.EEID,
                     CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.E_PENGAKUT,
                     "ZCLAIM_HEADER.STATUS_ID": [Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED]
                 })
