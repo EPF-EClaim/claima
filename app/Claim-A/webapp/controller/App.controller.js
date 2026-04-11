@@ -1865,7 +1865,7 @@ sap.ui.define([
 			}
 			//lender name
 			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
-				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), 'HOUSING_LOAN_SCHLENDER_IDEME_ID', 'LENDER_NAME'));
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), 'LENDER_ID', 'LENDER_NAME'));
 			}
 		}
 
