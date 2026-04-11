@@ -446,6 +446,13 @@ sap.ui.define([
             "FERRY": "03",
             "TRAIN": "04",
             "TAXI": "05",
+        },
+        "PengangkutanFields":
+        {
+            "LENDER_ID" : "LENDER_ID",
+            "LENDER_NAME": "LENDER_NAME",
+            "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"
         }
     }
 });
