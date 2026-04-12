@@ -3551,6 +3551,14 @@ sap.ui.define([
 					return;
 				}
 
+				// run validator before proceeding 
+				this.getView().getModel("claimitem_input").setData({});
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (!bCanProceed) {
+					return;
+				}
+
 				// check if selected course code/session number has already been approved for user before pushing changes 
 				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id")) && oAction !== this._oConstant.Claim_Action.DELETE) {
 					CustomValidator.init(this.getOwnerComponent(), this.getView());

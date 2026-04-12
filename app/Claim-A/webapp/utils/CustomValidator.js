@@ -64,8 +64,6 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
-                    var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
-
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     
@@ -118,12 +116,17 @@ sap.ui.define([
                         }
                     }
                     
-                    if (!!oClaimSubmissionModel && !!sClaimType) {
+                    if (!!oClaimSubmissionModel) {
+                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
                             // course code pre-check
                             var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
                             var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
-                            bCanProceed = await this.validateExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                            var bCourseAlreadyApproved = await ClaimUtility._checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                            if (bCourseAlreadyApproved) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
+                                bCanProceed = false;
+                            }
                         }
                     }
                     
@@ -161,21 +164,6 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
-        },
-
-		/**
-		 * Validate existing course code on running claim creation or submitting claim report
-		 * @public
-		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
-		 */
-        validateExistingCourseCode: async function (sCourseCode, sSessionNumber, sUserId) {
-            var bCanProceed = true;
-            const bCourseAlreadyApproved = await ClaimUtility._checkExistingCourseCode(sCourseCode, sSessionNumber, sUserId);
-            if (bCourseAlreadyApproved) {
-                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
-                bCanProceed = false;
-            }
-            return bCanProceed;
         }
  
     };
