@@ -6,9 +6,10 @@ module.exports = {
          * @public
          * @param {Object} oPayload - payload contains user input passed from frontend
          * @param {Array} aRules - list of eligibility rule from backend
+         * @param {Object} oEmp - Employee Data
          * @returns {Object} oPayload - return original payload but with result field filled
          */
-    onEligibleCheck: function (oPayload, aRules) {
+    onEligibleCheck: function (oPayload, aRules, oEmp) {
         var oRule, aFilteredRules;
         // to extract the key values from oPayload
         var aPayload = this._parsePayload(oPayload);
@@ -16,9 +17,8 @@ module.exports = {
         //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
             aFilteredRules = aRules.filter(function (rule) {
-                return rule.REGION_ID === aPayload.sRegionId;//[Constant.EntitiesFields.FLIGHT_CLASS_ID];
-            })
-
+                return (rule.REGION_ID === aPayload.sRegionId && rule.MARITAL_STATUS === oEmp.MARITAL_STATUS);
+            });
             oRule = aFilteredRules[0];
         }
         else {
@@ -60,15 +60,16 @@ module.exports = {
     /**
     * Validates claim item against eligibility rule
     * @private
+    * @param {Array} aPayload - key user input value in the form of object based on selected claim type item
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
     */
-    _validateClaimItem: function (oRule, oPayload) {
+    _validateClaimItem: function (aPayload, oRule, oPayload) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
             // JALUR_LEB - return true if claim amount is less than eligible amount
-            case Constant.ClaimTypeItem.JALUR_LEB:
+            case Constant.ClaimTypeItem.PEM_PINDAH:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
                 if (!oRule) {

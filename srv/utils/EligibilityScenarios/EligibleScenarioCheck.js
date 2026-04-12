@@ -84,28 +84,28 @@ module.exports = {
         case Constant.ClaimType.DLM_NEGARA:
           oReturnPayload = DalamNegara.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aEligibilityRules
           );
           break;
 
         case Constant.ClaimType.LUAR_NEGARA:
           oReturnPayload = LuarNegara.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aEligibilityRules
           );
           break;
 
         case Constant.ClaimType.KURSUS_DLM_NEGARA:
           oReturnPayload = KursusDalam.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aEligibilityRules
           );
           break;
 
         case Constant.ClaimType.KURSUS_LUAR_NEGARA:
           oReturnPayload = KursusLuar.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aEligibilityRules
           );
           break;
 
@@ -129,14 +129,18 @@ module.exports = {
         case Constant.ClaimType.JALUR_LEB:
           oReturnPayload = JalurLebar.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aEligibilityRules
           );
           break;
 
         case Constant.ClaimType.ELAUN_PINDAH:
+          aFilteredEmp = aEmpData.filter(function (data) {
+                return (data.EMP_ID === aPayload[i].EmpId);
+            })
            oReturnPayload = ElaunPindah.onEligibleCheck(
             aPayload[i],
             aEligibilityRules,
+            aFilteredEmp[0]
           );
           break;
 
