@@ -258,7 +258,8 @@ sap.ui.define([
             "RELATIONSHIP" : "RELATIONSHIP",
             "DOB" : "DOB",
             "STUDENT" : "STUDENT",
-            "EMP_ID" : "EMP_ID"
+            "EMP_ID" : "EMP_ID",
+            "REGION_ID": "REGION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -456,6 +457,7 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+            "REQUEST_SUB_ID": "req_subid"
         },
         "Region": {
             "SEMENANJUNG": "01",
@@ -469,6 +471,10 @@ sap.ui.define([
             "FERRY": "03",
             "TRAIN": "04",
             "TAXI": "05",
+        },
+        "CurrencyCode": {
+            "MYR": "MYR",
+            "USD": "USD"
         }
     }
 });
