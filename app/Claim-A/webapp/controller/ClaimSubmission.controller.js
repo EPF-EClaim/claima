@@ -561,6 +561,9 @@ sap.ui.define([
 					study_levels_id: it.STUDY_LEVELS_ID,
 					travel_days_id: it.TRAVEL_DAYS_ID,
 					vehicle_class_id: it.VEHICLE_CLASS_ID,
+					daily_allowance: it.DAILY_ALLOWANCE,
+					tips: it.TIPS,
+					exclude_tips: it.EXCLUDE_TIPS,
 					descr: {},
 				}));
 
@@ -728,8 +731,8 @@ sap.ui.define([
 					request_id: null,
 					status_id: o.STATUS_DESC,
 					claim_type_id: o.CLAIM_TYPE_DESC,
-					housing_loan_scheme: null,
-					lender_name: null,
+					housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
+					lender_name: o.LENDER_DESC,
 					course_code: o.COURSE_CODE_DESC,
 					project_code: null,
 					attachment_email_approver: null,
@@ -1217,6 +1220,9 @@ sap.ui.define([
 					"study_levels_id": null,
 					"travel_days_id": null,
 					"vehicle_class_id": null,
+					"daily_allowance": null,
+					"exclude_tips": null,
+					"tips": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -2319,13 +2325,16 @@ sap.ui.define([
 				this._calculateLodgingEligibleAmount();
 			}
 
-			// if claim type item is elaun pengangkutan, retrieve eligible amount
+			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
-				// reduce claimable amount by 50% if employee is single
-				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
-					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
-				}
+				var oEPengakutData = await ClaimUtility.fetchUserElaunPengangkutanData();
+				// populate item values
+				oInputModel.setProperty("/claim_item/amount", oEPengakutData.eligible_amount);
+				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);
+			}
+
+			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()){
+				this._resetPerDiem();
 			}
 		},
 
@@ -2866,7 +2875,10 @@ sap.ui.define([
 					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))), 
+					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
+					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -3313,42 +3325,54 @@ sap.ui.define([
 				//set initial value for meal entitlement based on traveldays
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
+
+					var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
+					if (nEntBfast >= 0) {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
+
+					var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
+					if (!nEntLunch >= 0) {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
+
+					var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
+					if (!nEntDinner >= 0) {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+					}
+
 				}
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
-				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", nTravelHours);
+				var remainingHours = nTravelHours % 24;
+				remainingHours = Math.max(0, remainingHours);
+				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
 		},
 
-		onChange_ClaimDetails_ProvidedMeals: function () {
-			let nEntBfast, nEntLunch, nEntDinner;
+		onChange_ClaimDetails_ProvidedMeals: async function () {
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null) {
-				nEntBfast = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
-			}
-
-			//lunch meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null) {
-				nEntLunch = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
-			}
-
-			//dinner meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null) {
-				nEntDinner = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null || 
+				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
+				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
+			) {
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
+					if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+						return;
+					}
+		
+					await this._calculatePerDiem();
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
@@ -3985,6 +4009,7 @@ sap.ui.define([
 						ENTITLED_BREAKFAST: claim_item.entitled_breakfast?.toString(),
 						ENTITLED_LUNCH: claim_item.entitled_lunch?.toString(),
 						ENTITLED_DINNER: claim_item.entitled_dinner?.toString(),
+						DAILY_ALLOWANCE: claim_item.dailyallowance?.toString(),
 						ANGGOTA_ID: claim_item.anggota_id,
 						ANGGOTA_NAME: claim_item.anggota_name,
 						DEPENDENT_NAME: claim_item.dependent_name,
@@ -4029,7 +4054,10 @@ sap.ui.define([
 						REQUEST_APPROVAL_AMOUNT: claim_item.request_approval_amount,
 						STUDY_LEVELS_ID: claim_item.study_levels_id,
 						TRAVEL_DAYS_ID: claim_item.travel_days_id,
-						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
+						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
+						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
+						TIPS: this._nonNan(parseInt(claim_item.tips)), 
+						EXCLUDE_TIPS: claim_item.exclude_tips
 					});
 
 					if (i >= itemCountDb) {
@@ -4456,7 +4484,6 @@ sap.ui.define([
 				"input_claimdetails_input_km",
 				"input_claimdetails_input_rate_per_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
@@ -4503,7 +4530,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube", 
+				"input_claimdetails_input_tips",
+				"input_claimdetails_input_exclude_tips",
+				"input_claimdetails_input_daily_allowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4599,7 +4629,6 @@ sap.ui.define([
 				"select_claimdetails_input_vehicle_ownership_id",
 				"input_claimdetails_input_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
@@ -4641,7 +4670,10 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment_file_2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube"
+				"input_claimdetails_meter_cube",
+				"input_claimdetails_input_tips",
+				"input_claimdetails_input_exclude_tips",
+				"input_claimdetails_input_daily_allowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -4802,13 +4834,19 @@ sap.ui.define([
 			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
 			{
 				if (!oResult || oResult.amount === 0) {
+					//reset amount
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
+					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
+					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
+					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
 				}
 
-				if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
 					oClaimItemInputModel.setProperty(
-						"/claim_item/dailyallowance",
+						"/claim_item/daily_allowance",
 						oResult.daily_allowance
 					);
 				}
@@ -4824,6 +4862,10 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+
+				if (this.byId("input_claimdetails_input_tips").getVisible()) {
+					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
 				}
 				
 			}).catch(err => {
@@ -4870,7 +4912,13 @@ sap.ui.define([
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
-		}
+		}, 
+
+		onSelect_ExcludeTips: async function () {
+			await this._calculatePerDiem();
+		}, 
+
+		
 
 	});
 });

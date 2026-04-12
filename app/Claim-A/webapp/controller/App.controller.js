@@ -1857,5 +1857,17 @@ sap.ui.define([
 			}
 		},
 
+		onSelect_ClaimHeader: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			//housing loan
+			if (oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await this._bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_ID, this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_DESC));
+			}
+			//lender name
+			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
+			}
+		}
+
 	});
 });

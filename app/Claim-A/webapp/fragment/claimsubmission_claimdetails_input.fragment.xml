@@ -158,6 +158,8 @@
                     id="select_claimdetails__input_marriagecategory"
                     selectedKey="{claimitem_input>/claim_item/marriage_category}"
                     forceSelection="false"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} }"
                     visible="false"
                     required="true"
                     editable="{clclaimitem_propertyaim>/marriage_category/is_editable}"
@@ -730,7 +732,11 @@
                     selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
                     change="onSelect_ClaimDetails_VehicleClass"
                     liveChange="onSelect_ClaimDetails_VehicleClass"
-                    visible="false"
+                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/FERRY}
+                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN})
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
+                            &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
+                    }"
 				>
 				</Select>
 
@@ -1045,10 +1051,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_travel_duration_day"
-                    value="{
-						path: 'claimitem_input>/claim_item/travel_duration_day',
-						type: 'Integer'
-					}"
+                    value="{claimitem_input>/claim_item/travel_duration_day}"
                     editable="false"
                     visible="false"
                 />
@@ -1059,10 +1062,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_travel_duration_hour"
-                    value="{
-						path: 'claimitem_input>/claim_item/travel_duration_hour',
-						type: 'Integer'
-					}"
+                    value="{claimitem_input>/claim_item/travel_duration_hour}"
                     editable="false"
                     visible="false"
                 />
@@ -1113,7 +1113,10 @@
                     id="input_claimdetails_input_entitled_breakfast"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'Integer'
+						type: 'Integer',
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
 					editable="false"
 					visible="{claimitem_property>/entitled_breakfast/is_visible}"
@@ -1125,7 +1128,10 @@
                     id="input_claimdetails_input_entitled_lunch"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'Integer'
+						type: 'Integer', 
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
                     editable="false"
                     visible="false"
@@ -1137,17 +1143,40 @@
                     id="input_claimdetails_input_entitled_dinner"
                     value="{
 						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'Integer'
+						type: 'Integer',
+                        constraints: {
+                            minimum: 0
+                        }
 					}"
                     editable="false"
                     visible="false"
                 />
 
                 <!-- Daily Allowance -->
-                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Label text="{i18n>label_claimdetails_input_daily_allowance}" />
                 <Input
-                    id="input_claimdetails_input_dailyallowance"
-                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
+                    id="input_claimdetails_input_daily_allowance"
+                    value="{ path: 'claimitem_input>/claim_item/daily_allowance',
+							 type: 'Integer'
+						}"
+                    visible="false"
+                    editable="false"
+                />
+                
+                <!-- Checkbox: Exclude Tips -->
+                <Label text="{i18n>label_claimdetails_input_exclude_tips}" />
+                <CheckBox
+                id="input_claimdetails_input_exclude_tips"
+                selected="{claimitem_input>/claim_item/exclude_tips}"
+                select="onSelect_ExcludeTips"
+                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                />
+
+                <!-- Tips Amount -->
+                <Label text="{i18n>label_claimdetails_input_tips}" />
+                <Input
+                    id="input_claimdetails_input_tips"
+                    value="{ path: 'claimitem_input>/claim_item/tips',
 							 type: 'FloatType',
 							 formatOptions: {
 							minFractionDigits: 2,
@@ -1155,9 +1184,10 @@
 							preserveDecimals: false
 						}
 						}"
-                    visible="false"
+                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
                     editable="false"
                 />
+
 
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
@@ -1344,10 +1374,21 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
+                    required="{= ${claimitem_input>/claim_item/attachment_file_1} === null &amp;&amp;
+
+                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT}
+                    }"
 				>
 				</u:FileUploader>
-                <Label id="label_claimdetails_input_attachment_file_1" />
+                <Label
+                    id="label_claimdetails_input_attachment_file_1"
+                    text="{i18n>label_claimdetails_input_attachment_file_1}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_1 !== null}
+                    }"
+                />
+
                 <Link
                     id="link_claimdetails_input_attachment_file_1"
                     press="onView_Claim_Attachment('child','1')"
@@ -1372,7 +1413,16 @@
                     style="Emphasized"
                     visible="false"
                 />
-                <Label id="label_claimdetails_input_attachment_file_2" />
+                <Label
+                    id="label_claimdetails_input_attachment_file_2"
+                    text="{i18n>label_claimdetails_input_attachment_file_2}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_2} !== null
+                    }"
+                />
+
+
                 <Link
                     id="link_claimdetails_input_attachment_file_2"
                     press="onView_Claim_Attachment('child','2')"
