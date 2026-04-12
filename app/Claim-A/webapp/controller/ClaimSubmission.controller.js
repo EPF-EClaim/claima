@@ -3634,19 +3634,13 @@ sap.ui.define([
 					return;
 				}
 
-				// check if selected course code/session number has already been approved for user before pushing changes 
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id")) && oAction !== this._oConstant.Claim_Action.DELETE) {
-					var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(
-						oInputModel.getProperty("/claim_header/course_code"),
-						oInputModel.getProperty("/claim_header/session_number"),
-						this._oSessionModel.getProperty("/userId"));
-					if (bCourseAlreadyApproved) {
-						MessageBox.error(Utility.getText("error_msg_course_already_approved", [
-							oInputModel.getProperty("/claim_header/course_code"),
-							oInputModel.getProperty("/claim_header/descr/course_code")]));
-						BusyIndicator.hide();
-						return;
-					}
+				// run validator before proceeding 
+				var oItemModel = this.getView().getModel("claimitem_input");
+				oItemModel?.setData({});
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (!bCanProceed) {
+					return;
 				}
 
 				// Total Claim Amount Validation checking
