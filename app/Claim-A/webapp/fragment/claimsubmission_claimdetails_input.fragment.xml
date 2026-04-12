@@ -1367,7 +1367,15 @@
                     required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
 				>
 				</u:FileUploader>
-                <Label id="label_claimdetails_input_attachment_file_1" />
+                <Label
+                    id="label_claimdetails_input_attachment_file_1"
+                    text="{i18n>label_claimdetails_input_attachment_file_1}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_1 !== null}
+                    }"
+                />
+
                 <Link
                     id="link_claimdetails_input_attachment_file_1"
                     press="onView_Claim_Attachment('child','1')"
@@ -1392,7 +1400,16 @@
                     style="Emphasized"
                     visible="false"
                 />
-                <Label id="label_claimdetails_input_attachment_file_2" />
+                <Label
+                    id="label_claimdetails_input_attachment_file_2"
+                    text="{i18n>label_claimdetails_input_attachment_file_2}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_2} !== null
+                    }"
+                />
+
+
                 <Link
                     id="link_claimdetails_input_attachment_file_2"
                     press="onView_Claim_Attachment('child','2')"
