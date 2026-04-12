@@ -88,12 +88,19 @@ sap.ui.define([
             "YURAN_KLJ": "YURAN_KLJ",
             "CASH_REPAY": "CASH_REPAY",
             "GALAKAN" : "GALAKAN",
-            "TELEFON_B" : "TELEFON_B"
+            "TELEFON_B" : "TELEFON_B",
+            "ELEKTRIK" : "ELEKTRIK",
+            "BIL_AIR" : "BIL_AIR"
         },
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
             "LODGING_L": "LODGING_L"
+        },
+        "ClaimTypeItemMakan": {
+            "MAKAN_O": "MAKAN_O",
+            "MAKAN_L": "MAKAN_L",
+            "MKN_LOAN": "MKN_LOAN"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
@@ -194,7 +201,8 @@ sap.ui.define([
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
             "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
-            "ZREJECT_REASON": "/ZREJECT_REASON"
+            "ZREJECT_REASON": "/ZREJECT_REASON",
+            "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -242,7 +250,11 @@ sap.ui.define([
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
-            "TO_LOCATION_ID": "TO_LOCATION_ID"
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
+            "LENDER_ID" : "LENDER_ID",
+            "LENDER_NAME": "LENDER_NAME",
+            "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"            
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -366,21 +378,12 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
-        "RelationshipType" :{
-            "SPOUSE": "01"
-        },
-        "MaritalStatus": {
+          "MaritalStatus": {
             "WIDOWED": "W",
             "SINGLE": "S",
             "MARRIED": "M",
             "ENGAGED": "E",
             "DIVORCED": "D"
-        },
-        "MeterCubeId": {
-            "EMPLOYEE": "01",
-            "SINGLE": "02",
-            "SPOUSE": "03",
-            "MARRIED": "06"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
@@ -422,17 +425,31 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE","ZTRAIN_COURSE_PART"
             ], 
         "ExcludeField":
         {
             "CLAIM_TYPE_ITEM_ID": "claim_type_item_id",
             "CLAIM_TYPE_ID": "claim_type_id", 
             "CLAIM_ID": "claim_id", 
+            "CLAIM_SUB_ID": "claim_sub_id", 
             "DESCR": "descr", 
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+        },
+        "Region": {
+            "SEMENANJUNG": "01",
+            "SABAH_SARAWAK": "02",
+            "OVERSEA": "03"
+        },
+         "FareType": 
+        {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "TRAIN": "04",
+            "TAXI": "05",
         }
     }
 });

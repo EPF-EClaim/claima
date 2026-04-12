@@ -76,7 +76,8 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "HANDPHONE": "HANDPHONE"
+        "HANDPHONE": "HANDPHONE",
+        "JALUR_LEB": "JALUR_LEB"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -134,7 +135,8 @@ const Constant = {
         "YURAN": "YURAN",
         "YURAN_KLJ": "YURAN_KLJ",
         "I_PAD": "I-PAD",
-        "TELEFON_B": "TELEFON_B"
+        "TELEFON_B": "TELEFON_B",
+        "JALUR_LEB": "JALUR_LEB"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -207,6 +209,27 @@ const Constant = {
     WhereCondition: {
         "AND": "AND",
         "IN": "IN"
+    },
+
+    RelationshipType: {
+        SPOUSE: "01",
+        CHILD: "02",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MeterCubeId: {
+        EMPLOYEE: "01",
+        SINGLE: "02",
+        SPOUSE: "03",
+        CHILD_GE_3: "04",
+        CHILD_LT_3: "05",
+        MARRIED: "06",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MaritalStatus: {
+        SINGLE: "S",
+        MARRIED: "M"
     },
 
     UnlimitedAmount: -1
