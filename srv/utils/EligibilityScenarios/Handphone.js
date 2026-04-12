@@ -2,6 +2,7 @@ const { Constant } = require("../constant");
 const ComparisonOperators = require("../ComparisonOperators");
 const GetHistoricalData = require("../GetHistoricalData");
 const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
+const req = require("express/lib/request");
 module.exports = {
   /**
    * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -31,14 +32,10 @@ module.exports = {
 
         iCurrentRecordItemData = await this._getCurrentRecordItemData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-
-        console.log("iHistoricalData, iCurrentRecordItemData");
-        console.log(iHistoricalData, iCurrentRecordItemData);
       }
     } catch (error) {
-      throw new Error(`${error.message}`);
-    }
-    console.log("test");
+      req.error(`${error.message}`);
+    };
     this._validateClaimItem(
       oRule, oPayload, iHistoricalData + iCurrentRecordItemData, iItemFreq);
 
