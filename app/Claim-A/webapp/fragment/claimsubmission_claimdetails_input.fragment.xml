@@ -933,10 +933,11 @@
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
-                    editMode="Disabled"
+                    editMode="{= ${claimitem_property>/currency_code/is_editable} ? 'Editable' : 'Disabled' }"
                     display="ValueDescription"
                     visible="false"
                     valueHelp="valuehelp_currency_code"
+                    
                 />
 
                 <!-- Currency Rate -->
@@ -954,6 +955,7 @@
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
+                    editable="{claimitem_property>/currency_rate/is_editable}"
                 />
 
                 <!-- Currency Amount -->
@@ -970,7 +972,7 @@
 						}
 					}"
                     visible="false"
-                    editable="false"
+                    editable="{claimitem_property>/currency_amount/is_editable}"
                     change="onChange_ClaimDetails_CurrencyRate"
                 />
 

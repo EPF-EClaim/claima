@@ -2364,7 +2364,11 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id: { is_required: false },
 				bill_no: { is_required: false },
-				account_no: { is_required: false }
+				account_no: { is_required: false },
+				currency_code: { is_editable: false },
+				currency_rate: { is_editable: false },
+				currency_amount: { is_editable: false }
+
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2413,12 +2417,20 @@ sap.ui.define([
 			}
 
 
-
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			var oPropModel = this.getView().getModel("claimitem_property");
 			var bIsForeignCurrency = oClaimItemModel.getProperty("/claim_item/need_foreign_currency");
 			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
 
-			// Only apply FX logic for certain claim types
+			var bFXCheckboxVisible = this.byId("checkbox_claimdetails_input_needforeigncurrency").getVisible();
+
+			if (!bFXCheckboxVisible) {
+				oPropModel.setProperty("/currency_code/is_editable", true);
+				oPropModel.setProperty("/currency_rate/is_editable", true);
+				oPropModel.setProperty("/currency_amount/is_editable", true);
+				return; // Skip FX logic
+			}
+
 			var aFxSupportedTypes = [
 				this._oConstant.ClaimTypeItem.HOTEL_O,
 				this._oConstant.ClaimTypeItem.LODG_O,
@@ -2433,14 +2445,12 @@ sap.ui.define([
 				this._oConstant.ClaimTypeItem.TELEFON,
 				this._oConstant.ClaimTypeItem.VISA,
 				this._oConstant.ClaimTypeItem.PELBAGAI,
-				this._oConstant.ClaimTypeItem.YURAN,
+				this._oConstant.ClaimTypeItem.YURAN
 			];
 
-			// Apply ONLY if claim type supports FX
 			if (aFxSupportedTypes.includes(sClaimTypeItemId)) {
 				this.applyForeignCurrencyState(bIsForeignCurrency);
 			}
-
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2542,7 +2552,7 @@ sap.ui.define([
 		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
 		* @param {string} sFieldDesc - specific name of description field of db table
 		*/
-		/* _setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
+		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
 					var sField = sTable.slice(1);
@@ -2565,58 +2575,6 @@ sap.ui.define([
 						new Sorter(sField + '_ID')
 					],
 					template: new Item({
-						key: "{employee>" + sField + "_ID}",
-						text: sItemText
-					})
-				});
-			}
-		}, */
-
-		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
-
-			var oControl = this.byId(sId);
-
-			// Only proceed if control is visible
-			if (oControl && oControl.getVisible()) {
-
-				var oClaimItemModel = this.getView().getModel("claimitem_input");
-				var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
-
-				if (!sField) {
-					sField = sTable.slice(1);  // e.g. ZREGION -> REGION
-				}
-				if (!sFieldDesc) {
-					sFieldDesc = sField + "_DESC";
-				}
-
-				var sItemText = "{employee>" + sFieldDesc + "}";
-
-				var aFilters = [
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				];
-
-
-
-				if (sTable === "ZREGION" && Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
-					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "03"));
-				}
-
-				else {
-					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "01"));
-					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "02"));
-				}
-
-
-
-				oControl.bindAggregation("items", {
-					path: "employee>/" + sTable,
-					filters: aFilters,
-					sorter: [
-						new Sorter(sField + "_ID")
-					],
-					template: new sap.ui.core.Item({
 						key: "{employee>" + sField + "_ID}",
 						text: sItemText
 					})
@@ -4947,36 +4905,40 @@ sap.ui.define([
 
 
 		/**
-		 * Updates field editability based on the Need Foreign Currency selection.
+		 * Updates FX-related editability and model state.
 		 *
-		 * @param {boolean} bIsSelected - Whether foreign currency is selected
+		 * @param {boolean} bIsSelected - Whether Need Foreign Currency is selected
 		 */
-
 		applyForeignCurrencyState: function (bIsSelected) {
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			var oClaimItemPropModel = this.getView().getModel("claimitem_property");
 
-			// Update model state
-			oClaimItemModel.setProperty("/claim_item/need_foreign_currency", bIsSelected);
-
-			// Fields
 			var oAmountMYR = this.byId("input_claimdetails_input_amount");
-			var oCurrencyCode = this.byId("select_claimdetails_input_currency_code");
 			var oCurrencyRate = this.byId("input_claimdetails_input_currency_rate");
 			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
 
+			oClaimItemModel.setProperty("/claim_item/need_foreign_currency", bIsSelected);
+
+			var sClaimType = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+			var bIsOverseas = Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimType);
+
+			if (!bIsOverseas) {
+				return;
+			}
+
 			if (bIsSelected) {
 				oAmountMYR.setEditable(false);
+				oClaimItemPropModel.setProperty("/currency_code/is_editable", true);
+				oClaimItemPropModel.setProperty("/currency_rate/is_editable", true);
+				oClaimItemPropModel.setProperty("/currency_amount/is_editable", true);
 
-				oCurrencyCode.setEditMode("Editable");
-				oCurrencyRate.setEditable(true);
-				oCurrencyAmount.setEditable(true);
-
-				var nRate = Number(oCurrencyRate.getValue());
-				var nAmount = Number(oCurrencyAmount.getValue());
+				var nRate = Number(oClaimItemModel.getProperty("/claim_item/currency_rate"));
+				var nAmount = Number(oClaimItemModel.getProperty("/claim_item/currency_amount"));
 
 				if (nRate && nAmount) {
-					oAmountMYR.setValue((nRate * nAmount).toFixed(2));
+					oClaimItemModel.setProperty("/claim_item/amount", nRate * nAmount);
 				}
+
 				oCurrencyRate.setValueState("None");
 				oCurrencyAmount.setValueState("None");
 
@@ -4985,18 +4947,19 @@ sap.ui.define([
 					"editable",
 					oAmountMYR.getBindingInfo("editable")
 				);
-				oCurrencyCode.setEditMode("Disabled");
-				oCurrencyRate.setEditable(false);
-				oCurrencyAmount.setEditable(false);
-				oCurrencyCode.setValue("");
-				oCurrencyRate.setValue("");
-				oCurrencyAmount.setValue("");
-				oAmountMYR.setValue("");
+
+				oClaimItemPropModel.setProperty("/currency_code/is_editable", false);
+				oClaimItemPropModel.setProperty("/currency_rate/is_editable", false);
+				oClaimItemPropModel.setProperty("/currency_amount/is_editable", false);
 
 				oClaimItemModel.setProperty("/claim_item/currency_code", null);
 				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
 				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
-				oClaimItemModel.setProperty("/claim_item/amount", null);
+
+				var bIsNew = oClaimItemModel.getProperty("/claim_item/is_new");
+				if (bIsNew) {
+					oClaimItemModel.setProperty("/claim_item/amount", null);
+				}
 
 				oCurrencyRate.setValueState("None");
 				oCurrencyAmount.setValueState("None");
