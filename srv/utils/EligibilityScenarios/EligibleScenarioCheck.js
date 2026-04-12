@@ -41,9 +41,15 @@ module.exports = {
     let aEmpRoleId = aEmpData.map((d) => d.ROLE);
     aEmpRoleId.push(Constant.Wildcard.All);
     aEmpRoleId.push(Constant.Wildcard.NA);
+    
+    //Find which submission type logic to process
+    let aSubmissionType = [];
+    aSubmissionType.push(aPayload[0].RecordId.substring(0,3));
+    aSubmissionType.push(Constant.Wildcard.All);
 
     // Build Eligibility Select Where Conditions
     let aEligibilityCondition = {
+      [Constant.EntitiesFields.SUBMISSION_TYPE]: {in: aSubmissionType},
       [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
       [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
@@ -62,7 +68,8 @@ module.exports = {
       };
     }
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
-
+    console.log("sEligibilityCondition");
+    console.log(sEligibilityCondition);
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(

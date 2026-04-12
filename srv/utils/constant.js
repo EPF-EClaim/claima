@@ -164,7 +164,8 @@ const Constant = {
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
         "END_DATE": "END_DATE",
-        "MANAGED_CREATEDAT": "createdAt"
+        "MANAGED_CREATEDAT": "createdAt",
+        "SUBMISSION_TYPE": "SUBMISSION_TYPE"
     },
     Wildcard: {
         "All": "*",
