@@ -367,7 +367,6 @@ sap.ui.define([
 					);
 
 				}
-
 			}
 		},
 
@@ -2255,7 +2254,7 @@ sap.ui.define([
 				this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
-			
+
 			switch (sKey){
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
 					oPropertyModel.setProperty("/to_state_id/is_required", true);
@@ -2267,9 +2266,9 @@ sap.ui.define([
 					break;
 
 				case this._oConstant.ClaimTypeItem.BIL_AIR:
-				oPropertyModel.setProperty("/bill_no/is_required", true);
-				oPropertyModel.setProperty("/account_no/is_required", true);
-				break;
+					oPropertyModel.setProperty("/bill_no/is_required", true);
+					oPropertyModel.setProperty("/account_no/is_required", true);
+					break;
 
 				case this._oConstant.ClaimTypeItem.LAUT:
 					//entitled meter cube
@@ -2280,9 +2279,9 @@ sap.ui.define([
 					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
-					
-				await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
-				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+
+					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2413,6 +2412,13 @@ sap.ui.define([
 				}
 				this._getFieldEditable_ClaimTypeItem();
 			}
+
+
+			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			var bIsForeignCurrency = oClaimItemModel.getProperty("/claim_item/need_foreign_currency");
+
+			// Force UI update (same as clicking the checkbox)
+			this.applyForeignCurrencyState(bIsForeignCurrency);
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2827,8 +2833,8 @@ sap.ui.define([
 					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
-					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))), 
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
 				});
@@ -2959,8 +2965,8 @@ sap.ui.define([
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
-    		const oInputModel = this.getView().getModel("claimitem_input");
-    		await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			const oInputModel = this.getView().getModel("claimitem_input");
+			await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -3254,7 +3260,7 @@ sap.ui.define([
 			) {
 				return;
 			}
-		
+
 			// calculate travel duration (days/hours)
 			var startDateValue = this.byId(startDate).getValue();
 			var endDateValue = this.byId(endDate).getValue();
@@ -3308,16 +3314,16 @@ sap.ui.define([
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null || 
+			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
 			) {
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-					if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
-						return;
-					}
-		
-					await this._calculatePerDiem();
+				if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+					return;
+				}
+
+				await this._calculatePerDiem();
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
@@ -3697,14 +3703,14 @@ sap.ui.define([
 								//eligibility checking
 								var aAllClaimItems = oInputModel.getProperty("/claim_items");
 								var aAllEligibilityGeneratedPayload = [];
-								for(var i = 0; i < aAllClaimItems.length; i++){
+								for (var i = 0; i < aAllClaimItems.length; i++) {
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
 
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return;
+								if (!bCanProceed) return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -3784,14 +3790,14 @@ sap.ui.define([
 								//eligibility checking
 								var aAllClaimItems = oInputModel.getProperty("/claim_items");
 								var aAllEligibilityGeneratedPayload = [];
-								for(var i = 0; i < aAllClaimItems.length; i++){
+								for (var i = 0; i < aAllClaimItems.length; i++) {
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
 
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return;
+								if (!bCanProceed) return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -4001,7 +4007,7 @@ sap.ui.define([
 						TRAVEL_DAYS_ID: claim_item.travel_days_id,
 						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
-						TIPS: this._nonNan(parseInt(claim_item.tips)), 
+						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips
 					});
 
@@ -4475,7 +4481,7 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube", 
+				"input_claimdetails_meter_cube",
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance"
@@ -4776,8 +4782,7 @@ sap.ui.define([
 		_updateEntitlementAmount: function (oClaimItemInputModel) {
 			BusyIndicator.show(0);
 
-			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
-			{
+			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
@@ -4812,12 +4817,12 @@ sap.ui.define([
 				if (this.byId("input_claimdetails_input_tips").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
 				}
-				
+
 			}).catch(err => {
 				MessageBox.error(
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
-			}).finally(() => BusyIndicator.hide()); 
+			}).finally(() => BusyIndicator.hide());
 		},
 
 		_saveDraftItems: async function () {
@@ -4847,23 +4852,78 @@ sap.ui.define([
 					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID ||
-					sKey === this._oConstant.ExcludeField.DESCR  ||
-					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
+					sKey === this._oConstant.ExcludeField.DESCR ||
+					sKey === this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
 					sKey === this._oConstant.ExcludeField.IS_NEW
-				){
+				) {
 					return;
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
-		}, 
+		},
 
 		onSelect_ExcludeTips: async function () {
 			await this._calculatePerDiem();
-		}, 
+		},
 
-		
+		applyForeignCurrencyState: function (bIsSelected) {
+			var oClaimItemModel = this.getView().getModel("claimitem_input");
+
+			// Update model state
+			oClaimItemModel.setProperty("/claim_item/need_foreign_currency", bIsSelected);
+
+			// Fields
+			var oAmountMYR = this.byId("input_claimdetails_input_amount");
+			var oCurrencyCode = this.byId("select_claimdetails_input_currency_code");
+			var oCurrencyRate = this.byId("input_claimdetails_input_currency_rate");
+			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
+
+			if (bIsSelected) {
+				oAmountMYR.setEditable(false);
+
+				oCurrencyCode.setEditMode("Editable");
+				oCurrencyRate.setEditable(true);
+				oCurrencyAmount.setEditable(true);
+
+				var nRate = Number(oCurrencyRate.getValue());
+				var nAmount = Number(oCurrencyAmount.getValue());
+
+				if (nRate && nAmount) {
+					oAmountMYR.setValue((nRate * nAmount).toFixed(2));
+				}
+				oCurrencyRate.setValueState("None");
+				oCurrencyAmount.setValueState("None");
+
+			} else {
+				oAmountMYR.bindProperty(
+					"editable",
+					oAmountMYR.getBindingInfo("editable")
+				);
+				oCurrencyCode.setEditMode("Disabled");
+				oCurrencyRate.setEditable(false);
+				oCurrencyAmount.setEditable(false);
+				oCurrencyCode.setValue("");
+				oCurrencyRate.setValue("");
+				oCurrencyAmount.setValue("");
+				oAmountMYR.setValue("");
+
+				oClaimItemModel.setProperty("/claim_item/currency_code", null);
+				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
+				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
+				oClaimItemModel.setProperty("/claim_item/amount", null);
+
+				oCurrencyRate.setValueState("None");
+				oCurrencyAmount.setValueState("None");
+			}
+		},
+
+		onNeedForeignCurrencySelected: function (oEvent) {
+			var bIsSelected = oEvent.getParameter("selected");
+			this.applyForeignCurrencyState(bIsSelected);
+		}
+			
 
 	});
 });

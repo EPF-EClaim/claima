@@ -922,6 +922,8 @@
                     id="checkbox_claimdetails_input_needforeigncurrency"
                     visible="false"
                     wrapping="true"
+                    select=".onNeedForeignCurrencySelected"
+                    selected="{claimitem_input>/claim_item/need_foreign_currency}"
                 />
 
                 <!-- Currency Code -->
@@ -950,7 +952,6 @@
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
-                    required="true"
                 />
 
                 <!-- Currency Amount -->
@@ -968,6 +969,7 @@
 					}"
                     visible="false"
                     editable="false"
+                    change="onChange_ClaimDetails_CurrencyRate"
                 />
 
                 <!-- Trip Start Date -->
