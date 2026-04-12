@@ -7,7 +7,7 @@ const LuarNegara = require("./LuarNegara");
 const KursusDalam = require("./KursusDalam");
 const KursusLuar = require("./KursusLuar");
 const IPAD = require("./IPAD");
-const Telefon_B = require("./Telefon_B");
+const Handphone = require("./Handphone");
 const JalurLebar = require("./JalurLebar");
 
 module.exports = {
@@ -24,8 +24,8 @@ module.exports = {
     // Get Employee Data
     const aEmpData = await tx.run(
       SELECT.from(Constant.Entities.ZEMP_MASTER).where({
-        EEID: { in: aParticipantList },
-      }),
+        EEID: { in: aParticipantList }
+      })
     );
     // Sort Employee Data by Grade
     aEmpData.sort(function (a, b) {
@@ -41,13 +41,19 @@ module.exports = {
     let aEmpRoleId = aEmpData.map((d) => d.ROLE);
     aEmpRoleId.push(Constant.Wildcard.All);
     aEmpRoleId.push(Constant.Wildcard.NA);
+    
+    //Find which submission type logic to process
+    let aSubmissionType = [];
+    aSubmissionType.push(aPayload[0].RecordId.substring(0,3));
+    aSubmissionType.push(Constant.Wildcard.All);
 
     // Build Eligibility Select Where Conditions
     let aEligibilityCondition = {
+      [Constant.EntitiesFields.SUBMISSION_TYPE]: {in: aSubmissionType},
       [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
       [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
-      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem,
+      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem
     };
  
     // Claim Type that requires additional Job Group filtering
@@ -57,19 +63,18 @@ module.exports = {
     ) {
       let aEmpJobGrp = aEmpData.map((d) => d.JOB_GROUP);
       aEmpJobGrp.push(Constant.Wildcard.NA);
+      aEmpJobGrp.push(Constant.Wildcard.All);
       aEligibilityCondition[Constant.EntitiesFields.JOB_GROUP] = {
-        in: aEmpJobGrp,
+        in: aEmpJobGrp
       };
-    }
+    };
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
-
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
         `${sEligibilityCondition}`
-      ),
+      )
     );
-
     let oReturnPayload = [];
 
     // loop each participant data
@@ -113,7 +118,7 @@ module.exports = {
           break;
 
         case Constant.ClaimType.HANDPHONE:
-          oReturnPayload = await Telefon_B.onEligibleCheck(
+          oReturnPayload = await Handphone.onEligibleCheck(
             aPayload[i],
             aEmpData[0],
             aEligibilityRules,
