@@ -281,23 +281,13 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // Specific Claim Type
-                            if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
-                                // Elaun Pengangkutan - minimum date = move-in date
-                                _dMinDate = new Date(oHeader.move_in_date);
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_receiptdate_pengangkutan_mindate"));
-                            }
-                            else {
-                                // Other Claim Type - minimum date = 90 days before header start date 
-                                _dMinDate = new Date(oHeader.trip_start_date);
-                                const dPastDate = new Date(_dMinDate);
-                                dPastDate.setDate(dPastDate.getDate() - 90);
-                                _dMinDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receiptdate_mindate"));
-                            }
+                            // Default Claim Type - minimum date = 90 days before header start date 
+                            _dMinDate = new Date(oHeader.trip_start_date);
+                            const dPastDate = new Date(_dMinDate);
+                            dPastDate.setDate(dPastDate.getDate() - 90);
+                            _dMinDate = dPastDate;
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                _oResourceBundle.getText("error_receiptdate_mindate"));
                             break;
                     }
                     break;
@@ -443,20 +433,10 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                           if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
-                                // Elaun Pengangkutan - maximum date = 6 months after move-in date
-                                _dMaxDate = new Date(oHeader.move_in_date);
-                                _dMaxDate.setMonth(_dMaxDate.getMonth() + 6);
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_receiptdate_pengangkutan_maxdate"));
-                            }
-                            else {
-                                // Other Claim Type - maximum date = header end date 
-                                _dMaxDate = new Date(oHeader.trip_end_date);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_receiptdate_maxdate"));
-                            }
+                            // Default Claim Type - maximum date = header end date 
+                            _dMaxDate = new Date(oHeader.trip_end_date);
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                _oResourceBundle.getText("error_receiptdate_maxdate"));
                             break;
                     }
                     break;

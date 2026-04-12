@@ -54,6 +54,7 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+
         /**
          * Gets text from the resource bundle.
          * @public
