@@ -250,7 +250,11 @@ sap.ui.define([
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
-            "TO_LOCATION_ID": "TO_LOCATION_ID"
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
+            "LENDER_ID" : "LENDER_ID",
+            "LENDER_NAME": "LENDER_NAME",
+            "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"            
         },
         "Operators": {
             "EQUAL": "EQ",
