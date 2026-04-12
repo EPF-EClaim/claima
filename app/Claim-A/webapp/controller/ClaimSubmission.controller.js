@@ -4,6 +4,7 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
+	"sap/ui/core/ValueState",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
@@ -37,6 +38,7 @@ sap.ui.define([
 	Controller,
 	BusyIndicator,
 	History,
+	ValueState,
 	JSONModel,
 	Filter,
 	FilterOperator,
@@ -1772,7 +1774,7 @@ sap.ui.define([
 			const aItemsColumnsAdditional = [
 				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
-				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "field_claimdetails_input_dependent_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "select_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
@@ -2279,9 +2281,10 @@ sap.ui.define([
 					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
-
+					
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2362,13 +2365,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id: { is_required: false },
-				bill_no: { is_required: false },
-				account_no: { is_required: false },
-				currency_code: { is_editable: false },
-				currency_rate: { is_editable: false },
-				currency_amount: { is_editable: false }
-
+				to_state_id:{is_required: false},
+				bill_no:{is_required: false},
+				account_no:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2414,42 +2413,6 @@ sap.ui.define([
 					this.byId("button_claimdetails_input_return").setVisible(true);
 				}
 				this._getFieldEditable_ClaimTypeItem();
-			}
-
-
-			var oClaimItemModel = this.getView().getModel("claimitem_input");
-			var oPropModel = this.getView().getModel("claimitem_property");
-			var bIsForeignCurrency = oClaimItemModel.getProperty("/claim_item/need_foreign_currency");
-			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
-
-			var bFXCheckboxVisible = this.byId("checkbox_claimdetails_input_needforeigncurrency").getVisible();
-
-			if (!bFXCheckboxVisible) {
-				oPropModel.setProperty("/currency_code/is_editable", true);
-				oPropModel.setProperty("/currency_rate/is_editable", true);
-				oPropModel.setProperty("/currency_amount/is_editable", true);
-				return; // Skip FX logic
-			}
-
-			var aFxSupportedTypes = [
-				this._oConstant.ClaimTypeItem.HOTEL_O,
-				this._oConstant.ClaimTypeItem.LODG_O,
-				this._oConstant.ClaimTypeItem.FLIGHT_O,
-				this._oConstant.ClaimTypeItem.FLIGHT_L,
-				this._oConstant.ClaimTypeItem.PARKING,
-				this._oConstant.ClaimTypeItem.EXCESS,
-				this._oConstant.ClaimTypeItem.DOBI,
-				this._oConstant.ClaimTypeItem.PKN_PANAS,
-				this._oConstant.ClaimTypeItem.SERVICES,
-				this._oConstant.ClaimTypeItem.TAMBANG,
-				this._oConstant.ClaimTypeItem.TELEFON,
-				this._oConstant.ClaimTypeItem.VISA,
-				this._oConstant.ClaimTypeItem.PELBAGAI,
-				this._oConstant.ClaimTypeItem.YURAN
-			];
-
-			if (aFxSupportedTypes.includes(sClaimTypeItemId)) {
-				this.applyForeignCurrencyState(bIsForeignCurrency);
 			}
 		},
 
@@ -2540,6 +2503,84 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
+			var oFilter = this._getDependentFilters();
+			var oSelect = this.byId("select_claimdetails_input_dependent_name");
+			var oBinding = oSelect.getBinding("items");
+			oBinding.filter(oFilter)
+
+		},
+
+		_getDependentFilters: function (){
+			var oInputModel = this.getView().getModel("claimitem_input");("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			switch(sClaimTypeItem){
+				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD);
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oPeduFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
+					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
+					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+
+					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
+
+					var oChildBelow18 = new Filter({
+						filters:[
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.GT, d18YearsFromCurrentDate)
+						],
+						and: true
+					})
+
+					var oChildStudying = new Filter({
+						filters:[
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.STUDENT , FilterOperator.EQ, true),
+						],
+						and: true
+					})
+
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							oSpouseFilter,
+							oChildBelow18,
+							oChildStudying
+						],
+						and:false
+					})
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
+					default:
+						return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+
+			}
+			
 		},
 
 		/**
@@ -3011,7 +3052,11 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
-			ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT){
+				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			}
+			
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -4458,7 +4503,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"field_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4499,9 +4544,6 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"select_claimdetails_input_currency_code",
-				"input_claimdetails_input_currency_rate",
-				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
 				"timepicker_claimdetails_input_trip_starttime",
 				"timepicker_claimdetails_input_departure_time",
@@ -4605,7 +4647,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"field_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4643,10 +4685,6 @@ sap.ui.define([
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
-				"checkbox_claimdetails_input_needforeigncurrency",
-				"select_claimdetails_input_currency_code",
-				"input_claimdetails_input_currency_rate",
-				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
 				"timepicker_claimdetails_input_trip_starttime",
 				"timepicker_claimdetails_input_departure_time",
@@ -4915,85 +4953,37 @@ sap.ui.define([
 			})
 
 		},
-
 		onSelect_ExcludeTips: async function () {
 			await this._calculatePerDiem();
-		},
-
-
-		/**
-		 * Updates FX-related editability and model state.
-		 *
-		 * @param {boolean} bIsSelected - Whether Need Foreign Currency is selected
-		 */
-		applyForeignCurrencyState: function (bIsSelected) {
-			var oClaimItemModel = this.getView().getModel("claimitem_input");
-			var oClaimItemPropModel = this.getView().getModel("claimitem_property");
-
-			var oAmountMYR = this.byId("input_claimdetails_input_amount");
-			var oCurrencyRate = this.byId("input_claimdetails_input_currency_rate");
-			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
-
-			oClaimItemModel.setProperty("/claim_item/need_foreign_currency", bIsSelected);
-
-			var sClaimType = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
-			var bIsOverseas = Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimType);
-
-			if (!bIsOverseas) {
-				return;
-			}
-
-			if (bIsSelected) {
-				oAmountMYR.setEditable(false);
-				oClaimItemPropModel.setProperty("/currency_code/is_editable", true);
-				oClaimItemPropModel.setProperty("/currency_rate/is_editable", true);
-				oClaimItemPropModel.setProperty("/currency_amount/is_editable", true);
-
-				var nRate = Number(oClaimItemModel.getProperty("/claim_item/currency_rate"));
-				var nAmount = Number(oClaimItemModel.getProperty("/claim_item/currency_amount"));
-
-				if (nRate && nAmount) {
-					oClaimItemModel.setProperty("/claim_item/amount", nRate * nAmount);
-				}
-
-				oCurrencyRate.setValueState("None");
-				oCurrencyAmount.setValueState("None");
-
-			} else {
-				oAmountMYR.bindProperty(
-					"editable",
-					oAmountMYR.getBindingInfo("editable")
-				);
-
-				oClaimItemPropModel.setProperty("/currency_code/is_editable", false);
-				oClaimItemPropModel.setProperty("/currency_rate/is_editable", false);
-				oClaimItemPropModel.setProperty("/currency_amount/is_editable", false);
-
-				oClaimItemModel.setProperty("/claim_item/currency_code", null);
-				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
-				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
-
-				var bIsNew = oClaimItemModel.getProperty("/claim_item/is_new");
-				if (bIsNew) {
-					oClaimItemModel.setProperty("/claim_item/amount", null);
-				}
-
-				oCurrencyRate.setValueState("None");
-				oCurrencyAmount.setValueState("None");
-			}
-		},
-
-		/**
-		 * Handles checkbox toggle for Need Foreign Currency.
+		}, 
+				/**
+		 * Handles checkbox toggle for Need Foreign Currency. Resets value to null when tick
 		 *
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
 
 		onNeedForeignCurrencySelected: function (oEvent) {
-			var bIsSelected = oEvent.getParameter("selected");
-			this.applyForeignCurrencyState(bIsSelected);
-		}
 
+			var bIsSelected 	= oEvent.getParameter("selected");
+			var oCurrencyRate 	= this.byId("input_claimdetails_input_currency_rate");
+			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
+			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			
+			if (bIsSelected) {
+				this.onChange_ClaimDetails_CurrencyRate();
+			}
+			else {
+				oClaimItemModel.setProperty("/claim_item/currency_code", null);
+				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
+				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
+				
+				oCurrencyRate.setValueState(ValueState.None);
+				oCurrencyAmount.setValueState(ValueState.None);
+			}
+		}
+ 
+
+		
 
 	});
 });
