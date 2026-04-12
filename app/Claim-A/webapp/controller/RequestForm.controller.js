@@ -592,6 +592,7 @@ sap.ui.define([
 				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
 				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
 				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
+				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				// extra hidden field value
 				cost_center				: oReqItem.COST_CENTER || "",
 				gl_account				: oReqItem.GL_ACCOUNT || "",
@@ -1123,8 +1124,6 @@ sap.ui.define([
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
 					DECLARE_CLUB_MEMBERSHIP:      !!oReqItem.club_membership,
 					CASH_ADVANCE:                 !!oReqItem.cash_advance,
-
-					// ======== MAKAN_L MAKAN_O ========
 					TRAVEL_DURATION_DAY:          parseFloat(oReqItem.travel_day || 0), 
                     TRAVEL_DURATION_HOUR:         parseFloat(oReqItem.travel_hour || 0),
                     TRIP_START_DATE:              oReqItem.trip_start_date || null,
@@ -1134,7 +1133,8 @@ sap.ui.define([
                     DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
                     ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
                     ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
-                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0
+                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
+					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2160,7 +2160,10 @@ sap.ui.define([
 				"i_breakfast", 
 				"i_lunch", 
 				"i_dinner", 
-				"i_daily_allowance"
+				"i_daily_allowance",
+				"i_currency_code",
+				"i_currency_rate",
+				"i_type_of_prof_body"
 			];
 
 			aControlIds.forEach(id => {
