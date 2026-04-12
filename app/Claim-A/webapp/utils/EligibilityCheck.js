@@ -73,7 +73,9 @@ sap.ui.define([
 						"flight_class": "FLIGHT_CLASS_ID",
 						"room_type": "ROOM_TYPE_ID",
 						"mobile_category_purpose_id": "MOBILE_PHONE_BILL",
-						[receipt_date]: "RECEIPT_DATE"
+						[receipt_date]: "RECEIPT_DATE",
+						"no_of_hours": "TRAVEL_HOURS",
+						"region" : "REGION_ID"
 					};
 					break;
 
