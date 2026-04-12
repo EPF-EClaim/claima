@@ -2510,8 +2510,7 @@ sap.ui.define([
 		},
 
 		_getDependentFilters: function (){
-			
-			var oInputModel = this._getNewClaimItemModel("claimitem_input");
+			var oInputModel = this.getView().getModel("claimitem_input");("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
 			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
