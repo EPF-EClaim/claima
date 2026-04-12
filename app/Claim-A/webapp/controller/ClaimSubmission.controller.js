@@ -2516,7 +2516,7 @@ sap.ui.define([
 			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
 			switch(sClaimTypeItem){
 				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
-					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02");
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD);
 
 					return new Filter({
 						filters: [
@@ -2535,11 +2535,11 @@ sap.ui.define([
 					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
 					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
 
-					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "01");
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
 
 					var oChildBelow18 = new Filter({
 						filters:[
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02"),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
 							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.GT, d18YearsFromCurrentDate)
 						],
 						and: true
@@ -2547,7 +2547,7 @@ sap.ui.define([
 
 					var oChildStudying = new Filter({
 						filters:[
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02"),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
 							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
 							new Filter(this._oConstant.EntitiesFields.STUDENT , FilterOperator.EQ, true),
 						],
