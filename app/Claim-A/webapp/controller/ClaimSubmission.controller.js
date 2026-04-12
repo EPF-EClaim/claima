@@ -2576,14 +2576,11 @@ sap.ui.define([
 					new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 				];
 
-				// ✅ APPLY REGION FILTERS *ONLY* for ZREGION
 				if (sTable === this._oConstant.ViewName.ZREGION) {
 
 					if (Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
-						// Overseas claim types → REGION 03
 						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.EQ, this._oConstant.Region.OVERSEA));
 					} else {
-						// Local claim types → REGION 01 + 02
 						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.NE, this._oConstant.Region.OVERSEA));
 	
 					}
