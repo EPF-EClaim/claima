@@ -2475,7 +2475,6 @@ sap.ui.define([
 		},
 
 		_setClaimDetailSelectionMaster: function () {
-			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			//// Type of Professional Body
 			this._setClaimDetailSelectionField("select_claimdetails_input_type_of_professional_body", "ZPROFESIONAL_BODY");
 			//// Funeral Transportation
@@ -2511,27 +2510,85 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
+			var oFilter = this._getDependentSelect();
 			var oSelect = this.byId("select_claimdetails_input_dependent_name");
 			var oBinding = oSelect.getBinding("items");
+			oBinding.filter(oFilter)
+
+		},
+
+		_getDependentSelect: function (){
 			
-			var aFilters = [
-				new Filter('EMP_ID', FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
-			]
+			var oInputModel = this._getNewClaimItemModel("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE){
-				aFilters =[
-					aFilters,
-					new Filter("RELATIONSHIP" , FilterOperator.EQ, "02")
-				]
-			}else if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.FLIGHT_WIL){
-				//bind by item
-				// current year - 18, anything < that year = in
-				// current year - 19 and -25 within those range = in filteroperator.bt
-				// 01 = spouse
-				// 02 = child
+			var oEmpFilter = new Filter('EMP_ID', FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			switch(sClaimTypeItem){
+				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+					var oPeduFilter = new Filter("RELATIONSHIP" , FilterOperator.EQ, "02");
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oPeduFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
+					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
+					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+
+					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+
+					var oSpouseFilter = new Filter("RELATIONSHIP" , FilterOperator.EQ, "01");
+
+					var oChildBelow18 = new Filter({
+						filters:[
+							new Filter("RELATIONSHIP" , FilterOperator.EQ, "02"),
+							new Filter("DOB" , FilterOperator.GT, d18YearsFromCurrentDate)
+						],
+						and: true
+					})
+
+					var oChildStudying = new Filter({
+						filters:[
+							new Filter("RELATIONSHIP" , FilterOperator.EQ, "02"),
+							new Filter("DOB" , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter("STUDENT" , FilterOperator.EQ, true),
+						],
+						and: true
+					})
+
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							oSpouseFilter,
+							oChildBelow18,
+							oChildStudying
+						],
+						and:false
+					})
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
+					default:
+						return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+
 			}
-			oBinding.filter(aFilters)
-
+			
 		},
 
 		/**
@@ -4375,7 +4432,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 
 			const sClaimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id") || "PEDU";
 			const sClaim_type_item = sClaimTypeItemFromModel;
 
 			if (!sClaim_type_item) {
