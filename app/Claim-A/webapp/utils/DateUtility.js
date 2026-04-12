@@ -175,7 +175,9 @@ sap.ui.define([
 
             if (iEndMidnight >= iStartMidnight) {
                 const iMsPerDay = 1000 * 60 * 60 * 24;
-                iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
+                const iBaseDiff = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay);
+                const bIsNightBased = Utility.isNightBasedCalculation(oHeader,oItem);
+                iDiffDays = bIsNightBased ? iBaseDiff : iBaseDiff + 1;
             }
 
             return iDiffDays;
@@ -736,7 +738,6 @@ sap.ui.define([
             return `${hours.toString().padStart(2, '0')}:${iMinutes
                 .toString()
                 .padStart(2, '0')}:${iSeconds.toString().padStart(2, '0')}`;
-        }
-
+        },
     };
 });

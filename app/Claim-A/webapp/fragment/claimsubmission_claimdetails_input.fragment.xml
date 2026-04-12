@@ -1043,10 +1043,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_travel_duration_day"
-                    value="{
-						path: 'claimitem_input>/claim_item/travel_duration_day',
-						type: 'Integer'
-					}"
+                    value="{claimitem_input>/claim_item/travel_duration_day}"
                     editable="false"
                     visible="false"
                 />
@@ -1057,10 +1054,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_travel_duration_hour"
-                    value="{
-						path: 'claimitem_input>/claim_item/travel_duration_hour',
-						type: 'Integer'
-					}"
+                    value="{claimitem_input>/claim_item/travel_duration_hour}"
                     editable="false"
                     visible="false"
                 />
