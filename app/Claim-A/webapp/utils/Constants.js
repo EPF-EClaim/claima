@@ -97,8 +97,7 @@ sap.ui.define([
             "LODG_O": "LODG_O",
             "HOTEL_O": "HOTEL_O",
             "FLIGHT_O": "FLIGHT_O",
-        },
-        
+        },        
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
@@ -485,7 +484,6 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
-        },
-        
+        },        
     }
 });
