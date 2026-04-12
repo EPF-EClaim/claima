@@ -2317,13 +2317,12 @@ sap.ui.define([
 				this._calculateLodgingEligibleAmount();
 			}
 
-			// if claim type item is elaun pengangkutan, retrieve eligible amount
+			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
-				// reduce claimable amount by 50% if employee is single
-				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
-					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
-				}
+				var oEPengakutData = await ClaimUtility.fetchUserElaunPengangkutanData();
+				// populate item values
+				oInputModel.setProperty("/claim_item/amount", oEPengakutData.eligible_amount);
+				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()){
@@ -3298,7 +3297,9 @@ sap.ui.define([
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
-				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", nTravelHours);
+				var remainingHours = nTravelHours % 24;
+				remainingHours = Math.max(0, remainingHours);
+				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
