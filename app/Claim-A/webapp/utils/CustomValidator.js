@@ -65,7 +65,7 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
                     var oInputModel = this._oView.getModel("claimitem_input");
-                    var sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+                    var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
