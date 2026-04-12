@@ -467,6 +467,9 @@ sap.ui.define([
             "SABAH_SARAWAK": "02",
             "OVERSEA": "03"
         },
+        "ViewName": {
+            "ZREGION": "ZREGION"
+        },
          "FareType": 
         {
             "BUS": "01",
@@ -478,6 +481,7 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
-        }
+        },
+        
     }
 });

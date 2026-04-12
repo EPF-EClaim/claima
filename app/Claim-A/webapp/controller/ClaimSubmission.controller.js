@@ -2571,21 +2571,21 @@ sap.ui.define([
 				var sItemText = "{employee>" + sFieldDesc + "}";
 
 				var aFilters = [
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 				];
 
 				// ✅ APPLY REGION FILTERS *ONLY* for ZREGION
-				if (sTable === "ZREGION") {
+				if (sTable === this._oConstant.ViewName.ZREGION) {
 
 					if (Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
 						// Overseas claim types → REGION 03
-						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "03"));
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.EQ, this._oConstant.Region.OVERSEA));
 					} else {
 						// Local claim types → REGION 01 + 02
-						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "01"));
-						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "02"));
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.NE, this._oConstant.Region.OVERSEA));
+	
 					}
 				}
 
