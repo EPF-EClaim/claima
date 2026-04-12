@@ -261,7 +261,8 @@ sap.ui.define([
             "LENDER_ID" : "LENDER_ID",
             "LENDER_NAME": "LENDER_NAME",
             "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
-            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"            
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC",
+            "REGION_ID": "REGION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -459,6 +460,7 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+            "REQUEST_SUB_ID": "req_subid"
         },
         "Region": {
             "SEMENANJUNG": "01",
@@ -472,6 +474,10 @@ sap.ui.define([
             "FERRY": "03",
             "TRAIN": "04",
             "TAXI": "05",
+        },
+        "CurrencyCode": {
+            "MYR": "MYR",
+            "USD": "USD"
         }
     }
 });
