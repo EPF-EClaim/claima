@@ -108,7 +108,7 @@
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
 					}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
 					required="true"
 				>
                     <items>
