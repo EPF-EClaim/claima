@@ -112,27 +112,30 @@ sap.ui.define([
             const aReqPart  = oReqModel.getProperty("/participant");
             let calculatedAllocAmount;
 
-            switch (oReqItem.claim_type_item_id) {
-                case Constants.ClaimTypeItem.LODGING_L:
-                case Constants.ClaimTypeItem.LODG_O:
-                    // calculate lodging amount
-                    calculatedAllocAmount = await this._retrieveLodgingAmount();
-                    break;
+            if (oReqModel.getProperty("/view") === Constants.PARMode.CREATE ||
+                oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
+                switch (oReqItem.claim_type_item_id) {
+                    case Constants.ClaimTypeItem.LODGING_L:
+                    case Constants.ClaimTypeItem.LODG_O:
+                        // calculate lodging amount
+                        calculatedAllocAmount = await this._retrieveLodgingAmount();
+                        break;
 
-                case Constants.ClaimTypeItem.MAKAN_L:
-                case Constants.ClaimTypeItem.MAKAN_O:
-                    if (oReqModel.getProperty("/view") === Constants.PARMode.CREATE ||
-                        oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
+                    case Constants.ClaimTypeItem.MAKAN_L:
+                    case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
                         calculatedAllocAmount = await this._retrieveEntitlementAmount();
-                    }
-                    break;
-                
-                default:
-                    // calculate kilometer amount 
-                    calculatedAllocAmount = this._calculateKilometer(oReqItem);
-                    break;
+                        if (oReqItem.currency_rate) {
+                            calculatedAllocAmount = calculatedAllocAmount * parseFloat(oReqItem.currency_rate);
+                        }
+                        break;
+                    
+                    default:
+                        // calculate kilometer amount 
+                        calculatedAllocAmount = this._calculateKilometer(oReqItem);
+                        break;
 
+                }
             }
 
 
@@ -221,7 +224,7 @@ sap.ui.define([
             var sClaimTypeItem  = oReqItem.claim_type_item_id;
             var sRegion         = oReqItem.sss || "01";
             var nTravelDay      = oReqItem.travel_day;
-            var nTravelHour     = oReqItem.travel_hour % 24;
+            var nTravelHour     = oReqItem.total_travel_hour;
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
@@ -249,10 +252,11 @@ sap.ui.define([
                 const oData     = oResult.value || oResult;
 
                 const fAmount           = oData.amount;
-                const sCurrency         = oData.currency_cide;
+                const sCurrency         = oData.currency_code;
                 const fDailyAllowance   = oData.daily_allowance;
 
                 oReqModel.setProperty("/req_item/daily_allowance", fDailyAllowance);
+                oReqModel.setProperty("/req_item/currency_code", sCurrency);
 
                 return fAmount + fDailyAllowance
                 
@@ -311,9 +315,11 @@ sap.ui.define([
             
             const iDays = Math.floor(iTotalHours / 24);
             const iHours = Math.floor(iTotalHours);
+            const iRemainingHours = Math.floor(iTotalHours % 24);
 
             oReqModel.setProperty('/req_item/travel_day', iDays);
-            oReqModel.setProperty('/req_item/travel_hour', iHours);
+            oReqModel.setProperty('/req_item/travel_hour', iRemainingHours);
+            oReqModel.setProperty('/req_item/total_travel_hour', iHours);
             oReqModel.setProperty('/req_item/entitled_breakfast', iDays);
             oReqModel.setProperty('/req_item/entitled_lunch', iDays);
             oReqModel.setProperty('/req_item/entitled_dinner', iDays);

@@ -450,6 +450,10 @@ sap.ui.define([
             "FERRY": "03",
             "TRAIN": "04",
             "TAXI": "05",
+        },
+        "CurrencyCode": {
+            "MYR": "MYR",
+            "USD": "USD"
         }
     }
 });
