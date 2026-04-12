@@ -2544,9 +2544,7 @@ sap.ui.define([
 
                 const vCurrentValue = oReqItem[sKey];
                 
-                if (sKey === "est_amount") {
-                    this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
-				} else if (typeof vCurrentValue === "number") {
+                if (sKey === "est_amount" || typeof vCurrentValue === "number") {
                     this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
                 } else if (typeof vCurrentValue === "boolean") {
                     this._oReqModel.setProperty(`/req_item/${sKey}`, false);
