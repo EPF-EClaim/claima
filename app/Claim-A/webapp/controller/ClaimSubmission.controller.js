@@ -2255,7 +2255,7 @@ sap.ui.define([
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
 
-			switch (sKey){
+			switch (sKey) {
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
 					oPropertyModel.setProperty("/to_state_id/is_required", true);
 					break;
@@ -2324,7 +2324,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);
 			}
 
-			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()){
+			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
 				this._resetPerDiem();
 			}
 		},
@@ -2362,9 +2362,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{is_required: false},
-				bill_no:{is_required: false},
-				account_no:{is_required: false}
+				to_state_id: { is_required: false },
+				bill_no: { is_required: false },
+				account_no: { is_required: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -4869,6 +4869,13 @@ sap.ui.define([
 			await this._calculatePerDiem();
 		},
 
+
+		/**
+		 * Updates field editability based on the Need Foreign Currency selection.
+		 *
+		 * @param {boolean} bIsSelected - Whether foreign currency is selected
+		 */
+
 		applyForeignCurrencyState: function (bIsSelected) {
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
 
@@ -4920,11 +4927,17 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Handles checkbox toggle for Need Foreign Currency.
+		 *
+		 * @param {sap.ui.base.Event} oEvent - Checkbox event
+		 */
+
 		onNeedForeignCurrencySelected: function (oEvent) {
 			var bIsSelected = oEvent.getParameter("selected");
 			this.applyForeignCurrencyState(bIsSelected);
 		}
-			
+
 
 	});
 });
