@@ -64,8 +64,10 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+                    var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
+
                     var oInputModel = this._oView.getModel("claimitem_input");
-                    var sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+                    var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
@@ -89,6 +91,8 @@ sap.ui.define([
                             bCanProceed = false
                     }
                 }
+
+                
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
