@@ -255,6 +255,10 @@ sap.ui.define([
             "LENDER_NAME": "LENDER_NAME",
             "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
             "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC",
+            "RELATIONSHIP" : "RELATIONSHIP",
+            "DOB" : "DOB",
+            "STUDENT" : "STUDENT",
+            "EMP_ID" : "EMP_ID",
             "REGION_ID": "REGION_ID"
         },
         "Operators": {
