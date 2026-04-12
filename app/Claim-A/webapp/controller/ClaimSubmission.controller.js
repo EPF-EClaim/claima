@@ -2413,11 +2413,34 @@ sap.ui.define([
 			}
 
 
+
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
 			var bIsForeignCurrency = oClaimItemModel.getProperty("/claim_item/need_foreign_currency");
+			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
 
-			// Force UI update (same as clicking the checkbox)
-			this.applyForeignCurrencyState(bIsForeignCurrency);
+			// Only apply FX logic for certain claim types
+			var aFxSupportedTypes = [
+				this._oConstant.ClaimTypeItem.HOTEL_O,
+				this._oConstant.ClaimTypeItem.LODG_O,
+				this._oConstant.ClaimTypeItem.FLIGHT_O,
+				this._oConstant.ClaimTypeItem.FLIGHT_L,
+				this._oConstant.ClaimTypeItem.PARKING,
+				this._oConstant.ClaimTypeItem.EXCESS,
+				this._oConstant.ClaimTypeItem.DOBI,
+				this._oConstant.ClaimTypeItem.PKN_PANAS,
+				this._oConstant.ClaimTypeItem.SERVICES,
+				this._oConstant.ClaimTypeItem.TAMBANG,
+				this._oConstant.ClaimTypeItem.TELEFON,
+				this._oConstant.ClaimTypeItem.VISA,
+				this._oConstant.ClaimTypeItem.PELBAGAI,
+				this._oConstant.ClaimTypeItem.YURAN,
+			];
+
+			// Apply ONLY if claim type supports FX
+			if (aFxSupportedTypes.includes(sClaimTypeItemId)) {
+				this.applyForeignCurrencyState(bIsForeignCurrency);
+			}
+
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -4876,7 +4899,7 @@ sap.ui.define([
 		 * @param {boolean} bIsSelected - Whether foreign currency is selected
 		 */
 
-		applyForeignCurrencyState: function (bIsSelected) {
+		 applyForeignCurrencyState: function (bIsSelected) {
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
 
 			// Update model state
@@ -4925,7 +4948,7 @@ sap.ui.define([
 				oCurrencyRate.setValueState("None");
 				oCurrencyAmount.setValueState("None");
 			}
-		},
+		}, 
 
 		/**
 		 * Handles checkbox toggle for Need Foreign Currency.
@@ -4933,10 +4956,10 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
 
-		onNeedForeignCurrencySelected: function (oEvent) {
+		 onNeedForeignCurrencySelected: function (oEvent) {
 			var bIsSelected = oEvent.getParameter("selected");
 			this.applyForeignCurrencyState(bIsSelected);
-		}
+		} 
 
 
 	});
