@@ -1773,7 +1773,7 @@ sap.ui.define([
 			const aItemsColumnsAdditional = [
 				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
-				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "field_claimdetails_input_dependent_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "select_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
@@ -2281,8 +2281,9 @@ sap.ui.define([
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
 					
-				await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
-				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2501,6 +2502,84 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
+			var oFilter = this._getDependentFilters();
+			var oSelect = this.byId("select_claimdetails_input_dependent_name");
+			var oBinding = oSelect.getBinding("items");
+			oBinding.filter(oFilter)
+
+		},
+
+		_getDependentFilters: function (){
+			var oInputModel = this.getView().getModel("claimitem_input");("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			switch(sClaimTypeItem){
+				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD);
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oPeduFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
+					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
+					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+
+					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
+
+					var oChildBelow18 = new Filter({
+						filters:[
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.GT, d18YearsFromCurrentDate)
+						],
+						and: true
+					})
+
+					var oChildStudying = new Filter({
+						filters:[
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.STUDENT , FilterOperator.EQ, true),
+						],
+						and: true
+					})
+
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							oSpouseFilter,
+							oChildBelow18,
+							oChildStudying
+						],
+						and:false
+					})
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
+					default:
+						return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+
+			}
+			
 		},
 
 		/**
@@ -2954,7 +3033,11 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
-			ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT){
+				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			}
+			
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -4401,7 +4484,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"field_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4548,7 +4631,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"field_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
