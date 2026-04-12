@@ -2553,34 +2553,54 @@ sap.ui.define([
 		* @param {string} sFieldDesc - specific name of description field of db table
 		*/
 		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
-			if (this.byId(sId).getVisible()) {
+
+			var oControl = this.byId(sId);
+
+			if (oControl && oControl.getVisible()) {
+
+				var oClaimItemModel = this.getView().getModel("claimitem_input");
+				var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+
 				if (!sField) {
-					var sField = sTable.slice(1);
+					sField = sTable.slice(1);
 				}
-				// determine description field
 				if (!sFieldDesc) {
-					var sFieldDesc = sField + '_DESC';
+					sFieldDesc = sField + "_DESC";
 				}
-				// show ID in text
+
 				var sItemText = "{employee>" + sFieldDesc + "}";
-				this.byId(sId).bindAggregation("items", {
+
+				var aFilters = [
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				];
+
+				// ✅ APPLY REGION FILTERS *ONLY* for ZREGION
+				if (sTable === "ZREGION") {
+
+					if (Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
+						// Overseas claim types → REGION 03
+						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "03"));
+					} else {
+						// Local claim types → REGION 01 + 02
+						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "01"));
+						aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "02"));
+					}
+				}
+
+				oControl.bindAggregation("items", {
 					path: "employee>/" + sTable,
-					filters: [
-						// ensure status is active
-						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-					],
-					sorter: [
-						new Sorter(sField + '_ID')
-					],
-					template: new Item({
+					filters: aFilters,
+					sorter: [new Sorter(sField + "_ID")],
+					template: new sap.ui.core.Item({
 						key: "{employee>" + sField + "_ID}",
 						text: sItemText
 					})
 				});
 			}
 		},
+
 
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
