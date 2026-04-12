@@ -2654,7 +2654,7 @@ sap.ui.define([
 					closeOnBrowserNavigation: false
 				});
 				return;
-			}			
+			}
 
 			// Reuben (FUT Issue 17)
 			// When creating claim for post education assistance, actual amount is used instead of amount for input
