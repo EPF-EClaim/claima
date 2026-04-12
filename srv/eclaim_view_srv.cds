@@ -199,7 +199,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 //Add additional field to cater on ELAUN MAKAN for PRE-APPROVAL-REQUEST
                 CURRENCY_CODE,
                 ZCURRENCY.CURRENCY_DESC,
-                CURRENCY_RATE
+                CURRENCY_RATE,
+                ////Add additional field to cater on ELAUN GALAKAN
+                TYPE_OF_PROFESSIONAL_BODY,
+                ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as

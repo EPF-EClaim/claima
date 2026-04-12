@@ -191,3 +191,12 @@ Content-Type: application/json
 #       }
 #      ]
 #     }
+
+POST http://localhost:4004/odata/v4/EmployeeSrv/getUserEligibleAmountEPengakut
+Content-Type: application/json
+Authorization: Basic alice
+ 
+   {
+    "sEmpId": "010320"
+   }
+
