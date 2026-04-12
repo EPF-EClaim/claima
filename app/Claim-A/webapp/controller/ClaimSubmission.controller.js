@@ -2502,22 +2502,22 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
-			var oFilter = this._getDependentSelect();
+			var oFilter = this._getDependentFilters();
 			var oSelect = this.byId("select_claimdetails_input_dependent_name");
 			var oBinding = oSelect.getBinding("items");
 			oBinding.filter(oFilter)
 
 		},
 
-		_getDependentSelect: function (){
+		_getDependentFilters: function (){
 			
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
-			var oEmpFilter = new Filter('EMP_ID', FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
 			switch(sClaimTypeItem){
 				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
-					var oPeduFilter = new Filter("RELATIONSHIP" , FilterOperator.EQ, "02");
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02");
 
 					return new Filter({
 						filters: [
@@ -2536,21 +2536,21 @@ sap.ui.define([
 					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
 					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
 
-					var oSpouseFilter = new Filter("RELATIONSHIP" , FilterOperator.EQ, "01");
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "01");
 
 					var oChildBelow18 = new Filter({
 						filters:[
-							new Filter("RELATIONSHIP" , FilterOperator.EQ, "02"),
-							new Filter("DOB" , FilterOperator.GT, d18YearsFromCurrentDate)
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02"),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.GT, d18YearsFromCurrentDate)
 						],
 						and: true
 					})
 
 					var oChildStudying = new Filter({
 						filters:[
-							new Filter("RELATIONSHIP" , FilterOperator.EQ, "02"),
-							new Filter("DOB" , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
-							new Filter("STUDENT" , FilterOperator.EQ, true),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, "02"),
+							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.STUDENT , FilterOperator.EQ, true),
 						],
 						and: true
 					})
