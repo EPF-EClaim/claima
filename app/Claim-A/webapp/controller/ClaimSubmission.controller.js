@@ -3053,7 +3053,6 @@ sap.ui.define([
 		 * @public
 		 */
 		onChange_ClaimDetails_ActualAmount: function () {
-			//do changes here
 			// verify if property exists and 'amount' field is visible
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oInputModel = this.getView().getModel("claimitem_input");
