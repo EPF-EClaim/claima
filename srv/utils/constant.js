@@ -79,7 +79,6 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "HANDPHONE": "HANDPHONE",
         "JALUR_LEB": "JALUR_LEB"
     },
     ClaimTypeItem: {

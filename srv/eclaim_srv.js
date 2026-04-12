@@ -639,7 +639,7 @@ module.exports = (srv) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
             const { ApproveRequest } = req.data;
-            console.log(ApproveRequest);
+
             if (!ApproveRequest || ApproveRequest.length === 0) {
                 throw new Error('No Data Sent')
             }
@@ -794,7 +794,7 @@ module.exports = (srv) => {
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;
-            console.log(ID);
+
             if (!ID) {
                 throw new Error('No Data Sent')
             }
@@ -1151,7 +1151,7 @@ module.exports = (srv) => {
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
 
         const sStatus = data.STATUS || req.data.STATUS;
-        console.log("update header data on approval: ");
+
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;

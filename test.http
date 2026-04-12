@@ -174,7 +174,7 @@ Authorization: Basic alice
             },
             {
                "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "800",
+               "value": "80",
                "result": null
             },
             {
@@ -183,11 +183,11 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "I-PAD",
-         "ClaimTypeItem": "I-PAD",
-         "EmpId": "886887",
-         "RecordId": "CLM26000000874",
-         "RecordSubId": "CLM26000000874001"
+         "ClaimType": "HANDPHONE",
+         "ClaimTypeItem": "TELEFON_B",
+         "EmpId": "900003",
+         "RecordId": "REQ26000000874",
+         "RecordSubId": "REQ26000000874001"
       }
      ]
     }

@@ -13,28 +13,35 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
-    // var oRule = [];
+    var oRule, oDateRange;
+    var iHistoricalData = 0;
+    var iCurrentRecordItemData = 0;
+    var iItemFreq = 0;
     try {
-      oSequenceCheck = await this._SequenceCheck(oPayload, oEmp, aRules, tx);
+      if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
+        oRule = aRules[0];
+      } else if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+        oRule = await this._SequenceCheck(oPayload, oEmp, aRules, tx);
+
+        oDateRange = await this._getDateRange(oPayload, tx);
+        iItemFreq = oDateRange.iItemFreq;
+
+        iHistoricalData = await this._getHistoricalData(
+          oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+
+        iCurrentRecordItemData = await this._getCurrentRecordItemData(
+          oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+          
+        console.log("iHistoricalData, iCurrentRecordItemData");
+        console.log(iHistoricalData, iCurrentRecordItemData);
+      }
     } catch (error) {
       throw new Error(`${error.message}`);
     }
-
-    var iHistoricalData = await this._getHistoricalData(oPayload, oSequenceCheck.dDateTo, oSequenceCheck.dDateFrom, tx);
-    var iCurrentRecordItemData = await this._getCurrentRecordItemData(
-      oPayload,
-      oSequenceCheck.dDateTo,
-      oSequenceCheck.dDateFrom,
-      tx,
-    );
-    console.log("iHistoricalData, iCurrentRecordItemData");
-    console.log(iHistoricalData, iCurrentRecordItemData);
+    console.log("test");
     this._validateClaimItem(
-      oSequenceCheck.oRule,
-      oPayload,
-      iHistoricalData + iCurrentRecordItemData,
-      oSequenceCheck.iFrequencyCount
-    );
+      oRule, oPayload, iHistoricalData + iCurrentRecordItemData, iItemFreq);
+
     return oPayload;
   },
   /**
@@ -47,7 +54,8 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   _SequenceCheck: async function (oPayload, oEmp, aRules, tx) {
-    var oRule, dDateFrom, dDateTo, iFrequencyCount;
+    var oRule;
+
     //Check if there is value in aRules table
     if (!!aRules) {
       // Check for employee Role
@@ -75,22 +83,12 @@ module.exports = {
       oExceptionData = await this._getExceptionData(oPayload, tx);
     }
 
-    var oDateRange = await this._getDateRange(oPayload, tx);
-    iFrequencyCount = oDateRange.iItemFreq;
-    dDateTo = oDateRange.oDatetoFrom.dDateTo;
-    dDateFrom = oDateRange.oDatetoFrom.dDateFrom;
-
     if (!!aFilteredRules[0]) {
       oRule = aFilteredRules[0];
     } else if (!!oExceptionData) {
       oRule = oExceptionData;
     }
-    // else {
-      // iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-      // if (iIndex == -1) return;
-      // oPayload.CheckFields[iIndex].result = false;
-    // }
-    return { oRule, dDateFrom, dDateTo, iFrequencyCount };
+    return oRule;
   },
 
   /**
@@ -234,7 +232,7 @@ module.exports = {
           (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
         );
         if (iIndex == -1) return;
-        if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
+        if ((!!oRule) && ((iExistingFreq < iAllowedFreq) || oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST)) {
           oPayload.CheckFields[iIndex].result = true;
         } else {
           oPayload.CheckFields[iIndex].result = false;
