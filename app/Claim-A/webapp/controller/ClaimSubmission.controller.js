@@ -4,6 +4,7 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
+	"sap/ui/core/ValueState",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
@@ -37,6 +38,7 @@ sap.ui.define([
 	Controller,
 	BusyIndicator,
 	History,
+	ValueState,
 	JSONModel,
 	Filter,
 	FilterOperator,
@@ -367,7 +369,6 @@ sap.ui.define([
 					);
 
 				}
-
 			}
 		},
 
@@ -2255,8 +2256,8 @@ sap.ui.define([
 				this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
-			
-			switch (sKey){
+
+			switch (sKey) {
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
 					oPropertyModel.setProperty("/to_state_id/is_required", true);
 					break;
@@ -2267,9 +2268,9 @@ sap.ui.define([
 					break;
 
 				case this._oConstant.ClaimTypeItem.BIL_AIR:
-				oPropertyModel.setProperty("/bill_no/is_required", true);
-				oPropertyModel.setProperty("/account_no/is_required", true);
-				break;
+					oPropertyModel.setProperty("/bill_no/is_required", true);
+					oPropertyModel.setProperty("/account_no/is_required", true);
+					break;
 
 				case this._oConstant.ClaimTypeItem.LAUT:
 					//entitled meter cube
@@ -2326,7 +2327,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/marriage_category", oEPengakutData.marriage_category);
 			}
 
-			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()){
+			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
 				this._resetPerDiem();
 			}
 		},
@@ -2593,34 +2594,52 @@ sap.ui.define([
 		* @param {string} sFieldDesc - specific name of description field of db table
 		*/
 		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
-			if (this.byId(sId).getVisible()) {
+
+			var oControl = this.byId(sId);
+
+			if (oControl && oControl.getVisible()) {
+
+				var oClaimItemModel = this.getView().getModel("claimitem_input");
+				var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+
 				if (!sField) {
-					var sField = sTable.slice(1);
+					sField = sTable.slice(1);
 				}
-				// determine description field
 				if (!sFieldDesc) {
-					var sFieldDesc = sField + '_DESC';
+					sFieldDesc = sField + "_DESC";
 				}
-				// show ID in text
+
 				var sItemText = "{employee>" + sFieldDesc + "}";
-				this.byId(sId).bindAggregation("items", {
+
+				var aFilters = [
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				];
+
+				if (sTable === this._oConstant.ViewName.ZREGION) {
+
+					if (Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.EQ, this._oConstant.Region.OVERSEA));
+					} else {
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.NE, this._oConstant.Region.OVERSEA));
+	
+					}
+				}
+
+				oControl.bindAggregation("items", {
 					path: "employee>/" + sTable,
-					filters: [
-						// ensure status is active
-						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-					],
-					sorter: [
-						new Sorter(sField + '_ID')
-					],
-					template: new Item({
+					filters: aFilters,
+					sorter: [new Sorter(sField + "_ID")],
+					template: new sap.ui.core.Item({
 						key: "{employee>" + sField + "_ID}",
 						text: sItemText
 					})
 				});
 			}
 		},
+
+
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
 			switch (oAction) {
@@ -2905,8 +2924,8 @@ sap.ui.define([
 					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
-					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))), 
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
 				});
@@ -3041,8 +3060,8 @@ sap.ui.define([
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
-    		const oInputModel = this.getView().getModel("claimitem_input");
-    		await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			const oInputModel = this.getView().getModel("claimitem_input");
+			await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -3336,7 +3355,7 @@ sap.ui.define([
 			) {
 				return;
 			}
-		
+
 			// calculate travel duration (days/hours)
 			var startDateValue = this.byId(startDate).getValue();
 			var endDateValue = this.byId(endDate).getValue();
@@ -3392,16 +3411,16 @@ sap.ui.define([
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null || 
+			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
 			) {
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-					if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
-						return;
-					}
-		
-					await this._calculatePerDiem();
+				if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+					return;
+				}
+
+				await this._calculatePerDiem();
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
@@ -3781,14 +3800,14 @@ sap.ui.define([
 								//eligibility checking
 								var aAllClaimItems = oInputModel.getProperty("/claim_items");
 								var aAllEligibilityGeneratedPayload = [];
-								for(var i = 0; i < aAllClaimItems.length; i++){
+								for (var i = 0; i < aAllClaimItems.length; i++) {
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
 
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return;
+								if (!bCanProceed) return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -3868,14 +3887,14 @@ sap.ui.define([
 								//eligibility checking
 								var aAllClaimItems = oInputModel.getProperty("/claim_items");
 								var aAllEligibilityGeneratedPayload = [];
-								for(var i = 0; i < aAllClaimItems.length; i++){
+								for (var i = 0; i < aAllClaimItems.length; i++) {
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
 
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return;
+								if (!bCanProceed) return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -4085,7 +4104,7 @@ sap.ui.define([
 						TRAVEL_DAYS_ID: claim_item.travel_days_id,
 						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
-						TIPS: this._nonNan(parseInt(claim_item.tips)), 
+						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips
 					});
 
@@ -4525,9 +4544,6 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"select_claimdetails_input_currency_code",
-				"input_claimdetails_input_currency_rate",
-				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
 				"timepicker_claimdetails_input_trip_starttime",
 				"timepicker_claimdetails_input_departure_time",
@@ -4559,7 +4575,7 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
-				"input_claimdetails_meter_cube", 
+				"input_claimdetails_meter_cube",
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance"
@@ -4669,10 +4685,6 @@ sap.ui.define([
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
-				"checkbox_claimdetails_input_needforeigncurrency",
-				"select_claimdetails_input_currency_code",
-				"input_claimdetails_input_currency_rate",
-				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
 				"timepicker_claimdetails_input_trip_starttime",
 				"timepicker_claimdetails_input_departure_time",
@@ -4860,8 +4872,7 @@ sap.ui.define([
 		_updateEntitlementAmount: function (oClaimItemInputModel) {
 			BusyIndicator.show(0);
 
-			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
-			{
+			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
@@ -4896,12 +4907,12 @@ sap.ui.define([
 				if (this.byId("input_claimdetails_input_tips").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
 				}
-				
+
 			}).catch(err => {
 				MessageBox.error(
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
-			}).finally(() => BusyIndicator.hide()); 
+			}).finally(() => BusyIndicator.hide());
 		},
 
 		_saveDraftItems: async function () {
@@ -4931,21 +4942,46 @@ sap.ui.define([
 					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID ||
-					sKey === this._oConstant.ExcludeField.DESCR  ||
-					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
+					sKey === this._oConstant.ExcludeField.DESCR ||
+					sKey === this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
 					sKey === this._oConstant.ExcludeField.IS_NEW
-				){
+				) {
 					return;
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
-		}, 
-
+		},
 		onSelect_ExcludeTips: async function () {
 			await this._calculatePerDiem();
 		}, 
+				/**
+		 * Handles checkbox toggle for Need Foreign Currency. Resets value to null when tick
+		 *
+		 * @param {sap.ui.base.Event} oEvent - Checkbox event
+		 */
+
+		onNeedForeignCurrencySelected: function (oEvent) {
+
+			var bIsSelected 	= oEvent.getParameter("selected");
+			var oCurrencyRate 	= this.byId("input_claimdetails_input_currency_rate");
+			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
+			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			
+			if (bIsSelected) {
+				this.onChange_ClaimDetails_CurrencyRate();
+			}
+			else {
+				oClaimItemModel.setProperty("/claim_item/currency_code", null);
+				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
+				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
+				
+				oCurrencyRate.setValueState(ValueState.None);
+				oCurrencyAmount.setValueState(ValueState.None);
+			}
+		}
+ 
 
 		
 
