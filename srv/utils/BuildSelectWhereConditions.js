@@ -60,15 +60,15 @@ module.exports = {
       * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
       * @public
       * @param {String} sDate - Input Date
-      * @param {Integer} iAdjYears - Frequency * Period iYear 
-      * @param {Integer} iAdjMonths - Frequency * Period iMonth 
-      * @param {Integer} iAdjDays - Frequency * Period Days 
+      * @param {Integer} iInputYear - Frequency * Period iYear 
+      * @param {Integer} iInputMonth - Frequency * Period iMonth 
+      * @param {Integer} iInputDays - Frequency * Period Days 
       * @returns {Object} Contains both Date from and Date to Ranges
       */
-    subtractDateDelta: function (sDate, iInputYear, iInputMonth, iInputDays, req) {
+    subtractDateDelta: function (sDate, iInputYear, iInputMonth, iInputDays) {
 
         if (!/^\d{4}-\d{2}-\d{2}$/.test(sDate)) {
-            req.error("Date must be in YYYY-MM-DD format");
+            throw new Error("Date must be in YYYY-MM-DD format");
         }
 
         // Adjust each non-zero parameter by subtracting 1

@@ -41,7 +41,8 @@ module.exports = {
          * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
          * @private
          * @param {Object} oPayload - payload contains user input passed from frontend
-         * @param {Object} oRule - Eligibility rule from backend
+         * @param {Object} dDateTo - Date To Range
+         * @param {Object} dDateFrom - Date From Range
          * @param {Object} tx - CDS Transaction
          * @returns {Object} oPayload - return original payload but with result field filled
          */
@@ -77,7 +78,8 @@ module.exports = {
          * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
          * @private
          * @param {Object} oPayload - payload contains user input passed from frontend
-         * @param {Object} oRule - Eligibility rule from backend
+         * @param {Object} dDateTo - Date To Range
+         * @param {Object} dDateFrom - Date From Range
          * @param {Object} tx - CDS Transaction
          * @returns {Object} oPayload - return original payload but with result field filled
          */
@@ -118,6 +120,7 @@ module.exports = {
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
     * @param {Integer} iExistingFreq - Date frequency count
+    * @param {Integer} iAllowedFreq - Rules Frequency Count
     */
     _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
         var iIndex;
