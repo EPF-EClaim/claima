@@ -2542,7 +2542,7 @@ sap.ui.define([
 		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
 		* @param {string} sFieldDesc - specific name of description field of db table
 		*/
-		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
+		/* _setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
 					var sField = sTable.slice(1);
@@ -2570,7 +2570,60 @@ sap.ui.define([
 					})
 				});
 			}
+		}, */
+
+		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
+
+			var oControl = this.byId(sId);
+
+			// Only proceed if control is visible
+			if (oControl && oControl.getVisible()) {
+
+				var oClaimItemModel = this.getView().getModel("claimitem_input");
+				var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+
+				if (!sField) {
+					sField = sTable.slice(1);  // e.g. ZREGION -> REGION
+				}
+				if (!sFieldDesc) {
+					sFieldDesc = sField + "_DESC";
+				}
+
+				var sItemText = "{employee>" + sFieldDesc + "}";
+
+				var aFilters = [
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				];
+
+
+
+				if (sTable === "ZREGION" && Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
+					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "03"));
+				}
+
+				else {
+					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "01"));
+					aFilters.push(new Filter("REGION_ID", FilterOperator.Contains, "02"));
+				}
+
+
+
+				oControl.bindAggregation("items", {
+					path: "employee>/" + sTable,
+					filters: aFilters,
+					sorter: [
+						new Sorter(sField + "_ID")
+					],
+					template: new sap.ui.core.Item({
+						key: "{employee>" + sField + "_ID}",
+						text: sItemText
+					})
+				});
+			}
 		},
+
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
 			switch (oAction) {
@@ -4899,7 +4952,7 @@ sap.ui.define([
 		 * @param {boolean} bIsSelected - Whether foreign currency is selected
 		 */
 
-		 applyForeignCurrencyState: function (bIsSelected) {
+		applyForeignCurrencyState: function (bIsSelected) {
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
 
 			// Update model state
@@ -4948,7 +5001,7 @@ sap.ui.define([
 				oCurrencyRate.setValueState("None");
 				oCurrencyAmount.setValueState("None");
 			}
-		}, 
+		},
 
 		/**
 		 * Handles checkbox toggle for Need Foreign Currency.
@@ -4956,10 +5009,10 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
 
-		 onNeedForeignCurrencySelected: function (oEvent) {
+		onNeedForeignCurrencySelected: function (oEvent) {
 			var bIsSelected = oEvent.getParameter("selected");
 			this.applyForeignCurrencyState(bIsSelected);
-		} 
+		}
 
 
 	});
