@@ -128,6 +128,13 @@ module.exports = {
           );
           break;
 
+        case Constant.ClaimType.ELAUN_PINDAH:
+           oReturnPayload = ElaunPindah.onEligibleCheck(
+            aPayload[i],
+            aEligibilityRules,
+          );
+          break;
+
         // case PELBAGAI: // Pelbagai no requirement checking needed
         //     break;
 
