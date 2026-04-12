@@ -1259,8 +1259,7 @@ sap.ui.define([
 						"attachment_file_1": null,
 						"attachment_file_2": null,
 					},
-					"eligible_amount": null,
-					"no_of_hours" : null
+					"eligible_amount": null
 				},
 				"attachments": {
 					"attachment1": {
@@ -2285,12 +2284,6 @@ sap.ui.define([
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
-
-				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
-
-					oPropertyModel.setProperty("marriage_category/is_editable", false);
-					
-					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2373,8 +2366,7 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id:{is_required: false},
 				bill_no:{is_required: false},
-				account_no:{is_required: false},
-				marriage_category:{is_editable: true}
+				account_no:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2662,25 +2654,7 @@ sap.ui.define([
 					closeOnBrowserNavigation: false
 				});
 				return;
-			}
-
-			if(oInputModel.getProperty("/claim_item/departure_time") && oInputModel.getProperty("/claim_item/arrival_time")){
-				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
-				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
-				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
-
-				if (iDiffMs < 0) {
-					MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
-					return;
-				}
-
-				const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
-
-				// 7. Save it back to the JSON model
-				oInputModel.setProperty("/claim_item/no_of_hours", fHours);
-			}
-
-			
+			}			
 
 			// Reuben (FUT Issue 17)
 			// When creating claim for post education assistance, actual amount is used instead of amount for input
@@ -4431,7 +4405,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 
 			const sClaimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id") || "PEDU";
+			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
 			const sClaim_type_item = sClaimTypeItemFromModel;
 
 			if (!sClaim_type_item) {
