@@ -2042,31 +2042,7 @@ sap.ui.define([
 				return;
 			}
 
-			if (sClaimTypeItemFromSelect) {
-				const sReqSubId = this._oReqModel.getProperty("/req_item/req_subid");
-
-				const oResetItem = {
-					req_subid: sReqSubId,                 
-					claim_type_item_id: sClaimTypeItem,   
-					est_amount: 0,
-					kilometer: 0,
-					rate_per_kilometer: 0,
-					cash_advance: false,
-					entitled_breakfast: 0,
-					entitled_lunch: 0,
-					entitled_dinner: 0,
-					daily_allowance: 0,
-					travel_day: 0,
-					travel_hour: 0
-				};
-				this._oReqModel.setProperty("/req_item", oResetItem);
-
-				let aParticipants = this._oReqModel.getProperty("/participant") || [];
-				aParticipants.forEach(row => {
-					row.ALLOCATED_AMOUNT = "";
-				});
-				this._oReqModel.setProperty("/participant", aParticipants);
-			}
+			this._resetReqItemInputs();
 
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
@@ -2113,7 +2089,7 @@ sap.ui.define([
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
-					this._onFilterSSS();
+					this._onFilterRegion();
 
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LODGING_L:
@@ -2494,8 +2470,8 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_state");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
+                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
                             ]: [];
 			oBinding.filter(aFilters);
 		},
@@ -2510,9 +2486,9 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_location_office");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
-                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
+                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
+                                new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
                             ]: [];
 			oBinding.filter(aFilters);
 		},
@@ -2526,7 +2502,7 @@ sap.ui.define([
 		 * Check if the claim type item end with L or O to determine the filter for local or oversea
          * @private
          */
-		_onFilterSSS: function () {
+		_onFilterRegion: function () {
 			const oSelect = this.byId("item_select_sss");
 			
 			if (!oSelect || !oSelect.getBinding("items")) {
@@ -2540,14 +2516,50 @@ sap.ui.define([
 			let aFilters = [];
 
 			if (sClaimTypeItem.endsWith("_L")) {
-				aFilters.push(new Filter("REGION_ID", FilterOperator.NE, Constants.Region.OVERSEA));
+				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.NE, Constants.Region.OVERSEA));
 
 			} else if (sClaimTypeItem.endsWith("_O")) {
-				aFilters.push(new Filter("REGION_ID", FilterOperator.EQ, Constants.Region.OVERSEA));
+				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.EQ, Constants.Region.OVERSEA));
 			}
 
 			oBinding.filter(aFilters);
-		}
+		},
+
+		/**
+         * Reset the Request Item Input when changing to new claim type item
+         */
+        _resetReqItemInputs: function () {
+            const oReqItem = this._oReqModel.getProperty("/req_item");
+
+            const aExcludedFields = [
+                Constants.ExcludeField.CLAIM_TYPE_ID,
+                Constants.ExcludeField.CLAIM_TYPE_ITEM_ID, 
+                Constants.ExcludeField.REQUEST_SUB_ID 
+            ];
+
+            Object.keys(oReqItem).forEach((sKey) => {
+                if (aExcludedFields.includes(sKey)) {
+                    return;
+                }
+
+                const vCurrentValue = oReqItem[sKey];
+                
+                if (sKey === "est_amount") {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
+				} else if (typeof vCurrentValue === "number") {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
+                } else if (typeof vCurrentValue === "boolean") {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, false);
+                } else {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, null);
+                }
+            });
+
+            let aParticipants = this._oReqModel.getProperty("/participant") || [];
+            aParticipants.forEach((row, index) => {
+                this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
+            });
+        },
 
 	});
 });
