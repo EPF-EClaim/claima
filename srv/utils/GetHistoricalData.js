@@ -84,11 +84,11 @@ module.exports = {
         * @public
         * @param {String} sClaimType - Claim Type
         * @param {String} sClaimTypeItem - Claim Type Item
-        * @param {Date} dInputDate - Date from input
+        * @param {String} sInputDate - Date from input
         * @param {Object} tx - CDS Transaction
         * @returns {Object} Object containing Date From and Date To range
         */
-    getDateRange: async function (sClaimType, sClaimTypeItem, dInputDate, tx) {
+    getDateRange: async function (sClaimType, sClaimTypeItem, sInputDate, tx) {
         var iMonthFreq = 0;
         var iYearFreq = 0;
         var iDateFreq = 0;
@@ -108,7 +108,7 @@ module.exports = {
                 throw new Error("No Period Unit found");
                 break;
         }
-        const oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(dInputDate, iYearFreq, iMonthFreq, iDateFreq);
+        const oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
         return { oDatetoFrom, iItemFreq } ;
     },
 
@@ -117,7 +117,6 @@ module.exports = {
         * @public
         * @param {String} sClaimType - Claim Type
         * @param {String} sClaimTypeItem - Claim Type Item
-        * @param {Date} dInputDate - Date from input
         * @param {Object} tx - CDS Transaction
         * @returns {Object} Object containing Date From and Date To range
         */
