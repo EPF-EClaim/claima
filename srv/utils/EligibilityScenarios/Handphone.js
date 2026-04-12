@@ -2,7 +2,6 @@ const { Constant } = require("../constant");
 const ComparisonOperators = require("../ComparisonOperators");
 const GetHistoricalData = require("../GetHistoricalData");
 const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
-const req = require("express/lib/request");
 module.exports = {
   /**
    * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule

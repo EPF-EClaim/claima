@@ -12,45 +12,45 @@ module.exports = {
         var sLine = "";
         var i = 0;
         var sInValues;
-        for (const [field, value] of Object.entries(oConditions)) {
+        for (const [sField, sValue] of Object.entries(oConditions)) {
             if (i > 0) {
                 sConditions = sConditions + " " + [Constant.WhereCondition.AND] + " ";
             }
             i = i + 1;
 
             // Handle BETWEEN
-            if (value && value.between) {
-                sLine = field + " " + [Constant.ComparisonOperators.GreaterEquals] + " " + `'${value.between[0]}'`
+            if (sValue && sValue.between) {
+                sLine = sField + " " + [Constant.ComparisonOperators.GreaterEquals] + " " + `'${sValue.between[0]}'`
                     + " " + [Constant.WhereCondition.AND] + " " +
-                    field + " " + [Constant.ComparisonOperators.LesserEquals] + " " + `'${value.between[1]}'`;
+                    sField + " " + [Constant.ComparisonOperators.LesserEquals] + " " + `'${sValue.between[1]}'`;
 
             }
             //Handle In list
-            else if (value && value.in && Array.isArray(value.in)) {
-                sInValues = value.in
+            else if (sValue && sValue.in && Array.isArray(sValue.in)) {
+                sInValues = sValue.in
                     .map(v => `'${v}'`)
                     .join(', ');
 
-                sLine = field + " " + Constant.WhereCondition.IN + " " + `(${sInValues})`;
-                //  `${field} IN (${sInValues})`;
+                sLine = sField + " " + Constant.WhereCondition.IN + " " + `(${sInValues})`;
+                //  `${sField} IN (${sInValues})`;
             }
             //Handle Greater or Equals
-            else if (value && value[Constant.ComparisonOperators.GreaterEquals] !== undefined) {
-                sLine = field + " " + [Constant.ComparisonOperators.GreaterEquals] + " " + `'${value[Constant.ComparisonOperators.GreaterEquals]}'`;
+            else if (sValue && sValue[Constant.ComparisonOperators.GreaterEquals] !== undefined) {
+                sLine = sField + " " + [Constant.ComparisonOperators.GreaterEquals] + " " + `'${sValue[Constant.ComparisonOperators.GreaterEquals]}'`;
 
             }
             //Handle Lesser or Equals
-            else if (value && value[Constant.ComparisonOperators.LesserEquals] !== undefined) {
-                sLine = field + " " + [Constant.ComparisonOperators.LesserEquals] + " " + `'${value[Constant.ComparisonOperators.LesserEquals]}'`;
+            else if (sValue && sValue[Constant.ComparisonOperators.LesserEquals] !== undefined) {
+                sLine = sField + " " + [Constant.ComparisonOperators.LesserEquals] + " " + `'${sValue[Constant.ComparisonOperators.LesserEquals]}'`;
 
             }
             //Handle Not Equals
-            else if (value && value[Constant.ComparisonOperators.NotEquals] !== undefined) {
-                sLine = field + " " + [Constant.ComparisonOperators.NotEquals] + " " + `'${value[Constant.ComparisonOperators.NotEquals]}'`;
+            else if (sValue && sValue[Constant.ComparisonOperators.NotEquals] !== undefined) {
+                sLine = sField + " " + [Constant.ComparisonOperators.NotEquals] + " " + `'${sValue[Constant.ComparisonOperators.NotEquals]}'`;
 
             }
             else {
-                sLine = field + " " + [Constant.ComparisonOperators.Equals] + " " + `'${value}'`;
+                sLine = sField + " " + [Constant.ComparisonOperators.Equals] + " " + `'${sValue}'`;
             }
             sConditions += sLine;
         }
@@ -60,53 +60,53 @@ module.exports = {
       * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
       * @public
       * @param {String} sDate - Input Date
-      * @param {Integer} iAdjYears - Frequency * Period Year 
-      * @param {Integer} iAdjMonths - Frequency * Period Month 
+      * @param {Integer} iAdjYears - Frequency * Period iYear 
+      * @param {Integer} iAdjMonths - Frequency * Period iMonth 
       * @param {Integer} iAdjDays - Frequency * Period Days 
       * @returns {Object} Contains both Date from and Date to Ranges
       */
-    subtractDateDelta: function (sDate, iYear, iMonth, iDays) {
+    subtractDateDelta: function (sDate, iInputYear, iInputMonth, iInputDays, req) {
 
         if (!/^\d{4}-\d{2}-\d{2}$/.test(sDate)) {
-            throw new Error("Date must be in YYYY-MM-DD format");
+            req.error("Date must be in YYYY-MM-DD format");
         }
 
         // Adjust each non-zero parameter by subtracting 1
-        const iAdjYears = iYear > 0 ? iYear - 1 : 0;
-        const iAdjMonths = iMonth > 0 ? iMonth - 1 : 0;
-        const iAdjDays = iDays > 0 ? iDays - 1 : 0;
+        const iAdjYears = iInputYear > 0 ? iInputYear - 1 : 0;
+        const iAdjMonths = iInputMonth > 0 ? iInputMonth - 1 : 0;
+        const iAdjDays = iInputDays > 0 ? iInputDays - 1 : 0;
 
-        const [inputYear, inputMonth, inputDay] = sDate.split("-").map(Number);
+        const [sInputYear, sInputMonth, sInputDay] = sDate.split("-").map(Number);
 
-        function daysInMonth(year, month) {
-            return new Date(Date.UTC(year, month, 0)).getUTCDate();
+        function daysInMonth(iYear, iMonth) {
+            return new Date(Date.UTC(iYear, iMonth, 0)).getUTCDate();
         }
 
         function formatDate(date) {
             return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
         }
 
-        let year = inputYear - iAdjYears;
-        let month = inputMonth - iAdjMonths;
+        let iYear = sInputYear - iAdjYears;
+        let iMonth = sInputMonth - iAdjMonths;
 
-        while (month <= 0) {
-            month += 12;
-            year--;
+        while (iMonth <= 0) {
+            iMonth += 12;
+            iYear--;
         }
 
-        const clampedDay = Math.min(inputDay, daysInMonth(year, month));
-        const adjustedDate = new Date(Date.UTC(year, month - 1, clampedDay));
-        adjustedDate.setUTCDate(adjustedDate.getUTCDate() - iAdjDays);
+        const dClampedDay = Math.min(sInputDay, daysInMonth(iYear, iMonth));
+        const dAdjustedDate = new Date(Date.UTC(iYear, iMonth - 1, dClampedDay));
+        dAdjustedDate.setUTCDate(dAdjustedDate.getUTCDate() - iAdjDays);
 
-        const resultYear = adjustedDate.getUTCFullYear();
-        const resultMonth = adjustedDate.getUTCMonth() + 1;
+        const dResultYear = dAdjustedDate.getUTCFullYear();
+        const dResultMonth = dAdjustedDate.getUTCMonth() + 1;
 
-        const firstDay = new Date(Date.UTC(resultYear, resultMonth - 1, 1));
-        const lastDay = new Date(Date.UTC(resultYear, resultMonth, 0));
+        const dFirstDay = new Date(Date.UTC(dResultYear, dResultMonth - 1, 1));
+        const dLastDay = new Date(Date.UTC(dResultYear, dResultMonth, 0));
 
         return {
-            dDateFrom: formatDate(firstDay),
-            dDateTo: formatDate(lastDay)
+            dDateFrom: formatDate(dFirstDay),
+            dDateTo: formatDate(dLastDay)
         };
     }
 
