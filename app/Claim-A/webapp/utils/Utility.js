@@ -54,6 +54,7 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+
         /**
          * Gets text from the resource bundle.
          * @public
@@ -220,6 +221,40 @@ sap.ui.define([
 
                 oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
             }
+        },
+        
+         /**
+         * Determine whether the number of days calculation should be treated as
+         * "number of nights" instead of inclusive calendar days.
+         *
+         * applies ONLY to specific claim types
+         *
+         * When this method returns true, the date difference will be calculated
+         * without adding 1 day (end date minus start date = number of nights).
+         *
+         * @public
+         * @param {object} oHeader - claim header data containing claim type information
+         * @param {object} oItem - claim item data containing claim type item ID
+         * @return {boolean} bIsNightBased - true if calculation should be based on number of nights
+         */
+
+        isNightBasedCalculation: function (oHeader, oItem) {
+            const aNightClaimTypes = [
+                Constants.ClaimType.DLM_NEGARA,
+                Constants.ClaimType.LUAR_NEGARA,
+                Constants.ClaimType.KURSUS_DLM_NEGARA,
+                Constants.ClaimType.KURSUS_LUAR_NEGARA
+            ];
+
+            const aLodgingItems = [
+                Constants.ClaimTypeItem.HOTEL_L,
+                Constants.ClaimTypeItem.HOTEL_O,
+                Constants.ClaimTypeItem.LODGING_L,
+                Constants.ClaimTypeItem.LODG_O
+            ];
+
+            return aNightClaimTypes.includes(oHeader.claim_type_id) &&
+                aLodgingItems.includes(oItem.claim_type_item_id);
         },
     };
     });

@@ -594,6 +594,7 @@ sap.ui.define([
 				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
 				currency_code		    : oReqItem.CURRENCY_CODE || null,
 				currency_rate			: oReqItem.CURRENCY_RATE || 0,
+				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				// extra hidden field value
 				cost_center				: oReqItem.COST_CENTER || "",
 				gl_account				: oReqItem.GL_ACCOUNT || "",
@@ -1136,7 +1137,8 @@ sap.ui.define([
                     ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
                     ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
 					CURRENCY_CODE:				  oReqItem.currency_code || null,
-					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || 0)
+					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || 0),
+					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2159,7 +2161,8 @@ sap.ui.define([
 				"i_dinner", 
 				"i_daily_allowance",
 				"i_currency_code",
-				"i_currency_rate"
+				"i_currency_rate",
+				"i_type_of_prof_body"
 			];
 
 			aControlIds.forEach(id => {
