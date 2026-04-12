@@ -135,6 +135,27 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Type of Professional Body -->
+                                <form:FormElement label="{i18n>req_i_prof_body}"
+                                            visible="false"
+                                            id="i_type_of_prof_body"  >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/type_of_professional_body}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZPROFESIONAL_BODY',
+                                                    filters: [{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }],
+                                                    sorter: { path: 'PROFESIONAL_BODY_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{employee>PROFESIONAL_BODY_ID}" 
+                                                        text="{employee>PROFESIONAL_BODY_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Remarks -->
                                 <form:FormElement label="{i18n>req_i_remarks}"
                                             visible="false"
