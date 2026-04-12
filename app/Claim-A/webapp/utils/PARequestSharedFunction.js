@@ -193,11 +193,8 @@ sap.ui.define([
 							bShowSubmit 	= true;
 							break;
 							
-						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
-							bShowBack   	= true;
-							bShowDelete 	= true;
-							break;
 							
+						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
 						case oController._oConstant.RequestStatus.REJECTED:			// rejected
 						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
 							bShowBack   	= true;
@@ -212,15 +209,8 @@ sap.ui.define([
 				case oController._oConstant.PARMode.VIEW:		// view
 					switch (sReqStatus) {
 						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
-							bShowBackScr	= true;
-							bShowDelete 	= true;
-							break;
-							
 						case oController._oConstant.RequestStatus.REJECTED:			// rejected
 						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
-							bShowBackScr	= true;
-							break;
-					
 						case oController._oConstant.RequestStatus.APPROVED:			// approved
 							bShowBackScr	= true;
 							break;

@@ -217,6 +217,7 @@ entity ZREQUEST_ITEM : managed {
         DAILY_ALLOWANCE            : Integer;
         CURRENCY_CODE              : String;
         CURRENCY_RATE              : Decimal(6, 2);
+        TYPE_OF_PROFESSIONAL_BODY  : String(3);
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -276,7 +277,9 @@ entity ZREQUEST_ITEM : managed {
         ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
                                          on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
         ZCURRENCY                  : Association to ZCURRENCY
-                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE
+                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
+        ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
+                                         on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
                                          
 }
 
@@ -1287,6 +1290,7 @@ entity ZELIGIBILITY_RULE : managed {
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
         STATUS                    : String(10)     @Common.Label: 'Status';
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
+        SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1327,6 +1331,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
         ZJOB_GROUP                : Association to ZJOB_GROUP
                                         on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
+        ZNUM_RANGE                : Association to ZNUM_RANGE
+                                        on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

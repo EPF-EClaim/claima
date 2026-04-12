@@ -135,6 +135,27 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Type of Professional Body -->
+                                <form:FormElement label="{i18n>req_i_prof_body}"
+                                            visible="false"
+                                            id="i_type_of_prof_body"  >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/type_of_professional_body}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZPROFESIONAL_BODY',
+                                                    filters: [{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }],
+                                                    sorter: { path: 'PROFESIONAL_BODY_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{employee>PROFESIONAL_BODY_ID}" 
+                                                        text="{employee>PROFESIONAL_BODY_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Remarks -->
                                 <form:FormElement label="{i18n>req_i_remarks}"
                                             visible="false"
@@ -529,8 +550,7 @@
                                             }" 
                                             change=".onInputAllocatedAmount"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
-                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} &amp;&amp;
-                                                        !!${request>/req_item/type_of_vehicle}}">
+                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}}">
                                         </Input>
                                     </form:fields>
                                 </form:FormElement>
@@ -540,7 +560,7 @@
                                             visible="false"
                                             id="i_rate_per_kilometer" >
                                     <form:fields>
-                                        <Text text="RM {
+                                        <Text text="MYR {
                                             path: 'request>/req_item/rate_per_kilometer',
                                             type: 'sap.ui.model.type.Float',
                                             formatOptions: {
@@ -558,7 +578,6 @@
                                     <form:fields>
                                         <Input 
                                             textAlign="Begin" 
-                                            required="true" 
                                             value="{
                                                 path: 'request>/req_item/toll_amt',
                                                 type: 'sap.ui.model.type.Float',
@@ -803,7 +822,8 @@
                                             items="{path: 'employee>/ZREGION',
                                                     sorter: { path: 'REGION_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".onInputAllocatedAmount">
                                             <items>
                                                 <core:Item key="{employee>REGION_ID}" 
                                                         text="{employee>REGION_DESC}" />
@@ -1029,14 +1049,44 @@
                                             visible="false"
                                             id="i_daily_allowance" >
                                     <form:fields>
-                                        <Text text="{
-                                            path: 'request>/req_item/daily_allowance',
-                                            type: 'sap.ui.model.type.Float',
-                                            formatOptions: {
-                                                minFractionDigits: 2,
-                                                maxFractionDigits: 2
-                                                }
-                                            }"/>
+                                        <Text text="{request>/req_item/daily_allowance}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Currency Code -->
+                                <form:FormElement label="{i18n>label_claimdetails_input_currencycode}"
+                                            visible="false"
+                                            id="i_currency_code"  >
+                                    <form:fields>
+                                        <m:Input 
+                                            textAlign="Begin" 
+                                            enabled="false"
+                                            value="{request>/req_item/currency_code}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Currency Rate -->
+                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate}"
+                                            visible="false"
+                                            id="i_currency_rate"  >
+                                    <form:fields>
+                                        <m:Input 
+                                            textAlign="Begin" 
+                                            enabled="{= 
+                                                ${request>/view} !== 'view' &amp;&amp; 
+                                                !!${request>/req_item/currency_code} &amp;&amp;
+                                                ${request>/req_item/currency_code} !== ${constant>/CurrencyCode/MYR}
+                                            }"
+                                            value="{
+                                                path: 'request>/req_item/currency_rate',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2
+                                                    }
+                                                }"
+                                            required="true"
+                                            change=".onInputAllocatedAmount"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1068,7 +1118,7 @@
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}  || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TAMBANG}  || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}  ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}    ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}   ||
