@@ -1103,13 +1103,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_entitled_breakfast"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_breakfast}"
 					editable="false"
 					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
@@ -1118,13 +1112,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
                 <Input
                     id="input_claimdetails_input_entitled_lunch"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'Integer', 
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_lunch}"
                     editable="false"
                     visible="false"
                 />
@@ -1133,13 +1121,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
                 <Input
                     id="input_claimdetails_input_entitled_dinner"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_dinner}"
                     editable="false"
                     visible="false"
                 />
