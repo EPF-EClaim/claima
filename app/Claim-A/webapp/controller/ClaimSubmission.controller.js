@@ -2520,7 +2520,7 @@ sap.ui.define([
 
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE){
 				aFilters =[
-					new Filter('EMP_ID', FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+					aFilters,
 					new Filter("RELATIONSHIP" , FilterOperator.EQ, "02")
 				]
 			}else if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.FLIGHT_WIL){
