@@ -13,26 +13,31 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
-    var oRule = [];
+    var oRule, oDateRange;
+    var iHistoricalData = 0;
+    var iCurrentRecordItemData = 0;
+    var iItemFreq = 0;
     try {
-      oRule = await this._SequenceCheck(oPayload, oEmp, aRules);
+      if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
+        oRule = aRules[0];
+      } else if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+        oRule = await this._SequenceCheck(oPayload, oEmp, aRules, tx);
+
+        oDateRange = await this._getDateRange(oPayload, tx);
+        iItemFreq = oDateRange.iItemFreq;
+
+        iHistoricalData = await this._getHistoricalData(
+          oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+
+        iCurrentRecordItemData = await this._getCurrentRecordItemData(
+          oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+      }
     } catch (error) {
-      throw new Error('Error during Eligiblity / Exception Rule checking');
-    }
-
-    // return oRule;
-    var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
-    var iCurrentRecordItemData = await this._getCurrentRecordItemData(
-      oPayload,
-      oRule,
-      tx,
-    );
-
+      throw new Error(`${error.message}`);
+    };
     this._validateClaimItem(
-      oRule,
-      oPayload,
-      iHistoricalData + iCurrentRecordItemData,
-    );
+      oRule, oPayload, iHistoricalData + iCurrentRecordItemData, iItemFreq);
+
     return oPayload;
   },
   /**
@@ -45,65 +50,82 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   _SequenceCheck: async function (oPayload, oEmp, aRules, tx) {
+    var oRule;
+
     //Check if there is value in aRules table
     if (!!aRules) {
       // Check for employee Role
       aFilteredRules = aRules.filter(function (rule) {
         return rule.ROLE_ID === oEmp.ROLE;
       })
-
       if (!(!!aFilteredRules[0])) {
         // Check for employee Job Group
         aFilteredRules = aRules.filter(function (rule) {
           return rule.JOB_GROUP === oEmp.JOB_GROUP;
         })
-
         if (!(!!aFilteredRules[0])) {
           // Check for Employee Grade
           aFilteredRules = aRules.filter(function (rule) {
             return rule.PERSONAL_GRADE === oEmp.GRADE;
           })
-
           if (!(!!aFilteredRules[0])) {
             // Check Exception list
-            oExceptionData = await this._getExceptionData(oPayload, oRule, tx);
-            oRule = oExceptionData;
-          } else {
-            oRule = aFilteredRules[0];
+            oExceptionData = await this._getExceptionData(oPayload, tx);
           }
-        } else {
-          oRule = aFilteredRules[0];
         }
-      } else {
-        oRule = aFilteredRules[0];
       }
     } else {
       //if no Eligibility table data, check exception list
-      oExceptionData = await this._getExceptionData(oPayload, oRule, tx);
+      oExceptionData = await this._getExceptionData(oPayload, tx);
+    }
+
+    if (!!aFilteredRules[0]) {
+      oRule = aFilteredRules[0];
+    } else if (!!oExceptionData) {
       oRule = oExceptionData;
     }
     return oRule;
   },
 
   /**
-   * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
-   * @public
-   * @param {Object} oPayload - payload contains user input passed from frontend
-   * @param {Object} oRule - Eligibility rule from backend
-   * @param {Object} tx - CDS Transaction
-   * @returns {Object} iHistoricalData - return Claim / Request Header count
-   */
-  _getHistoricalData: async function (oPayload, oRule, tx) {
-    let aDateToFrom = [];
-    // get Historical Claims Data
-    // find field for date
-    iIndex = oPayload.CheckFields.findIndex(
-      (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
-    );
+       * Get Data Range based on RECEIPT_DATE in Payload Checkfields
+       * @private
+       * @param {Object} oPayload - payload contains user input passed from frontend
+       * @param {Object} tx - CDS Transaction
+       * @returns {Array} oDatetoFrom - Array filled with Date From and Date To
+       */
+  _getDateRange: async function (oPayload, tx) {
+    // get Date Range
+    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
     if (iIndex == -1) return;
-    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
-    const dDateFrom = aDateToFrom.dDateFrom;
-    const dDateTo = aDateToFrom.dDateTo;
+    return oDatetoFrom = await GetHistoricalData.getDateRange(
+      oPayload.ClaimType,
+      oPayload.ClaimTypeItem,
+      oPayload.CheckFields[iIndex].value,
+      tx);
+  },
+
+  /**
+           * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+           * @private
+           * @param {Object} oPayload - payload contains user input passed from frontend
+           * @param {Object} dDateTo - Date To Range
+           * @param {Object} dDateFrom - Date From Range
+           * @param {Object} tx - CDS Transaction
+           * @returns {Object} oPayload - return original payload but with result field filled
+           */
+  _getHistoricalData: async function (oPayload, dDateTo, dDateFrom, tx) {
+    var sHeaderTable = "";
+    var sItemTable = "";
+    // get Historical Claims Data
+    // Map ClaimID or RequestID based on which HeaderTable to use
+    if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+      sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+      sItemTable = Constant.Entities.ZCLAIM_ITEM;
+    } else {
+      sHeaderTable = Constant.Entities.ZREQUEST_HEADER
+      sItemTable = Constant.Entities.ZREQUEST_ITEM;
+    }
 
     const aItemcondition = {
       [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
@@ -111,41 +133,30 @@ module.exports = {
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
       [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
     };
+    const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
+    const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
+      sItemTable,
+      sItemcondition,
+      tx);
 
-    //Stringify Where Conditions
-    const sConditions = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
-    // Get Current Claims Item count with same Frequency Period
-    return iHistoricalData = await GetHistoricalData.getHistoricalData(
-      Constant.Entities.ZCLAIM_HEADER,
-      Constant.Entities.ZCLAIM_ITEM,
-      sConditions,
-      tx,
-    );
+    return iHistoricalData;
   },
 
   /**
-   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
-   * @public
-   * @param {Object} oPayload - payload contains user input passed from frontend
-   * @param {Object} oRule - Eligibility rule from backend
-   * @param {Object} tx - CDS Transaction
-   * @returns {Object} iCurrentData - return Current Claim / Request item count
-   */
-  _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
-    let aDateToFrom = [];
-    // get Historical Claims Data
-    // find field for date
-    iIndex = oPayload.CheckFields.findIndex(
-      (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
-    );
-    if (iIndex == -1) return;
-    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
-
-    const dDateFrom = aDateToFrom.dDateFrom;
-    const dDateTo = aDateToFrom.dDateTo;
-
-    //Map Headers
-    // Map ClaimID or RequestID based on which HeaderTable to use
+           * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+           * @private
+           * @param {Object} oPayload - payload contains user input passed from frontend
+           * @param {Object} dDateTo - Date To Range
+           * @param {Object} dDateFrom - Date From Range
+           * @param {Object} tx - CDS Transaction
+           * @returns {Object} oPayload - return original payload but with result field filled
+           */
+  _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
+    var sHeaderField = "";
+    var sItemField = "";
+    var sItemTable = "";
+    // get Current Items Data
+    // Map Headers and ClaimID or RequestID based on which ItemTable to use
     if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
       sHeaderField = Constant.EntitiesFields.CLAIMID;
       sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
@@ -164,12 +175,10 @@ module.exports = {
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
       [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
     };
+    const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-    //Stringify Where Conditions
-    const sConditions = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
-    // Get Current Claims Item count with same Frequency Period
     return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
-      sConditions,
+      sCurrentItemcondition,
       tx);
   },
 
@@ -178,7 +187,7 @@ module.exports = {
     * @public
     * @param {Object} oPayload - payload contains user input passed from frontend
     * @param {Object} tx - CDS Transaction
-    * @returns {Object} aExceptionData - return Exception table data
+    * @returns {Object} oExceptionData - return Exception table data
     */
   _getExceptionData: async function (oPayload, tx) {
     // If No data from Rules Table, refer to Exception list table
@@ -188,22 +197,20 @@ module.exports = {
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
     if (iIndex == -1) return;
-    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
-    const dDateFrom = aDateToFrom.dDateFrom;
-    const dDateTo = aDateToFrom.dDateTo;
     const aExceptionCondition = {
       [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: Constant.ClaimType.HANDPHONE,
-      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.LesserEquals]: dDateFrom },
-      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.GreaterEquals]: dDateTo }
+      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.LesserEquals]: oPayload.CheckFields[iIndex].value },
+      [Constant.EntitiesFields.END_DATE]: { [Constant.ComparisonOperators.GreaterEquals]: oPayload.CheckFields[iIndex].value }
     };
     const sExceptionConditions = BuildSelectWhereConditions.buildWhereCondition(aExceptionCondition);
     // Get Exception List Data
-    const aExceptionData = await tx.run(
-      SELECT.from(sExceptionTable).where(`${sExceptionConditions}`)
+    var sCreatedAtDesc = Constant.EntitiesFields.MANAGED_CREATEDAT + " " + Constant.WhereCondition.DESC;
+    const oExceptionData = await tx.run(
+      SELECT.one.from(sExceptionTable).where(`${sExceptionConditions}`).orderBy(`${sCreatedAtDesc}`)
     );
-    return aExceptionData;
+    return oExceptionData;
   },
 
   /**
@@ -211,22 +218,25 @@ module.exports = {
    * @private
    * @param {Object} oRule - matched eligibility rule from aRules
    * @param {Object} oPayload - original payload from user input
-   * @param {Integer} iFrequencyCount - Date frequency count
+   * @param {Integer} iExistingFreq - Date frequency count
+   * @param {Integer} iAllowedFreq - Rules Frequency Count
    */
-  _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
+  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
     var iIndex;
 
     switch (oPayload.ClaimTypeItem) {
       case Constant.ClaimTypeItem.TELEFON_B:
         // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
-        iIndex = oPayload.CheckFields.findIndex(
-          (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
-        );
-        if (iIndex == -1) return;
-        if (iFrequencyCount < oRule.FREQUENCY) {
-          oPayload.CheckFields[iIndex].result = true;
-        } else {
-          oPayload.CheckFields[iIndex].result = false;
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+          iIndex = oPayload.CheckFields.findIndex(
+            (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
+          );
+          if (iIndex == -1) return;
+          if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
+            oPayload.CheckFields[iIndex].result = true;
+          } else {
+            oPayload.CheckFields[iIndex].result = false;
+          }
         }
 
         iIndex = null;
