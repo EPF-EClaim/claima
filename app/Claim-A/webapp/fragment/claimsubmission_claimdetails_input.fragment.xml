@@ -100,15 +100,22 @@
                 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<mdc:Field
-                        id="field_claimdetails_input_dependent_name"
-                        value="{claimitem_input>/claim_item/dependent_name}"
-                        editMode="Editable"
-                        display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
-                        valueHelp="valuehelp_claimdetails_input_dependent_name"
-                        required="true"
-                />
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'DEPENDENT_NO', descending: false }
+					}"
+					visible="false"
+					required="true"
+				>
+                    <items>
+                        <core:Item key="{employee>LEGAL_NAME}" 
+                                text="{employee>LEGAL_NAME}" />
+                    </items>
+				</Select>
                 
                 <!-- Type of Professional Body -->
                 <Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -1509,51 +1516,6 @@
                                     id="valuehelp_claimdetails_input_anggota_name_dialog_MTable"
                                     keyPath="EEID"
                                     descriptionPath="NAME"
-                                    caseSensitive="false">
-                                    <!-- create table via delegate-->
-                                </mdcvhcnt:MTable>
-                            </mdcvh:Dialog>
-                        </mdc:dialog>
-                    </mdc:ValueHelp>
-            </f:dependents>
-            <f:dependents>
-            <!-- Dependent Name -->
-                <mdc:ValueHelp
-                        id="valuehelp_claimdetails_input_dependent_name"
-                        delegate='{
-                            "name": "claima/utils/ValueHelpDelegate_Common",
-                            "payload": {
-                                "modelName": "employee",
-                                "entitySet": "employee>/ZEMP_DEPENDENT",
-                                "keyField": "DEPENDENT_NO",
-                                "descriptionField": "LEGAL_NAME",
-                                "columns": ["{i18n>valuehelp_claiminput_altcc_col_id}","{i18n>valuehelp_claiminput_dependent_col_name}"],
-                                "searchKeys": ["LEGAL_NAME"],
-                                "openOnClick": true,
-                                "filters": [
-                                    {path: "EMP_ID", operator: "EQ", value1: "/userId", model: "session"}
-                                ]
-                            }
-                        }'
-                    >
-                        <mdc:typeahead>
-                            <mdcvh:Popover id="valuehelp_claimdetails_input_dependent_name_pop">
-                                <mdcvhcnt:MTable id="valuehelp_claimdetails_input_dependent_name_pop_MTable"
-                                    keyPath="LEGAL_NAME"
-                                    caseSensitive="false"
-                                    useAsValueHelp="false">
-                                    <!-- create table via delegate-->
-                                </mdcvhcnt:MTable>
-                            </mdcvh:Popover>
-                        </mdc:typeahead>
-                        <mdc:dialog>
-                            <mdcvh:Dialog
-                                id="valuehelp_claimdetails_input_dependent_namec_dialog"
-                                title="{i18n>valuehelp_claiminput_dependent}"
-                            >
-                                <mdcvhcnt:MTable
-                                    id="valuehelp_claimdetails_input_dependent_name_dialog_MTable"
-                                    keyPath="LEGAL_NAME"
                                     caseSensitive="false">
                                     <!-- create table via delegate-->
                                 </mdcvhcnt:MTable>
