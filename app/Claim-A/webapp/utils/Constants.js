@@ -254,7 +254,8 @@ sap.ui.define([
             "LENDER_ID" : "LENDER_ID",
             "LENDER_NAME": "LENDER_NAME",
             "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
-            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"            
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC",
+            "REGION_ID": "REGION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -378,11 +379,11 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
-          "MaritalStatus": {
+        "MaritalStatus": {
             "WIDOWED": "W",
             "SINGLE": "S",
             "MARRIED": "M",
-            "ENGAGED": "E",
+            "SEPARATED": "E",
             "DIVORCED": "D"
         },
         "InsuranceProvider" : {
@@ -407,6 +408,21 @@ sap.ui.define([
         "DependentType": {
             "ANGGOTA" : "1",
             "DEPENDENT": "2"
+        },
+        "Relationship": {
+            "SPOUSE" : "01",
+            "CHILD": "02",
+            "FATHER": "03",
+            "MOTHER": "04",
+            "SIBLING": "05",
+            "RELATIVES": "06",
+            "ADDITIONAL_SPOUSE": "07"
+        },
+        "MarriageCategory": {
+            "SINGLE" : "01",
+            "MARRIED_NO_CHILDREN": "02",
+            "MARRIED_1_TO_3_CHILDREN": "03",
+            "MARRIED_4_OR_MORE_CHILDREN": "04"
         },
         "ConfigAccess": 
              [
@@ -437,6 +453,7 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+            "REQUEST_SUB_ID": "req_subid"
         },
         "Region": {
             "SEMENANJUNG": "01",
@@ -450,6 +467,10 @@ sap.ui.define([
             "FERRY": "03",
             "TRAIN": "04",
             "TAXI": "05",
+        },
+        "CurrencyCode": {
+            "MYR": "MYR",
+            "USD": "USD"
         }
     }
 });

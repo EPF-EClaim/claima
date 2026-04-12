@@ -59,6 +59,7 @@ const Constant = {
     },
     Entities: {
         "ZEMP_MASTER": "ZEMP_MASTER",
+        "ZEMP_DEPENDENT": "ZEMP_DEPENDENT",
         "ZELIGIBILITY_RULE": "ZELIGIBILITY_RULE",
         "ZCLAIM_HEADER": "ZCLAIM_HEADER",
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
@@ -161,11 +162,16 @@ const Constant = {
         "BILL_DATE": "BILL_DATE",
         "RECEIPT_DATE": "RECEIPT_DATE",
         "JOB_GROUP": "JOB_GROUP",
+        "MARITAL_STATUS": "MARITAL_STATUS",
+        "EMPLOYEE_TYPE": "EMPLOYEE_TYPE",
+        "MARRIAGE_CATEGORY": "MARRIAGE_CATEGORY",
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
         "END_DATE": "END_DATE",
         "MANAGED_CREATEDAT": "createdAt",
-        "SUBMISSION_TYPE": "SUBMISSION_TYPE"
+        "SUBMISSION_TYPE": "SUBMISSION_TYPE",
+        "RELATIONSHIP": "RELATIONSHIP",
+        "DEPENDENT_NO": "DEPENDENT_NO"
     },
     Wildcard: {
         "All": "*",
@@ -187,6 +193,9 @@ const Constant = {
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
         CANCELLED: "STAT07"
+    },
+    ClaimTypeItemStatus: {
+        ACTIVE: "ACTIVE"
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",
@@ -233,10 +242,30 @@ const Constant = {
     },
 
     MaritalStatus: {
+        WIDOWED: "W",
         SINGLE: "S",
-        MARRIED: "M"
+        MARRIED: "M",
+        SEPARATED: "E",
+        DIVORCED: "D"
     },
 
+    Relationship: {
+        SPOUSE : "01",
+        CHILD: "02",
+        FATHER: "03",
+        MOTHER: "04",
+        SIBLING: "05",
+        RELATIVES: "06",
+        ADDITIONAL_SPOUSE: "07"
+    },
+    
+    MarriageCategory: {
+        SINGLE : "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
+    },
+    
     UnlimitedAmount: -1
 
 };
