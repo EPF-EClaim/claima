@@ -346,42 +346,32 @@ sap.ui.define([
 		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
 		 */
 		fetchUserElaunPengangkutanData: async function () {
-			// get marriage category based marital status
-			var sMarriageCategory = null;
+			// get eligible amount and marriage category based on current user
+			var oResult = {
+				eligible_amount: 0.00,
+				marriage_category: null,
+			};
 			try {
-				const oFunctionCat = this._oOwnerComponent.getModel().bindContext("/getMarriageCategory(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountEPengakut(...)");
 
-				await oFunctionCat.execute();
+				await oFunction.execute();
 
-				const oContextCat = oFunctionCat.getBoundContext();
-				sMarriageCategory = oContextCat.getObject("value");
+				const oContext = oFunction.getBoundContext();
+				const oData = oContext.getObject();
+
+				oResult = {
+					eligible_amount: oData.eligible_amount,
+					marriage_category: oData.marriage_category
+				};
 
 			} catch (oError) {
-				sMarriageCategory = null;
+				oResult = {
+					eligible_amount: 0.00,
+					marriage_category: null,
+				};
 			}
 
-			// get eligible amount based on employee ID and retrieved marriage category
-			var dEligibleAmount = 0.00;
-			try {
-				const oFunctionEligible = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
-
-				if (!!sMarriageCategory) {
-					oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
-				}
-
-				await oFunctionEligible.execute();
-
-				const oContextAmount = oFunctionEligible.getBoundContext();
-				dEligibleAmount = oContextAmount.getObject("value");
-
-			} catch (oError) {
-				dEligibleAmount = 0.00;
-			}
-
-			return {
-				eligible_amount: dEligibleAmount,
-				marriage_category: sMarriageCategory
-			}
+			return oResult
 		},
 
 		/**
@@ -392,7 +382,7 @@ sap.ui.define([
 		fetchClaimElaunPengangkutan: async function () {
 			// check if claim exists with claim item elaun pengangkutan for employee
 			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkExistingClaimEPengakut(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkUserExistingClaimEPengakut(...)");
 
 				await oFunction.execute();
 

@@ -1210,15 +1210,13 @@ module.exports = (srv) => {
 
     /**
      * Get marriage category for employee based on marital status and number of dependents
-     * @public
+     * @private
+     * @param {String} sEmpId - Employee ID
      * @return {String} - return marriage category based on status and number of dependents
      */
-    srv.on('getMarriageCategory', async (req) => {
-        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
-        const sEmail = String(sUserEmail).trim().toLowerCase();
-
+    async function _getMarriageCategory(sEmpId) {
         try {
-            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'MARITAL').where({ EMAIL: sEmail });
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('MARITAL').where({ EEID: sEmpId });
             if (!oEmpData) {
                 return req.error(404, `No employee data found.`);
             }
@@ -1231,7 +1229,7 @@ module.exports = (srv) => {
                 const aDependents = await SELECT
                     .from(Constant.Entities.ZEMP_DEPENDENT)
                     .where({
-                        EMP_ID: oEmpData,
+                        EMP_ID: sEmpId,
                         RELATIONSHIP: Constant.Relationship.CHILD
                     })
                     .orderBy([
@@ -1264,16 +1262,14 @@ module.exports = (srv) => {
         } catch (error) {
             return req.error(500, 'An error occurred while checking Employee Dependent table.');
         }
-    });
+    };
 
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
      * @public
-     * @param {String} sMarriageCategory - Marriage category based on employee marital status and dependents
-     * @return {Decimal} - return eligible amount retrieved from table
+     * @return {Object} epengakutData - return eligible amount retrieved from table as well as user marriage category
      */
-    srv.on('getEligibleAmountEPengakut', async (req) => {
-        const { sMarriageCategory } = req.data;
+    srv.on('getUserEligibleAmountEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 
@@ -1283,13 +1279,15 @@ module.exports = (srv) => {
                 return req.error(404, `No employee data found.`);
             }
 
+            const sMarriageCategory = await _getMarriageCategory(oEmpData.EEID);
+            if (!sMarriageCategory) {
+                return req.error(404, `No marriage category available for employee.`);
+            }
+
             const sTodayDate = new Date().toISOString().slice(0, 10);
             const aMaritalStatusValues = [oEmpData.MARITAL, Constant.Wildcard.All];
             const aEmployeeTypeValues = [oEmpData.EMPLOYEE_TYPE, Constant.Wildcard.All];
-            var aMarriageCategoryValues = [Constant.Wildcard.All];
-            if (!!sMarriageCategory) {
-                aMarriageCategoryValues.push(sMarriageCategory);
-            }
+            const aMarriageCategoryValues = [sMarriageCategory, Constant.Wildcard.All];
 
             const oEligibilityRule = await SELECT.one
                 .from(Constant.Entities.ZELIGIBILITY_RULE)
@@ -1317,7 +1315,10 @@ module.exports = (srv) => {
                 return req.error(404, `Eligible amount not found for given employee.`);
             }
 
-            return oEligibilityRule.ELIGIBLE_AMOUNT;
+            return {
+                eligible_amount: oEligibilityRule.ELIGIBLE_AMOUNT,
+                marriage_category: sMarriageCategory
+            }
 
         } catch (error) {
             return req.error(500, 'An error occurred while checking Eligibility Rule table.');
@@ -1329,7 +1330,7 @@ module.exports = (srv) => {
      * @public
      * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
      */
-    srv.on('checkExistingClaimEPengakut', async (req) => {
+    srv.on('checkUserExistingClaimEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 
