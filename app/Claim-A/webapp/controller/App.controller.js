@@ -531,7 +531,7 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
+		onSelect_ClaimProcess_ClaimType: function (oEvent) {
 			// validate claim type
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
