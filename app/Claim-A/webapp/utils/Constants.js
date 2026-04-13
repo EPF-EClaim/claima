@@ -478,8 +478,9 @@ sap.ui.define([
             "BUS": "01",
             "EHAILING": "02",
             "FERRY": "03",
-            "TRAIN": "04",
-            "TAXI": "05",
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
         },
         "CurrencyCode": {
             "MYR": "MYR",
