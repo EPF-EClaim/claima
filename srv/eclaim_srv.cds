@@ -91,6 +91,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                 START_DATE,
                 STATUS,
                 COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC as COST_CENTER_DESC,
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 

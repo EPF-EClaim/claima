@@ -280,7 +280,7 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
         ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
-                                         
+
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -998,10 +998,11 @@ entity ZEMP_CA_PAYMENT : managed {
     key REQUEST_ID           : String    @mandatory  @Common.Label: 'Pre Approval Request ID';
     key EMP_ID               : String    @mandatory  @Common.Label: 'Employee ID';
     key DISBURSEMENT_DATE    : Date      @mandatory  @Common.Label: 'Disbursement Date';
-        DISBURSEMENT_STATUS  : String(2) @Common.Label: 'Disbursement Status (Y/N)';
+        DISBURSEMENT_STATUS  : String(2) @Common.Label: 'Disbursement Status ';
         ZDISBURSEMENT_STATUS : Association to ZDISBURSEMENT_STATUS
                                    on ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_ID = DISBURSEMENT_STATUS
 }
+
 
 entity ZPERDIEM_ENT : managed {
     key PERSONAL_GRADE     : String        @mandatory  @Common.Label: 'Personal Grade From';
