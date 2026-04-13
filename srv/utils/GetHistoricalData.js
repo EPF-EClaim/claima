@@ -5,7 +5,7 @@ const { Constant } = require("./constant");
 
 module.exports = {
     /**
-        * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+        * Get Historical Count of Headers of Status Approved or Pending Approval
         * @public
         * @param {String} sHeaderTable - Header Table Name
         * @param {String} sItemTable - Item Table Name
@@ -58,7 +58,7 @@ module.exports = {
     },
 
     /**
-        * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+        * Get Current Record Sub ID Item Count
         * @public
         * @param {String} sItemTable - Item Table Name
         * @param {String} sItemcondition - Item Selection Where Conditions
@@ -77,5 +77,58 @@ module.exports = {
         } catch (error) {
             return 0;
         }
-    }
+    },
+
+    /**
+        * Get Date Range based on Input Date, Frequency and Period from Claim Item Type
+        * @public
+        * @param {String} sClaimType - Claim Type
+        * @param {String} sClaimTypeItem - Claim Type Item
+        * @param {String} sInputDate - Date from input
+        * @param {Object} tx - CDS Transaction
+        * @returns {Object} Object containing Date From and Date To range
+        */
+    getDateRange: async function (sClaimType, sClaimTypeItem, sInputDate, tx) {
+        var iMonthFreq = 0;
+        var iYearFreq = 0;
+        var iDateFreq = 0;
+        const oClaimTypeItem = await this.getFrequency(sClaimType, sClaimTypeItem, tx);
+        var iItemFreq = oClaimTypeItem.FREQUENCY
+
+        switch (oClaimTypeItem.PERIOD_UNIT) {
+            case Constant.PeriodUnit.MONTH:
+                iMonthFreq = oClaimTypeItem.PERIOD;
+                break;
+
+            case Constant.PeriodUnit.YEAR:
+                iYearFreq = oClaimTypeItem.PERIOD;
+                break;
+
+            default:
+                throw new Error("No Period Unit found");
+                break;
+        }
+        const oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
+        return { oDatetoFrom, iItemFreq } ;
+    },
+
+    /**
+        * Get Frequency, Period, Period Unit from Claim Type Item Table
+        * @public
+        * @param {String} sClaimType - Claim Type
+        * @param {String} sClaimTypeItem - Claim Type Item
+        * @param {Object} tx - CDS Transaction
+        * @returns {Object} Object containing Date From and Date To range
+        */
+    getFrequency: async function (ClaimType, ClaimTypeItem, tx) {
+        const aClaimTypeItem = {
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: ClaimTypeItem
+        };
+
+        const sClaimTypeItem = BuildSelectWhereConditions.buildWhereCondition(aClaimTypeItem);
+        return oClaimTypeItem = await tx.run(
+            SELECT.one.from(Constant.Entities.ZCLAIM_TYPE_ITEM).where(`${sClaimTypeItem}`)
+        );
+    },
 };

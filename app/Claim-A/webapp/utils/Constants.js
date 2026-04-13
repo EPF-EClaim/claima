@@ -92,6 +92,12 @@ sap.ui.define([
             "ELEKTRIK" : "ELEKTRIK",
             "BIL_AIR" : "BIL_AIR"
         },
+        "ClaimTypeItemOverseas": {
+            "MAKAN_O": "MAKAN_O",
+            "LODG_O": "LODG_O",
+            "HOTEL_O": "HOTEL_O",
+            "FLIGHT_O": "FLIGHT_O",
+        },        
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
@@ -254,7 +260,12 @@ sap.ui.define([
             "LENDER_ID" : "LENDER_ID",
             "LENDER_NAME": "LENDER_NAME",
             "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
-            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC"            
+            "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC",
+            "RELATIONSHIP" : "RELATIONSHIP",
+            "DOB" : "DOB",
+            "STUDENT" : "STUDENT",
+            "EMP_ID" : "EMP_ID",
+            "REGION_ID": "REGION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -452,19 +463,28 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+            "REQUEST_SUB_ID": "req_subid"
         },
         "Region": {
             "SEMENANJUNG": "01",
             "SABAH_SARAWAK": "02",
             "OVERSEA": "03"
         },
+        "ViewName": {
+            "ZREGION": "ZREGION"
+        },
          "FareType": 
         {
             "BUS": "01",
             "EHAILING": "02",
             "FERRY": "03",
-            "TRAIN": "04",
-            "TAXI": "05",
-        }
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
+        },
+        "CurrencyCode": {
+            "MYR": "MYR",
+            "USD": "USD"
+        }        
     }
 });
