@@ -341,37 +341,30 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
 		 * @public
-		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
+		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
-		fetchUserElaunPengangkutanData: async function () {
-			// get eligible amount and marriage category based on current user
-			var oResult = {
-				eligible_amount: 0.00,
-				marriage_category: null,
-			};
+		fetchUserAmountElaunPengangkutan: async function () {
+			// get eligible amount based on current user
+			var dResult = 0.00;
 			try {
+				BusyIndicator.show(0);
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountEPengakut(...)");
 
 				await oFunction.execute();
 
 				const oContext = oFunction.getBoundContext();
-				const oData = oContext.getObject();
-
-				oResult = {
-					eligible_amount: oData.eligible_amount,
-					marriage_category: oData.marriage_category
-				};
+				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				oResult = {
-					eligible_amount: 0.00,
-					marriage_category: null,
-				};
+				MessageToast.show(oError);
+				dResult = 0.00;
+			} finally {
+				BusyIndicator.hide();
 			}
 
-			return oResult
+			return dResult;
 		},
 
 		/**
