@@ -35,7 +35,7 @@ sap.ui.define([
 		},
 
 		/**
-		* Checks if course has already used by user for a previously approved claim
+		* Checks if course has already been used by user for a previously approved claim
 		* @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sSessionNumber - session number ID to check from database
