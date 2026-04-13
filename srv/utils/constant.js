@@ -65,7 +65,9 @@ const Constant = {
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
         "ZREQUEST_HEADER": "ZREQUEST_HEADER",
         "ZREQUEST_ITEM": "ZREQUEST_ITEM",
-        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST"
+        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
+        "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
+        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -77,7 +79,6 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "HANDPHONE": "HANDPHONE",
         "JALUR_LEB": "JALUR_LEB"
     },
     ClaimTypeItem: {
@@ -166,6 +167,8 @@ const Constant = {
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
         "END_DATE": "END_DATE",
+        "MANAGED_CREATEDAT": "createdAt",
+        "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO"
     },
@@ -204,10 +207,9 @@ const Constant = {
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
     },
-    FrequencyPeriod: {
+    PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year",
-        "THREE_YEARS": "3 years"
+        "YEAR": "Year"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
@@ -217,7 +219,9 @@ const Constant = {
     },
     WhereCondition: {
         "AND": "AND",
-        "IN": "IN"
+        "IN": "IN",
+        "DESC": "DESC",
+        "ASC": "ASC"
     },
 
     RelationshipType: {

@@ -100,15 +100,22 @@
                 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<mdc:Field
-                        id="field_claimdetails_input_dependent_name"
-                        value="{claimitem_input>/claim_item/dependent_name}"
-                        editMode="Editable"
-                        display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
-                        valueHelp="valuehelp_claimdetails_input_dependent_name"
-                        required="true"
-                />
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'LEGAL_NAME', descending: false }
+					}"
+					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
+					required="true"
+				>
+                    <items>
+                        <core:Item key="{employee>LEGAL_NAME}" 
+                                text="{employee>LEGAL_NAME}" />
+                    </items>
+				</Select>
                 
                 <!-- Type of Professional Body -->
                 <Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -279,7 +286,8 @@
                         constraints: { minimum: 0.01 }
 					}"
 					required="true"
-					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
@@ -924,6 +932,8 @@
                     id="checkbox_claimdetails_input_needforeigncurrency"
                     visible="false"
                     wrapping="true"
+                    select=".onNeedForeignCurrencySelected"
+                    selected="{claimitem_input>/claim_item/need_foreign_currency}"
                 />
 
                 <!-- Currency Code -->
@@ -931,12 +941,10 @@
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
-                    editMode="Disabled"
                     display="ValueDescription"
                     visible="false"
                     valueHelp="valuehelp_currency_code"
                 />
-
                 <!-- Currency Rate -->
                 <Label text="{i18n>label_claimdetails_input_currencyrate}" />
                 <Input
@@ -952,7 +960,10 @@
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
-                    required="true"
+                    editable="{= 
+                            ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}  || 
+                            !!${claimitem_input>/claim_item/need_foreign_currency}
+                    }"
                 />
 
                 <!-- Currency Amount -->
@@ -969,7 +980,8 @@
 						}
 					}"
                     visible="false"
-                    editable="false"
+                    change="onChange_ClaimDetails_CurrencyRate"
+                    editable="{= !!${claimitem_input>/claim_item/need_foreign_currency} }"
                 />
 
                 <!-- Trip Start Date -->
@@ -1103,13 +1115,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_entitled_breakfast"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_breakfast}"
 					editable="false"
 					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
@@ -1118,13 +1124,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
                 <Input
                     id="input_claimdetails_input_entitled_lunch"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'Integer', 
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_lunch}"
                     editable="false"
                     visible="false"
                 />
@@ -1133,13 +1133,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
                 <Input
                     id="input_claimdetails_input_entitled_dinner"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_dinner}"
                     editable="false"
                     visible="false"
                 />
@@ -1558,51 +1552,6 @@
                                     id="valuehelp_claimdetails_input_anggota_name_dialog_MTable"
                                     keyPath="EEID"
                                     descriptionPath="NAME"
-                                    caseSensitive="false">
-                                    <!-- create table via delegate-->
-                                </mdcvhcnt:MTable>
-                            </mdcvh:Dialog>
-                        </mdc:dialog>
-                    </mdc:ValueHelp>
-            </f:dependents>
-            <f:dependents>
-            <!-- Dependent Name -->
-                <mdc:ValueHelp
-                        id="valuehelp_claimdetails_input_dependent_name"
-                        delegate='{
-                            "name": "claima/utils/ValueHelpDelegate_Common",
-                            "payload": {
-                                "modelName": "employee",
-                                "entitySet": "employee>/ZEMP_DEPENDENT",
-                                "keyField": "DEPENDENT_NO",
-                                "descriptionField": "LEGAL_NAME",
-                                "columns": ["{i18n>valuehelp_claiminput_altcc_col_id}","{i18n>valuehelp_claiminput_dependent_col_name}"],
-                                "searchKeys": ["LEGAL_NAME"],
-                                "openOnClick": true,
-                                "filters": [
-                                    {path: "EMP_ID", operator: "EQ", value1: "/userId", model: "session"}
-                                ]
-                            }
-                        }'
-                    >
-                        <mdc:typeahead>
-                            <mdcvh:Popover id="valuehelp_claimdetails_input_dependent_name_pop">
-                                <mdcvhcnt:MTable id="valuehelp_claimdetails_input_dependent_name_pop_MTable"
-                                    keyPath="LEGAL_NAME"
-                                    caseSensitive="false"
-                                    useAsValueHelp="false">
-                                    <!-- create table via delegate-->
-                                </mdcvhcnt:MTable>
-                            </mdcvh:Popover>
-                        </mdc:typeahead>
-                        <mdc:dialog>
-                            <mdcvh:Dialog
-                                id="valuehelp_claimdetails_input_dependent_namec_dialog"
-                                title="{i18n>valuehelp_claiminput_dependent}"
-                            >
-                                <mdcvhcnt:MTable
-                                    id="valuehelp_claimdetails_input_dependent_name_dialog_MTable"
-                                    keyPath="LEGAL_NAME"
                                     caseSensitive="false">
                                     <!-- create table via delegate-->
                                 </mdcvhcnt:MTable>
