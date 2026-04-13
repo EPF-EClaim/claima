@@ -2282,7 +2282,6 @@ sap.ui.define([
 					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
-					
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
