@@ -1260,7 +1260,8 @@ sap.ui.define([
 						"attachment_file_1": null,
 						"attachment_file_2": null,
 					},
-					"eligible_amount": null
+					"eligible_amount": null,
+					"no_of_hours" : null
 				},
 				"attachments": {
 					"attachment1": {
@@ -2281,7 +2282,6 @@ sap.ui.define([
 					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
-
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
@@ -2666,6 +2666,23 @@ sap.ui.define([
 					closeOnBrowserNavigation: false
 				});
 				return;
+			}
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
+			}
+			//if departure time and arrival time exist, it will do a calculation for the flight duration
+			//this is needed for the eligibility check for the flight class of the employee
+			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
+			if(!!oInputModel.getProperty("/claim_item/departure_time") && !!oInputModel.getProperty("/claim_item/arrival_time")){
+				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
+				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
+				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
+				const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+
+				oInputModel.setProperty("/claim_item/no_of_hours", fHours);
 			}
 
 			// Reuben (FUT Issue 17)

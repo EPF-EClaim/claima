@@ -106,6 +106,17 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
+
+                    if(!!oInputModel?.getProperty("/claim_item/departure_time") && !!oInputModel?.getProperty("/claim_item/arrival_time")){
+                        const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
+                        const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
+                        const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
+
+                        if (iDiffMs < 0) {
+                            MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
+                            bCanProceed = false;
+                        }
+                    }
                     
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved; if found, return message based on status
