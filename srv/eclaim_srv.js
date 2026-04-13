@@ -639,7 +639,7 @@ module.exports = (srv) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
             const { ApproveRequest } = req.data;
-            console.log(ApproveRequest);
+
             if (!ApproveRequest || ApproveRequest.length === 0) {
                 throw new Error('No Data Sent')
             }
@@ -794,7 +794,7 @@ module.exports = (srv) => {
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;
-            console.log(ID);
+
             if (!ID) {
                 throw new Error('No Data Sent')
             }
@@ -975,7 +975,7 @@ module.exports = (srv) => {
                 }
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
-            time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
+                time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
             //checking on the daily and meal allowance entitlement
             if (req.data.day === 0 && req.data.hours < 8.0) {
@@ -1153,56 +1153,97 @@ module.exports = (srv) => {
         const sStatus = data.STATUS || req.data.STATUS;
 
         if (sStatus === Constant.Status.APPROVED) {
-
+            var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
+            try {
+                oRequestRecord = await
+                    SELECT.one.from(Constant.Entities.ZREQUEST_HEADER).where({ REQUEST_ID: sRequestId });
 
+            } catch (error) {
+                req.error(500, `Failed searching for request header: ${sRequestId}, ${error.message}`);
+            }
+
+            if (!oRequestRecord) return;
             if (!sRequestId) return;
 
             cds.spawn({ user: req.user }, async (tx) => {
-                try {
+                switch (oRequestRecord.CLAIM_TYPE_ID) {
+                    case Constant.ClaimType.HANDPHONE:
+                        try {
+                            var result;
+                            const aReqItem = await tx.run(
+                                SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({
+                                    REQUEST_ID: sRequestId
+                                })
+                            );
 
-                    const oCashAdvanceItem = await tx.run(
-                        SELECT.one.from('ZREQUEST_ITEM').where({
-                            REQUEST_ID: sRequestId,
-                            CASH_ADVANCE: true
-                        })
-                    );
+                            const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
+                            const aParticipantData = await tx.run(
+                                SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
+                                    REQUEST_ID: sRequestId,
+                                    REQUEST_SUB_ID: { in: aReqSubId }
+                                })
+                            );
+                            for (let i = 0; i < aParticipantData.length; i++) {
+                                var aPartReqItem = aReqItem.filter(function (item) {
+                                    return item.REQUEST_SUB_ID === aParticipantData[i].REQUEST_SUB_ID;
+                                });
+                                result = await tx.run(
+                                    INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
+                                        EMP_ID: aParticipantData[i].PARTICIPANTS_ID,
+                                        CLAIM_TYPE_ID: aPartReqItem[0].CLAIM_TYPE_ID,
+                                        START_DATE: aPartReqItem[0].START_DATE,
+                                        END_DATE: aPartReqItem[0].END_DATE,
+                                        ELIGIBLE_AMOUNT: aParticipantData[i].ALLOCATED_AMOUNT
+                                    })
+                                );
+                            };
 
-                    if (!oCashAdvanceItem) return;
+                        } catch (error) {
+                            req.error(400, `Failed inserting records for Exception List Table: ${error.message}`);
+                        }
+                        break;
 
-                    const oRequestRecord = await tx.run(
-                        SELECT.one.from('ZREQUEST_HEADER').where({ REQUEST_ID: sRequestId })
-                    );
+                    default:
+                        try {
+                            const oCashAdvanceItem = await tx.run(
+                                SELECT.one.from('ZREQUEST_ITEM').where({
+                                    REQUEST_ID: sRequestId,
+                                    CASH_ADVANCE: true
+                                })
+                            );
 
-                    if (!oRequestRecord) return;
+                            if (!oCashAdvanceItem) return;
 
-                    const sEmpId = oRequestRecord.EMP_ID;
-                    const sTripStartDate = oRequestRecord.TRIP_START_DATE;
+                            const sEmpId = oRequestRecord.EMP_ID;
+                            const sTripStartDate = oRequestRecord.TRIP_START_DATE;
 
-                    const oExistingCashAdvRecords = await tx.run(
-                        SELECT.one.from('ZEMP_CA_PAYMENT').where({
-                            REQUEST_ID: sRequestId,
-                            EMP_ID: sEmpId
-                        })
-                    );
+                            const oExistingCashAdvRecords = await tx.run(
+                                SELECT.one.from('ZEMP_CA_PAYMENT').where({
+                                    REQUEST_ID: sRequestId,
+                                    EMP_ID: sEmpId
+                                })
+                            );
 
-                    if (oExistingCashAdvRecords) return;
+                            if (oExistingCashAdvRecords) return;
 
-                    let dDate = new Date(sTripStartDate);
-                    dDate.setDate(dDate.getDate() - 14);
-                    const sDisbursementDate = dDate.toISOString().split('T')[0];
+                            let dDate = new Date(sTripStartDate);
+                            dDate.setDate(dDate.getDate() - 14);
+                            const sDisbursementDate = dDate.toISOString().split('T')[0];
 
-                    await tx.run(
-                        INSERT.into('ZEMP_CA_PAYMENT').entries({
-                            REQUEST_ID: sRequestId,
-                            EMP_ID: sEmpId,
-                            DISBURSEMENT_DATE: sDisbursementDate,
-                            DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
-                        })
-                    );
+                            await tx.run(
+                                INSERT.into('ZEMP_CA_PAYMENT').entries({
+                                    REQUEST_ID: sRequestId,
+                                    EMP_ID: sEmpId,
+                                    DISBURSEMENT_DATE: sDisbursementDate,
+                                    DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
+                                })
+                            );
 
-                } catch (error) {
-                    req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                        } catch (error) {
+                            req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                        }
+                        break;
                 }
             });
         }
@@ -1265,16 +1306,16 @@ module.exports = (srv) => {
     };
 
     /**
-     * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
+     * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
-     * @return {Object} epengakutData - return eligible amount retrieved from table as well as user marriage category
+     * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getUserEligibleAmountEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 
         try {
-            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'MARITAL', 'EMPLOYEE_TYPE').where({ EMAIL: sEmail });
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'MARITAL').where({ EMAIL: sEmail });
             if (!oEmpData) {
                 return req.error(404, `No employee data found.`);
             }
@@ -1285,9 +1326,14 @@ module.exports = (srv) => {
             }
 
             const sTodayDate = new Date().toISOString().slice(0, 10);
-            const aMaritalStatusValues = [oEmpData.MARITAL, Constant.Wildcard.All];
-            const aEmployeeTypeValues = [oEmpData.EMPLOYEE_TYPE, Constant.Wildcard.All];
-            const aMarriageCategoryValues = [sMarriageCategory, Constant.Wildcard.All];
+            var aMaritalStatusValues = [Constant.Wildcard.All];
+            if (!!oEmpData.MARITAL) {
+                aMaritalStatusValues.push(oEmpData.MARITAL);
+            }
+            var aMarriageCategoryValues = [Constant.Wildcard.All];
+            if (!!sMarriageCategory) {
+                aMarriageCategoryValues.push(sMarriageCategory);
+            }
 
             const oEligibilityRule = await SELECT.one
                 .from(Constant.Entities.ZELIGIBILITY_RULE)
@@ -1302,23 +1348,18 @@ module.exports = (srv) => {
                     END_DATE: { '>=': sTodayDate },
                     // values to filter
                     MARITAL_STATUS: { 'in': aMaritalStatusValues },
-                    EMPLOYEE_TYPE: { 'in': aEmployeeTypeValues },
                     MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
                  })
                 .orderBy([
                     { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.EMPLOYEE_TYPE], sort: 'desc' }
+                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
                 ]);
 
             if (!oEligibilityRule) {
                 return req.error(404, `Eligible amount not found for given employee.`);
             }
 
-            return {
-                eligible_amount: oEligibilityRule.ELIGIBLE_AMOUNT,
-                marriage_category: sMarriageCategory
-            }
+            return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
             return req.error(500, 'An error occurred while checking Eligibility Rule table.');
@@ -1328,9 +1369,9 @@ module.exports = (srv) => {
     /**
      * Check if user has already approved claim with elaun pengangkutan claim item
      * @public
-     * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+     * @return {String} - return claim status if approved claim already exists with elaun pengangkutan claim item
      */
-    srv.on('checkUserExistingClaimEPengakut', async (req) => {
+    srv.on('getUserClaimStatusEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 
@@ -1352,6 +1393,7 @@ module.exports = (srv) => {
                     "ZCLAIM_HEADER.STATUS_ID": [Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED]
                 })
                 .orderBy([
+                    "ZCLAIM_HEADER.STATUS_ID",
                     Constant.EntitiesFields.CLAIMID,
                     Constant.EntitiesFields.CLAIM_SUB_ID
                 ]);
@@ -1360,7 +1402,7 @@ module.exports = (srv) => {
                 return req.error(404, `Unable to retrieve previous claims.`);
             }
 
-            return (aClaimSubmissions.length > 0) ? true : false;
+            return (aClaimSubmissions.length > 0) ? aClaimSubmissions[0].ZCLAIM_HEADER.STATUS_ID : null;
 
         } catch (error) {
             return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
@@ -1402,7 +1444,7 @@ module.exports = (srv) => {
     * @param {String} requestId - Pre-Approval Request ID
     * @returns {Boolean} PreApprovalUsageCheck - isUsed
     */
-    srv.on('checkPreApprovalUsage', async(req) => {
+    srv.on('checkPreApprovalUsage', async (req) => {
         const { ZCLAIM_HEADER } = srv.entities;
         const tx = cds.tx(req);
 
@@ -1458,7 +1500,7 @@ module.exports = (srv) => {
         }
 
         try {
-            const oEmployee = await SELECT.one.from('ZEMP_MASTER').where({EEID: sEmpId});
+            const oEmployee = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sEmpId });
             if (!oEmployee || !oEmployee.GRADE) {
                 return req.error(404, `Employee record or Personal Grade not found for ID: ${sEmpId}`);
             }
@@ -1472,7 +1514,7 @@ module.exports = (srv) => {
             });
 
             if (oRule && oRule.ELIGIBLE_AMOUNT !== undefined) {
-                return oRule.ELIGIBLE_AMOUNT; 
+                return oRule.ELIGIBLE_AMOUNT;
             } else {
                 return req.error(404, `No eligibility rule configured for Grade ${sPersonalGrade} on this claim item.`);
             }
