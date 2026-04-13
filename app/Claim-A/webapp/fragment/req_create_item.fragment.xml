@@ -65,7 +65,7 @@
                                             forceSelection="false"
                                             change=".getFieldVisibility_ClaimTypeItem"
                                             items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}"
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_DESC', descending: false }}"
                                             enabled="{= ${request>/view} !== 'view' }" >
                                             <items>
                                                 <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
