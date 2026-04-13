@@ -3605,6 +3605,10 @@ sap.ui.define([
 					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
 				}
 
+				// reset item model after use
+				var oInputModel = this.getView().getModel("claimitem_input");
+				oInputModel?.setData({});
+
 				oPage.removeContent(oClaimItemFragment);
 
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
@@ -3649,8 +3653,6 @@ sap.ui.define([
 				}
 
 				// run validator before proceeding 
-				var oItemModel = this.getView().getModel("claimitem_input");
-				oItemModel?.setData({});
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
 				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 				if (!bCanProceed) {
