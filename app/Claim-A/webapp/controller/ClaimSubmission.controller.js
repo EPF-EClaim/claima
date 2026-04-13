@@ -4475,6 +4475,7 @@ sap.ui.define([
 		_filterFareType: function () {
 			var oSelect = this.byId("select_claimdetails_input_fare_type_id");
 			var oBinding = oSelect.getBinding("items");
+			if (!oBinding) return;
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
