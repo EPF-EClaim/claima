@@ -2044,7 +2044,13 @@ sap.ui.define([
 				return;
 			}
 
-			this._resetReqItemInputs();
+			// reset model only when creating new item, 
+			// edit will not reset model at first but will change to create mode after that to cater claim type item change
+			if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+				this._resetReqItemInputs();
+			} else if (this._oReqModel.getProperty("/view") === Constants.PARMode.EDIT) {
+				this._oReqModel.setProperty("/view", Constants.PARMode.CREATE)
+			}
 
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
