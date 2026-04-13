@@ -2677,7 +2677,7 @@ sap.ui.define([
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
 			//this is needed for the eligibility check for the flight class of the employee
 			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
-			if(oInputModel.getProperty("/claim_item/departure_time") && oInputModel.getProperty("/claim_item/arrival_time")){
+			if(!!oInputModel.getProperty("/claim_item/departure_time") && !!oInputModel.getProperty("/claim_item/arrival_time")){
 				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
 				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
 				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
