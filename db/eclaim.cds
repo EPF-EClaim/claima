@@ -993,17 +993,14 @@ entity ZBRANCH : managed {
         END_DATE     : Date        @Common.Label: 'End Date';
         STATUS       : String(10)  @Common.Label: 'Status';
 }
-
 entity ZEMP_CA_PAYMENT : managed {
     key REQUEST_ID           : String    @mandatory  @Common.Label: 'Pre Approval Request ID';
     key EMP_ID               : String    @mandatory  @Common.Label: 'Employee ID';
     key DISBURSEMENT_DATE    : Date      @mandatory  @Common.Label: 'Disbursement Date';
         DISBURSEMENT_STATUS  : String(2) @Common.Label: 'Disbursement Status ';
         ZDISBURSEMENT_STATUS : Association to ZDISBURSEMENT_STATUS
-                                   on ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_ID = DISBURSEMENT_STATUS
+                                   on ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_ID = DISBURSEMENT_STATUS;
 }
-
-
 entity ZPERDIEM_ENT : managed {
     key PERSONAL_GRADE     : String        @mandatory  @Common.Label: 'Personal Grade From';
     key LOCATION           : String(2)     @mandatory  @Common.Label: 'Location';
