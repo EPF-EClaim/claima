@@ -538,7 +538,7 @@ sap.ui.define([
 			if (oClaimType) {
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
-				//// get cost center from claim type if value exists
+				// get cost center from claim type
 				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 
