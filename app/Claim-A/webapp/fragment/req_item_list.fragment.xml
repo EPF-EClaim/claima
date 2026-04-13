@@ -35,7 +35,7 @@
                     id="req_item_table"
                     rows="{request>/req_item_rows}"
                     columnHeaderHeight="3rem"
-                    selectionMode="MultiToggle"
+                    selectionMode="{= ${request>/view} !== 'list' ? 'None' : 'MultiToggle' }"
                     ariaLabelledBy="title"
                     width="auto"
                     rowActionCount="2">
