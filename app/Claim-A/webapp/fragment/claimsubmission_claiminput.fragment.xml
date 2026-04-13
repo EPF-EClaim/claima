@@ -150,6 +150,46 @@
                         displayFormat="dd-MMM-yyyy"
                         />
 
+                     <!-- Loan Scheme -->
+                    <Label text="{i18n>label_claiminput_loan_scheme}" />
+                    <Select
+                        id="select_claiminput_loan_scheme"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claim_header/housing_loan_scheme}"
+                        items="{
+                            path: 'employee>/ZHOUSING_LOAN_SCHEME',
+                            sorter: [
+                                { path: 'HOUSING_LOAN_SCHEME_ID' },
+                                { path: 'HOUSING_LOAN_SCHEME_DESC' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        change="onSelect_ClaimHeader"
+                        liveChange="onSelect_ClaimHeader"
+                    >
+                        <core:Item key="{employee>HOUSING_LOAN_SCHEME_ID}" text="{employee>HOUSING_LOAN_SCHEME_DESC}" />
+                    </Select>
+
+                     <!-- Lender Name -->
+                    <Label text="{i18n>label_claiminput_lender_name}" />
+                    <Select
+                        id="select_claiminput_lender_name"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claim_header/lender_name}"
+                        items="{
+                            path: 'employee>/ZLENDER_NAME',
+                            sorter: [
+                                { path: 'LENDER_ID' },
+                                { path: 'LENDER_NAME' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        change="onSelect_ClaimHeader"
+                        liveChange="onSelect_ClaimHeader"
+                    >
+                        <core:Item key="{employee>LENDER_ID}" text="{employee>LENDER_NAME}" />
+                    </Select>
+
                     <!-- Move-In Date -->
                     <Label text="{i18n>label_claiminput_move_in_date}" />
                     <DatePicker

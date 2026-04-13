@@ -1,73 +1,73 @@
 sap.ui.define([
-	"sap/ui/core/mvc/Controller",
-	"sap/ui/core/library",
-	"sap/ui/core/Fragment",
-	"sap/ui/core/BusyIndicator",
-	"sap/ui/core/routing/History",
-	"sap/ui/model/json/JSONModel",
-	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-	"sap/ui/export/Spreadsheet",
-	"sap/ui/mdc/enums/FieldEditMode",
-	"sap/m/library",
-	"sap/m/MessageToast",
-	"sap/m/Dialog",
-	"sap/m/Button",
-	"sap/m/Label",
-	"sap/m/MessageBox",
-	"claima/utils/PARequestSharedFunction",
-	"claima/utils/budgetCheck",
-	"claima/utils/ApprovalLog",
-	"claima/utils/ApproveDialog",
-	"claima/utils/RejectDialog",
-	"claima/utils/SendBackDialog",
-	'claima/utils/Utility',
+    "sap/m/Button",
+    "sap/m/Dialog",
+    "sap/m/Label",
+    "sap/m/library",
+    "sap/m/MessageBox",
+    "sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
+    "sap/ui/core/library",
+    "sap/ui/core/mvc/Controller",
+    "sap/ui/core/routing/History",
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/mdc/enums/FieldEditMode",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/model/Sorter",
+    "claima/utils/ApprovalLog",
+    "claima/utils/ApproveDialog",
 	"claima/utils/ClaimUtility",
-	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
-	"claima/utils/Attachment",
-	"claima/utils/EligibilityCheck",
-	"claima/utils/DateUtility",
-	"claima/utils/Constants",
-	"claima/utils/RequestUtility",
-	"claima/utils/CustomValidator"
+    "claima/utils/ApproverUtility",
+    "claima/utils/Attachment",
+    "claima/utils/budgetCheck",
+    "claima/utils/Constants",
+    "claima/utils/CustomValidator",
+    "claima/utils/DateUtility",
+    "claima/utils/EligibilityCheck",
+    "claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+    "claima/utils/PARequestSharedFunction",
+    "claima/utils/RejectDialog",
+    "claima/utils/RequestUtility",
+    "claima/utils/SendBackDialog",
+    "claima/utils/Utility",
+    "claima/utils/workflowApproval",
 ], function (
-	Controller,
-	coreLibrary,
-	Fragment,
-	BusyIndicator,
-	History,
-	JSONModel,
-	Filter,
-	FilterOperator,
-	Sorter,
-	Spreadsheet,
-	FieldEditMode,
-	mLibrary,
-	MessageToast,
-	Dialog,
-	Button,
-	Label,
-	MessageBox,
-	PARequestSharedFunction,
-	budgetCheck,
-	ApprovalLog,
-	ApproveDialog,
-	RejectDialog,
-	SendBackDialog,
-	Utility,
+    Button,
+    Dialog,
+    Label,
+    mLibrary,
+    MessageBox,
+    MessageToast,
+    BusyIndicator,
+    Fragment,
+    coreLibrary,
+    Controller,
+    History,
+    Spreadsheet,
+    FieldEditMode,
+    Filter,
+    FilterOperator,
+    JSONModel,
+    Sorter,
+    ApprovalLog,
+    ApproveDialog,
 	ClaimUtility,
-	ApproverUtility,
-	workflowApproval,
-	EligibleScenarioCheck,
-	Attachment,
-	EligibilityCheck,
-	DateUtility,
-	Constants,
-	RequestUtility,
-	CustomValidator
+    ApproverUtility,
+    Attachment,
+    budgetCheck,
+    Constants,
+    CustomValidator,
+    DateUtility,
+    EligibilityCheck,
+    EligibleScenarioCheck,
+    PARequestSharedFunction,
+    RejectDialog,
+    RequestUtility,
+    SendBackDialog,
+    Utility,
+    workflowApproval,
 ) {
 	"use strict";
 
@@ -595,12 +595,17 @@ sap.ui.define([
 			const aIndividual = ['IND', 'Individual'];
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
-			oReqData.req_item = {
+			oReqData.req_item = {               
 				est_amount: 0,
 				kilometer: 0,
 				rate_per_kilometer: 0,
-				toll_amt: 0,
-				cash_advance: false
+				cash_advance: false,
+				entitled_breakfast: 0,
+				entitled_lunch: 0,
+				entitled_dinner: 0,
+				daily_allowance: 0,
+				travel_day: 0,
+				travel_hour: 0
 			};
 
 			// if group type is Individual
@@ -704,12 +709,25 @@ sap.ui.define([
 				arrival_time			: oReqItem.ARRIVAL_TIME || "",
 				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
 				cash_advance			: oReqItem.CASH_ADVANCE || false,
+				trip_start_date			: oReqItem.TRIP_START_DATE || null,
+				trip_end_date			: oReqItem.TRIP_END_DATE || null,
+				trip_start_time			: oReqItem.TRIP_START_TIME || null,
+				trip_end_time			: oReqItem.TRIP_END_TIME || null,
+				travel_day				: oReqItem.TRAVEL_DURATION_DAY || 0,
+				travel_hour				: oReqItem.TRAVEL_DURATION_HOUR || 0,
+				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
+				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
+				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
+				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
+				currency_code		    : oReqItem.CURRENCY_CODE || null,
+				currency_rate			: oReqItem.CURRENCY_RATE || 0,
+				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				// extra hidden field value
 				cost_center				: oReqItem.COST_CENTER || "",
 				gl_account				: oReqItem.GL_ACCOUNT || "",
 				material_code			: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,			
+				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1179,8 +1197,8 @@ sap.ui.define([
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
-					var departure_date 	= new Date(oReqItem.departure_time).toISOString() || null;
-					var arrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
+					var dtDeparture_date 	= new Date(oReqItem.departure_time).toISOString() || null;
+					var dtArrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
 				}
 
 				let oPayload = {
@@ -1222,8 +1240,8 @@ sap.ui.define([
 					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
 					START_TIME:                   oReqItem.start_time || null, 
 					END_TIME:                     oReqItem.end_time || null,
-					DEPARTURE_TIME:               departure_date || null,
-					ARRIVAL_TIME:                 arrival_date || null,
+					DEPARTURE_TIME:               dtDeparture_date || null,
+					ARRIVAL_TIME:                 dtArrival_date || null,
 					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
 					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
@@ -1234,7 +1252,20 @@ sap.ui.define([
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
 					DECLARE_CLUB_MEMBERSHIP:      !!oReqItem.club_membership,
-					CASH_ADVANCE:                 !!oReqItem.cash_advance
+					CASH_ADVANCE:                 !!oReqItem.cash_advance,
+					TRAVEL_DURATION_DAY:          parseFloat(oReqItem.travel_day || 0), 
+                    TRAVEL_DURATION_HOUR:         parseFloat(oReqItem.travel_hour || 0),
+                    TRIP_START_DATE:              oReqItem.trip_start_date || null,
+                    TRIP_END_DATE:                oReqItem.trip_end_date || null,
+                    TRIP_START_TIME:              oReqItem.trip_start_time || null,
+                    TRIP_END_TIME:                oReqItem.trip_end_time || null,
+                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
+                    ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
+                    ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
+                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
+					CURRENCY_CODE:				  oReqItem.currency_code || null,
+					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || 0),
+					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -1491,6 +1522,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
 				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
+				
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -2139,6 +2171,14 @@ sap.ui.define([
 				return;
 			}
 
+			// reset model only when creating new item, 
+			// edit will not reset model at first but will change to create mode after that to cater claim type item change
+			if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+				this._resetReqItemInputs();
+			} else if (this._oReqModel.getProperty("/view") === Constants.PARMode.EDIT) {
+				this._oReqModel.setProperty("/view", Constants.PARMode.CREATE)
+			}
+
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
 				oLocationTypeSelect.setForceSelection(false);
@@ -2182,7 +2222,19 @@ sap.ui.define([
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
+
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+					this._onFilterRegion();
+
+					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.LODGING_L:
+						case Constants.ClaimTypeItem.LODG_O:
+							RequestUtility.populateAllocatedAmount();
+							break;
+					
+						default:
+							break;
+					}
 				}
 
 			} catch (err) {
@@ -2230,7 +2282,20 @@ sap.ui.define([
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",
-				"i_lodging_cat"
+				"i_lodging_cat",
+				"i_trip_start_date",
+				"i_trip_end_date",
+				"i_trip_start_time", 
+				"i_trip_end_time", 
+				"i_travel_day", 
+				"i_travel_hour", 
+				"i_breakfast", 
+				"i_lunch", 
+				"i_dinner", 
+				"i_daily_allowance",
+				"i_currency_code",
+				"i_currency_rate",
+				"i_type_of_prof_body"
 			];
 
 			aControlIds.forEach(id => {
@@ -2541,8 +2606,8 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_state");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
+                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
                             ]: [];
 			oBinding.filter(aFilters);
 		},
@@ -2557,15 +2622,78 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_location_office");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
-                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
+                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
+                                new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
                             ]: [];
 			oBinding.filter(aFilters);
 		},
 
 		onSelectToOffice: function () {
 			RequestUtility.determineOfficeMileage();
-		}
+		},
+
+		/**
+         * Dynamic Filter for Semenanjung/Sabah/Sarawak Dropdown selection 
+		 * Check if the claim type item end with L or O to determine the filter for local or oversea
+         * @private
+         */
+		_onFilterRegion: function () {
+			const oSelect = this.byId("item_select_sss");
+			
+			if (!oSelect || !oSelect.getBinding("items")) {
+				return;
+			}
+
+			const oBinding = oSelect.getBinding("items");
+			
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id") || "";
+
+			let aFilters = [];
+
+			if (sClaimTypeItem.endsWith("_L")) {
+				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.NE, Constants.Region.OVERSEA));
+
+			} else if (sClaimTypeItem.endsWith("_O")) {
+				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.EQ, Constants.Region.OVERSEA));
+			}
+
+			oBinding.filter(aFilters);
+		},
+
+		/**
+         * Reset the Request Item Input when changing to new claim type item
+         */
+        _resetReqItemInputs: function () {
+            const oReqItem = this._oReqModel.getProperty("/req_item");
+
+            const aExcludedFields = [
+                Constants.ExcludeField.CLAIM_TYPE_ID,
+                Constants.ExcludeField.CLAIM_TYPE_ITEM_ID, 
+                Constants.ExcludeField.REQUEST_SUB_ID 
+            ];
+
+            Object.keys(oReqItem).forEach((sKey) => {
+                if (aExcludedFields.includes(sKey)) {
+                    return;
+                }
+
+                const vCurrentValue = oReqItem[sKey];
+                
+                if (sKey === "est_amount" || typeof vCurrentValue === "number") {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
+                } else if (typeof vCurrentValue === "boolean") {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, false);
+                } else {
+                    this._oReqModel.setProperty(`/req_item/${sKey}`, null);
+                }
+            });
+
+            let aParticipants = this._oReqModel.getProperty("/participant") || [];
+            aParticipants.forEach((row, index) => {
+                this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
+            });
+        },
+
 	});
 });

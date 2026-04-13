@@ -358,6 +358,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         amount : Decimal(15, 2);
         daily_allowance: Decimal(15,2);
         currency_code: String;
+        tips_amount: Decimal;
     }
 
     function getAmountEntitlement(employeeid: String,
@@ -369,6 +370,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   breakfast: Integer, 
                                   lunch: Integer, 
                                   dinner: Integer,
+                                  tips: Boolean,
                                   dependent: Integer) returns perdiem;
 
     function getMeterCubeEntitlement(
@@ -389,6 +391,19 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
+    
+    function _getMarriageCategory(
+        sEmpId: String,
+    ) returns String;
+
+    type epengakutData {
+        eligible_amount: Decimal(16, 2);
+        marriage_category: String;
+    }
+    
+    function getUserEligibleAmountEPengakut() returns epengakutData;
+    
+    function checkUserExistingClaimEPengakut() returns Boolean;
     
     type reminders {
         empName     : String;
@@ -422,4 +437,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
         PARTICIPANTS_ID: String;
     }
     action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
+
+    function getLodgingAmount(
+        sClaimTypeId: String,
+        sClaimTypeItemId: String,
+        sEmpId: String
+    ) returns Decimal(15, 2);
+
 };
