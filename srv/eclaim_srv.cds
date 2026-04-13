@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv @(requires: 'authenticated-user'){
+service eclaim_srv @(requires: 'authenticated-user') {
     type Response {
         message : String;
     };
@@ -92,10 +92,9 @@ service eclaim_srv @(requires: 'authenticated-user'){
                 STATUS,
                 COST_CENTER,
                 ZCOST_CENTER.COST_CENTER_DESC as COST_CENTER_DESC,
-                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
+                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM  as Items
         };
-
-    entity ZREQUEST_ITEM                 as
+     entity ZREQUEST_ITEM                 as
         projection on ECLAIM.ZREQUEST_ITEM {
             @Core.Computed REQUEST_SUB_ID,
             *
@@ -337,112 +336,99 @@ service eclaim_srv @(requires: 'authenticated-user'){
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
+    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
 
-    type EligibilityPayload{
-        CheckFields: many EligibilityCheckFields;
-        ClaimType: String;
-        ClaimTypeItem: String;
-        EmpId: String;
-        RecordId: String;
-        RecordSubId: String;
+    type EligibilityPayload {
+        CheckFields   : many EligibilityCheckFields;
+        ClaimType     : String;
+        ClaimTypeItem : String;
+        EmpId         : String;
+        RecordId      : String;
+        RecordSubId   : String;
     }
 
-    type EligibilityCheckFields{
-        fieldName: String;
-        value: LargeString @Core.MediaType: 'application/json';
-        result: LargeString @Core.MediaType: 'application/json';
+    type EligibilityCheckFields {
+        fieldName : String;
+        value     : LargeString @Core.MediaType: 'application/json';
+        result    : LargeString @Core.MediaType: 'application/json';
     }
 
-    action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
+    action   EligibilityCheck(aPayload: many EligibilityPayload)                               returns many Response;
+
     type perdiem {
-        amount : Decimal(15, 2);
-        daily_allowance: Decimal(15,2);
-        currency_code: String;
-        tips_amount: Decimal;
+        amount          : Decimal(15, 2);
+        daily_allowance : Decimal(15, 2);
+        currency_code   : String;
+        tips_amount     : Decimal;
     }
 
     function getAmountEntitlement(employeeid: String,
-                                  day:Integer, 
-                                  hours: Decimal(5, 1), 
-                                  location: String, 
-                                  claimtypeid: String, 
+                                  day: Integer,
+                                  hours: Decimal(5, 1),
+                                  location: String,
+                                  claimtypeid: String,
                                   claimtypeitem: String,
-                                  breakfast: Integer, 
-                                  lunch: Integer, 
+                                  breakfast: Integer,
+                                  lunch: Integer,
                                   dinner: Integer,
                                   tips: Boolean,
-                                  dependent: Integer) returns perdiem;
+                                  dependent: Integer)                                          returns perdiem;
 
-    function getMeterCubeEntitlement(
-        empId : String
-    ) returns Decimal(15,2);
+    function getMeterCubeEntitlement(empId: String)                                            returns Decimal(15, 2);
 
     type meterCubeAmount {
-    entitled : Decimal(15, 2);
-    amount   : Decimal(15, 2);
+        entitled : Decimal(15, 2);
+        amount   : Decimal(15, 2);
     }
 
-    function calculatePengangkutanLautAmount(
-        empId           : String,
-        actualMeterCube : Decimal(15, 2),
-        actualAmount    : Decimal(15, 2)
-    ) returns meterCubeAmount;
-                                
-    entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
+    function calculatePengangkutanLautAmount(empId: String,
+                                             actualMeterCube: Decimal(15, 2),
+                                             actualAmount: Decimal(15, 2))                     returns meterCubeAmount;
 
-    function checkDefaultCostCenter(sClaimTypeId: String) returns String;
-    
-    function _getMarriageCategory(
-        sEmpId: String,
-    ) returns String;
+    entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
-    type epengakutData {
-        eligible_amount: Decimal(16, 2);
-        marriage_category: String;
-    }
+    function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
+
+    function _getMarriageCategory(sEmpId: String, )                                            returns String;
+
+    function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
     
-    function getUserEligibleAmountEPengakut() returns epengakutData;
-    
-    function checkUserExistingClaimEPengakut() returns Boolean;
+    function getUserClaimStatusEPengakut() returns String;
     
     type reminders {
         empName     : String;
-        empEmail    : String; 
+        empEmail    : String;
         ccEmail     : String;
         tripEndDate : String;
-        scenario    : String; 
+        scenario    : String;
         milestone   : String;
     }
-    
-    function getEmailReminder() returns array of reminders;
 
-    function getOfficeDistance(
-        sFromState: String,
-        sFromOffice: String,
-        sToState: String,
-        sToOffice: String,
-    ) returns String;
+    function getEmailReminder()                                                                returns array of reminders;
 
-    action CheckUserClaimTypes(ID: String) returns many Response;
+    function getOfficeDistance(sFromState: String,
+                               sFromOffice: String,
+                               sToState: String,
+                               sToOffice: String, )                                            returns String;
+
+    action   CheckUserClaimTypes(ID: String)                                                   returns many Response;
 
     type PreApprovalUsageCheck {
-        isUsed: Boolean
+        isUsed : Boolean
     }
 
-    function checkPreApprovalUsage(requestID: String) returns PreApprovalUsageCheck;
+    function checkPreApprovalUsage(requestID: String)                                          returns PreApprovalUsageCheck;
 
     type ParticipantKey {
-        REQUEST_ID: String;
-        REQUEST_SUB_ID: String;
-        PARTICIPANTS_ID: String;
+        REQUEST_ID      : String;
+        REQUEST_SUB_ID  : String;
+        PARTICIPANTS_ID : String;
     }
-    action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
 
-    function getLodgingAmount(
-        sClaimTypeId: String,
-        sClaimTypeItemId: String,
-        sEmpId: String
-    ) returns Decimal(15, 2);
+    action   deleteParticipants(participants: array of ParticipantKey)                         returns Boolean;
+
+    function getLodgingAmount(sClaimTypeId: String,
+                              sClaimTypeItemId: String,
+                              sEmpId: String)                                                  returns Decimal(15, 2);
 
 };
