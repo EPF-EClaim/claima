@@ -2365,9 +2365,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{is_required: false},
-				bill_no:{is_required: false},
-				account_no:{is_required: false}
+				to_state_id:{ is_required: false },
+				bill_no:{ is_required: false },
+				account_no:{ is_required: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2669,23 +2669,22 @@ sap.ui.define([
 				return;
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
+			}
+			//if departure time and arrival time exist, it will do a calculation for the flight duration
+			//this is needed for the eligibility check for the flight class of the employee
+			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
 			if(oInputModel.getProperty("/claim_item/departure_time") && oInputModel.getProperty("/claim_item/arrival_time")){
 				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
 				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
 				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
-
-				if (iDiffMs < 0) {
-					MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
-					return;
-				}
-
 				const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
 
-				// 7. Save it back to the JSON model
 				oInputModel.setProperty("/claim_item/no_of_hours", fHours);
 			}
-
-			
 
 			// Reuben (FUT Issue 17)
 			// When creating claim for post education assistance, actual amount is used instead of amount for input
