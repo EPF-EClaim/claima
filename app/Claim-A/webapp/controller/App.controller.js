@@ -539,13 +539,8 @@ sap.ui.define([
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
 				//// get cost center from claim type if value exists
-				BusyIndicator.show(0);
-				var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
-				if (!!sClaimTypeCostCenter) { // checks if claim type exists and has value for cost center
-					oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
-					oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-				}
-				BusyIndicator.hide();
+				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
+				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
