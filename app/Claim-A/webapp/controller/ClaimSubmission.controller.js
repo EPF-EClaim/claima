@@ -1463,6 +1463,7 @@ sap.ui.define([
 		onDuplicate_ClaimSummary: async function (oItem) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oInputItemModel = this.getView().getModel("claimitem_input");
 			var tempItems = {
 				claim_items: oInputModel.getProperty("/claim_items"),
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
@@ -1489,12 +1490,7 @@ sap.ui.define([
 				// calculate new total
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-
-				ClaimUtility.calculateMatawangAmount(
-					this.getView().getModel("claimsubmission_input"),
-					this.getView().getModel("claimitem_input"),
-					this._oConstant
-				);
+				ClaimUtility.calculateMatawangAmount();
 				this.getView().getModel("claimsubmission_input").updateBindings(true);
 				this.getView().getModel("claimitem_input").updateBindings(true);
 			}
@@ -1553,18 +1549,9 @@ sap.ui.define([
 			var oInputItem = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
 				// 1. Recalculate Matawang locally
-				ClaimUtility.calculateMatawangAmount(
-					this.getView().getModel("claimsubmission_input"),
-					this.getView().getModel("claimitem_input"),
-					this._oConstant
-				);
+				ClaimUtility.calculateMatawangAmount();
 				// 2. Save updated Matawang to backend
-				await ClaimUtility.saveUpdatedMatawang(
-					this.getView().getModel("claimsubmission_input"),
-					this.getView().getModel("claimitem_input"),
-					this._saveClaimItem.bind(this),
-					this._oConstant
-				);
+				await ClaimUtility.saveUpdatedMatawang();
 			}
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
@@ -2361,11 +2348,7 @@ sap.ui.define([
 			const oSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//Added for matawang
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
-				ClaimUtility.calculateMatawangAmount(
-					oClaimSubmissionModel,
-					oInputModel,
-					this._oConstant
-				);
+				ClaimUtility.calculateMatawangAmount();
 			}
 		},
 
@@ -2454,11 +2437,7 @@ sap.ui.define([
 
 			//For Matawang
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
-				ClaimUtility.calculateMatawangAmount(
-					oClaimSubmissionModel,
-					oInputModel,
-					this._oConstant
-				);
+				ClaimUtility.calculateMatawangAmount();
 			}
 		},
 
@@ -2816,16 +2795,10 @@ sap.ui.define([
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
 					// 1. Recalculate Matawang locally
 					ClaimUtility.calculateMatawangAmount(
-						oClaimSubmissionModel,
-						oInputModel,
-						this._oConstant
 					);
 					// 2. Save updated Matawang to backend
 					await ClaimUtility.saveUpdatedMatawang(
-						oClaimSubmissionModel,
-						oInputModel,
 						this._saveClaimItem.bind(this),
-						this._oConstant
 					);
 				}
 				// calculate new total amount of claim submission header

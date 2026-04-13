@@ -454,59 +454,70 @@ sap.ui.define([
 			return oContext.execute().then(() => oContext.requestObject());
 		},
 
-				/**
+		/**
 		 * Calculate Matawang 3% fields (UI-only).
 		 *
 		 * @public
-		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
-		 * @param {object} oConstant - Global constant object
 		 */
-		calculateMatawangAmount: function (oSubmissionModel, oInputModel, oConstant) {
-			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
-			let iTotal = 0;
-
-			// Sum all foreign currency required items
-			aClaimItems.forEach(oItem => {
-				if (
-					oItem.claim_type_item_id !== oConstant.ClaimTypeItem.MATAWANG &&
-					oItem.need_foreign_currency === true
-				) {
-					iTotal += Number(oItem.amount || 0);
-				}
-			});
-			const iThreePercent = iTotal * 0.03;
-			const iMatawangIndex = aClaimItems.findIndex(
-				oItem => oItem.claim_type_item_id === oConstant.ClaimTypeItem.MATAWANG
+		calculateMatawangAmount: function () {
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
+			oContext.setParameter(
+				"claimItems",
+				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
 			);
-			if (iMatawangIndex > -1) {
-				// Matawang exists in claim_items list
-				oSubmissionModel.setProperty(`/claim_items/${iMatawangIndex}/percentage_compensation`, oConstant.Percentage.three);
-				oSubmissionModel.setProperty(`/claim_items/${iMatawangIndex}/amount`, iThreePercent);
-			} else {
-				// Matawang is being created
-				const sItemType = oInputModel.getProperty("/claim_item/claim_type_item_id");
-				if (sItemType === oConstant.ClaimTypeItem.MATAWANG) {
-					oInputModel.setProperty("/claim_item/percentage_compensation", oConstant.Percentage.three);
-					oInputModel.setProperty("/claim_item/amount", iThreePercent);
-				}
-			}
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+
+					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+					const iMatawangIndex = aClaimItems.findIndex(
+						oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
+					);
+
+					if (iMatawangIndex > -1) {
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/percentage_compensation`,
+							Constant.Percentage.THREE
+						);
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/amount`,
+							oResult.amount
+						);
+					}
+
+					else if (
+						oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+						Constant.ClaimTypeItem.MATAWANG
+					) {
+						oInputModel.setProperty(
+							"/claim_item/percentage_compensation",
+							Constant.Percentage.THREE
+						);
+						oInputModel.setProperty(
+							"/claim_item/amount",
+							oResult.amount
+						);
+					}
+
+				});
 		},
 		/**
 		 * Save Matawang item after calculation.
 		 *
 		 * @public
-		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
 		 * @param {Function} fnSaveClaimItem - controller save function (callback)
-		 * @param {object} oConstant - constants object
 		 */
-		saveUpdatedMatawang: async function (oSubmissionModel, oInputModel, fnSaveClaimItem, oConstant) {
+		saveUpdatedMatawang: async function (fnSaveClaimItem) {
+
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
 
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
 
 			const iMatawangIndex = aClaimItems.findIndex(
-				oItem => oItem.claim_type_item_id === oConstant.ClaimTypeItem.MATAWANG
+				oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
 			);
 
 			if (iMatawangIndex === -1) { return; }

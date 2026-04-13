@@ -385,6 +385,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                              actualMeterCube: Decimal(15, 2),
                                              actualAmount: Decimal(15, 2))                     returns meterCubeAmount;
 
+    function calculateMatawangAmount(
+    claimItems : LargeString
+)                                                                                              
+returns {
+    amount                  : Decimal(15, 2);
+};
+
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
