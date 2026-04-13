@@ -60,7 +60,8 @@ sap.ui.define([
 	return Controller.extend("claima.controller.App", {
 
 		RequestUtility: RequestUtility,
-
+		DateUtility: DateUtility,
+		
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();

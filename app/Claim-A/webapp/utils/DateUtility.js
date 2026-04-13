@@ -268,7 +268,7 @@ sap.ui.define([
          *
         **/
         determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
-            if (!sId || !sType || !sItemType) return null;
+            if (!sId && !sType && !sItemType) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -395,6 +395,25 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
+                            break;
+
+
+                    }
+                    break;
+                case Constants.EntitiesFields.MOVE_IN_DATE:
+                    switch(_sSubmissionType){
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                        break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            if(sType === Constants.ClaimType.ELAUN_PINDAH){
+                                const dPastDate = new Date(_dMinDate);
+                                dPastDate.setDate(dPastDate.getDate() - 180);
+                                _dMinDate = dPastDate;
+                            }
+
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                            _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             break;
                     }
                     break;
@@ -546,6 +565,21 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.MOVE_IN_DATE:
+                    switch(_sSubmissionType){
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            if(sType === Constants.ClaimType.ELAUN_PINDAH){
+                                _dMaxDate = this.today()
+                            }
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                            _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             break;
                     }
                     break;

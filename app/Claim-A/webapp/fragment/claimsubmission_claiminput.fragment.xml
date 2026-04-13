@@ -189,11 +189,48 @@
                     <Label text="{i18n>label_claiminput_move_in_date}" />
                     <DatePicker
                         id="datepicker_claiminput_move_in_date"
-                        value="{claimsubmission_input>/claim_header/move_in_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/move_in_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                }
+                            }
+                        }"
+                        showCurrentDateButton="true"
+                        displayFormat="yyyy-MM-dd" 
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
-                        displayFormat="dd-MMM-yyyy"
-                    />
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/MOVE_IN_DATE',
+                                'claimsubmission_input>/claim_header/claim_id',
+                                'claimsubmission_input>/claim_header/claim_type_id',
+                                'claimitem_input>/claim_item/claim_type_item_id',
+                                'claimsubmission_input>/claim_header',
+                                'claimitem_input>/claim_item'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                        }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/MOVE_IN_DATE',
+                                'claimsubmission_input>/claim_header/claim_id',
+                                'claimsubmission_input>/claim_header/claim_type_id',
+                                'claimitem_input>/claim_item/claim_type_item_id',
+                                'claimsubmission_input>/claim_header',
+                                'claimitem_input>/claim_item'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
+                    >
+                        <customData>
+                            <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/RECEIPT_DATE/customErrorMessage}" />
+                            <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMinDateError}" />
+                            <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMaxDateError}" />						
+                        </customData>
+                    </DatePicker>
 
                     <!-- Location -->
                     <Label text="{i18n>label_claiminput_location}" />
