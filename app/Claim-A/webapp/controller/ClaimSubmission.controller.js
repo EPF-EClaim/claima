@@ -2365,9 +2365,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{ is_required: false },
-				bill_no:{ is_required: false },
-				account_no:{ is_required: false }
+				to_state_id: { is_required: false },
+				bill_no: { is_required: false },
+				account_no: { is_required: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
