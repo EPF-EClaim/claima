@@ -308,7 +308,8 @@
                         constraints: { minimum: 0.01 }
 					}"
 					required="true"
-					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
@@ -953,6 +954,8 @@
                     id="checkbox_claimdetails_input_needforeigncurrency"
                     visible="false"
                     wrapping="true"
+                    select=".onNeedForeignCurrencySelected"
+                    selected="{claimitem_input>/claim_item/need_foreign_currency}"
                 />
 
                 <!-- Currency Code -->
@@ -960,12 +963,10 @@
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
-                    editMode="Disabled"
                     display="ValueDescription"
                     visible="false"
                     valueHelp="valuehelp_currency_code"
                 />
-
                 <!-- Currency Rate -->
                 <Label text="{i18n>label_claimdetails_input_currencyrate}" />
                 <Input
@@ -981,7 +982,10 @@
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
-                    required="true"
+                    editable="{= 
+                            ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}  || 
+                            !!${claimitem_input>/claim_item/need_foreign_currency}
+                    }"
                 />
 
                 <!-- Currency Amount -->
@@ -998,7 +1002,8 @@
 						}
 					}"
                     visible="false"
-                    editable="false"
+                    change="onChange_ClaimDetails_CurrencyRate"
+                    editable="{= !!${claimitem_input>/claim_item/need_foreign_currency} }"
                 />
 
                 <!-- Trip Start Date -->
@@ -1132,13 +1137,7 @@
                 />
                 <Input
                     id="input_claimdetails_input_entitled_breakfast"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_breakfast}"
 					editable="false"
 					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
@@ -1147,13 +1146,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
                 <Input
                     id="input_claimdetails_input_entitled_lunch"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'Integer', 
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_lunch}"
                     editable="false"
                     visible="false"
                 />
@@ -1162,13 +1155,7 @@
                 <Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
                 <Input
                     id="input_claimdetails_input_entitled_dinner"
-                    value="{
-						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'Integer',
-                        constraints: {
-                            minimum: 0
-                        }
-					}"
+                    value="{claimitem_input>/claim_item/entitled_dinner}"
                     editable="false"
                     visible="false"
                 />
