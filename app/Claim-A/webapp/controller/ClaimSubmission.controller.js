@@ -2281,7 +2281,7 @@ sap.ui.define([
 					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
 					oPropertyModel.setProperty("/amount/is_editable", false);
-					
+
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
@@ -2365,9 +2365,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{is_required: false},
-				bill_no:{is_required: false},
-				account_no:{is_required: false}
+				to_state_id: { is_required: false },
+				bill_no: { is_required: false },
+				account_no: { is_required: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2510,14 +2510,14 @@ sap.ui.define([
 
 		},
 
-		_getDependentFilters: function (){
-			var oInputModel = this.getView().getModel("claimitem_input");("claimitem_input");
+		_getDependentFilters: function () {
+			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
-			var oEmpFilter = new Filter( this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
-			switch(sClaimTypeItem){
+			var oEmpFilter = new Filter(this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			switch (sClaimTypeItem) {
 				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
-					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD);
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
 
 					return new Filter({
 						filters: [
@@ -2532,25 +2532,25 @@ sap.ui.define([
 					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
 					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
 
-					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
-					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
-					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate,0,1).toLocaleDateString("en-CA");
+					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
 
-					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
 
 					var oChildBelow18 = new Filter({
-						filters:[
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.GT, d18YearsFromCurrentDate)
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
 						],
 						and: true
 					})
 
 					var oChildStudying = new Filter({
-						filters:[
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP , FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB , FilterOperator.BT,d25YearsFromCurrentDate, d19YearsFromCurrentDate),
-							new Filter(this._oConstant.EntitiesFields.STUDENT , FilterOperator.EQ, true),
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
 						],
 						and: true
 					})
@@ -2561,7 +2561,7 @@ sap.ui.define([
 							oChildBelow18,
 							oChildStudying
 						],
-						and:false
+						and: false
 					})
 
 					return new Filter({
@@ -2572,15 +2572,15 @@ sap.ui.define([
 						and: true
 					})
 
-					default:
-						return new Filter({
+				default:
+					return new Filter({
 						filters: [
 							oEmpFilter
 						]
 					})
 
 			}
-			
+
 		},
 
 		/**
@@ -2596,50 +2596,45 @@ sap.ui.define([
 		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 
 			var oControl = this.byId(sId);
+			if (!oControl || !oControl.getVisible()) return;
+			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
 
-			if (oControl && oControl.getVisible()) {
-
-				var oClaimItemModel = this.getView().getModel("claimitem_input");
-				var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
-
-				if (!sField) {
-					sField = sTable.slice(1);
-				}
-				if (!sFieldDesc) {
-					sFieldDesc = sField + "_DESC";
-				}
-
-				var sItemText = "{employee>" + sFieldDesc + "}";
-
-				var aFilters = [
-					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				];
-
-				if (sTable === this._oConstant.ViewName.ZREGION) {
-
-					if (Object.values(this._oConstant.ClaimTypeItemOverseas).includes(sClaimTypeItemId)) {
-						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.EQ, this._oConstant.Region.OVERSEA));
-					} else {
-						aFilters.push(new Filter(this._oConstant.EntitiesFields.REGION_ID, FilterOperator.NE, this._oConstant.Region.OVERSEA));
-	
-					}
-				}
-
-				oControl.bindAggregation("items", {
-					path: "employee>/" + sTable,
-					filters: aFilters,
-					sorter: [new Sorter(sField + "_ID")],
-					template: new sap.ui.core.Item({
-						key: "{employee>" + sField + "_ID}",
-						text: sItemText
-					})
-				});
+			if (!sField) {
+				sField = sTable.slice(1);
 			}
+			if (!sFieldDesc) {
+				sFieldDesc = sField + "_DESC";
+			}
+			var sItemText = "{employee>" + sFieldDesc + "}";
+
+			var aFilters = [
+				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+			];
+			if (sTable === this._oConstant.ViewName.ZREGION) {
+				const isOverseas = Object.values(this._oConstant.ClaimTypeItemOverseas)
+					.includes(sClaimTypeItemId);
+
+				aFilters.push(
+					new Filter(
+						this._oConstant.EntitiesFields.REGION_ID,
+						isOverseas ? FilterOperator.EQ : FilterOperator.NE,
+						this._oConstant.Region.OVERSEA
+					)
+				);
+			}
+			oControl.bindAggregation("items", {
+				path: "employee>/" + sTable,
+				filters: aFilters,
+				sorter: [new Sorter(sField + "_ID")],
+				template: new Item({
+					key: "{employee>" + sField + "_ID}",
+					text: sItemText
+				})
+			});
 		},
-
-
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
 			switch (oAction) {
@@ -3053,10 +3048,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
 
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT){
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
 				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 			}
-			
+
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -4951,24 +4946,21 @@ sap.ui.define([
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
-
 		},
 		onSelect_ExcludeTips: async function () {
 			await this._calculatePerDiem();
-		}, 
-				/**
+		},
+		/**
 		 * Handles checkbox toggle for Need Foreign Currency. Resets value to null when tick
 		 *
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
-
 		onNeedForeignCurrencySelected: function (oEvent) {
-
-			var bIsSelected 	= oEvent.getParameter("selected");
-			var oCurrencyRate 	= this.byId("input_claimdetails_input_currency_rate");
+			var bIsSelected = oEvent.getParameter("selected");
+			var oCurrencyRate = this.byId("input_claimdetails_input_currency_rate");
 			var oCurrencyAmount = this.byId("input_claimdetails_input_currency_amount");
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
-			
+
 			if (bIsSelected) {
 				this.onChange_ClaimDetails_CurrencyRate();
 			}
@@ -4976,14 +4968,10 @@ sap.ui.define([
 				oClaimItemModel.setProperty("/claim_item/currency_code", null);
 				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
 				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
-				
+
 				oCurrencyRate.setValueState(ValueState.None);
 				oCurrencyAmount.setValueState(ValueState.None);
 			}
 		}
- 
-
-		
-
 	});
 });

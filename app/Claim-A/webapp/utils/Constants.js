@@ -484,6 +484,6 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
-        },        
+        }        
     }
 });
