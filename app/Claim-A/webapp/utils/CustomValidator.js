@@ -108,11 +108,21 @@ sap.ui.define([
                     }
                     
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
-                        // check if previous claim with elaun pengangkutan has already been approved
-                        var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan();
-                        if (bClaimExists) {
-                            MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
-                            bCanProceed = false;
+                        // check if previous claim with elaun pengangkutan has already been approved; if found, return message based on status
+                        var sClaimStatus = await ClaimUtility.fetchUserClaimStatusElaunPengangkutan();
+                        if (!!sClaimStatus) {
+                            switch (sClaimStatus) {
+                                case Constants.ClaimStatus.APPROVED:
+                                    MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
+                                    bCanProceed = false;
+                                    break;
+                                case Constants.ClaimStatus.PENDING_APPROVAL:
+                                    MessageBox.error(Utility.getText("error_msg_epengakut_already_pending"));
+                                    bCanProceed = false;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                     
