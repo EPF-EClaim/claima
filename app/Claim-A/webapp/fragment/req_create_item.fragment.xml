@@ -224,7 +224,7 @@
                                         <unified:FileUploader
                                             change=".onImportChange1"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            required="true" 
+                                            required="true"
                                             maximumFileSize='5.0'
 					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
