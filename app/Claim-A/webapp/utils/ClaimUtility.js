@@ -322,24 +322,6 @@ sap.ui.define([
 
 		},
 
-		determineDefaultCostCenter: async function (sClaimTypeId) {
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-				return oResult.sCostCenter
-
-			} catch (oError) {
-				return null;
-			}
-		},
-
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
 		 * @public
@@ -452,6 +434,23 @@ sap.ui.define([
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
 			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+		/**
+         * Get Fare Type filters based on Claim Type and Claim Item
+         * @public
+         * @param {string} sClaimTypeId
+         * @param {string} sClaimTypeItemId
+         * @returns {sap.ui.model.Filter[]} array of filters
+         */
+        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+            var aFilters = [];                
+            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
+			{
+                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
+            }
+            return aFilters;
 		},
 
 		/**

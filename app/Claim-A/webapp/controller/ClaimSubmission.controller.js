@@ -2260,6 +2260,11 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
+			if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.DLM_NEGARA) {
+				this._filterFareType();
+			}
+
 			//set disclaimer field as false if they are visible for validation
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
@@ -4466,6 +4471,21 @@ sap.ui.define([
 				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
 			];
 			_oBinding.filter(_aFilters);
+		},
+
+		/**
+		 * @private
+		 * Filters the Fare Type dropdown based on Claim Type and Claim Item.
+		 */
+		_filterFareType: function () {
+			var oSelect = this.byId("select_claimdetails_input_fare_type_id");
+			var oBinding = oSelect.getBinding("items");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			var aFareTypeFilters = ClaimUtility.getFareTypeFilters(sClaimTypeId, sClaimTypeItemId);
+			oBinding.filter(aFareTypeFilters);
 		},
 
 		// App Control Visibility

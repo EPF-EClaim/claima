@@ -36,7 +36,10 @@
                             sorter: [
                                 { path: 'CLAIM_TYPE_DESC' },
                                 { path: 'CLAIM_TYPE_ID' }
-                            ]
+                            ],
+                            parameters: {
+                                $select: 'COST_CENTER,COST_CENTER_DESC'
+                            }
                         }"
                         change="onSelect_ClaimProcess_ClaimType"
                         liveChange="onSelect_ClaimProcess_ClaimType"

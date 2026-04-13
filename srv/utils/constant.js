@@ -170,7 +170,8 @@ const Constant = {
         "MANAGED_CREATEDAT": "createdAt",
         "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
-        "DEPENDENT_NO": "DEPENDENT_NO"
+        "DEPENDENT_NO": "DEPENDENT_NO",
+        "REGION_ID": "REGION_ID"
     },
     Wildcard: {
         "All": "*",
