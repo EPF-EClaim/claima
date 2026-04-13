@@ -1261,7 +1261,7 @@ sap.ui.define([
 						"attachment_file_2": null,
 					},
 					"eligible_amount": null,
-					"no_of_hours" : null
+					"no_of_hours": null
 				},
 				"attachments": {
 					"attachment1": {
@@ -1490,13 +1490,13 @@ sap.ui.define([
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 
-					ClaimUtility.calculateMatawangAmount(
-						this.getView().getModel("claimsubmission_input"),
-						this.getView().getModel("claimitem_input"),
-						this._oConstant
-					);
-					this.getView().getModel("claimsubmission_input").updateBindings(true);
-					this.getView().getModel("claimitem_input").updateBindings(true);
+				ClaimUtility.calculateMatawangAmount(
+					this.getView().getModel("claimsubmission_input"),
+					this.getView().getModel("claimitem_input"),
+					this._oConstant
+				);
+				this.getView().getModel("claimsubmission_input").updateBindings(true);
+				this.getView().getModel("claimitem_input").updateBindings(true);
 			}
 			oInputModel.setProperty(addrIndex + "/is_new", true);
 			// refresh table
@@ -1550,6 +1550,22 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
 			}
 
+			var oInputItem = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
+				// 1. Recalculate Matawang locally
+				ClaimUtility.calculateMatawangAmount(
+					this.getView().getModel("claimsubmission_input"),
+					this.getView().getModel("claimitem_input"),
+					this._oConstant
+				);
+				// 2. Save updated Matawang to backend
+				await ClaimUtility.saveUpdatedMatawang(
+					this.getView().getModel("claimsubmission_input"),
+					this.getView().getModel("claimitem_input"),
+					this._saveClaimItem.bind(this),
+					this._oConstant
+				);
+			}
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
@@ -2707,7 +2723,7 @@ sap.ui.define([
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
 			//this is needed for the eligibility check for the flight class of the employee
 			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
-			if(!!oInputModel.getProperty("/claim_item/departure_time") && !!oInputModel.getProperty("/claim_item/arrival_time")){
+			if (!!oInputModel.getProperty("/claim_item/departure_time") && !!oInputModel.getProperty("/claim_item/arrival_time")) {
 				const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
 				const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
 				const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
@@ -2797,8 +2813,6 @@ sap.ui.define([
 						}
 					});
 				}
-
-
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
 					// 1. Recalculate Matawang locally
 					ClaimUtility.calculateMatawangAmount(
@@ -2814,10 +2828,6 @@ sap.ui.define([
 						this._oConstant
 					);
 				}
-
-
-
-
 				// calculate new total amount of claim submission header
 				const nTotal = oClaimSubmissionModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);

@@ -463,7 +463,6 @@ sap.ui.define([
 		 * @param {object} oConstant - Global constant object
 		 */
 		calculateMatawangAmount: function (oSubmissionModel, oInputModel, oConstant) {
-
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
 			let iTotal = 0;
 
