@@ -403,7 +403,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
     
     function getUserEligibleAmountEPengakut() returns epengakutData;
     
-    function checkUserExistingClaimEPengakut() returns Boolean;
+    function checkUserExistingClaimEPengakut() returns String;
     
     type reminders {
         empName     : String;

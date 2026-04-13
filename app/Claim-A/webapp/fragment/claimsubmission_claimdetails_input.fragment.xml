@@ -150,6 +150,28 @@
 				>
 				</Select>
 
+                <!-- Employee Type -->
+                <Label
+                    text="{i18n>label_claimdetails_input_employee_type}" />
+
+                <Input
+                    id="input_claimdetails_input_employee_type"
+                    value="{claimsubmission_input>/emp_master/descr/employee_type}"
+                    editable="false"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/E_PENGAKUT} }"
+                />
+
+                <!-- Marital Status -->
+                <Label
+                    text="{i18n>label_claimdetails_input_marital_status}" />
+
+                <Input
+                    id="input_claimdetails_input_marital_status"
+                    value="{claimsubmission_input>/emp_master/descr/marital}"
+                    editable="false"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/E_PENGAKUT} }"
+                />
+
                 <!-- Marriage Category -->
                 <Label
                     text="{i18n>label_claimdetails_input_marriagecategory}" />

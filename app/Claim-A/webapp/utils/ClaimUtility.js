@@ -376,10 +376,10 @@ sap.ui.define([
 
 		/**
 		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
-		 * @public
-		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+		 * @private
+		 * @return {String} - return status of claim that has been approved/pending approval; if not found, return null
 		 */
-		fetchClaimElaunPengangkutan: async function () {
+		_fetchClaimElaunPengangkutan: async function () {
 			// check if claim exists with claim item elaun pengangkutan for employee
 			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkUserExistingClaimEPengakut(...)");
@@ -387,12 +387,12 @@ sap.ui.define([
 				await oFunction.execute();
 
 				const oContext = oFunction.getBoundContext();
-				const dResult = oContext.getObject("value");
+				const dResult = oContext.getObject("value") || null;
 
 				return dResult;
 
 			} catch (oError) {
-				return true;
+				return null;
 			}
 		},
 

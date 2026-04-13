@@ -1328,7 +1328,7 @@ module.exports = (srv) => {
     /**
      * Check if user has already approved claim with elaun pengangkutan claim item
      * @public
-     * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+     * @return {String} - return claim status if approved claim already exists with elaun pengangkutan claim item
      */
     srv.on('checkUserExistingClaimEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
@@ -1352,6 +1352,7 @@ module.exports = (srv) => {
                     "ZCLAIM_HEADER.STATUS_ID": [Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED]
                 })
                 .orderBy([
+                    "ZCLAIM_HEADER.STATUS_ID",
                     Constant.EntitiesFields.CLAIMID,
                     Constant.EntitiesFields.CLAIM_SUB_ID
                 ]);
@@ -1360,7 +1361,7 @@ module.exports = (srv) => {
                 return req.error(404, `Unable to retrieve previous claims.`);
             }
 
-            return (aClaimSubmissions.length > 0) ? true : false;
+            return (aClaimSubmissions.length > 0) ? aClaimSubmissions[0].ZCLAIM_HEADER.STATUS_ID : null;
 
         } catch (error) {
             return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
