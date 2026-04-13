@@ -322,24 +322,6 @@ sap.ui.define([
 
 		},
 
-		determineDefaultCostCenter: async function (sClaimTypeId) {
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-				return oResult.sCostCenter
-
-			} catch (oError) {
-				return null;
-			}
-		},
-
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
 		 * @public
