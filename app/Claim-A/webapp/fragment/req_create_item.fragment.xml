@@ -63,7 +63,7 @@
                                             selectedKey="{request>/req_item/claim_type_item_id}" 
                                             required="true" 
                                             forceSelection="false"
-                                            change=".getFieldVisibility_ClaimTypeItem"
+                                            change=".initializeClaimTypeItemFields"
                                             items="{path: 'request>/claim_type_items',
                                                     sorter: { path: 'CLAIM_TYPE_ITEM_DESC', descending: false }}"
                                             enabled="{= ${request>/view} !== 'view' }" >

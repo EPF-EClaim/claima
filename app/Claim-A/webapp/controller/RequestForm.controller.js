@@ -612,7 +612,7 @@ sap.ui.define([
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
-			this.getFieldVisibility_ClaimTypeItem(false);
+			this.initializeClaimTypeItemFields(false);
 		},
 
 		async _loadParticipantsForItem(sReqId, sReqSubId) {
@@ -2034,7 +2034,7 @@ sap.ui.define([
 		* Field Visibility Functions 
 		* ======================================================= */
 
-		getFieldVisibility_ClaimTypeItem: async function (bReset = true) {
+		initializeClaimTypeItemFields: async function (bReset = true) {
 			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
 			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
