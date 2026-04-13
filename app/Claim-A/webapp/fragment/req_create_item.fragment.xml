@@ -853,15 +853,21 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Member Cube Eligible -->
+                                <!-- Meter Cube Eligible -->
                                 <form:FormElement label="{i18n>req_i_cube_eligible}"
                                             visible="false"
                                             id="i_cube_eligible"  >
                                     <form:fields>
-                                        <m:Input 
+                                        <Text 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/cube_eligible}"/>
+                                            text="{
+                                                path: 'request>/req_item/cube_eligible',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2
+                                                }
+                                            }"/>
                                     </form:fields>
                                 </form:FormElement>
 

@@ -2100,6 +2100,7 @@ sap.ui.define([
 					this._onFilterRegion();
 
 					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
