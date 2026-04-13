@@ -2246,7 +2246,7 @@ sap.ui.define([
 
 			if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
 				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.DLM_NEGARA) {
-				this.filterFareType();
+				this._filterFareType();
 			}
 
 			//set disclaimer field as false if they are visible for validation
@@ -4430,12 +4430,10 @@ sap.ui.define([
 		},
 
 		/**
-		 * Fare Type dropdown based on the selected Claim Type and Claim Item.
-		 * - When Claim Item is TAMBANG AND
-		 *   Claim Type is KURSUS_DLM_NEGARA or DLM_NEGARA,
-		 *   the FLIGHT fare type must be excluded.
+		 * @private
+		 * Filters the Fare Type dropdown based on Claim Type and Claim Item.
 		 */
-		filterFareType: function () {
+		_filterFareType: function () {
 			var oSelect = this.byId("select_claimdetails_input_fare_type_id");
 			var oBinding = oSelect.getBinding("items");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
