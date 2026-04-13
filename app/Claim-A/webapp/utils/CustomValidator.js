@@ -106,26 +106,46 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
-                    
-                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
-                        // check if previous claim with elaun pengangkutan has already been approved
-                        var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan();
-                        if (bClaimExists) {
-                            MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
+
+                    if(!!oInputModel?.getProperty("/claim_item/departure_time") && !!oInputModel?.getProperty("/claim_item/arrival_time")){
+                        const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
+                        const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
+                        const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
+
+                        if (iDiffMs < 0) {
+                            MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
                             bCanProceed = false;
                         }
                     }
                     
+                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
+                        // check if previous claim with elaun pengangkutan has already been approved; if found, return message based on status
+                        var sClaimStatus = await ClaimUtility.fetchUserClaimStatusElaunPengangkutan();
+                        if (!!sClaimStatus) {
+                            switch (sClaimStatus) {
+                                case Constants.ClaimStatus.APPROVED:
+                                    MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
+                                    bCanProceed = false;
+                                    break;
+                                case Constants.ClaimStatus.PENDING_APPROVAL:
+                                    MessageBox.error(Utility.getText("error_msg_epengakut_already_pending"));
+                                    bCanProceed = false;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    
                     if (!!oClaimSubmissionModel) {
-                        // course code pre-check
-                        var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type");
-                        var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
-                        var sCourseCodeDesc = oClaimSubmissionModel.getProperty("/claim_header/descr/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc");
-                        var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
+                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
+                            // course code pre-check
+                            var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
+                            var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
                             var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
                             if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [sCourseCode, sCourseCodeDesc]));
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
                             }
                         }
