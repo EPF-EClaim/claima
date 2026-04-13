@@ -109,7 +109,7 @@ sap.ui.define([
                     
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved
-                        var sClaimStatus = await ClaimUtility._fetchClaimElaunPengangkutan();
+                        var sClaimStatus = await ClaimUtility.fetchClaimElaunPengangkutan();
                         if (!!sClaimStatus) {
                             switch (sClaimStatus) {
                                 case Constants.ClaimStatus.APPROVED:
