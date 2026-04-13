@@ -452,6 +452,23 @@ sap.ui.define([
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
 			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+		/**
+         * Get Fare Type filters based on Claim Type and Claim Item
+         * @public
+         * @param {string} sClaimTypeId
+         * @param {string} sClaimTypeItemId
+         * @returns {sap.ui.model.Filter[]} array of filters
+         */
+        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+            var aFilters = [];                
+            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
+			{
+                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
+            }
+            return aFilters;
 		}
 	}
 });
