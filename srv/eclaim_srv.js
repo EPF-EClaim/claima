@@ -1371,7 +1371,7 @@ module.exports = (srv) => {
      * @public
      * @return {String} - return claim status if approved claim already exists with elaun pengangkutan claim item
      */
-    srv.on('checkUserExistingClaimEPengakut', async (req) => {
+    srv.on('getUserClaimStatusEPengakut', async (req) => {
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 

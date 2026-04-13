@@ -368,14 +368,14 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
+		 * Retrieve status of existing employee claim with item Elaun Pengangkutan
 		 * @public
-		 * @return {String} - return status of claim that has been approved/pending approval; if not found, return null
+		 * @return {String} - return status of existing claim with item Elaun Pengangkutan
 		 */
-		fetchClaimElaunPengangkutan: async function () {
+		fetchUserClaimStatusElaunPengangkutan: async function () {
 			// check if claim exists with claim item elaun pengangkutan for employee
 			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkUserExistingClaimEPengakut(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserClaimStatusEPengakut(...)");
 
 				await oFunction.execute();
 
