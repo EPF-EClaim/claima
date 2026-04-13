@@ -36,13 +36,13 @@ sap.ui.define([
 
 		/**
 		* Checks if course has already been used by user for a previously approved claim
-		* @private
+		* @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sSessionNumber - session number ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
 		* @returns {boolean} if records found, return true; else return false
 		*/
-		_checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
+		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({
