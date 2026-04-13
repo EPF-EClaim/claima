@@ -9,6 +9,7 @@ const KursusLuar = require("./KursusLuar");
 const IPAD = require("./IPAD");
 const Handphone = require("./Handphone");
 const JalurLebar = require("./JalurLebar");
+const ElaunPindah = require("./ElaunPindah");
 
 module.exports = {
   /**
@@ -135,9 +136,9 @@ module.exports = {
 
         case Constant.ClaimType.ELAUN_PINDAH:
           aFilteredEmp = aEmpData.filter(function (data) {
-                return (data.EMP_ID === aPayload[i].EmpId);
+                return (data.EEID == aPayload[i].EmpId);
             })
-           oReturnPayload = ElaunPindah.onEligibleCheck(
+           oReturnPayload = await ElaunPindah.onEligibleCheck(
             aPayload[i],
             aEligibilityRules,
             aFilteredEmp[0]

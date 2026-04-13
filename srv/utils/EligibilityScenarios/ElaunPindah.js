@@ -1,5 +1,6 @@
 const { Constant } = require("../constant");
-const ComparisonOperators = require('../ComparisonOperators')
+const ComparisonOperators = require('../ComparisonOperators');
+const GetDependentData = require("../GetDependentData");
 module.exports = {
     /**
          * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -9,21 +10,29 @@ module.exports = {
          * @param {Object} oEmp - Employee Data
          * @returns {Object} oPayload - return original payload but with result field filled
          */
-    onEligibleCheck: function (oPayload, aRules, oEmp) {
+    onEligibleCheck: async function (oPayload, aRules, oEmp) {
         var oRule, aFilteredRules;
         // to extract the key values from oPayload
-        var aPayload = this._parsePayload(oPayload);
-
+        var aPayload = this._parsePayload(oPayload)
+        
         //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
+            var sMarriageCategory = await GetDependentData.getMarriageCategory(oPayload.EmpId);
+
             aFilteredRules = aRules.filter(function (rule) {
-                return (rule.REGION_ID === aPayload.sRegionId && rule.MARITAL_STATUS === oEmp.MARITAL_STATUS);
+                return (rule.REGION_ID == aPayload.sRegionId && 
+                    rule.MARITAL_STATUS == oEmp.MARITAL && 
+                    rule.MARRIAGE_CATEGORY == sMarriageCategory);
             });
             oRule = aFilteredRules[0];
         }
         else {
             oRule = aRules[0];
         }
+
+        if (!oRule) {
+            throw new Error("No Eligibility Rules Found");
+        };
 
         this._validateClaimItem(aPayload, oRule, oPayload);
         return oPayload;
