@@ -287,6 +287,7 @@
 					}"
 					required="true"
 					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
                         !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;

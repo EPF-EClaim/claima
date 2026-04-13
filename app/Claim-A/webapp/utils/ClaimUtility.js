@@ -293,9 +293,9 @@ sap.ui.define([
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
-			
+
 			var oSessionModel = this.getView().getModel("session");
-    		var sEEID = oSessionModel.getProperty("/userId");
+			var sEEID = oSessionModel.getProperty("/userId");
 
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
@@ -420,7 +420,7 @@ sap.ui.define([
 					);
 				});
 		},
-		
+
 		/**
 		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
@@ -459,6 +459,74 @@ sap.ui.define([
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
 			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+				/**
+		 * Calculate Matawang 3% fields (UI-only).
+		 *
+		 * @public
+		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim submission model
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {object} oConstant - Global constant object
+		 */
+		calculateMatawangAmount: function (oSubmissionModel, oInputModel, oConstant) {
+
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+			let iTotal = 0;
+
+			// Sum all foreign currency required items
+			aClaimItems.forEach(oItem => {
+				if (
+					oItem.claim_type_item_id !== oConstant.ClaimTypeItem.MATAWANG &&
+					oItem.need_foreign_currency === true
+				) {
+					iTotal += Number(oItem.amount || 0);
+				}
+			});
+			const iThreePercent = iTotal * 0.03;
+			const iMatawangIndex = aClaimItems.findIndex(
+				oItem => oItem.claim_type_item_id === oConstant.ClaimTypeItem.MATAWANG
+			);
+			if (iMatawangIndex > -1) {
+				// Matawang exists in claim_items list
+				oSubmissionModel.setProperty(`/claim_items/${iMatawangIndex}/percentage_compensation`, oConstant.Percentage.three);
+				oSubmissionModel.setProperty(`/claim_items/${iMatawangIndex}/amount`, iThreePercent);
+			} else {
+				// Matawang is being created
+				const sItemType = oInputModel.getProperty("/claim_item/claim_type_item_id");
+				if (sItemType === oConstant.ClaimTypeItem.MATAWANG) {
+					oInputModel.setProperty("/claim_item/percentage_compensation", oConstant.Percentage.three);
+					oInputModel.setProperty("/claim_item/amount", iThreePercent);
+				}
+			}
+		},
+		/**
+		 * Save Matawang item after calculation.
+		 *
+		 * @public
+		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim submission model
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {Function} fnSaveClaimItem - controller save function (callback)
+		 * @param {object} oConstant - constants object
+		 */
+		saveUpdatedMatawang: async function (oSubmissionModel, oInputModel, fnSaveClaimItem, oConstant) {
+
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+
+			const iMatawangIndex = aClaimItems.findIndex(
+				oItem => oItem.claim_type_item_id === oConstant.ClaimTypeItem.MATAWANG
+			);
+
+			if (iMatawangIndex === -1) { return; }
+
+			const oMatawangItem = aClaimItems[iMatawangIndex];
+
+			// Put Matawang item into input model
+			oInputModel.setProperty("/claim_item", oMatawangItem);
+			oInputModel.setProperty("/is_new", false);
+
+			// Save using controller's existing save function
+			return await fnSaveClaimItem();
 		}
 	}
 });
