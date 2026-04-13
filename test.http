@@ -174,18 +174,18 @@ Authorization: Basic alice
             },
             {
                "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "80",
+               "value": "80000",
                "result": null
             },
             {
-               "fieldName": "TRAVEL_HOURS",
-               "value": "1",
+               "fieldName": "REGION_ID",
+               "value": "01",
                "result": null
             }
             ],
-         "ClaimType": "HANDPHONE",
-         "ClaimTypeItem": "TELEFON_B",
-         "EmpId": "",
+         "ClaimType": "ELAUN_PINDAH",
+         "ClaimTypeItem": "PEM_PINDAH",
+         "EmpId": "900173",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
       }
