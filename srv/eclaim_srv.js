@@ -1631,10 +1631,12 @@ module.exports = (srv) => {
             }
         });
 
-        const iThreePercent = Number((iTotal * 0.03).toFixed(2));
+        const nThreePercent  = Number((iTotal * 0.03).toFixed(2));
+        const nPercentage = Number(3.00);
 
         return {
-            amount: iThreePercent
+            percentage  : nPercentage,
+            amount: nThreePercent 
         };
     });
 }

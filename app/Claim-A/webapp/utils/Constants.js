@@ -487,7 +487,7 @@ sap.ui.define([
             "USD": "USD"
         },
         "Percentage": {
-            "THREE": "3.00"
+            "THREE": 3.00
         }        
     }
 });

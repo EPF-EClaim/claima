@@ -458,7 +458,7 @@ sap.ui.define([
 		 *
 		 * @public
 		 */
-		calculateMatawangAmount: function () {
+		calculateMatawangAmount: async function () {
 			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
@@ -478,7 +478,7 @@ sap.ui.define([
 					if (iMatawangIndex > -1) {
 						oSubmissionModel.setProperty(
 							`/claim_items/${iMatawangIndex}/percentage_compensation`,
-							Constant.Percentage.THREE
+							oResult.percentage
 						);
 						oSubmissionModel.setProperty(
 							`/claim_items/${iMatawangIndex}/amount`,
@@ -492,7 +492,7 @@ sap.ui.define([
 					) {
 						oInputModel.setProperty(
 							"/claim_item/percentage_compensation",
-							Constant.Percentage.THREE
+							oResult.percentage
 						);
 						oInputModel.setProperty(
 							"/claim_item/amount",
