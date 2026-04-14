@@ -43,7 +43,7 @@ sap.ui.define([
         "MEDICAL_INSURANCE"
     ]);
 
-    const sAllowedonzempcapayment = new Set([
+    const sAllowedEditableFields = new Set([
         Constants.EntitiesFields.DISBURSEMENT_STATUS
     ]);
 
@@ -160,7 +160,7 @@ sap.ui.define([
             const fieldType = oFieldMeta?.$Type;
             const sDisable =
                 (isZempMaster && !allowedOnZemp.has(sFieldName)) ||
-                (bIsZempCaPayment && !sAllowedonzempcapayment.has(sFieldName));
+                (bIsZempCaPayment && !sAllowedEditableFields.has(sFieldName));
 
             oVBox.addItem(new Label({
                 text: item.Label,
