@@ -461,30 +461,36 @@ sap.ui.define([
                                 // if end date not set, use 1 day after header end date
                                 if (!!new Date(oItem["end_date"]).getTime()) {
                                     _dMaxDate = new Date(oItem["end_date"]);
+                                    // set validator error message
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_start_date_kursus_item_maxdate"));
                                 }
                                 else {
                                     _dMaxDate = new Date(oHeader.trip_end_date);
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                    // set validator error message
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_start_date_kursus_maxdate"));
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_start_date_kursus_maxdate"));
                             }
                             else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
                                 // Elaun Makan (Perpindahan) - maximum date = item end date
                                 // if end date not set, use 1 day after move-in date
                                 if (!!new Date(oItem["end_date"]).getTime()) {
                                     _dMaxDate = new Date(oItem["end_date"]);
+                                    // set validator error message
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
                                 }
                                 else {
                                     _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oHeader["trip_end_date"] ? new Date(oHeader["trip_end_date"]) : null;
                                     if (_dMaxDate) {
                                         _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                        // set validator error message
+                                        _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                            _oResourceBundle.getText("error_start_date_mknloan_maxdate"));
                                     }
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_start_date_mknloan_maxdate"));
                             }
                             else {
                                 // Other Claim Type - maximum date = item end date

@@ -346,7 +346,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
@@ -428,7 +428,6 @@ sap.ui.define([
 		fetchMeterCubeEntitlement: function (oInputModel) {
 			const oContext = this._oView.getModel().bindContext("/getMeterCubeEntitlement(...)");
 
-			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((result) => {
@@ -453,8 +452,6 @@ sap.ui.define([
 		 */
 		fetchPengangkutanLautAmount: function (oInputModel) {
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
-
-			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 
@@ -477,6 +474,23 @@ sap.ui.define([
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
 			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+		/**
+         * Get Fare Type filters based on Claim Type and Claim Item
+         * @public
+         * @param {string} sClaimTypeId
+         * @param {string} sClaimTypeItemId
+         * @returns {sap.ui.model.Filter[]} array of filters
+         */
+        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+            var aFilters = [];                
+            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
+			{
+                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
+            }
+            return aFilters;
 		}
 	}
 });

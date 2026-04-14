@@ -755,16 +755,6 @@ sap.ui.define([
 				return;
 			}
 
-			// Mobile Eligibility Pre-check
-			var sClaimType = oInputModel.getProperty("/claimtype/type")
-			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
-				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
-				if (!bEligible) {
-					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
-					return;
-				}
-			}
-
 			//check if the same Request ID has been submitted for claim submission
 			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
 				var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
@@ -917,24 +907,6 @@ sap.ui.define([
 				return;
 			}
 
-			// validate required fields
-			var reqFields = [
-				"input_claiminput_purpose",
-				"datepicker_claiminput_tripstartdate",
-				"datepicker_claiminput_tripenddate",
-
-			];
-			//// add attachment field if using email approval
-			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
-				reqFields.push("fileuploader_claiminput_attachment");
-			}
-			for (let i = 0; i < reqFields.length; i++) {
-				if (!this.byId(reqFields[i]).getValue()) {
-					// stop claim submission if values empty
-					MessageToast.show(Utility.getText("msg_claiminput_required"));
-					return;
-				}
-			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);

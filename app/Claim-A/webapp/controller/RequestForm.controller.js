@@ -183,9 +183,8 @@ sap.ui.define([
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
 
-			if (bEdit) {
+			if (bEdit && this._oReqModel.getProperty("/req_item/doc1_filename")) {
 				this.byId("i_attachment_1_file").setRequired(false);
-				this.byId("i_attachment_2_file").setRequired(false);
 			} 
 
 			PARequestSharedFunction.determineFooterButton(this);
@@ -463,6 +462,7 @@ sap.ui.define([
 
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
+			this._resetReqItemInputs();
 		},
 		
 		onSaveHeaderPress: async function () {
@@ -633,7 +633,7 @@ sap.ui.define([
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
-			this.getFieldVisibility_ClaimTypeItem(oEvent);
+			this.initializeClaimTypeItemFields(false);
 		},
 
 		async _loadParticipantsForItem(sReqId, sReqSubId) {
@@ -779,21 +779,21 @@ sap.ui.define([
 				};
 
 				const oTotals = aRows.reduce((acc, row) => {
-					const reqAmt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
+					const fReqAmt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
 					
-					const cashAdvAmt = row?.CASH_ADV_AMT ?? row?.cash_advance_amount ?? row?.CASH_ADVANCE_AMT ?? 0;
+					const fCashAdvAmt = row?.CASH_ADVANCE ? row.EST_AMOUNT : 0;
 					
 					return {
-						reqTotal: acc.reqTotal + toNumber(reqAmt),
-						cashTotal: acc.cashTotal + toNumber(cashAdvAmt)
+						fReqTotal: acc.fReqTotal + toNumber(fReqAmt),
+						fCashTotal: acc.fCashTotal + toNumber(fCashAdvAmt)
 					};
-				}, { reqTotal: 0, cashTotal: 0 });
+				}, { fReqTotal: 0, fCashTotal: 0 });
 
-				const round2 = (n) => Math.round(n * 100) / 100;
+				const oRound2 = (n) => Math.round(n * 100) / 100;
 
 				const oHeader = this._oReqModel.getProperty("/req_header") || {};
-				oHeader.reqamt = round2(oTotals.reqTotal);
-				oHeader.cashadvamt = round2(oTotals.cashTotal);
+				oHeader.reqamt = oRound2(oTotals.fReqTotal);
+				oHeader.cashadvamt = oRound2(oTotals.fCashTotal);
 				
 				this._oReqModel.setProperty("/req_header", oHeader);
 				oTable.clearSelection();
@@ -1232,6 +1232,7 @@ sap.ui.define([
 				MessageBox.error(e.message || Utility.getText("req_d_e_save_failed"));
 			} finally {
 				BusyIndicator.hide();
+				this._resetReqItemInputs();
 			}
 		},
 
@@ -2043,7 +2044,13 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
                 	RequestUtility.populateAllocatedAmount();
-					RequestUtility.determineOfficeMileage();
+					this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+						this._oReqModel.getProperty("/req_item/from_state"),
+						this._oReqModel.getProperty("/req_item/from_location_office"),
+						this._oReqModel.getProperty("/req_item/to_state"),
+						this._oReqModel.getProperty("/req_item/to_location_office")
+					));
+                    RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2054,10 +2061,8 @@ sap.ui.define([
 		* Field Visibility Functions 
 		* ======================================================= */
 
-		getFieldVisibility_ClaimTypeItem: async function (oEvent) {
-			const sClaimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
-			const sClaimTypeItemFromModel = this._oReqModel.getProperty("/req_item/claim_type_item_id");
-			const sClaimTypeItem = sClaimTypeItemFromSelect || sClaimTypeItemFromModel;
+		initializeClaimTypeItemFields: async function (bReset = true) {
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
 			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
 			if (!sClaimTypeItem) {
@@ -2065,13 +2070,9 @@ sap.ui.define([
 				return;
 			}
 
-			// reset model only when creating new item, 
-			// edit will not reset model at first but will change to create mode after that to cater claim type item change
-			if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+			if (bReset) {
 				this._resetReqItemInputs();
-			} else if (this._oReqModel.getProperty("/view") === Constants.PARMode.EDIT) {
-				this._oReqModel.setProperty("/view", Constants.PARMode.CREATE)
-			}
+			} 
 
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
@@ -2121,6 +2122,7 @@ sap.ui.define([
 					this._onFilterRegion();
 
 					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
@@ -2487,10 +2489,18 @@ sap.ui.define([
 		* xml onchange event trigger
 		* ======================================================= */
 
+		/**
+		 * method to populate allocated amount if applicable
+		 * @public
+		 */
 		onInputAllocatedAmount: function () {
 			RequestUtility.populateAllocatedAmount();
 		},
 
+		/**
+		 * method to filter the to state selection
+		 * @public
+		 */
 		onFilterToState: function () {
             const oReqItem  = this._oReqModel.getProperty("/req_item");
             
@@ -2506,6 +2516,10 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 		},
 
+		/**
+		 * method to filter the to location (office) selection
+		 * @public
+		 */
         onFilterToOffice: function () {
             const oReqItem  = this._oReqModel.getProperty("/req_item");
             
@@ -2523,8 +2537,18 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 		},
 
-		onSelectToOffice: function () {
-			RequestUtility.determineOfficeMileage();
+		/**
+		 * check mileage of the office location selected when select 'to location (office)'
+		 * @public
+		 */
+		onSelectToOffice: async function () {
+			this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+				this._oReqModel.getProperty("/req_item/from_state"),
+				this._oReqModel.getProperty("/req_item/from_location_office"),
+				this._oReqModel.getProperty("/req_item/to_state"),
+				this._oReqModel.getProperty("/req_item/to_location_office")
+			));
+			RequestUtility.populateAllocatedAmount();
 		},
 
 		/**
@@ -2557,6 +2581,7 @@ sap.ui.define([
 
 		/**
          * Reset the Request Item Input when changing to new claim type item
+		 * @private
          */
         _resetReqItemInputs: function () {
             const oReqItem = this._oReqModel.getProperty("/req_item");
@@ -2587,6 +2612,10 @@ sap.ui.define([
             aParticipants.forEach((row, index) => {
                 this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
             });
+			
+			// set attachment 1 field to be required (mandatory)
+			this.byId("i_attachment_1_file").setRequired(true);
+
         },
 
 	});
