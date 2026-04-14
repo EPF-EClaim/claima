@@ -67,7 +67,7 @@
 					selectedKey="{reqDialog>/transfermode}" 
 					required="true" 
 					forceSelection="false"
-					visible="false"
+					visible="{= ${reqDialog>/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"
 					items="{path: 'employee>/ZTRANSFER_MODE',
 							sorter: { path: 'TRANSFER_MODE_ID', descending: false }}">
 					<items>
@@ -196,7 +196,6 @@
 			    <TextArea
 					id="req_comment"
 					textAlign="Begin"
-					required="true"
 					value="{reqDialog>/comment}"
 					visible="false" />
 
