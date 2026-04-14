@@ -617,34 +617,44 @@
 				</DatePicker>
 
                 <!-- Mode of Transfer-->
-                <Label text="{i18n>req_i_transfer_mode}" />
+                <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
                 <Select
-                    id="input_claimdetails_mode_of_transfer"
-                    selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+                    id="select_claimdetails_input_mode_of_transfer"
                     forceSelection="false"
-                    enabled="false"
-                    visible="false"
-                    items="{path: 'employee>/ZTRANSFER_MODE',
-							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
-							filters: [
-								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+					required="true"
+					visible="{= ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
+                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+                    items="{
+                        path: 'employee>/ZTRANSFER_MODE',
+                        sorter: [{ path: 'TRANSFER_MODE_ID' }],
+                        filters: [{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]
+                    }"
+                >
                     <items>
 						<core:Item key="{employee>TRANSFER_MODE_ID}" 
 								text="{employee>TRANSFER_MODE_DESC}" />
                     </items>
                 </Select>
 
-				<Label text="{i18n>req_i_tarikh_pindah}"
-                                            id="i_tarikh_pindah"/>
-                <DatePicker
-                    id="input_claimdetails_transfer_date"
-                    displayFormat="dd MMM yyyy"
-                    valueFormat="yyyy-MM-dd"
-                    placeholder="eg: 01 Jan 1990"
+				<Label text="{i18n>label_claimdetails_input_transfer_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_transfer_date"
                     value="{claimitem_input>/claim_item/transfer_date}"
-                    textAlign="Begin"
-                    visible="false"
-					enabled="false"/>
+					visible="{= ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
+                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+					displayFormat="dd-MMM-yyyy"
+				/>
 
 				<!-- Number of Days -->
 				<Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_LOAN} ? ${i18n>label_claimdetails_input_maxday} :${i18n>label_claimdetails_input_numberofdays} }" />
