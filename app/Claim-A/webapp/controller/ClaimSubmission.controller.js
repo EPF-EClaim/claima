@@ -591,7 +591,7 @@ sap.ui.define([
 					lodging_category: it.LODGING_CATEGORY_DESC,
 					marriage_category: it.MARRIAGE_CATEGORY_DESC,
 					area: it.AREA_DESC,
-					rate_per_km: null,
+					rate_per_km: it.RATE,
 					room_type: it.ROOM_TYPE_DESC,
 					region: it.REGION_DESC,
 					from_state_id: null,
@@ -1802,7 +1802,6 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_numberofdays"), property: "no_of_days", field: "input_claimdetails_input_no_of_days", type: "number", scale: 0, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_typeofvehicle"), property: "vehicle_type", field: "select_claimdetails_input_vehicle_type", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_vehicleownership"), property: "vehicle_ownership_id", field: "select_claimdetails_input_vehicle_ownership_id", type: "descr", width: 18 },
-				{ label: Utility.getText("label_claimdetails_input_km"), property: "km", field: "input_claimdetails_input_km", type: "number", scale: 2, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_km_rate"), property: "rate_per_km", field: "input_claimdetails_input_rate_per_km", width: 14 },
 				{ label: Utility.getText("label_claimdetails_input_faretype"), property: "fare_type_id", field: "select_claimdetails_input_fare_type_id", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_vehicleclass"), property: "vehicle_class_id", field: "select_claimdetails_input_vehicle_class_id", type: "descr", width: 18 },
@@ -1810,10 +1809,13 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_toll"), property: "toll", field: "input_claimdetails_input_toll", type: "number", scale: 2, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_parking"), property: "parking", field: "checkbox_claimdetails_input_parking", width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_locationtype"), property: "location_type", field: "select_claimdetails_input_location_type", type: "descr", width: 18 },
-				{ label: Utility.getText("label_claimdetails_input_state_from"), property: "from_state_id", field: "input_claimdetails_input_from_state_id", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_state_from"), property: "from_state_id", field: "select_claimdetails_input_from_state_id", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_location_from"), property: "from_location", field: "input_claimdetails_input_from_location", width: 18 },
-				{ label: Utility.getText("label_claimdetails_input_state_to"), property: "to_state_id", field: "input_claimdetails_input_to_state_id", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_location_from_office"), property: "from_location_office", field: "select_claimdetails_input_from_location", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_state_to"), property: "to_state_id", field: "select_claimdetails_input_to_state_id", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_location_to"), property: "to_location", field: "input_claimdetails_input_to_location", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_location_to_office"), property: "to_location_office", field: "select_claimdetails_input_to_location", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_km"), property: "km", field: "input_claimdetails_input_km", type: "number", scale: 2, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_roomtype"), property: "room_type", field: "select_claimdetails_input_room_type", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_country"), property: "country", field: "select_claimdetails_input_country", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_location"), property: "location", field: "input_claimdetails_input_location", width: 18 },
@@ -2234,11 +2236,15 @@ sap.ui.define([
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
 
-			// When Location Type is visible but no selection yet, hide From State & To State by default
+			// When Location Type is visible but no selection yet, hide State and Location fields by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
 			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
 				this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+				this.byId("select_claimdetails_input_from_location")?.setVisible(false);
+				this.byId("input_claimdetails_input_from_location")?.setVisible(false);
 				this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+				this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+				this.byId("input_claimdetails_input_to_location")?.setVisible(false);
 			}
 
 			// set claim detail selection values
@@ -3455,46 +3461,132 @@ sap.ui.define([
 		},
 
 		/**
-		* On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
-		* once mileage is retrieved, amount is calculated based on kilometer * rate per km
+		* On selecting From State, filter for values in From Location (Office)
 		* @public
-		* @param {object} oEvent - the event call passed into param
-		* @param {string} sLocationTypeOffice - determines whether office location is to or from
 		*/
-		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
+		onSelect_ClaimDetails_FromState: function (oEvent) {
+			var oSelect = this.byId("select_claimdetails_input_from_location");
+			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oBinding || !oInputModel) return;
 
-			// set state field value if empty or not same Id
-			var oSelectedItem = oEvent.getParameters().selectedItem;
+			// set description value
+			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSelectedItem) {
-				const oBindingContext = oSelectedItem.getBindingContext("employee");
-				const oStateId = oBindingContext.getObject("STATE_ID");
-				if (oInputModel.getProperty("/claim_item/" + sLocationTypeOffice + "_state_id") !== oStateId) {
-					// set if claim type is course based on project_claim field
-					oInputModel.setProperty("/claim_item/" + sLocationTypeOffice + "_state_id", oStateId);
-				}
+				// get claim type description
+				oInputModel.setProperty("/claim_item/descr/from_state_id", oSelectedItem.getBindingContext("employee").getObject("STATE_DESC"));
+			}
+			else {
+				oInputModel.setProperty("/claim_item/descr/from_state_id", null);
 			}
 
-			if ((oInputModel.getProperty("/claim_item/from_state_id") && oInputModel.getProperty("/claim_item/from_location_office")) &&
-				(oInputModel.getProperty("/claim_item/to_state_id") && oInputModel.getProperty("/claim_item/to_location_office"))
-			) {
-				var aEntityFields = [
-					{ entity_field: this._oConstant.EntitiesFields.FROM_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
-					{ entity_field: this._oConstant.EntitiesFields.FROM_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
-					{ entity_field: this._oConstant.EntitiesFields.TO_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
-					{ entity_field: this._oConstant.EntitiesFields.TO_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
-				]
-				var aRetrievalFields = [this._oConstant.OfficeDistance.MILEAGE];
-				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
-				if (aOutputValues.length > 0) {
-					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);
-				}
-				else {
-					oInputModel.setProperty("/claim_item/km", null);
-					MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
-				}
-				this._calculateRatePerKm();
+			// set filters
+			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
+			var aFilters = [new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
+			if (!!sFromState) { aFilters.push(new Filter("STATE_ID", FilterOperator.EQ, sFromState)); }
+			oBinding.filter(aFilters);
+
+			// reset current value of From Location (Office)
+			oInputModel.setProperty("/claim_item/from_location_office", null)
+			this.onSelect_ClaimDetails_FromLocationOffice();
+		},
+
+		/**
+		* On selecting From Location (Office), filter for values in 'To State'
+		* @public
+		*/
+		onSelect_ClaimDetails_FromLocationOffice: function (oEvent) {
+			var oSelect = this.byId("select_claimdetails_input_to_state_id");
+			var oBinding = oSelect?.getBinding("items");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oBinding || !oInputModel) return;
+
+			// set description value
+			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oSelectedItem) {
+				// get claim type description
+				oInputModel.setProperty("/claim_item/descr/from_location_office", oSelectedItem.getBindingContext("employee").getObject("LOCATION_DESC"));
 			}
+			else {
+				oInputModel.setProperty("/claim_item/descr/from_location_office", null);
+			}
+
+			// set filters
+			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
+			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
+			var aFilters = [];
+			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
+			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
+			oBinding.filter(aFilters);
+
+			// reset current value of To State
+			oInputModel.setProperty("/claim_item/to_state_id", null)
+			this.onSelect_ClaimDetails_ToState();
+		},
+
+		/**
+		* On selecting 'To State', filter for values in To Location (Office)
+		* @public
+		*/
+		onSelect_ClaimDetails_ToState: function (oEvent) {
+			var oSelect = this.byId("select_claimdetails_input_to_location");
+			var oBinding = oSelect?.getBinding("items");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oBinding || !oInputModel) return;
+
+			// set description value
+			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oSelectedItem) {
+				// get claim type description
+				oInputModel.setProperty("/claim_item/descr/to_state_id", oSelectedItem.getBindingContext("employee_view").getObject("TO_STATE_DESC"));
+			}
+			else {
+				oInputModel.setProperty("/claim_item/descr/to_state_id", null);
+			}
+
+			// set filters
+			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
+			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
+			var sToState = oInputModel.getProperty("/claim_item/to_state_id");
+			var aFilters = [];
+			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
+			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
+			if (!!sToState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)); }
+			oBinding.filter(aFilters);
+
+			// reset current value of To Location (Office)
+			oInputModel.setProperty("/claim_item/to_location_office", null)
+			this.onSelect_ClaimDetails_ToLocationOffice();
+		},
+
+		/**
+		* On selecting To Location (Office), call function to determine office distance
+		* @public
+		*/
+		onSelect_ClaimDetails_ToLocationOffice: async function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oInputModel) return;
+
+			// set description value
+			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oSelectedItem) {
+				// get claim type description
+				oInputModel.setProperty("/claim_item/descr/to_location_office", oSelectedItem.getBindingContext("employee_view").getObject("TO_LOCATION_DESC"));
+			}
+			else {
+				oInputModel.setProperty("/claim_item/descr/to_location_office", null);
+			}
+
+			// get mileage
+			var fMileage = await ClaimUtility.determineOfficeMileage(
+				oInputModel.getProperty("/claim_item/from_state_id"),
+				oInputModel.getProperty("/claim_item/from_location_office"),
+				oInputModel.getProperty("/claim_item/to_state_id"),
+				oInputModel.getProperty("/claim_item/to_location_office")
+			);
+			// populate item values
+			oInputModel.setProperty("/claim_item/km", fMileage);
+			this.onChange_ClaimDetails_Kilometer();
 		},
 
 		/* =========================================================
@@ -4389,44 +4481,6 @@ sap.ui.define([
 				})
 			});
 			this.oDialog.open();
-		},
-
-		getFromLocationOfficeByState: function () {
-			var _oSelect = this.byId("select_claimdetails_input_from_location");
-			var _oBinding = _oSelect.getBinding("items");
-			if (!_oBinding) {
-				return;
-			}
-
-			var _oInputModel = this.getView().getModel("claimitem_input");
-			if (!_oInputModel) {
-				return;
-			}
-
-			var _aFilters = [
-				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
-				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/from_state_id"))
-			];
-			_oBinding.filter(_aFilters);
-		},
-
-		getToLocationOfficeByState: function () {
-			var _oSelect = this.byId("select_claimdetails_input_to_location");
-			var _oBinding = _oSelect.getBinding("items");
-			if (!_oBinding) {
-				return;
-			}
-
-			var _oInputModel = this.getView().getModel("claimitem_input");
-			if (!_oInputModel) {
-				return;
-			}
-
-			var _aFilters = [
-				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
-				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
-			];
-			_oBinding.filter(_aFilters);
 		},
 
 		/**

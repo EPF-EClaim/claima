@@ -323,7 +323,47 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
+		 * Retrieve mileage based on selected office locations
+		 * @public
+		 * @param {String} sFromState - value of From State
+		 * @param {String} sFromOffice - value of From Location (Office)
+		 * @param {String} sToState - value of To State
+		 * @param {String} sToOffice - value of To Location (Office)
+		 * @return {Float} fMileage - returns mileage based on selected office locations
+		 */
+		determineOfficeMileage: async function (sFromState, sFromOffice, sToState, sToOffice) {
+			var fMileage = 0.0;
+
+			if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
+
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getOfficeDistance(...)");
+
+				oFunction.setParameter("sFromState", sFromState);
+				oFunction.setParameter("sFromOffice", sFromOffice);
+				oFunction.setParameter("sToState", sToState);
+				oFunction.setParameter("sToOffice", sToOffice);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+				fMileage = parseFloat(oResult.value) || 0.0;
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				fMileage = 0.0;
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return fMileage;
+		},
+
+		/**
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
