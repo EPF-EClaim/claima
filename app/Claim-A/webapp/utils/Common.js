@@ -16,6 +16,8 @@ sap.ui.define([
         /**
          * Initialize the Utility 
          * @public
+         * @param {object} oOwnerComponent Caller component for accessing models
+         * @param {object} oView View instance of caller
          */
         init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
@@ -86,7 +88,7 @@ sap.ui.define([
 
                         } catch (e) {
                             MessageToast.show(
-                                Utility.getText("msg_claimsubmission_failed", [e.message])
+                                Utility.getText("msg_claimsubmission_failed")
                             );
                         } finally {
                             BusyIndicator.hide();
@@ -152,7 +154,7 @@ sap.ui.define([
 
                         } catch (e) {
                             MessageToast.show(
-                                Utility.getText("msg_claimsubmission_failed", [e.message])
+                                Utility.getText("msg_claimsubmission_failed")
                             );
                         } finally {
                             BusyIndicator.hide();
@@ -169,7 +171,7 @@ sap.ui.define([
 		 * Set fields to be editable
 		 * if there is a request tied to claim, do not allow editing for start and end trip dates
 		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
-		 * @private
+		 * @public
          * @param {string} sClaimType Claim submission or Pre Approval Request claim type
 		 * @param {boolean} bEdit edit toggle
 		 */

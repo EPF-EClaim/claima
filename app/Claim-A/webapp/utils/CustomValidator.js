@@ -241,20 +241,17 @@ sap.ui.define([
          * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
          */
         _isValidDateRange: function (sStartdate, sEnddate) {
-            var bValidDates = true;
 			// check for missing value
 			if (!sStartdate || !sEnddate) {
                 MessageBox.error(Utility.getText("msg_daterange_missing"));
-                bValidDates = false;
-                return bValidDates;
+                return false;
             }
 			// check if end date earlier than start date
 			if (new Date(sStartdate) > new Date(sEnddate)) {
                 MessageBox.error(Utility.getText("msg_daterange_order"));
-                bValidDates = false;
-                return bValidDates;
+                return false;
             }
-			return bValidDates;
+			return true;
 		},
  
     };

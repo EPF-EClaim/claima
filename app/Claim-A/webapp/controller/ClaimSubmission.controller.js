@@ -100,7 +100,6 @@ sap.ui.define([
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
 			//declare utility
-			Common.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent());
 
 			// URL Access

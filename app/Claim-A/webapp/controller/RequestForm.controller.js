@@ -98,7 +98,6 @@ sap.ui.define([
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			Common.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
