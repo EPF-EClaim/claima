@@ -3271,7 +3271,7 @@ sap.ui.define([
 		* On selecting mode of transfer, set description in item model
 		* @public
 		*/
-		onChange_ClaimDetails_ModeOfTransfer: function (oEvent) {
+		onSelect_ClaimDetails_ModeOfTransfer: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oModeOfTranfer = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oModeOfTranfer) {
