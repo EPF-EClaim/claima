@@ -3268,6 +3268,23 @@ sap.ui.define([
 		},
 
 		/**
+		* On selecting mode of transfer, set description in item model
+		* @public
+		*/
+		onSelect_ClaimProcess_ModeOfTransfer: function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oModeOfTranfer = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oModeOfTranfer) {
+				// set course code description
+				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", oModeOfTranfer.getBindingContext("employee").getObject("TRANSFER_MODE_DESC"));
+			}
+			else {
+				// reset description value
+				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", null);
+			}
+		},
+
+		/**
 		 * On selecting vehicle type from dropdown, call method to determine rate per km based on vehicle type and claim item used
 		 * rate per KM values will be populated based on output values returned
 		 * @public

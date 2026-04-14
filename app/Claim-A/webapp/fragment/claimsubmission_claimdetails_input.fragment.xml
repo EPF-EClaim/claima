@@ -635,6 +635,8 @@
                         sorter: [{ path: 'TRANSFER_MODE_ID' }],
                         filters: [{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]
                     }"
+                    change="onSelect_ClaimDetails_ModeOfTransfer"
+                    liveChange="onSelect_ClaimDetails_ModeOfTransfer"
                 >
                     <items>
 						<core:Item key="{employee>TRANSFER_MODE_ID}" 
