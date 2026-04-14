@@ -2301,11 +2301,12 @@ annotate service.ZEMP_CA_PAYMENT with @(
                 $Type            : 'UI.DataField',
                 Value            : DISBURSEMENT_STATUS,
                 ![@UI.Importance]: #High,
-                Label            : 'Disbursement Status (Y/N)'
+                Label            : 'Disbursement Status'
             }
         ]
     }
 );
+
 
 annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
@@ -4316,7 +4317,13 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : SUBMISSION_TYPE,
                 ![@UI.Importance]: #High,
                 Label            : 'Submission Type'
-            }            
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost_Center'
+            }             
         ]
     }
 );
