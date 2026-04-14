@@ -10,7 +10,7 @@ sap.ui.define([
     "sap/m/Input",
     "sap/m/Dialog",
     "sap/m/Button",
-    "claima/utils/Utility", 
+    "claima/utils/Utility",
     "claima/utils/Validator",
     "sap/ui/core/ValueState"
 ], function (ControllerExtension,
@@ -25,7 +25,7 @@ sap.ui.define([
     Dialog,
     Button,
     Utility,
-    Validator, 
+    Validator,
     ValueState) {
     'use strict';
 
@@ -40,6 +40,12 @@ sap.ui.define([
         "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
         "MEDICAL_INSURANCE"
     ]);
+
+
+    const allowedOnZempCaPayment = new Set([
+        "DISBURSEMENT_STATUS"
+    ])
+
 
     const sDisabledField = "RANGE_ID";
 
@@ -94,29 +100,29 @@ sap.ui.define([
                 oMeta?.$Type === "Edm.Int32" ||
                 oMeta?.$Type === "Edm.Int64" ||
                 oMeta?.$Type === "Edm.Double";
-            
+
             oControl.setValueState("None");
             oControl.setValueStateText("");
 
             if (bRequired && (!sValue || sValue.trim() === '')) {
-                oValidator._setValueState(oControl, 
-                                          ValueState.Error,
-                                          Utility.getText("msg_requiredfield"));
-                oValidator._addMessage(oControl, Utility.getText("msg_requiredfield"));                
+                oValidator._setValueState(oControl,
+                    ValueState.Error,
+                    Utility.getText("msg_requiredfield"));
+                oValidator._addMessage(oControl, Utility.getText("msg_requiredfield"));
                 bValid = false;
                 continue;
-            } 
+            }
             if (nMaxLength && sValue && sValue.length > nMaxLength) {
-                oValidator._setValueState(oControl, 
-                                          ValueState.Error, 
-                                          Utility.getText("msg_max_length", [nMaxLength]));
+                oValidator._setValueState(oControl,
+                    ValueState.Error,
+                    Utility.getText("msg_max_length", [nMaxLength]));
                 bValid = false;
                 continue;
-            } 
+            }
             if (bIsNumeric && sValue && isNaN(Number(sValue))) {
-                oValidator._setValueState(oControl, 
-                                          ValueState.Error, 
-                                          Utility.getText("msg_valid_number"));
+                oValidator._setValueState(oControl,
+                    ValueState.Error,
+                    Utility.getText("msg_valid_number"));
                 bValid = false;
                 continue;
             }
@@ -140,6 +146,7 @@ sap.ui.define([
         const oKeys = oDataType.$Key || [];
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
+        const isZempCaPayment = sPath?.startsWith("/ZEMP_CA_PAYMENT");
 
         const oVBox = new VBox({
             width: "70%",
@@ -151,7 +158,9 @@ sap.ui.define([
             const fieldName = item.Value.$Path;
             const oFieldMeta = oDataType[fieldName];
             const fieldType = oFieldMeta?.$Type;
-            const sDisable = isZempMaster && !allowedOnZemp.has(fieldName);
+            const sDisable =
+                (isZempMaster && !allowedOnZemp.has(fieldName)) ||
+                (isZempCaPayment && !allowedOnZempCaPayment.has(fieldName));
 
             oVBox.addItem(new Label({
                 text: item.Label,
@@ -161,46 +170,77 @@ sap.ui.define([
             }));
             oVBox.addStyleClass("sapUiSmallMarginTopBottom")
 
-            const oInput = fieldType?.includes('Edm.Date') ?
-                new DatePicker({
+            let oInput;
+
+            /* ================================
+             * ZEMP_CA_PAYMENT – DROPDOWN ONLY
+             * ================================ */
+            if (isZempCaPayment && fieldName === "DISBURSEMENT_STATUS") {
+                
+                oInput = new Select({
+                    name: fieldName,
+                    width: "130%",
+                    selectedKey: oData[fieldName] || "",
+                });
+
+                // Explicitly set the OData model
+                oInput.setModel(oModel);
+
+                // Bind items AFTER model is set
+                oInput.bindItems({
+                    path: "/ZDISBURSEMENT_STATUS",
+                    template: new ListItem({
+                        key: "{DISBURSEMENT_STATUS_ID}",
+                        text: "{DISBURSEMENT_STATUS_DESC}"
+                    })
+                });
+
+                /* ================================
+                 * DATE FIELDS (READ-ONLY)
+                 * ================================ */
+            } else if (fieldType?.includes("Edm.Date")) {
+
+                oInput = new DatePicker({
                     value: oData[fieldName] || null,
                     name: fieldName,
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
-                }) :
-                fieldType?.includes('Edm.Boolean') ?
-                    new Select({
-                        name: fieldName,
-                        width: "130%",
-                        forceSelection: false,
-                        selectedKey: oData[fieldName] || null,
-                        items: [
-                            new ListItem({
-                                key: null,
-                                text: Utility.getText("none")
-                            }),
-                            new ListItem({
-                                key: false,
-                                text: Utility.getText("no")
-                            }),
-                            new ListItem({
-                                key: true,
-                                text: Utility.getText("yes")
-                            })
-                        ]
-                    }) :
-                    new Input({
-                        value: oData[fieldName]?.toString() || "",
-                        name: fieldName,
-                        width: "130%",
-                        enabled: !sDisable
-                    });
+                    enabled: false
+                });
+
+                /* ================================
+                 * BOOLEAN FIELDS
+                 * ================================ */
+            } else if (fieldType?.includes("Edm.Boolean")) {
+
+                oInput = new Select({
+                    name: fieldName,
+                    width: "130%",
+                    selectedKey: oData[fieldName] || null,
+                    items: [
+                        new ListItem({ key: "", text: Utility.getText("none") }),
+                        new ListItem({ key: false, text: Utility.getText("no") }),
+                        new ListItem({ key: true, text: Utility.getText("yes") })
+                    ]
+                });
+
+                /* ================================
+                 * DEFAULT INPUT (READ-ONLY LOGIC)
+                 * ================================ */
+            } else {
+
+                oInput = new Input({
+                    value: oData[fieldName]?.toString() || "",
+                    name: fieldName,
+                    width: "130%",
+                    enabled: !sDisable
+                });
+            }
 
             oVBox.addItem(oInput);
         });
-        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster };
+        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, isZempCaPayment };
     }
 
     return {
@@ -279,7 +319,7 @@ sap.ui.define([
                 return;
             }
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, isZempCaPayment } = _getDetails(oView, aSelectedContexts);
 
             if (sPath.includes("/ZNUM_RANGE")) {
                 const oItems = oVBox.getItems();
