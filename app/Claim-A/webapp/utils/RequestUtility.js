@@ -342,10 +342,8 @@ sap.ui.define([
 		_getEntitledMeterCube: async function () {
             const oReqModel     = this._oOwnerComponent.getModel("request");
             const oDataModel    = this._oOwnerComponent.getModel();
-            const sEmpId        = this._oOwnerComponent.getModel("session").getProperty("/userId");
 
-			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...)");
-			oFunction.setParameter("empId", sEmpId);
+			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...");
 
             try {
                 await oFunction.execute();
