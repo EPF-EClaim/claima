@@ -168,8 +168,10 @@ sap.ui.define([
                         // stop claim submission if incomplete
                         bCanProceed = false;
                     }
+                    Utility.init(this._oOwnerComponent, this._oView)
+                    const bIsEventDateRequired = await Utility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"));
                     //// event start/end date (optional)
-                    if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate")) {
+                    if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
                         if (!this._isValidDateRange(oReqModel.getProperty("/req_header/eventstartdate"), oReqModel.getProperty("/req_header/eventenddate"))) {
                             // stop claim submission if incomplete
                             bCanProceed = false;
@@ -239,18 +241,20 @@ sap.ui.define([
          * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
          */
         _isValidDateRange: function (sStartdate, sEnddate) {
-            var bCheck = true;
+            var bValidDates = true;
 			// check for missing value
 			if (!sStartdate || !sEnddate) {
                 MessageBox.error(Utility.getText("msg_daterange_missing"));
-                bCheck = false;
+                bValidDates = false;
+                return bValidDates;
             }
 			// check if end date earlier than start date
 			if (new Date(sStartdate) > new Date(sEnddate)) {
                 MessageBox.error(Utility.getText("msg_daterange_order"));
-                bCheck = false;
+                bValidDates = false;
+                return bValidDates;
             }
-			return bCheck;
+			return bValidDates;
 		},
  
     };

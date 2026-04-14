@@ -101,7 +101,7 @@ sap.ui.define([
 
 			//declare utility
 			Common.init(this.getOwnerComponent(), this.getView());
-			Utility.init(this.getOwnerComponent(), this.getView());
+			Utility.init(this.getOwnerComponent());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -2749,7 +2749,6 @@ sap.ui.define([
 					return;
 				}
 			}
-
 			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());

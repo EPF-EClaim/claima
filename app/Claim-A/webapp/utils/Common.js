@@ -1,18 +1,22 @@
 sap.ui.define([
+    "sap/m/MessageBox",
     "sap/m/MessageToast",
     "sap/ui/core/BusyIndicator",
-    "claima/utils/Constants",
-    "claima/utils/DateUtility",
-    "claima/utils/ClaimUtility",
-    "claima/utils/RequestUtility",
-    "claima/utils/CustomValidator",
-    "claima/utils/Utility",
     "claima/model/models",
-], function (MessageToast, BusyIndicator, Constants, DateUtility, ClaimUtility, RequestUtility, CustomValidator, Utility, Models) {
+    "claima/utils/ClaimUtility",
+    "claima/utils/Constants",
+    "claima/utils/CustomValidator",
+    "claima/utils/DateUtility",
+    "claima/utils/RequestUtility",
+    "claima/utils/Utility"
+], function (MessageBox, MessageToast, BusyIndicator, Models, ClaimUtility, Constants, CustomValidator, DateUtility, RequestUtility, Utility) {
 	"use strict";
 
 	return {
-
+        /**
+         * Initialize the Utility 
+         * @public
+         */
         init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
@@ -42,15 +46,15 @@ sap.ui.define([
                             CustomValidator.init(this._oOwnerComponent, this._oView);
                             const bProceed = await CustomValidator.validate(Constants.SubmissionTypePrefix.REQUESTHEADER);
                             if ( !bProceed ) {
-                                break;
+                                return;
                             }
 
                             // Bind to existing claim header
                             const oContext = await RequestUtility.getReqHeader(oODataModel, sReqID);
 
-                            const lastModifiedDate = DateUtility.getHanaDate(new Date());
+                            const dLastModifiedDate = DateUtility.getHanaDate(new Date());
 
-                            oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
+                            oContext.setProperty("LAST_MODIFIED_DATE", dLastModifiedDate);
                             oContext.setProperty("REMARK",
                                 oInputModel.getProperty("/req_header/comment")
                             );
@@ -108,19 +112,15 @@ sap.ui.define([
                             CustomValidator.init(this._oOwnerComponent, this._oView);
                             const bProceed = await CustomValidator.validate(Constants.SubmissionTypePrefix.CLAIMHEADER);
                             if ( !bProceed ) {
-                                break;
+                                return;
                             }
 
                             // Bind to existing claim header 
                             const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId);
 
-                            const lastModifiedDate = DateUtility.getHanaDate(new Date());
-                            oInputModel.setProperty(
-                                "/claim_header/last_modified_date",
-                                lastModifiedDate
-                            );
+                            const dLastModifiedDate = DateUtility.getHanaDate(new Date());
 
-                            oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
+                            oContext.setProperty("LAST_MODIFIED_DATE", dLastModifiedDate);
                             oContext.setProperty("COMMENT",
                                 oInputModel.getProperty("/claim_header/comment")
                             );
@@ -165,13 +165,13 @@ sap.ui.define([
             }
 		},
 
-        //set editable header fields
 		/**
 		 * Set fields to be editable
 		 * if there is a request tied to claim, do not allow editing for start and end trip dates
 		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
 		 * @private
-		 * @param {boolean} bEdit - edit toggle
+         * @param {string} sClaimType Claim submission or Pre Approval Request claim type
+		 * @param {boolean} bEdit edit toggle
 		 */
 		setHeaderEditable: async function (sClaimType , bEdit) {
             ClaimUtility.init(this._oOwnerComponent, this._oView);
@@ -199,7 +199,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {	
-                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), false);
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
                     }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
@@ -212,7 +212,8 @@ sap.ui.define([
 
                         oEditableFields.setProperty("/startEvent", bEdit);
                         oEditableFields.setProperty("/endEvent", bEdit);
-                        if (await this._getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
+                        Utility.init(this._oOwnerComponent, this._oView);
+                        if (await Utility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
                             oEditableFields.setProperty("/startEventRequired", bEdit);
                             oEditableFields.setProperty("/endEventRequired", bEdit);
                         }
@@ -227,26 +228,10 @@ sap.ui.define([
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {
-                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), false);
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
                     }
                     break;
             }
-		},
-
-        /**
-		 * Get condition for Event dates editability
-		 * @param {s} sRequestTypeDesc 
-		 * @returns {b}
-		 */
-		_getEventDateRequired: async function (sRequestTypeDesc) {
-            var bCheck = false;
-            RequestUtility.init(this._oOwnerComponent, this._oView);
-			const sReqType = await RequestUtility.getRequestTypeIdByDesc(sRequestTypeDesc);
-
-			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
-				bCheck = true;
-			}
-            return bCheck;
 		},
 	}
 });

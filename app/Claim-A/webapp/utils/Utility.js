@@ -2,16 +2,11 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
-    "sap/m/MessageToast",
-    "sap/ui/core/BusyIndicator",
     "sap/ui/core/Fragment",
     "claima/utils/Constants",
-    "claima/utils/DateUtility",
-    "claima/utils/ClaimUtility",
     "claima/utils/RequestUtility"
-], function (Filter, FilterOperator, Sorter, JSONModel, MessageToast, BusyIndicator, Fragment, Constants, DateUtility, ClaimUtility, RequestUtility) {
+], function (Filter, FilterOperator, JSONModel, Fragment, Constants, RequestUtility) {
     "use strict";
 
     return {
@@ -40,8 +35,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -80,7 +74,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -153,7 +147,21 @@ sap.ui.define([
             oModel.setProperty(sCountPath, aFiltered.length);
         },
 
+        /**
+		 * Get condition for Event dates editability
+		 * @param {string} sRequestTypeDesc Request Type Description to be checked
+         * @returns {boolean} Determine Event Date is Required
+		 */
+		getEventDateRequired: async function (sRequestTypeDesc) {
+            var bIsRequired = false;
+            RequestUtility.init(this._oOwnerComponent, this._oView);
+			const sReqType = await RequestUtility.getRequestTypeIdByDesc(sRequestTypeDesc);
 
+			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
+				bIsRequired = true;
+			}
+            return bIsRequired;
+		},
 
         /**
          * @public

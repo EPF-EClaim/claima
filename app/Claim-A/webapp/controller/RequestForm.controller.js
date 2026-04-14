@@ -96,7 +96,7 @@ sap.ui.define([
 			this._oFragments 		= Object.create(null);
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
-			Utility.init(this.getOwnerComponent(), this.getView());
+			Utility.init(this.getOwnerComponent());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			Common.init(this.getOwnerComponent(), this.getView());
 
