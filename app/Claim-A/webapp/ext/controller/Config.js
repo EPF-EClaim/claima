@@ -43,7 +43,7 @@ sap.ui.define([
         "MEDICAL_INSURANCE"
     ]);
 
-    const sallowedOnZempCaPayment = new Set([
+    const sAllowedonzempcapayment = new Set([
         Constants.EntitiesFields.DISBURSEMENT_STATUS
     ]);
 
@@ -146,7 +146,7 @@ sap.ui.define([
         const oKeys = oDataType.$Key || [];
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
-        const bisZempCaPayment = sPath?.startsWith(`/${Constants.Configuration.ZEMP_CA_PAYMENT}`);
+        const bIsZempCaPayment = sPath?.startsWith(`/${Constants.Configuration.ZEMP_CA_PAYMENT}`);
 
         const oVBox = new VBox({
             width: "70%",
@@ -160,7 +160,7 @@ sap.ui.define([
             const fieldType = oFieldMeta?.$Type;
             const sDisable =
                 (isZempMaster && !allowedOnZemp.has(sFieldName)) ||
-                (bisZempCaPayment && !sallowedOnZempCaPayment.has(sFieldName));
+                (bIsZempCaPayment && !sAllowedonzempcapayment.has(sFieldName));
 
             oVBox.addItem(new Label({
                 text: item.Label,
@@ -176,7 +176,7 @@ sap.ui.define([
              * ZEMP_CA_PAYMENT – DROPDOWN ONLY
              * ================================ */
             if (
-                bisZempCaPayment &&
+                bIsZempCaPayment &&
                 sFieldName === Constants.EntitiesFields.DISBURSEMENT_STATUS
             ) {
                 oInput = new Select({
@@ -242,7 +242,7 @@ sap.ui.define([
 
             oVBox.addItem(oInput);
         });
-        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bisZempCaPayment };
+        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bIsZempCaPayment };
     }
 
     return {
@@ -321,7 +321,7 @@ sap.ui.define([
                 return;
             }
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bisZempCaPayment } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bIsZempCaPayment } = _getDetails(oView, aSelectedContexts);
 
             if (sPath.includes("/ZNUM_RANGE")) {
                 const oItems = oVBox.getItems();
