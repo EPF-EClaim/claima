@@ -207,6 +207,8 @@ sap.ui.define([
 			oFunction.setParameter("lunch", nLunch);
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
+            oFunction.setParameter("tips", false);
+            oFunction.setParameter("dependent", 0);
 
             try {
                 await oFunction.execute();
@@ -304,7 +306,7 @@ sap.ui.define([
             const oReqModel     = this._oOwnerComponent.getModel("request");
             const oDataModel    = this._oOwnerComponent.getModel();
 
-			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...");
+			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...)");
 
             try {
                 await oFunction.execute();
