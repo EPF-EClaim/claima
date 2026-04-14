@@ -2101,12 +2101,19 @@ sap.ui.define([
 
 					this._onFilterRegion();
 
-					// auto populating the allocated amount upon selecting claim type item, otherwise manual input
+					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
+
+						case Constants.ClaimTypeItem.HOTEL_L:
+						case Constants.ClaimTypeItem.HOTEL_O:
+						case Constants.ClaimTypeItem.LODGING_L:
+						case Constants.ClaimTypeItem.LODG_O:
+							var iNumberOfNight = iDiffDays - 1;
+							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 					
 						default:
