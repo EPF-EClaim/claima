@@ -1487,11 +1487,11 @@ module.exports = (srv) => {
      * @private
      * @async
      * @param {object} tx - CAP transaction context for database operations
-     * @param {string} empId - Employee ID used to retrieve employee and dependent records
+     * @param {string} oEmp - Employee ID used to retrieve employee and dependent records
      * @param {object} entities - CAP service entities containing database models
      * @returns {number} Total entitled meter cube value (rounded to 2 decimal places)
      */
-    async function computeMeterCubeEntitlement(tx, empId, entities) {
+    async function computeMeterCubeEntitlement(tx, oEmp, entities) {
         const { ZEMP_MASTER, ZEMP_DEPENDENT, ZMETER_CUBE } = entities;
 
         let total = 0;
@@ -1500,21 +1500,17 @@ module.exports = (srv) => {
         const getCube = (id) =>
             Number(aMeterCube.find(c => c.METER_CUBE_ID === id)?.METER_CUBE || 0);
 
-        const emp = await tx.run(
-            SELECT.one.from(ZEMP_MASTER).where({ EEID: empId })
-        );
-
         total += getCube(Constant.MeterCubeId.EMPLOYEE);
 
-        if (emp.MARITAL === Constant.MaritalStatus.SINGLE) {
+        if (oEmp.MARITAL === Constant.MaritalStatus.SINGLE) {
             total += getCube(Constant.MeterCubeId.SINGLE);
         }
-        if (emp.MARITAL === Constant.MaritalStatus.MARRIED) {
+        if (oEmp.MARITAL === Constant.MaritalStatus.MARRIED) {
             total += getCube(Constant.MeterCubeId.MARRIED);
         }
 
         const dependents = await tx.run(
-            SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: empId })
+            SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID })
         );
 
         const year = new Date().getFullYear();
@@ -1541,6 +1537,40 @@ module.exports = (srv) => {
     }
 
     /**
+     * Retrieve employee master record for logged-in user.
+     *
+     * @private
+     * @async
+     * @param {object} tx - CAP transaction context
+     * @param {object} req - CAP request object
+     * @param {object} entities - CAP service entities
+     * @returns {object} Employee master record
+     */
+    async function getLoggedInEmployee(tx, req, entities) {
+        const { ZEMP_MASTER } = entities;
+        const sUserEmail =
+            req.user?.attr?.email ||
+            req.user?.attr?.mail ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.login_name ||
+            req.user?.id;
+
+        if (!sUserEmail) {
+            req.error(401, "Unable to determine logged-in user");
+        }
+
+        const oEmp = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
+        );
+
+        if (!oEmp) {
+            req.error(404, "Employee record not found");
+        }
+
+        return oEmp;
+    }
+
+    /**
      * Retrieve meter cube entitlement for an employee.
      * Calculates total meter cube entitlement based on employee profile
      * and dependent relationships using backend business rules.
@@ -1552,22 +1582,16 @@ module.exports = (srv) => {
      */
     srv.on('getMeterCubeEntitlement', async (req) => {
         const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        const empId =
-            req.data.empId ||
-            req.user?.id ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.email;
-
-        if (!empId) {
-            req.error(400, "Employee ID not found");
+        if (oEmp){
+            return await computeMeterCubeEntitlement(
+                tx,
+                oEmp,
+                srv.entities
+            );
         }
-
-        return await computeMeterCubeEntitlement(
-            tx,
-            empId,
-            srv.entities
-        );
+        
     });
 
     /**
@@ -1583,15 +1607,7 @@ module.exports = (srv) => {
      */
     srv.on('calculatePengangkutanLautAmount', async (req) => {
         const tx = cds.tx(req);
-
-        const empId =
-            req.data.empId ||
-            req.user?.id ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.email;
-
-        if (!empId) req.error(400, "Employee ID not found");
-
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const nActualMC = Number(req.data.actualMeterCube);
         const nActualAmount = Number(req.data.actualAmount);
 
@@ -1599,7 +1615,7 @@ module.exports = (srv) => {
             return { entitled: 0, amount: 0 };
         }
 
-        const nEntitledMC = await computeMeterCubeEntitlement(tx, empId, srv.entities);
+        const nEntitledMC = await computeMeterCubeEntitlement(tx, oEmp, srv.entities);
 
         const nFinalAmount =
             (nActualMC > nEntitledMC && nEntitledMC > 0)
