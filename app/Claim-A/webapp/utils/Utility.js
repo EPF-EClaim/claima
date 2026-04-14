@@ -310,22 +310,13 @@ sap.ui.define([
 				fMileage = parseFloat(oResult.value) || 0.0;
 
 			} catch (oError) {
+                MessageToast.show(oError);
 				fMileage = 0.0;
-                if (sSubmissionType === Constants.SubmissionTypePrefix.CLAIM) {
-                    MessageToast.show(oError);
-                }
 			} finally {
 				BusyIndicator.hide();
 			}
 
-            // determine how value will be set based on submission type
-            switch (sSubmissionType) {
-                case Constants.SubmissionTypePrefix.CLAIM:
-                    return fMileage;
-                case Constants.SubmissionTypePrefix.REQUEST:
-                    oReqModel.setProperty("/req_item/kilometer", fMileage);
-                    break;
-            }
+            return fMileage;
 		}
 
     };
