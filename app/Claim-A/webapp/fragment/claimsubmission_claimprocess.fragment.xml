@@ -174,7 +174,8 @@
                 text="{i18n>button_claimprocess_preapproval}"
                 enabled="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                 ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
-                                ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
+                                ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) &amp;&amp;
+                                !${claimsubmission_input>/claimtype/requestform/request_id} }"
             />
 
             <!-- Start Claim -->
