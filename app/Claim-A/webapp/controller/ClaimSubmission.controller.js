@@ -3275,7 +3275,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oModeOfTranfer = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oModeOfTranfer) {
-				// set course code description
+				// set mode of transfer description
 				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", oModeOfTranfer.getBindingContext("employee").getObject("TRANSFER_MODE_DESC"));
 			}
 			else {
