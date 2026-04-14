@@ -61,12 +61,12 @@ sap.ui.define([
 					var sRecordSubId = oItemData?.claim_sub_id;
 					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem = oItemData.claim_type_item_id;
-					var amount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount" 
+					var sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount" 
 					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 
 					var oMapping = {
 						// field                		: db technical name
-						[amount]: "ELIGIBLE_AMOUNT",
+						[sAmount]: "ELIGIBLE_AMOUNT",
 						"no_of_days": "TRAVEL_DAYS_ID",
 						"fare_type_id": "FARE_TYPE_ID",
 						"vehicle_class_id": "TRANSPORT_CLASS",
