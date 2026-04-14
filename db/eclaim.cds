@@ -1289,6 +1289,7 @@ entity ZELIGIBILITY_RULE : managed {
         STATUS                    : String(10)     @Common.Label: 'Status';
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
         SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
+        COST_CENTER               : String(4)      @Common.Label: 'Cost_Center';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1331,6 +1332,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
         ZNUM_RANGE                : Association to ZNUM_RANGE
                                         on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
+        ZCOST_CENTER                  : Association to one ZCOST_CENTER
+                                            on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
