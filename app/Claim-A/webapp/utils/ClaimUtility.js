@@ -35,7 +35,7 @@ sap.ui.define([
 		},
 
 		/**
-		* Checks if course has already used by user for a previously approved claim
+		* Checks if course has already been used by user for a previously approved claim
 		* @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sSessionNumber - session number ID to check from database
@@ -322,77 +322,52 @@ sap.ui.define([
 
 		},
 
-		determineDefaultCostCenter: async function (sClaimTypeId) {
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-				return oResult.sCostCenter
-
-			} catch (oError) {
-				return null;
-			}
-		},
-
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
 		 * @public
-		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
+		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
-		fetchUserElaunPengangkutanData: async function () {
-			// get eligible amount and marriage category based on current user
-			var oResult = {
-				eligible_amount: 0.00,
-				marriage_category: null,
-			};
+		fetchUserAmountElaunPengangkutan: async function () {
+			// get eligible amount based on current user
+			var dResult = 0.00;
 			try {
+				BusyIndicator.show(0);
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountEPengakut(...)");
 
 				await oFunction.execute();
 
 				const oContext = oFunction.getBoundContext();
-				const oData = oContext.getObject();
-
-				oResult = {
-					eligible_amount: oData.eligible_amount,
-					marriage_category: oData.marriage_category
-				};
+				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				oResult = {
-					eligible_amount: 0.00,
-					marriage_category: null,
-				};
+				MessageToast.show(oError);
+				dResult = 0.00;
+			} finally {
+				BusyIndicator.hide();
 			}
 
-			return oResult
+			return dResult;
 		},
 
 		/**
-		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
+		 * Retrieve status of existing employee claim with item Elaun Pengangkutan
 		 * @public
-		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+		 * @return {String} - return status of existing claim with item Elaun Pengangkutan
 		 */
-		fetchClaimElaunPengangkutan: async function () {
+		fetchUserClaimStatusElaunPengangkutan: async function () {
 			// check if claim exists with claim item elaun pengangkutan for employee
 			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkUserExistingClaimEPengakut(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserClaimStatusEPengakut(...)");
 
 				await oFunction.execute();
 
 				const oContext = oFunction.getBoundContext();
-				const dResult = oContext.getObject("value");
+				const dResult = oContext.getObject("value") || null;
 
 				return dResult;
 
 			} catch (oError) {
-				return true;
+				return null;
 			}
 		},
 
@@ -459,6 +434,23 @@ sap.ui.define([
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
 			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+		/**
+         * Get Fare Type filters based on Claim Type and Claim Item
+         * @public
+         * @param {string} sClaimTypeId
+         * @param {string} sClaimTypeItemId
+         * @returns {sap.ui.model.Filter[]} array of filters
+         */
+        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+            var aFilters = [];                
+            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
+			{
+                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
+            }
+            return aFilters;
 		}
 	}
 });

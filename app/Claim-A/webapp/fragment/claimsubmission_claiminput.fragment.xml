@@ -262,7 +262,6 @@
                     <Input
                         id="input_claiminput_comment"
                         value="{claimsubmission_input>/claim_header/comment}"
-                        required="true"
                     />
                 </f:content>
                 <f:dependents>
