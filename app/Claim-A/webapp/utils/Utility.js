@@ -4,9 +4,14 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
+    "sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
     "sap/ui/core/Fragment",
-    "claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, JSONModel, Fragment, Constants) {
+    "claima/utils/Constants",
+    "claima/utils/DateUtility",
+    "claima/utils/ClaimUtility",
+    "claima/utils/RequestUtility"
+], function (Filter, FilterOperator, Sorter, JSONModel, MessageToast, BusyIndicator, Fragment, Constants, DateUtility, ClaimUtility, RequestUtility) {
     "use strict";
 
     return {
@@ -14,8 +19,9 @@ sap.ui.define([
          * Initialize the Utility 
          * @public
          */
-        init: function (oOwnerComponent) {
+        init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
         },
 
         /* =========================================================
@@ -222,7 +228,7 @@ sap.ui.define([
                 oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
             }
         },
-        
+
          /**
          * Determine whether the number of days calculation should be treated as
          * "number of nights" instead of inclusive calendar days.

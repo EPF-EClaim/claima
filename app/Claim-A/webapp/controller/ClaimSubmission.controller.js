@@ -32,7 +32,9 @@ sap.ui.define([
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/CustomDuplicationCheck",
-	"claima/model/models"
+	"claima/model/models",
+	"claima/utils/Constants",
+	"claima/utils/Common"
 ], function (
 	Fragment,
 	Item,
@@ -67,8 +69,9 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	CustomValidator,
 	CustomDuplicationCheck,
-	Models
-
+	Models,
+	Constants,
+	Common
 ) {
 	"use strict";
 
@@ -97,7 +100,8 @@ sap.ui.define([
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
 			//declare utility
-			Utility.init(this.getOwnerComponent());
+			Common.init(this.getOwnerComponent(), this.getView());
+			Utility.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -211,11 +215,11 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
 				oClaimSubmissionModel.setProperty("/view_only", true);
-				await this.setHeaderEditable(false);
+				await this._setHeaderEditable(false);
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await this.setHeaderEditable(true);
+				await this._setHeaderEditable(true);
 			}
 
 			// load form fragments
@@ -240,7 +244,7 @@ sap.ui.define([
 		 * @private
 		 * @param {boolean} bEdit - edit toggle
 		 */
-		setHeaderEditable: async function (bEdit) {
+		_setHeaderEditable: async function (bEdit) {
 			const oClaimModel = this.getView().getModel("claimsubmission_input");
 			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");
 			if (bEdit) {
@@ -259,7 +263,7 @@ sap.ui.define([
 				oEditableFields.setProperty("/saveHeader", true);
 			}
 			else {	
-				oEditableFields.setData(Models.getClaimHeaderEditableDefaults(),false);
+				oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(),false);
 			}
 		},
 
@@ -1761,83 +1765,8 @@ sap.ui.define([
 			}
 		},
 
-		onSaveHeader: async function () {
-			const oInputModel = this.getView().getModel("claimsubmission_input");
-			const oODataModel = this.getOwnerComponent().getModel();
-
-			if ( DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")) && DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")) ) {
-				try {
-					BusyIndicator.show(0);
-
-					const sClaimId = oInputModel.getProperty("/claim_header/claim_id");
-					if (!sClaimId) {
-						MessageBox.error("msg_error_missing_claim_id");
-					}
-					
-					// validate date range
-					//// trip start/end date
-					if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_header/trip_start_date"), oInputModel.getProperty("/claim_header/trip_end_date"))) {
-						// stop claim submission if incomplete
-						return;
-					}
-					//// event start/end date (optional)
-					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
-						if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_header/event_start_date"), oInputModel.getProperty("/claim_header/event_end_date"))) {
-							// stop claim submission if incomplete
-							return;
-						}
-					}
-
-					// Bind to existing claim header 
-					const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId)
-
-					const lastModifiedDate = DateUtility.getHanaDate(new Date());
-					oInputModel.setProperty(
-						"/claim_header/last_modified_date",
-						lastModifiedDate
-					);
-
-					oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
-					oContext.setProperty("COMMENT",
-						oInputModel.getProperty("/claim_header/comment")
-					);
-					oContext.setProperty("LOCATION",
-						oInputModel.getProperty("/claim_header/location")
-					);
-					oContext.setProperty("ALTERNATE_COST_CENTER",
-						oInputModel.getProperty("/claim_header/alternate_cost_center")
-					);
-
-					oContext.setProperty("TRIP_START_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date"))
-					);
-					oContext.setProperty("TRIP_END_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date"))
-					);
-					oContext.setProperty("EVENT_START_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date"))
-					);
-					oContext.setProperty("EVENT_END_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
-					);
-
-					await oODataModel.submitBatch("$auto");
-
-					MessageToast.show(
-						Utility.getText("msg_claimheader_updated", [sClaimId])
-					);
-
-				} catch (e) {
-					MessageToast.show(
-						Utility.getText("msg_claimsubmission_failed", [e.message])
-					);
-				} finally {
-					BusyIndicator.hide();
-				}
-			}	
-			else {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
-			}
+		onSaveHeaderPress: async function () {
+			await Common.saveHeader(Constants.SubmissionTypePrefix.CLAIMHEADER);
 		},
 
 		onDownloadExcelReport: async function () {
@@ -2828,8 +2757,8 @@ sap.ui.define([
 
 			// validate date range
 			//// start/end date
-			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
-				if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("claim_item/end_date"))) {
+			if (oInputModel.getProperty("/claim_item/start_date") || oInputModel.getProperty("claim_item/end_date")) {
+				if (!this._validDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("claim_item/end_date"))) {
 					// stop claim details if incomplete
 					return;
 				}
@@ -3677,6 +3606,26 @@ sap.ui.define([
 				ctx.controller.prefill({ from: sFrom, to: sTo });
 				ctx.controller.open();
 			}.bind(this));
+		},
+
+		_validDateRange: function (startdate, enddate) {
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			// check for missing value
+			if (!startDateValue || !endDateValue) {
+				MessageBox.error(Utility.getText("msg_daterange_missing"));
+				return false;
+			}
+			// check if end date earlier than start date
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
+			if (startDateUnix > endDateUnix) {
+				MessageBox.error(Utility.getText("msg_daterange_order"));
+				return false;
+			}
+			else {
+				return true;
+			}
 		},
 
 		onCancel_ClaimDetails_Input: async function () {

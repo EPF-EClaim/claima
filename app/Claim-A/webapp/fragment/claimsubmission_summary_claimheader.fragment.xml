@@ -45,7 +45,7 @@
                 icon="sap-icon://save"
                 text="{i18n>button_claimdetails_input_save}"
                 id="btnExcelDownload3"
-                press=".onSaveHeader"
+                press=".onSaveHeaderPress"
                 visible="{claimSubmissionHeaderEditableModel>/saveHeader}"
             />
 
@@ -322,16 +322,21 @@
             <f:dependents>
                     <mdc:ValueHelp
                         id="valuehelp_claiminput_altcc"
-                        delegate='\{
-                            "name": "claima/utils/ValueHelpDelegate_altcc",
-                            "payload": \{
-                                "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                        delegate='{
+                            "name": "claima/utils/ValueHelpDelegate_Common",
+                            "payload": {
+                                "modelName": "employee",
+                                "entitySet": "employee>/ZCOST_CENTER",
+                                "keyField": "COST_CENTER_ID",
+                                "descriptionField": "COST_CENTER_DESC",
                                 "columns": [
-                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
-                                    "\{i18n>valuehelp_claiminput_altcc_col_name\}"
-                                ]
-                            \}
-                        \}'
+                                    "{i18n>valuehelp_claiminput_altcc_col_id}",
+                                    "{i18n>valuehelp_claiminput_altcc_col_name}"
+                                ],
+                                "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                                "openOnClick": true
+                            }
+                        }'
                     >
                         <mdc:typeahead>
                             <mdcvh:Popover id="valuehelp_claiminput_altcc_pop">

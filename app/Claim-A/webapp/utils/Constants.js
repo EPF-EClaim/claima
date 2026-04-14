@@ -333,7 +333,9 @@ sap.ui.define([
         },
         "SubmissionTypePrefix": {
             "REQUEST": "REQ",
-            "CLAIM": "CLM"
+            "CLAIM": "CLM",
+            "REQUESTHEADER": "REQHD",
+            "CLAIMHEADER": "CLMHD"
         },
         "CashAdvanceInfo": {
             "COST_CENTER": "100000000",

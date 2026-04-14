@@ -33,6 +33,8 @@ sap.ui.define([
     "claima/utils/SendBackDialog",
     "claima/utils/Utility",
     "claima/utils/workflowApproval",
+	"claima/model/models",
+	"claima/utils/Common",
 ], function (
     Button,
     Dialog,
@@ -68,6 +70,8 @@ sap.ui.define([
     SendBackDialog,
     Utility,
     workflowApproval,
+	Models,
+	Common
 ) {
 	"use strict";
 
@@ -92,21 +96,14 @@ sap.ui.define([
 			this._oFragments 		= Object.create(null);
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			Common.init(this.getOwnerComponent(), this.getView());
+			Utility.init(this.getOwnerComponent(), this.getView());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 
-			var oHeaderEditable = new JSONModel({
-				"startTrip": false,
-				"endTrip": false,
-				"startEvent": false,
-				"endEvent": false,
-				"location": false,
-				"comment": false,
-				"altCostCenter": false,
-			});
-			this.getView().setModel(oHeaderEditable, "editable");
+			this.getView().setModel(Models.createClaimHeaderEditableModel(), "reqHeaderEditableModel");
 		},
 
 		/* =========================================================
@@ -225,9 +222,9 @@ sap.ui.define([
 				PARequestSharedFunction.getCurrentState(this);
 			}
 			
-			this.setHeaderUnEditable();
+			await this._setHeaderEditable(false);
 			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
-				this.setHeaderEditable();
+				await this._setHeaderEditable(true);
 			}
 			PARequestSharedFunction.determineFooterButton(this);
 		},
@@ -467,112 +464,39 @@ sap.ui.define([
 
 		
 		//set editable header fields
-		setHeaderEditable: async function () {
+		/**
+		 * Set fields to be editable
+		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
+		 * @private
+		 * @param {boolean} bEdit - edit toggle
+		 */
+		_setHeaderEditable: async function (bEdit) {
 			const oReqModel = this.getView().getModel("request");
-			var oEditableFields = this.getView().getModel("editable");
-
-			oEditableFields.setProperty("/startEvent", true);
-			oEditableFields.setProperty("/endEvent", true);
-			oEditableFields.setProperty("/location", true);
-			oEditableFields.setProperty("/comment", true);
-			oEditableFields.setProperty("/startTrip", true);
-			oEditableFields.setProperty("/endTrip", true);
-			const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
-			if ( !sDefaultCostCenter ){
-				oEditableFields.setProperty("/altCostCenter", true);
+			var oEditableFields = this.getView().getModel("reqHeaderEditableModel");
+			if (bEdit) {
+				oEditableFields.setProperty("/startEvent", true);
+				oEditableFields.setProperty("/endEvent", true);
+				if (await this._getEventDateEditability(oReqModel.getProperty("/req_header/reqtype"))) {
+					oEditableFields.setProperty("/startEventRequired", true);
+					oEditableFields.setProperty("/endEventRequired", true);
+				}
+				oEditableFields.setProperty("/location", true);
+				oEditableFields.setProperty("/comment", true);
+				oEditableFields.setProperty("/startTrip", true);
+				oEditableFields.setProperty("/endTrip", true);
+				const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
+				if ( !sDefaultCostCenter ){
+					oEditableFields.setProperty("/altCostCenter", true);
+				}
+				oEditableFields.setProperty("/saveHeader", true);
 			}
-			oEditableFields.setProperty("/saveHeader", true);
-		},
-
-		//set all fields uneditable
-		setHeaderUnEditable: function () {
-			var oEditableFields = this.getView().getModel("editable");
-
-			oEditableFields.setProperty("/startEvent", false);
-			oEditableFields.setProperty("/endEvent", false);
-			oEditableFields.setProperty("/location", false);
-			oEditableFields.setProperty("/comment", false);
-			oEditableFields.setProperty("/startTrip", false);
-			oEditableFields.setProperty("/endTrip", false);
-			oEditableFields.setProperty("/altCostCenter", false);
-			oEditableFields.setProperty("/saveHeader", false);
+			else {
+				oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(),false);
+			}
 		},
 		
-		onSaveHeader: async function () {
-			const oInputModel = this.getView().getModel("request");
-			const oODataModel = this.getOwnerComponent().getModel();
-
-			if ( this._getHanaDate(oInputModel.getProperty("/req_header/tripstartdate")) && this._getHanaDate(oInputModel.getProperty("/req_header/tripenddate")) ) {
-				try {
-					BusyIndicator.show(0);
-
-					const sReqID = oInputModel.getProperty("/req_header/reqid");
-					if (!sReqID) {
-						throw new Error("Missing Request ID");
-					}
-
-					// Bind to existing claim header
-					const oContextBinding = oODataModel.bindContext(
-						`/ZREQUEST_HEADER('${encodeURIComponent(sReqID)}')`
-					);
-
-					await oContextBinding.requestObject(); 
-					const oContext = oContextBinding.getBoundContext();
-
-					const lastModifiedDate = this._getHanaDate(new Date());
-
-					oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
-					oContext.setProperty("REMARK",
-						oInputModel.getProperty("/req_header/comment")
-					);
-					oContext.setProperty("LOCATION",
-						oInputModel.getProperty("/req_header/location")
-					);
-					oContext.setProperty("ALTERNATE_COST_CENTER",
-						oInputModel.getProperty("/req_header/altcostcenter")
-					);
-
-					oContext.setProperty("TRIP_START_DATE",
-						this._getHanaDate(oInputModel.getProperty("/req_header/tripstartdate"))
-					);
-					oContext.setProperty("TRIP_END_DATE",
-						this._getHanaDate(oInputModel.getProperty("/req_header/tripenddate"))
-					);
-					oContext.setProperty("EVENT_START_DATE",
-						this._getHanaDate(oInputModel.getProperty("/req_header/eventstartdate"))
-					);
-					oContext.setProperty("EVENT_END_DATE",
-						this._getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
-					);
-
-					await oODataModel.submitBatch("$auto");
-
-					MessageToast.show(
-						Utility.getText("msg_claimheader_updated", [sReqID])
-					);
-
-				} catch (e) {
-					MessageToast.show(
-						Utility.getText("msg_claimsubmission_failed", [e.message])
-					);
-					console.error(e);
-				} finally {
-					BusyIndicator.hide();
-				}
-			}	
-			else {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
-			}
-		},
-
-		_getHanaDate: function (iDate) {
-			if (iDate) {
-				var oDate = new Date(iDate);
-				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
-				return oDateString;
-			} else {
-				return null;
-			}
+		onSaveHeaderPress: async function () {
+			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
 		},
 
 		/* =========================================================
@@ -1543,6 +1467,67 @@ sap.ui.define([
 				})
 			] : [];
 			oBinding.filter(aFilters);
+		},
+
+		/**
+		 * Get condition for Event dates editability
+		 * @param {s} sRequestTypeDesc 
+		 * @returns {b}
+		 */
+		_getEventDateEditability: async function (sRequestTypeDesc) {
+			const sReqType = await this._getRequestTypeIdByDesc(sRequestTypeDesc);
+
+			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		},
+
+		/**
+		 * Get Request Type ID with Request Type Description
+		 * @param {s} sRequestTypeDesc Request Type Description
+		 * @returns {s} Request Type ID
+		 */
+		_getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
+			if (!sRequestTypeDesc) {
+				return null;
+			}
+
+			try {
+				 await this._oDataModel.getMetaModel().requestObject("/");
+
+				// Main table path
+				const sRequestTypeTablePath = "/ZREQUEST_TYPE";
+
+				// Build filter
+				const aFilters = [
+					new Filter("REQUEST_TYPE_DESC", FilterOperator.EQ, sRequestTypeDesc),
+	        		new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+				];
+
+				// Bind list
+				const oBinding = this._oDataModel.bindList(
+					sRequestTypeTablePath,
+					null,
+					null,
+					aFilters,
+					{ $$ownRequest: true }
+				);
+
+				// Fetch data
+				const aCtx = await oBinding.requestContexts(0, Infinity);
+				let oData = null;
+				if (!aCtx || aCtx.length === 0) {
+					return null; // no employee found
+				}
+				return oData = aCtx[0].getObject().REQUEST_TYPE_ID;
+
+			} catch (e) {
+				console.log(e)
+				return null;
+			}
 		},
 
 		/* =========================================================

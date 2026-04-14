@@ -398,8 +398,8 @@ sap.ui.define([
 
 		/**
 		 * Bind to existing claim header with claim ID
-		 * @param {object} oODataModel 
-		 * @param {string} sClaimId 
+		 * @param {object} oODataModel model binding for claim
+		 * @param {string} sClaimId claim ID to check from database
 		 * @returns {object}
 		 */
 		getClaimHeader: async function (oODataModel, sClaimId) {

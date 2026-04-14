@@ -3,7 +3,6 @@ sap.ui.define([
     "sap/ui/core/Fragment",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"claima/utils/Utility",
 	"claima/utils/DateUtility",
 	"sap/m/MessageBox",
 ], function (
@@ -154,6 +153,26 @@ sap.ui.define([
             var fEstAmount = this._calculateEstimatedAmount(oReqItem, aReqPart);
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
+
+        /**
+		 * Bind to existing request header with request ID
+		 * @param {object} oODataModel model binding for request
+		 * @param {string} sReqId request ID to check from database
+		 * @returns {object}
+		 */
+		getReqHeader: async function (oODataModel, sReqId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZREQUEST_HEADER('${encodeURIComponent(sReqId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
 
 		/**
          * Calculate the total for km and rate per km 
