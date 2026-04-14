@@ -2665,11 +2665,6 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			// Validate Approved Amount 
-			if (!this._validateAmount()) {
-				return;
-			}
-
 			// Validate required fields
 			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
@@ -5010,19 +5005,6 @@ sap.ui.define([
 				oCurrencyRate.setValueState(ValueState.None);
 				oCurrencyAmount.setValueState(ValueState.None);
 			}
-		},
-		_validateAmount: function () {
-			const oInput = this.byId("input_claimdetails_input_amount");
-			const value = parseFloat(oInput.getValue());
-
-			if (isNaN(value) || value <= 0) {
-				MessageBox.error(
-					Utility.getText("msg_claiminput_amount_invalid"),
-					{ closeOnBrowserNavigation: false }
-				);
-				return false;
-			}
-			return true;
 		}
 	});
 });
