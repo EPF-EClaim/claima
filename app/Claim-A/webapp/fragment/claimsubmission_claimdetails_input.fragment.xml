@@ -968,6 +968,10 @@
                     display="ValueDescription"
                     visible="false"
                     valueHelp="valuehelp_currency_code"
+                    editMode="{= !!${claimitem_input>/claim_item/need_foreign_currency}? 'Editable': 'ReadOnly'}"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} || !!${claimitem_input>/claim_item/need_foreign_currency}
+                    }" 
+                    
                 />
                 <!-- Currency Rate -->
                 <Label text="{i18n>label_claimdetails_input_currencyrate}" />
@@ -980,14 +984,19 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							preserveDecimals: false
-						}
+						},
+                        constraints: {
+                            minimum: 0.01
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
                     editable="{= 
                             ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}  || 
                             !!${claimitem_input>/claim_item/need_foreign_currency}
-                    }"
+                    }"  
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} || !!${claimitem_input>/claim_item/need_foreign_currency}
+                    }"           
                 />
 
                 <!-- Currency Amount -->
@@ -1001,11 +1010,13 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							preserveDecimals: false
-						}
+						},
+                        constraints: { minimum: 0.01 }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
                     editable="{= !!${claimitem_input>/claim_item/need_foreign_currency} }"
+                    required="{= ${claimitem_input>/claim_item/need_foreign_currency}}"
                 />
 
                 <!-- Trip Start Date -->
