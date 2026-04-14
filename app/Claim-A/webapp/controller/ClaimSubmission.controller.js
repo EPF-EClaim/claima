@@ -3493,7 +3493,7 @@ sap.ui.define([
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSelectedItem) {
 				// get claim type description
-				oInputModel.setProperty("/claim_item/descr/from_state_id", oSelectedItem.getBindingContext("employee").getObject("STATE_DESC"));
+				oInputModel.setProperty("/claim_item/descr/from_state_id", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.STATE_DESC));
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_state_id", null);
@@ -3501,8 +3501,8 @@ sap.ui.define([
 
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
-			var aFilters = [new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
-			if (!!sFromState) { aFilters.push(new Filter("STATE_ID", FilterOperator.EQ, sFromState)); }
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
+			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.STATE_ID, FilterOperator.EQ, sFromState)); }
 			oBinding.filter(aFilters);
 
 			// reset current value of From Location (Office)
@@ -3524,7 +3524,7 @@ sap.ui.define([
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSelectedItem) {
 				// get claim type description
-				oInputModel.setProperty("/claim_item/descr/from_location_office", oSelectedItem.getBindingContext("employee").getObject("LOCATION_DESC"));
+				oInputModel.setProperty("/claim_item/descr/from_location_office", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.LOCATION_DESC));
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_location_office", null);
@@ -3557,7 +3557,7 @@ sap.ui.define([
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSelectedItem) {
 				// get claim type description
-				oInputModel.setProperty("/claim_item/descr/to_state_id", oSelectedItem.getBindingContext("employee_view").getObject("TO_STATE_DESC"));
+				oInputModel.setProperty("/claim_item/descr/to_state_id", oSelectedItem.getBindingContext("employee_view").getObject(this._oConstant.EntitiesFields.TO_STATE_DESC));
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/to_state_id", null);
@@ -3590,21 +3590,19 @@ sap.ui.define([
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSelectedItem) {
 				// get claim type description
-				oInputModel.setProperty("/claim_item/descr/to_location_office", oSelectedItem.getBindingContext("employee_view").getObject("TO_LOCATION_DESC"));
+				oInputModel.setProperty("/claim_item/descr/to_location_office", oSelectedItem.getBindingContext("employee_view").getObject(this._oConstant.EntitiesFields.TO_LOCATION_DESC));
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/to_location_office", null);
 			}
 
 			// get mileage
-			var fMileage = await Utility.determineOfficeMileage(
+			oInputModel.setProperty("/claim_item/km", await Utility.determineOfficeMileage(
 				oInputModel.getProperty("/claim_item/from_state_id"),
 				oInputModel.getProperty("/claim_item/from_location_office"),
 				oInputModel.getProperty("/claim_item/to_state_id"),
 				oInputModel.getProperty("/claim_item/to_location_office")
-			);
-			// populate item values
-			oInputModel.setProperty("/claim_item/km", fMileage);
+			));
 			this.onChange_ClaimDetails_Kilometer();
 		},
 
