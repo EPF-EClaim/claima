@@ -993,14 +993,18 @@ entity ZBRANCH : managed {
         END_DATE     : Date        @Common.Label: 'End Date';
         STATUS       : String(10)  @Common.Label: 'Status';
 }
+
 entity ZEMP_CA_PAYMENT : managed {
     key REQUEST_ID           : String    @mandatory  @Common.Label: 'Pre Approval Request ID';
     key EMP_ID               : String    @mandatory  @Common.Label: 'Employee ID';
     key DISBURSEMENT_DATE    : Date      @mandatory  @Common.Label: 'Disbursement Date';
-        DISBURSEMENT_STATUS  : String(2) @Common.Label: 'Disbursement Status ';
+        DISBURSEMENT_STATUS  : String(2) @Common.Label          : 'Disbursement Status'
+                                         @Common.Text           : ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_DESC
+                                         @Common.TextArrangement: #TextOnly;
         ZDISBURSEMENT_STATUS : Association to ZDISBURSEMENT_STATUS
-                                   on ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_ID = DISBURSEMENT_STATUS;
+                                   on ZDISBURSEMENT_STATUS.DISBURSEMENT_STATUS_ID = DISBURSEMENT_STATUS
 }
+
 entity ZPERDIEM_ENT : managed {
     key PERSONAL_GRADE     : String        @mandatory  @Common.Label: 'Personal Grade From';
     key LOCATION           : String(2)     @mandatory  @Common.Label: 'Location';
@@ -1289,6 +1293,7 @@ entity ZELIGIBILITY_RULE : managed {
         STATUS                    : String(10)     @Common.Label: 'Status';
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
         SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
+        COST_CENTER               : String(4)      @Common.Label: 'Cost_Center';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1331,6 +1336,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
         ZNUM_RANGE                : Association to ZNUM_RANGE
                                         on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
+        ZCOST_CENTER              : Association to one ZCOST_CENTER
+                                        on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

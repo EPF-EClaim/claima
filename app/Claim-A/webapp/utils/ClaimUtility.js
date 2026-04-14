@@ -323,7 +323,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
@@ -385,7 +385,6 @@ sap.ui.define([
 		fetchMeterCubeEntitlement: function (oInputModel) {
 			const oContext = this._oView.getModel().bindContext("/getMeterCubeEntitlement(...)");
 
-			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((result) => {
@@ -410,8 +409,6 @@ sap.ui.define([
 		 */
 		fetchPengangkutanLautAmount: function (oInputModel) {
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
-
-			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 

@@ -177,7 +177,7 @@ annotate service.ZCLAIM_TYPE with @(
                 Label: 'Status'
             }
         ],
-        
+
         LineItem      : [
             {
                 $Type: 'UI.DataField',
@@ -2262,9 +2262,9 @@ annotate service.ZEMP_CA_PAYMENT with @(
         DISBURSEMENT_DATE
     ],
     Capabilities                   : {
-        Deletable : true,
+        Deletable : false,
         Updatable : true,
-        Insertable: true
+        Insertable: false
     },
     odata.draft.enabled,
 
@@ -2301,7 +2301,7 @@ annotate service.ZEMP_CA_PAYMENT with @(
                 $Type            : 'UI.DataField',
                 Value            : DISBURSEMENT_STATUS,
                 ![@UI.Importance]: #High,
-                Label            : 'Disbursement Status (Y/N)'
+                Label            : 'Disbursement Status'
             }
         ]
     }
@@ -4316,7 +4316,13 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : SUBMISSION_TYPE,
                 ![@UI.Importance]: #High,
                 Label            : 'Submission Type'
-            }            
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost_Center'
+            }
         ]
     }
 );
@@ -4399,7 +4405,12 @@ annotate service.ZROLEHIERARCHY with @(
 annotate service.ZWORKFLOW_STEP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [WORKFLOW_CODE, WORKFLOW_TYPE, START_DATE, END_DATE],
+    Common.SemanticKey             : [
+        WORKFLOW_CODE,
+        WORKFLOW_TYPE,
+        START_DATE,
+        END_DATE
+    ],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4439,7 +4450,7 @@ annotate service.ZWORKFLOW_STEP with @(
                 Value            : END_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'End Date'
-            }            
+            }
         ]
     }
 );
@@ -4447,7 +4458,14 @@ annotate service.ZWORKFLOW_STEP with @(
 annotate service.ZWORKFLOW_RULE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE],
+    Common.SemanticKey             : [
+        WORKFLOW_ID,
+        WORKFLOW_TYPE,
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID,
+        START_DATE,
+        END_DATE
+    ],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4487,7 +4505,7 @@ annotate service.ZWORKFLOW_RULE with @(
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item ID'
-            },          
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -4529,7 +4547,7 @@ annotate service.ZWORKFLOW_RULE with @(
                 Value            : RECEIPT_AGE,
                 ![@UI.Importance]: #High,
                 Label            : 'Receipt Age'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMPLOYEE_COST_CENTER,
@@ -4547,7 +4565,7 @@ annotate service.ZWORKFLOW_RULE with @(
                 Value            : REMARK,
                 ![@UI.Importance]: #High,
                 Label            : 'Remark'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -4565,13 +4583,13 @@ annotate service.ZWORKFLOW_RULE with @(
                 Value            : TRIP_START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Trip Start Date'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROLE,
                 ![@UI.Importance]: #High,
                 Label            : 'Role'
-            }                                                                        
+            }
         ]
     }
 );
@@ -4579,7 +4597,16 @@ annotate service.ZWORKFLOW_RULE with @(
 annotate service.ZTRAIN_COURSE_PART with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS,PARTICIPANT_ID, START_DATE,END_DATE],
+    Common.SemanticKey             : [
+        COURSE_ID,
+        COURSE_DESC,
+        SESSION_NUMBER,
+        COURSE_SESSION_STAT,
+        ATTENDENCE_STATUS,
+        PARTICIPANT_ID,
+        START_DATE,
+        END_DATE
+    ],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4619,7 +4646,7 @@ annotate service.ZTRAIN_COURSE_PART with @(
                 Value            : END_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'End Date'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : SESSION_NUMBER,
@@ -4643,7 +4670,7 @@ annotate service.ZTRAIN_COURSE_PART with @(
                 Value            : PARTICIPANT_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Participant ID'
-            }             
+            }
         ]
     }
 );
