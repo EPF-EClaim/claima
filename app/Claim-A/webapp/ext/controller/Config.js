@@ -12,7 +12,8 @@ sap.ui.define([
     "sap/m/Button",
     "claima/utils/Utility",
     "claima/utils/Validator",
-    "sap/ui/core/ValueState"
+    "sap/ui/core/ValueState",
+    "claima/utils/Constants"
 ], function (ControllerExtension,
     ListItem,
     DatePicker,
@@ -26,7 +27,8 @@ sap.ui.define([
     Button,
     Utility,
     Validator,
-    ValueState) {
+    ValueState,
+    Constants) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -41,11 +43,9 @@ sap.ui.define([
         "MEDICAL_INSURANCE"
     ]);
 
-
     const allowedOnZempCaPayment = new Set([
-        "DISBURSEMENT_STATUS"
-    ])
-
+        Constants.EntitiesFields.DISBURSEMENT_STATUS
+    ]);
 
     const sDisabledField = "RANGE_ID";
 
@@ -146,7 +146,7 @@ sap.ui.define([
         const oKeys = oDataType.$Key || [];
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
-        const isZempCaPayment = sPath?.startsWith("/ZEMP_CA_PAYMENT");
+        const isZempCaPayment = sPath?.startsWith(`/${Constants.Configuration.ZEMP_CA_PAYMENT}`);
 
         const oVBox = new VBox({
             width: "70%",
@@ -175,8 +175,10 @@ sap.ui.define([
             /* ================================
              * ZEMP_CA_PAYMENT – DROPDOWN ONLY
              * ================================ */
-            if (isZempCaPayment && fieldName === "DISBURSEMENT_STATUS") {
-                
+            if (
+                isZempCaPayment &&
+                fieldName === Constants.EntitiesFields.DISBURSEMENT_STATUS
+            ) {
                 oInput = new Select({
                     name: fieldName,
                     width: "130%",
@@ -188,7 +190,7 @@ sap.ui.define([
 
                 // Bind items AFTER model is set
                 oInput.bindItems({
-                    path: "/ZDISBURSEMENT_STATUS",
+                    path: Constants.Entities.ZDISBURSEMENT_STATUS,
                     template: new ListItem({
                         key: "{DISBURSEMENT_STATUS_ID}",
                         text: "{DISBURSEMENT_STATUS_DESC}"
