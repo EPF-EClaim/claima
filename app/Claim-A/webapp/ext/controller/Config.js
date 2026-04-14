@@ -43,7 +43,7 @@ sap.ui.define([
         "MEDICAL_INSURANCE"
     ]);
 
-    const allowedOnZempCaPayment = new Set([
+    const sallowedOnZempCaPayment = new Set([
         Constants.EntitiesFields.DISBURSEMENT_STATUS
     ]);
 
@@ -146,7 +146,7 @@ sap.ui.define([
         const oKeys = oDataType.$Key || [];
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
-        const isZempCaPayment = sPath?.startsWith(`/${Constants.Configuration.ZEMP_CA_PAYMENT}`);
+        const bisZempCaPayment = sPath?.startsWith(`/${Constants.Configuration.ZEMP_CA_PAYMENT}`);
 
         const oVBox = new VBox({
             width: "70%",
@@ -155,18 +155,18 @@ sap.ui.define([
         oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom")
 
         oLineItems.forEach(function (item) {
-            const fieldName = item.Value.$Path;
-            const oFieldMeta = oDataType[fieldName];
+            const sFieldName = item.Value.$Path;
+            const oFieldMeta = oDataType[sFieldName];
             const fieldType = oFieldMeta?.$Type;
             const sDisable =
-                (isZempMaster && !allowedOnZemp.has(fieldName)) ||
-                (isZempCaPayment && !allowedOnZempCaPayment.has(fieldName));
+                (isZempMaster && !allowedOnZemp.has(sFieldName)) ||
+                (bisZempCaPayment && !sallowedOnZempCaPayment.has(sFieldName));
 
             oVBox.addItem(new Label({
                 text: item.Label,
                 width: "100%",
-                labelFor: fieldName,
-                required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
+                labelFor: sFieldName,
+                required: !!(oDataType[sFieldName] && oDataType[sFieldName].$Nullable === false)
             }));
             oVBox.addStyleClass("sapUiSmallMarginTopBottom")
 
@@ -176,13 +176,13 @@ sap.ui.define([
              * ZEMP_CA_PAYMENT – DROPDOWN ONLY
              * ================================ */
             if (
-                isZempCaPayment &&
-                fieldName === Constants.EntitiesFields.DISBURSEMENT_STATUS
+                bisZempCaPayment &&
+                sFieldName === Constants.EntitiesFields.DISBURSEMENT_STATUS
             ) {
                 oInput = new Select({
-                    name: fieldName,
+                    name: sFieldName,
                     width: "130%",
-                    selectedKey: oData[fieldName] || "",
+                    selectedKey: oData[sFieldName] || "",
                 });
 
                 // Explicitly set the OData model
@@ -203,8 +203,8 @@ sap.ui.define([
             } else if (fieldType?.includes("Edm.Date")) {
 
                 oInput = new DatePicker({
-                    value: oData[fieldName] || null,
-                    name: fieldName,
+                    value: oData[sFieldName] || null,
+                    name: sFieldName,
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
@@ -217,9 +217,9 @@ sap.ui.define([
             } else if (fieldType?.includes("Edm.Boolean")) {
 
                 oInput = new Select({
-                    name: fieldName,
+                    name: sFieldName,
                     width: "130%",
-                    selectedKey: oData[fieldName] || null,
+                    selectedKey: oData[sFieldName] || null,
                     items: [
                         new ListItem({ key: "", text: Utility.getText("none") }),
                         new ListItem({ key: false, text: Utility.getText("no") }),
@@ -233,8 +233,8 @@ sap.ui.define([
             } else {
 
                 oInput = new Input({
-                    value: oData[fieldName]?.toString() || "",
-                    name: fieldName,
+                    value: oData[sFieldName]?.toString() || "",
+                    name: sFieldName,
                     width: "130%",
                     enabled: !sDisable
                 });
@@ -242,7 +242,7 @@ sap.ui.define([
 
             oVBox.addItem(oInput);
         });
-        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, isZempCaPayment };
+        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bisZempCaPayment };
     }
 
     return {
@@ -321,7 +321,7 @@ sap.ui.define([
                 return;
             }
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, isZempCaPayment } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster, bisZempCaPayment } = _getDetails(oView, aSelectedContexts);
 
             if (sPath.includes("/ZNUM_RANGE")) {
                 const oItems = oVBox.getItems();
