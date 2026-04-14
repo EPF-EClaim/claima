@@ -2333,6 +2333,13 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
 			}
 
+			// if claim type item is elaun lodging pertukaran, populate eligible amount with user value
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR) {
+				var dEligibleAmount = await ClaimUtility.fetchUserAmountLodgingPertukaran();
+				// populate item values
+				oInputModel.setProperty("/claim_item/eligible_amount", dEligibleAmount);
+			}
+
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
 				this._resetPerDiem();
 			}

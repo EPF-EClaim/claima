@@ -256,9 +256,9 @@
 
                 <!-- Eligible Amount (MYR) -->
                 <Label text="{i18n>label_claimdetails_input_eligible_amount}" />
-                <Text
-                    id="text_claimdetails_input_eligible_amount"
-                    text="{
+                <Input
+                    id="input_claimdetails_input_eligible_amount"
+                    value="{
 						path: 'claimitem_input>/claim_item/eligible_amount',
 						type: 'FloatType',
 						formatOptions: {
@@ -266,10 +266,12 @@
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
 							preserveDecimals: false
-						}
+                        }
 					}"
-					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
-                />
+					editable="false"
+					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) ||
+                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} }"
+				/>
 
                 <!-- Meter Cube Entitled -->
                 <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}" />

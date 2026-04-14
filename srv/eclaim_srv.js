@@ -1354,6 +1354,56 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Get eligible amount for user employee on Elaun Lodging Pertukaran, based on Employee Grade
+     * @public
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountLodTukar', async (req) => {
+        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
+        const sEmail = String(sUserEmail).trim().toLowerCase();
+
+        try {
+            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'GRADE').where({ EMAIL: sEmail });
+            if (!oEmpData) {
+                return req.error(404, `No employee data found.`);
+            }
+
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+            var aPersonalGradeFilters = [Constant.Wildcard.All];
+            if (!!oEmpData.GRADE) {
+                aPersonalGradeFilters.push(oEmpData.GRADE);
+            }
+
+            const oEligibilityRule = await SELECT.one
+                .from(Constant.Entities.ZELIGIBILITY_RULE)
+                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                .where({
+                    // claim type + claim type item
+                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
+                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.LOD_TUKAR,
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                    // values to filter
+                    PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                 })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }
+                ]);
+
+            if (!oEligibilityRule) {
+                return req.error(404, `Eligible amount not found for given employee.`);
+            }
+
+            return oEligibilityRule.ELIGIBLE_AMOUNT;
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+        }
+    });
+
     srv.on('getOfficeDistance', async (req) => {
         const {
             sFromState,

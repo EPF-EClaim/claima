@@ -394,6 +394,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     
     function getUserClaimStatusEPengakut() returns String;
     
+    function getUserEligibleAmountLodTukar() returns Decimal(16, 2);
+    
     type reminders {
         empName     : String;
         empEmail    : String;

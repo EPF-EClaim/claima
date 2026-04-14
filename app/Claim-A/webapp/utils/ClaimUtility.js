@@ -372,6 +372,33 @@ sap.ui.define([
 		},
 
 		/**
+		 * Retrieve eligible amount for user selecting Elaun Lodging Pertukaran, based on Employee Grade
+		 * @public
+		 * @return {Decimal} - returns eligible amount retrieved from table
+		 */
+		fetchUserAmountLodgingPertukaran: async function () {
+			// get eligible amount based on current user
+			var dResult = 0.00;
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountLodTukar(...)");
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				dResult = oContext.getObject("value") || 0.00;
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				dResult = 0.00;
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return dResult;
+		},
+
+		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
 		 * Calls backend entitlement function using the logged-in employee ID
