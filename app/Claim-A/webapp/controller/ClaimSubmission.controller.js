@@ -3597,7 +3597,8 @@ sap.ui.define([
 			}
 
 			// get mileage
-			var fMileage = await ClaimUtility.determineOfficeMileage(
+			var fMileage = await Utility.determineOfficeMileage(
+				this._oConstant.SubmissionTypePrefix.CLAIM,
 				oInputModel.getProperty("/claim_item/from_state_id"),
 				oInputModel.getProperty("/claim_item/from_location_office"),
 				oInputModel.getProperty("/claim_item/to_state_id"),

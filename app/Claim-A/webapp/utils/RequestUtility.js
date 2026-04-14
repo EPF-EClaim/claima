@@ -64,45 +64,6 @@ sap.ui.define([
 		},
 
 		/**
-         * Determine the office mileage 
-         * @public
-         */
-        determineOfficeMileage: async function () {
-            const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
-            const oDataModel = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
-            const oReqItem  =oReqModel.getProperty("/req_item");
-
-            var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
-            var sToState    = oReqItem.to_state
-            var sToOffice   = oReqItem.to_location_office;
-
-            if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
-
-            const oFunction = oDataModel.bindContext("/getOfficeDistance(...)");
-            oFunction.setParameter("sFromState", sFromState);
-            oFunction.setParameter("sFromOffice", sFromOffice);
-            oFunction.setParameter("sToState", sToState);
-            oFunction.setParameter("sToOffice", sToOffice);
-
-            try {
-                await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-                var fMileage = parseFloat(oResult.value);
-
-                oReqModel.setProperty("/req_item/kilometer", fMileage);
-
-                this.populateAllocatedAmount();
-
-            } catch (error) {
-                return parseFloat(0).toFixed(2);
-            }
-        },
-
-		/**
          * Populate the allocated amount when needed 
          * @public
          */

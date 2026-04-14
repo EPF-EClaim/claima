@@ -4,9 +4,20 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
+	"sap/ui/core/BusyIndicator",
+	"sap/m/MessageToast",
     "sap/ui/core/Fragment",
     "claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, JSONModel, Fragment, Constants) {
+], function (
+    Filter,
+    FilterOperator,
+    Sorter,
+    JSONModel,
+	BusyIndicator,
+    MessageToast,
+    Fragment,
+    Constants
+) {
     "use strict";
 
     return {
@@ -256,5 +267,66 @@ sap.ui.define([
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
+
+		/**
+		 * Retrieve mileage based on selected office locations
+		 * @public
+		 * @param {String} sSubmissionType - whether submission type is Claim or Request
+		 * @param {String} sFromState - value of From State
+		 * @param {String} sFromOffice - value of From Location (Office)
+		 * @param {String} sToState - value of To State
+		 * @param {String} sToOffice - value of To Location (Office)
+		 * @return {Float} fMileage - returns mileage based on selected office locations
+		 */
+		determineOfficeMileage: async function (sSubmissionType, sFromState, sFromOffice, sToState, sToOffice) {
+			var fMileage = 0.0;
+            const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
+            const oReqItem  = oReqModel.getProperty("/req_item");
+
+            if (sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+
+                sFromState  = oReqItem.from_state;
+                sFromOffice = oReqItem.from_location_office;
+                sToState    = oReqItem.to_state
+                sToOffice   = oReqItem.to_location_office;
+            }
+
+			if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
+
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getOfficeDistance(...)");
+
+				oFunction.setParameter("sFromState", sFromState);
+				oFunction.setParameter("sFromOffice", sFromOffice);
+				oFunction.setParameter("sToState", sToState);
+				oFunction.setParameter("sToOffice", sToOffice);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+				fMileage = parseFloat(oResult.value) || 0.0;
+
+			} catch (oError) {
+				fMileage = 0.0;
+                if (sSubmissionType === Constants.SubmissionTypePrefix.CLAIM) {
+                    MessageToast.show(oError);
+                }
+			} finally {
+				BusyIndicator.hide();
+			}
+
+            // determine how value will be set based on submission type
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.CLAIM:
+                    return fMileage;
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    oReqModel.setProperty("/req_item/kilometer", fMileage);
+                    break;
+            }
+		}
+
     };
     });

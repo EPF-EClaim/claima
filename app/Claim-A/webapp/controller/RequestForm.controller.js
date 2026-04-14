@@ -2023,7 +2023,8 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
                 	RequestUtility.populateAllocatedAmount();
-					RequestUtility.determineOfficeMileage();
+					Utility.determineOfficeMileage(this._oConstant.SubmissionTypePrefix.REQUEST);
+                    RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2515,7 +2516,8 @@ sap.ui.define([
 		 * @public
 		 */
 		onSelectToOffice: function () {
-			RequestUtility.determineOfficeMileage();
+			Utility.determineOfficeMileage(this._oConstant.SubmissionTypePrefix.REQUEST);
+			RequestUtility.populateAllocatedAmount();
 		},
 
 		/**
