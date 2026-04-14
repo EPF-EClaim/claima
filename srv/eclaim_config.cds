@@ -2262,9 +2262,9 @@ annotate service.ZEMP_CA_PAYMENT with @(
         DISBURSEMENT_DATE
     ],
     Capabilities                   : {
-        Deletable : true,
+        Deletable : false,
         Updatable : true,
-        Insertable: true
+        Insertable: false
     },
     odata.draft.enabled,
 
