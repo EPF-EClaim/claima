@@ -271,25 +271,14 @@ sap.ui.define([
 		/**
 		 * Retrieve mileage based on selected office locations
 		 * @public
-		 * @param {String} sSubmissionType - whether submission type is Claim or Request
 		 * @param {String} sFromState - value of From State
 		 * @param {String} sFromOffice - value of From Location (Office)
 		 * @param {String} sToState - value of To State
 		 * @param {String} sToOffice - value of To Location (Office)
 		 * @return {Float} fMileage - returns mileage based on selected office locations
 		 */
-		determineOfficeMileage: async function (sSubmissionType, sFromState, sFromOffice, sToState, sToOffice) {
+		determineOfficeMileage: async function (sFromState, sFromOffice, sToState, sToOffice) {
 			var fMileage = 0.0;
-            const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
-            const oReqItem  = oReqModel.getProperty("/req_item");
-
-            if (sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
-
-                sFromState  = oReqItem.from_state;
-                sFromOffice = oReqItem.from_location_office;
-                sToState    = oReqItem.to_state
-                sToOffice   = oReqItem.to_location_office;
-            }
 
 			if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
 

@@ -2023,7 +2023,12 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
                 	RequestUtility.populateAllocatedAmount();
-					this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(this._oConstant.SubmissionTypePrefix.REQUEST));
+					this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+						this._oReqModel.getProperty("/req_item/from_state"),
+						this._oReqModel.getProperty("/req_item/from_location_office"),
+						this._oReqModel.getProperty("/req_item/to_state"),
+						this._oReqModel.getProperty("/req_item/to_location_office")
+					));
                     RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
@@ -2516,7 +2521,12 @@ sap.ui.define([
 		 * @public
 		 */
 		onSelectToOffice: async function () {
-			this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(this._oConstant.SubmissionTypePrefix.REQUEST));
+			this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+				this._oReqModel.getProperty("/req_item/from_state"),
+				this._oReqModel.getProperty("/req_item/from_location_office"),
+				this._oReqModel.getProperty("/req_item/to_state"),
+				this._oReqModel.getProperty("/req_item/to_location_office")
+			));
 			RequestUtility.populateAllocatedAmount();
 		},
 
