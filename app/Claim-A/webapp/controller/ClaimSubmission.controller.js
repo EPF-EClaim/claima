@@ -210,6 +210,7 @@ sap.ui.define([
 			}
 			// set view-only
 			// TODO: Revisit to make sure the claim is reloaded everytime
+			Common.init(this.getOwnerComponent(), this.getView());
 			if (
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
