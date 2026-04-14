@@ -2335,9 +2335,9 @@ sap.ui.define([
 
 			// if claim type item is elaun lodging pertukaran, populate eligible amount with user value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR) {
-				var dEligibleAmount = await ClaimUtility.fetchUserAmountLodgingPertukaran();
+				var dEligibleAmount = ;
 				// populate item values
-				oInputModel.setProperty("/claim_item/eligible_amount", dEligibleAmount);
+				oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodgingPertukaran());
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
@@ -3173,6 +3173,14 @@ sap.ui.define([
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
 				this._updateEntitlementAmount(oInputModel);
+			}
+			// if claim type item is elaun lodging pertukaran, calculate amount based on eligible amount, number of nights, and number of family members
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR) {
+				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodgingPertukaran(
+					oInputModel.getProperty("/claim_item/eligible_amount"),
+					oInputModel.getProperty("/claim_item/no_of_days"),
+					oInputModel.getProperty("/claim_item/no_of_family_member")
+				));
 			}
 		},
 

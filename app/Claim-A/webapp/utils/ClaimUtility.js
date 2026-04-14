@@ -399,6 +399,26 @@ sap.ui.define([
 		},
 
 		/**
+		 * Calculate approved amount based on eligible amount, number of nights, and number of family members
+		 * @public
+		 * @param {Decimal} dEligibleAmount - eligible amount set for employee
+		 * @param {Integer} iNoOfDays - number of days retrieved from claim item
+		 * @param {Integer} iNoOfFamilyMembers - number of family members retrieved from claim item
+		 * @return {Decimal} dResult - returns approved amount based on above parameters
+		 */
+		calculateAmountLodgingPertukaran: function (dEligibleAmount, iNoOfDays, iNoOfFamilyMembers) {
+			if (!dEligibleAmount || !iNoOfDays || !iNoOfFamilyMembers) return 0.00;
+
+			// get number of nights
+			var iNoOfNights = iNoOfDays - 1;
+
+			// calculate approved amount
+			var dResult = parseFloat(dEligibleAmount) * iNoOfNights * iNoOfFamilyMembers;
+
+			return !isNaN(dResult) ? dResult : 0.00;
+		},
+
+		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
 		 * Calls backend entitlement function using the logged-in employee ID
