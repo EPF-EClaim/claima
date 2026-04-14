@@ -1,18 +1,14 @@
 sap.ui.define([
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
-    "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
     "sap/ui/core/BusyIndicator",
-    "sap/ui/core/Fragment",
     "claima/utils/Constants",
     "claima/utils/DateUtility",
     "claima/utils/ClaimUtility",
     "claima/utils/RequestUtility",
     "claima/utils/CustomValidator",
-    "claima/utils/Utility"
-], function (Filter, FilterOperator, Sorter, JSONModel, MessageToast, BusyIndicator, Fragment, Constants, DateUtility, ClaimUtility, RequestUtility, CustomValidator, Utility) {
+    "claima/utils/Utility",
+    "claima/model/models",
+], function (MessageToast, BusyIndicator, Constants, DateUtility, ClaimUtility, RequestUtility, CustomValidator, Utility, Models) {
 	"use strict";
 
 	return {
@@ -88,7 +84,6 @@ sap.ui.define([
                             MessageToast.show(
                                 Utility.getText("msg_claimsubmission_failed", [e.message])
                             );
-                            console.error(e);
                         } finally {
                             BusyIndicator.hide();
                         }
@@ -168,6 +163,83 @@ sap.ui.define([
                     }
                     break;
             }
+		},
+
+        //set editable header fields
+		/**
+		 * Set fields to be editable
+		 * if there is a request tied to claim, do not allow editing for start and end trip dates
+		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
+		 * @private
+		 * @param {boolean} bEdit - edit toggle
+		 */
+		setHeaderEditable: async function (sClaimType , bEdit) {
+            ClaimUtility.init(this._oOwnerComponent, this._oView);
+            switch(sClaimType) {
+                case Constants.SubmissionTypePrefix.CLAIMHEADER:
+                    const oClaimModel = this._oView.getModel("claimsubmission_input");
+                    var oEditableFields = this._oView.getModel("claimSubmissionHeaderEditableModel");
+                    if (bEdit) {
+                        oEditableFields.setProperty("/startEvent", bEdit);
+                        oEditableFields.setProperty("/endEvent", bEdit);
+                        oEditableFields.setProperty("/location", bEdit);
+                        oEditableFields.setProperty("/comment", bEdit);
+                        if (!oClaimModel.getProperty("/claim_header/request_id")) {
+                            oEditableFields.setProperty("/startTrip", bEdit);
+                            oEditableFields.setProperty("/endTrip", bEdit);
+                        }
+                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+                        if ( !sDefaultCostCenter ){
+                            oEditableFields.setProperty("/altCostCenter", bEdit);
+                        }
+                        oEditableFields.setProperty("/saveHeader", bEdit);
+                    }
+                    else {	
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
+                    }
+                    break;
+                case Constants.SubmissionTypePrefix.REQUESTHEADER:
+                    const oReqModel = this._oView.getModel("request");
+                    var oEditableFields = this._oView.getModel("reqHeaderEditableModel");
+                    if (bEdit) {
+                        oEditableFields.setProperty("/startEvent", bEdit);
+                        oEditableFields.setProperty("/endEvent", bEdit);
+                        if (await this._getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
+                            oEditableFields.setProperty("/startEventRequired", bEdit);
+                            oEditableFields.setProperty("/endEventRequired", bEdit);
+                        }
+                        oEditableFields.setProperty("/location", bEdit);
+                        oEditableFields.setProperty("/comment", bEdit);
+                        oEditableFields.setProperty("/startTrip", bEdit);
+                        oEditableFields.setProperty("/endTrip", bEdit);
+                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
+                        if ( !sDefaultCostCenter ){
+                            oEditableFields.setProperty("/altCostCenter", bEdit);
+                        }
+                        oEditableFields.setProperty("/saveHeader", bEdit);
+                    }
+                    else {
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
+                    }
+                    break;
+            }
+		},
+
+        /**
+		 * Get condition for Event dates editability
+		 * @param {s} sRequestTypeDesc 
+		 * @returns {b}
+		 */
+		_getEventDateRequired: async function (sRequestTypeDesc) {
+            RequestUtility.init(this._oOwnerComponent, this._oView);
+			const sReqType = await RequestUtility.getRequestTypeIdByDesc(sRequestTypeDesc);
+
+			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		},
 	}
 });

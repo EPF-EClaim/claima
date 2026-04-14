@@ -96,9 +96,9 @@ sap.ui.define([
 			this._oFragments 		= Object.create(null);
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
-			Common.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent(), this.getView());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			Common.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -222,9 +222,9 @@ sap.ui.define([
 				PARequestSharedFunction.getCurrentState(this);
 			}
 			
-			await this._setHeaderEditable(false);
+			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
 			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
-				await this._setHeaderEditable(true);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
 			}
 			PARequestSharedFunction.determineFooterButton(this);
 		},
@@ -460,39 +460,6 @@ sap.ui.define([
 
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
-		},
-
-		
-		//set editable header fields
-		/**
-		 * Set fields to be editable
-		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
-		 * @private
-		 * @param {boolean} bEdit - edit toggle
-		 */
-		_setHeaderEditable: async function (bEdit) {
-			const oReqModel = this.getView().getModel("request");
-			var oEditableFields = this.getView().getModel("reqHeaderEditableModel");
-			if (bEdit) {
-				oEditableFields.setProperty("/startEvent", true);
-				oEditableFields.setProperty("/endEvent", true);
-				if (await this._getEventDateEditability(oReqModel.getProperty("/req_header/reqtype"))) {
-					oEditableFields.setProperty("/startEventRequired", true);
-					oEditableFields.setProperty("/endEventRequired", true);
-				}
-				oEditableFields.setProperty("/location", true);
-				oEditableFields.setProperty("/comment", true);
-				oEditableFields.setProperty("/startTrip", true);
-				oEditableFields.setProperty("/endTrip", true);
-				const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
-				if ( !sDefaultCostCenter ){
-					oEditableFields.setProperty("/altCostCenter", true);
-				}
-				oEditableFields.setProperty("/saveHeader", true);
-			}
-			else {
-				oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(),false);
-			}
 		},
 		
 		onSaveHeaderPress: async function () {
@@ -1467,67 +1434,6 @@ sap.ui.define([
 				})
 			] : [];
 			oBinding.filter(aFilters);
-		},
-
-		/**
-		 * Get condition for Event dates editability
-		 * @param {s} sRequestTypeDesc 
-		 * @returns {b}
-		 */
-		_getEventDateEditability: async function (sRequestTypeDesc) {
-			const sReqType = await this._getRequestTypeIdByDesc(sRequestTypeDesc);
-
-			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		},
-
-		/**
-		 * Get Request Type ID with Request Type Description
-		 * @param {s} sRequestTypeDesc Request Type Description
-		 * @returns {s} Request Type ID
-		 */
-		_getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
-			if (!sRequestTypeDesc) {
-				return null;
-			}
-
-			try {
-				 await this._oDataModel.getMetaModel().requestObject("/");
-
-				// Main table path
-				const sRequestTypeTablePath = "/ZREQUEST_TYPE";
-
-				// Build filter
-				const aFilters = [
-					new Filter("REQUEST_TYPE_DESC", FilterOperator.EQ, sRequestTypeDesc),
-	        		new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-				];
-
-				// Bind list
-				const oBinding = this._oDataModel.bindList(
-					sRequestTypeTablePath,
-					null,
-					null,
-					aFilters,
-					{ $$ownRequest: true }
-				);
-
-				// Fetch data
-				const aCtx = await oBinding.requestContexts(0, Infinity);
-				let oData = null;
-				if (!aCtx || aCtx.length === 0) {
-					return null; // no employee found
-				}
-				return oData = aCtx[0].getObject().REQUEST_TYPE_ID;
-
-			} catch (e) {
-				console.log(e)
-				return null;
-			}
 		},
 
 		/* =========================================================

@@ -44,7 +44,7 @@
                 type="Default"
                 icon="sap-icon://save"
                 text="{i18n>button_claimdetails_input_save}"
-                id="btnExcelDownload3"
+                id="btnSaveHeader"
                 press=".onSaveHeaderPress"
                 visible="{claimSubmissionHeaderEditableModel>/saveHeader}"
             />

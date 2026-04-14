@@ -957,13 +957,13 @@ sap.ui.define([
 			}
 			// validate date range
 			//// trip start/end date
-			if (!this._validDateRange(this.byId("datepicker_claiminput_tripstartdate").getValue(), this.byId("datepicker_claiminput_tripenddate").getValue())) {
+			if (!this._validDateRange(oInputModel.getProperty("/claim_header/trip_start_date"), oInputModel.getProperty("/claim_header/trip_end_date"))) {
 				// stop claim submission if incomplete
 				return;
 			}
 			//// event start/end date (optional)
-			if (this.byId("datepicker_claiminput_eventstartdate").getValue() || this.byId("datepicker_claiminput_eventenddate").getValue()) {
-				if (!this._validDateRange(this.byId("datepicker_claiminput_eventstartdate").getValue(), this.byId("datepicker_claiminput_eventenddate").getValue())) {
+			if (oInputModel.getProperty("/claim_header/event_start_date") || oInputModel.getProperty("/claim_header/event_end_date")) {
+				if (!this._validDateRange(oInputModel.getProperty("/claim_header/event_start_date"), oInputModel.getProperty("/claim_header/event_end_date"))) {
 					// stop claim submission if incomplete
 					return;
 				}
@@ -1138,8 +1138,8 @@ sap.ui.define([
 		},
 
 		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
+			var startDateValue = startdate;
+			var endDateValue = enddate;
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
 				MessageBox.error(Utility.getText("msg_daterange_missing"));

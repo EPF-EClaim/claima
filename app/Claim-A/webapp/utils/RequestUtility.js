@@ -174,6 +174,51 @@ sap.ui.define([
 			}
 		},
 
+        /**
+		 * Get Request Type ID with Request Type Description
+		 * @param {s} sRequestTypeDesc Request Type Description
+		 * @returns {s} Request Type ID
+		 */
+		getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
+			if (!sRequestTypeDesc) {
+				return null;
+			}
+
+			try {
+				 await this._oOwnerComponent.getModel().getMetaModel().requestObject("/");
+
+				// Main table path
+				const sRequestTypeTablePath = "/ZREQUEST_TYPE";
+
+				// Build filter
+				const aFilters = [
+					new Filter("REQUEST_TYPE_DESC", FilterOperator.EQ, sRequestTypeDesc),
+	        		new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+				];
+
+				// Bind list
+				const oBinding = this._oOwnerComponent.getModel().bindList(
+					sRequestTypeTablePath,
+					null,
+					null,
+					aFilters,
+					{ $$ownRequest: true }
+				);
+
+				// Fetch data
+				const aCtx = await oBinding.requestContexts(0, Infinity);
+				let oData = null;
+				if (!aCtx || aCtx.length === 0) {
+					return null; // no employee found
+				}
+				return oData = aCtx[0].getObject().REQUEST_TYPE_ID;
+
+			} catch (e) {
+				console.log(e)
+				return null;
+			}
+		},
+
 		/**
          * Calculate the total for km and rate per km 
          * @private

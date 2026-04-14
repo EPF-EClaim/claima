@@ -323,6 +323,29 @@ sap.ui.define([
 		},
 
 		/**
+		 * Check for default cost center assigned to claim type
+		 * @param {*} sClaimTypeId claim type to be checked
+		 * @returns {o} cost center selected
+		 */
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject() || null;
+
+				return oResult.sCostCenter;
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
@@ -375,82 +398,6 @@ sap.ui.define([
 		 * Bind to existing claim header with claim ID
 		 * @param {object} oODataModel model binding for claim
 		 * @param {string} sClaimId claim ID to check from database
-		 * @returns {object}
-		 */
-		getClaimHeader: async function (oODataModel, sClaimId) {
-			try {
-				const oContextBinding = oODataModel.bindContext(
-					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
-				);
-
-				await oContextBinding.requestObject(); 
-				const oContext = oContextBinding.getBoundContext();
-				return oContext;
-			} catch (oError) {
-				return null;
-			}
-		},
-
-		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
-		 * @public
-		 * @return {Object} - returns eligible amount retrieved from table plus marriage category id
-		 */
-		fetchUserElaunPengangkutanData: async function () {
-			// get eligible amount and marriage category based on current user
-			var oResult = {
-				eligible_amount: 0.00,
-				marriage_category: null,
-			};
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountEPengakut(...)");
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oData = oContext.getObject();
-
-				oResult = {
-					eligible_amount: oData.eligible_amount,
-					marriage_category: oData.marriage_category
-				};
-
-			} catch (oError) {
-				oResult = {
-					eligible_amount: 0.00,
-					marriage_category: null,
-				};
-			}
-
-			return oResult
-		},
-
-		/**
-		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
-		 * @public
-		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
-		 */
-		fetchClaimElaunPengangkutan: async function () {
-			// check if claim exists with claim item elaun pengangkutan for employee
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkUserExistingClaimEPengakut(...)");
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const dResult = oContext.getObject("value");
-
-				return dResult;
-
-			} catch (oError) {
-				return true;
-			}
-		},
-
-		/**
-		 * Bind to existing claim header with claim ID
-		 * @param {object} oODataModel 
-		 * @param {string} sClaimId 
 		 * @returns {object}
 		 */
 		getClaimHeader: async function (oODataModel, sClaimId) {

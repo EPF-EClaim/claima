@@ -215,11 +215,12 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
 				oClaimSubmissionModel.setProperty("/view_only", true);
-				await this._setHeaderEditable(false);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, false);
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await this._setHeaderEditable(true);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, false);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			// load form fragments
@@ -234,37 +235,6 @@ sap.ui.define([
 			}
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
-		},
-
-		//set editable header fields
-		/**
-		 * Set fields to be editable
-		 * if there is a request tied to claim, do not allow editing for start and end trip dates
-		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
-		 * @private
-		 * @param {boolean} bEdit - edit toggle
-		 */
-		_setHeaderEditable: async function (bEdit) {
-			const oClaimModel = this.getView().getModel("claimsubmission_input");
-			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");
-			if (bEdit) {
-				oEditableFields.setProperty("/startEvent", true);
-				oEditableFields.setProperty("/endEvent", true);
-				oEditableFields.setProperty("/location", true);
-				oEditableFields.setProperty("/comment", true);
-				if (!oClaimModel.getProperty("/claim_header/request_id")) {
-					oEditableFields.setProperty("/startTrip", true);
-					oEditableFields.setProperty("/endTrip", true);
-				}
-				const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-				if ( !sDefaultCostCenter ){
-					oEditableFields.setProperty("/altCostCenter", true);
-				}
-				oEditableFields.setProperty("/saveHeader", true);
-			}
-			else {	
-				oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(),false);
-			}
 		},
 
 		//event handle for confirm and cancel
@@ -3625,8 +3595,8 @@ sap.ui.define([
 		},
 
 		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
+			var startDateValue = startdate;
+			var endDateValue = enddate;
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
 				MessageBox.error(Utility.getText("msg_daterange_missing"));
