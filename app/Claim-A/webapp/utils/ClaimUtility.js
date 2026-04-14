@@ -323,9 +323,9 @@ sap.ui.define([
 		},
 
 		/**
-		 * Check for default cost center assigned to claim type
-		 * @param {*} sClaimTypeId claim type to be checked
-		 * @returns {o} cost center selected
+		 * Check for default cost center assigned to claim type, if no data found, return null value
+		 * @param {string} sClaimTypeId claim type to be checked
+		 * @returns {string} cost center selected
 		 */
 		determineDefaultCostCenter: async function (sClaimTypeId) {
 			try {
@@ -395,10 +395,10 @@ sap.ui.define([
 		},
 
 		/**
-		 * Bind to existing claim header with claim ID
-		 * @param {object} oODataModel model binding for claim
+		 * Bind to existing claim header with claim ID, if not found return null value
+		 * @param {object} oODataModel model used for claim data binding
 		 * @param {string} sClaimId claim ID to check from database
-		 * @returns {object}
+		 * @returns {object} Bound context of the claim header, null value if not found
 		 */
 		getClaimHeader: async function (oODataModel, sClaimId) {
 			try {

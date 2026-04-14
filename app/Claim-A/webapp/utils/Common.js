@@ -180,6 +180,10 @@ sap.ui.define([
                     const oClaimModel = this._oView.getModel("claimsubmission_input");
                     var oEditableFields = this._oView.getModel("claimSubmissionHeaderEditableModel");
                     if (bEdit) {
+                        oEditableFields.setProperty("/startTrip", !bEdit);
+                        oEditableFields.setProperty("/endTrip", !bEdit);
+                        oEditableFields.setProperty("/altCostCenter", !bEdit)
+                            
                         oEditableFields.setProperty("/startEvent", bEdit);
                         oEditableFields.setProperty("/endEvent", bEdit);
                         oEditableFields.setProperty("/location", bEdit);
@@ -195,13 +199,17 @@ sap.ui.define([
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {	
-                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), false);
                     }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     const oReqModel = this._oView.getModel("request");
                     var oEditableFields = this._oView.getModel("reqHeaderEditableModel");
                     if (bEdit) {
+                        oEditableFields.setProperty("/startEventRequired", !bEdit);
+                        oEditableFields.setProperty("/endEventRequired", !bEdit);
+                        oEditableFields.setProperty("/altCostCenter", !bEdit);
+
                         oEditableFields.setProperty("/startEvent", bEdit);
                         oEditableFields.setProperty("/endEvent", bEdit);
                         if (await this._getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
@@ -219,7 +227,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {
-                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), bEdit);
+                        oEditableFields.setData(Models.createClaimHeaderEditableModel().getData(), false);
                     }
                     break;
             }
@@ -231,15 +239,14 @@ sap.ui.define([
 		 * @returns {b}
 		 */
 		_getEventDateRequired: async function (sRequestTypeDesc) {
+            var bCheck = false;
             RequestUtility.init(this._oOwnerComponent, this._oView);
 			const sReqType = await RequestUtility.getRequestTypeIdByDesc(sRequestTypeDesc);
 
 			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
-				return true;
+				bCheck = true;
 			}
-			else {
-				return false;
-			}
+            return bCheck;
 		},
 	}
 });

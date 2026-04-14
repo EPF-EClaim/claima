@@ -231,11 +231,12 @@ sap.ui.define([
         },
 
         /**
-         * Check if start and end dates are valid
+         * Check if start and end dates are empty
+         * Check if start date is set before end date
          * @private
-         * @param {string} sStartdate 
-         * @param {string} sEnddate 
-         * @returns {boolean}
+         * @param {string} sStartdate start date to be checked
+         * @param {string} sEnddate end date to be checked
+         * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
          */
         _isValidDateRange: function (sStartdate, sEnddate) {
             var bCheck = true;

@@ -223,9 +223,11 @@ sap.ui.define([
 			}
 			
 			Common.init(this.getOwnerComponent(), this.getView());
-			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
 			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
+			}
+			else {
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
 			}
 			PARequestSharedFunction.determineFooterButton(this);
 		},

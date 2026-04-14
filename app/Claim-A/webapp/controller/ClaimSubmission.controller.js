@@ -220,7 +220,6 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, false);
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 

@@ -154,11 +154,12 @@ sap.ui.define([
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
 
-        /**
-		 * Bind to existing request header with request ID
-		 * @param {object} oODataModel model binding for request
-		 * @param {string} sReqId request ID to check from database
-		 * @returns {object}
+        /** 
+         * Bind to an existing request header by request ID.
+         * Returns the bound context if found; otherwise returns null.
+		 * @param {object} oODataModel model used for request data binding
+		 * @param {string} sReqId Request ID to retrieve from the backend
+		 * @returns {object} Bound context of the request header, or null if not found
 		 */
 		getReqHeader: async function (oODataModel, sReqId) {
 			try {
@@ -176,8 +177,8 @@ sap.ui.define([
 
         /**
 		 * Get Request Type ID with Request Type Description
-		 * @param {s} sRequestTypeDesc Request Type Description
-		 * @returns {s} Request Type ID
+		 * @param {string} sRequestTypeDesc Request Type Description to be checked with database
+		 * @returns {string} returns Request Type ID found, if not returns null
 		 */
 		getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
 			if (!sRequestTypeDesc) {
@@ -214,7 +215,6 @@ sap.ui.define([
 				return oData = aCtx[0].getObject().REQUEST_TYPE_ID;
 
 			} catch (e) {
-				console.log(e)
 				return null;
 			}
 		},
