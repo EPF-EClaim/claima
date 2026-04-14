@@ -1,12 +1,22 @@
 
 sap.ui.define([
+	"sap/m/MessageBox",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
-    "sap/ui/core/Fragment",
-    "claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, JSONModel, Fragment, Constants) {
+    "sap/ui/model/Sorter",
+    "claima/utils/Constants",
+], function (
+	MessageBox,
+	BusyIndicator,
+	Fragment,
+    Filter,
+	FilterOperator,
+	JSONModel,
+	Sorter,
+	Constants) {
     "use strict";
 
     return {
@@ -256,5 +266,32 @@ sap.ui.define([
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
+
+        /**
+		* Retrieve the number of family member including the employee him/herself
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constants.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
     };
     });

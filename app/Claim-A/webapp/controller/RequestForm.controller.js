@@ -2089,11 +2089,19 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
+				
+					// calculate number of days
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
-
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+					// get number of family members including requestor him/herself
+					var iNoOfDependents = await Utility.getNumberOfFamilyMembers(this._oSessionModel.getProperty("/userId"));
+					var iNoOfFamilyMember = parseInt(iNoOfDependents) + 1;
+					this._oReqModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
+
 					this._onFilterRegion();
 
+					// auto populating the allocated amount upon selecting claim type item, otherwise manual input
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
