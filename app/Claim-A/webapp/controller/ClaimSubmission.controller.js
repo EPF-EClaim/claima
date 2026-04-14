@@ -1799,6 +1799,8 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_insurance_purchase_date"), property: "insurance_purchase_date", field: "datepicker_claimdetails_input_insurance_purchase_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_insurance_cert_start_date"), property: "insurance_cert_start_date", field: "datepicker_claimdetails_input_insurance_cert_start_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_insurance_cert_end_date"), property: "insurance_cert_end_date", field: "datepicker_claimdetails_input_insurance_cert_end_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_mode_of_transfer"), property: "mode_of_transfer", field: "select_claimdetails_input_mode_of_transfer", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_transfer_date"), property: "transfer_date", field: "datepicker_claimdetails_input_transfer_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_numberofdays"), property: "no_of_days", field: "input_claimdetails_input_no_of_days", type: "number", scale: 0, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_typeofvehicle"), property: "vehicle_type", field: "select_claimdetails_input_vehicle_type", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_vehicleownership"), property: "vehicle_ownership_id", field: "select_claimdetails_input_vehicle_ownership_id", type: "descr", width: 18 },
@@ -3268,6 +3270,23 @@ sap.ui.define([
 			}
 			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
+			}
+		},
+
+		/**
+		* On selecting mode of transfer, set description in item model
+		* @public
+		*/
+		onSelect_ClaimDetails_ModeOfTransfer: function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oModeOfTranfer = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oModeOfTranfer) {
+				// set mode of transfer description
+				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", oModeOfTranfer.getBindingContext("employee").getObject("TRANSFER_MODE_DESC"));
+			}
+			else {
+				// reset description value
+				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", null);
 			}
 		},
 
