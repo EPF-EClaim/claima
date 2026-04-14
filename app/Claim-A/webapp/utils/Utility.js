@@ -273,8 +273,9 @@ sap.ui.define([
 		* @param {string} sEmpId - employee ID to retrieve dependents for
 		* @returns {integer} if records found, return total number of dependents for employee
 		*/
-		getNumberOfFamilyMembers: async function (sEmpId) {
+		getNumberOfFamilyMembers: async function () {
 			const oModel = this._oOwnerComponent.getModel();
+            var sEmpId   = this._oOwnerComponent.getModel("session").getProperty("/userId");
 			const oListBinding = oModel.bindList(Constants.Entities.ZEMP_DEPENDENT, null, [
 				new Sorter("DEPENDENT_NO")
 			], [

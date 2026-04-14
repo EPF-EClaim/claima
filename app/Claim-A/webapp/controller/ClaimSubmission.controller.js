@@ -2314,7 +2314,7 @@ sap.ui.define([
 			// set number of family members based on claim item
 			// no of family member + 1 for the claimant itself
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				var nDependent = await Utility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
+				var nDependent = await Utility.getNumberOfFamilyMembers() + 1;
 				oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
 			}
 

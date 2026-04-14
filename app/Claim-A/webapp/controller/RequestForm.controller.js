@@ -2095,7 +2095,7 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 
 					// get number of family members including requestor him/herself
-					var iNoOfDependents = await Utility.getNumberOfFamilyMembers(this._oSessionModel.getProperty("/userId"));
+					var iNoOfDependents = await Utility.getNumberOfFamilyMembers();
 					var iNoOfFamilyMember = parseInt(iNoOfDependents) + 1;
 					this._oReqModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
 
