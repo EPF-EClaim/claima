@@ -4,9 +4,20 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
+	"sap/ui/core/BusyIndicator",
+	"sap/m/MessageToast",
     "sap/ui/core/Fragment",
     "claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, JSONModel, Fragment, Constants) {
+], function (
+    Filter,
+    FilterOperator,
+    Sorter,
+    JSONModel,
+	BusyIndicator,
+    MessageToast,
+    Fragment,
+    Constants
+) {
     "use strict";
 
     return {
@@ -256,5 +267,46 @@ sap.ui.define([
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
+
+		/**
+		 * Retrieve mileage based on selected office locations
+		 * @public
+		 * @param {String} sFromState - value of From State
+		 * @param {String} sFromOffice - value of From Location (Office)
+		 * @param {String} sToState - value of To State
+		 * @param {String} sToOffice - value of To Location (Office)
+		 * @return {Float} fMileage - returns mileage based on selected office locations
+		 */
+		determineOfficeMileage: async function (sFromState, sFromOffice, sToState, sToOffice) {
+			var fMileage = 0.0;
+
+			if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
+
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getOfficeDistance(...)");
+
+				oFunction.setParameter("sFromState", sFromState);
+				oFunction.setParameter("sFromOffice", sFromOffice);
+				oFunction.setParameter("sToState", sToState);
+				oFunction.setParameter("sToOffice", sToOffice);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+				fMileage = parseFloat(oResult.value) || 0.0;
+
+			} catch (oError) {
+                MessageToast.show(oError);
+				fMileage = 0.0;
+			} finally {
+				BusyIndicator.hide();
+			}
+
+            return fMileage;
+		}
+
     };
     });

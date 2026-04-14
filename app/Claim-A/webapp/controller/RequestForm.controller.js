@@ -2023,7 +2023,13 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
                 	RequestUtility.populateAllocatedAmount();
-					RequestUtility.determineOfficeMileage();
+					this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+						this._oReqModel.getProperty("/req_item/from_state"),
+						this._oReqModel.getProperty("/req_item/from_location_office"),
+						this._oReqModel.getProperty("/req_item/to_state"),
+						this._oReqModel.getProperty("/req_item/to_location_office")
+					));
+                    RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2514,8 +2520,14 @@ sap.ui.define([
 		 * check mileage of the office location selected when select 'to location (office)'
 		 * @public
 		 */
-		onSelectToOffice: function () {
-			RequestUtility.determineOfficeMileage();
+		onSelectToOffice: async function () {
+			this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
+				this._oReqModel.getProperty("/req_item/from_state"),
+				this._oReqModel.getProperty("/req_item/from_location_office"),
+				this._oReqModel.getProperty("/req_item/to_state"),
+				this._oReqModel.getProperty("/req_item/to_location_office")
+			));
+			RequestUtility.populateAllocatedAmount();
 		},
 
 		/**
