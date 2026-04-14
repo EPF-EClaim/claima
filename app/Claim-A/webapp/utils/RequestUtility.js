@@ -130,6 +130,10 @@ sap.ui.define([
                         }
                         break;
                     
+                    case Constants.ClaimTypeItem.LAUT:
+                        this._getEntitledMeterCube();
+                        break;
+                    
                     default:
                         // calculate kilometer amount 
                         calculatedAllocAmount = this._calculateKilometer(oReqItem);
@@ -325,6 +329,36 @@ sap.ui.define([
             oReqModel.setProperty('/req_item/entitled_dinner', iDays);
             
         },
+
+        /**
+		 * Retrieve and apply meter cube entitlement from backend service.
+		 *
+		 * Calls backend entitlement function using the logged-in employee ID
+		 * and updates the entitled meter cube value in the claim item input model.
+		 *
+         * @private
+		 * @returns Updates entitled meter cube field upon completion
+		 */
+		_getEntitledMeterCube: async function () {
+            const oReqModel     = this._oOwnerComponent.getModel("request");
+            const oDataModel    = this._oOwnerComponent.getModel();
+
+			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...");
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                
+                const oResult   = oContext.getObject();
+                const oData     = oResult.value || oResult;
+
+                oReqModel.setProperty("/req_item/cube_eligible", Number(oData).toFixed(2));
+                
+
+            } catch (oError) {
+                oReqModel.setProperty("/req_item/cube_eligible", 0);
+            }
+		},
         
     };
 });

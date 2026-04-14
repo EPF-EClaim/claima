@@ -2103,6 +2103,7 @@ sap.ui.define([
 
 					// auto populating the allocated amount upon selecting claim type item, otherwise manual input
 					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
