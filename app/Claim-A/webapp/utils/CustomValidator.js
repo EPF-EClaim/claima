@@ -155,6 +155,9 @@ sap.ui.define([
                         var dTripStartDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
                         var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"));
                         var dMoveInDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/move_in_date"));
+                        dTripStartDate.setHours(0, 0, 0, 0);
+                        dTripEndDate.setHours(0, 0, 0, 0);
+                        dMoveInDate.setHours(0, 0, 0, 0);
                        
                         
                         if(!!dTripStartDate && !!dTripEndDate && !!dMoveInDate){
@@ -172,8 +175,10 @@ sap.ui.define([
 
                     if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.ELAUN_PINDAH ){
                         var dMoveInDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/move_in_date"));
+                        dMoveInDate.setHours(0, 0, 0, 0);
                         const dPastDate = new Date();
                         dPastDate.setDate(dPastDate.getDate() - 180);
+                        dPastDate.setHours(0, 0, 0, 0);
 
                         if(!!dMoveInDate){
                             if(dMoveInDate < dPastDate){
