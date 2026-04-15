@@ -1465,7 +1465,6 @@ sap.ui.define([
 		onDuplicate_ClaimSummary: async function (oItem) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oInputItemModel = this.getView().getModel("claimitem_input");
 			var tempItems = {
 				claim_items: oInputModel.getProperty("/claim_items"),
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
@@ -5113,6 +5112,8 @@ sap.ui.define([
 		/**
 		 * Handles recalculation check for 3% Matawang. 
 		 * Private function
+		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim Input model
 		 * @param {function} fnSaveClaimItem - Function to Create or Update item
 		 */
 		_recalculateMatawangIfNeeded: async function (
