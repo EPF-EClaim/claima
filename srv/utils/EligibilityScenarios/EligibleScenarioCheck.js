@@ -55,7 +55,7 @@ module.exports = {
       [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem,
-      [Constant.EntitiesFields.STATUS]: Constant.Status.ACTIVE
+      [Constant.EntitiesFields.STATUS]: Constant.ConfigStatus.ACTIVE
     };
  
     // Claim Type that requires additional Job Group filtering

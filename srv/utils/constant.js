@@ -172,7 +172,8 @@ const Constant = {
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO",
         "REGION_ID": "REGION_ID",
-        "STATUS": "STATUS"
+        "STATUS": "STATUS",
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
     },
     Wildcard: {
         "All": "*",
@@ -193,8 +194,7 @@ const Constant = {
         REJECTED: "STAT04",
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
-        CANCELLED: "STAT07",
-        ACTIVE: "ACTIVE"
+        CANCELLED: "STAT07"
     },
     ClaimTypeItemStatus: {
         ACTIVE: "ACTIVE"
@@ -268,7 +268,20 @@ const Constant = {
         MARRIED_4_OR_MORE_CHILDREN: "04"
     },
     
-    UnlimitedAmount: -1
+    UnlimitedAmount: -1,
+
+    FareType: {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
+        },
+    
+    ConfigStatus: {
+        "ACTIVE": "ACTIVE"
+    }
 
 };
 
