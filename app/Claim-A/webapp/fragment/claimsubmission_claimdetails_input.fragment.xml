@@ -535,6 +535,19 @@
                     required="true"
 				/>
 
+                 <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                <Label text="{i18n>label_claimdetails_input_region}" />
+                <Select
+                    id="select_claimdetails_input_region"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/region}"
+                    change="onSelect_ClaimDetails_Region"
+                    liveChange="onSelect_ClaimDetails_Region"
+                    visible="false"
+                    required="true"
+				>
+				</Select>
+
 				<!-- Nama Pembekal Insuran -->
 				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
 				<Select
@@ -1226,7 +1239,7 @@
                 id="input_claimdetails_input_exclude_tips"
                 selected="{claimitem_input>/claim_item/exclude_tips}"
                 select="onSelect_ExcludeTips"
-                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                visible="false"
                 />
 
                 <!-- Tips Amount -->
@@ -1241,7 +1254,7 @@
 							preserveDecimals: false
 						}
 						}"
-                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    visible="false"
                     editable="false"
                 />
 
@@ -1254,19 +1267,6 @@
                     visible="false"
                     required="true"
                 />
-
-                <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{i18n>label_claimdetails_input_region}" />
-                <Select
-                    id="select_claimdetails_input_region"
-                    forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/region}"
-                    change="onSelect_ClaimDetails_Region"
-                    liveChange="onSelect_ClaimDetails_Region"
-                    visible="false"
-                    required="true"
-				>
-				</Select>
 
                 <!-- Area (Negara/Wilayah) -->
                 <Label text="{i18n>label_claimdetails_input_area}" />

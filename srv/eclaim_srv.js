@@ -1706,4 +1706,37 @@ module.exports = (srv) => {
             amount: nThreePercent
         };
     });
+
+    /**
+     * Get Total count of dependent based on Employee ID
+     * IND1 - fetch Spouse and Child Only
+     * @public
+     * @async
+     * @returns {Integer} Total count of dependent 
+     */
+    srv.on('getNumberOfFamilyMembers', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZEMP_DEPENDENT } = srv.entities;
+        const sIndicator = req.data.IND;
+        var aDependent;
+
+        //get total dependent based on Employee ID - IND1 filter by spouse and child
+        if (oEmp) {
+            if (sIndicator === Constant.Indicator.Spouse_Child){
+                aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
+                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
+                                                                         Constant.Relationship.CHILD] }})
+            );
+            } else {
+                aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({
+                   EMP_ID: oEmp.EEID 
+                })
+            );
+            }
+            return aDependent.length + 1;
+        }
+    })
 }
