@@ -151,7 +151,7 @@ sap.ui.define([
                         }
                     }
                     
-                    if (!!oInputModel?.getProperty("/claim_item/amount") <= 0) {
+                    if (!!oInputModel?.getProperty("/claim_item/amount") == 0) {
                         MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
                         bCanProceed = false;
                         break;
