@@ -177,7 +177,8 @@ const Constant = {
         "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
         "RATE_KM_ID": "RATE_KM_ID",
         "RATE": "RATE",
-        "REGION_ID": "REGION_ID"
+        "REGION_ID": "REGION_ID",
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
     },
     Wildcard: {
         "All": "*",
@@ -272,7 +273,16 @@ const Constant = {
         MARRIED_4_OR_MORE_CHILDREN: "04"
     },
     
-    UnlimitedAmount: -1
+    UnlimitedAmount: -1,
+
+    FareType: {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
+        }
 
 };
 
