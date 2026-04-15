@@ -2457,6 +2457,13 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
 				await ClaimUtility.calculateMatawangAmount();
 			}
+
+			//for tambang excluding flight
+            if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
+                oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.DLM_NEGARA
+            ) {
+                this._filterFareType();
+            }
 		},
 
 		_setClaimDetailSelection: function (oModel) {
