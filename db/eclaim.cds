@@ -503,8 +503,8 @@ entity ZCLAIM_ITEM : managed {
         CURRENCY_RATE              : Decimal(6, 2);
         CURRENCY_AMOUNT            : Decimal(16, 2);
         REQUEST_APPROVAL_AMOUNT    : Decimal(16, 2);
-        DEPARTURE_TIME             : Time;
-        ARRIVAL_TIME               : Time;
+        DEPARTURE_TIME             : Timestamp;
+        ARRIVAL_TIME               : Timestamp;
         DEPENDENT                  : String;
         DEPENDENT_RELATIONSHIP     : String;
         POLICY_NUMBER              : String;
