@@ -1,23 +1,24 @@
 
 sap.ui.define([
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
-	"sap/ui/core/BusyIndicator",
-	"sap/m/MessageToast",
-    "sap/ui/core/Fragment",
+    "sap/ui/model/Sorter",
     "claima/utils/Constants"
 ], function (
-    Filter,
-    FilterOperator,
-    Sorter,
-    JSONModel,
+	MessageBox,
+	MessageToast,
 	BusyIndicator,
-    MessageToast,
-    Fragment,
-    Constants
-) {
+	Fragment,
+	Filter,
+	FilterOperator,
+	JSONModel,
+	Sorter,
+	Constants) {
     "use strict";
 
     return {
@@ -267,6 +268,34 @@ sap.ui.define([
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
+
+        /**
+		* Retrieve the number of family member including the employee him/herself
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function () {
+			const oModel = this._oOwnerComponent.getModel();
+            var sEmpId   = this._oOwnerComponent.getModel("session").getProperty("/userId");
+			const oListBinding = oModel.bindList(Constants.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
 
 		/**
 		 * Retrieve mileage based on selected office locations

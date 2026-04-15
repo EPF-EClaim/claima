@@ -2095,16 +2095,31 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
+				
+					// calculate number of days
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
-
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+					// get number of family members including requestor him/herself
+					var iNoOfDependents = await Utility.getNumberOfFamilyMembers();
+					var iNoOfFamilyMember = parseInt(iNoOfDependents) + 1;
+					this._oReqModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
+
 					this._onFilterRegion();
 
+					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
+
+						case Constants.ClaimTypeItem.HOTEL_L:
+						case Constants.ClaimTypeItem.HOTEL_O:
+						case Constants.ClaimTypeItem.LODGING_L:
+						case Constants.ClaimTypeItem.LODG_O:
+							var iNumberOfNight = iDiffDays - 1;
+							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 					
 						default:
