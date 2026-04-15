@@ -1646,12 +1646,9 @@ module.exports = (srv) => {
                 iTotal += Number(oItem.amount || 0);
             }
         });
-
-
+        const nPercentage = 3.00; // 3%
         const nThreePercent =
-            Math.ceil(iTotal * 0.03 * 100) / 100;
-        const nPercentage = Number(3.00);
-
+            Math.ceil(iTotal * (nPercentage / 100) * 100) / 100;
         return {
             percentage: nPercentage,
             amount: nThreePercent
