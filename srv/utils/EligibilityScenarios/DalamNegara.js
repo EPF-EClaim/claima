@@ -24,7 +24,7 @@ module.exports = {
         }
         else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
             aFilteredRules = aRules.filter(function (rule) {
-                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.FARE_TYPE_ID];
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
             })
 
             oRule = aFilteredRules[0];

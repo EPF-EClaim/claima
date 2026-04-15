@@ -9,7 +9,6 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     onEligibleCheck: function (oPayload, aRules) {
-
         var oRule, aFilteredRules;
 
         // to extract the key values from oPayload
@@ -90,9 +89,7 @@ module.exports = {
             // DOBI - return true if user's traveling days >= eligible min days
             case Constant.ClaimTypeItem.DOBI:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
-
                 if (iIndex == -1) return;
-
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
@@ -108,9 +105,7 @@ module.exports = {
             // FLIGHT - return true if selected flight class matches user's personal grade
             case Constant.ClaimTypeItem.FLIGHT_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
-
                 if (iIndex == -1) return;
-
                 // if no rule matches the selected flight class, return false
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
@@ -127,9 +122,7 @@ module.exports = {
             case Constant.ClaimTypeItem.HOTEL_L:
             case Constant.ClaimTypeItem.LODGING_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
-
                 if (iIndex == -1) return;
-
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
