@@ -859,7 +859,8 @@
                     required="{claimitem_property>/to_state_id/is_required}"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
-                            sorter: { path: 'TO_STATE_ID', descending: false }}"
+                            sorter: { path: 'TO_STATE_ID', descending: false },
+                            length: 1000}"
 					change="onSelect_ClaimDetails_ToState"
 					liveChange="onSelect_ClaimDetails_ToState"
                 >
@@ -890,7 +891,7 @@
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
                             sorter: { path: 'TO_LOCATION_ID', descending: false },
-                            length: 1000}">
+                            length: 5000}">
                     <items>
                         <core:Item key="{employee_view>TO_LOCATION_ID}" 
                         		   text="{employee_view>TO_LOCATION_DESC}" />
