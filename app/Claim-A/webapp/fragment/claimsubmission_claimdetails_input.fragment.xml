@@ -740,6 +740,10 @@
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
                     }"
 				>
+                <items>
+                    <core:Item key="{employee>VEHICLE_CLASS_ID}" 
+                                text="{employee>VEHICLE_CLASS_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Flight Class -->
