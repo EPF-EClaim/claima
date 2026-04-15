@@ -165,7 +165,7 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+					for (var iContext = 0; iContext < aContexts.length; iContext++) {
 						var oData = aContexts[iContext].getObject();
 						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
 							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
@@ -215,63 +215,6 @@ sap.ui.define([
 		},
 
 		/**
-		* Retrieve backend data from db table based on selected claim item value
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEntity - name of table to check from database
-		* @param {array} aEntityFields - array of entity fields and values to filter by
-		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
-		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
-		*/
-		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			const oModel = this._oOwnerComponent.getModel();
-			// set filters based on given entity fields
-			var aSorters = [];
-			var aFilters = [];
-			for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
-				//// filter entity field to be checked by selection input or * (all)
-				var oFilterEntityField = new Filter({
-					filters: [
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				aFilters.push(oFilterEntityField);
-				aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
-			}
-			// ensure status is active
-			aFilters.push(
-				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
-				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-			);
-			const oListBinding = oModel.bindList(sEntity, null, aSorters, aFilters);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					var aReturnFields = [];
-					for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
-						aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
-					}
-					return aReturnFields;
-				} else {
-					return [];
-				}
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-				return [];
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
@@ -279,7 +222,7 @@ sap.ui.define([
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
 			var nDay, nDependent;
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
-				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
@@ -293,9 +236,9 @@ sap.ui.define([
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
-			
+
 			var oSessionModel = this.getView().getModel("session");
-    		var sEEID = oSessionModel.getProperty("/userId");
+			var sEEID = oSessionModel.getProperty("/userId");
 
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
@@ -346,6 +289,48 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Retrieve rate per km data for item based on vehicle type and claim type item
+		 * @public
+		 * @param {String} sVehicleType - vehicle type based on selected item
+		 * @param {String} sClaimTypeItem - claim type item of selected item
+		 * @return {Object} - returns id and value of rate per km retrieved from table
+		 */
+		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem) {
+			var oResult = {
+				id: null,
+				value: null
+			};
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getRatePerKm(...)");
+
+				oFunction.setParameter("sVehicleType", sVehicleType);
+				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oData = oContext.getObject();
+
+				oResult = {
+					id: oData.id,
+					value: oData.value
+				}
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				oResult = {
+					id: null,
+					value: null
+				}
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return oResult;
+		},
+		
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
@@ -495,7 +480,7 @@ sap.ui.define([
 					);
 				});
 		},
-		
+
 		/**
 		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
@@ -527,7 +512,7 @@ sap.ui.define([
 		 * @param {String} sRequestID - Pre-approval request ID
 		 * @returns {Boolean} bIsUsed - show if warning should be sent
 		 */
-		checkReusedPAR: async function(sRequestID) {
+		checkReusedPAR: async function (sRequestID) {
 			const oModel = this._oView.getModel();
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
@@ -535,20 +520,100 @@ sap.ui.define([
 		},
 
 		/**
-         * Get Fare Type filters based on Claim Type and Claim Item
-         * @public
-         * @param {string} sClaimTypeId
-         * @param {string} sClaimTypeItemId
-         * @returns {sap.ui.model.Filter[]} array of filters
-         */
-        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
-            var aFilters = [];                
-            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
-                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
-			{
-                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
-            }
-            return aFilters;
+		 * Get Fare Type filters based on Claim Type and Claim Item
+		 * @public
+		 * @param {string} sClaimTypeId
+		 * @param {string} sClaimTypeItemId
+		 * @returns {sap.ui.model.Filter[]} array of filters
+		 */
+		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+			var aFilters = [];
+			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
+				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
+			}
+			return aFilters;
+		},
+
+		/**
+		 * Calculate Matawang 3% fields - Uses CAP Backend to calculate.
+		 * @public
+		 */
+		calculateMatawangAmount: async function () {
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oCalculateMataWangAmountContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
+			oCalculateMataWangAmountContext.setParameter(
+				"claimItems",
+				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
+			);
+			return await oCalculateMataWangAmountContext.execute()
+				.then(() => oCalculateMataWangAmountContext.requestObject())
+				.then((oResult) => {
+
+					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+					const iMatawangIndex = aClaimItems.findIndex(
+						oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
+					);
+
+					if (iMatawangIndex > -1) {
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/percentage_compensation`,
+							oResult.percentage
+						);
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/amount`,
+							oResult.amount
+						);
+					}
+
+					else if (
+						oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+						Constant.ClaimTypeItem.MATAWANG
+					) {
+						oInputModel.setProperty(
+							"/claim_item/percentage_compensation",
+							oResult.percentage
+						);
+						oInputModel.setProperty(
+							"/claim_item/amount",
+							oResult.amount
+						);
+					}
+				});
+		},
+		/**
+		 * Save Matawang item after calculation.
+		 *
+		 * @public
+		 * @param {Function} fnSaveClaimItem - controller save function (callback)
+		 */
+		saveUpdatedMatawang: async function (fnSaveClaimItem) {
+
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
+			const bPreviousIsNew = oInputModel.getProperty("/is_new");
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+			
+			const iMatawangIndex = aClaimItems.findIndex(
+				oItem =>
+					oItem.claim_type_item_id ===
+					Constant.ClaimTypeItem.MATAWANG
+			);
+
+			if (iMatawangIndex === -1) {
+				return false;
+			}
+
+			const oMatawangItem = {
+				...aClaimItems[iMatawangIndex]
+			};
+			oInputModel.setProperty("/claim_item", oMatawangItem);
+			oInputModel.setProperty("/is_new", false);
+			await fnSaveClaimItem();
+			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
+			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}
 	}
 });

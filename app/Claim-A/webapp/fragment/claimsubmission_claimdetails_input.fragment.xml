@@ -297,6 +297,7 @@
 					}"
 					required="true"
 					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
                         !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
@@ -965,12 +966,17 @@
                 />
 
                 <!-- Currency Code -->
-                <Label text="{i18n>label_claimdetails_input_currencycode}" />
+                <Label text="{i18n>label_claimdetails_input_currencycode}"/>
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
                     display="ValueDescription"
-                    visible="false"
+                    
+                    visible="{=
+                        ${claimitem_input>/claim_item/need_foreign_currency} ||
+                        ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}
+                    }"
+
                     valueHelp="valuehelp_currency_code"
                     editMode="{= !!${claimitem_input>/claim_item/need_foreign_currency}? 'Editable': 'ReadOnly'}"
                     required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} || !!${claimitem_input>/claim_item/need_foreign_currency}
@@ -992,8 +998,11 @@
                         constraints: {
                             minimum: 0.01
                         }
-					}"
-                    visible="false"
+					}"     
+                    visible="{=
+                        ${claimitem_input>/claim_item/need_foreign_currency} ||
+                        ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}
+                    }"
                     change="onChange_ClaimDetails_CurrencyRate"
                     editable="{= 
                             ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}  || 
@@ -1004,7 +1013,7 @@
                 />
 
                 <!-- Currency Amount -->
-                <Label text="{i18n>label_claimdetails_input_currencyamt}" />
+                <Label text="{i18n>label_claimdetails_input_currencyamt}"/>
                 <Input
                     id="input_claimdetails_input_currency_amount"
                     value="{
@@ -1017,7 +1026,12 @@
 						},
                         constraints: { minimum: 0.01 }
 					}"
-                    visible="false"
+                    
+                    visible="{=
+                        ${claimitem_input>/claim_item/need_foreign_currency} ||
+                        ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}
+                    }"
+
                     change="onChange_ClaimDetails_CurrencyRate"
                     editable="{= !!${claimitem_input>/claim_item/need_foreign_currency} }"
                     required="{= ${claimitem_input>/claim_item/need_foreign_currency}}"
