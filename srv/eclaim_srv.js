@@ -1421,41 +1421,44 @@ module.exports = (srv) => {
         try {
             const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'GRADE').where({ EMAIL: sEmail });
             if (!oEmpData) {
-                return req.error(404, `No employee data found.`);
+                req.error(404, `No employee data found.`);
+            }
+            else {
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aPersonalGradeFilters = [Constant.Wildcard.All];
+                if (!!oEmpData.GRADE) {
+                    aPersonalGradeFilters.push(oEmpData.GRADE);
+                }
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: sClaimType,
+                        CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                    })
+                    .orderBy([
+                        { ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }
+                    ]);
+
+                if (!oEligibilityRule) {
+                    req.error(404, `Eligible amount not found for given employee.`);
+                }
+                else {
+                    return oEligibilityRule.ELIGIBLE_AMOUNT;
+                }
             }
 
-            const sTodayDate = new Date().toISOString().slice(0, 10);
-            var aPersonalGradeFilters = [Constant.Wildcard.All];
-            if (!!oEmpData.GRADE) {
-                aPersonalGradeFilters.push(oEmpData.GRADE);
-            }
-
-            const oEligibilityRule = await SELECT.one
-                .from(Constant.Entities.ZELIGIBILITY_RULE)
-                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
-                .where({
-                    // claim type + claim type item
-                    CLAIM_TYPE_ID: sClaimType,
-                    CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
-                    // status check
-                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                    // values to filter
-                    PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
-                 })
-                .orderBy([
-                    { ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }
-                ]);
-
-            if (!oEligibilityRule) {
-                return req.error(404, `Eligible amount not found for given employee.`);
-            }
-
-            return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
