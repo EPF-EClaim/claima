@@ -165,7 +165,7 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+					for (var iContext = 0; iContext < aContexts.length; iContext++) {
 						var oData = aContexts[iContext].getObject();
 						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
 							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
@@ -279,7 +279,7 @@ sap.ui.define([
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
 			var nDay, nDependent;
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
-				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
@@ -293,9 +293,9 @@ sap.ui.define([
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
-			
+
 			var oSessionModel = this.getView().getModel("session");
-    		var sEEID = oSessionModel.getProperty("/userId");
+			var sEEID = oSessionModel.getProperty("/userId");
 
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
@@ -439,7 +439,7 @@ sap.ui.define([
 					);
 				});
 		},
-		
+
 		/**
 		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
@@ -471,7 +471,7 @@ sap.ui.define([
 		 * @param {String} sRequestID - Pre-approval request ID
 		 * @returns {Boolean} bIsUsed - show if warning should be sent
 		 */
-		checkReusedPAR: async function(sRequestID) {
+		checkReusedPAR: async function (sRequestID) {
 			const oModel = this._oView.getModel();
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
@@ -479,20 +479,100 @@ sap.ui.define([
 		},
 
 		/**
-         * Get Fare Type filters based on Claim Type and Claim Item
-         * @public
-         * @param {string} sClaimTypeId
-         * @param {string} sClaimTypeItemId
-         * @returns {sap.ui.model.Filter[]} array of filters
-         */
-        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
-            var aFilters = [];                
-            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
-                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
-			{
-                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
-            }
-            return aFilters;
+		 * Get Fare Type filters based on Claim Type and Claim Item
+		 * @public
+		 * @param {string} sClaimTypeId
+		 * @param {string} sClaimTypeItemId
+		 * @returns {sap.ui.model.Filter[]} array of filters
+		 */
+		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+			var aFilters = [];
+			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
+				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
+			}
+			return aFilters;
+		},
+
+		/**
+		 * Calculate Matawang 3% fields - Uses CAP Backend to calculate.
+		 * @public
+		 */
+		calculateMatawangAmount: async function () {
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oCalculateMataWangAmountContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
+			oCalculateMataWangAmountContext.setParameter(
+				"claimItems",
+				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
+			);
+			return await oCalculateMataWangAmountContext.execute()
+				.then(() => oCalculateMataWangAmountContext.requestObject())
+				.then((oResult) => {
+
+					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+					const iMatawangIndex = aClaimItems.findIndex(
+						oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
+					);
+
+					if (iMatawangIndex > -1) {
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/percentage_compensation`,
+							oResult.percentage
+						);
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/amount`,
+							oResult.amount
+						);
+					}
+
+					else if (
+						oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+						Constant.ClaimTypeItem.MATAWANG
+					) {
+						oInputModel.setProperty(
+							"/claim_item/percentage_compensation",
+							oResult.percentage
+						);
+						oInputModel.setProperty(
+							"/claim_item/amount",
+							oResult.amount
+						);
+					}
+				});
+		},
+		/**
+		 * Save Matawang item after calculation.
+		 *
+		 * @public
+		 * @param {Function} fnSaveClaimItem - controller save function (callback)
+		 */
+		saveUpdatedMatawang: async function (fnSaveClaimItem) {
+
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
+			const bPreviousIsNew = oInputModel.getProperty("/is_new");
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+			
+			const iMatawangIndex = aClaimItems.findIndex(
+				oItem =>
+					oItem.claim_type_item_id ===
+					Constant.ClaimTypeItem.MATAWANG
+			);
+
+			if (iMatawangIndex === -1) {
+				return false;
+			}
+
+			const oMatawangItem = {
+				...aClaimItems[iMatawangIndex]
+			};
+			oInputModel.setProperty("/claim_item", oMatawangItem);
+			oInputModel.setProperty("/is_new", false);
+			await fnSaveClaimItem();
+			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
+			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}
 	}
 });
