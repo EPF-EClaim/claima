@@ -3402,8 +3402,7 @@ sap.ui.define([
 				(this.byId(startDate).getVisible() && !this.byId(startDate).getValue()) ||
 				(this.byId(startTime).getVisible() && !this.byId(startTime).getValue()) ||
 				(this.byId(endDate).getVisible() && !this.byId(endDate).getValue()) ||
-				(this.byId(endTime).getVisible() && !this.byId(endTime).getValue()) ||
-				(this.byId("select_claimdetails_input_region").getVisible() && !oClaimItemInputModel.getProperty("/claim_item/region"))
+				(this.byId(endTime).getVisible() && !this.byId(endTime).getValue()) 
 			) {
 				return;
 			}
