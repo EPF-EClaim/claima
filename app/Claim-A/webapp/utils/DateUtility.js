@@ -599,9 +599,13 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            _dMaxDate = new Date();
-                            _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                _oResourceBundle.getText("error_move_in_date_in_future"));
+                            if(sType === Constants.ClaimType.ELAUN_PINDAH){
+                                _dMaxDate = new Date();
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("error_move_in_date_in_future"));
+                            }else{
+
+                            }
                             break;
                     }
                     break;

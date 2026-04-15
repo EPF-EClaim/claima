@@ -159,7 +159,6 @@ sap.ui.define([
                         dTripEndDate.setHours(0, 0, 0, 0);
                         dMoveInDate.setHours(0, 0, 0, 0);
                        
-                        
                         if(!!dTripStartDate && !!dTripEndDate && !!dMoveInDate){
                             if(dTripStartDate > dTripEndDate ){
                                 MessageBox.error(Utility.getText("req_d_w_check_date"));
