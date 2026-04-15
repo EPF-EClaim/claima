@@ -903,11 +903,6 @@ sap.ui.define([
 				return;
 			}
 
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-				return;
-			}
-
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
