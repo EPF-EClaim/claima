@@ -254,6 +254,8 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+            "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
             "STATE_ID": "STATE_ID",
             "STATE_DESC": "STATE_DESC",
             "LOCATION_DESC": "LOCATION_DESC",
@@ -341,7 +343,9 @@ sap.ui.define([
         },
         "SubmissionTypePrefix": {
             "REQUEST": "REQ",
-            "CLAIM": "CLM"
+            "CLAIM": "CLM",
+            "REQUESTHEADER": "REQHD",
+            "CLAIMHEADER": "CLMHD"
         },
         "CashAdvanceInfo": {
             "COST_CENTER": "100000000",
