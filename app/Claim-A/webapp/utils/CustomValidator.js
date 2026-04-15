@@ -1,13 +1,15 @@
 sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Constants",
+    "claima/utils/ClaimUtility",
     "claima/utils/Utility",
-    "claima/utils/ClaimUtility"
+    "claima/utils/RequestUtility"
 ], function (
     MessageBox,
     Constants,
+    ClaimUtility,
     Utility,
-    ClaimUtility
+    RequestUtility
 ) {
     "use strict";
 
@@ -42,7 +44,7 @@ sap.ui.define([
 
                     var oReqModel = this._oOwnerComponent.getModel("request");
                     var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
-
+                    
                     // HANDPHONE | TELEFON_B
                     if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
                         
@@ -87,8 +89,8 @@ sap.ui.define([
                         if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
                             bCanProceed = false
+                        }
                     }
-                }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
@@ -149,6 +151,27 @@ sap.ui.define([
                                 bCanProceed = false;
                             }
                         }
+                        // validate date range
+			            //// trip start/end date
+                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                        //// event start/end date (optional)
+                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
+                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
+                                // stop claim submission if incomplete
+                                bCanProceed = false;
+                            }
+                        }
+                    }
+
+                    // // validate item date range
+                    if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
+                        if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
+                            // stop claim details if incomplete
+                            bCanProceed = false;
+                        }
                     }
                     
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
@@ -161,10 +184,55 @@ sap.ui.define([
                             }
                         }
                     }
+                    break;
+                case Constants.SubmissionTypePrefix.REQUESTHEADER:
+                    var oReqModel = this._oOwnerComponent.getModel("request");
+                    if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
+                        // stop claim submission if incomplete
+                        bCanProceed = false;
+                    }
+                    RequestUtility.init(this._oOwnerComponent, this._oView)
+                    const bIsEventDateRequired = RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"));
+                    //// event start/end date (optional)
+                    if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
+                        if (!this._isValidDateRange(oReqModel.getProperty("/req_header/eventstartdate"), oReqModel.getProperty("/req_header/eventenddate"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                    }
+                    break;
+                case Constants.SubmissionTypePrefix.CLAIMHEADER:   
+                    var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
 
-                    
+                    if (!!oClaimSubmissionModel) {
+                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                        //// event start/end date (optional)
+                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
+                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
+                                // stop claim submission if incomplete
+                                bCanProceed = false;
+                            }
+                        }
+
+                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
+                        if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
+                            // course code pre-check
+                            var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
+                            var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
+                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                            if (bCourseAlreadyApproved) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
+                                bCanProceed = false;
+                            }
+                        }
+                    }
+                    break;
             }
             return bCanProceed;
+            
         },        
         onShowConfirmation: function(sPromptMessage) {
                 return new Promise((oResolve) => {
@@ -185,7 +253,37 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
-        }
+        },
+
+        /**
+         * Check if start and end dates are empty
+         * Check if start date is set before end date
+         * @private
+         * @param {string} sStartdate start date to be checked
+         * @param {string} sEnddate end date to be checked
+         * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
+         */
+        _isValidDateRange: function (sStartdate, sEnddate) {
+			// check for missing value
+			if (!sStartdate || !sEnddate) {
+                MessageBox.error(Utility.getText("msg_daterange_missing"));
+                return false;
+            }
+            else {
+                // check if values can be converted to valid dates
+                if (isNaN(new Date(sStartdate).getTime()) || isNaN(new Date(sEnddate).getTime())) {
+                    MessageBox.error(Utility.getText("msg_daterange_missing"));
+                    return false;
+                }
+            }
+
+			// check if end date earlier than start date
+			if (new Date(sStartdate) > new Date(sEnddate)) {
+                MessageBox.error(Utility.getText("msg_daterange_order"));
+                return false;
+            }
+			return true;
+		},
  
     };
 });

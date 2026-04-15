@@ -31,7 +31,10 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/CustomDuplicationCheck"
+	"claima/utils/CustomDuplicationCheck",
+	"claima/model/models",
+	"claima/utils/Constants",
+	"claima/utils/Common"
 ], function (
 	Fragment,
 	Item,
@@ -65,8 +68,10 @@ sap.ui.define([
 	EligibilityCheck,
 	EligibleScenarioCheck,
 	CustomValidator,
-	CustomDuplicationCheck
-
+	CustomDuplicationCheck,
+	Models,
+	Constants,
+	Common
 ) {
 	"use strict";
 
@@ -128,6 +133,7 @@ sap.ui.define([
 				}
 			}), "appModel");
 
+			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -203,14 +209,17 @@ sap.ui.define([
 			}
 			// set view-only
 			// TODO: Revisit to make sure the claim is reloaded everytime
+			Common.init(this.getOwnerComponent(), this.getView());
 			if (
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
-				oClaimSubmissionModel.setProperty("/view_only", true)
+				oClaimSubmissionModel.setProperty("/view_only", true);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, false);
 			}
 			else {
-				oClaimSubmissionModel.setProperty("/view_only", false)
+				oClaimSubmissionModel.setProperty("/view_only", false);
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			// load form fragments
@@ -1726,6 +1735,10 @@ sap.ui.define([
 			}
 		},
 
+		onSaveHeaderPress: async function () {
+			await Common.saveHeader(Constants.SubmissionTypePrefix.CLAIMHEADER);
+		},
+
 		onDownloadExcelReport: async function () {
 			// get header data
 			const oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
@@ -2687,8 +2700,7 @@ sap.ui.define([
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
+			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
@@ -2745,14 +2757,11 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
-			// validate date range
-			//// start/end date
-			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
-				if (!this._validDateRange("datepicker_claimdetails_input_startdate", "datepicker_claimdetails_input_enddate")) {
-					// stop claim details if incomplete
-					return;
-				}
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				return;
 			}
+			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -2823,8 +2832,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
+			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 
@@ -2862,12 +2870,12 @@ sap.ui.define([
 					ATTACHMENT_FILE_1: oInputModel.getProperty("/claim_item/attachment_file_1"),
 					ATTACHMENT_FILE_2: oInputModel.getProperty("/claim_item/attachment_file_2"),
 					BILL_NO: oInputModel.getProperty("/claim_item/bill_no"),
-					BILL_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/bill_date")),
+					BILL_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/bill_date")),
 					CLAIM_CATEGORY: oInputModel.getProperty("/claim_item/claim_category"),
 					COUNTRY: oInputModel.getProperty("/claim_item/country"),
 					DISCLAIMER: oInputModel.getProperty("/claim_item/disclaimer"),
-					START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/start_date")),
-					END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/end_date")),
+					START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/start_date")),
+					END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/end_date")),
 					START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/start_time")),
 					END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/end_time")),
 					FLIGHT_CLASS: oInputModel.getProperty("/claim_item/flight_class"),
@@ -2884,7 +2892,7 @@ sap.ui.define([
 					PARKING: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/parking"))),
 					PHONE_NO: oInputModel.getProperty("/claim_item/phone_no"),
 					RATE_PER_KM: oInputModel.getProperty("/claim_item/rate_per_km"),
-					RECEIPT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/receipt_date")),
+					RECEIPT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/receipt_date")),
 					RECEIPT_NUMBER: oInputModel.getProperty("/claim_item/receipt_number"),
 					REMARK: oInputModel.getProperty("/claim_item/remark"),
 					ROOM_TYPE: oInputModel.getProperty("/claim_item/room_type"),
@@ -2897,10 +2905,10 @@ sap.ui.define([
 					TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/total_exp_amount"))).toFixed(2),
 					VEHICLE_TYPE: oInputModel.getProperty("/claim_item/vehicle_type"),
 					VEHICLE_FARE: oInputModel.getProperty("/claim_item/vehicle_fare"),
-					TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/trip_start_date")),
-					TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/trip_end_date")),
-					EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/event_start_date")),
-					EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/event_end_date")),
+					TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_start_date")),
+					TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_end_date")),
+					EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_start_date")),
+					EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_end_date")),
 					TRAVEL_DURATION_DAY: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day"))).toFixed(1),
 					TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))).toFixed(1),
 					PROVIDED_BREAKFAST: oInputModel.getProperty("/claim_item/provided_breakfast")?.toString(),
@@ -2915,7 +2923,7 @@ sap.ui.define([
 					TYPE_OF_PROFESSIONAL_BODY: oInputModel.getProperty("/claim_item/type_of_professional_body"),
 					DISCLAIMER_GALAKAN: oInputModel.getProperty("/claim_item/disclaimer_galakan"),
 					MODE_OF_TRANSFER: oInputModel.getProperty("/claim_item/mode_of_transfer"),
-					TRANSFER_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/transfer_date")),
+					TRANSFER_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/transfer_date")),
 					NO_OF_DAYS: oInputModel.getProperty("/claim_item/no_of_days"),
 					FAMILY_COUNT: oInputModel.getProperty("/claim_item/family_count"),
 					FUNERAL_TRANSPORTATION: oInputModel.getProperty("/claim_item/funeral_transportation"),
@@ -2938,12 +2946,12 @@ sap.ui.define([
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
-					INSURANCE_CERT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
-					INSURANCE_CERT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_start_date")),
+					INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
+					INSURANCE_CERT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_start_date")),
 					INSURANCE_PACKAGE_ID: oInputModel.getProperty("/claim_item/insurance_package_id"),
 					INSURANCE_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_provider_id"),
 					INSURANCE_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_provider_name"),
-					INSURANCE_PURCHASE_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/insurance_purchase_date")),
+					INSURANCE_PURCHASE_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_purchase_date")),
 					METER_CUBE_ACTUAL: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_actual"))).toFixed(2),
 					METER_CUBE_ENTITLED: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_entitled"))).toFixed(2),
 					MOBILE_CATEGORY_PURPOSE_ID: oInputModel.getProperty("/claim_item/mobile_category_purpose_id"),
@@ -3697,26 +3705,6 @@ sap.ui.define([
 			}.bind(this));
 		},
 
-		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
-				MessageBox.error(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageBox.error(Utility.getText("msg_daterange_order"));
-				return false;
-			}
-			else {
-				return true;
-			}
-		},
-
 		onCancel_ClaimDetails_Input: async function () {
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
@@ -3856,10 +3844,10 @@ sap.ui.define([
 				var oBody = new JSONModel({
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-					TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-					TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-					EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-					EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
+					TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
+					TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
+					EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
+					EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
 					SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
 					COMMENT: oInputModel.getProperty("/claim_header/comment"),
 					ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
@@ -3870,15 +3858,15 @@ sap.ui.define([
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
 					TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
 					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
-					LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-					SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
+					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
+					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
+					LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
 					LAST_APPROVED_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
-					PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
+					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
 					LOCATION: oInputModel.getProperty("/claim_header/location"),
 					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-					HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-					MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
+					HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
+					MOVE_IN_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
 					HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
 					LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
 					SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
@@ -3890,7 +3878,7 @@ sap.ui.define([
 					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
 					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
+					LAST_SEND_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
@@ -3899,7 +3887,7 @@ sap.ui.define([
 					REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
 					SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
-					REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
+					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
 				});
 
@@ -4032,7 +4020,7 @@ sap.ui.define([
 									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
+										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
 									}
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								} else {
@@ -4136,12 +4124,12 @@ sap.ui.define([
 						ATTACHMENT_FILE_1: claim_item.attachment_file_1,
 						ATTACHMENT_FILE_2: claim_item.attachment_file_2,
 						BILL_NO: claim_item.bill_no,
-						BILL_DATE: this._getHanaDate(claim_item.bill_date),
+						BILL_DATE: DateUtility.getHanaDate(claim_item.bill_date),
 						CLAIM_CATEGORY: claim_item.claim_category,
 						COUNTRY: claim_item.country,
 						DISCLAIMER: claim_item.disclaimer,
-						START_DATE: this._getHanaDate(claim_item.start_date),
-						END_DATE: this._getHanaDate(claim_item.end_date),
+						START_DATE: DateUtility.getHanaDate(claim_item.start_date),
+						END_DATE: DateUtility.getHanaDate(claim_item.end_date),
 						START_TIME: DateUtility.getHanaTime(claim_item.start_time),
 						END_TIME: DateUtility.getHanaTime(claim_item.end_time),
 						FLIGHT_CLASS: claim_item.flight_class,
@@ -4158,7 +4146,7 @@ sap.ui.define([
 						PARKING: this._nonNan(parseFloat(claim_item.parking)),
 						PHONE_NO: claim_item.phone_no,
 						RATE_PER_KM: claim_item.rate_per_km,
-						RECEIPT_DATE: this._getHanaDate(claim_item.receipt_date),
+						RECEIPT_DATE: DateUtility.getHanaDate(claim_item.receipt_date),
 						RECEIPT_NUMBER: claim_item.receipt_number,
 						REMARK: claim_item.remark,
 						ROOM_TYPE: claim_item.room_type,
@@ -4171,10 +4159,10 @@ sap.ui.define([
 						TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(claim_item.total_exp_amount)).toFixed(2),
 						VEHICLE_TYPE: claim_item.vehicle_type,
 						VEHICLE_FARE: claim_item.vehicle_fare,
-						TRIP_START_DATE: this._getHanaDate(claim_item.trip_start_date),
-						TRIP_END_DATE: this._getHanaDate(claim_item.trip_end_date),
-						EVENT_START_DATE: this._getHanaDate(claim_item.event_start_date),
-						EVENT_END_DATE: this._getHanaDate(claim_item.event_end_date),
+						TRIP_START_DATE: DateUtility.getHanaDate(claim_item.trip_start_date),
+						TRIP_END_DATE: DateUtility.getHanaDate(claim_item.trip_end_date),
+						EVENT_START_DATE: DateUtility.getHanaDate(claim_item.event_start_date),
+						EVENT_END_DATE: DateUtility.getHanaDate(claim_item.event_end_date),
 						TRAVEL_DURATION_DAY: this._nonNan(parseFloat(claim_item.travel_duration_day)).toFixed(1),
 						TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
 						PROVIDED_BREAKFAST: claim_item.provided_breakfast?.toString(),
@@ -4190,7 +4178,7 @@ sap.ui.define([
 						TYPE_OF_PROFESSIONAL_BODY: claim_item.type_of_professional_body,
 						DISCLAIMER_GALAKAN: claim_item.disclaimer_galakan,
 						MODE_OF_TRANSFER: claim_item.mode_of_transfer,
-						TRANSFER_DATE: this._getHanaDate(claim_item.transfer_date),
+						TRANSFER_DATE: DateUtility.getHanaDate(claim_item.transfer_date),
 						NO_OF_DAYS: claim_item.no_of_days,
 						FAMILY_COUNT: claim_item.family_count,
 						FUNERAL_TRANSPORTATION: claim_item.funeral_transportation,
@@ -4213,12 +4201,12 @@ sap.ui.define([
 						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
 						EMP_ID: claim_item.emp_id,
 						FARE_TYPE_ID: claim_item.fare_type_id,
-						INSURANCE_CERT_END_DATE: this._getHanaDate(claim_item.insurance_cert_end_date),
-						INSURANCE_CERT_START_DATE: this._getHanaDate(claim_item.insurance_cert_start_date),
+						INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(claim_item.insurance_cert_end_date),
+						INSURANCE_CERT_START_DATE: DateUtility.getHanaDate(claim_item.insurance_cert_start_date),
 						INSURANCE_PACKAGE_ID: claim_item.insurance_package_id,
 						INSURANCE_PROVIDER_ID: claim_item.insurance_provider_id,
 						INSURANCE_PROVIDER_NAME: claim_item.insurance_provider_name,
-						INSURANCE_PURCHASE_DATE: this._getHanaDate(claim_item.insurance_purchase_date),
+						INSURANCE_PURCHASE_DATE: DateUtility.getHanaDate(claim_item.insurance_purchase_date),
 						METER_CUBE_ACTUAL: this._nonNan(parseFloat(claim_item.meter_cube_actual)).toFixed(2),
 						METER_CUBE_ENTITLED: this._nonNan(parseFloat(claim_item.meter_cube_entitled)).toFixed(2),
 						MOBILE_CATEGORY_PURPOSE_ID: claim_item.mobile_category_purpose_id,
@@ -4316,16 +4304,6 @@ sap.ui.define([
 			if (iDate) {
 				var oDate = new Date(iDate);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
-				return oDateString;
-			} else {
-				return null;
-			}
-		},
-
-		_getHanaDate: function (iDate) {
-			if (iDate) {
-				var oDate = new Date(iDate);
-				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
 				return oDateString;
 			} else {
 				return null;
