@@ -1,19 +1,19 @@
 sap.ui.define([
-    "claima/utils/Constants",
+    "sap/m/MessageBox",
     "sap/ui/core/Fragment",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"claima/utils/Utility",
+    "claima/utils/Utility",
 	"claima/utils/DateUtility",
-	"sap/m/MessageBox",
+    "claima/utils/Constants"
 ], function (
-    Constants,
+    MessageBox,
 	Fragment,
 	Filter,
 	FilterOperator,
 	Utility,
 	DateUtility,
-	MessageBox) {
+    Constants ) {
     "use strict";
 
     return {
@@ -119,6 +119,40 @@ sap.ui.define([
             var fEstAmount = this._calculateEstimatedAmount(oReqItem, aReqPart);
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
+
+        /** 
+         * Bind to an existing request header by request ID.
+         * Returns the bound context if found; otherwise returns null.
+		 * @param {object} oODataModel model used for request data binding
+		 * @param {string} sReqId Request ID to retrieve from the backend
+		 * @returns {object} Bound context of the request header, or null if not found
+		 */
+		getReqHeader: async function (oODataModel, sReqId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZREQUEST_HEADER('${encodeURIComponent(sReqId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
+        /**
+		 * Get condition for Event dates editability
+         * @public
+		 * @param {string} sRequestTypeID Request Type ID to be checked
+         * @returns {boolean} Determine Event Date is Required
+		 */
+		getEventDateRequired: function (sRequestTypeID) {
+			if (sRequestTypeID == Constants.RequestType.TRAVEL || sRequestTypeID == Constants.RequestType.EVENTS) {
+				return true;
+			}
+            return false;
+		},
 
 		/**
          * Calculate the total for km and rate per km 
