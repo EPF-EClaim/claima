@@ -750,11 +750,6 @@ sap.ui.define([
 				oInputModel.setProperty("/req_emailapprove", false);
 			}
 
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-				return;
-			}
-
 			//check if the same Request ID has been submitted for claim submission
 			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
 				var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
@@ -927,18 +922,10 @@ sap.ui.define([
 					return;
 				}
 			}
-			// validate date range
-			//// trip start/end date
-			if (!this._validDateRange(this.byId("datepicker_claiminput_tripstartdate").getValue(), this.byId("datepicker_claiminput_tripenddate").getValue())) {
-				// stop claim submission if incomplete
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
 				return;
-			}
-			//// event start/end date (optional)
-			if (this.byId("datepicker_claiminput_eventstartdate").getValue() || this.byId("datepicker_claiminput_eventenddate").getValue()) {
-				if (!this._validDateRange(this.byId("datepicker_claiminput_eventstartdate").getValue(), this.byId("datepicker_claiminput_eventenddate").getValue())) {
-					// stop claim submission if incomplete
-					return;
-				}
 			}
 
 			// send new claim submission to database
@@ -1107,26 +1094,6 @@ sap.ui.define([
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
 			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
-		},
-
-		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
-				MessageBox.error(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageBox.error(Utility.getText("msg_daterange_order"));
-				return false;
-			}
-			else {
-				return true;
-			}
 		},
 
 		onCancel_ClaimInput: function () {

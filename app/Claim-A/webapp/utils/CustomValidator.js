@@ -87,8 +87,8 @@ sap.ui.define([
                         if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
                             bCanProceed = false
+                        }
                     }
-                }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
@@ -148,6 +148,27 @@ sap.ui.define([
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
                             }
+                        }
+                        // validate date range
+			            //// trip start/end date
+                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                        //// event start/end date (optional)
+                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
+                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
+                                // stop claim submission if incomplete
+                                bCanProceed = false;
+                            }
+                        }
+                    }
+
+                    // // validate item date range
+                    if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
+                        if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
+                            // stop claim details if incomplete
+                            bCanProceed = false;
                         }
                     }
                     

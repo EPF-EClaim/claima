@@ -160,6 +160,7 @@ sap.ui.define([
 
         /**
 		 * Get condition for Event dates editability
+         * @public
 		 * @param {string} sRequestTypeDesc Request Type Description to be checked
          * @returns {boolean} Determine Event Date is Required
 		 */

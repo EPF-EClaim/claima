@@ -2753,13 +2753,10 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
-			// validate date range
-			//// start/end date
-			if (oInputModel.getProperty("/claim_item/start_date") || oInputModel.getProperty("claim_item/end_date")) {
-				if (!this._validDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("claim_item/end_date"))) {
-					// stop claim details if incomplete
-					return;
-				}
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
 			}
 			
 			// get descriptions
@@ -3704,26 +3701,6 @@ sap.ui.define([
 				ctx.controller.prefill({ from: sFrom, to: sTo });
 				ctx.controller.open();
 			}.bind(this));
-		},
-
-		_validDateRange: function (startdate, enddate) {
-			var startDateValue = startdate;
-			var endDateValue = enddate;
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
-				MessageBox.error(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageBox.error(Utility.getText("msg_daterange_order"));
-				return false;
-			}
-			else {
-				return true;
-			}
 		},
 
 		onCancel_ClaimDetails_Input: async function () {
