@@ -3339,24 +3339,28 @@ sap.ui.define([
 		 * rate per KM values will be populated based on output values returned
 		 * @public
 		 */
-		onSelect_ClaimDetails_VehicleType: async function () {
+		onSelect_ClaimDetails_VehicleType: async function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oInputModel) return;
+
+			// set description value
+			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
+			if (oSelectedItem) {
+				// get vehicle type description
+				oInputModel.setProperty("/claim_item/descr/vehicle_type", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.VEHICLE_TYPE_DESC));
+			}
+			else {
+				oInputModel.setProperty("/claim_item/descr/vehicle_type", null);
+			}
+
+			// calculate rate per km
 			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
-				var oInputModel = this.getView().getModel("claimitem_input");
-				var aEntityFields = [
-					{ entity_field: "VEHICLE_TYPE_ID", filter_value: oInputModel.getProperty("/claim_item/vehicle_type") },
-					{ entity_field: "CLAIM_TYPE_ITEM_ID", filter_value: oInputModel.getProperty("/claim_item/claim_type_item_id") }
-				]
-				var aRetrievalFields = ["RATE_KM_ID", "RATE"];
-				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
-				if (aOutputValues.length > 0) {
-					oInputModel.setProperty("/claim_item/rate_per_km", aOutputValues[0]);
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", aOutputValues[1]);
-				}
-				else {
-					oInputModel.setProperty("/claim_item/rate_per_km", null);
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
-					MessageToast.show(Utility.getText("msg_claimdetails_input_descr/rate_per_km_none"));
-				}
+				var oRatePerKm = await ClaimUtility.fetchRatePerKm(
+					oSelectedItem ? oSelectedItem.getKey() : oInputModel.getProperty("/claim_item/vehicle_type"),
+					oInputModel.getProperty("/claim_item/claim_type_item_id")
+				);
+				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
 				this._calculateRatePerKm();
 			}
 		},
@@ -4684,8 +4688,8 @@ sap.ui.define([
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
 				"input_claimdetails_input_remarks",
-				"fileuploader_claimdetails_input_attachment1",
-				"fileuploader_claimdetails_input_attachment2",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
 				"input_claimdetails_meter_cube",
@@ -4742,13 +4746,6 @@ sap.ui.define([
 						control.setEditable(false);
 					} else if (control.getMetadata().getName().includes("FileUploader")) {
 						control.setVisible(false);
-
-						// set button to open attachment
-						var fieldNumber = control.getId().slice(-1);
-						var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-						if (openAttachment && !openAttachment.getVisible()) {
-							openAttachment.setVisible(true);
-						}
 					} else if (control instanceof sap.ui.mdc.Field) {
 						control.setEditMode("Display");
 					}
@@ -4834,17 +4831,6 @@ sap.ui.define([
 				const c = this._resolveControl(id, "claimsubmission_claimdetails_input");
 				if (c && typeof c.setEditable === "function") {
 					c.setEditable(bEditable);
-				} else if (c.getMetadata().getName().includes("FileUploader")) {
-					if (c.getVisible() !== bEditable) {
-						c.setVisible(bEditable);
-					}
-
-					// set button to open attachment
-					var fieldNumber = c.getId().slice(-1);
-					var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-					if (openAttachment && openAttachment.getVisible() === bEditable) {
-						openAttachment.setVisible(!bEditable);
-					}
 				} else {
 					console.warn("Control not found or not editable-capable:", id);
 				}

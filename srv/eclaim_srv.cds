@@ -394,6 +394,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
 
+    type rateperkm {
+        id      : String;
+        value   : Decimal(34);
+    }
+
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String) returns rateperkm;
+    
     function _getMarriageCategory(sEmpId: String, )                                            returns String;
 
     function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
