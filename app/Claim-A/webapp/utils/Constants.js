@@ -99,6 +99,7 @@ sap.ui.define([
             "FLIGHT_O": "FLIGHT_O",
         },
         "ClaimTypeItemLodging": {
+            "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
             "LODGING_L": "LODGING_L"
         },

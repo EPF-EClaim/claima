@@ -1355,11 +1355,14 @@ module.exports = (srv) => {
     });
 
     /**
-     * Get eligible amount for user employee on Elaun Lodging Pertukaran, based on Employee Grade
+     * Get eligible amount for user employee on Lodging claim type items, based on Employee Grade
      * @public
+     * @param {String} sClaimType - claim type to retrieve amount
+     * @param {String} sClaimTypeItem - claim type item to retrieve amount
      * @return {Decimal} - return eligible amount retrieved from table
      */
-    srv.on('getUserEligibleAmountLodTukar', async (req) => {
+    srv.on('getUserEligibleAmountLodging', async (req) => {
+        const { sClaimType, sClaimTypeItem } = req.data;
         const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
         const sEmail = String(sUserEmail).trim().toLowerCase();
 
@@ -1380,8 +1383,8 @@ module.exports = (srv) => {
                 .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
                 .where({
                     // claim type + claim type item
-                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
-                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.LOD_TUKAR,
+                    CLAIM_TYPE_ID: sClaimType,
+                    CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
                     // status check
                     STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
                     START_DATE: { '<=': sTodayDate },

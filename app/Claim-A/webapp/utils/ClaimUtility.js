@@ -372,16 +372,21 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve eligible amount for user selecting Elaun Lodging Pertukaran, based on Employee Grade
+		 * Retrieve eligible amount for user selecting lodging claim type item, based on Employee Grade
 		 * @public
+		 * @param {String} sClaimType - claim type of selected item
+		 * @param {String} sClaimTypeItem - claim type item of selected item
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
-		fetchUserAmountLodgingPertukaran: async function () {
+		fetchUserAmountLodging: async function (sClaimType, sClaimTypeItem) {
 			// get eligible amount based on current user
 			var dResult = 0.00;
 			try {
 				BusyIndicator.show(0);
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountLodTukar(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountLodging(...)");
+
+				oFunction.setParameter("sClaimType", sClaimType);
+				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
 
 				await oFunction.execute();
 
@@ -399,22 +404,26 @@ sap.ui.define([
 		},
 
 		/**
-		 * Calculate approved amount based on eligible amount, number of nights, and number of family members
+		 * Calculate approved amount for lodging based on params
 		 * @public
+		 * @param {String} sClaimTypeItem - claim type item of selected item
 		 * @param {Decimal} dEligibleAmount - eligible amount set for employee
 		 * @param {Integer} iNoOfDays - number of days retrieved from claim item
-		 * @param {Integer} iNoOfFamilyMembers - number of family members retrieved from claim item
+		 * @param {Integer} iNoOfFamilyMembers - optional, number of family members retrieved from claim item (used for lodging pertukaran)
 		 * @return {Decimal} dResult - returns approved amount based on above parameters
 		 */
-		calculateAmountLodgingPertukaran: function (dEligibleAmount, iNoOfDays, iNoOfFamilyMembers) {
-			if (!dEligibleAmount || !iNoOfDays || !iNoOfFamilyMembers) return 0.00;
-
-			// get number of nights
-			var iNoOfNights = iNoOfDays - 1;
+		calculateAmountLodging: function (sClaimTypeItem, dEligibleAmount, iNoOfDays, iNoOfFamilyMembers) {
+			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
 
 			// calculate approved amount
-			var dResult = parseFloat(dEligibleAmount) * iNoOfNights * iNoOfFamilyMembers;
-
+			switch (sClaimTypeItem) {
+				case Constant.ClaimTypeItem.LOD_TUKAR:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					break;
+				default:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
+					break;
+			}
 			return !isNaN(dResult) ? dResult : 0.00;
 		},
 

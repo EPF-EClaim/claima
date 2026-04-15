@@ -256,9 +256,9 @@
 
                 <!-- Eligible Amount (MYR) -->
                 <Label text="{i18n>label_claimdetails_input_eligible_amount}" />
-                <Input
-                    id="input_claimdetails_input_eligible_amount"
-                    value="{
+                <Text
+                    id="text_claimdetails_input_eligible_amount"
+                    text="{
 						path: 'claimitem_input>/claim_item/eligible_amount',
 						type: 'FloatType',
 						formatOptions: {
@@ -266,12 +266,10 @@
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
 							preserveDecimals: false
-                        }
+						}
 					}"
-					editable="false"
-					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) ||
-                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} }"
-				/>
+					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                />
 
                 <!-- Meter Cube Entitled -->
                 <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}" />
@@ -302,7 +300,6 @@
                         !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LOD_TUKAR} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
 						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
