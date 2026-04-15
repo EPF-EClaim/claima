@@ -24,7 +24,7 @@ module.exports = {
         }
         else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
             aFilteredRules = aRules.filter(function (rule) {
-                return rule.TRANSPORT_CLASS === aPayload.sFareTypeId;//[Constant.EntitiesFields.FARE_TYPE_ID];
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
             })
 
             oRule = aFilteredRules[0];
@@ -46,7 +46,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sTravelDaysId, sFlightClassId, sFareTypeId;
+        var sTravelDaysId, sFlightClassId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -66,10 +66,13 @@ module.exports = {
                 case Constant.EntitiesFields.FARE_TYPE_ID:
                     sFareTypeId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.TRANSPORT_CLASS:
+                    sTransportClass = oPayload.CheckFields[i].value;
+                    break;
             }
-        }
+        };
 
-        return { sTravelDaysId, sFlightClassId, sFareTypeId };
+        return { sTravelDaysId, sFlightClassId, sFareTypeId, sTransportClass };
     },
 
     /**
@@ -139,18 +142,23 @@ module.exports = {
             // TAMBANG - return true if selected transport class matches user's personal grade
             case Constant.ClaimTypeItem.TAMBANG:
                 iIndex = oPayload.CheckFields.findIndex((field) =>
-                    field.fieldName === Constant.EntitiesFields.FARE_TYPE_ID);
+                        field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
 
                 if (iIndex == -1) return;
 
                 // if no rule matches the selected transport class, return false
-                if (!oRule) {
-                    oPayload.CheckFields[iIndex].result = false;
+                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
+                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
                 } else {
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
-                        oPayload.CheckFields[iIndex].value,
-                        oRule.TRANSPORT_CLASS
-                    );
+                    oPayload.CheckFields[iIndex].result = true;
                 }
                 break;
         }
