@@ -323,6 +323,30 @@ sap.ui.define([
 		},
 
 		/**
+		 * Check for default cost center assigned to claim type, if no data found, return null value
+		 * @public
+		 * @param {string} sClaimTypeId claim type to be checked
+		 * @returns {string} cost center selected
+		 */
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject() || null;
+
+				return oResult.sCostCenter;
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
@@ -425,6 +449,27 @@ sap.ui.define([
 					break;
 			}
 			return !isNaN(dResult) ? dResult : 0.00;
+		},
+		
+		/**
+		 * Bind to existing claim header with claim ID, if not found return null value
+		 * @public
+		 * @param {object} oODataModel model used for claim data binding
+		 * @param {string} sClaimId claim ID to check from database
+		 * @returns {object} Bound context of the claim header, null value if not found
+		 */
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
 		},
 
 		/**
