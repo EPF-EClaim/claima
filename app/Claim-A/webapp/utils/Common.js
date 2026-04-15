@@ -217,7 +217,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/startEvent", bEdit);
                         oEditableFields.setProperty("/endEvent", bEdit);
                         RequestUtility.init(this._oOwnerComponent, this._oView);
-                        if (await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
+                        if (await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"))) {
                             oEditableFields.setProperty("/startEventRequired", bEdit);
                             oEditableFields.setProperty("/endEventRequired", bEdit);
                         }

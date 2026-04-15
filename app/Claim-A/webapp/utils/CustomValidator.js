@@ -192,7 +192,7 @@ sap.ui.define([
                         bCanProceed = false;
                     }
                     RequestUtility.init(this._oOwnerComponent, this._oView)
-                    const bIsEventDateRequired = await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"));
+                    const bIsEventDateRequired = RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"));
                     //// event start/end date (optional)
                     if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
                         if (!this._isValidDateRange(oReqModel.getProperty("/req_header/eventstartdate"), oReqModel.getProperty("/req_header/eventenddate"))) {

@@ -142,64 +142,16 @@ sap.ui.define([
 		},
 
         /**
-		 * Get Request Type ID with Request Type Description
-         * @private
-		 * @param {string} sRequestTypeDesc Request Type Description to be checked with database
-		 * @returns {string} returns Request Type ID found, if not returns null
-		 */
-		_getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
-			if (!sRequestTypeDesc) {
-				return null;
-			}
-
-			try {
-				 await this._oOwnerComponent.getModel().getMetaModel().requestObject("/");
-
-				// Main table path
-				const sRequestTypeTablePath = "/ZREQUEST_TYPE";
-
-				// Build filter
-				const aFilters = [
-					new Filter("REQUEST_TYPE_DESC", FilterOperator.EQ, sRequestTypeDesc),
-	        		new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-				];
-
-				// Bind list
-				const oBinding = this._oOwnerComponent.getModel().bindList(
-					sRequestTypeTablePath,
-					null,
-					null,
-					aFilters,
-					{ $$ownRequest: true }
-				);
-
-				// Fetch data
-				const aCtx = await oBinding.requestContexts(0, Infinity);
-				let oData = null;
-				if (!aCtx || aCtx.length === 0) {
-					return null; // no employee found
-				}
-				return oData = aCtx[0].getObject().REQUEST_TYPE_ID;
-
-			} catch (e) {
-				return null;
-			}
-		},
-
-        /**
 		 * Get condition for Event dates editability
          * @public
-		 * @param {string} sRequestTypeDesc Request Type Description to be checked
+		 * @param {string} sRequestTypeID Request Type ID to be checked
          * @returns {boolean} Determine Event Date is Required
 		 */
-		getEventDateRequired: async function (sRequestTypeDesc) {
-            var bIsRequired = false;
-			const sReqType = await this._getRequestTypeIdByDesc(sRequestTypeDesc);
-
-			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
-				bIsRequired = true;
+		getEventDateRequired: function (sRequestTypeID) {
+			if (sRequestTypeID == Constants.RequestType.TRAVEL || sRequestTypeID == Constants.RequestType.EVENTS) {
+				return true;
 			}
-            return bIsRequired;
+            return false;
 		},
 
 		/**

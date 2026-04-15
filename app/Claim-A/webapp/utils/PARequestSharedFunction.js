@@ -74,6 +74,7 @@ sap.ui.define([
 					altcostcenterdesc: oData.ALT_COST_CENTER_DESC || "",
 					cashadvamt:     parseFloat(oData.CASH_ADVANCE) || 0,
 					reqamt:         parseFloat(oData.PREAPPROVAL_AMOUNT) || 0,
+					reqtypeid:      oData.REQUEST_TYPE_ID || "",
 					reqtype:        oData.REQUEST_TYPE_DESC || "",
 					comment:        oData.REMARK || "",
 					doc1:           oData.ATTACHMENT1 || "",
