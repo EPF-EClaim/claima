@@ -178,6 +178,7 @@ const Constant = {
         "RATE_KM_ID": "RATE_KM_ID",
         "RATE": "RATE",
         "REGION_ID": "REGION_ID",
+        "STATUS": "STATUS",
         "TRANSPORT_CLASS": "TRANSPORT_CLASS"
     },
     Wildcard: {
@@ -282,7 +283,11 @@ const Constant = {
             "FLIGHT": "04",
             "TRAIN": "05",
             "TAXI": "06"
-        }
+        },
+    
+    ConfigStatus: {
+        "ACTIVE": "ACTIVE"
+    }
 
 };
 
