@@ -43,11 +43,11 @@ sap.ui.define([
                             const sReqID = oInputModel.getProperty("/req_header/reqid");
                             if (!sReqID) {
                                 MessageBox.error(Utility.getText("msg_error_missing_claim_id"));
+                                return;
                             }
 
                             CustomValidator.init(this._oOwnerComponent, this._oView);
-                            const bProceed = await CustomValidator.validate(Constants.SubmissionTypePrefix.REQUESTHEADER);
-                            if ( !bProceed ) {
+                            if ( !await CustomValidator.validate(Constants.SubmissionTypePrefix.REQUESTHEADER) ) {
                                 return;
                             }
 
@@ -86,7 +86,7 @@ sap.ui.define([
                                 Utility.getText("msg_claimheader_updated", [sReqID])
                             );
 
-                        } catch (e) {
+                        } catch (oError) {
                             MessageToast.show(
                                 Utility.getText("msg_claimsubmission_failed")
                             );
@@ -95,6 +95,7 @@ sap.ui.define([
                         }
                     }	
                     else {
+                        BusyIndicator.hide();
                         MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
                     }
                     break;
@@ -109,11 +110,11 @@ sap.ui.define([
                             const sClaimId = oInputModel.getProperty("/claim_header/claim_id");
                             if (!sClaimId) {
                                 MessageBox.error(Utility.getText("msg_error_missing_claim_id"));
+                                return;
                             }
 
                             CustomValidator.init(this._oOwnerComponent, this._oView);
-                            const bProceed = await CustomValidator.validate(Constants.SubmissionTypePrefix.CLAIMHEADER);
-                            if ( !bProceed ) {
+                            if ( !await CustomValidator.validate(Constants.SubmissionTypePrefix.CLAIMHEADER) ) {
                                 return;
                             }
 
@@ -152,7 +153,7 @@ sap.ui.define([
                                 Utility.getText("msg_claimheader_updated", [sClaimId])
                             );
 
-                        } catch (e) {
+                        } catch (oError) {
                             MessageToast.show(
                                 Utility.getText("msg_claimsubmission_failed")
                             );
@@ -161,6 +162,7 @@ sap.ui.define([
                         }
                     }	
                     else {
+                        BusyIndicator.hide();
                         MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
                     }
                     break;
@@ -214,8 +216,8 @@ sap.ui.define([
 
                         oEditableFields.setProperty("/startEvent", bEdit);
                         oEditableFields.setProperty("/endEvent", bEdit);
-                        Utility.init(this._oOwnerComponent, this._oView);
-                        if (await Utility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
+                        RequestUtility.init(this._oOwnerComponent);
+                        if (await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"))) {
                             oEditableFields.setProperty("/startEventRequired", bEdit);
                             oEditableFields.setProperty("/endEventRequired", bEdit);
                         }

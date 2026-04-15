@@ -2,12 +2,14 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
-    "claima/utils/Utility"
+    "claima/utils/Utility",
+    "claima/utils/RequestUtility"
 ], function (
     MessageBox,
     Constants,
     ClaimUtility,
-    Utility
+    Utility,
+    RequestUtility
 ) {
     "use strict";
 
@@ -189,8 +191,8 @@ sap.ui.define([
                         // stop claim submission if incomplete
                         bCanProceed = false;
                     }
-                    Utility.init(this._oOwnerComponent, this._oView)
-                    const bIsEventDateRequired = await Utility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"));
+                    RequestUtility.init(this._oOwnerComponent)
+                    const bIsEventDateRequired = await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"));
                     //// event start/end date (optional)
                     if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
                         if (!this._isValidDateRange(oReqModel.getProperty("/req_header/eventstartdate"), oReqModel.getProperty("/req_header/eventenddate"))) {
@@ -214,15 +216,15 @@ sap.ui.define([
                                 bCanProceed = false;
                             }
                         }
-                        // course code pre-check
-                        var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type");
-                        var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
-                        var sCourseCodeDesc = oClaimSubmissionModel.getProperty("/claim_header/descr/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc");
-                        var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
+
+                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
+                            // course code pre-check
+                            var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
+                            var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
                             var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
                             if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [sCourseCode, sCourseCodeDesc]));
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
                             }
                         }
@@ -267,6 +269,14 @@ sap.ui.define([
                 MessageBox.error(Utility.getText("msg_daterange_missing"));
                 return false;
             }
+            else {
+                // check if values can be converted to valid dates
+                if (isNaN(new Date(sStartdate).getTime()) || isNaN(new Date(sEnddate).getTime())) {
+                    MessageBox.error(Utility.getText("msg_daterange_missing"));
+                    return false;
+                }
+            }
+
 			// check if end date earlier than start date
 			if (new Date(sStartdate) > new Date(sEnddate)) {
                 MessageBox.error(Utility.getText("msg_daterange_order"));

@@ -1,18 +1,19 @@
 sap.ui.define([
-    "claima/utils/Constants",
+    "sap/m/MessageBox",
     "sap/ui/core/Fragment",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
+    "claima/utils/Utility",
 	"claima/utils/DateUtility",
-	"sap/m/MessageBox",
+    "claima/utils/Constants"
 ], function (
-    Constants,
+    MessageBox,
 	Fragment,
 	Filter,
 	FilterOperator,
 	Utility,
 	DateUtility,
-	MessageBox) {
+    Constants ) {
     "use strict";
 
     return {
@@ -21,9 +22,8 @@ sap.ui.define([
          * Initialize the RequestUtility
          * @public
          */
-        init: function(oOwnerComponent, oView) {
+        init: function(oOwnerComponent) {
             this._oOwnerComponent = oOwnerComponent;
-            this._oView = oView;
 		},
 
 		/**
@@ -142,10 +142,11 @@ sap.ui.define([
 
         /**
 		 * Get Request Type ID with Request Type Description
+         * @private
 		 * @param {string} sRequestTypeDesc Request Type Description to be checked with database
 		 * @returns {string} returns Request Type ID found, if not returns null
 		 */
-		getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
+		_getRequestTypeIdByDesc: async function (sRequestTypeDesc) {
 			if (!sRequestTypeDesc) {
 				return null;
 			}
@@ -182,6 +183,22 @@ sap.ui.define([
 			} catch (e) {
 				return null;
 			}
+		},
+
+        /**
+		 * Get condition for Event dates editability
+         * @public
+		 * @param {string} sRequestTypeDesc Request Type Description to be checked
+         * @returns {boolean} Determine Event Date is Required
+		 */
+		getEventDateRequired: async function (sRequestTypeDesc) {
+            var bIsRequired = false;
+			const sReqType = await this._getRequestTypeIdByDesc(sRequestTypeDesc);
+
+			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
+				bIsRequired = true;
+			}
+            return bIsRequired;
 		},
 
 		/**

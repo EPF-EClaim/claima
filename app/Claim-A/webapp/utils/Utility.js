@@ -6,8 +6,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageToast",
     "sap/ui/core/Fragment",
-    "claima/utils/Constants",
-    "claima/utils/RequestUtility"
+    "claima/utils/Constants"
 ], function (
     Filter,
     FilterOperator,
@@ -15,8 +14,7 @@ sap.ui.define([
 	BusyIndicator,
     MessageToast,
     Fragment,
-    Constants, 
-    RequestUtility
+    Constants
 ) {
     "use strict";
 
@@ -25,9 +23,8 @@ sap.ui.define([
          * Initialize the Utility 
          * @public
          */
-        init: function (oOwnerComponent, oView) {
+        init: function (oOwnerComponent) {
             this._oOwnerComponent = oOwnerComponent;
-            this._oView = oView;
         },
 
         /* =========================================================
@@ -157,23 +154,6 @@ sap.ui.define([
             oModel.setProperty(sListPath, aFiltered);
             oModel.setProperty(sCountPath, aFiltered.length);
         },
-
-        /**
-		 * Get condition for Event dates editability
-         * @public
-		 * @param {string} sRequestTypeDesc Request Type Description to be checked
-         * @returns {boolean} Determine Event Date is Required
-		 */
-		getEventDateRequired: async function (sRequestTypeDesc) {
-            var bIsRequired = false;
-            RequestUtility.init(this._oOwnerComponent, this._oView);
-			const sReqType = await RequestUtility.getRequestTypeIdByDesc(sRequestTypeDesc);
-
-			if (sReqType == Constants.RequestType.TRAVEL || sReqType == Constants.RequestType.EVENTS) {
-				bIsRequired = true;
-			}
-            return bIsRequired;
-		},
 
         /**
          * @public

@@ -18,7 +18,6 @@ sap.ui.define([
     "sap/ui/model/Sorter",
     "claima/utils/ApprovalLog",
     "claima/utils/ApproveDialog",
-	"claima/utils/ClaimUtility",
     "claima/utils/ApproverUtility",
     "claima/utils/Attachment",
     "claima/utils/budgetCheck",
@@ -55,7 +54,6 @@ sap.ui.define([
     Sorter,
     ApprovalLog,
     ApproveDialog,
-	ClaimUtility,
     ApproverUtility,
     Attachment,
     budgetCheck,
@@ -95,7 +93,7 @@ sap.ui.define([
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
 
-			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			RequestUtility.init(this.getOwnerComponent());
 			Utility.init(this.getOwnerComponent());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
