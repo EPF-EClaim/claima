@@ -59,10 +59,18 @@ module.exports = {
         return rule.ROLE_ID === oEmp.ROLE;
       })
       if (!(!!aFilteredRules[0])) {
-        // Check for employee Job Group
-        aFilteredRules = aRules.filter(function (rule) {
-          return rule.JOB_GROUP === oEmp.JOB_GROUP;
-        })
+        // Check for employee Job Group with cost center
+        aCostCenterRule = aRules.filter(function (rule) {
+          return ((rule.JOB_GROUP === oEmp.JOB_GROUP) && (rule.COST_CENTER != null));
+        });
+        if ((!!aCostCenterRule[0]) && (oEmp.CC.includes(aCostCenterRule[0].COST_CENTER))) {
+          aFilteredRules = aCostCenterRule;
+        } else {
+          // if employee cost center does not contain the value, means user is outside of branch
+          aFilteredRules = aRules.filter(function (rule) {
+            return ((rule.JOB_GROUP === oEmp.JOB_GROUP) && (rule.COST_CENTER == null));
+          })
+        };
         if (!(!!aFilteredRules[0])) {
           // Check for Employee Grade
           aFilteredRules = aRules.filter(function (rule) {
