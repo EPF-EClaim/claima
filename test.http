@@ -19,8 +19,8 @@
 # }
 
 
-# GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
-# Authorization: Basic alice
+GET http://localhost:4004/odata/v4/EmployeeSrv/getSpouseChildCount()
+Authorization: Basic alice
 
 
 
