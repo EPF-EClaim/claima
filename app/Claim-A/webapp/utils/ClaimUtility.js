@@ -323,7 +323,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status
+		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */

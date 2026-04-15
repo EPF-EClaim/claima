@@ -713,7 +713,7 @@ sap.ui.define([
                     lodging_category: it.LODGING_CATEGORY_DESC,
                     marriage_category: it.MARRIAGE_CATEGORY_DESC,
                     area: it.AREA_DESC,
-                    rate_per_km: null,
+                    rate_per_km: it.RATE,
                     room_type: it.ROOM_TYPE_DESC,
                     region: it.REGION_DESC,
                     from_state_id: null,
