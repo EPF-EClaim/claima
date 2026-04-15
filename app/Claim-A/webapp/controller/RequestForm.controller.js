@@ -93,7 +93,7 @@ sap.ui.define([
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
 
-			RequestUtility.init(this.getOwnerComponent());
+			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 

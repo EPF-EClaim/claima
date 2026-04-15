@@ -191,7 +191,7 @@ sap.ui.define([
                         // stop claim submission if incomplete
                         bCanProceed = false;
                     }
-                    RequestUtility.init(this._oOwnerComponent)
+                    RequestUtility.init(this._oOwnerComponent, this._oView)
                     const bIsEventDateRequired = await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtype"));
                     //// event start/end date (optional)
                     if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {

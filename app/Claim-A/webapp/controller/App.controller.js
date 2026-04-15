@@ -70,7 +70,7 @@ sap.ui.define([
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
 			// declare request utility
-			RequestUtility.init(this.getOwnerComponent());
+			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 

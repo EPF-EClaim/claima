@@ -22,8 +22,9 @@ sap.ui.define([
          * Initialize the RequestUtility
          * @public
          */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
 
 		/**
