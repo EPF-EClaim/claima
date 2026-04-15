@@ -283,6 +283,8 @@ sap.ui.define([
 		},
 
 		_afterLoadFragments: async function () {
+			// ReInit claimutility because of model undefined upon refresh on claim submission view
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 			// enable view attachment at claim summary
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
@@ -1490,9 +1492,6 @@ sap.ui.define([
 				// calculate new total
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				await ClaimUtility.calculateMatawangAmount();
-				this.getView().getModel("claimsubmission_input").updateBindings(true);
-				this.getView().getModel("claimitem_input").updateBindings(true);
 			}
 			oInputModel.setProperty(addrIndex + "/is_new", true);
 			// refresh table
@@ -1503,6 +1502,7 @@ sap.ui.define([
 		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oInputClaimModel = this.getView().getModel("claimitem_input");
 			var tempItems = {
 				claim_items: oInputModel.getProperty("/claim_items"),
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
@@ -1523,7 +1523,6 @@ sap.ui.define([
 					}
 				}
 			);
-
 			// update claim sub item number
 			oInputModel.getProperty("/claim_items").forEach(function (claim_item, i) {
 				oInputModel.setProperty(
@@ -1537,6 +1536,8 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
 
+			///Check to recalculate Mata Wang if it is required
+			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
 			if (!updateSuccess) {
@@ -1546,13 +1547,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
 			}
 
-			var oInputItem = this.getView().getModel("claimitem_input");
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
-				// 1. Recalculate Matawang locally
-				await ClaimUtility.calculateMatawangAmount();
-/* 				// 2. Save updated Matawang to backend
-				await ClaimUtility.saveUpdatedMatawang(this._saveClaimItem.bind(this)); */
-			}
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
@@ -2450,6 +2444,7 @@ sap.ui.define([
 
 			//For Matawang
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
+				//ClaimUtility.init(this.getOwnerComponent(), this.getView());
 				await ClaimUtility.calculateMatawangAmount();
 			}
 		},
@@ -2803,17 +2798,19 @@ sap.ui.define([
 						}
 					});
 				}
-				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
-					// 1. Recalculate Matawang locally
-					await ClaimUtility.calculateMatawangAmount();
-	/* 				// 2. Save updated Matawang to backend
-					await ClaimUtility.saveUpdatedMatawang(this._saveClaimItem.bind(this)); */
-				}
-				// calculate new total amount of claim submission header
-				const nTotal = oClaimSubmissionModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-				oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				///Check to recalculate Mata Wang if it is required
+				var oInputModel = this.getView().getModel("claimitem_input");
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
 
-				// return to claim item screen
+				const nTotal = oClaimSubmissionModel
+					.getProperty("/claim_items")
+					.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+
+				oClaimSubmissionModel.setProperty(
+					"/claim_header/total_claim_amount",
+					nTotal
+				);
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -5115,6 +5112,33 @@ sap.ui.define([
 				oCurrencyRate.setValueState(ValueState.None);
 				oCurrencyAmount.setValueState(ValueState.None);
 			}
-		}
+		},
+		/**
+		 * Handles recalculation check for 3% Matawang. 
+		 * Private
+		 * @param {function} fnSaveClaimItem - Function to Create or Update item
+		 */
+		_recalculateMatawangIfNeeded: async function (oSubmissionModel, oInputModel, fnSaveClaimItem,) {
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+			const bMatawangExist = aClaimItems.some(
+				oItem =>
+					oItem.claim_type_item_id ===
+					this._oConstant.ClaimTypeItem.MATAWANG
+			);
+			// Do nothing if:
+			// - No Matawang exists
+			// - Current item is Matawang itself
+			if (
+				!bMatawangExist ||
+				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+				this._oConstant.ClaimTypeItem.MATAWANG
+			) {
+				return false;
+			}
+
+			await ClaimUtility.calculateMatawangAmount();
+			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
+			return true;
+		},
 	});
 });

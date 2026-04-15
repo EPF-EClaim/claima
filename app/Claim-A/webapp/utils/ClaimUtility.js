@@ -165,7 +165,7 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+					for (var iContext = 0; iContext < aContexts.length; iContext++) {
 						var oData = aContexts[iContext].getObject();
 						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
 							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
@@ -279,7 +279,7 @@ sap.ui.define([
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
 			var nDay, nDependent;
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
-				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
@@ -426,7 +426,7 @@ sap.ui.define([
 		 * @param {String} sRequestID - Pre-approval request ID
 		 * @returns {Boolean} bIsUsed - show if warning should be sent
 		 */
-		checkReusedPAR: async function(sRequestID) {
+		checkReusedPAR: async function (sRequestID) {
 			const oModel = this._oView.getModel();
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
@@ -434,36 +434,36 @@ sap.ui.define([
 		},
 
 		/**
-         * Get Fare Type filters based on Claim Type and Claim Item
-         * @public
-         * @param {string} sClaimTypeId
-         * @param {string} sClaimTypeItemId
-         * @returns {sap.ui.model.Filter[]} array of filters
-         */
-        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
-            var aFilters = [];                
-            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
-                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
-			{
-                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
-            }
-            return aFilters;
+		 * Get Fare Type filters based on Claim Type and Claim Item
+		 * @public
+		 * @param {string} sClaimTypeId
+		 * @param {string} sClaimTypeItemId
+		 * @returns {sap.ui.model.Filter[]} array of filters
+		 */
+		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+			var aFilters = [];
+			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
+				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
+			}
+			return aFilters;
 		},
 
 		/**
 		 * Calculate Matawang 3% fields (UI-only).
-		 *
+		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
 		 * @public
 		 */
 		calculateMatawangAmount: async function () {
-			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oSubmissionModel= this._oView.getModel("claimsubmission_input");
 			const oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
 			oContext.setParameter(
 				"claimItems",
 				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
 			);
-			return oContext.execute()
+			return await oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
 
@@ -496,31 +496,37 @@ sap.ui.define([
 							oResult.amount
 						);
 					}
-
 				});
 		},
 		/**
 		 * Save Matawang item after calculation.
 		 *
 		 * @public
+		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
 		 * @param {Function} fnSaveClaimItem - controller save function (callback)
 		 */
 		saveUpdatedMatawang: async function (fnSaveClaimItem) {
-
-			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oSubmissionModel= this._oView.getModel("claimsubmission_input");
 			const oInputModel = this._oView.getModel("claimitem_input");
-
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
 
 			const iMatawangIndex = aClaimItems.findIndex(
-				oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
+				oItem =>
+					oItem.claim_type_item_id ===
+					Constant.ClaimTypeItem.MATAWANG
 			);
 
-			if (iMatawangIndex === -1) { return; }
+			// No Matawang to update
+			if (iMatawangIndex === -1) {
+				return false;
+			}
+			// Clone Matawang item to avoid mutating submission data directly
+			const oMatawangItem = {
+				...aClaimItems[iMatawangIndex]
+			};
 
-			const oMatawangItem = aClaimItems[iMatawangIndex];
-
-			// Put Matawang item into input model
+			// Put cloned Matawang item into input model
 			oInputModel.setProperty("/claim_item", oMatawangItem);
 			oInputModel.setProperty("/is_new", false);
 

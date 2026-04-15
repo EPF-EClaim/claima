@@ -75,6 +75,12 @@ sap.ui.define([
                                     bCanProceed = false;
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.MATAWANG:
+                                if(!oInputModel.getProperty("/claim_item/amount")) {
+                                    MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                    bCanProceed = false;
+                                }
+                                break;
                             default:
                                 break;
                         }

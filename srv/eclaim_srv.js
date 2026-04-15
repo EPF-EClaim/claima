@@ -1584,14 +1584,14 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        if (oEmp){
+        if (oEmp) {
             return await computeMeterCubeEntitlement(
                 tx,
                 oEmp,
                 srv.entities
             );
         }
-        
+
     });
 
     /**
@@ -1647,12 +1647,14 @@ module.exports = (srv) => {
             }
         });
 
-        const nThreePercent  = Number((iTotal * 0.03).toFixed(2));
+
+        const nThreePercent =
+            Math.ceil(iTotal * 0.03 * 100) / 100;
         const nPercentage = Number(3.00);
 
         return {
-            percentage  : nPercentage,
-            amount: nThreePercent 
+            percentage: nPercentage,
+            amount: nThreePercent
         };
     });
 }
