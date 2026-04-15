@@ -116,7 +116,7 @@
                                 'constant>/EntitiesFields/TRIP_START_DATE',
                                 { value: 'CLM' },
                                 'claimsubmission_input>/claimtype/type',
-                                'claimsubmission_input>/claim_header/claim_type_item_id',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header',
                                 'claimsubmission_input>/claimtype/item'
                             ],
@@ -170,7 +170,7 @@
                                 'constant>/EntitiesFields/TRIP_END_DATE',
                                 { value: 'CLM' },
                                 'claimsubmission_input>/claimtype/type',
-                                'claimsubmission_input>/claim_header/claim_type_item_id',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header',
                                 'claimsubmission_input>/claimtype/item'
                             ],
