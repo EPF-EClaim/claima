@@ -2538,8 +2538,15 @@ sap.ui.define([
 		_getDependentFilters: function () {
 			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 
-			var oEmpFilter = new Filter(this._oConstant.EntitiesFields.EMP_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"));
+			var oEmpFilter = new Filter(
+				this._oConstant.EntitiesFields.EMP_ID,
+				FilterOperator.EQ,
+				sClaimantEmpId
+			);
+
 			switch (sClaimTypeItem) {
 				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
 					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
@@ -2603,9 +2610,7 @@ sap.ui.define([
 							oEmpFilter
 						]
 					})
-
 			}
-
 		},
 
 		/**
