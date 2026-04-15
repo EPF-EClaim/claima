@@ -151,6 +151,12 @@ sap.ui.define([
                         }
                     }
                     
+                    if (!!oInputModel?.getProperty("/claim_item/amount") <= 0) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
+                        bCanProceed = false;
+                        break;
+                    }
+
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){
