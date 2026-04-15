@@ -120,8 +120,7 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item',
-                                'claimsubmission_input>/claim_header/trip_start_date'
+                                'claimsubmission_input>/claimtype/item'
                             ],
                             formatter: '.DateUtility.determineMinDate'
                             }"
@@ -178,8 +177,7 @@
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
                                 'claimsubmission_input>/claimtype/item',
-                                'claimsubmission_input>/claim_header/trip_start_date',
-                                'claimsubmission_input>/claim_header/trip_end_date'
+                                'claimsubmission_input>/claim_header/trip_start_date'
                             ],
                             formatter: '.DateUtility.determineMinDate'
                             }"

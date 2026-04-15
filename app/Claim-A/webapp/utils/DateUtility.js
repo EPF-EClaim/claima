@@ -257,7 +257,7 @@ sap.ui.define([
          * @returns {Date|null} Minimum allowed date or null if invalid input.
          *
         **/
-        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, dTripStartDate) {
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
@@ -386,8 +386,8 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if(sType === Constants.ClaimType.ELAUN_PINDAH){
-                                if(!!dTripStartDate){
-                                    _dMinDate = dTripStartDate;
+                                if(!!sFieldValue){
+                                    _dMinDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("error_move_in_date_in_past"));
                                 }else{
@@ -425,10 +425,10 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if(sType === Constants.ClaimType.ELAUN_PINDAH){
-                                if(!!dTripStartDate){
-                                    _dMinDate = dTripStartDate;
+                                if(!!sFieldValue){
+                                    _dMinDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                        _oResourceBundle.getText("error_trip_end_date_in_past"));
+                                        _oResourceBundle.getText("req_d_w_check_date"));
                                 }else{
                                     const dPastDate = new Date();
                                     dPastDate.setDate(dPastDate.getDate() - 180);
@@ -461,7 +461,7 @@ sap.ui.define([
          * @returns {Date|null} Maximum allowed date or null if invalid input.
          *
         **/
-        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, dTripEndDate) {
+        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
@@ -600,8 +600,8 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if(sType === Constants.ClaimType.ELAUN_PINDAH){
-                                if(!!dTripEndDate){
-                                    _dMaxDate = dTripEndDate;
+                                if(!!sFieldValue){
+                                    _dMaxDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                         _oResourceBundle.getText("error_move_in_date_in_future"));
                                 }else{
@@ -623,10 +623,10 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if(sType === Constants.ClaimType.ELAUN_PINDAH){
-                                if(!!dTripEndDate){
-                                    _dMaxDate = dTripEndDate;
+                                if(!!sFieldValue){
+                                    _dMaxDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                        _oResourceBundle.getText("error_trip_start_date_in_past"));
+                                        _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
                                 }else{
                                     _dMaxDate = new Date();
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
