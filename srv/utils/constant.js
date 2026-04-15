@@ -171,7 +171,8 @@ const Constant = {
         "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO",
-        "REGION_ID": "REGION_ID"
+        "REGION_ID": "REGION_ID",
+        "STATUS": "STATUS"
     },
     Wildcard: {
         "All": "*",
@@ -192,7 +193,8 @@ const Constant = {
         REJECTED: "STAT04",
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
-        CANCELLED: "STAT07"
+        CANCELLED: "STAT07",
+        ACTIVE: "ACTIVE"
     },
     ClaimTypeItemStatus: {
         ACTIVE: "ACTIVE"

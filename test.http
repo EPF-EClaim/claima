@@ -183,9 +183,9 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "ELAUN_PINDAH",
-         "ClaimTypeItem": "PEM_PINDAH",
-         "EmpId": "900173",
+         "ClaimType": "HANDPHONE",
+         "ClaimTypeItem": "TELEFON_B",
+         "EmpId": "886887",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
       }
