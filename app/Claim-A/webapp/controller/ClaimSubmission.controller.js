@@ -129,6 +129,21 @@ sap.ui.define([
 					[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
 						customErrorMessage: "",
 						customMinDateError: "",
+					},
+					[this._oConstant.EntitiesFields.MOVE_IN_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.TRIP_START_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.TRIP_END_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
 					}
 				}
 			}), "appModel");
