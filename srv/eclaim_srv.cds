@@ -443,6 +443,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               sClaimTypeItemId: String,
                               sEmpId: String)                                                  returns Decimal(15, 2);
     
-    function getSpouseChildCount() returns Integer;
+    function getSpouseChildCount()                                                             returns Integer;
+
+    function getNumberOfFamilyMembers()                                                        returns Integer;
 
 };

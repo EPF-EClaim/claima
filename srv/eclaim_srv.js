@@ -1715,7 +1715,25 @@ module.exports = (srv) => {
         //get spouse and child count for the current user
         if (oEmp) {
             const aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, RELATIONSHIP: { in: ['01', '02'] }})
+                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
+                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
+                                                                         Constant.Relationship.CHILD] }})
+            );
+            return aDependent.length;
+        }
+    });
+
+    srv.on('getNumberOfFamilyMembers', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZEMP_DEPENDENT } = srv.entities;
+
+        //get total dependent based on Employee ID
+        if (oEmp) {
+            const aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({
+                   EMP_ID: oEmp.EEID 
+                })
             );
             return aDependent.length;
         }
