@@ -132,7 +132,8 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item'
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
                             ],
                             formatter: '.DateUtility.determineMaxDate'
                         }"
@@ -176,7 +177,9 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item'
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date',
+                                'claimsubmission_input>/claim_header/trip_end_date'
                             ],
                             formatter: '.DateUtility.determineMinDate'
                             }"
@@ -290,7 +293,8 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item'
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
                             ],
                             formatter: '.DateUtility.determineMinDate'
                             }"
@@ -301,7 +305,8 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item'
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
                             ],
                             formatter: '.DateUtility.determineMaxDate'
                         }"
