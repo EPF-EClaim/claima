@@ -4679,8 +4679,8 @@ sap.ui.define([
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
 				"input_claimdetails_input_remarks",
-				"fileuploader_claimdetails_input_attachment1",
-				"fileuploader_claimdetails_input_attachment2",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
 				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
 				"input_claimdetails_meter_cube",
@@ -4737,13 +4737,6 @@ sap.ui.define([
 						control.setEditable(false);
 					} else if (control.getMetadata().getName().includes("FileUploader")) {
 						control.setVisible(false);
-
-						// set button to open attachment
-						var fieldNumber = control.getId().slice(-1);
-						var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-						if (openAttachment && !openAttachment.getVisible()) {
-							openAttachment.setVisible(true);
-						}
 					} else if (control instanceof sap.ui.mdc.Field) {
 						control.setEditMode("Display");
 					}
@@ -4829,17 +4822,6 @@ sap.ui.define([
 				const c = this._resolveControl(id, "claimsubmission_claimdetails_input");
 				if (c && typeof c.setEditable === "function") {
 					c.setEditable(bEditable);
-				} else if (c.getMetadata().getName().includes("FileUploader")) {
-					if (c.getVisible() !== bEditable) {
-						c.setVisible(bEditable);
-					}
-
-					// set button to open attachment
-					var fieldNumber = c.getId().slice(-1);
-					var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-					if (openAttachment && openAttachment.getVisible() === bEditable) {
-						openAttachment.setVisible(!bEditable);
-					}
 				} else {
 					console.warn("Control not found or not editable-capable:", id);
 				}
