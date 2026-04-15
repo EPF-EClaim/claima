@@ -2352,7 +2352,6 @@ sap.ui.define([
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
 				this._resetPerDiem();
 			}
-			const oSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//Added for matawang
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
 				await ClaimUtility.calculateMatawangAmount();
@@ -2444,7 +2443,6 @@ sap.ui.define([
 
 			//For Matawang
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
-				//ClaimUtility.init(this.getOwnerComponent(), this.getView());
 				await ClaimUtility.calculateMatawangAmount();
 			}
 		},
@@ -5070,7 +5068,6 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
-
 		_resetClaimItemInputs: async function (oInputModel) {
 			Object.keys(oInputModel.getData().claim_item).forEach((sKey) => {
 				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
@@ -5115,30 +5112,35 @@ sap.ui.define([
 		},
 		/**
 		 * Handles recalculation check for 3% Matawang. 
-		 * Private
+		 * Private function
 		 * @param {function} fnSaveClaimItem - Function to Create or Update item
 		 */
-		_recalculateMatawangIfNeeded: async function (oSubmissionModel, oInputModel, fnSaveClaimItem,) {
+		_recalculateMatawangIfNeeded: async function (
+			oSubmissionModel,
+			oInputModel,
+			fnSaveClaimItem
+		) {
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
-			const bMatawangExist = aClaimItems.some(
+			const iMatawangIndex = aClaimItems.findIndex(
 				oItem =>
 					oItem.claim_type_item_id ===
 					this._oConstant.ClaimTypeItem.MATAWANG
 			);
-			// Do nothing if:
-			// - No Matawang exists
-			// - Current item is Matawang itself
-			if (
-				!bMatawangExist ||
-				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
-				this._oConstant.ClaimTypeItem.MATAWANG
-			) {
+			if (iMatawangIndex === -1) {
 				return false;
 			}
+			const bIsSaveFlow = !!oInputModel?.getProperty("/claim_item/claim_sub_id");
+			const bIsEditingMatawang =
+				bIsSaveFlow &&
+				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+				this._oConstant.ClaimTypeItem.MATAWANG;
 
+			if (bIsEditingMatawang) {
+				return false;
+			}
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return true;
-		},
+		}
 	});
 });

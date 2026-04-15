@@ -450,13 +450,11 @@ sap.ui.define([
 		},
 
 		/**
-		 * Calculate Matawang 3% fields (UI-only).
-		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * Calculate Matawang 3% fields - Uses CAP Backend to calculate.
 		 * @public
 		 */
 		calculateMatawangAmount: async function () {
-			const oSubmissionModel= this._oView.getModel("claimsubmission_input");
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
 			oContext.setParameter(
@@ -502,36 +500,34 @@ sap.ui.define([
 		 * Save Matawang item after calculation.
 		 *
 		 * @public
-		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
 		 * @param {Function} fnSaveClaimItem - controller save function (callback)
 		 */
 		saveUpdatedMatawang: async function (fnSaveClaimItem) {
-			const oSubmissionModel= this._oView.getModel("claimsubmission_input");
-			const oInputModel = this._oView.getModel("claimitem_input");
-			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
 
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
+			const bPreviousIsNew = oInputModel.getProperty("/is_new");
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
 			const iMatawangIndex = aClaimItems.findIndex(
 				oItem =>
 					oItem.claim_type_item_id ===
 					Constant.ClaimTypeItem.MATAWANG
 			);
 
-			// No Matawang to update
 			if (iMatawangIndex === -1) {
 				return false;
 			}
-			// Clone Matawang item to avoid mutating submission data directly
+
 			const oMatawangItem = {
 				...aClaimItems[iMatawangIndex]
 			};
-
-			// Put cloned Matawang item into input model
 			oInputModel.setProperty("/claim_item", oMatawangItem);
 			oInputModel.setProperty("/is_new", false);
-
-			// Save using controller's existing save function
-			return await fnSaveClaimItem();
+			const bResultMatawang = await fnSaveClaimItem();
+			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
+			oInputModel.setProperty("/is_new", bPreviousIsNew);
+			return bResultMatawang;
 		}
 	}
 });
