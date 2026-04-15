@@ -2994,13 +2994,13 @@ sap.ui.define([
 					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
-					ARRIVAL_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/arrival_time")),
+					ARRIVAL_TIME: new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() || null,
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
-					DEPARTURE_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/departure_time")),
+					DEPARTURE_TIME: new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() || null,
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
@@ -3830,10 +3830,6 @@ sap.ui.define([
 					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
 				}
 
-				// reset item model after use
-				var oInputModel = this.getView().getModel("claimitem_input");
-				oInputModel?.setData({});
-
 				oPage.removeContent(oClaimItemFragment);
 
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
@@ -4292,13 +4288,13 @@ sap.ui.define([
 						MATERIAL_CODE: claim_item.material_code,
 						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
 						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
-						ARRIVAL_TIME: DateUtility.getHanaTime(claim_item.arrival_time),
+						ARRIVAL_TIME: new Date(claim_item.arrival_time).toISOString() || null,
 						CLAIM_TYPE_ID: claim_item.claim_type_id,
 						COURSE_TITLE: claim_item.course_title,
 						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
 						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
-						DEPARTURE_TIME: DateUtility.getHanaTime(claim_item.departure_time),
+						DEPARTURE_TIME: new Date(claim_item.departure_time).toISOString() || null,
 						DEPENDENT: claim_item.dependent,
 						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
 						EMP_ID: claim_item.emp_id,
