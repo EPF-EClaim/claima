@@ -1404,14 +1404,27 @@
                         ${claimitem_input>/claim_item/attachment_file_1 !== null}
                     }"
                 />
-
+                
                 <Link
+                    width="90%"
                     id="link_claimdetails_input_attachment_file_1"
                     press="onView_Claim_Attachment('child','1')"
                     text="{claimitem_input>/claim_item/attachment_file_1}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
                 />
 
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment_1"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_1} !== null
+                    }"
+                />
                 <!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
                 <u:FileUploader
@@ -1445,6 +1458,20 @@
                     text="{claimitem_input>/claim_item/attachment_file_2}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
                 />
+
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment_2"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_2} !== null
+                    }"
+                />
+
             </f:content>
             <f:dependents>
                 <!-- Value Help for Country -->

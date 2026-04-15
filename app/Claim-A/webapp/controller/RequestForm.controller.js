@@ -88,6 +88,7 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
+			this._sDeleteTarget 	= null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -675,6 +676,75 @@ sap.ui.define([
 				setEmpty();
 			}
 		},
+
+		onDeleteAttachment1: function () {
+			this._sDeleteTarget = "doc1";
+			this._openDeleteAttachmentDialog();
+		},
+
+		onDeleteAttachment2: function () {
+			this._sDeleteTarget = "doc2";
+			this._openDeleteAttachmentDialog();
+		},
+
+		_openDeleteAttachmentDialog: function () {
+			if (!this._oDeleteAttachmentDialog) {
+				Fragment.load({
+					name: "claima.fragment.deleteattachment",
+					id: "deleteAttachmentDialogFrag",
+					controller: this
+				}).then(function (oDialog) {
+					this._oDeleteAttachmentDialog = oDialog;
+					this.getView().addDependent(oDialog);
+
+					var oText = Fragment.byId(
+						"deleteAttachmentDialogFrag",
+						"deleteAttachmentText"
+					);
+					oText.setText(Utility.getText("req_d_w_delete_msg"));
+
+					oDialog.open();
+				}.bind(this));
+			} else {
+				this._oDeleteAttachmentDialog.open();
+			}
+		},
+
+		onConfirmDeleteAttachment: function () {
+			var oModel = this.getView().getModel("request");
+
+			if (this._sDeleteTarget === "doc1") {
+				var oUploader1 = this.byId("i_attachment_1_file");
+
+				oModel.setProperty("/req_item/doc1", null);
+				oModel.setProperty("/req_item/doc1_filename", null);
+				oModel.setProperty("/req_item/_del_doc1", true);
+
+				if (oUploader1) {
+					oUploader1.clear();
+				}
+			}
+
+			if (this._sDeleteTarget === "doc2") {
+				var oUploader2 = this.byId("i_attachment_2_file");
+
+				oModel.setProperty("/req_item/doc2", null);
+				oModel.setProperty("/req_item/doc2_filename", null);
+				oModel.setProperty("/req_item/_del_doc2", true);
+
+				if (oUploader2) {
+					oUploader2.clear();
+				}
+			}
+
+			oModel.refresh(true);
+			this._oDeleteAttachmentDialog.close();
+		},
+
+
+			onCancelDeleteAttachment: function () {
+				this._oDeleteAttachmentDialog.close();
+			},
 
 		/* =========================================================
 		* Item List: Delete Row(s)

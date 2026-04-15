@@ -3062,6 +3062,35 @@ sap.ui.define([
 			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
+		onDelete_Claim_Attachment_1: function () {
+					var oModel = this.getView().getModel("claimitem_input");
+					this._newDialog(
+						Utility.getText("dialog_claimsubmission_deleteattachment"),
+						Utility.getText("label_claimsubmission_deleteattachment"),
+					
+						function(){
+							oModel.setProperty("/attachments/attachment1/fileName", null);
+							oModel.setProperty("/attachments/attachment1/fileContent", null);
+					// optional: if you mirror filename in claim_item
+					oModel.setProperty("/claim_item/attachment_file_1", null);
+						}.bind(this)
+					);
+				},
+		onDelete_Claim_Attachment_2: function () {
+					var oModel = this.getView().getModel("claimitem_input");
+					this._newDialog(
+						Utility.getText("dialog_claimsubmission_deleteattachment"),
+						Utility.getText("label_claimsubmission_deleteattachment"),
+					
+						function(){
+							oModel.setProperty("/attachments/attachment2/fileName", null);
+							oModel.setProperty("/attachments/attachment2/fileContent", null);
+					// optional: if you mirror filename in claim_item
+					oModel.setProperty("/claim_item/attachment_file_2", null);
+						}.bind(this)
+					);
+				},
+
 		/**
 		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
 		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
