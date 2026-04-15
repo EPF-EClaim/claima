@@ -94,6 +94,16 @@ sap.ui.define([
                     case Constants.ClaimTypeItem.LAUT:
                         this._getEntitledMeterCube();
                         break;
+
+                    case Constants.ClaimTypeItem.DARAT:
+                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
+                        if (oResult) {
+                            calculatedAllocAmount = oResult.fAmount;
+                            oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
+                            // check if using minimum eligible amount, show notification
+                            if (oResult.bMinimum) MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+                        }
+                        break;
                     
                     default:
                         // calculate kilometer amount 
