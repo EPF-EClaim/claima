@@ -572,7 +572,8 @@ sap.ui.define([
 		* @returns {integer} if records found, return total number of dependents for employee
 		*/
 		getSpouseChildNo: async function () {
-			const oContext = this._oView.getModel().bindContext("/getSpouseChildCount(...)");
+			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
+			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
 			
  			await oContext.execute();
 

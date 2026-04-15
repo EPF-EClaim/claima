@@ -1707,35 +1707,36 @@ module.exports = (srv) => {
         };
     });
 
-    srv.on('getSpouseChildCount', async (req) => {
-        const tx = cds.tx(req);
-        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-        const { ZEMP_DEPENDENT } = srv.entities;
-
-        //get spouse and child count for the current user
-        if (oEmp) {
-            const aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
-                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
-                                                                         Constant.Relationship.CHILD] }})
-            );
-            return aDependent.length;
-        }
-    });
-
+    /**
+     * Get Total count of dependent based on Employee ID
+     * IND1 - fetch Spouse and Child Only
+     * @public
+     * @async
+     * @returns {Integer} Total count of dependent 
+     */
     srv.on('getNumberOfFamilyMembers', async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { ZEMP_DEPENDENT } = srv.entities;
+        const sIndicator = req.data.IND;
+        var aDependent;
 
-        //get total dependent based on Employee ID
+        //get total dependent based on Employee ID - IND1 filter by spouse and child
         if (oEmp) {
-            const aDependent = await tx.run(
+            if (sIndicator === Constant.Indicator.Spouse_Child){
+                aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
+                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
+                                                                         Constant.Relationship.CHILD] }})
+            );
+            } else {
+                aDependent = await tx.run(
                 SELECT.from(ZEMP_DEPENDENT).where({
                    EMP_ID: oEmp.EEID 
                 })
             );
-            return aDependent.length;
+            }
+            return aDependent.length + 1;
         }
     })
 }

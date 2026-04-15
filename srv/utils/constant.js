@@ -287,6 +287,9 @@ const Constant = {
     
     ConfigStatus: {
         "ACTIVE": "ACTIVE"
+    }, 
+    Indicator: {
+        Spouse_Child: "IND1"
     }
 
 };
