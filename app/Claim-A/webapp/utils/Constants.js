@@ -87,17 +87,17 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ",
             "CASH_REPAY": "CASH_REPAY",
-            "GALAKAN" : "GALAKAN",
-            "TELEFON_B" : "TELEFON_B",
-            "ELEKTRIK" : "ELEKTRIK",
-            "BIL_AIR" : "BIL_AIR"
+            "GALAKAN": "GALAKAN",
+            "TELEFON_B": "TELEFON_B",
+            "ELEKTRIK": "ELEKTRIK",
+            "BIL_AIR": "BIL_AIR"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
             "LODG_O": "LODG_O",
             "HOTEL_O": "HOTEL_O",
             "FLIGHT_O": "FLIGHT_O",
-        },        
+        },
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
@@ -209,6 +209,7 @@ sap.ui.define([
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
             "ZREJECT_REASON": "/ZREJECT_REASON",
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
+            "ZDISBURSEMENT_STATUS": "/ZDISBURSEMENT_STATUS"
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -253,21 +254,27 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "STATE_ID": "STATE_ID",
+            "STATE_DESC": "STATE_DESC",
+            "LOCATION_DESC": "LOCATION_DESC",
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
+            "TO_STATE_DESC": "TO_STATE_DESC",
             "TO_LOCATION_ID": "TO_LOCATION_ID",
-            "LENDER_ID" : "LENDER_ID",
+            "TO_LOCATION_DESC": "TO_LOCATION_DESC",
+            "LENDER_ID": "LENDER_ID",
             "LENDER_NAME": "LENDER_NAME",
             "HOUSING_LOAN_SCHEME_ID": "HOUSING_LOAN_SCHEME_ID",
             "HOUSING_LOAN_SCHEME_DESC": "HOUSING_LOAN_SCHEME_DESC",
-            "RELATIONSHIP" : "RELATIONSHIP",
-            "DOB" : "DOB",
-            "STUDENT" : "STUDENT",
-            "EMP_ID" : "EMP_ID",
+            "RELATIONSHIP": "RELATIONSHIP",
+            "DOB": "DOB",
+            "STUDENT": "STUDENT",
+            "EMP_ID": "EMP_ID",
             "REGION_ID": "REGION_ID",
             "TRIP_START_DATE" : "TRIP_START_DATE",
-            "TRIP_END_DATE" : "TRIP_END_DATE"
+            "TRIP_END_DATE" : "TRIP_END_DATE",
+            "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -312,7 +319,8 @@ sap.ui.define([
             "ZEMP_DEPENDENT_DTD": "ZEMP_DEPENDENT_DTD",
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
-            "ZBUDGET": "ZBUDGET"
+            "ZBUDGET": "ZBUDGET",
+            "ZEMP_CA_PAYMENT" : "ZEMP_CA_PAYMENT"
         },
         "BudgetCheckStatus": {
             "NOT_FOUND": "RECORD NOT FOUND",
@@ -380,16 +388,16 @@ sap.ui.define([
             "APPROVER": "APPROVER",
             "VIEW_ONLY": "VIEW_ONLY"
         },
-        "LocationType" : {
-            "OTHER" : "1",
-            "KWSP"  : "2"
+        "LocationType": {
+            "OTHER": "1",
+            "KWSP": "2"
         },
-        "LocationTypeOffice" : {
-            "FROM" : "from",
-            "TO"  : "to"
+        "LocationTypeOffice": {
+            "FROM": "from",
+            "TO": "to"
         },
-        "OfficeDistance" : {
-            "MILEAGE" : "MILEAGE"
+        "OfficeDistance": {
+            "MILEAGE": "MILEAGE"
         },
         "MaritalStatus": {
             "WIDOWED": "W",
@@ -398,31 +406,31 @@ sap.ui.define([
             "SEPARATED": "E",
             "DIVORCED": "D"
         },
-        "InsuranceProvider" : {
-            "OTHERS" : "4",
+        "InsuranceProvider": {
+            "OTHERS": "4",
         },
-        "Status" : {
-            "ACTIVE" : "ACTIVE"
+        "Status": {
+            "ACTIVE": "ACTIVE"
         },
-        "CourseSessionStatus" : {
-            "ACTIVE" : "1"
+        "CourseSessionStatus": {
+            "ACTIVE": "1"
         },
-        "Claim_Action" : {
-            "DRAFT" : "Save Draft",
-            "DELETE" : "Delete Report",
-            "SUBMIT" : "Submit Report",
-            "BACK" : "Back",
-            "REJECT" : "Reject",
-            "PUSHBACK" : "Push Back",
-            "APPROVE" : "Approve"
+        "Claim_Action": {
+            "DRAFT": "Save Draft",
+            "DELETE": "Delete Report",
+            "SUBMIT": "Submit Report",
+            "BACK": "Back",
+            "REJECT": "Reject",
+            "PUSHBACK": "Push Back",
+            "APPROVE": "Approve"
 
         },
         "DependentType": {
-            "ANGGOTA" : "1",
+            "ANGGOTA": "1",
             "DEPENDENT": "2"
         },
         "Relationship": {
-            "SPOUSE" : "01",
+            "SPOUSE": "01",
             "CHILD": "02",
             "FATHER": "03",
             "MOTHER": "04",
@@ -431,13 +439,13 @@ sap.ui.define([
             "ADDITIONAL_SPOUSE": "07"
         },
         "MarriageCategory": {
-            "SINGLE" : "01",
+            "SINGLE": "01",
             "MARRIED_NO_CHILDREN": "02",
             "MARRIED_1_TO_3_CHILDREN": "03",
             "MARRIED_4_OR_MORE_CHILDREN": "04"
         },
-        "ConfigAccess": 
-             [
+        "ConfigAccess":
+            [
                 "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",
                 "ZSTATUS", "ZLODGING_CAT", "ZROOM_TYPE", "ZCOUNTRY", "ZAREA",
                 "ZMARITAL_STAT", "ZVEHICLE_TYPE", "ZJOB_GROUP", "ZSTATE", "ZDEPARTMENT",
@@ -453,16 +461,16 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE","ZTRAIN_COURSE_PART"
-            ], 
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART"
+            ],
         "ExcludeField":
         {
             "CLAIM_TYPE_ITEM_ID": "claim_type_item_id",
-            "CLAIM_TYPE_ID": "claim_type_id", 
-            "CLAIM_ID": "claim_id", 
-            "CLAIM_SUB_ID": "claim_sub_id", 
-            "DESCR": "descr", 
-            "GL_ACCOUNT": "gl_account", 
+            "CLAIM_TYPE_ID": "claim_type_id",
+            "CLAIM_ID": "claim_id",
+            "CLAIM_SUB_ID": "claim_sub_id",
+            "DESCR": "descr",
+            "GL_ACCOUNT": "gl_account",
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
             "REQUEST_SUB_ID": "req_subid"
@@ -475,7 +483,7 @@ sap.ui.define([
         "ViewName": {
             "ZREGION": "ZREGION"
         },
-         "FareType": 
+        "FareType":
         {
             "BUS": "01",
             "EHAILING": "02",
@@ -487,6 +495,6 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
-        }        
+        }
     }
 });

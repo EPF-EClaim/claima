@@ -923,24 +923,6 @@ sap.ui.define([
 				return;
 			}
 
-			// validate required fields
-			var reqFields = [
-				"input_claiminput_purpose",
-				"datepicker_claiminput_tripstartdate",
-				"datepicker_claiminput_tripenddate",
-				"input_claiminput_comment",
-			];
-			//// add attachment field if using email approval
-			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
-				reqFields.push("fileuploader_claiminput_attachment");
-			}
-			for (let i = 0; i < reqFields.length; i++) {
-				if (!this.byId(reqFields[i]).getValue()) {
-					// stop claim submission if values empty
-					MessageToast.show(Utility.getText("msg_claiminput_required"));
-					return;
-				}
-			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);

@@ -64,45 +64,6 @@ sap.ui.define([
 		},
 
 		/**
-         * Determine the office mileage 
-         * @public
-         */
-        determineOfficeMileage: async function () {
-            const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
-            const oDataModel = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
-            const oReqItem  =oReqModel.getProperty("/req_item");
-
-            var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
-            var sToState    = oReqItem.to_state
-            var sToOffice   = oReqItem.to_location_office;
-
-            if (!sFromState || !sFromOffice || !sToState || !sToOffice) return;
-
-            const oFunction = oDataModel.bindContext("/getOfficeDistance(...)");
-            oFunction.setParameter("sFromState", sFromState);
-            oFunction.setParameter("sFromOffice", sFromOffice);
-            oFunction.setParameter("sToState", sToState);
-            oFunction.setParameter("sToOffice", sToOffice);
-
-            try {
-                await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-                var fMileage = parseFloat(oResult.value);
-
-                oReqModel.setProperty("/req_item/kilometer", fMileage);
-
-                this.populateAllocatedAmount();
-
-            } catch (error) {
-                return parseFloat(0).toFixed(2);
-            }
-        },
-
-		/**
          * Populate the allocated amount when needed 
          * @public
          */
@@ -128,6 +89,10 @@ sap.ui.define([
                         if (oReqItem.currency_rate) {
                             calculatedAllocAmount = calculatedAllocAmount * parseFloat(oReqItem.currency_rate);
                         }
+                        break;
+                    
+                    case Constants.ClaimTypeItem.LAUT:
+                        this._getEntitledMeterCube();
                         break;
                     
                     default:
@@ -242,6 +207,8 @@ sap.ui.define([
 			oFunction.setParameter("lunch", nLunch);
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
+            oFunction.setParameter("tips", false);
+            oFunction.setParameter("dependent", 0);
 
             try {
                 await oFunction.execute();
@@ -325,6 +292,36 @@ sap.ui.define([
             oReqModel.setProperty('/req_item/entitled_dinner', iDays);
             
         },
+
+        /**
+		 * Retrieve and apply meter cube entitlement from backend service.
+		 *
+		 * Calls backend entitlement function using the logged-in employee ID
+		 * and updates the entitled meter cube value in the claim item input model.
+		 *
+         * @private
+		 * @returns Updates entitled meter cube field upon completion
+		 */
+		_getEntitledMeterCube: async function () {
+            const oReqModel     = this._oOwnerComponent.getModel("request");
+            const oDataModel    = this._oOwnerComponent.getModel();
+
+			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...)");
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                
+                const oResult   = oContext.getObject();
+                const oData     = oResult.value || oResult;
+
+                oReqModel.setProperty("/req_item/cube_eligible", Number(oData).toFixed(2));
+                
+
+            } catch (oError) {
+                oReqModel.setProperty("/req_item/cube_eligible", 0);
+            }
+		},
         
     };
 });
