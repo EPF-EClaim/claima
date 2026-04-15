@@ -2796,8 +2796,6 @@ sap.ui.define([
 					});
 				}
 				///Check to recalculate Mata Wang if it is required
-				var oInputModel = this.getView().getModel("claimitem_input");
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
 
 				const nTotal = oClaimSubmissionModel

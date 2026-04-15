@@ -525,10 +525,9 @@ sap.ui.define([
 			};
 			oInputModel.setProperty("/claim_item", oMatawangItem);
 			oInputModel.setProperty("/is_new", false);
-			const bResultMatawang = await fnSaveClaimItem();
+			await fnSaveClaimItem();
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
-			return bResultMatawang;
 		}
 	}
 });
