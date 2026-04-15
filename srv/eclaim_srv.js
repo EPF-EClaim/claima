@@ -1251,6 +1251,58 @@ module.exports = (srv) => {
     });
 
     /**
+     * Get rate per km id and description, based on Vehicle Type and Claim Type Item
+     * @public
+     * @param {String} sVehicleType - vehicle type to check in table 
+     * @param {String} sClaimTypeItem - claim type item to check in table 
+     * @return {Object} rateperkm - return rate per km ID and description
+     */
+    srv.on('getRatePerKm', async (req) => {
+        const { sVehicleType, sClaimTypeItem } = req.data;
+
+        try {
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+            var aVehicleTypeFilters = [Constant.Wildcard.All];
+            if (!!sVehicleType) {
+                aVehicleTypeFilters.push(sVehicleType);
+            }
+            var aClaimTypeItemFilters = [Constant.Wildcard.All];
+            if (!!sClaimTypeItem) {
+                aClaimTypeItemFilters.push(sClaimTypeItem);
+            }
+
+            const oRatePerKm = await SELECT.one
+                .from(Constant.Entities.ZRATE_KM)
+                .columns(Constant.EntitiesFields.RATE_KM_ID,Constant.EntitiesFields.RATE)
+                .where({
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                    // values to filter
+                    VEHICLE_TYPE_ID: aVehicleTypeFilters,
+                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters,
+                 })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: 'desc' },
+                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: 'desc' }
+                ]);
+
+            if (!oRatePerKm) {
+                return req.error(404, `Rate per km not found for given vehicle type.`);
+            }
+
+            return {
+                id: oRatePerKm.RATE_KM_ID,
+                value: oRatePerKm.RATE
+            };
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Rate per KM table.');
+        }
+    });
+
+    /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
      * @return {Decimal} - return eligible amount retrieved from table

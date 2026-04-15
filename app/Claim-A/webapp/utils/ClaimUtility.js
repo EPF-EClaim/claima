@@ -215,63 +215,6 @@ sap.ui.define([
 		},
 
 		/**
-		* Retrieve backend data from db table based on selected claim item value
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEntity - name of table to check from database
-		* @param {array} aEntityFields - array of entity fields and values to filter by
-		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
-		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
-		*/
-		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			const oModel = this._oOwnerComponent.getModel();
-			// set filters based on given entity fields
-			var aSorters = [];
-			var aFilters = [];
-			for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
-				//// filter entity field to be checked by selection input or * (all)
-				var oFilterEntityField = new Filter({
-					filters: [
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				aFilters.push(oFilterEntityField);
-				aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
-			}
-			// ensure status is active
-			aFilters.push(
-				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
-				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-			);
-			const oListBinding = oModel.bindList(sEntity, null, aSorters, aFilters);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					var aReturnFields = [];
-					for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
-						aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
-					}
-					return aReturnFields;
-				} else {
-					return [];
-				}
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-				return [];
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
@@ -320,6 +263,48 @@ sap.ui.define([
 			return oContext.execute()
 				.then(() => oContext.requestObject());
 
+		},
+
+		/**
+		 * Retrieve rate per km data for item based on vehicle type and claim type item
+		 * @public
+		 * @param {String} sVehicleType - vehicle type based on selected item
+		 * @param {String} sClaimTypeItem - claim type item of selected item
+		 * @return {Object} - returns id and value of rate per km retrieved from table
+		 */
+		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem) {
+			var oResult = {
+				id: null,
+				value: null
+			};
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getRatePerKm(...)");
+
+				oFunction.setParameter("sVehicleType", sVehicleType);
+				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oData = oContext.getObject();
+
+				oResult = {
+					id: oData.id,
+					value: oData.value
+				}
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				oResult = {
+					id: null,
+					value: null
+				}
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return oResult;
 		},
 
 		/**
