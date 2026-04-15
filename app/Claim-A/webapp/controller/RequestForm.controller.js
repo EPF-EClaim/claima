@@ -32,6 +32,8 @@ sap.ui.define([
     "claima/utils/SendBackDialog",
     "claima/utils/Utility",
     "claima/utils/workflowApproval",
+	"claima/model/models",
+	"claima/utils/Common",
 ], function (
     Button,
     Dialog,
@@ -66,6 +68,8 @@ sap.ui.define([
     SendBackDialog,
     Utility,
     workflowApproval,
+	Models,
+	Common
 ) {
 	"use strict";
 
@@ -91,10 +95,13 @@ sap.ui.define([
 			this._sDeleteTarget 	= null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			Utility.init(this.getOwnerComponent());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+
+			this.getView().setModel(Models.createClaimHeaderEditableModel(), "reqHeaderEditableModel");
 		},
 
 		/* =========================================================
@@ -211,7 +218,14 @@ sap.ui.define([
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
 			}
-
+			
+			Common.init(this.getOwnerComponent(), this.getView());
+			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
+			}
+			else {
+				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
+			}
 			PARequestSharedFunction.determineFooterButton(this);
 		},
 
@@ -447,6 +461,10 @@ sap.ui.define([
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
+		},
+		
+		onSaveHeaderPress: async function () {
+			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
 		},
 
 		/* =========================================================

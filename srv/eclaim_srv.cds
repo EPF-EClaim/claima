@@ -384,10 +384,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function calculatePengangkutanLautAmount( actualMeterCube: Decimal(15, 2),
                                              actualAmount: Decimal(15, 2))                     returns meterCubeAmount;
 
+    type matawangAmount {
+        percentage  : Decimal(15, 2);
+        amount      : Decimal(15, 2);
+    }
+    function calculateMatawangAmount(claimItems : LargeString)                                 returns matawangAmount;
+
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
 
+    type rateperkm {
+        id      : String;
+        value   : Decimal(34);
+    }
+
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String) returns rateperkm;
+    
     function _getMarriageCategory(sEmpId: String, )                                            returns String;
 
     function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
@@ -429,5 +442,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getLodgingAmount(sClaimTypeId: String,
                               sClaimTypeItemId: String,
                               sEmpId: String)                                                  returns Decimal(15, 2);
+
+    //IND1 - Spouse_Child
+    function getNumberOfFamilyMembers(IND: String)                                             returns Integer;
 
 };

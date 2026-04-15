@@ -2,7 +2,6 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageToast",
@@ -11,7 +10,6 @@ sap.ui.define([
 ], function (
     Filter,
     FilterOperator,
-    Sorter,
     JSONModel,
 	BusyIndicator,
     MessageToast,
@@ -45,8 +43,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -85,7 +82,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -157,8 +154,6 @@ sap.ui.define([
             oModel.setProperty(sListPath, aFiltered);
             oModel.setProperty(sCountPath, aFiltered.length);
         },
-
-
 
         /**
          * @public
@@ -233,7 +228,7 @@ sap.ui.define([
                 oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
             }
         },
-        
+
          /**
          * Determine whether the number of days calculation should be treated as
          * "number of nights" instead of inclusive calendar days.

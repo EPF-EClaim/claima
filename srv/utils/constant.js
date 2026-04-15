@@ -67,7 +67,8 @@ const Constant = {
         "ZREQUEST_ITEM": "ZREQUEST_ITEM",
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
-        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART"
+        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
+        "ZRATE_KM": "ZRATE_KM"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -171,7 +172,14 @@ const Constant = {
         "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO",
-        "REGION_ID": "REGION_ID"
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "RATE_KM_ID": "RATE_KM_ID",
+        "RATE": "RATE",
+        "REGION_ID": "REGION_ID",
+        "STATUS": "STATUS",
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
     },
     Wildcard: {
         "All": "*",
@@ -266,7 +274,23 @@ const Constant = {
         MARRIED_4_OR_MORE_CHILDREN: "04"
     },
     
-    UnlimitedAmount: -1
+    UnlimitedAmount: -1,
+
+    FareType: {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
+        },
+    
+    ConfigStatus: {
+        "ACTIVE": "ACTIVE"
+    }, 
+    Indicator: {
+        Spouse_Child: "IND1"
+    }
 
 };
 

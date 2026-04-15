@@ -968,9 +968,9 @@ module.exports = (srv) => {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
             //calculation for MKN_LOAN based on dependent
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN){
-                total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day); 
-                if (!req.data.tips){
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+                total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
+                if (!req.data.tips) {
                     total_tips = 0.15 * total_amt_dp;
                     total_amt_dp += total_tips;
                 }
@@ -978,53 +978,53 @@ module.exports = (srv) => {
             } else {
                 time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
-            //checking on the daily and meal allowance entitlement
-            if (req.data.day === 0 && req.data.hours < 8.0) {
-                //no entitlement
-                meal_allowance = 0;
-            } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
-                //entitle for daily allowance
-                meal_allowance = entitlement.AMOUNT / 2;
-            }
-            else if (req.data.day > 0) {
-                meal_allowance = req.data.day * entitlement.AMOUNT;
-                if (time_difference >= 8.0 && time_difference < 24.0) {
-                    daily_allowance = entitlement.AMOUNT / 2;
-                    total_daily_allowance = 1;
+                //checking on the daily and meal allowance entitlement
+                if (req.data.day === 0 && req.data.hours < 8.0) {
+                    //no entitlement
+                    meal_allowance = 0;
+                } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
+                    //entitle for daily allowance
+                    meal_allowance = entitlement.AMOUNT / 2;
                 }
-                meal_allowance += daily_allowance;
-            }
+                else if (req.data.day > 0) {
+                    meal_allowance = req.data.day * entitlement.AMOUNT;
+                    if (time_difference >= 8.0 && time_difference < 24.0) {
+                        daily_allowance = entitlement.AMOUNT / 2;
+                        total_daily_allowance = 1;
+                    }
+                    meal_allowance += daily_allowance;
+                }
 
-            //deduction of meal allowance
-            //// no deduction for elaun makan perpindahan
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
-                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
-            } else {
-                //20% from breakfast, 40% from lunch, 40% from dinner 
-                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
-            }
-            total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+                //deduction of meal allowance
+                //// no deduction for elaun makan perpindahan
+                if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+                    bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
+                    lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
+                    dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
+                } else {
+                    //20% from breakfast, 40% from lunch, 40% from dinner 
+                    bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+                    lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+                    dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+                }
+                total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
 
-            //to include tips calculation (15%) from total entitlement
-            // only applicable for claim submission
-            // if true, exclude tips and set total tips to be 0. Else, include 15% tips
-            if (!req.data.tips){
-                total_tips = 0.15 * total_meal_allowance;
-                total_meal_allowance += total_tips;
-            }
+                //to include tips calculation (15%) from total entitlement
+                // only applicable for claim submission
+                // if true, exclude tips and set total tips to be 0. Else, include 15% tips
+                if (!req.data.tips) {
+                    total_tips = 0.15 * total_meal_allowance;
+                    total_meal_allowance += total_tips;
+                }
 
-            return {
-                amount: total_meal_allowance,
-                daily_allowance: total_daily_allowance,
-                currency_code: entitlement.CURRENCY, 
-                tips_amount: total_tips
+                return {
+                    amount: total_meal_allowance,
+                    daily_allowance: total_daily_allowance,
+                    currency_code: entitlement.CURRENCY,
+                    tips_amount: total_tips
+                }
             }
         }
-    }
     });
 
     /**
@@ -1251,6 +1251,58 @@ module.exports = (srv) => {
     });
 
     /**
+     * Get rate per km id and description, based on Vehicle Type and Claim Type Item
+     * @public
+     * @param {String} sVehicleType - vehicle type to check in table 
+     * @param {String} sClaimTypeItem - claim type item to check in table 
+     * @return {Object} rateperkm - return rate per km ID and description
+     */
+    srv.on('getRatePerKm', async (req) => {
+        const { sVehicleType, sClaimTypeItem } = req.data;
+
+        try {
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+            var aVehicleTypeFilters = [Constant.Wildcard.All];
+            if (!!sVehicleType) {
+                aVehicleTypeFilters.push(sVehicleType);
+            }
+            var aClaimTypeItemFilters = [Constant.Wildcard.All];
+            if (!!sClaimTypeItem) {
+                aClaimTypeItemFilters.push(sClaimTypeItem);
+            }
+
+            const oRatePerKm = await SELECT.one
+                .from(Constant.Entities.ZRATE_KM)
+                .columns(Constant.EntitiesFields.RATE_KM_ID,Constant.EntitiesFields.RATE)
+                .where({
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                    // values to filter
+                    VEHICLE_TYPE_ID: aVehicleTypeFilters,
+                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters,
+                 })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: 'desc' },
+                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: 'desc' }
+                ]);
+
+            if (!oRatePerKm) {
+                return req.error(404, `Rate per km not found for given vehicle type.`);
+            }
+
+            return {
+                id: oRatePerKm.RATE_KM_ID,
+                value: oRatePerKm.RATE
+            };
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Rate per KM table.');
+        }
+    });
+
+    /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
      * @return {Decimal} - return eligible amount retrieved from table
@@ -1294,7 +1346,7 @@ module.exports = (srv) => {
                     // values to filter
                     MARITAL_STATUS: { 'in': aMaritalStatusValues },
                     MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
-                 })
+                })
                 .orderBy([
                     { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
                     { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
@@ -1584,14 +1636,14 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        if (oEmp){
+        if (oEmp) {
             return await computeMeterCubeEntitlement(
                 tx,
                 oEmp,
                 srv.entities
             );
         }
-        
+
     });
 
     /**
@@ -1627,4 +1679,64 @@ module.exports = (srv) => {
             amount: Number(nFinalAmount.toFixed(2))
         };
     });
+
+    srv.on('calculateMatawangAmount', async (req) => {
+        const tx = cds.tx(req);
+
+        const aClaimItems = JSON.parse(req.data.claimItems || "[]");
+        if (!Array.isArray(aClaimItems)) {
+            req.error(400, "Invalid claim item list.");
+        }
+
+        let iTotal = 0;
+
+        aClaimItems.forEach(oItem => {
+            if (
+                oItem.claim_type_item_id !== Constant.ClaimTypeItem.MATAWANG &&
+                oItem.need_foreign_currency === true
+            ) {
+                iTotal += Number(oItem.amount || 0);
+            }
+        });
+        const nPercentage = 3.00; // 3%
+        const nThreePercent =
+            Math.ceil(iTotal * (nPercentage / 100) * 100) / 100;
+        return {
+            percentage: nPercentage,
+            amount: nThreePercent
+        };
+    });
+
+    /**
+     * Get Total count of dependent based on Employee ID
+     * IND1 - fetch Spouse and Child Only
+     * @public
+     * @async
+     * @returns {Integer} Total count of dependent 
+     */
+    srv.on('getNumberOfFamilyMembers', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZEMP_DEPENDENT } = srv.entities;
+        const sIndicator = req.data.IND;
+        var aDependent;
+
+        //get total dependent based on Employee ID - IND1 filter by spouse and child
+        if (oEmp) {
+            if (sIndicator === Constant.Indicator.Spouse_Child){
+                aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
+                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
+                                                                         Constant.Relationship.CHILD] }})
+            );
+            } else {
+                aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({
+                   EMP_ID: oEmp.EEID 
+                })
+            );
+            }
+            return aDependent.length + 1;
+        }
+    })
 }
