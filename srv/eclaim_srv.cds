@@ -384,6 +384,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function calculatePengangkutanLautAmount( actualMeterCube: Decimal(15, 2),
                                              actualAmount: Decimal(15, 2))                     returns meterCubeAmount;
 
+    type matawangAmount {
+        percentage  : Decimal(15, 2);
+        amount      : Decimal(15, 2);
+    }
+    function calculateMatawangAmount(claimItems : LargeString)                                 returns matawangAmount;
+
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
