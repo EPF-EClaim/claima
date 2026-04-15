@@ -114,7 +114,7 @@
                         minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_START_DATE',
-                                { value: 'CLM' },
+                                { value: 'constant>/WorkflowType/CLAIM' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
@@ -125,7 +125,7 @@
                         maxDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_START_DATE',
-                                { value: 'CLM' },
+                                { value: 'constant>/WorkflowType/CLAIM' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
@@ -168,7 +168,7 @@
                         minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_END_DATE',
-                                { value: 'CLM' },
+                                { value: '{constant>/WorkflowType/CLAIM}' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
@@ -179,7 +179,7 @@
                         maxDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_END_DATE',
-                                { value: 'CLM' },
+                                { value: 'constant>/WorkflowType/CLAIM' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
@@ -280,7 +280,7 @@
                         minDate="{
                             parts: [
                                 'constant>/EntitiesFields/MOVE_IN_DATE',
-                                { value: 'CLM' },
+                                { value: 'constant>/WorkflowType/CLAIM' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
@@ -291,7 +291,7 @@
                         maxDate="{
                             parts: [
                                 'constant>/EntitiesFields/MOVE_IN_DATE',
-                                { value: 'CLM' },
+                                { value: 'constant>/WorkflowType/CLAIM' },
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',

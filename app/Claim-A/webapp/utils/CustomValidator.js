@@ -160,14 +160,10 @@ sap.ui.define([
                         dMoveInDate.setHours(0, 0, 0, 0);
                        
                         if(!!dTripStartDate && !!dTripEndDate && !!dMoveInDate){
-                            if(dTripStartDate > dTripEndDate ){
-                                MessageBox.error(Utility.getText("req_d_w_check_date"));
-                                bCanProceed = false;
-                            }else if(dMoveInDate < dTripStartDate || dMoveInDate > dTripEndDate){
+                            if(dMoveInDate < dTripStartDate || dMoveInDate > dTripEndDate){
                                 MessageBox.error(Utility.getText("error_msg_move_in_date_not_within_trip_start_and_trip_end_dates"));
                                 bCanProceed = false;
                             }
-
 
                         }
                     }
