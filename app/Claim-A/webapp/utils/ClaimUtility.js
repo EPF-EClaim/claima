@@ -506,34 +506,15 @@ sap.ui.define([
 		* @param {string} sEmpId - employee ID to retrieve dependents for
 		* @returns {integer} if records found, return total number of dependents for employee
 		*/
-		getSpouseChildNo: async function (sEmpId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
-				new Sorter("DEPENDENT_NO")
-			], [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId),
-				new Filter
-				({
-                filters: [
-                    new Filter("RELATIONSHIP", FilterOperator.EQ, "01"),
-                    new Filter("RELATIONSHIP", FilterOperator.EQ, "02")
-                ],
-                and: false
-            })
+		getSpouseChildNo: async function () {
+			const oContext = this._oView.getModel().bindContext("/getSpouseChildCount(...)");
+			
+ 			await oContext.execute();
 
-			]);
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
 
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				return aContexts.length;
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
-				return 0;
-			} finally {
-				BusyIndicator.hide();
-			}
+    		return oResult?.value ?? 0;
 		}
 	}
 });

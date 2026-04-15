@@ -1627,4 +1627,18 @@ module.exports = (srv) => {
             amount: Number(nFinalAmount.toFixed(2))
         };
     });
+
+    srv.on('getSpouseChildCount', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZEMP_DEPENDENT } = srv.entities;
+
+        //get spouse and child count for the current user
+        if (oEmp) {
+            const aDependent = await tx.run(
+                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, RELATIONSHIP: { in: ['01', '02'] }})
+            );
+            return aDependent.length;
+        }
+    })
 }

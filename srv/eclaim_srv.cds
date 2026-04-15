@@ -429,5 +429,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getLodgingAmount(sClaimTypeId: String,
                               sClaimTypeItemId: String,
                               sEmpId: String)                                                  returns Decimal(15, 2);
+    
+    function getSpouseChildCount() returns Integer;
 
 };
