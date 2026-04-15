@@ -292,7 +292,7 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
-			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible() && (oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
+			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) {
 				oClaimItemInputModel.setProperty(("/claim_item/exclude_tips"), true);
 			}
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
