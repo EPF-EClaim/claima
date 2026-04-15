@@ -64,6 +64,25 @@ sap.ui.define([
                 });
                 return oRoleModel;
             }, 
+
+            createClaimHeaderEditableModel: function () {
+                const oHeaderEditable = {
+                    "startTrip": false,
+                    "endTrip": false,
+                    "startEvent": false,
+                    "endEvent": false,
+                    "startEventRequired" : false,
+                    "endEventRequired": false,
+                    "location": false,
+                    "comment": false,
+                    "altCostCenter": false,
+                    "saveHeader": false,
+                };
+
+                return new JSONModel(
+                    Object.assign({}, oHeaderEditable)
+                );
+            },
         };
 
     });

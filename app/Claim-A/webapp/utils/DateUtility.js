@@ -1,19 +1,9 @@
 sap.ui.define([
     "sap/ui/core/format/DateFormat",
-	"sap/ui/model/Sorter",
-	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator",
-	"sap/ui/core/BusyIndicator",
-	"sap/m/MessageBox",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (
     DateFormat,
-    Sorter,
-	Filter,
-	FilterOperator,
-	BusyIndicator,
-    MessageBox,
 	Constants,
     Utility
 ) {
