@@ -179,7 +179,7 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
-                    
+
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){

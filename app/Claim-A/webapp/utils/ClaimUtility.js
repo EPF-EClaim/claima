@@ -235,6 +235,9 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) {
+				oClaimItemInputModel.setProperty(("/claim_item/exclude_tips"), true);
+			}
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
 
 			var oSessionModel = this.getView().getModel("session");
@@ -558,6 +561,26 @@ sap.ui.define([
 			await fnSaveClaimItem();
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
+		}, 
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getSpouseChildNo: async function () {
+			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
+			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
+			
+ 			await oContext.execute();
+
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
+
+    		return oResult?.value ?? 0;
 		}
 	}
 });
