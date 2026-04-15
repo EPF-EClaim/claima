@@ -918,6 +918,11 @@ sap.ui.define([
 				return;
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+				return;
+			}
+
 			// validate required fields
 			var reqFields = [
 				"input_claiminput_purpose",

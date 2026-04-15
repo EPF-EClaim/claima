@@ -150,6 +150,40 @@ sap.ui.define([
                             }
                         }
                     }
+
+                    if(oClaimSubmissionModel.getProperty("/claimtype/type") === Constants.ClaimType.ELAUN_PINDAH){
+                        var dTripStartDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
+                        var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"));
+                        var dMoveInDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/move_in_date"));
+                       
+                        
+                        if(!!dTripStartDate && !!dTripEndDate && !!dMoveInDate){
+                            if(dTripStartDate > dTripEndDate ){
+                                MessageBox.error(Utility.getText("req_d_w_check_date"));
+                                bCanProceed = false;
+                            }else if(dMoveInDate < dTripStartDate || dMoveInDate > dTripEndDate){
+                                MessageBox.error(Utility.getText("error_msg_move_in_date_not_within_trip_start_and_trip_end_dates"));
+                                bCanProceed = false;
+                            }
+
+
+                        }
+                    }
+
+                    if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.ELAUN_PINDAH ){
+                        var dMoveInDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/move_in_date"));
+                        const dPastDate = new Date();
+                        dPastDate.setDate(dPastDate.getDate() - 180);
+
+                        if(!!dMoveInDate){
+                            if(dMoveInDate < dPastDate){
+                                MessageBox.error(Utility.getText("error_msg_move_in_date_not_within_6_months_of_system_date"));
+                                bCanProceed = false;
+                            }
+                        }
+                    }
+
+
                     
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
