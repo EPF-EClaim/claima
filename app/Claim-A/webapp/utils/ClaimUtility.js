@@ -292,6 +292,9 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible() && (oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
+				oClaimItemInputModel.setProperty(("/claim_item/exclude_tips"), true);
+			}
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
 			
 			var oSessionModel = this.getView().getModel("session");
@@ -448,6 +451,44 @@ sap.ui.define([
                 aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
             }
             return aFilters;
+		}, 
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getSpouseChildNo: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId),
+				new Filter
+				({
+                filters: [
+                    new Filter("RELATIONSHIP", FilterOperator.EQ, "01"),
+                    new Filter("RELATIONSHIP", FilterOperator.EQ, "02")
+                ],
+                and: false
+            })
+
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
 		}
 	}
 });

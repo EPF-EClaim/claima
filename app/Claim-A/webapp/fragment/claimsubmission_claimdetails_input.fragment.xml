@@ -1185,7 +1185,7 @@
                 id="input_claimdetails_input_exclude_tips"
                 selected="{claimitem_input>/claim_item/exclude_tips}"
                 select="onSelect_ExcludeTips"
-                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                visible="false"
                 />
 
                 <!-- Tips Amount -->
@@ -1200,7 +1200,7 @@
 							preserveDecimals: false
 						}
 						}"
-                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    visible="false"
                     editable="false"
                 />
 
