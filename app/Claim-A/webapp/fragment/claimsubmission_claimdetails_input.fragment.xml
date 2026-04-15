@@ -516,6 +516,19 @@
                     required="true"
 				/>
 
+                 <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                <Label text="{i18n>label_claimdetails_input_region}" />
+                <Select
+                    id="select_claimdetails_input_region"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/region}"
+                    change="onSelect_ClaimDetails_Region"
+                    liveChange="onSelect_ClaimDetails_Region"
+                    visible="false"
+                    required="true"
+				>
+				</Select>
+
 				<!-- Nama Pembekal Insuran -->
 				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
 				<Select
@@ -1222,19 +1235,6 @@
                     visible="false"
                     required="true"
                 />
-
-                <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{i18n>label_claimdetails_input_region}" />
-                <Select
-                    id="select_claimdetails_input_region"
-                    forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/region}"
-                    change="onSelect_ClaimDetails_Region"
-                    liveChange="onSelect_ClaimDetails_Region"
-                    visible="false"
-                    required="true"
-				>
-				</Select>
 
                 <!-- Area (Negara/Wilayah) -->
                 <Label text="{i18n>label_claimdetails_input_area}" />
