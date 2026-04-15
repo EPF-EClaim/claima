@@ -456,13 +456,13 @@ sap.ui.define([
 		calculateMatawangAmount: async function () {
 			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const oInputModel = this._oView.getModel("claimitem_input");
-			const oContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
-			oContext.setParameter(
+			const oCalculateMataWangAmountContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
+			oCalculateMataWangAmountContext.setParameter(
 				"claimItems",
 				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
 			);
-			return await oContext.execute()
-				.then(() => oContext.requestObject())
+			return await oCalculateMataWangAmountContext.execute()
+				.then(() => oCalculateMataWangAmountContext.requestObject())
 				.then((oResult) => {
 
 					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
@@ -509,6 +509,7 @@ sap.ui.define([
 			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
 			const bPreviousIsNew = oInputModel.getProperty("/is_new");
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+			
 			const iMatawangIndex = aClaimItems.findIndex(
 				oItem =>
 					oItem.claim_type_item_id ===
