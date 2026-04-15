@@ -267,7 +267,7 @@ sap.ui.define([
          * @returns {Date|null} Minimum allowed date or null if invalid input.
          *
         **/
-        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, dActualValue) {
             if (!sId && !sType && !sItemType) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
@@ -418,9 +418,8 @@ sap.ui.define([
                                 _dMinDate = dPastDate;
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_trip_start_date_in_past"));
+                                break;
                             }
-                           
-                            break;
                     }
                     break;
                 case Constants.EntitiesFields.TRIP_END_DATE:
@@ -430,12 +429,17 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if(sType === Constants.ClaimType.ELAUN_PINDAH){
-                                const dPastDate = new Date();
-                                dPastDate.setDate(dPastDate.getDate() - 180);
-                                _dMinDate = dPastDate;
-                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_trip_end_date_in_past"));
-
+                                if(!!dActualValue){
+                                    _dMinDate = dActualValue;
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_trip_end_date_in_past"));
+                                }else{
+                                    const dPastDate = new Date();
+                                    dPastDate.setDate(dPastDate.getDate() - 180);
+                                    _dMinDate = dPastDate;
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_trip_end_date_in_past"));
+                                }
                             }
                             break;
                     }
@@ -615,9 +619,18 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            _dMaxDate = new Date();
-                            _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                _oResourceBundle.getText("error_trip_start_date_in_future"));
+                            if(sType === Constants.ClaimType.ELAUN_PINDAH){
+                                
+                                _dMaxDate = new Date();
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                    _oResourceBundle.getText("error_trip_start_date_in_past"));
+                            }else{
+                                _dMaxDate = new Date();
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("error_trip_start_date_in_future"));
+                            }                            
+                    
+                        
                             break;
                     }
                     break;
