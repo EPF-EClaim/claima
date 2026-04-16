@@ -184,7 +184,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-		
+
 		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
@@ -267,13 +267,17 @@ sap.ui.define([
 		/**
 		 * Retrieve rate per km data for item based on vehicle type and claim type item
 		 * @public
-		 * @param {String} sVehicleType - vehicle type based on selected item
-		 * @param {String} sClaimTypeItem - claim type item of selected item
-		 * @return {Object} - returns id and value of rate per km retrieved from table
 		 */
-		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem, dRateDate) {
-			let oResult = { id: null, value: null };
+		fetchRatePerKm: async function () {
 
+			let oResult = { id: null, value: null };
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+
+			if (!oClaimItem || !oClaimItem.vehicle_type) return;
+
+			const dRateDate =
+				oClaimItem.start_date || oClaimItem.receipt_date;
 			try {
 				BusyIndicator.show(0);
 
@@ -281,8 +285,8 @@ sap.ui.define([
 					.getModel()
 					.bindContext("/getRatePerKm(...)");
 
-				oFunction.setParameter("sVehicleType", sVehicleType);
-				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+				oFunction.setParameter("sVehicleType", oClaimItem.vehicle_type);
+				oFunction.setParameter("sClaimTypeItem", oClaimItem.claim_type_item_id);
 				oFunction.setParameter("dRateDate", dRateDate);
 
 				await oFunction.execute();
@@ -524,6 +528,6 @@ sap.ui.define([
 			await fnSaveClaimItem();
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
-		}, 
+		},
 	}
 });

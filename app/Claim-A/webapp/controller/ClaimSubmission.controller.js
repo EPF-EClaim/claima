@@ -3427,30 +3427,13 @@ sap.ui.define([
 			if (!oInputModel || !oPropertyModel) return;
 			if (!oPropertyModel.getProperty("/rate_per_km/is_visible")) return;
 
-			const oClaimItem = oInputModel.getProperty("/claim_item");
-			if (!oClaimItem) return;
-
 			try {
 				if (bRecalculateRate) {
-					if (!oClaimItem.vehicle_type) return;
-
-					const dRateDate = oClaimItem.start_date || oClaimItem.receipt_date;
-					const oRatePerKm = await ClaimUtility.fetchRatePerKm(
-						oClaimItem.vehicle_type,
-						oClaimItem.claim_type_item_id,
-						dRateDate
-					);
-
+					const oRatePerKm = await ClaimUtility.fetchRatePerKm();
 					if (!oRatePerKm) return;
 
-					oInputModel.setProperty(
-						"/claim_item/rate_per_km",
-						oRatePerKm.id
-					);
-					oInputModel.setProperty(
-						"/claim_item/descr/rate_per_km",
-						oRatePerKm.value
-					);
+					oInputModel.setProperty("/claim_item/rate_per_km",oRatePerKm.id);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km",oRatePerKm.value);
 				}
 				if (
 					oPropertyModel.getProperty("/km/is_visible") &&
