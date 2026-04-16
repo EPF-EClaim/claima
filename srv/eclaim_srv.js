@@ -1019,7 +1019,7 @@ module.exports = (srv) => {
 
                 return {
                     amount: total_meal_allowance,
-                    daily_allowance: total_daily_allowance,
+                    daily_allowance: daily_allowance,
                     currency_code: entitlement.CURRENCY,
                     tips_amount: total_tips
                 }
