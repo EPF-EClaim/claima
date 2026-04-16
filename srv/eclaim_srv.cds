@@ -371,7 +371,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   breakfast: Integer,
                                   lunch: Integer,
                                   dinner: Integer,
-                                  tips: Boolean,
+                                  exclude_tips: Boolean,
                                   dependent: Integer)                                          returns perdiem;
 
     function getMeterCubeEntitlement ()                                          returns Decimal(15, 2);
