@@ -101,7 +101,7 @@ sap.ui.define([
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
 			//declare utility
-			Utility.init(this.getOwnerComponent());
+			Utility.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -235,7 +235,7 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
+				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			// load form fragments
@@ -2359,15 +2359,9 @@ sap.ui.define([
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				var nDependent;
-				//UAT issue #71, no of dependent should only include spouse and child (01, 02), and staff
-				if (sKey === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-					nDependent = (await ClaimUtility.getSpouseChildNo());
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				} else {
-					nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				}
+				var iDependent;
+				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
+				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2380,7 +2374,8 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
 				var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
 				// populate item values
-				oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
+				if (dEligibleAmount === null) return;
+				else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
@@ -2480,12 +2475,18 @@ sap.ui.define([
 				await ClaimUtility.calculateMatawangAmount();
 			}
 
+			// set filters for state and location (office) if existing claim item uses KWSP Office
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				Utility.init(this.getOwnerComponent(), this.getView());
+				Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.CLAIM);
+			}
+
 			//for tambang excluding flight
-            if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
-                oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.DLM_NEGARA
-            ) {
-                this._filterFareType();
-            }
+			if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.DLM_NEGARA
+			) {
+				this._filterFareType();
+			}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2816,7 +2817,7 @@ sap.ui.define([
 			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
-			
+
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -2995,13 +2996,13 @@ sap.ui.define([
 					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
-					ARRIVAL_TIME: new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() || null,
+					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
-					DEPARTURE_TIME: new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() || null,
+					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
@@ -3203,13 +3204,16 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				// set 'amount' property to % of actual amount based on percentage compensation
-				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+					ClaimUtility.fetchPemberianPindahAmount();
+				} else {
+					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				}
 			}
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
-			}
-
+				ClaimUtility.fetchPengangkutanLautAmount();
+			} 
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -3272,6 +3276,17 @@ sap.ui.define([
 
 				await this._calculatePerDiem();
 			}
+			// Fetch Rate for KM
+			await this._calculateRatePerKm(true);
+		},
+
+		/**
+		 * run related methods on setting receipt date
+		 * @public
+		 */
+		onChange_ClaimDetails_ReceiptDate: async function () {
+			// Fetch Rate for KM
+			await this._calculateRatePerKm(true);
 		},
 
 		/**
@@ -3437,19 +3452,9 @@ sap.ui.define([
 			else {
 				oInputModel.setProperty("/claim_item/descr/vehicle_type", null);
 			}
-
 			// calculate rate per km
-			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
-				var oRatePerKm = await ClaimUtility.fetchRatePerKm(
-					oSelectedItem ? oSelectedItem.getKey() : oInputModel.getProperty("/claim_item/vehicle_type"),
-					oInputModel.getProperty("/claim_item/claim_type_item_id")
-				);
-				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
-				this._calculateRatePerKm();
-			}
+			await this._calculateRatePerKm(true);
 		},
-
 		/**
 		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
 		 * @public
@@ -3458,7 +3463,7 @@ sap.ui.define([
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// calculate amount if rate per km exists 
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
-				this._calculateRatePerKm();
+				this._calculateRatePerKm(false);
 			}
 		},
 
@@ -3470,7 +3475,7 @@ sap.ui.define([
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// calculate amount if km and rate per km exists 
 			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
-				this._calculateRatePerKm();
+				this._calculateRatePerKm(false);
 			}
 		},
 
@@ -3481,22 +3486,48 @@ sap.ui.define([
 		 * without toll - (km * rate_per_km)
 		 * @private
 		 */
-		_calculateRatePerKm: function () {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
-			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
-				// calculate amount with toll
-				var fAmount = parseFloat(oInputModel.getProperty("/claim_item/km")) * parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"));
-				oInputModel.setProperty("/claim_item/amount", fAmount);
-				if (oPropertyModel.getProperty("/toll/is_visible") && parseFloat(oInputModel.getProperty("/claim_item/toll")) > 0) {
-					var fAmount = parseFloat(oInputModel.getProperty("/claim_item/amount")) + parseFloat(oInputModel.getProperty("/claim_item/toll"));
+		_calculateRatePerKm: async function (bRecalculateRate) {
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const oPropertyModel = this.getView().getModel("claimitem_property");
+
+			if (!oInputModel || !oPropertyModel) return;
+			if (!oPropertyModel.getProperty("/rate_per_km/is_visible")) return;
+
+			try {
+				if (bRecalculateRate) {
+					const oRatePerKm = await ClaimUtility.fetchRatePerKm();
+					if (!oRatePerKm) return;
+
+					oInputModel.setProperty("/claim_item/rate_per_km",oRatePerKm.id);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km",oRatePerKm.value);
+				}
+				if (
+					oPropertyModel.getProperty("/km/is_visible") &&
+					oPropertyModel.getProperty("/rate_per_km/is_visible")
+				) {
+					const fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
+					const fRate = parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km")) || 0;
+					const fToll = parseFloat(oInputModel.getProperty("/claim_item/toll")) || 0;
+
+					let fAmount = fKm * fRate;
+
+					if (oPropertyModel.getProperty("/toll/is_visible") &&fToll > 0) {
+						
+						fAmount += fToll;
+					}
 					oInputModel.setProperty("/claim_item/amount", fAmount);
 				}
+			} catch (oError) {
+				console.error("Failed to calculate Rate Per KM", oError);
 			}
 		},
-
 		onSelect_ClaimDetails_Region: async function () {
-			await this._calculatePerDiem();
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH){
+				ClaimUtility.fetchPemberianPindahAmount();
+			} else {
+				await this._calculatePerDiem();
+			}
 		},
 
 		_calculatePerDiem: async function () {
@@ -3532,10 +3563,10 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			if (
-				(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) || 
+				(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) ||
 				(this.byId(startTime).getVisible() && !oClaimItemInputModel.getProperty(sStartTimeValue)) ||
 				(this.byId(endDate).getVisible() && !oClaimItemInputModel.getProperty(sEndDateValue)) ||
-				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue)) 
+				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue))
 			) {
 				return;
 			}
@@ -3676,7 +3707,7 @@ sap.ui.define([
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			oBinding.filter(aFilters);
@@ -3710,7 +3741,7 @@ sap.ui.define([
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
 			var sToState = oInputModel.getProperty("/claim_item/to_state_id");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			if (!!sToState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)); }
@@ -3903,7 +3934,7 @@ sap.ui.define([
 
 				// run validator before proceeding 
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 				if (!bCanProceed) {
 					return;
 				}
@@ -4316,13 +4347,13 @@ sap.ui.define([
 						MATERIAL_CODE: claim_item.material_code,
 						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
 						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
-						ARRIVAL_TIME: new Date(claim_item.arrival_time).toISOString() || null,
+						ARRIVAL_TIME: claim_item.arrival_time ? new Date(claim_item.arrival_time).toISOString() : null,
 						CLAIM_TYPE_ID: claim_item.claim_type_id,
 						COURSE_TITLE: claim_item.course_title,
 						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
 						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
-						DEPARTURE_TIME: new Date(claim_item.departure_time).toISOString() || null,
+						DEPARTURE_TIME: claim_item.departure_time ? new Date(claim_item.departure_time).toISOString() : null,
 						DEPENDENT: claim_item.dependent,
 						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
 						EMP_ID: claim_item.emp_id,
@@ -5200,6 +5231,6 @@ sap.ui.define([
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return true;
-		}
+		},
 	});
 });
