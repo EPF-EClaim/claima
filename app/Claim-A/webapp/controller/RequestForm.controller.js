@@ -94,7 +94,7 @@ sap.ui.define([
 			this._oFragments 		= Object.create(null);
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
-			Utility.init(this.getOwnerComponent());
+			Utility.init(this.getOwnerComponent(), this.getView());
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
@@ -2125,7 +2125,8 @@ sap.ui.define([
 					this._onFilterRegion();
 
 					// set filters for state and location (office) fields if values exist
-					Utility.setFiltersExistingStateLocation(this.getView(), this._oReqModel.getProperty("/req_item"));
+					Utility.init(this.getOwnerComponent(), this.getView());
+					Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.REQUEST);
 
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
