@@ -184,7 +184,36 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-		
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
 		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
@@ -200,7 +229,7 @@ sap.ui.define([
 				nDependent = 0;
 			}
 			//get total hours based on diffrence hour + day
-			var nHour = nDay > 1? oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") + (nDay * 24) : oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") ;
+			var nHour = (nDay * 24) + oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id");
@@ -267,45 +296,40 @@ sap.ui.define([
 		/**
 		 * Retrieve rate per km data for item based on vehicle type and claim type item
 		 * @public
-		 * @param {String} sVehicleType - vehicle type based on selected item
-		 * @param {String} sClaimTypeItem - claim type item of selected item
-		 * @return {Object} - returns id and value of rate per km retrieved from table
 		 */
-		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem) {
-			var oResult = {
-				id: null,
-				value: null
-			};
+		fetchRatePerKm: async function () {
+
+			let oResult = { id: null, value: null };
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+
+			if (!oClaimItem || !oClaimItem.vehicle_type) return;
+
+			const dRateDate =
+				oClaimItem.start_date || oClaimItem.receipt_date;
 			try {
 				BusyIndicator.show(0);
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/getRatePerKm(...)");
 
-				oFunction.setParameter("sVehicleType", sVehicleType);
-				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+				const oFunction = this._oOwnerComponent
+					.getModel()
+					.bindContext("/getRatePerKm(...)");
+
+				oFunction.setParameter("sVehicleType", oClaimItem.vehicle_type);
+				oFunction.setParameter("sClaimTypeItem", oClaimItem.claim_type_item_id);
+				oFunction.setParameter("dRateDate", dRateDate);
 
 				await oFunction.execute();
 
-				const oContext = oFunction.getBoundContext();
-				const oData = oContext.getObject();
-
-				oResult = {
-					id: oData.id,
-					value: oData.value
-				}
+				const oData = oFunction.getBoundContext().getObject();
+				oResult = { id: oData.id, value: oData.value };
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				oResult = {
-					id: null,
-					value: null
-				}
+				MessageToast.show(oError?.message || "Failed to fetch Rate per KM");
 			} finally {
 				BusyIndicator.hide();
 			}
-
 			return oResult;
 		},
-		
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
@@ -368,7 +392,7 @@ sap.ui.define([
 					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
 				);
 
-				await oContextBinding.requestObject(); 
+				await oContextBinding.requestObject();
 				const oContext = oContextBinding.getBoundContext();
 				return oContext;
 			} catch (oError) {
@@ -412,7 +436,8 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
@@ -514,7 +539,7 @@ sap.ui.define([
 			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
 			const bPreviousIsNew = oInputModel.getProperty("/is_new");
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
-			
+
 			const iMatawangIndex = aClaimItems.findIndex(
 				oItem =>
 					oItem.claim_type_item_id ===
@@ -534,5 +559,25 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}, 
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getSpouseChildNo: async function () {
+			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
+			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
+			
+ 			await oContext.execute();
+
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
+
+    		return oResult?.value ?? 0;
+		}
 	}
 });

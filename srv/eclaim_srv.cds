@@ -1383,7 +1383,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         value   : Decimal(34);
     }
 
-    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String) returns rateperkm;
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date) returns rateperkm;
     
     function _getMarriageCategory(sEmpId: String, )                                            returns String;
 
@@ -1438,6 +1438,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getPengangkutanDaratAmount(
                                         sRegion     : String,
                                         fKilometer  : Decimal(5, 2)
-                                    )                                                          returns DaratAmounts
+                                    )                                                          returns DaratAmounts;
+
+    function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
 
 };
