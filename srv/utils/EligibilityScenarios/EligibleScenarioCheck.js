@@ -48,39 +48,37 @@ module.exports = {
     aSubmissionType.push(aPayload[0].RecordId.substring(0,3));
     aSubmissionType.push(Constant.Wildcard.All);
 
-    // Build Eligibility Select Where Conditions
-    let aEligibilityCondition = {
-      [Constant.EntitiesFields.SUBMISSION_TYPE]: {in: aSubmissionType},
-      [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
-      [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
-      [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
-      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem,
-      [Constant.EntitiesFields.STATUS]: Constant.ConfigStatus.ACTIVE
-    };
- 
-    // Claim Type that requires additional Job Group filtering
-    if (
-      aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
-      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TELEFON_B
-    ) {
-      let aEmpJobGrp = aEmpData.map((d) => d.JOB_GROUP);
-      aEmpJobGrp.push(Constant.Wildcard.NA);
-      aEmpJobGrp.push(Constant.Wildcard.All);
-      aEligibilityCondition[Constant.EntitiesFields.JOB_GROUP] = {
-        in: aEmpJobGrp
-      };
-    };
-    const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
-    // Get Eligibility Rules
-    const aEligibilityRules = await tx.run(
-      SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
-        `${sEligibilityCondition}`
-      )
-    );
-    let oReturnPayload = [];
-
-    // loop each participant data
     for (let i = 0; i < aPayload.length; i++) {
+      // Build Eligibility Select Where Conditions
+      let aEligibilityCondition = {
+        [Constant.EntitiesFields.SUBMISSION_TYPE]: {in: aSubmissionType},
+        [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
+        [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
+        [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[i].ClaimType,
+        [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[i].ClaimTypeItem,
+        [Constant.EntitiesFields.STATUS]: Constant.ConfigStatus.ACTIVE
+      };
+  
+      // Claim Type that requires additional Job Group filtering
+      if (
+        aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
+        aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TELEFON_B
+      ) {
+        let aEmpJobGrp = aEmpData.map((d) => d.JOB_GROUP);
+        aEmpJobGrp.push(Constant.Wildcard.NA);
+        aEmpJobGrp.push(Constant.Wildcard.All);
+        aEligibilityCondition[Constant.EntitiesFields.JOB_GROUP] = {
+          in: aEmpJobGrp
+        };
+      };
+      const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
+      // Get Eligibility Rules
+      const aEligibilityRules = await tx.run(
+        SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
+          `${sEligibilityCondition}`
+        )
+      );
+      let oReturnPayload = [];
       // Proceed to each Claim Type
       switch (aPayload[i].ClaimType) {
         case Constant.ClaimType.DLM_NEGARA:
@@ -139,7 +137,7 @@ module.exports = {
           aFilteredEmp = aEmpData.filter(function (data) {
                 return (data.EEID == aPayload[i].EmpId);
             })
-           oReturnPayload = await ElaunPindah.onEligibleCheck(
+          oReturnPayload = await ElaunPindah.onEligibleCheck(
             aPayload[i],
             aEligibilityRules,
             aFilteredEmp[0]
@@ -154,8 +152,8 @@ module.exports = {
           break;
       }
       aPayload[i] = oReturnPayload; //Update Payload with Result value
-    }
 
-    return aPayload;
+      return aPayload;
+    }
   },
 };
