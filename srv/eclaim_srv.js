@@ -1788,7 +1788,7 @@ module.exports = (srv) => {
                 ]);
 
             if (!oEligibilityRule) {
-                return req.error(404, `Eligible amount not found for given employee.`);
+                return 0;
             }
 
             return oEligibilityRule.ELIGIBLE_AMOUNT;
