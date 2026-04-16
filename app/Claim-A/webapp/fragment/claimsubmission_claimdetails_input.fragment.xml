@@ -377,6 +377,7 @@
                     showCurrentDateButton="true"
                     visible="false"
                     required="true"
+                    change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',

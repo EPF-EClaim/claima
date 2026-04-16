@@ -1251,45 +1251,69 @@ module.exports = (srv) => {
     });
 
     /**
-     * Get rate per km id and description, based on Vehicle Type and Claim Type Item
+     * Get rate per km id and description, based on Vehicle Type, Claim Type Item Claim Item, Start Date or Receipt Date
      * @public
      * @param {String} sVehicleType - vehicle type to check in table 
-     * @param {String} sClaimTypeItem - claim type item to check in table 
+     * @param {String} sClaimTypeItem - claim type item to check in table
+     * @param {String} sClaimType - claim type to check in table 
+     * @param {date} dStartDate - claim item start date
+     * @param {date} dReceiptDate - claim item receipt date
      * @return {Object} rateperkm - return rate per km ID and description
      */
-    srv.on('getRatePerKm', async (req) => {
-        const { sVehicleType, sClaimTypeItem } = req.data;
+    srv.on("getRatePerKm", async (req) => {
+        const {
+            sVehicleType,
+            sClaimTypeItem,
+            sClaimType,
+            dStartDate,
+            dReceiptDate
+        } = req.data;
 
         try {
-            const sTodayDate = new Date().toISOString().slice(0, 10);
-            var aVehicleTypeFilters = [Constant.Wildcard.All];
-            if (!!sVehicleType) {
+            const sRateDate = determineRateDate(
+                sClaimType,
+                sClaimTypeItem,
+                dStartDate,
+                dReceiptDate
+            );
+
+            if (!sRateDate) {
+                return req.error(400, "No valid date provided for rate determination.");
+            }
+
+            let aVehicleTypeFilters = [Constant.Wildcard.All];
+            if (sVehicleType) {
                 aVehicleTypeFilters.push(sVehicleType);
             }
-            var aClaimTypeItemFilters = [Constant.Wildcard.All];
-            if (!!sClaimTypeItem) {
+
+            let aClaimTypeItemFilters = [Constant.Wildcard.All];
+            if (sClaimTypeItem) {
                 aClaimTypeItemFilters.push(sClaimTypeItem);
             }
 
             const oRatePerKm = await SELECT.one
                 .from(Constant.Entities.ZRATE_KM)
-                .columns(Constant.EntitiesFields.RATE_KM_ID,Constant.EntitiesFields.RATE)
+                .columns(
+                    Constant.EntitiesFields.RATE_KM_ID,
+                    Constant.EntitiesFields.RATE
+                )
                 .where({
-                    // status check
                     STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                    // values to filter
+                    START_DATE: { "<=": sRateDate },
+                    END_DATE: { ">=": sRateDate },
                     VEHICLE_TYPE_ID: aVehicleTypeFilters,
-                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters,
-                 })
+                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters
+                })
                 .orderBy([
-                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: 'desc' }
+                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: "desc" },
+                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: "desc" }
                 ]);
 
             if (!oRatePerKm) {
-                return req.error(404, `Rate per km not found for given vehicle type.`);
+                return req.error(
+                    404,
+                    "Rate per KM not found for given claim parameters."
+                );
             }
 
             return {
@@ -1298,9 +1322,34 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Rate per KM table.');
+            return req.error(
+                500,
+                "An error occurred while determining Rate per KM."
+            );
         }
     });
+    function determineRateDate(
+        sClaimType,
+        sClaimTypeItem,
+        dStartDate,
+        dReceiptDate
+    ) {
+        const startDateClaimTypes = [
+            Constant.ClaimType.ELAUN_PINDAH,
+            Constant.ClaimType.ELAUN_TUKAR
+        ];
+
+        if (
+            startDateClaimTypes.includes(sClaimType) &&
+            [Constant.ClaimTypeItem.KM, Constant.ClaimTypeItem.KILOMETER].includes(sClaimTypeItem)
+        ) {
+            return dStartDate;
+        }
+
+        // LUAR_NEGARA + KILOMETER lands here
+        return dReceiptDate;
+    }
+
 
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
@@ -1723,18 +1772,22 @@ module.exports = (srv) => {
 
         //get total dependent based on Employee ID - IND1 filter by spouse and child
         if (oEmp) {
-            if (sIndicator === Constant.Indicator.Spouse_Child){
+            if (sIndicator === Constant.Indicator.Spouse_Child) {
                 aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
-                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
-                                                                         Constant.Relationship.CHILD] }})
-            );
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID,
+                        RELATIONSHIP: {
+                            in: [Constant.RelationshipType.SPOUSE,
+                            Constant.Relationship.CHILD]
+                        }
+                    })
+                );
             } else {
                 aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({
-                   EMP_ID: oEmp.EEID 
-                })
-            );
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID
+                    })
+                );
             }
             return aDependent.length + 1;
         }

@@ -299,41 +299,34 @@ sap.ui.define([
 		 * @param {String} sClaimTypeItem - claim type item of selected item
 		 * @return {Object} - returns id and value of rate per km retrieved from table
 		 */
-		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem) {
-			var oResult = {
-				id: null,
-				value: null
-			};
+		fetchRatePerKm: async function (sVehicleType, sClaimTypeItem, sClaimType, dStartDate, dReceiptDate) {
+			let oResult = { id: null, value: null };
+
 			try {
 				BusyIndicator.show(0);
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/getRatePerKm(...)");
+
+				const oFunction = this._oOwnerComponent
+					.getModel()
+					.bindContext("/getRatePerKm(...)");
 
 				oFunction.setParameter("sVehicleType", sVehicleType);
 				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+				oFunction.setParameter("sClaimType", sClaimType);
+				oFunction.setParameter("dStartDate", dStartDate);
+				oFunction.setParameter("dReceiptDate", dReceiptDate);
 
 				await oFunction.execute();
 
-				const oContext = oFunction.getBoundContext();
-				const oData = oContext.getObject();
-
-				oResult = {
-					id: oData.id,
-					value: oData.value
-				}
+				const oData = oFunction.getBoundContext().getObject();
+				oResult = { id: oData.id, value: oData.value };
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				oResult = {
-					id: null,
-					value: null
-				}
+				MessageToast.show(oError?.message || "Failed to fetch Rate per KM");
 			} finally {
 				BusyIndicator.hide();
 			}
-
 			return oResult;
 		},
-		
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
@@ -396,7 +389,7 @@ sap.ui.define([
 					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
 				);
 
-				await oContextBinding.requestObject(); 
+				await oContextBinding.requestObject();
 				const oContext = oContextBinding.getBoundContext();
 				return oContext;
 			} catch (oError) {
@@ -542,7 +535,7 @@ sap.ui.define([
 			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
 			const bPreviousIsNew = oInputModel.getProperty("/is_new");
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
-			
+
 			const iMatawangIndex = aClaimItems.findIndex(
 				oItem =>
 					oItem.claim_type_item_id ===
@@ -561,7 +554,7 @@ sap.ui.define([
 			await fnSaveClaimItem();
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
-		}, 
+		},
 
 		/**
 		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
@@ -574,13 +567,13 @@ sap.ui.define([
 		getSpouseChildNo: async function () {
 			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
 			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
-			
- 			await oContext.execute();
 
-   		 	// Read return value
+			await oContext.execute();
+
+			// Read return value
 			const oResult = await oContext.requestObject();
 
-    		return oResult?.value ?? 0;
+			return oResult?.value ?? 0;
 		}
 	}
 });

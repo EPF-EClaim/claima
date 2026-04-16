@@ -2482,9 +2482,9 @@ sap.ui.define([
 			//for tambang excluding flight
             if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
                 oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.DLM_NEGARA
-            ) {
-                this._filterFareType();
-            }
+			) {
+				this._filterFareType();
+			}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2815,7 +2815,7 @@ sap.ui.define([
 			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
-			
+
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -3215,8 +3215,53 @@ sap.ui.define([
 
 				await this._calculatePerDiem();
 			}
-		},
+			// Re-calculate the 
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+			if (
+				oPropertyModel.getProperty("/rate_per_km/is_visible") &&
+				oClaimItem.vehicle_type
+			) {
+				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
+					oClaimItem.vehicle_type,
+					oClaimItem.claim_type_item_id,
+					oClaimItem.claim_type_id,
+					oClaimItem.start_date,
+					oClaimItem.receipt_date
+				);
+				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
 
+				this._calculateRatePerKm();
+			}
+		},
+		/**
+		 * run related methods on setting receipt date
+		 * @public
+		 */
+		onChange_ClaimDetails_ReceiptDate: async function() {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			oInputModel.refresh(true);
+
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+			if (
+				oPropertyModel.getProperty("/rate_per_km/is_visible") &&
+				oClaimItem.vehicle_type
+			) {
+				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
+					oClaimItem.vehicle_type,
+					oClaimItem.claim_type_item_id,
+					oClaimItem.claim_type_id,
+					oClaimItem.start_date,
+					oClaimItem.receipt_date
+				);
+				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
+
+				this._calculateRatePerKm();
+			}
+		},
 		/**
 		 * On setting insurance cert start/end date, call private method to calculate number of days
 		 * @public
@@ -3383,9 +3428,13 @@ sap.ui.define([
 
 			// calculate rate per km
 			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
-				var oRatePerKm = await ClaimUtility.fetchRatePerKm(
-					oSelectedItem ? oSelectedItem.getKey() : oInputModel.getProperty("/claim_item/vehicle_type"),
-					oInputModel.getProperty("/claim_item/claim_type_item_id")
+				const oClaimItem = oInputModel.getProperty("/claim_item");
+				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
+					oSelectedItem ? oSelectedItem.getKey() : oClaimItem.vehicle_type,
+					oClaimItem.claim_type_item_id,
+					oClaimItem.claim_type_id,
+					oClaimItem.start_date,
+					oClaimItem.receipt_date
 				);
 				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
 				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
@@ -3475,10 +3524,10 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			if (
-				(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) || 
+				(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) ||
 				(this.byId(startTime).getVisible() && !oClaimItemInputModel.getProperty(sStartTimeValue)) ||
 				(this.byId(endDate).getVisible() && !oClaimItemInputModel.getProperty(sEndDateValue)) ||
-				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue)) 
+				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue))
 			) {
 				return;
 			}
