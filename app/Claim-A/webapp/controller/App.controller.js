@@ -25,8 +25,7 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/RequestUtility",
-	"claima/utils/ClaimUtility",
-	"claima/utils/Constants"
+	"claima/utils/ClaimUtility"
 ], function (
 	Popover,
 	Button,
@@ -54,8 +53,7 @@ sap.ui.define([
 	EligibilityCheck,
 	CustomValidator,
 	RequestUtility,
-	ClaimUtility,
-	Constants
+	ClaimUtility
 ) {
 	"use strict";
 
@@ -1814,8 +1812,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/trip_start_date", null);
 					oInputModel.setProperty("/claim_header/trip_end_date", null);
 				}
-				// var oMaxDays = new JSONModel({ req_no_of_days: iMaxDays, tripstartdate: null, tripenddate:null });
-				// this.getOwnerComponent().setModel(oMaxDays, "FragmentMaxDays");
 			}
 		}
 	});
