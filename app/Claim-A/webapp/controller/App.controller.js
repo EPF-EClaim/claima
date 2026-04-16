@@ -925,7 +925,7 @@ sap.ui.define([
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER))) {
 				return;
 			}
 

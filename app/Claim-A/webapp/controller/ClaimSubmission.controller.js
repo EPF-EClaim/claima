@@ -234,7 +234,7 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
+				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			// load form fragments
@@ -2358,15 +2358,9 @@ sap.ui.define([
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				var nDependent;
-				//UAT issue #71, no of dependent should only include spouse and child (01, 02), and staff
-				if (sKey === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-					nDependent = (await ClaimUtility.getSpouseChildNo());
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				} else {
-					nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				}
+				var iDependent;
+				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
+				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2379,7 +2373,8 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
 				var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
 				// populate item values
-				oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
+				if (dEligibleAmount === null) return;
+				else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
@@ -2994,13 +2989,13 @@ sap.ui.define([
 					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
-					ARRIVAL_TIME: new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() || null,
+					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
-					DEPARTURE_TIME: new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() || null,
+					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
@@ -3895,7 +3890,7 @@ sap.ui.define([
 
 				// run validator before proceeding 
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 				if (!bCanProceed) {
 					return;
 				}
@@ -4308,13 +4303,13 @@ sap.ui.define([
 						MATERIAL_CODE: claim_item.material_code,
 						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
 						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
-						ARRIVAL_TIME: new Date(claim_item.arrival_time).toISOString() || null,
+						ARRIVAL_TIME: claim_item.arrival_time ? new Date(claim_item.arrival_time).toISOString() : null,
 						CLAIM_TYPE_ID: claim_item.claim_type_id,
 						COURSE_TITLE: claim_item.course_title,
 						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
 						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
-						DEPARTURE_TIME: new Date(claim_item.departure_time).toISOString() || null,
+						DEPARTURE_TIME: claim_item.departure_time ? new Date(claim_item.departure_time).toISOString() : null,
 						DEPENDENT: claim_item.dependent,
 						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
 						EMP_ID: claim_item.emp_id,

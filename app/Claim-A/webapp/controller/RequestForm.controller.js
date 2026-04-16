@@ -220,7 +220,7 @@ sap.ui.define([
 			
 			Common.init(this.getOwnerComponent(), this.getView());
 			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
-				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
+				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
 			}
 			else {
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
@@ -2113,16 +2113,30 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
+				
+					// calculate number of days
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
-
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+					// get number of family members including requestor him/herself
+					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
+					this._oReqModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
+
 					this._onFilterRegion();
 
+					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 							RequestUtility.populateAllocatedAmount();
+
+						case Constants.ClaimTypeItem.HOTEL_L:
+						case Constants.ClaimTypeItem.HOTEL_O:
+						case Constants.ClaimTypeItem.LODGING_L:
+						case Constants.ClaimTypeItem.LODG_O:
+							var iNumberOfNight = iDiffDays - 1;
+							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 					
 						default:
