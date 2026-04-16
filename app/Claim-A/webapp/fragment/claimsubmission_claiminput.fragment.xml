@@ -240,6 +240,7 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         change="onSelect_ClaimHeader"
                         liveChange="onSelect_ClaimHeader"
                     >
@@ -260,6 +261,7 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"                        
                         change="onSelect_ClaimHeader"
                         liveChange="onSelect_ClaimHeader"
                     >
