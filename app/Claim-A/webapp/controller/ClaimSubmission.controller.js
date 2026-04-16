@@ -2745,7 +2745,6 @@ sap.ui.define([
 				});
 				return;
 			}
-
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
@@ -3156,7 +3155,7 @@ sap.ui.define([
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
 				ClaimUtility.fetchPengangkutanLautAmount();
-			} 
+			}
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -3455,7 +3454,7 @@ sap.ui.define([
 					let fAmount = fKm * fRate;
 
 					if (oPropertyModel.getProperty("/toll/is_visible") &&fToll > 0) {
-						
+
 						fAmount += fToll;
 					}
 					oInputModel.setProperty("/claim_item/amount", fAmount);
