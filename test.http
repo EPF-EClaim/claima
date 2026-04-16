@@ -19,8 +19,8 @@
 # }
 
 
-GET http://localhost:4004/odata/v4/EmployeeSrv/getSpouseChildCount()
-Authorization: Basic alice
+# GET http://localhost:4004/odata/v4/EmployeeSrv/getSpouseChildCount()
+# Authorization: Basic alice
 
 
 
@@ -168,7 +168,7 @@ Authorization: Basic alice
        {
          "CheckFields": [
             {
-               "fieldName": "FARE_TYPE_ID",
+               "fieldName": "REGION_ID",
                "value": "02",
                "result": null
             },
@@ -183,9 +183,9 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
-         "EmpId": "886887",
+         "ClaimType": "ELAUN_TUKAR",
+         "ClaimTypeItem": "PINDAH",
+         "EmpId": "900001",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
       }
