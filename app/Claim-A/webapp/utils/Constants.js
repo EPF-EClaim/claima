@@ -254,6 +254,8 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+            "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
             "STATE_ID": "STATE_ID",
             "STATE_DESC": "STATE_DESC",
             "LOCATION_DESC": "LOCATION_DESC",
@@ -272,6 +274,8 @@ sap.ui.define([
             "STUDENT": "STUDENT",
             "EMP_ID": "EMP_ID",
             "REGION_ID": "REGION_ID",
+            "TRIP_START_DATE" : "TRIP_START_DATE",
+            "TRIP_END_DATE" : "TRIP_END_DATE",
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS"
         },
         "Operators": {
@@ -495,6 +499,9 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
+        },
+        "LenderName":{
+            "FINANCIAL_INSTITUTION" : "FN"
         }
     }
 });
