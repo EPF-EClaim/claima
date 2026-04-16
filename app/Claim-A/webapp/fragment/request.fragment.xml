@@ -76,7 +76,7 @@
 					</items>
 				</Select>
 
-			    <Label text="{i18n>req_tripstartdate}"
+			    <Label text="{i18n>req_tripstartdate} {i18n>icon_info}"
 					   tooltip="{i18n>valuehelp_reqinput_tripdate}"			
 				/>
 				<DatePicker
@@ -90,7 +90,7 @@
 								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_tripenddate}" 
+				<Label text="{i18n>req_tripenddate} {i18n>icon_info}" 
 					   tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
@@ -104,7 +104,7 @@
 								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_eventstartdate}"
+				<Label text="{i18n>req_eventstartdate} {i18n>icon_info}"
 				 	   tooltip="{i18n>valuehelp_reqinput_eventdate}"
 				/>
 				<DatePicker
@@ -118,7 +118,7 @@
 								${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_eventenddate}" 
+				<Label text="{i18n>req_eventenddate} {i18n>icon_info}" 
 					   tooltip="{i18n>valuehelp_reqinput_eventdate}"	
 				/>
 				<DatePicker
