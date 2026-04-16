@@ -281,7 +281,7 @@
                 />
                                 
                 <!-- Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Label id="label_claimdetails_input_amount" />
                 <Input
                     id="input_claimdetails_input_amount"
                     value="{

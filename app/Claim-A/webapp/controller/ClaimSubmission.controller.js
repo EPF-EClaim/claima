@@ -2370,6 +2370,14 @@ sap.ui.define([
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
+				this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount_approved"));
+			}
+			else {
+				this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount"));
+			}
+
+			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
 				this._calculateLodgingEligibleAmount();
@@ -2461,6 +2469,14 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
 				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
+				}
+
+				// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
+					this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount_approved"));
+				}
+				else {
+					this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount"));
 				}
 
 			}
