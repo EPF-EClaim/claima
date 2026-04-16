@@ -1,24 +1,26 @@
 
 sap.ui.define([
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
-	"sap/ui/core/BusyIndicator",
-	"sap/m/MessageToast",
-    "sap/ui/core/Fragment",
+    "sap/ui/model/Sorter",
     "claima/utils/Constants",
-	"sap/m/MessageBox",
 	"claima/utils/Utility"
 ], function (
-    Filter,
+	MessageBox,
+	MessageToast,
+	BusyIndicator,
+	Fragment,
+	Filter,
 	FilterOperator,
 	JSONModel,
-	BusyIndicator,
-	MessageToast,
-	Fragment,
+	Sorter,
 	Constants,
-	MessageBox,
-	Utility
+    Utility
 ) {
     "use strict";
 
@@ -267,6 +269,31 @@ sap.ui.define([
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
 
+        /**
+		* Retrieve the number of family member including the employee him/herself
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sClaimType) {
+			const oModel = this._oOwnerComponent.getModel();
+            const oContext = oModel.bindContext("/getNumberOfFamilyMembers(...)");
+
+            if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN) {
+			    oContext.setParameter("IND", Constants.DependentIndicator.Spouse_Child); //Get count of spouse and children + self
+            } 
+
+			try {
+                await oContext.execute();
+
+                const oResult = await oContext.requestObject();
+    		    return oResult?.value ?? 0;
+            } catch (error) {
+                return 0;
+            }
+
+		},
+
 		/**
 		 * Retrieve mileage based on selected office locations
 		 * @public
@@ -298,7 +325,7 @@ sap.ui.define([
 				fMileage = parseFloat(oResult.value) || 0.0;
 
 			} catch (oError) {
-                MessageToast.show(oError);
+                MessageToast.show(oError.value);
 				fMileage = 0.0;
 			} finally {
 				BusyIndicator.hide();

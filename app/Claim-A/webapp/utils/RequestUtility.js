@@ -238,7 +238,7 @@ sap.ui.define([
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
 
-            if (!nTravelDay || !nTravelHour || !sRegion) return;
+            if (!nTravelHour || !sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getAmountEntitlement(...)");
             
@@ -251,7 +251,7 @@ sap.ui.define([
 			oFunction.setParameter("lunch", nLunch);
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
-            oFunction.setParameter("tips", false);
+            oFunction.setParameter("exclude_tips", true);
             oFunction.setParameter("dependent", 0);
 
             try {
