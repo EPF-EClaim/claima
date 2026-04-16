@@ -1,80 +1,80 @@
 sap.ui.define([
-    "sap/m/Button",
-    "sap/m/Dialog",
-    "sap/m/Label",
-    "sap/m/library",
-    "sap/m/MessageBox",
-    "sap/m/MessageToast",
-    "sap/ui/core/BusyIndicator",
-    "sap/ui/core/Fragment",
-    "sap/ui/core/library",
-    "sap/ui/core/mvc/Controller",
-    "sap/ui/core/routing/History",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/mdc/enums/FieldEditMode",
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
-    "sap/ui/model/json/JSONModel",
-    "sap/ui/model/Sorter",
-    "claima/utils/ApprovalLog",
-    "claima/utils/ApproveDialog",
-    "claima/utils/ApproverUtility",
-    "claima/utils/Attachment",
-    "claima/utils/budgetCheck",
-    "claima/utils/Constants",
-    "claima/utils/CustomValidator",
-    "claima/utils/DateUtility",
-    "claima/utils/EligibilityCheck",
-    "claima/utils/EligibilityScenarios/EligibleScenarioCheck",
-    "claima/utils/PARequestSharedFunction",
-    "claima/utils/RejectDialog",
-    "claima/utils/RequestUtility",
-    "claima/utils/SendBackDialog",
-    "claima/utils/Utility",
-    "claima/utils/workflowApproval",
+	"sap/m/Button",
+	"sap/m/Dialog",
+	"sap/m/Label",
+	"sap/m/library",
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Fragment",
+	"sap/ui/core/library",
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/core/routing/History",
+	"sap/ui/export/Spreadsheet",
+	"sap/ui/mdc/enums/FieldEditMode",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/model/Sorter",
+	"claima/utils/ApprovalLog",
+	"claima/utils/ApproveDialog",
+	"claima/utils/ApproverUtility",
+	"claima/utils/Attachment",
+	"claima/utils/budgetCheck",
+	"claima/utils/Constants",
+	"claima/utils/CustomValidator",
+	"claima/utils/DateUtility",
+	"claima/utils/EligibilityCheck",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/PARequestSharedFunction",
+	"claima/utils/RejectDialog",
+	"claima/utils/RequestUtility",
+	"claima/utils/SendBackDialog",
+	"claima/utils/Utility",
+	"claima/utils/workflowApproval",
 	"claima/model/models",
 	"claima/utils/Common",
 ], function (
-    Button,
-    Dialog,
-    Label,
-    mLibrary,
-    MessageBox,
-    MessageToast,
-    BusyIndicator,
-    Fragment,
-    coreLibrary,
-    Controller,
-    History,
-    Spreadsheet,
-    FieldEditMode,
-    Filter,
-    FilterOperator,
-    JSONModel,
-    Sorter,
-    ApprovalLog,
-    ApproveDialog,
-    ApproverUtility,
-    Attachment,
-    budgetCheck,
-    Constants,
-    CustomValidator,
-    DateUtility,
-    EligibilityCheck,
-    EligibleScenarioCheck,
-    PARequestSharedFunction,
-    RejectDialog,
-    RequestUtility,
-    SendBackDialog,
-    Utility,
-    workflowApproval,
+	Button,
+	Dialog,
+	Label,
+	mLibrary,
+	MessageBox,
+	MessageToast,
+	BusyIndicator,
+	Fragment,
+	coreLibrary,
+	Controller,
+	History,
+	Spreadsheet,
+	FieldEditMode,
+	Filter,
+	FilterOperator,
+	JSONModel,
+	Sorter,
+	ApprovalLog,
+	ApproveDialog,
+	ApproverUtility,
+	Attachment,
+	budgetCheck,
+	Constants,
+	CustomValidator,
+	DateUtility,
+	EligibilityCheck,
+	EligibleScenarioCheck,
+	PARequestSharedFunction,
+	RejectDialog,
+	RequestUtility,
+	SendBackDialog,
+	Utility,
+	workflowApproval,
 	Models,
 	Common
 ) {
 	"use strict";
 
 	const DialogType = mLibrary.DialogType;
-    const ValueState = coreLibrary.ValueState;
+	const ValueState = coreLibrary.ValueState;
 	const ButtonType = mLibrary.ButtonType;
 
 	return Controller.extend("claima.controller.RequestForm", {
@@ -184,7 +184,7 @@ sap.ui.define([
 
 			if (bEdit && this._oReqModel.getProperty("/req_item/doc1_filename")) {
 				this.byId("i_attachment_1_file").setRequired(false);
-			} 
+			}
 
 			PARequestSharedFunction.determineFooterButton(this);
 		},
@@ -205,8 +205,8 @@ sap.ui.define([
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
-					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
-						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
+					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
+						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") ||
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
 						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
 						break;
@@ -219,7 +219,7 @@ sap.ui.define([
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
 			}
-			
+
 			Common.init(this.getOwnerComponent(), this.getView());
 			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
 				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
@@ -237,7 +237,7 @@ sap.ui.define([
 		onBack() {
 			const sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 
-			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || 
+			if (sReqStatus == this._oConstant.RequestStatus.DRAFT ||
 				sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
 				if (!this.oBackDialog) {
 					this.oBackDialog = new Dialog({
@@ -299,7 +299,7 @@ sap.ui.define([
 
 								// update status to CANCELLED
 								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
-								
+
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
 								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
 								//Call CAP action 
@@ -309,7 +309,7 @@ sap.ui.define([
 									await oAction.execute();
 								} catch (oError) {
 									MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
-								}    
+								}
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
@@ -381,7 +381,7 @@ sap.ui.define([
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
-										
+
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
 										await this._loadRequest(sCurrentReqId);
 									}else{
@@ -463,7 +463,7 @@ sap.ui.define([
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
 		},
-		
+
 		onSaveHeaderPress: async function () {
 			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
 		},
@@ -488,7 +488,7 @@ sap.ui.define([
 			const aIndividual = ['IND', 'Individual'];
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
-			oReqData.req_item = {               
+			oReqData.req_item = {
 				est_amount: 0,
 				kilometer: 0,
 				rate_per_kilometer: 0,
@@ -636,7 +636,7 @@ sap.ui.define([
 		},
 
 		async _loadParticipantsForItem(sReqId, sReqSubId) {
-			
+
 			const setEmpty = () => {
 				this._oReqModel.setProperty("/participant", [
 					{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }
@@ -784,10 +784,10 @@ sap.ui.define([
 			} else {
 				const oRow = oEvent.getParameter("row");
 				const iRowIdx = oEvent.getParameter("rowIndex");
-				
-				let oCtx = oRow ? oRow.getBindingContext("request") : 
-						(Number.isInteger(iRowIdx) ? oTable.getContextByIndex(iRowIdx) : null);
-						
+
+				let oCtx = oRow ? oRow.getBindingContext("request") :
+					(Number.isInteger(iRowIdx) ? oTable.getContextByIndex(iRowIdx) : null);
+
 				const iSingleIdx = getIndexFromCtx(oCtx);
 				if (iSingleIdx !== null) aToDelete.push(iSingleIdx);
 			}
@@ -825,7 +825,7 @@ sap.ui.define([
 
 				if (aSuccessIdx.length > 0) {
 					aSuccessIdx.forEach((i) => aRows.splice(i, 1));
-					
+
 					this._oReqModel.setProperty("/req_item_rows", aRows);
 					this._oReqModel.setProperty("/list_count", aRows.length);
 					MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
@@ -843,9 +843,9 @@ sap.ui.define([
 
 				const oTotals = aRows.reduce((acc, row) => {
 					const fReqAmt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
-					
+
 					const fCashAdvAmt = row?.CASH_ADVANCE ? row.EST_AMOUNT : 0;
-					
+
 					return {
 						fReqTotal: acc.fReqTotal + toNumber(fReqAmt),
 						fCashTotal: acc.fCashTotal + toNumber(fCashAdvAmt)
@@ -857,7 +857,7 @@ sap.ui.define([
 				const oHeader = this._oReqModel.getProperty("/req_header") || {};
 				oHeader.reqamt = oRound2(oTotals.fReqTotal);
 				oHeader.cashadvamt = oRound2(oTotals.fCashTotal);
-				
+
 				this._oReqModel.setProperty("/req_header", oHeader);
 				oTable.clearSelection();
 
@@ -984,7 +984,7 @@ sap.ui.define([
 
 			let aToDelete = [];
 			const aSel = oTable.getSelectedIndices() || [];
-			
+
 			if (aSel.length > 0) {
 				aToDelete = aSel.map((v) => extractIndexFromCtxPath(oTable.getContextByIndex(v)))
 					.filter((x) => x !== null);
@@ -1000,7 +1000,7 @@ sap.ui.define([
 			aToDelete = Array.from(new Set(aToDelete));
 
 			let aBackendPayload = [];
-			let aIndicesToRemove = []; 
+			let aIndicesToRemove = [];
 
 			aToDelete.forEach(i => {
 				const rowData = aRows[i] || {};
@@ -1013,7 +1013,7 @@ sap.ui.define([
 						REQUEST_ID: sReqId,
 						REQUEST_SUB_ID: sReqSubId,
 						PARTICIPANTS_ID: sPID,
-						_localIndex: i 
+						_localIndex: i
 					});
 				} else {
 					aIndicesToRemove.push(i);
@@ -1033,15 +1033,15 @@ sap.ui.define([
 
 					const oAction = this._oDataModel.bindContext("/deleteParticipants(...)");
 					oAction.setParameter("participants", aCleanPayload);
-					
+
 					await oAction.execute();
 
 					aBackendPayload.forEach(item => aIndicesToRemove.push(item._localIndex));
-					
+
 				} catch (error) {
 					MessageBox.error(Utility.getText("req_d_e_delete_participant"));
 					BusyIndicator.hide();
-					return; 
+					return;
 				} finally {
 					BusyIndicator.hide();
 				}
@@ -1060,7 +1060,7 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				
+
 				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aIndicesToRemove.length]));
 
 				if (typeof RequestUtility !== "undefined" && RequestUtility.populateAllocatedAmount) {
@@ -1079,7 +1079,7 @@ sap.ui.define([
 
 		async onSaveAddAnother(oEvent) {
 			await this.onSave(oEvent, true);
-			
+
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -1096,7 +1096,7 @@ sap.ui.define([
 			oData.view = "create";
 			this._oReqModel.setData(oData);
 		},
-		
+
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
 			const oReqHeader = oData.req_header;
@@ -1147,8 +1147,8 @@ sap.ui.define([
 					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
 					oReqItem.cost_center 	= (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-") 
-											? oReqHeader.altcostcenter 
-											: oReqHeader.costcenter;
+						? oReqHeader.altcostcenter
+						: oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
@@ -1229,67 +1229,67 @@ sap.ui.define([
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
 				if (bIsEdit) {
-                    const sReqSubId = String(oReqItem.req_subid || "").trim();
+					const sReqSubId = String(oReqItem.req_subid || "").trim();
 
 					if (!oReqItem.doc1_filename && !oReqItem.doc1) oPayload.ATTACHMENT1 = null;
 					if (!oReqItem.doc2_filename && !oReqItem.doc2) oPayload.ATTACHMENT2 = null;
 
-                    const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
-                        new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
-                        new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
-                    ], { $$updateGroupId: "itemSave" });
+					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
+						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
+						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
+					], { $$updateGroupId: "itemSave" });
 
-                    const aCtx = await oList.requestContexts(0, 1);
-                    if (!aCtx[0]) throw new Error("Item not found");
-                    
-                    Object.keys(oPayload).forEach(key => aCtx[0].setProperty(key, oPayload[key]));
+					const aCtx = await oList.requestContexts(0, 1);
+					if (!aCtx[0]) throw new Error("Item not found");
 
-                    await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
-                    await this._oDataModel.submitBatch("itemSave");
+					Object.keys(oPayload).forEach(key => aCtx[0].setProperty(key, oPayload[key]));
+
+					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
+					await this._oDataModel.submitBatch("itemSave");
 
 					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
-                } else {
-                    const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
-                    
-                    await this._oDataModel.submitBatch("itemCreate");
-					await oItemContext.created();
-                    
-                    const sGeneratedSubId = oItemContext.getProperty("REQUEST_SUB_ID");
+				} else {
+					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
 
-                    if (!sGeneratedSubId) {
-                        throw new Error("Failed to retrieve generated Request Sub ID from backend.");
-                    }
-					
+					await this._oDataModel.submitBatch("itemCreate");
+					await oItemContext.created();
+
+					const sGeneratedSubId = oItemContext.getProperty("REQUEST_SUB_ID");
+
+					if (!sGeneratedSubId) {
+						throw new Error("Failed to retrieve generated Request Sub ID from backend.");
+					}
+
 					// upload Child MDF
 					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
-                    const aParts = oData.participant || [];
-                    let bHasParticipants = false;
+					const aParts = oData.participant || [];
+					let bHasParticipants = false;
 
-                    for (const p of aParts) {
-                        const sPID = String(p.PARTICIPANTS_ID || "").trim();
-                        if (!sPID) continue;
-                        
-                        bHasParticipants = true;
-                        this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
-                            REQUEST_ID: sReqId,
-                            REQUEST_SUB_ID: sGeneratedSubId,
-                            PARTICIPANTS_ID: sPID,
-                            ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
-                        }, { $$updateGroupId: "partCreate" });
-                    }
+					for (const p of aParts) {
+						const sPID = String(p.PARTICIPANTS_ID || "").trim();
+						if (!sPID) continue;
 
-                    if (bHasParticipants) {
-                        await this._oDataModel.submitBatch("partCreate");
-                    }
-                    
-                    const oHeaderContext = this.getView().getBindingContext(); 
-                    if (oHeaderContext) oHeaderContext.refresh();
+						bHasParticipants = true;
+						this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
+							REQUEST_ID: sReqId,
+							REQUEST_SUB_ID: sGeneratedSubId,
+							PARTICIPANTS_ID: sPID,
+							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
+						}, { $$updateGroupId: "partCreate" });
+					}
 
-                }
+					if (bHasParticipants) {
+						await this._oDataModel.submitBatch("partCreate");
+					}
 
-                MessageToast.show("Success");
+					const oHeaderContext = this.getView().getBindingContext();
+					if (oHeaderContext) oHeaderContext.refresh();
+
+				}
+
+				MessageToast.show("Success");
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
@@ -1307,7 +1307,7 @@ sap.ui.define([
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc1 = oEvent.getParameters("files").files[0];
 		},
-		
+
 		onImportChange2( oEvent ) {
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc2 = oEvent.getParameters("files").files[0];
@@ -1439,7 +1439,7 @@ sap.ui.define([
 			const oSelectedRow = oEvent.getParameter("selectedRow");
 
 			if (!sValue) {
-				this._updateParticipantData(sPath, null); 
+				this._updateParticipantData(sPath, null);
 				return;
 			}
 
@@ -1484,7 +1484,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
 				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
-				
+
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -1551,12 +1551,12 @@ sap.ui.define([
 		onUploadParticipants(oEvent) {
 			var oFile = oEvent.getParameter("files")[0];
 			if (!oFile) return;
-			
+
 			BusyIndicator.show(0);
 
 			var oReader = new FileReader();
 
-			oReader.onload = async (e) => { 
+			oReader.onload = async (e) => {
 				try {
 					var oData = new Uint8Array(e.target.result);
 					var oWorkbook = XLSX.read(oData, { type: "array" });
@@ -1583,7 +1583,7 @@ sap.ui.define([
 
 					if (aInvalidIds.length > 0) {
 						MessageBox.error(
-							Utility.getText("req_d_e_excel_upload_failed") + 
+							Utility.getText("req_d_e_excel_upload_failed") +
 							aInvalidIds.join(", ")
 						);
 						return;
@@ -1605,28 +1605,28 @@ sap.ui.define([
 		},
 
 		async _getInvalidParticipantIds(aUploadedIds) {
-			const iChunkSize = 100; 
+			const iChunkSize = 100;
 			let aFoundIdsInDB = [];
 
 			for (let i = 0; i < aUploadedIds.length; i += iChunkSize) {
 				const aChunk = aUploadedIds.slice(i, i + iChunkSize);
-				
+
 				const aFilters = aChunk.map(id => new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.EQ, id));
 				const oCombinedFilter = new sap.ui.model.Filter({ filters: aFilters, and: false });
 
 				const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [oCombinedFilter], {
 					$$groupId: "$auto",
-					$select: "EEID" 
+					$select: "EEID"
 				});
 
 				const aContexts = await oListBinding.requestContexts(0, aChunk.length);
 				const aChunkFound = aContexts.map(ctx => ctx.getProperty("EEID"));
-				
+
 				aFoundIdsInDB = aFoundIdsInDB.concat(aChunkFound);
 			}
 
 			const aInvalidIds = aUploadedIds.filter(id => !aFoundIdsInDB.includes(id));
-			
+
 			return aInvalidIds;
 		},
 
@@ -1728,7 +1728,7 @@ sap.ui.define([
 								delete ws[addr];
 							}
 						}
-						
+
 						if (meta.type === "number") {
 							const n = _num(cell.v);
 							if (n === null) {
@@ -2046,7 +2046,7 @@ sap.ui.define([
 
 			if (isNaN(dDeparture.getTime()) || isNaN(dArrival.getTime())) {
 				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
-				return; 
+				return;
 			}
 
 			const iDiffMs = dArrival.getTime() - dDeparture.getTime();
@@ -2064,43 +2064,48 @@ sap.ui.define([
 		},
 
 		getFromLocationByState () {
-            var oSelect = this.byId("item_from_location_office");
-            
-            var oBinding = oSelect.getBinding("items");
+			var oSelect = this.byId("item_from_location_office");
 
-            if (!oBinding) {
-                return;
-            }
+			var oBinding = oSelect.getBinding("items");
 
-            var aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+			if (!oBinding) {
+				return;
+			}
+
+			var aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
 				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/from_state"))
-            ];
+			];
 
-            oBinding.filter(aFilters);
-        },
+			oBinding.filter(aFilters);
+		},
 
 		getToLocationByState () {
-            var oSelect = this.byId("item_to_location_office");
-            
-            var oBinding = oSelect.getBinding("items");
+			var oSelect = this.byId("item_to_location_office");
 
-            if (!oBinding) {
-                return;
-            }
+			var oBinding = oSelect.getBinding("items");
 
-            var aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+			if (!oBinding) {
+				return;
+			}
+
+			var aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
 				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/to_state"))
-            ];
+			];
 
-            oBinding.filter(aFilters);
-        },
+			oBinding.filter(aFilters);
+		},
 
-		async getRatePerKM () {
+		async getRatePerKM() {
 			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
+			var dTripStartDate = this._oReqModel.getProperty("/req_header/tripstartdate");
+			
 			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
-				new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType)
+			new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType),
+			new Filter("START_DATE", FilterOperator.LE, dTripStartDate),
+			new Filter("END_DATE", FilterOperator.GE, dTripStartDate),
+			new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE,)
 			]);
 
 			try {
@@ -2110,14 +2115,14 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
-                	RequestUtility.populateAllocatedAmount();
+					RequestUtility.populateAllocatedAmount();
 					this._oReqModel.setProperty("/req_item/kilometer", await Utility.determineOfficeMileage(
 						this._oReqModel.getProperty("/req_item/from_state"),
 						this._oReqModel.getProperty("/req_item/from_location_office"),
 						this._oReqModel.getProperty("/req_item/to_state"),
 						this._oReqModel.getProperty("/req_item/to_location_office")
 					));
-                    RequestUtility.populateAllocatedAmount();
+					RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2139,7 +2144,7 @@ sap.ui.define([
 
 			if (bReset) {
 				this._resetReqItemInputs();
-			} 
+			}
 
 			const oLocationTypeSelect = this.byId("item_location_type");
 			if (oLocationTypeSelect) {
@@ -2162,9 +2167,9 @@ sap.ui.define([
 				if (!aCtx || aCtx.length === 0) {
 					console.warn("No configuration rows for claim type item:", sClaimTypeItem);
 					this._setAllControlsVisible(false);
-					return; 
+					return;
 				}
-				
+
 				const oData = aCtx[0].getObject();
 				const sFields = oData.FIELD || "";
 
@@ -2183,7 +2188,7 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
-				
+
 					// calculate number of days
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
@@ -2214,7 +2219,7 @@ sap.ui.define([
 							var iNumberOfNight = iDiffDays - 1;
 							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
-					
+
 						default:
 							break;
 					}
@@ -2268,13 +2273,13 @@ sap.ui.define([
 				"i_lodging_cat",
 				"i_trip_start_date",
 				"i_trip_end_date",
-				"i_trip_start_time", 
-				"i_trip_end_time", 
-				"i_travel_day", 
-				"i_travel_hour", 
-				"i_breakfast", 
-				"i_lunch", 
-				"i_dinner", 
+				"i_trip_start_time",
+				"i_trip_end_time",
+				"i_travel_day",
+				"i_travel_hour",
+				"i_breakfast",
+				"i_lunch",
+				"i_dinner",
 				"i_daily_allowance",
 				"i_currency_code",
 				"i_currency_rate",
@@ -2371,13 +2376,13 @@ sap.ui.define([
 
 			SendBackDialog.open(this);
 		},
-		
+
 		onClickCancel_app: function () {
 			if (this._approveDialog) { this._approveDialog.close(); }
 			if (this._sendBackDialog) { this._sendBackDialog.close(); }
 			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
-		
+
 		onClickCreate_app: async function () {
 			// Minimal validation for reject flow (reason + comment)
 			const oReject = this.getView().getModel("Reject");
@@ -2454,7 +2459,7 @@ sap.ui.define([
 					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
-	
+
 
 				// 1) Update approval rows + header, build dataset & email payloads
 				const { payloads, dataset, submissionType } =
@@ -2524,7 +2529,7 @@ sap.ui.define([
 				const reqModel = this.getView().getModel("request");
 				const sReqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
-				
+
 
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
@@ -2562,7 +2567,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-		
+
 		onExit: function () {
 			try {
 				RejectDialog.destroy(this);
@@ -2590,9 +2595,9 @@ sap.ui.define([
 		 */
 		onFilterToState: function () {
             const oReqItem  = this._oReqModel.getProperty("/req_item");
-            
+
             var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
+			var sFromOffice = oReqItem.from_location_office;
 
 			const oSelect   = this.byId("item_to_state");
 			const oBinding  = oSelect.getBinding("items");
@@ -2608,11 +2613,11 @@ sap.ui.define([
 		 * method to filter the to location (office) selection
 		 * @public
 		 */
-        onFilterToOffice: function () {
+		onFilterToOffice: function () {
             const oReqItem  = this._oReqModel.getProperty("/req_item");
-            
+
             var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
+			var sFromOffice = oReqItem.from_location_office;
             var sToState    = oReqItem.to_state;
 
 			const oSelect   = this.byId("item_to_location_office");
@@ -2641,19 +2646,19 @@ sap.ui.define([
 		},
 
 		/**
-         * Dynamic Filter for Semenanjung/Sabah/Sarawak Dropdown selection 
+		 * Dynamic Filter for Semenanjung/Sabah/Sarawak Dropdown selection 
 		 * Check if the claim type item end with L or O to determine the filter for local or oversea
-         * @private
-         */
+		 * @private
+		 */
 		_onFilterRegion: function () {
 			const oSelect = this.byId("item_select_sss");
-			
+
 			if (!oSelect || !oSelect.getBinding("items")) {
 				return;
 			}
 
 			const oBinding = oSelect.getBinding("items");
-			
+
 			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id") || "";
 
 			let aFilters = [];
@@ -2669,43 +2674,43 @@ sap.ui.define([
 		},
 
 		/**
-         * Reset the Request Item Input when changing to new claim type item
+		 * Reset the Request Item Input when changing to new claim type item
 		 * @private
-         */
-        _resetReqItemInputs: function () {
-            const oReqItem = this._oReqModel.getProperty("/req_item");
+		 */
+		_resetReqItemInputs: function () {
+			const oReqItem = this._oReqModel.getProperty("/req_item");
 
-            const aExcludedFields = [
-                Constants.ExcludeField.CLAIM_TYPE_ID,
-                Constants.ExcludeField.CLAIM_TYPE_ITEM_ID, 
-                Constants.ExcludeField.REQUEST_SUB_ID 
-            ];
+			const aExcludedFields = [
+				Constants.ExcludeField.CLAIM_TYPE_ID,
+				Constants.ExcludeField.CLAIM_TYPE_ITEM_ID,
+				Constants.ExcludeField.REQUEST_SUB_ID
+			];
 
-            Object.keys(oReqItem).forEach((sKey) => {
-                if (aExcludedFields.includes(sKey)) {
-                    return;
-                }
+			Object.keys(oReqItem).forEach((sKey) => {
+				if (aExcludedFields.includes(sKey)) {
+					return;
+				}
 
-                const vCurrentValue = oReqItem[sKey];
-                
-                if (sKey === "est_amount" || typeof vCurrentValue === "number") {
-                    this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
-                } else if (typeof vCurrentValue === "boolean") {
-                    this._oReqModel.setProperty(`/req_item/${sKey}`, false);
-                } else {
-                    this._oReqModel.setProperty(`/req_item/${sKey}`, null);
-                }
-            });
+				const vCurrentValue = oReqItem[sKey];
 
-            let aParticipants = this._oReqModel.getProperty("/participant") || [];
-            aParticipants.forEach((row, index) => {
-                this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
-            });
-			
+				if (sKey === "est_amount" || typeof vCurrentValue === "number") {
+					this._oReqModel.setProperty(`/req_item/${sKey}`, 0);
+				} else if (typeof vCurrentValue === "boolean") {
+					this._oReqModel.setProperty(`/req_item/${sKey}`, false);
+				} else {
+					this._oReqModel.setProperty(`/req_item/${sKey}`, null);
+				}
+			});
+
+			let aParticipants = this._oReqModel.getProperty("/participant") || [];
+			aParticipants.forEach((row, index) => {
+				this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
+			});
+
 			// set attachment 1 field to be required (mandatory)
 			this.byId("i_attachment_1_file").setRequired(true);
 
-        },
+		},
 
 		/**
 		 * change event to calculate No of days
