@@ -92,7 +92,8 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
-			this._sDeleteTarget 	= null;
+			this._sDeleteTarget 	= null; //doc 1 or doc 2
+			this._oDeleteAttachmentDialog = null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent());
@@ -714,13 +715,6 @@ sap.ui.define([
 				}).then(function (oDialog) {
 					this._oDeleteAttachmentDialog = oDialog;
 					this.getView().addDependent(oDialog);
-
-					var oText = Fragment.byId(
-						"deleteAttachmentDialogFrag",
-						"deleteAttachmentText"
-					);
-					oText.setText(Utility.getText("req_d_w_delete_msg"));
-
 					oDialog.open();
 				}.bind(this));
 			} else {
@@ -728,40 +722,42 @@ sap.ui.define([
 			}
 		},
 
-		onConfirmDeleteAttachment: function () {
+		onConfirmDeleteAttachment: async function () {
 			var oModel = this.getView().getModel("request");
+			var sTarget = this._sDeleteTarget; // "doc1" or "doc2"
 
-			if (this._sDeleteTarget === "doc1") {
-				var oUploader1 = this.byId("i_attachment_1_file");
+			try {
+				
+				var sAttachmentId = oModel.getProperty(`/req_item/${sTarget}_attachment_id`);
 
-				oModel.setProperty("/req_item/doc1", null);
-				oModel.setProperty("/req_item/doc1_filename", null);
-				oModel.setProperty("/req_item/_del_doc1", true);
-
-				if (oUploader1) {
-					oUploader1.clear();
+				if (sAttachmentId) {
+					await Attachment.deleteAttachment(sAttachmentId);
 				}
-			}
 
-			if (this._sDeleteTarget === "doc2") {
-				var oUploader2 = this.byId("i_attachment_2_file");
+				oModel.setProperty(`/req_item/${sTarget}`, null);
+				oModel.setProperty(`/req_item/${sTarget}_filename`, null);
+				oModel.setProperty(`/req_item/_del_${sTarget}`, true);
+				oModel.setProperty(`/req_item/${sTarget}_attachment_id`, null);
 
-				oModel.setProperty("/req_item/doc2", null);
-				oModel.setProperty("/req_item/doc2_filename", null);
-				oModel.setProperty("/req_item/_del_doc2", true);
-
-				if (oUploader2) {
-					oUploader2.clear();
+				if (sTarget === "doc1") {
+					this.byId("i_attachment_1_file")?.clear();
 				}
-			}
+				if (sTarget === "doc2") {
+					this.byId("i_attachment_2_file")?.clear();
+				}
 
-			oModel.refresh(true);
-			this._oDeleteAttachmentDialog.close();
+				oModel.refresh(true);
+				this._oDeleteAttachmentDialog.close();
+
+			} catch (e) {
+				MessageBox.error(
+					e.message || "Failed to delete attachment from SuccessFactors"
+				);
+			}
 		},
 
-
-			onCancelDeleteAttachment: function () {
-				this._oDeleteAttachmentDialog.close();
+		onCancelDeleteAttachment: function () {
+			this._oDeleteAttachmentDialog.close();
 			},
 
 		/* =========================================================

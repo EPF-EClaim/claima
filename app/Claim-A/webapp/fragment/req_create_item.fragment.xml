@@ -233,8 +233,8 @@
                                         id="i_attachment_1_file">
 
                                         <unified:layoutData>
-                                            <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
-                                        </unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                    </unified:layoutData>
 
                                     </unified:FileUploader>
 
@@ -254,7 +254,7 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment1"
-                                            visible="{= ${request>/req_item/doc1} !== null &amp;&amp; ${request>/view} !== 'view' }">
+                                            visible="{= ${request>/view} !== 'view'}">
                                         
                                             <layoutData>
                                                 <form:ColumnElementData cellsLarge="3" cellsSmall="2"/>
@@ -316,7 +316,7 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment2"
-                                            visible="{= ${request>/req_item/doc2} !== null &amp;&amp; ${request>/view} !== 'view' }">
+                                            visible="{= ${request>/req_item/doc2} !== null &amp;&amp;${request>/view} === 'edit'}">
                                         
                                             <layoutData>
                                                 <form:ColumnElementData cellsLarge="3" cellsSmall="2"/>

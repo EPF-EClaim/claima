@@ -88,7 +88,8 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
 			this._openDisclaimerGalakanDialog = null;
-
+			this._sDeleteTarget = null;          // "1" or "2"
+			this._oDeleteAttachmentDialog = null;
 
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -3135,33 +3136,64 @@ sap.ui.define([
 		},
 
 		onDelete_Claim_Attachment_1: function () {
-					var oModel = this.getView().getModel("claimitem_input");
-					this._newDialog(
-						Utility.getText("dialog_claimsubmission_deleteattachment"),
-						Utility.getText("label_claimsubmission_deleteattachment"),
-					
-						function(){
-							oModel.setProperty("/attachments/attachment1/fileName", null);
-							oModel.setProperty("/attachments/attachment1/fileContent", null);
-					// optional: if you mirror filename in claim_item
-					oModel.setProperty("/claim_item/attachment_file_1", null);
-						}.bind(this)
-					);
-				},
+			this._sDeleteTarget = "1";
+			this._openDeleteAttachmentDialog();
+		},
+
 		onDelete_Claim_Attachment_2: function () {
-					var oModel = this.getView().getModel("claimitem_input");
-					this._newDialog(
-						Utility.getText("dialog_claimsubmission_deleteattachment"),
-						Utility.getText("label_claimsubmission_deleteattachment"),
-					
-						function(){
-							oModel.setProperty("/attachments/attachment2/fileName", null);
-							oModel.setProperty("/attachments/attachment2/fileContent", null);
-					// optional: if you mirror filename in claim_item
-					oModel.setProperty("/claim_item/attachment_file_2", null);
-						}.bind(this)
-					);
-				},
+			this._sDeleteTarget = "2";
+			this._openDeleteAttachmentDialog();
+		},
+
+		_openDeleteAttachmentDialog: function () {
+		if (!this._oDeleteAttachmentDialog) {
+			Fragment.load({
+				name: "claima.fragment.deleteattachment",
+				id: "deleteAttachmentDialogFrag",
+				controller: this
+			}).then(function (oDialog) {
+				this._oDeleteAttachmentDialog = oDialog;
+				this.getView().addDependent(oDialog);
+				oDialog.open();
+			}.bind(this));
+		} else {
+			this._oDeleteAttachmentDialog.open();
+		}
+	},
+
+		onConfirmDeleteAttachment: async function () {
+			var oModel = this.getView().getModel("claimitem_input");
+			var sIndex = this._sDeleteTarget; // "1" or "2"
+
+			try {
+				// 1️⃣ Get SF Attachment ID
+				const sAttachmentId = oModel.getProperty(
+					`/claim_item/attachment_file_${sIndex}_attachment_id`
+				);
+
+				// 2️⃣ Delete from SuccessFactors FIRST
+				if (sAttachmentId) {
+					await Attachment.deleteAttachment(sAttachmentId);
+				}
+
+				// 3️⃣ Clear local/UI model
+				oModel.setProperty(`/attachments/attachment${sIndex}/fileName`, null);
+				oModel.setProperty(`/attachments/attachment${sIndex}/fileContent`, null);
+				oModel.setProperty(`/claim_item/attachment_file_${sIndex}`, null);
+				oModel.setProperty(`/claim_item/attachment_file_${sIndex}_attachment_id`, null);
+
+				// 4️⃣ Refresh UI
+				oModel.refresh(true);
+
+				// 5️⃣ Close dialog
+				this._oDeleteAttachmentDialog.close();
+
+			} catch (e) {
+				MessageBox.error(
+					e.message || Utility.getText("msg_claiminput_attachment_delete_error")
+				);
+			}
+		},
 
 		/**
 		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
