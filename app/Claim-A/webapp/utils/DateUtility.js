@@ -705,10 +705,11 @@ sap.ui.define([
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                         _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
                                 }
+                            } else {
+                                _dMaxDate = new Date();
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("error_trip_end_date_in_future"));
                             }
-                            _dMaxDate = new Date();
-                            _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                _oResourceBundle.getText("error_trip_end_date_in_future"));
                             break;
                     }
                     break;
