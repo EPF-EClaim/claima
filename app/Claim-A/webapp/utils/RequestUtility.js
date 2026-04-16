@@ -71,7 +71,7 @@ sap.ui.define([
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem  = oReqModel.getProperty("/req_item");
             const aReqPart  = oReqModel.getProperty("/participant");
-            let calculatedAllocAmount;
+            let fCalculatedAllocatedAmount;
 
             if (oReqModel.getProperty("/view") === Constants.PARMode.CREATE ||
                 oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
@@ -79,25 +79,35 @@ sap.ui.define([
                     case Constants.ClaimTypeItem.LODGING_L:
                     case Constants.ClaimTypeItem.LODG_O:
                         // calculate lodging amount
-                        calculatedAllocAmount = await this._retrieveLodgingAmount();
+                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
                         break;
 
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
-                        calculatedAllocAmount = await this._retrieveEntitlementAmount();
+                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
                         if (oReqItem.currency_rate) {
-                            calculatedAllocAmount = calculatedAllocAmount * parseFloat(oReqItem.currency_rate);
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
                         }
                         break;
                     
                     case Constants.ClaimTypeItem.LAUT:
                         this._getEntitledMeterCube();
                         break;
+
+                    case Constants.ClaimTypeItem.DARAT:
+                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
+                        if (oResult) {
+                            fCalculatedAllocatedAmount = oResult.fAmount;
+                            oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
+                            // check if using minimum eligible amount, show notification
+                            if (oResult.bMinimum) MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+                        }
+                        break;
                     
                     default:
                         // calculate kilometer amount 
-                        calculatedAllocAmount = this._calculateKilometer(oReqItem);
+                        fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
                         break;
 
                 }
@@ -105,11 +115,11 @@ sap.ui.define([
 
 
             // populate allocated amount
-            if (calculatedAllocAmount) {
+            if (fCalculatedAllocatedAmount) {
                 aReqPart.forEach((row, index) => {
                     if (row.PARTICIPANTS_ID) {
                         oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`,
-                            parseFloat(calculatedAllocAmount).toFixed(2)
+                            parseFloat(fCalculatedAllocatedAmount).toFixed(2)
                         );
                     }
                 });
@@ -228,7 +238,7 @@ sap.ui.define([
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
 
-            if (!nTravelDay || !nTravelHour || !sRegion) return;
+            if (!nTravelHour || !sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getAmountEntitlement(...)");
             
@@ -241,7 +251,7 @@ sap.ui.define([
 			oFunction.setParameter("lunch", nLunch);
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
-            oFunction.setParameter("tips", false);
+            oFunction.setParameter("exclude_tips", true);
             oFunction.setParameter("dependent", 0);
 
             try {
