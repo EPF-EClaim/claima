@@ -1428,16 +1428,14 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { sClaimType, sClaimTypeItem } = req.data;
 
-        try {
-            if (!oEmp) {
-                req.error(404, `No employee data found.`);
-            }
-            else {
+        if (!oEmp) {
+            req.error(404, `No employee data found.`);
+        }
+        else {
+            try {
                 const sTodayDate = new Date().toISOString().slice(0, 10);
                 var aPersonalGradeFilters = [Constant.Wildcard.All];
-                if (!!oEmp.GRADE) {
-                    aPersonalGradeFilters.push(oEmp.GRADE);
-                }
+                if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
 
                 const oEligibilityRule = await SELECT.one
                     .from(Constant.Entities.ZELIGIBILITY_RULE)
@@ -1453,9 +1451,7 @@ module.exports = (srv) => {
                         // values to filter
                         PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
                     })
-                    .orderBy([
-                        { ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }
-                    ]);
+                    .orderBy([{ ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }]);
 
                 if (!oEligibilityRule) {
                     req.error(404, `Eligible amount not found for given employee.`);
@@ -1463,10 +1459,9 @@ module.exports = (srv) => {
                 else {
                     return oEligibilityRule.ELIGIBLE_AMOUNT;
                 }
+            } catch (error) {
+                req.error(500, 'An error occurred while checking Eligibility Rule table.');
             }
-
-        } catch (error) {
-            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
