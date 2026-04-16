@@ -2379,7 +2379,8 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
 				var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
 				// populate item values
-				oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
+				if (dEligibleAmount === null) return;
+				else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
@@ -3853,7 +3854,7 @@ sap.ui.define([
 
 				// run validator before proceeding 
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 				if (!bCanProceed) {
 					return;
 				}
