@@ -43,6 +43,9 @@ sap.ui.define([
 		* @returns {boolean} if records found, return true; else return false
 		*/
 		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
+			// no checking if course code toggle is used
+			if (!sCourseCode || !sSessionNumber) return false;
+
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({

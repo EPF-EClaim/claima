@@ -1051,6 +1051,7 @@ sap.ui.define([
 						"start_date": null,
 						"end_date": null
 					},
+					"skipcoursecode": null,
 					"descr": {
 						"type": null,
 						"item": null,

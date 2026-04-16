@@ -58,7 +58,8 @@
                     <Text
                         id="text_claiminput_course_code"
                         text="{claimsubmission_input>/claim_header/course_code} - {claimsubmission_input>/claim_header/descr/course_code}"
-                        visible="{= ${claimsubmission_input>/claim_header/course_code} !== null}"
+                        visible="{= ${claimsubmission_input>/claim_header/course_code} !== null &amp;&amp;
+                                !${claimsubmission_input>/skipcoursecode} }"
                     />
 
                     <!-- Session Number -->
@@ -66,7 +67,8 @@
                     <Text
                         id="text_claiminput_session_number"
                         text="{claimsubmission_input>/claim_header/session_number}"
-                        visible="{= ${claimsubmission_input>/claim_header/session_number} !== null}"
+                        visible="{= ${claimsubmission_input>/claim_header/session_number} !== null &amp;&amp;
+                                !${claimsubmission_input>/skipcoursecode} }"
                     />
 
                     <!-- Pre-Approval Request -->

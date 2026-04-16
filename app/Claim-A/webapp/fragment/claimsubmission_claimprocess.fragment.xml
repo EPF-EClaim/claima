@@ -92,6 +92,7 @@
                                 { path: 'COURSE_DESC' }
                             ]
                         }"
+                        editable="{= !${claimsubmission_input>/skipcoursecode} }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
                             ${claimsubmission_input>/claimtype/item} !== null
                         }"
@@ -122,6 +123,23 @@
                     >
                         <core:Item key="{employee>SESSION_NUMBER}" text="{employee>SESSION_NUMBER}" />
                     </Select>
+
+                    <!-- Skip Course Code? -->
+                    <Label text="{i18n>label_claimprocess_skipcoursecode}" />
+                    <Switch
+                        id="switch_claimprocess_skipcoursecode"
+                        state="{claimsubmission_input>/skipcoursecode}"
+                        customTextOn="{i18n>switch_claimprocess_skipcoursecode_yes}"
+                        customTextOff="{i18n>switch_claimprocess_skipcoursecode_no}"
+                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null
+                        }"
+                        change="onSwitch_ClaimProcess_SkipCourseCode"
+                    >
+                        <layoutData>
+                            <FlexItemData growFactor="1" />
+                        </layoutData>
+                    </Switch>
 
                     <!-- Select Request Form (Pre-Approval) -->
                     <Label text="{i18n>label_claimprocess_requestform}" />
@@ -187,7 +205,8 @@
                             ${claimsubmission_input>/claimtype/item} !== null &amp;&amp;
 
                     ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
-                        ( ${claimsubmission_input>/claimtype/course_code/course_id} !== null &amp;&amp; ${claimsubmission_input>/claimtype/course_code/session_number} !== null )) &amp;&amp;
+                        ${claimsubmission_input>/skipcoursecode} ||
+                            ( ${claimsubmission_input>/claimtype/course_code/course_id} !== null &amp;&amp; ${claimsubmission_input>/claimtype/course_code/session_number} !== null )) &amp;&amp;
 
                     ( ( ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                         ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;

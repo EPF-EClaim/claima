@@ -336,6 +336,7 @@ sap.ui.define([
 						"start_date": null,
 						"end_date": null
 					},
+					"skipcoursecode": null,
 					"descr": {
 						"type": null,
 						"item": null,
@@ -583,6 +584,21 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		* On enabling Skip Course Code, reset values for course code
+		* @public
+		*/
+		onSwitch_ClaimProcess_SkipCourseCode: function (oEvent) {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			if (!!oInputModel.getProperty("/skipcoursecode")) {
+				// reset course code
+				if (oInputModel.getProperty("/claimtype/course_code/course_id") !== null) {
+					oInputModel.setProperty("/claimtype/course_code/course_id", null);
+					this.onSelect_ClaimProcess_CourseCode();
+				}
+			}
+		},
+
 		onSelect_ClaimProcess_ClaimItem: function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -746,9 +762,12 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
-			// default undefined switch to false
+			// default undefined switches to false
 			if (oInputModel.getProperty("/req_emailapprove") === undefined) {
 				oInputModel.setProperty("/req_emailapprove", false);
+			}
+			if (oInputModel.getProperty("/skipcoursecode") === undefined) {
+				oInputModel.setProperty("/skipcoursecode", false);
 			}
 
 			//check if the same Request ID has been submitted for claim submission
