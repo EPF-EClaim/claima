@@ -454,11 +454,8 @@
                                             visible="false"
                                             id="i_no_of_family_member" >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number"
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/no_of_family_member}"/>
+                                        <Text
+                                            text="{request>/req_item/no_of_family_member}"/>
                                     </form:fields>
                                 </form:FormElement>
 
