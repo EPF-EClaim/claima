@@ -928,7 +928,6 @@ module.exports = (srv) => {
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
         var total_tips = 0;
-        let total_daily_allowance = 0;
 
         //get employee personal grade 
         const result = await tx.run(
@@ -990,7 +989,6 @@ module.exports = (srv) => {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
                     if (time_difference >= 8.0 && time_difference < 24.0) {
                         daily_allowance = entitlement.AMOUNT / 2;
-                        total_daily_allowance = 1;
                     }
                     meal_allowance += daily_allowance;
                 }
@@ -1012,14 +1010,14 @@ module.exports = (srv) => {
                 //to include tips calculation (15%) from total entitlement
                 // only applicable for claim submission
                 // if true, exclude tips and set total tips to be 0. Else, include 15% tips
-                if (!req.data.tips) {
+                if (!req.data.exclude_tips) {
                     total_tips = 0.15 * total_meal_allowance;
                     total_meal_allowance += total_tips;
                 }
 
                 return {
                     amount: total_meal_allowance,
-                    daily_allowance: total_daily_allowance,
+                    daily_allowance: daily_allowance,
                     currency_code: entitlement.CURRENCY,
                     tips_amount: total_tips
                 }
