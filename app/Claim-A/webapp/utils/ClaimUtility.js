@@ -353,7 +353,7 @@ sap.ui.define([
 
 			} catch (oError) {
 				MessageToast.show(oError);
-				dResult = 0.00;
+				dResult = null;
 			} finally {
 				BusyIndicator.hide();
 			}
