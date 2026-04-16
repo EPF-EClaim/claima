@@ -197,7 +197,7 @@ sap.ui.define([
                             oEditableFields.setProperty("/endTrip", bEdit);
                         }
                         const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-                        if ( !sDefaultCostCenter ){
+                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
                             oEditableFields.setProperty("/altCostCenter", bEdit);
                         }
                         oEditableFields.setProperty("/saveHeader", bEdit);
@@ -226,7 +226,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/startTrip", bEdit);
                         oEditableFields.setProperty("/endTrip", bEdit);
                         const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
-                        if ( !sDefaultCostCenter ){
+                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
                             oEditableFields.setProperty("/altCostCenter", bEdit);
                         }
                         oEditableFields.setProperty("/saveHeader", bEdit);
