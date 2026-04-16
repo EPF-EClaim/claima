@@ -274,6 +274,8 @@ sap.ui.define([
             "STUDENT": "STUDENT",
             "EMP_ID": "EMP_ID",
             "REGION_ID": "REGION_ID",
+            "TRIP_START_DATE" : "TRIP_START_DATE",
+            "TRIP_END_DATE" : "TRIP_END_DATE",
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS"
         },
         "Operators": {

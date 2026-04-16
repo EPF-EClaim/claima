@@ -93,7 +93,16 @@
                     />
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
-                        value="{claimsubmission_input>/claim_header/trip_start_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/trip_start_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                },
+                                pattern:'dd-MMM-yyyy'
+                            }
+                        }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                     ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                     ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
@@ -104,14 +113,52 @@
                         }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
-                        />
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
+                    >
+                        <customData>
+                            <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/TRIP_START_DATE/customErrorMessage}" />
+                            <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/TRIP_START_DATE/customMinDateError}" />
+                            <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/TRIP_START_DATE/customMaxDateError}" />						
+                        </customData>
+                    </DatePicker>
 
                     <!-- Trip End Date -->
                     <Label text="{i18n>label_claiminput_tripenddate}"
                            tooltip="{i18n>valuehelp_claiminput_tripdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
-                        value="{claimsubmission_input>/claim_header/trip_end_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/trip_end_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                },
+                                pattern:'dd-MMM-yyyy'
+                            }
+                        }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
@@ -122,7 +169,36 @@
                         }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
-                        />
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
+                    >
+                        <customData>
+                            <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/TRIP_END_DATE/customErrorMessage}" />
+                            <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/TRIP_END_DATE/customMinDateError}" />
+                            <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/TRIP_END_DATE/customMaxDateError}" />						
+                        </customData>
+                    </DatePicker>
 
                     <!-- Event Start Date -->
                     <Label text="{i18n>label_claiminput_eventstartdate}"
@@ -194,11 +270,51 @@
                     <Label text="{i18n>label_claiminput_move_in_date}" />
                     <DatePicker
                         id="datepicker_claiminput_move_in_date"
-                        value="{claimsubmission_input>/claim_header/move_in_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/move_in_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                },
+                                pattern:'dd-MMM-yyyy'
+                            }
+                        }"
+                        showCurrentDateButton="true"
+                        displayFormat="yyyy-MM-dd" 
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
-                        displayFormat="dd-MMM-yyyy"
-                    />
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/MOVE_IN_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/MOVE_IN_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
+                    >
+                        <customData>
+                            <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/MOVE_IN_DATE/customErrorMessage}" />
+                            <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/MOVE_IN_DATE/customMinDateError}" />
+                            <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/MOVE_IN_DATE/customMaxDateError}" />						
+                        </customData>
+                    </DatePicker>
 
                     <!-- Location -->
                     <Label text="{i18n>label_claiminput_location}" />
