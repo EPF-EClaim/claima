@@ -386,11 +386,13 @@ sap.ui.define([
 		/**
 		 * Retrieve eligible amount for user selecting lodging claim type item, based on Employee Grade
 		 * @public
-		 * @param {String} sClaimType - claim type of selected item
-		 * @param {String} sClaimTypeItem - claim type item of selected item
 		 * @return {Decimal} - returns eligible amount retrieved from table
 		 */
-		fetchUserAmountLodging: async function (sClaimType, sClaimTypeItem) {
+		fetchUserAmountLodging: async function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimType = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
 			// get eligible amount based on current user
 			var dResult = 0.00;
 			try {

@@ -2371,10 +2371,7 @@ sap.ui.define([
 
 			// if claim type item is lodging, retrieve eligible amount
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging(
-					oInputModel.getProperty("/claim_item/claim_type_id"),
-					oInputModel.getProperty("/claim_item/claim_type_item_id")
-				));
+				oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 			}
 
 			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
