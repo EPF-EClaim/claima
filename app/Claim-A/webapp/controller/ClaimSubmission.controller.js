@@ -3238,12 +3238,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging(
-					oInputModel.getProperty("/claim_item/claim_type_item_id"),
-					oInputModel.getProperty("/claim_item/eligible_amount"),
-					oInputModel.getProperty("/claim_item/no_of_days"),
-					oInputModel.getProperty("/claim_item/no_of_family_member")
-				));
+				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {

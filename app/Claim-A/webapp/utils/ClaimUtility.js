@@ -420,13 +420,15 @@ sap.ui.define([
 		/**
 		 * Calculate approved amount for lodging based on params
 		 * @public
-		 * @param {String} sClaimTypeItem - claim type item of selected item
-		 * @param {Decimal} dEligibleAmount - eligible amount set for employee
-		 * @param {Integer} iNoOfDays - number of days retrieved from claim item
-		 * @param {Integer} iNoOfFamilyMembers - optional, number of family members retrieved from claim item (used for lodging pertukaran)
 		 * @return {Decimal} dResult - returns approved amount based on above parameters
 		 */
-		calculateAmountLodging: function (sClaimTypeItem, dEligibleAmount, iNoOfDays, iNoOfFamilyMembers) {
+		calculateAmountLodging: function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
+			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
+			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/no_of_family_member");
+
 			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
 
 			// calculate approved amount
