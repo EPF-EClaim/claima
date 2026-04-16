@@ -3135,6 +3135,10 @@ sap.ui.define([
 			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
+		/**
+		 * Deletes the selected claim attachment after user confirmation
+		 * @public
+		 */
 		onDelete_Claim_Attachment_1: function () {
 			this._sDeleteTarget = "1";
 			this._openDeleteAttachmentDialog();
@@ -3146,53 +3150,45 @@ sap.ui.define([
 		},
 
 		_openDeleteAttachmentDialog: function () {
-		if (!this._oDeleteAttachmentDialog) {
-			Fragment.load({
-				name: "claima.fragment.deleteattachment",
-				id: "deleteAttachmentDialogFrag",
-				controller: this
-			}).then(function (oDialog) {
-				this._oDeleteAttachmentDialog = oDialog;
-				this.getView().addDependent(oDialog);
-				oDialog.open();
-			}.bind(this));
-		} else {
-			this._oDeleteAttachmentDialog.open();
-		}
-	},
+			if (!this._oDeleteAttachmentDialog) {
+				Fragment.load({
+					name: "claima.fragment.deleteattachment",
+					id: "deleteAttachmentDialogFrag",
+					controller: this
+				}).then(function (oDialog) {
+					this._oDeleteAttachmentDialog = oDialog;
+					this.getView().addDependent(oDialog);
+					oDialog.open();
+				}.bind(this));
+			} else {
+				this._oDeleteAttachmentDialog.open();
+			}
+		},
 
 		onConfirmDeleteAttachment: async function () {
-			var oModel = this.getView().getModel("claimitem_input");
-			var sIndex = this._sDeleteTarget; // "1" or "2"
+			const oModel = this.getView().getModel("claimitem_input");
+			const sIndex = this._sDeleteTarget; // "1" or "2"
 
 			try {
-				// 1️⃣ Get SF Attachment ID
-				const sAttachmentId = oModel.getProperty(
-					`/claim_item/attachment_file_${sIndex}_attachment_id`
-				);
-
-				// 2️⃣ Delete from SuccessFactors FIRST
-				if (sAttachmentId) {
-					await Attachment.deleteAttachment(sAttachmentId);
-				}
-
-				// 3️⃣ Clear local/UI model
 				oModel.setProperty(`/attachments/attachment${sIndex}/fileName`, null);
 				oModel.setProperty(`/attachments/attachment${sIndex}/fileContent`, null);
 				oModel.setProperty(`/claim_item/attachment_file_${sIndex}`, null);
 				oModel.setProperty(`/claim_item/attachment_file_${sIndex}_attachment_id`, null);
+				oModel.setProperty(`/claim_item/_del_attachment_${sIndex}`, true);
 
-				// 4️⃣ Refresh UI
 				oModel.refresh(true);
-
-				// 5️⃣ Close dialog
-				this._oDeleteAttachmentDialog.close();
 
 			} catch (e) {
 				MessageBox.error(
 					e.message || Utility.getText("msg_claiminput_attachment_delete_error")
 				);
+			} finally {
+				this._oDeleteAttachmentDialog.close();
 			}
+		},
+
+		onCancelDeleteAttachment: function () {
+			this._oDeleteAttachmentDialog.close();
 		},
 
 		/**

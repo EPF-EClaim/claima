@@ -242,10 +242,10 @@
                                         id="i_attachment1_link" 
                                         press="onDocLinkPress" 
                                         text="{request>/req_item/doc1_filename}"
-                                        visible="{= ${request>/req_item/doc1} !== null }">
+                                        visible="{= !!${request>/req_item/doc1_filename} }" >
                                             
                                     <layoutData>
-                                            <form:ColumnElementData cellsLarge="5" cellsSmall="10"/>
+                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
                                     </layoutData>
                                     </Link>
 
@@ -254,12 +254,13 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment1"
-                                            visible="{= ${request>/view} !== 'view'}">
-                                        
+                                            visible="{= !!${request>/req_item/doc1_filename} }" >
+                                    
                                             <layoutData>
-                                                <form:ColumnElementData cellsLarge="3" cellsSmall="2"/>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
                                             </layoutData>
                                     </Button>
+                                   
                                     </form:fields>
                                 </form:FormElement>
 
@@ -306,9 +307,9 @@
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc2_filename}"
-                                            visible="{= ${request>/req_item/doc2} !== null }" >
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
                                          <layoutData>
-                                            <form:ColumnElementData cellsLarge="5" cellsSmall="10"/>
+                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
                                         </layoutData>
                                         </Link>
                                          <Button
@@ -316,10 +317,10 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment2"
-                                            visible="{= ${request>/req_item/doc2} !== null &amp;&amp;${request>/view} === 'edit'}">
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
                                         
                                             <layoutData>
-                                                <form:ColumnElementData cellsLarge="3" cellsSmall="2"/>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
                                             </layoutData>
                                         </Button>
                                     </form:fields>

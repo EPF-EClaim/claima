@@ -1447,15 +1447,14 @@
                 />
                 
                 <Link
-                    width="90%"
                     id="link_claimdetails_input_attachment_file_1"
                     press="onView_Claim_Attachment('child','1')"
                     text="{claimitem_input>/claim_item/attachment_file_1}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
                 />
-
+                <!-- Attachment 1 delete button -->
                 <Button
-                    width="10%"
+                    width="5%"
                     icon="sap-icon://delete"
                     type="Transparent"
                     tooltip="Delete attachment"
@@ -1492,14 +1491,13 @@
                     }"
                 />
 
-
                 <Link
                     id="link_claimdetails_input_attachment_file_2"
                     press="onView_Claim_Attachment('child','2')"
                     text="{claimitem_input>/claim_item/attachment_file_2}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
                 />
-
+                <!-- Attachment 2 delete button -->
                 <Button
                     width="10%"
                     icon="sap-icon://delete"
