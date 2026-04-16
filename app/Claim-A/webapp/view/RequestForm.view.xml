@@ -68,13 +68,13 @@
                                 <form:formElements>
                                     <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_tripstartdate}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripstartdate}" required="true" editable="{reqHeaderEditableModel>/startTrip}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_tripenddate}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripenddate}" required="true" editable="{reqHeaderEditableModel>/endTrip}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_eventstartdate}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventstartdate}" 
+                                    <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripstartdate}" required="true" editable="{reqHeaderEditableModel>/startTrip}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripenddate}" required="true" editable="{reqHeaderEditableModel>/endTrip}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventstartdate}" 
                                                                                                                  required="{reqHeaderEditableModel>/startEventRequired}"
                                                                                                                  editable="{reqHeaderEditableModel>/startEvent}"    
                                     /></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_eventenddate}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventenddate}" 
+                                    <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventenddate}" 
                                                                                                                required="{reqHeaderEditableModel>/endEventRequired}" 
                                                                                                                editable="{reqHeaderEditableModel>/endEvent}"                  
                                     /></form:fields></form:FormElement>
