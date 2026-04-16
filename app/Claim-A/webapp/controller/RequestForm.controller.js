@@ -1155,7 +1155,7 @@ sap.ui.define([
                     ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
                     ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
 					CURRENCY_CODE:				  oReqItem.currency_code || null,
-					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || 0),
+					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
 				};
 
@@ -2129,12 +2129,14 @@ sap.ui.define([
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
+						case Constants.ClaimTypeItem.LOD_TUKAR:
 							RequestUtility.populateAllocatedAmount();
 
 						case Constants.ClaimTypeItem.HOTEL_L:
 						case Constants.ClaimTypeItem.HOTEL_O:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
+						case Constants.ClaimTypeItem.LOD_TUKAR:
 							var iNumberOfNight = iDiffDays - 1;
 							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
@@ -2628,6 +2630,34 @@ sap.ui.define([
 			this.byId("i_attachment_1_file").setRequired(true);
 
         },
+
+		/**
+		 * change event to calculate No of days
+		 * @public
+		 */
+		onSelectDate: function () {
+			const _oHeader = this._oReqModel.getProperty("/req_header") || {};
+			const _oItem = this._oReqModel.getProperty("/req_item") || {};
+			var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
+			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+			switch (_oItem.claim_type_item_id) {
+				case Constants.ClaimTypeItem.HOTEL_L:
+				case Constants.ClaimTypeItem.HOTEL_O:
+				case Constants.ClaimTypeItem.LODGING_L:
+				case Constants.ClaimTypeItem.LODG_O:
+				case Constants.ClaimTypeItem.LOD_TUKAR:
+					var iNumberOfNight = iDiffDays - 1;
+					this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
+					break;
+			
+				default:
+					break;
+			}
+
+			// run populate allocated amount if applicable
+			RequestUtility.populateAllocatedAmount();
+		}
 
 	});
 });

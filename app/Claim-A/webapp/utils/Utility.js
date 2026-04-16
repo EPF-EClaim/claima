@@ -279,7 +279,10 @@ sap.ui.define([
 			const oModel = this._oOwnerComponent.getModel();
             const oContext = oModel.bindContext("/getNumberOfFamilyMembers(...)");
 
-            if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN) {
+            if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN || 
+                sClaimType === Constants.ClaimTypeItem.MKN_TUKAR || 
+                sClaimType === Constants.ClaimTypeItem.LOD_TUKAR
+            ) {
 			    oContext.setParameter("IND", Constants.DependentIndicator.Spouse_Child); //Get count of spouse and children + self
             } 
 
