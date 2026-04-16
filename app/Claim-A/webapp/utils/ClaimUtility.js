@@ -261,7 +261,7 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 			oContext.setParameter("employeeid", sEEID);
 			oContext.setParameter("dependent", nDependent);
-			oContext.setParameter("tips", bTips);
+			oContext.setParameter("exclude_tips", bTips);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
