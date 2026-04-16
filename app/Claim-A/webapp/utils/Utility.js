@@ -295,6 +295,55 @@ sap.ui.define([
 		},
 
 		/**
+		* Set filters for state and office location when values found for existing claim item
+		* @public
+		* @param {Object} oView - view from claim or PAR
+		* @param {Object} oItem - claim item data containing claim type item ID
+		*/
+		setFiltersExistingStateLocation: function (oView, oItem) {
+            // set filters
+            var sFromState = oItem.from_state_id || oItem.from_state;
+            var sFromOffice = oItem.from_location_office;
+            var sToState = oItem.to_state_id || oItem.to_state;
+
+			if (!sFromState || !sFromOffice || !sToState) return;
+
+            // set selection fields
+            var oSelectFromLoc = oView.byId("select_claimdetails_input_from_location") || oView.byId("item_from_location_office");
+            var oSelectToState = oView.byId("select_claimdetails_input_to_state_id") || oView.byId("item_to_state");
+            var oSelectToLoc = oView.byId("select_claimdetails_input_to_location") || oView.byId("item_to_location_office");
+
+			if (!oSelectFromLoc || !oSelectToState || !oSelectToLoc) return;
+
+			// filter From Location (Office)
+			var oBindingFromLoc = oSelectFromLoc?.getBinding("items");
+			var aFiltersFromLoc = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.STATE_ID, FilterOperator.EQ, sFromState)
+			];
+			oBindingFromLoc?.filter(aFiltersFromLoc);
+
+			// filter To State
+			var oBindingToState = oSelectToState?.getBinding("items");
+			var aFiltersToState = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
+			];
+			oBindingToState?.filter(aFiltersToState);
+
+			// filter To Location (Office)
+			var oBindingToLoc = oSelectToLoc?.getBinding("items");
+			var aFiltersToLoc = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
+				new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
+			];
+			oBindingToLoc?.filter(aFiltersToLoc);
+		},
+
+		/**
 		 * Retrieve mileage based on selected office locations
 		 * @public
 		 * @param {String} sFromState - value of From State

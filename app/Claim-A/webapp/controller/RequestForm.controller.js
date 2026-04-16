@@ -2124,6 +2124,9 @@ sap.ui.define([
 
 					this._onFilterRegion();
 
+					// set filters for state and location (office) fields if values exist
+					Utility.setFiltersExistingStateLocation(this.getView(), this._oReqModel.getProperty("/req_item"));
+
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.LAUT:
@@ -2521,6 +2524,7 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_state");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
+								new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
                                 new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
                                 new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
                             ]: [];
@@ -2541,6 +2545,7 @@ sap.ui.define([
 			const oSelect   = this.byId("item_to_location_office");
 			const oBinding  = oSelect.getBinding("items");
 			const aFilters  = oSelect ? [
+								new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
                                 new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
                                 new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
                                 new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)

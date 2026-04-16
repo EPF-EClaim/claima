@@ -142,52 +142,6 @@ sap.ui.define([
 		},
 
 		/**
-		* Set filters for state and office location when values found for existing claim item
-		* @public
-		*/
-		setFiltersExistingStateLocation: function () {
-			var oInputModel = this._oView.getModel("claimitem_input");
-			if (!oInputModel) return;
-
-			// set filters
-			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
-			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
-			var sToState = oInputModel.getProperty("/claim_item/to_state_id");
-
-			if (!sFromState || !sFromOffice || !sToState) return;
-
-			// filter From Location (Office)
-			var oSelectFromLoc = this._oView.byId("select_claimdetails_input_from_location");
-			var oBindingFromLoc = oSelectFromLoc?.getBinding("items");
-			var aFiltersFromLoc = [
-				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
-				new Filter(Constant.EntitiesFields.STATE_ID, FilterOperator.EQ, sFromState)
-			];
-			oBindingFromLoc?.filter(aFiltersFromLoc);
-
-			// filter To State
-			var oSelectToState = this._oView.byId("select_claimdetails_input_to_state_id");
-			var oBindingToState = oSelectToState?.getBinding("items");
-			var aFiltersToState = [
-				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
-				new Filter(Constant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
-				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
-			];
-			oBindingToState?.filter(aFiltersToState);
-
-			// filter To Location (Office)
-			var oSelectToLoc = this._oView.byId("select_claimdetails_input_to_location");
-			var oBindingToLoc = oSelectToLoc?.getBinding("items");
-			var aFiltersToLoc = [
-				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
-				new Filter(Constant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
-				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
-				new Filter(Constant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
-			];
-			oBindingToLoc?.filter(aFiltersToLoc);
-		},
-
-		/**
 		* Check if current user ID has previously approved claim with elaun pengangkutan claim item
 		* Method retrieves db table to be checked with fields and values to be filtered against
 		* if records found and have been approved, return true; else, return false

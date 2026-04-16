@@ -2476,7 +2476,7 @@ sap.ui.define([
 
 			// set filters for state and location (office) if existing claim item uses KWSP Office
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
-				ClaimUtility.setFiltersExistingStateLocation();
+				Utility.setFiltersExistingStateLocation(this.getView(), oInputModel.getProperty("/claim_item"));
 			}
 
 			//for tambang excluding flight
