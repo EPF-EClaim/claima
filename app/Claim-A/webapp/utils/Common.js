@@ -225,7 +225,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/comment", bEdit);
                         oEditableFields.setProperty("/startTrip", bEdit);
                         oEditableFields.setProperty("/endTrip", bEdit);
-                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
+                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtype"))
                         if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
                             oEditableFields.setProperty("/altCostCenter", bEdit);
                         }
