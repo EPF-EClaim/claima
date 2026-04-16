@@ -446,4 +446,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
     //IND1 - Spouse_Child
     function getNumberOfFamilyMembers(IND: String)                                             returns Integer;
 
+    function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
+
 };

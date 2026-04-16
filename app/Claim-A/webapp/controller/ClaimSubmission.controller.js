@@ -3151,6 +3151,8 @@ sap.ui.define([
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
 				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			} else if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+				ClaimUtility.fetchPemberianPindahAmount(oInputModel);
 			}
 
 		},
@@ -3439,7 +3441,12 @@ sap.ui.define([
 		},
 
 		onSelect_ClaimDetails_Region: async function () {
-			await this._calculatePerDiem();
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH){
+				ClaimUtility.fetchPemberianPindahAmount(oInputModel);
+			} else {
+				await this._calculatePerDiem();
+			}
 		},
 
 		_calculatePerDiem: async function () {
