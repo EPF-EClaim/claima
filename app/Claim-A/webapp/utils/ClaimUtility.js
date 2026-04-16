@@ -578,6 +578,44 @@ sap.ui.define([
 			const oResult = await oContext.requestObject();
 
     		return oResult?.value ?? 0;
+		}, 
+
+		/**
+		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
+		 *
+		 * Calls backend calculation function using employee ID,region, marital status
+		 * and actual amount, then updates approved amount
+		 * in the claim item input model.
+		 *
+		 * @public
+		 * @returns Updates claim item fields upon completion
+		 */
+		fetchPemberianPindahAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
+			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
+			oContext.setParameter("region", oInputModel.getProperty("/claim_item/region"));
+
+			var nApprovedAmount = 0;
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					//get eligible amount
+					var nEligibleAmount = oResult.value;
+					var nPercentageComp = oInputModel.getProperty("/claim_item/percentage_compensation");
+
+					if (oInputModel.getProperty("/claim_item/actual_amount")) {
+						//calculate approved amount 
+						//use claimed amount if it is lower than eligible amount
+						if (oInputModel.getProperty("/claim_item/actual_amount") < nEligibleAmount) {
+							nApprovedAmount = (oInputModel.getProperty("/claim_item/actual_amount") * (nPercentageComp/100)).toFixed(2);
+						} else {
+							nApprovedAmount = (nEligibleAmount * (nPercentageComp/100)).toFixed(2);
+						}
+					}
+					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
+				});
 		}
+		
 	}
 });
