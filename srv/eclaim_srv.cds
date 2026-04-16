@@ -454,6 +454,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getPengangkutanDaratAmount(
                                         sRegion     : String,
                                         fKilometer  : Decimal(5, 2)
-                                    )                                                          returns DaratAmounts
+                                    )                                                          returns DaratAmounts;
+
+    function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
 
 };

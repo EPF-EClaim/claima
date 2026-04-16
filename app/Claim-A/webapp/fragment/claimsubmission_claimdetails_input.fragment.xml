@@ -281,7 +281,7 @@
                 />
                                 
                 <!-- Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
                 <Input
                     id="input_claimdetails_input_amount"
                     value="{
@@ -934,8 +934,7 @@
                     editable="{= !${claimsubmission_input>/view_only} }"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
-                            sorter: { path: 'TO_LOCATION_ID', descending: false },
-                            length: 1000}">
+                            sorter: { path: 'TO_LOCATION_ID', descending: false }}">
                     <items>
                         <core:Item key="{employee_view>TO_LOCATION_ID}" 
                         		   text="{employee_view>TO_LOCATION_DESC}" />
