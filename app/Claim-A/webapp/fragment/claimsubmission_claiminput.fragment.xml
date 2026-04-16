@@ -88,7 +88,7 @@
                     />
 
                     <!-- Trip Start Date -->
-                    <Label text="{i18n>label_claiminput_tripstartdate}"
+                    <Label text="{i18n>label_claiminput_tripstartdate} {i18n>icon_info}"
                            tooltip="{i18n>valuehelp_claiminput_tripdate}" 
                     />
                     <DatePicker
@@ -145,7 +145,7 @@
                     </DatePicker>
 
                     <!-- Trip End Date -->
-                    <Label text="{i18n>label_claiminput_tripenddate}"
+                    <Label text="{i18n>label_claiminput_tripenddate} {i18n>icon_info}"
                            tooltip="{i18n>valuehelp_claiminput_tripdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
@@ -201,7 +201,7 @@
                     </DatePicker>
 
                     <!-- Event Start Date -->
-                    <Label text="{i18n>label_claiminput_eventstartdate}"
+                    <Label text="{i18n>label_claiminput_eventstartdate} {i18n>icon_info}"
                            tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
@@ -214,7 +214,7 @@
                         />
 
                     <!-- Event End Date -->
-                    <Label text="{i18n>label_claiminput_eventenddate}"
+                    <Label text="{i18n>label_claiminput_eventenddate} {i18n>icon_info}"
                            tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
@@ -240,6 +240,7 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         change="onSelect_ClaimHeader"
                         liveChange="onSelect_ClaimHeader"
                     >
@@ -260,11 +261,22 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"                        
                         change="onSelect_ClaimHeader"
                         liveChange="onSelect_ClaimHeader"
                     >
                         <core:Item key="{employee>LENDER_ID}" text="{employee>LENDER_NAME}" />
                     </Select>
+
+                    <!-- Specify Details -->
+                    <Label text="{i18n>label_claiminput_specify_details}" />
+                    <Input
+                        id="input_claiminput_specify_details"
+                        value="{claimsubmission_input>/claim_header/specify_details}"
+                        placeholder="{i18n>placeholder_claiminput_specify_details}"
+                        visible="{= ${claimsubmission_input>/claim_header/lender_name} === ${constant>/LenderName/FINANCIAL_INSTITUTION}}"
+                        required="{= ${claimsubmission_input>/claim_header/lender_name} === ${constant>/LenderName/FINANCIAL_INSTITUTION}}"
+                    />
 
                     <!-- Move-In Date -->
                     <Label text="{i18n>label_claiminput_move_in_date}" />

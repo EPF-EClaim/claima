@@ -100,7 +100,7 @@
 
                 <!-- Trip Start Date -->
                 <Label
-                    text="{i18n>label_claimsummary_claimheader_tripstartdate}"
+                    text="{i18n>label_claimsummary_claimheader_tripstartdate} {i18n>icon_info}"
                     required="true"
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
@@ -117,7 +117,7 @@
 
                 <!-- Trip End Date -->
                 <Label
-                    text="{i18n>label_claimsummary_claimheader_tripenddate}"
+                    text="{i18n>label_claimsummary_claimheader_tripenddate} {i18n>icon_info}"
                     required="true"
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
@@ -133,7 +133,7 @@
 
                 <!-- Event Start Date -->
                 <Label
-                    text="{i18n>label_claimsummary_claimheader_eventstartdate}"
+                    text="{i18n>label_claimsummary_claimheader_eventstartdate} {i18n>icon_info}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
                 <DatePicker
@@ -148,7 +148,7 @@
 
                 <!-- Event End Date -->
                 <Label
-                    text="{i18n>label_claimsummary_claimheader_eventenddate}"
+                    text="{i18n>label_claimsummary_claimheader_eventenddate} {i18n>icon_info}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
                 <DatePicker
