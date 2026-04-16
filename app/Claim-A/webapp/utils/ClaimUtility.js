@@ -228,36 +228,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getNumberOfFamilyMembers: async function (sEmpId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
-				new Sorter("DEPENDENT_NO")
-			], [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
-			]);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				return aContexts.length;
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
-				return 0;
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
+		
 		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
@@ -607,25 +578,5 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}, 
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getSpouseChildNo: async function () {
-			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
-			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
-			
- 			await oContext.execute();
-
-   		 	// Read return value
-			const oResult = await oContext.requestObject();
-
-    		return oResult?.value ?? 0;
-		}
 	}
 });
