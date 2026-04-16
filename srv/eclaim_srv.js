@@ -1289,7 +1289,7 @@ module.exports = (srv) => {
                 ]);
 
             if (!oRatePerKm) {
-                return req.error(404, `Rate per km not found for given vehicle type.`);
+                req.error(404, `Rate per km not found for given vehicle type.`);
             }
 
             return {
@@ -1298,7 +1298,7 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Rate per KM table.');
+            req.error(500, 'An error occurred while checking Rate per KM table.');
         }
     });
 
@@ -1353,13 +1353,13 @@ module.exports = (srv) => {
                 ]);
 
             if (!oEligibilityRule) {
-                return req.error(404, `Eligible amount not found for given employee.`);
+                req.error(404, `Eligible amount not found for given employee.`);
             }
 
             return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
@@ -1396,13 +1396,13 @@ module.exports = (srv) => {
                 ]);
 
             if (!aClaimSubmissions) {
-                return req.error(404, `Unable to retrieve previous claims.`);
+                req.error(404, `Unable to retrieve previous claims.`);
             }
 
             return (aClaimSubmissions.length > 0) ? aClaimSubmissions[0].ZCLAIM_HEADER.STATUS_ID : null;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+            req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
         }
     });
 
@@ -1426,10 +1426,10 @@ module.exports = (srv) => {
                 return oRoute.MILEAGE;
             }
 
-            return req.error(404, 'No distance record found for the selected route.');
+            eq.error(404, 'No distance record found for the selected route.');
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+            req.error(500, `Failed to retrieve mileage: ${error.message}`);
         }
     });
 
@@ -1484,8 +1484,8 @@ module.exports = (srv) => {
             return true;
 
         } catch (error) {
-            console.error("Mass delete failed:", error);
-            return req.error(500, `Failed to delete participants: ${error.message}`);
+            return false;
+            req.error(500, `Failed to delete participants: ${error.message}`);
         }
     });
 
@@ -1517,7 +1517,7 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
+            req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
         }
     });
 
@@ -1758,7 +1758,7 @@ module.exports = (srv) => {
             const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
             
             if (!sMarriageCategory) {
-                return req.error(404, `No marriage category available for employee.`);
+                req.error(404, `No marriage category available for employee.`);
             }
 
             const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -1778,7 +1778,7 @@ module.exports = (srv) => {
             ]);
 
             if (!oEligibilityRule) {
-                return req.error(404, `Eligibility not found.`);
+                req.error(404, `Eligibility not found.`);
             }
 
             const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
@@ -1790,7 +1790,7 @@ module.exports = (srv) => {
                 bMinimum    : fCalculatedAmount < fMinimumEligibleAmount
             };
         } else {
-            return req.error(404, `Employee Not Found.`);
+            req.error(404, `Employee Not Found.`);
         }
     });
 }
