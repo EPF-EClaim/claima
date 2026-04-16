@@ -1790,7 +1790,6 @@ module.exports = (srv) => {
             req.error(404, `Employee Not Found.`);
         }
     });
-    }); 
 
      /**
      * Get eligible amount for employee on Elaun Pemberian Pindah, based on Marital Status
