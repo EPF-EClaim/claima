@@ -412,7 +412,8 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
@@ -534,5 +535,62 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}, 
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getSpouseChildNo: async function () {
+			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
+			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
+			
+ 			await oContext.execute();
+
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
+
+    		return oResult?.value ?? 0;
+		}, 
+
+		/**
+		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
+		 *
+		 * Calls backend calculation function using employee ID,region, marital status
+		 * and actual amount, then updates approved amount
+		 * in the claim item input model.
+		 *
+		 * @public
+		 * @returns Updates claim item fields upon completion
+		 */
+		fetchPemberianPindahAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
+			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
+			oContext.setParameter("region", oInputModel.getProperty("/claim_item/region"));
+
+			var nApprovedAmount = 0;
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					//get eligible amount
+					var nEligibleAmount = oResult.value;
+					var nPercentageComp = oInputModel.getProperty("/claim_item/percentage_compensation");
+
+					if (oInputModel.getProperty("/claim_item/actual_amount")) {
+						//calculate approved amount 
+						//use claimed amount if it is lower than eligible amount
+						if (oInputModel.getProperty("/claim_item/actual_amount") < nEligibleAmount) {
+							nApprovedAmount = (oInputModel.getProperty("/claim_item/actual_amount") * (nPercentageComp/100)).toFixed(2);
+						} else {
+							nApprovedAmount = (nEligibleAmount * (nPercentageComp/100)).toFixed(2);
+						}
+					}
+					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
+				});
+		},
 	}
 });

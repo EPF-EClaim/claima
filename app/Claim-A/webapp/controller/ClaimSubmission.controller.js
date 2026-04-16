@@ -3147,13 +3147,16 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				// set 'amount' property to % of actual amount based on percentage compensation
-				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+					ClaimUtility.fetchPemberianPindahAmount();
+				} else {
+					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				}
 			}
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
-			}
-
+				ClaimUtility.fetchPengangkutanLautAmount();
+			} 
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -3440,7 +3443,12 @@ sap.ui.define([
 		},
 
 		onSelect_ClaimDetails_Region: async function () {
-			await this._calculatePerDiem();
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH){
+				ClaimUtility.fetchPemberianPindahAmount();
+			} else {
+				await this._calculatePerDiem();
+			}
 		},
 
 		_calculatePerDiem: async function () {
