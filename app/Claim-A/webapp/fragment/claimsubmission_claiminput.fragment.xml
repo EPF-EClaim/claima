@@ -87,6 +87,26 @@
                                 !${claimsubmission_input>/req_emailapprove} }"
                     />
 
+                     <!-- Mode of Transfer -->
+                    <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
+                    <Select
+                        id="select_claiminput_mode_of_transfer"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claim_header/mode_of_transfer}"
+                        items="{
+                            path: 'employee>/ZTRANSFER_MODE',
+                            sorter: [
+                                { path: 'TRANSFER_MODE_ID' },
+                                { path: 'TRANSFER_MODE_DESC' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"                        
+                        change="onChange_ModeOfTransfer"
+                    >
+                        <core:Item key="{employee>TRANSFER_MODE_ID}" text="{employee>TRANSFER_MODE_DESC}" />
+                    </Select>
+
                     <!-- Trip Start Date -->
                     <Label text="{i18n>label_claiminput_tripstartdate} {i18n>icon_info}"
                            tooltip="{i18n>valuehelp_claiminput_tripdate}" 
@@ -188,7 +208,8 @@
                                 'claimsubmission_input>/claimtype/type',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item'
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
                             ],
                             formatter: '.DateUtility.determineMaxDate'
                         }"
@@ -335,26 +356,6 @@
                         value="{claimsubmission_input>/claim_header/location}"
                         placeholder="{i18n>placeholder_claiminput_location}"
                     />
-
-                     <!-- Mode of Transfer -->
-                    <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
-                    <Select
-                        id="select_claiminput_mode_of_transfer"
-                        forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claim_header/mode_of_transfer}"
-                        items="{
-                            path: 'employee>/ZTRANSFER_MODE',
-                            sorter: [
-                                { path: 'TRANSFER_MODE_ID' },
-                                { path: 'TRANSFER_MODE_DESC' }
-                            ]
-                        }"
-                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"                        
-                        change="onChange_ModeOfTransfer"
-                    >
-                        <core:Item key="{employee>TRANSFER_MODE_ID}" text="{employee>TRANSFER_MODE_DESC}" />
-                    </Select>
 
                     <!-- Alternate Cost Center -->
                     <Label text="{i18n>label_claiminput_altcc}" />

@@ -1,16 +1,21 @@
-<core:FragmentDefinition 
-	xmlns:unified="sap.ui.unified" 
-	xmlns:l="sap.ui.layout" 
-	xmlns:core="sap.ui.core" 
-	xmlns:mvc="sap.ui.core.mvc" 
-	xmlns="sap.m" 
-	xmlns:f="sap.ui.layout.form" 
+<core:FragmentDefinition
+	xmlns:unified="sap.ui.unified"
+	xmlns:l="sap.ui.layout"
+	xmlns:core="sap.ui.core"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
 	xmlns:mdc="sap.ui.mdc"
-    xmlns:mdcvh="sap.ui.mdc.valuehelp"
-    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content">
-	<Dialog title="{i18n>req_po_title}" contentWidth="50%" class="requestDialog">
-		<f:SimpleForm 
-            id="req_create_form"
+	xmlns:mdcvh="sap.ui.mdc.valuehelp"
+	xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+>
+	<Dialog
+		title="{i18n>req_po_title}"
+		contentWidth="50%"
+		class="requestDialog"
+	>
+		<f:SimpleForm
+			id="req_create_form"
 			editable="true"
 			layout="ResponsiveGridLayout"
 			labelSpanXL="4"
@@ -24,205 +29,355 @@
 			emptySpanS="0"
 			columnsXL="2"
 			columnsL="1"
-			columnsM="1" >
+			columnsM="1"
+		>
 			<f:content>
 				<Label text="{i18n>req_purpose}" />
-				<Input value="{reqDialog>/purpose}" required="true"/>
-
+				<Input
+					value="{reqDialog>/purpose}"
+					required="true"
+				/>
 				<Label text="{i18n>req_rtype}" />
-				<Select 
-						id="req_reqtype"
-						selectedKey="{reqDialog>/reqtype}" 
-						required="true" 
-						forceSelection="false"
-						items="{
-							path: 'employee>/ZREQUEST_TYPE',
-							sorter: { path: 'REQUEST_TYPE_ID', descending: false }
-						}"
-						change=".getFieldVisibility_ReqType">
+				<Select
+					id="req_reqtype"
+					selectedKey="{reqDialog>/reqtype}"
+					required="true"
+					forceSelection="false"
+					items="{
+						path: 'employee>/ZREQUEST_TYPE',
+						sorter: {
+							path: 'REQUEST_TYPE_ID',
+							descending: false
+						}
+					}"
+					change=".getFieldVisibility_ReqType"
+				>
 					<items>
-						<core:Item 
-							key="{employee>REQUEST_TYPE_ID}" 
-							text="{employee>REQUEST_TYPE_DESC}" />
+						<core:Item
+							key="{employee>REQUEST_TYPE_ID}"
+							text="{employee>REQUEST_TYPE_DESC}"
+						/>
 					</items>
 				</Select>
-
 				<Label text="{i18n>req_claimtype}" />
-				<Select selectedKey="{reqDialog>/claimtype}"
-						id="req_claimtype" 
-						required="true" 
-						forceSelection="false"
-						change=".RequestUtility.determineDefaultCostCenter"
-						items="{path: 'claim_type_list>/types',
-								sorter: { path: 'CLAIM_TYPE_ID', descending: false }}">
+				<Select
+					selectedKey="{reqDialog>/claimtype}"
+					id="req_claimtype"
+					required="true"
+					forceSelection="false"
+					change=".RequestUtility.determineDefaultCostCenter"
+					items="{
+						path: 'claim_type_list>/types',
+						sorter: {
+							path: 'CLAIM_TYPE_ID',
+							descending: false
+						}
+					}"
+				>
 					<items>
-						<core:Item key="{claim_type_list>CLAIM_TYPE_ID}" 
-								text="{claim_type_list>CLAIM_TYPE_DESC}" />
+						<core:Item
+							key="{claim_type_list>CLAIM_TYPE_ID}"
+							text="{claim_type_list>CLAIM_TYPE_DESC}"
+						/>
 					</items>
 				</Select>
-
 				<Label text="{i18n>req_transfer_mode}" />
-				<Select 
-                    id="req_transfermode"
-					selectedKey="{reqDialog>/transfermode}" 
-					required="true" 
+				<Select
+					id="req_transfermode"
+					selectedKey="{reqDialog>/transfermode}"
+					required="true"
+					change="onChange_ModeOfTransfer"
 					forceSelection="false"
 					visible="{= ${reqDialog>/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"
-					items="{path: 'employee>/ZTRANSFER_MODE',
-							sorter: { path: 'TRANSFER_MODE_ID', descending: false }}">
+					items="{
+						path: 'employee>/ZTRANSFER_MODE',
+						sorter: {
+							path: 'TRANSFER_MODE_ID',
+							descending: false
+						}
+					}"
+				>
 					<items>
-						<core:Item key="{employee>TRANSFER_MODE_ID}" 
-								text="{employee>TRANSFER_MODE_DESC}" />
+						<core:Item
+							key="{employee>TRANSFER_MODE_ID}"
+							text="{employee>TRANSFER_MODE_DESC}"
+						/>
 					</items>
 				</Select>
-
-			    <Label text="{i18n>req_tripstartdate} {i18n>icon_info}"
-					   tooltip="{i18n>valuehelp_reqinput_tripdate}"			
+				<Label
+					text="{i18n>req_tripstartdate} {i18n>icon_info}"
+					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
-                    id="req_tripstartdate"
-                    displayFormat="dd MMM yyyy"  
-                    valueFormat="yyyy-MM-dd" 
-                    placeholder="eg: 01 Jan 1990"
-                    value="{reqDialog>/tripstartdate}"
-					textAlign="Begin"
+					id="req_tripstartdate"
+					placeholder="eg: 01 Jan 1990"
+					value="{
+						path: 'reqDialog>/tripstartdate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd-MMM-yyyy'
+						}
+					}"
+					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-								${reqDialog>/reqtype} === 'RT0004' }"
-					visible="false"/>
-
-				<Label text="{i18n>req_tripenddate} {i18n>icon_info}" 
-					   tooltip="{i18n>valuehelp_reqinput_tripdate}"
+						${reqDialog>/reqtype} === 'RT0004' }"
+					visible="false"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/TRIP_START_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{
+								value: 'null'
+							},
+							'reqDialog>/',
+							{
+								value: 'null'
+							},
+							'reqDialog>/tripenddate'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/TRIP_START_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{
+								value: 'null'
+							},
+							'reqDialog>/',
+							{
+								value: 'null'
+							},
+							'reqDialog>/tripenddate'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+				>
+					<customData>
+						<core:CustomData
+							key="customErrorMessage"
+							value="{appModel>/fieldControl/TRIP_START_DATE/customErrorMessage}"
+						/>
+						<core:CustomData
+							key="customMinDateError"
+							value="{appModel>/fieldControl/TRIP_START_DATE/customMinDateError}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{appModel>/fieldControl/TRIP_START_DATE/customMaxDateError}"
+						/>
+					</customData>
+				</DatePicker>
+				<Label
+					text="{i18n>req_tripenddate} {i18n>icon_info}"
+					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
-                    id="req_tripenddate"
-                    displayFormat="dd MMM yyyy"  
-                    valueFormat="yyyy-MM-dd" 
-                    placeholder="eg: 01 Jan 1990"
-                    value="{reqDialog>/tripenddate}"
-					textAlign="Begin"
+					id="req_tripenddate"
+					placeholder="eg: 01 Jan 1990"
+					value="{
+						path: 'reqDialog>/tripenddate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd-MMM-yyyy'
+						}
+					}"
+					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-								${reqDialog>/reqtype} === 'RT0004' }"
-					visible="false"/>
-
-				<Label text="{i18n>req_eventstartdate} {i18n>icon_info}"
-				 	   tooltip="{i18n>valuehelp_reqinput_eventdate}"
+						${reqDialog>/reqtype} === 'RT0004' }"
+					visible="false"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/TRIP_END_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{
+								value: 'null'
+							},
+							'reqDialog>/',
+							{
+								value: 'null'
+							},
+							'reqDialog>/tripstartdate'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/TRIP_END_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{
+								value: 'null'
+							},
+							'reqDialog>/',
+							{
+								value: 'null'
+							},
+							'reqDialog>/tripstartdate'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+				>
+					<customData>
+						<core:CustomData
+							key="customErrorMessage"
+							value="{appModel>/fieldControl/TRIP_END_DATE/customErrorMessage}"
+						/>
+						<core:CustomData
+							key="customMinDateError"
+							value="{appModel>/fieldControl/TRIP_END_DATE/customMinDateError}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{appModel>/fieldControl/TRIP_END_DATE/customMaxDateError}"
+						/>
+					</customData>
+				</DatePicker>
+				<Label
+					text="{i18n>req_eventstartdate} {i18n>icon_info}"
+					tooltip="{i18n>valuehelp_reqinput_eventdate}"
 				/>
 				<DatePicker
-                    id="req_eventstartdate"
-                    displayFormat="dd MMM yyyy"  
-                    valueFormat="yyyy-MM-dd" 
-                    placeholder="eg: 01 Jan 1990"
-                    value="{reqDialog>/eventstartdate}"
+					id="req_eventstartdate"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{reqDialog>/eventstartdate}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-								${reqDialog>/reqtype} === 'RT0003' }"
-					visible="false"/>
-
-				<Label text="{i18n>req_eventenddate} {i18n>icon_info}" 
-					   tooltip="{i18n>valuehelp_reqinput_eventdate}"	
+						${reqDialog>/reqtype} === 'RT0003' }"
+					visible="false"
+				/>
+				<Label
+					text="{i18n>req_eventenddate} {i18n>icon_info}"
+					tooltip="{i18n>valuehelp_reqinput_eventdate}"
 				/>
 				<DatePicker
-                    id="req_eventenddate"
-                    displayFormat="dd MMM yyyy"  
-                    valueFormat="yyyy-MM-dd" 
-                    placeholder="eg: 01 Jan 1990"
-                    value="{reqDialog>/eventenddate}"
+					id="req_eventenddate"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{reqDialog>/eventenddate}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-								${reqDialog>/reqtype} === 'RT0003' }"
-					visible="false" />	
-
+						${reqDialog>/reqtype} === 'RT0003' }"
+					visible="false"
+				/>
 				<Label text="{i18n>req_grptype}" />
-				<Select 
+				<Select
 					id="req_grptype"
-					selectedKey="{reqDialog>/grptype}" 
-					required="true" 
+					selectedKey="{reqDialog>/grptype}"
+					required="true"
 					forceSelection="false"
 					enabled="false"
 					visible="false"
 					items="{
 						path: 'employee>/ZINDIV_GROUP',
-						filters: [
-							{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' },
-							{ path: 'IND_OR_GROUP_ID', operator: 'NE', value1: 'I_G' }
-						],
-						sorter: { path: 'IND_OR_GROUP_ID', descending: false }
-					}">
+						filters: [{
+							path: 'STATUS',
+							operator: 'EQ',
+							value1: 'ACTIVE'
+						}, {
+							path: 'IND_OR_GROUP_ID',
+							operator: 'NE',
+							value1: 'I_G'
+						}],
+						sorter: {
+							path: 'IND_OR_GROUP_ID',
+							descending: false
+						}
+					}"
+				>
 					<items>
-						<core:Item 
-							key="{employee>IND_OR_GROUP_ID}" 
-							text="{employee>IND_OR_GROUP_DESC}" />
+						<core:Item
+							key="{employee>IND_OR_GROUP_ID}"
+							text="{employee>IND_OR_GROUP_DESC}"
+						/>
 					</items>
 				</Select>
-
-			    <Label text="{i18n>req_location}" />
-			    <Input 
+				<Label text="{i18n>req_location}" />
+				<Input
 					id="req_location"
 					textAlign="Begin"
 					placeholder="{i18n>placeholder_reqinput_location}"
 					value="{reqDialog>/location}"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-								${reqDialog>/reqtype} === 'RT0003' }"
-					visible="false"/>
-
-			    <Label text="{i18n>req_transport}" />
-				<Input 
+						${reqDialog>/reqtype} === 'RT0003' }"
+					visible="false"
+				/>
+				<Label text="{i18n>req_transport}" />
+				<Input
 					id="req_transport"
 					value="{reqDialog>/transport}"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' }"
-					visible="false" />
-
-			    <Label text="{i18n>req_acc}" />
+					visible="false"
+				/>
+				<Label text="{i18n>req_acc}" />
 				<mdc:Field
-                        id="req_acc"
-                        value="{reqDialog>/altcostcenter}"
-						additionalValue="{reqDialog>/altcostcenter_desc}"
-                        editMode="Editable"
-                        display="ValueDescription"
-                        visible="false"
-                        valueHelp="valuehelp_requestinput_altcc"
-                    />
-
-			    <Label text="{i18n>req_attach1}" />
-			    <unified:FileUploader
+					id="req_acc"
+					value="{reqDialog>/altcostcenter}"
+					additionalValue="{reqDialog>/altcostcenter_desc}"
+					editMode="Editable"
+					display="ValueDescription"
+					visible="false"
+					valueHelp="valuehelp_requestinput_altcc"
+				/>
+				<Label text="{i18n>req_attach1}" />
+				<unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
 					mimeType="application/pdf,image/png,image/jpeg"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
-					visible="false" />
-
-			    <Label text="{i18n>req_attach2}" />
-			    <unified:FileUploader
+					visible="false"
+				/>
+				<Label text="{i18n>req_attach2}" />
+				<unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
 					mimeType="application/pdf,image/png,image/jpeg"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc2}"
-					visible="false" />
-
-			    <Label text="{i18n>req_comment}" />
-			    <TextArea
+					visible="false"
+				/>
+				<Label text="{i18n>req_comment}" />
+				<TextArea
 					id="req_comment"
 					textAlign="Begin"
 					value="{reqDialog>/comment}"
-					visible="false" />
-
+					visible="false"
+				/>
 				<Label text="{i18n>req_project}" />
-				<Select 
+				<Select
 					id="req_project"
-					selectedKey="{reqDialog>/projectcode}" 
-					required="true" 
+					selectedKey="{reqDialog>/projectcode}"
+					required="true"
 					forceSelection="false"
 					visible="false"
-					items="{path: 'employee>/ZPROJECT_HDR',
-							sorter: { path: 'PROJECT_CODE_IO', descending: false }}">
+					items="{
+						path: 'employee>/ZPROJECT_HDR',
+						sorter: {
+							path: 'PROJECT_CODE_IO',
+							descending: false
+						}
+					}"
+				>
 					<items>
-						<core:Item key="{employee>PROJECT_CODE_IO}" 
-								text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}" />
+						<core:Item
+							key="{employee>PROJECT_CODE_IO}"
+							text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}"
+						/>
 					</items>
 				</Select>
-								
 			</f:content>
 			<f:dependents>
 				<mdc:ValueHelp
@@ -240,11 +395,13 @@
 				>
 					<mdc:typeahead>
 						<mdcvh:Popover id="valuehelp_requestinput_altcc_pop">
-							<mdcvhcnt:MTable id="valuehelp_requestinput_altcc_pop_MTable"
+							<mdcvhcnt:MTable
+								id="valuehelp_requestinput_altcc_pop_MTable"
 								keyPath="COST_CENTER_ID"
 								descriptionPath="COST_CENTER_DESC"
 								caseSensitive="false"
-								useAsValueHelp="false">
+								useAsValueHelp="false"
+							>
 								<!-- create table via delegate-->
 							</mdcvhcnt:MTable>
 						</mdcvh:Popover>
@@ -258,17 +415,33 @@
 								id="valuehelp_requestinput_altcc_dialog_MTable"
 								keyPath="COST_CENTER_ID"
 								descriptionPath="COST_CENTER_DESC"
-								caseSensitive="false">
+								caseSensitive="false"
+							>
 								<!-- create table via delegate-->
 							</mdcvhcnt:MTable>
 						</mdcvh:Dialog>
 					</mdc:dialog>
 				</mdc:ValueHelp>
 			</f:dependents>
-        </f:SimpleForm>
-		<HBox id="request_placeholder" alignItems="Center" justifyContent="End" class="sapUiSmallMarginEnd" columnGap="0.5rem">
-            <Button id="request_create" press="onClickCreateRequest" 	text="{i18n>req_b_create}" type="Emphasized"/>
-            <Button id="request_cancel" press="onClickCancel" 			text="{i18n>req_b_cancel}" />
+		</f:SimpleForm>
+		<HBox
+			id="request_placeholder"
+			alignItems="Center"
+			justifyContent="End"
+			class="sapUiSmallMarginEnd"
+			columnGap="0.5rem"
+		>
+			<Button
+				id="request_create"
+				press="onClickCreateRequest"
+				text="{i18n>req_b_create}"
+				type="Emphasized"
+			/>
+			<Button
+				id="request_cancel"
+				press="onClickCancel"
+				text="{i18n>req_b_cancel}"
+			/>
 		</HBox>
 	</Dialog>
 </core:FragmentDefinition>
