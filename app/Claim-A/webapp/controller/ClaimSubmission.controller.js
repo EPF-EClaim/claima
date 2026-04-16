@@ -100,7 +100,7 @@ sap.ui.define([
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
 			//declare utility
-			Utility.init(this.getOwnerComponent());
+			Utility.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -2474,6 +2474,12 @@ sap.ui.define([
 				await ClaimUtility.calculateMatawangAmount();
 			}
 
+			// set filters for state and location (office) if existing claim item uses KWSP Office
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				Utility.init(this.getOwnerComponent(), this.getView());
+				Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.CLAIM);
+			}
+
 			//for tambang excluding flight
             if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
                 oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.DLM_NEGARA
@@ -3622,7 +3628,7 @@ sap.ui.define([
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			oBinding.filter(aFilters);
@@ -3656,7 +3662,7 @@ sap.ui.define([
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
 			var sToState = oInputModel.getProperty("/claim_item/to_state_id");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			if (!!sToState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)); }
