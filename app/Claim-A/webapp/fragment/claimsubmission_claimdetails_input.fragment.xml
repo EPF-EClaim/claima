@@ -361,7 +361,14 @@
                 />
 
                 <!-- Receipt Date -->
-                <Label text="{i18n>label_claimdetails_input_receiptdate}" />
+                <Label
+                text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_receiptdate}
+                }"
+                />
                 <DatePicker
                     id="datepicker_claimdetails_input_receipt_date"
                     value="{
@@ -418,7 +425,13 @@
                 />
 
 				<!-- Start Date -->
-				<Label text="{i18n>label_claimdetails_input_startdate}" />
+				<Label text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_startdate}
+                }" />
+                
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
                     value="{
