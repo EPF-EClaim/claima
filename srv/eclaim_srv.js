@@ -1253,32 +1253,21 @@ module.exports = (srv) => {
      * @public
      * @param {String} sVehicleType - vehicle type to check in table 
      * @param {String} sClaimTypeItem - claim type item to check in table
-     * @param {String} sClaimType - claim type to check in table 
-     * @param {date} dStartDate - claim item start date
-     * @param {date} dReceiptDate - claim item receipt date
+     * @param {date} dRateDate - Date to check in table
      * @return {Object} rateperkm - return rate per km ID and description
      */
     srv.on("getRatePerKm", async (req) => {
         const {
             sVehicleType,
             sClaimTypeItem,
-            sClaimType,
-            dStartDate,
-            dReceiptDate
+            dRateDate
         } = req.data;
 
+        if (!dRateDate) {
+            return req.error(400, "Rate date is required.");
+        }
+
         try {
-            const sRateDate = determineRateDate(
-                sClaimType,
-                sClaimTypeItem,
-                dStartDate,
-                dReceiptDate
-            );
-
-            if (!sRateDate) {
-                return req.error(400, "No valid date provided for rate determination.");
-            }
-
             let aVehicleTypeFilters = [Constant.Wildcard.All];
             if (sVehicleType) {
                 aVehicleTypeFilters.push(sVehicleType);
@@ -1297,8 +1286,8 @@ module.exports = (srv) => {
                 )
                 .where({
                     STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { "<=": sRateDate },
-                    END_DATE: { ">=": sRateDate },
+                    START_DATE: { "<=": dRateDate },
+                    END_DATE: { ">=": dRateDate },
                     VEHICLE_TYPE_ID: aVehicleTypeFilters,
                     CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters
                 })
@@ -1308,10 +1297,7 @@ module.exports = (srv) => {
                 ]);
 
             if (!oRatePerKm) {
-                return req.error(
-                    404,
-                    "Rate per KM not found for given claim parameters."
-                );
+                return req.error(404, "Rate per KM not found for given parameters.");
             }
 
             return {
@@ -1326,29 +1312,6 @@ module.exports = (srv) => {
             );
         }
     });
-    function determineRateDate(
-        sClaimType,
-        sClaimTypeItem,
-        dStartDate,
-        dReceiptDate
-    ) {
-        const startDateClaimTypes = [
-            Constant.ClaimType.ELAUN_PINDAH,
-            Constant.ClaimType.ELAUN_TUKAR
-        ];
-
-        if (
-            startDateClaimTypes.includes(sClaimType) &&
-            [Constant.ClaimTypeItem.KM, Constant.ClaimTypeItem.KILOMETER].includes(sClaimTypeItem)
-        ) {
-            return dStartDate;
-        }
-
-        // LUAR_NEGARA + KILOMETER lands here
-        return dReceiptDate;
-    }
-
-
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
@@ -1806,23 +1769,23 @@ module.exports = (srv) => {
 
         if (oEmp) {
             const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
-            
+
             if (!sMarriageCategory) {
                 req.error(404, `No marriage category available for employee.`);
             }
 
             const sTodayDate = new Date().toISOString().slice(0, 10);
 
-            const oEligibilityRule = await SELECT.one.from(ZELIGIBILITY_RULE).where({ 
-                CLAIM_TYPE_ID       : Constant.ClaimType.ELAUN_TUKAR,
-                CLAIM_TYPE_ITEM_ID  : Constant.ClaimTypeItem.DARAT,
-                MARITAL_STATUS      : oEmp.MARITAL,
-                MARRIAGE_CATEGORY   : sMarriageCategory,
-                REGION_ID           : sRegion,
-                STATUS              : Constant.ConfigStatus.ACTIVE,
-                START_DATE          : { '<=': sTodayDate },
-                END_DATE            : { '>=': sTodayDate },
-             }).orderBy([
+            const oEligibilityRule = await SELECT.one.from(ZELIGIBILITY_RULE).where({
+                CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
+                CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.DARAT,
+                MARITAL_STATUS: oEmp.MARITAL,
+                MARRIAGE_CATEGORY: sMarriageCategory,
+                REGION_ID: sRegion,
+                STATUS: Constant.ConfigStatus.ACTIVE,
+                START_DATE: { '<=': sTodayDate },
+                END_DATE: { '>=': sTodayDate },
+            }).orderBy([
                 { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
                 { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
             ]);
@@ -1835,9 +1798,9 @@ module.exports = (srv) => {
             const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
 
             return {
-                fAmount     : Math.max(fCalculatedAmount, fMinimumEligibleAmount),
-                fRate       : oEligibilityRule.RATE,
-                bMinimum    : fCalculatedAmount < fMinimumEligibleAmount
+                fAmount: Math.max(fCalculatedAmount, fMinimumEligibleAmount),
+                fRate: oEligibilityRule.RATE,
+                bMinimum: fCalculatedAmount < fMinimumEligibleAmount
             };
         } else {
             req.error(404, `Employee Not Found.`);

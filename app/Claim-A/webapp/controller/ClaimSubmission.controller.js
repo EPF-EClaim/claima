@@ -3210,52 +3210,19 @@ sap.ui.define([
 
 				await this._calculatePerDiem();
 			}
-			// Re-calculate the 
-			const oClaimItem = oInputModel.getProperty("/claim_item");
-			if (
-				oPropertyModel.getProperty("/rate_per_km/is_visible") &&
-				oClaimItem.vehicle_type
-			) {
-				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
-					oClaimItem.vehicle_type,
-					oClaimItem.claim_type_item_id,
-					oClaimItem.claim_type_id,
-					oClaimItem.start_date,
-					oClaimItem.receipt_date
-				);
-				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
-
-				this._calculateRatePerKm();
-			}
+			// Rate KM
+			await this._recalculateRatePerKm();
 		},
 		/**
 		 * run related methods on setting receipt date
 		 * @public
 		 */
-		onChange_ClaimDetails_ReceiptDate: async function() {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		onChange_ClaimDetails_ReceiptDate: async function () {
+
 			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			oInputModel.refresh(true);
 
-			const oClaimItem = oInputModel.getProperty("/claim_item");
-			if (
-				oPropertyModel.getProperty("/rate_per_km/is_visible") &&
-				oClaimItem.vehicle_type
-			) {
-				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
-					oClaimItem.vehicle_type,
-					oClaimItem.claim_type_item_id,
-					oClaimItem.claim_type_id,
-					oClaimItem.start_date,
-					oClaimItem.receipt_date
-				);
-				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
-
-				this._calculateRatePerKm();
-			}
+			await this._recalculateRatePerKm();
 		},
 		/**
 		 * On setting insurance cert start/end date, call private method to calculate number of days
@@ -3420,23 +3387,9 @@ sap.ui.define([
 			else {
 				oInputModel.setProperty("/claim_item/descr/vehicle_type", null);
 			}
-
 			// calculate rate per km
-			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
-				const oClaimItem = oInputModel.getProperty("/claim_item");
-				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
-					oSelectedItem ? oSelectedItem.getKey() : oClaimItem.vehicle_type,
-					oClaimItem.claim_type_item_id,
-					oClaimItem.claim_type_id,
-					oClaimItem.start_date,
-					oClaimItem.receipt_date
-				);
-				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
-				this._calculateRatePerKm();
-			}
+			await this._recalculateRatePerKm();
 		},
-
 		/**
 		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
 		 * @public
@@ -5187,6 +5140,41 @@ sap.ui.define([
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return true;
+		},
+		/**
+		 * Recalculate Rate Per KM when dependent fields change
+		 */
+		_recalculateRatePerKm: async function () {
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const oPropertyModel = this.getView().getModel("claimitem_property");
+
+			if (!oInputModel || !oPropertyModel) return;
+			if (!oPropertyModel.getProperty("/rate_per_km/is_visible")) return;
+
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+			if (!oClaimItem?.vehicle_type) return;
+
+			const dRateDate = oClaimItem.start_date
+				? oClaimItem.start_date
+				: oClaimItem.receipt_date;
+
+			try {
+				const oRatePerKm = await ClaimUtility.fetchRatePerKm(
+					oClaimItem.vehicle_type,
+					oClaimItem.claim_type_item_id,
+					dRateDate
+				);
+
+				if (!oRatePerKm) return;
+
+				oInputModel.setProperty("/claim_item/rate_per_km", oRatePerKm.id);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km", oRatePerKm.value);
+
+				this._calculateRatePerKm();
+
+			} catch (oError) {
+				console.error("Failed to recalculate Rate Per KM", oError);
+			}
 		}
 	});
 });
