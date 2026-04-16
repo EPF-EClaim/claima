@@ -2480,6 +2480,11 @@ sap.ui.define([
 				await ClaimUtility.calculateMatawangAmount();
 			}
 
+			// set filters for state and location (office) if existing claim item uses KWSP Office
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				ClaimUtility.setFiltersExistingStateLocation();
+			}
+
 			//for tambang excluding flight
             if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
                 oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") ===this._oConstant.ClaimType.DLM_NEGARA
