@@ -1424,20 +1424,19 @@ module.exports = (srv) => {
      * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getUserEligibleAmountLodging', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { sClaimType, sClaimTypeItem } = req.data;
-        const sUserEmail = req.user?.attr?.email || req.user?.attr?.mail || req.user?.attr?.user_name || req.user?.attr?.login_name || req.user?.id || "";
-        const sEmail = String(sUserEmail).trim().toLowerCase();
 
         try {
-            const oEmpData = await SELECT.one.from(Constant.Entities.ZEMP_MASTER).columns('EEID', 'GRADE').where({ EMAIL: sEmail });
-            if (!oEmpData) {
+            if (!oEmp) {
                 req.error(404, `No employee data found.`);
             }
             else {
                 const sTodayDate = new Date().toISOString().slice(0, 10);
                 var aPersonalGradeFilters = [Constant.Wildcard.All];
-                if (!!oEmpData.GRADE) {
-                    aPersonalGradeFilters.push(oEmpData.GRADE);
+                if (!!oEmp.GRADE) {
+                    aPersonalGradeFilters.push(oEmp.GRADE);
                 }
 
                 const oEligibilityRule = await SELECT.one
@@ -1465,7 +1464,6 @@ module.exports = (srv) => {
                     return oEligibilityRule.ELIGIBLE_AMOUNT;
                 }
             }
-
 
         } catch (error) {
             req.error(500, 'An error occurred while checking Eligibility Rule table.');
