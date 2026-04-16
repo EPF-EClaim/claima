@@ -1363,6 +1363,10 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TELEFON_B}
+                    }"
                     maxDate="{
 						parts: [
 							'constant>/EntitiesFields/BILL_DATE',

@@ -184,36 +184,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getNumberOfFamilyMembers: async function (sEmpId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
-				new Sorter("DEPENDENT_NO")
-			], [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
-			]);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				return aContexts.length;
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
-				return 0;
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
+		
 		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
@@ -228,7 +199,8 @@ sap.ui.define([
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
-			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
+			//get total hours based on diffrence hour + day
+			var nHour = nDay > 1? oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") + (nDay * 24) : oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") ;
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id");
@@ -352,8 +324,8 @@ sap.ui.define([
 				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				dResult = 0.00;
+				MessageBox.error(oError.toString());
+				dResult = null;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -562,25 +534,5 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
 		}, 
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getSpouseChildNo: async function () {
-			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
-			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
-			
- 			await oContext.execute();
-
-   		 	// Read return value
-			const oResult = await oContext.requestObject();
-
-    		return oResult?.value ?? 0;
-		}
 	}
 });
