@@ -1426,7 +1426,7 @@ module.exports = (srv) => {
                 return oRoute.MILEAGE;
             }
 
-            eq.error(404, 'No distance record found for the selected route.');
+            req.error(404, 'No distance record found for the selected route.');
 
         } catch (error) {
             req.error(500, `Failed to retrieve mileage: ${error.message}`);
@@ -1484,7 +1484,6 @@ module.exports = (srv) => {
             return true;
 
         } catch (error) {
-            return false;
             req.error(500, `Failed to delete participants: ${error.message}`);
         }
     });
