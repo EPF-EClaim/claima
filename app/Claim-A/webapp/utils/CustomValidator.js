@@ -185,17 +185,6 @@ sap.ui.define([
                         bCanProceed = false;
                         break;
                     }
-
-                    if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
-                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                        for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount == 0){
-                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                bCanProceed = false;
-                                break;
-                            }
-                        }
-                    }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
@@ -238,6 +227,15 @@ sap.ui.define([
                             if (bCourseAlreadyApproved) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
+                            }
+                        }
+
+                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                        for(var i = 0; i < aItems.length; i++){
+                            if(aItems[i].amount == 0){
+                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                bCanProceed = false;
+                                break;
                             }
                         }
                     }

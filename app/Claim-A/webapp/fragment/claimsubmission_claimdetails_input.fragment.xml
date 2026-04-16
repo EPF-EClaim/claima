@@ -420,7 +420,16 @@
 				<Label text="{i18n>label_claimdetails_input_startdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
-					value="{claimitem_input>/claim_item/start_date}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/start_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+                    }"
 					visible="{claimitem_property>/start_date/is_visible}"
 					minDate="{
 						parts: [
@@ -471,7 +480,16 @@
 				<Label text="{i18n>label_claimdetails_input_enddate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
-					value="{claimitem_input>/claim_item/end_date}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/end_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+                    }"
 					visible="{claimitem_property>/end_date/is_visible}"
 					minDate="{
 						parts: [
@@ -516,6 +534,19 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
                     required="true"
 				/>
+
+                 <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                <Label text="{i18n>label_claimdetails_input_region}" />
+                <Select
+                    id="select_claimdetails_input_region"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/region}"
+                    change="onSelect_ClaimDetails_Region"
+                    liveChange="onSelect_ClaimDetails_Region"
+                    visible="false"
+                    required="true"
+				>
+				</Select>
 
 				<!-- Nama Pembekal Insuran -->
 				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
@@ -1208,7 +1239,7 @@
                 id="input_claimdetails_input_exclude_tips"
                 selected="{claimitem_input>/claim_item/exclude_tips}"
                 select="onSelect_ExcludeTips"
-                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                visible="false"
                 />
 
                 <!-- Tips Amount -->
@@ -1223,7 +1254,7 @@
 							preserveDecimals: false
 						}
 						}"
-                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    visible="false"
                     editable="false"
                 />
 
@@ -1236,19 +1267,6 @@
                     visible="false"
                     required="true"
                 />
-
-                <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{i18n>label_claimdetails_input_region}" />
-                <Select
-                    id="select_claimdetails_input_region"
-                    forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/region}"
-                    change="onSelect_ClaimDetails_Region"
-                    liveChange="onSelect_ClaimDetails_Region"
-                    visible="false"
-                    required="true"
-				>
-				</Select>
 
                 <!-- Area (Negara/Wilayah) -->
                 <Label text="{i18n>label_claimdetails_input_area}" />
