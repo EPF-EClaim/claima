@@ -441,7 +441,8 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
@@ -589,14 +590,13 @@ sap.ui.define([
 		 *
 		 * Calls backend calculation function using employee ID,region, marital status
 		 * and actual amount, then updates approved amount
-		 * amount in the claim item input model.
+		 * in the claim item input model.
 		 *
 		 * @public
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
-		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPemberianPindahAmount: function (oInputModel) {
+		fetchPemberianPindahAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
 			oContext.setParameter("region", oInputModel.getProperty("/claim_item/region"));
 

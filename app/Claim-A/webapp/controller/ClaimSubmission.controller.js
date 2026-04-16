@@ -3151,9 +3151,9 @@ sap.ui.define([
 			}
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+				ClaimUtility.fetchPengangkutanLautAmount();
 			} else if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
-				ClaimUtility.fetchPemberianPindahAmount(oInputModel);
+				ClaimUtility.fetchPemberianPindahAmount();
 			}
 
 		},
