@@ -1064,7 +1064,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key TO_STATE_ID,
                 ZTOSTATE.STATE_DESC            as TO_STATE_DESC,
                 STATUS
-
         }
         group by
             FROM_STATE_ID,
