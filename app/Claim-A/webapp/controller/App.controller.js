@@ -25,8 +25,7 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/RequestUtility",
-	"claima/utils/ClaimUtility",
-	"claima/utils/Constants"
+	"claima/utils/ClaimUtility"
 ], function (
 	Popover,
 	Button,
@@ -54,8 +53,7 @@ sap.ui.define([
 	EligibilityCheck,
 	CustomValidator,
 	RequestUtility,
-	ClaimUtility,
-	Constants
+	ClaimUtility
 ) {
 	"use strict";
 
