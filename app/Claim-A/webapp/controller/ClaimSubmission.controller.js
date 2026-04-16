@@ -3847,7 +3847,7 @@ sap.ui.define([
 
 				// run validator before proceeding 
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 				if (!bCanProceed) {
 					return;
 				}
