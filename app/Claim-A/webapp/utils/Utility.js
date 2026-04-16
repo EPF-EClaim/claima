@@ -8,7 +8,8 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Sorter",
-    "claima/utils/Constants"
+    "claima/utils/Constants",
+	"claima/utils/Utility"
 ], function (
 	MessageBox,
 	MessageToast,
@@ -18,7 +19,9 @@ sap.ui.define([
 	FilterOperator,
 	JSONModel,
 	Sorter,
-	Constants) {
+	Constants,
+    Utility
+) {
     "use strict";
 
     return {
@@ -329,7 +332,52 @@ sap.ui.define([
 			}
 
             return fMileage;
-		}
+		},
+
+        /**
+         * method to call the backend service to get Pengangkutan Darat Amount
+         * @param {String} sSubmissionType 
+         */
+        determineDaratAmount: async function (sSubmissionType) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            let sRegion, fKilometer;
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
+                    sRegion       = oReqItem.sss; 
+                    fKilometer    = oReqItem.kilometer;
+                    break;
+                
+                default:
+                    MessageBox.error("Invalid submission type provided for calculation.");
+                    return null;
+            }
+
+            if (!sRegion || !fKilometer) return;
+
+            const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
+            
+            oFunction.setParameter("sRegion", sRegion);
+            oFunction.setParameter("fKilometer", fKilometer);
+
+            try {
+                BusyIndicator.show(0); 
+                
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            } finally {
+                BusyIndicator.hide();
+            }
+        }
 
     };
     });

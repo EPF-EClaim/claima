@@ -199,7 +199,8 @@ sap.ui.define([
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
-			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
+			//get total hours based on diffrence hour + day
+			var nHour = nDay > 1? oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") + (nDay * 24) : oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour") ;
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id");
@@ -232,7 +233,7 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 			oContext.setParameter("employeeid", sEEID);
 			oContext.setParameter("dependent", nDependent);
-			oContext.setParameter("tips", bTips);
+			oContext.setParameter("exclude_tips", bTips);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
@@ -323,8 +324,8 @@ sap.ui.define([
 				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				dResult = 0.00;
+				MessageBox.error(oError.toString());
+				dResult = null;
 			} finally {
 				BusyIndicator.hide();
 			}
