@@ -169,6 +169,7 @@ sap.ui.define([
 			var oSelectToState = this._oView.byId("select_claimdetails_input_to_state_id");
 			var oBindingToState = oSelectToState?.getBinding("items");
 			var aFiltersToState = [
+				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
 				new Filter(Constant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
 				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
 			];
@@ -178,6 +179,7 @@ sap.ui.define([
 			var oSelectToLoc = this._oView.byId("select_claimdetails_input_to_location");
 			var oBindingToLoc = oSelectToLoc?.getBinding("items");
 			var aFiltersToLoc = [
+				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
 				new Filter(Constant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
 				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
 				new Filter(Constant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)

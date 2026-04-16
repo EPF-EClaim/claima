@@ -3619,7 +3619,7 @@ sap.ui.define([
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			oBinding.filter(aFilters);
@@ -3653,7 +3653,7 @@ sap.ui.define([
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var sFromOffice = oInputModel.getProperty("/claim_item/from_location_office");
 			var sToState = oInputModel.getProperty("/claim_item/to_state_id");
-			var aFilters = [];
+			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
 			if (!!sFromState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState)); }
 			if (!!sFromOffice) { aFilters.push(new Filter(this._oConstant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)); }
 			if (!!sToState) { aFilters.push(new Filter(this._oConstant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)); }
