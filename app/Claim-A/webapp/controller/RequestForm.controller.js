@@ -2119,7 +2119,7 @@ sap.ui.define([
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 
 					// get number of family members including requestor him/herself
-					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers("");
+					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
 					this._oReqModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
 
 					this._onFilterRegion();

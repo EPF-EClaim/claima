@@ -277,7 +277,7 @@ sap.ui.define([
             const oContext = oModel.bindContext("/getNumberOfFamilyMembers(...)");
 
             if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN) {
-			    oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
+			    oContext.setParameter("IND", Constants.DependentIndicator.Spouse_Child); //Get count of spouse and children + self
             } 
 
 			try {
@@ -322,7 +322,7 @@ sap.ui.define([
 				fMileage = parseFloat(oResult.value) || 0.0;
 
 			} catch (oError) {
-                MessageToast.show(oError);
+                MessageToast.show(oError.value);
 				fMileage = 0.0;
 			} finally {
 				BusyIndicator.hide();

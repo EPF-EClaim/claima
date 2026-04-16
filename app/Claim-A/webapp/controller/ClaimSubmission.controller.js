@@ -2359,14 +2359,8 @@ sap.ui.define([
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
 				var iDependent;
-				//UAT issue #71, no of dependent should only include spouse and child (01, 02), and staff
-				// if (sKey === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-					iDependent = await Utility.getNumberOfFamilyMembers(sKey);
-					oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
-				// } else {
-				// 	nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
-				// 	oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				// }
+				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
+				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
