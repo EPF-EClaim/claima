@@ -502,6 +502,9 @@ sap.ui.define([
         }, 
         "DependentIndicator": {
             "Spouse_Child": "IND1"
+        },
+        "LenderName":{
+            "FINANCIAL_INSTITUTION" : "FN"
         }
     }
 });
