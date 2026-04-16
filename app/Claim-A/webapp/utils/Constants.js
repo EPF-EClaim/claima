@@ -499,6 +499,9 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
+        }, 
+        "DependentIndicator": {
+            "Spouse_Child": "IND1"
         },
         "LenderName":{
             "FINANCIAL_INSTITUTION" : "FN"

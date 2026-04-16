@@ -446,4 +446,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
     //IND1 - Spouse_Child
     function getNumberOfFamilyMembers(IND: String)                                             returns Integer;
 
+    type DaratAmounts {
+        fAmount          : Decimal(15, 2);
+        fRate            : Decimal(15, 2);
+        bMinimum         : Boolean
+    }
+    function getPengangkutanDaratAmount(
+                                        sRegion     : String,
+                                        fKilometer  : Decimal(5, 2)
+                                    )                                                          returns DaratAmounts;
+
+    function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
+
 };

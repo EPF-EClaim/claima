@@ -1,20 +1,26 @@
 
 sap.ui.define([
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
-	"sap/ui/core/BusyIndicator",
-	"sap/m/MessageToast",
-    "sap/ui/core/Fragment",
-    "claima/utils/Constants"
+    "sap/ui/model/Sorter",
+    "claima/utils/Constants",
+	"claima/utils/Utility"
 ], function (
-    Filter,
-    FilterOperator,
-    JSONModel,
+	MessageBox,
+	MessageToast,
 	BusyIndicator,
-    MessageToast,
-    Fragment,
-    Constants
+	Fragment,
+	Filter,
+	FilterOperator,
+	JSONModel,
+	Sorter,
+	Constants,
+    Utility
 ) {
     "use strict";
 
@@ -263,6 +269,31 @@ sap.ui.define([
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
 
+        /**
+		* Retrieve the number of family member including the employee him/herself
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sClaimType) {
+			const oModel = this._oOwnerComponent.getModel();
+            const oContext = oModel.bindContext("/getNumberOfFamilyMembers(...)");
+
+            if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN) {
+			    oContext.setParameter("IND", Constants.DependentIndicator.Spouse_Child); //Get count of spouse and children + self
+            } 
+
+			try {
+                await oContext.execute();
+
+                const oResult = await oContext.requestObject();
+    		    return oResult?.value ?? 0;
+            } catch (error) {
+                return 0;
+            }
+
+		},
+
 		/**
 		 * Retrieve mileage based on selected office locations
 		 * @public
@@ -294,14 +325,59 @@ sap.ui.define([
 				fMileage = parseFloat(oResult.value) || 0.0;
 
 			} catch (oError) {
-                MessageToast.show(oError);
+                MessageToast.show(oError.value);
 				fMileage = 0.0;
 			} finally {
 				BusyIndicator.hide();
 			}
 
             return fMileage;
-		}
+		},
+
+        /**
+         * method to call the backend service to get Pengangkutan Darat Amount
+         * @param {String} sSubmissionType 
+         */
+        determineDaratAmount: async function (sSubmissionType) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            let sRegion, fKilometer;
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
+                    sRegion       = oReqItem.sss; 
+                    fKilometer    = oReqItem.kilometer;
+                    break;
+                
+                default:
+                    MessageBox.error("Invalid submission type provided for calculation.");
+                    return null;
+            }
+
+            if (!sRegion || !fKilometer) return;
+
+            const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
+            
+            oFunction.setParameter("sRegion", sRegion);
+            oFunction.setParameter("fKilometer", fKilometer);
+
+            try {
+                BusyIndicator.show(0); 
+                
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            } finally {
+                BusyIndicator.hide();
+            }
+        }
 
     };
     });

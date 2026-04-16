@@ -2358,15 +2358,9 @@ sap.ui.define([
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				var nDependent;
-				//UAT issue #71, no of dependent should only include spouse and child (01, 02), and staff
-				if (sKey === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-					nDependent = (await ClaimUtility.getSpouseChildNo());
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				} else {
-					nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
-					oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
-				}
+				var iDependent;
+				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
+				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2379,7 +2373,8 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
 				var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
 				// populate item values
-				oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
+				if (dEligibleAmount === null) return;
+				else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
 			}
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
@@ -3146,13 +3141,16 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				// set 'amount' property to % of actual amount based on percentage compensation
-				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+					ClaimUtility.fetchPemberianPindahAmount();
+				} else {
+					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+				}
 			}
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
-			}
-
+				ClaimUtility.fetchPengangkutanLautAmount();
+			} 
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -3439,7 +3437,12 @@ sap.ui.define([
 		},
 
 		onSelect_ClaimDetails_Region: async function () {
-			await this._calculatePerDiem();
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH){
+				ClaimUtility.fetchPemberianPindahAmount();
+			} else {
+				await this._calculatePerDiem();
+			}
 		},
 
 		_calculatePerDiem: async function () {
@@ -3846,7 +3849,7 @@ sap.ui.define([
 
 				// run validator before proceeding 
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 				if (!bCanProceed) {
 					return;
 				}
