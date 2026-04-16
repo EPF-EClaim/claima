@@ -163,7 +163,7 @@ sap.ui.define([
 				new Filter(Constant.EntitiesFields.STATUS, FilterOperator.EQ, Constant.Status.ACTIVE),
 				new Filter(Constant.EntitiesFields.STATE_ID, FilterOperator.EQ, sFromState)
 			];
-			oBindingFromLoc.filter(aFiltersFromLoc);
+			oBindingFromLoc?.filter(aFiltersFromLoc);
 
 			// filter To State
 			var oSelectToState = this._oView.byId("select_claimdetails_input_to_state_id");
@@ -172,7 +172,7 @@ sap.ui.define([
 				new Filter(Constant.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
 				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
 			];
-			oBindingToState.filter(aFiltersToState);
+			oBindingToState?.filter(aFiltersToState);
 
 			// filter To Location (Office)
 			var oSelectToLoc = this._oView.byId("select_claimdetails_input_to_location");
@@ -182,7 +182,7 @@ sap.ui.define([
 				new Filter(Constant.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
 				new Filter(Constant.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
 			];
-			oBindingToLoc.filter(aFiltersToLoc);
+			oBindingToLoc?.filter(aFiltersToLoc);
 		},
 
 		/**
