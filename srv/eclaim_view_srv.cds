@@ -1127,6 +1127,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTOSTATE.STATE_DESC             as TO_STATE_DESC,
             key TO_LOCATION_ID,
                 ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+                STATUS
         }
         group by
             FROM_STATE_ID,
@@ -1136,7 +1137,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             TO_STATE_ID,
             ZTOSTATE.STATE_DESC,
             TO_LOCATION_ID,
-            ZOFFICE_LOCATION1.LOCATION_DESC;
+            ZOFFICE_LOCATION1.LOCATION_DESC,
+            STATUS;
 
     entity ZCLM_TO_STATE_SELECTION        as
         select from ECLAIM.ZOFFICE_DISTANCE {
@@ -1146,6 +1148,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
             key TO_STATE_ID,
                 ZTOSTATE.STATE_DESC            as TO_STATE_DESC,
+                STATUS
         }
         group by
             FROM_STATE_ID,
@@ -1153,7 +1156,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             FROM_LOCATION_ID,
             ZOFFICE_LOCATION.LOCATION_DESC,
             TO_STATE_ID,
-            ZTOSTATE.STATE_DESC;
+            ZTOSTATE.STATE_DESC,
+            STATUS;
 
 
     entity ZCLM_COURSE_VIEW               as
