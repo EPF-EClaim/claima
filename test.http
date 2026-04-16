@@ -19,33 +19,34 @@
 # }
 
 
-GET http://localhost:4004/odata/v4/EmployeeSrv/getUserEligibleAmountPemPindah()
+# GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
+# Authorization: Basic alice
+
+
+
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+Content-Type: application/json
 Authorization: Basic alice
-
-
-
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-# Content-Type: application/json
  
-#    {
-#     "budget": [
-#         {
-#             "COMMITMENT_ITEM": "760001",
-#             "FUND_CENTER": "108S37004",
-#             "INTERNAL_ORDER": "1",
-#             "MATERIAL_GROUP": "760001959",
-#             "ORIGINAL_BUDGET": "10.00",
-#             "RETURN": "10.00",
-#             "SUPPLEMENT": "10.00",
-#             "VIREMENT_IN": "90.00",
-#             "VIREMENT_OUT": "0.00",
-#             "YEAR": "2026",
-#             "HasActiveEntity": false,
-#             "HasDraftEntity": false,
-#             "IsActiveEntity": true
-#         }
-#     ]
-# }
+   {
+    "budget": [
+        {
+            "COMMITMENT_ITEM": "11111",
+            "FUND_CENTER": "222222222",
+            "INTERNAL_ORDER": "1",
+            "MATERIAL_GROUP": "44444444",
+            "ORIGINAL_BUDGET": "10.00",
+            "RETURN": "10.00",
+            "SUPPLEMENT": "10.00",
+            "VIREMENT_IN": "10.00",
+            "VIREMENT_OUT": "0.00",
+            "YEAR": "2026",
+            "HasActiveEntity": false,
+            "HasDraftEntity": false,
+            "IsActiveEntity": true
+        }
+    ]
+}
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json

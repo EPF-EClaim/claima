@@ -253,7 +253,12 @@ module.exports = (srv) => {
 
                     consumed = Number(existing[0].CONSUMED);
 
-                    var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
+                    // the system is to take the existing amount from the table and add on the amount maintained inside the upload file
+                    // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
+                    var total_budget = original_budget + (virement_in + existing[0].VIREMENT_IN) + 
+                                      (virement_out + existing[0].VIREMENT_OUT) + (supplement + existing[0].SUPPLEMENT) + 
+                                      (return_value + existing[0].RETURN);
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
