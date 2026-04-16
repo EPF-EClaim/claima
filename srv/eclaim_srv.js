@@ -1012,7 +1012,7 @@ module.exports = (srv) => {
                 //to include tips calculation (15%) from total entitlement
                 // only applicable for claim submission
                 // if true, exclude tips and set total tips to be 0. Else, include 15% tips
-                if (!req.data.tips) {
+                if (!req.data.exclude_tips) {
                     total_tips = 0.15 * total_meal_allowance;
                     total_meal_allowance += total_tips;
                 }
