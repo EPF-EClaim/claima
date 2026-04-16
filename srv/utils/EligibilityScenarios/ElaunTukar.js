@@ -15,8 +15,8 @@ module.exports = {
         // to extract the key values from oPayload
         var aPayload = this._parsePayload(oPayload)
         
-        //to find the matching eligibility rule for PINDAH as this may return more than 1 eligible rule value
-        if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PINDAH) {
+        //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
+        if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
             var sMarriageCategory = await GetDependentData.getMarriageCategory(oPayload.EmpId);
 
             aFilteredRules = aRules.filter(function (rule) {
@@ -77,8 +77,8 @@ module.exports = {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
-            // PINDAH - return true if claim amount is less than eligible amount
-            case Constant.ClaimTypeItem.PINDAH:
+            // PEM_PINDAH - return true if claim amount is less than eligible amount
+            case Constant.ClaimTypeItem.PEM_PINDAH:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
                 if (!oRule) {

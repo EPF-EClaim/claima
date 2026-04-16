@@ -145,33 +145,6 @@ sap.ui.define([
                         }
                     }
                     
-                    if (!!oClaimSubmissionModel) {
-                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
-                        if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
-                            // course code pre-check
-                            var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
-                            var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
-                            if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
-                                bCanProceed = false;
-                            }
-                        }
-                        // validate date range
-			            //// trip start/end date
-                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
-                            // stop claim submission if incomplete
-                            bCanProceed = false;
-                        }
-                        //// event start/end date (optional)
-                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
-                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
-                                // stop claim submission if incomplete
-                                bCanProceed = false;
-                            }
-                        }
-                    }
-
                     // // validate item date range
                     if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
                         if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
@@ -179,16 +152,10 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
-
-                    if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
-                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                        for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount == 0){
-                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                bCanProceed = false;
-                                break;
-                            }
-                        }
+                    
+                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
+                        bCanProceed = false;
                     }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
@@ -232,6 +199,15 @@ sap.ui.define([
                             if (bCourseAlreadyApproved) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
+                            }
+                        }
+
+                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                        for(var i = 0; i < aItems.length; i++){
+                            if(aItems[i].amount == 0){
+                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                bCanProceed = false;
+                                break;
                             }
                         }
                     }

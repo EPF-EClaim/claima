@@ -281,7 +281,7 @@
                 />
                                 
                 <!-- Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
                 <Input
                     id="input_claimdetails_input_amount"
                     value="{
@@ -361,7 +361,14 @@
                 />
 
                 <!-- Receipt Date -->
-                <Label text="{i18n>label_claimdetails_input_receiptdate}" />
+                <Label
+                text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_receiptdate}
+                }"
+                />
                 <DatePicker
                     id="datepicker_claimdetails_input_receipt_date"
                     value="{
@@ -377,6 +384,7 @@
                     showCurrentDateButton="true"
                     visible="false"
                     required="true"
+                    change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',
@@ -417,7 +425,13 @@
                 />
 
 				<!-- Start Date -->
-				<Label text="{i18n>label_claimdetails_input_startdate}" />
+				<Label text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_startdate}
+                }" />
+                
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
                     value="{
@@ -920,8 +934,7 @@
                     editable="{= !${claimsubmission_input>/view_only} }"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
-                            sorter: { path: 'TO_LOCATION_ID', descending: false },
-                            length: 1000}">
+                            sorter: { path: 'TO_LOCATION_ID', descending: false }}">
                     <items>
                         <core:Item key="{employee_view>TO_LOCATION_ID}" 
                         		   text="{employee_view>TO_LOCATION_DESC}" />
@@ -1363,6 +1376,10 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TELEFON_B}
+                    }"
                     maxDate="{
 						parts: [
 							'constant>/EntitiesFields/BILL_DATE',

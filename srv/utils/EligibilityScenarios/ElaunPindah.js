@@ -77,7 +77,7 @@ module.exports = {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
-            // JALUR_LEB - return true if claim amount is less than eligible amount
+            // PEM_PINDAH - return true if claim amount is less than eligible amount
             case Constant.ClaimTypeItem.PEM_PINDAH:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
