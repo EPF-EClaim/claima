@@ -2371,10 +2371,10 @@ sap.ui.define([
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
-				this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount_approved"));
+				oPropertyModel.setProperty("/amount/label", Utility.getText("label_claimdetails_input_amount_approved"));
 			}
 			else {
-				this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount"));
+				oPropertyModel.setProperty("/amount/label", Utility.getText("label_claimdetails_input_amount"));
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2412,7 +2412,10 @@ sap.ui.define([
 			// set claim item property model
 			var oClaimItemProperties = {
 				actual_amount: { is_visible: false },
-				amount: { is_visible: false },
+				amount: {
+					label: Utility.getText("label_claimdetails_input_amount"),
+					is_visible: false
+				},
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
 				end_date: { is_visible: false },
@@ -2473,10 +2476,10 @@ sap.ui.define([
 
 				// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
-					this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount_approved"));
+					oClaimItemPropertyModel.setProperty("/amount/label", Utility.getText("label_claimdetails_input_amount_approved"));
 				}
 				else {
-					this.byId("label_claimdetails_input_amount")?.setText(Utility.getText("label_claimdetails_input_amount"));
+					oClaimItemPropertyModel.setProperty("/amount/label", Utility.getText("label_claimdetails_input_amount"));
 				}
 
 			}
