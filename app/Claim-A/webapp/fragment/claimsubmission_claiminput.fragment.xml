@@ -271,7 +271,7 @@
                     <Input
                         id="input_claiminput_specify_details"
                         value="{claimsubmission_input>/claim_header/specify_details}"
-                        placeholder="{i18n>placeholder_claiminput_location}"
+                        placeholder="{i18n>placeholder_claiminput_specify_details}"
                         visible="{= ${claimsubmission_input>/claim_header/lender_name} === ${constant>/LenderName/FINANCIAL_INSTITUTION}}"
                         required="{= ${claimsubmission_input>/claim_header/lender_name} === ${constant>/LenderName/FINANCIAL_INSTITUTION}}"
                     />
