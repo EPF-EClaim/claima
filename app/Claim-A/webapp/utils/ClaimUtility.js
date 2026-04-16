@@ -353,8 +353,8 @@ sap.ui.define([
 				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				dResult = 0.00;
+				MessageBox.error(oError.toString());
+				dResult = null;
 			} finally {
 				BusyIndicator.hide();
 			}
