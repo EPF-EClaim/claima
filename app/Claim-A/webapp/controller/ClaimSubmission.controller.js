@@ -234,7 +234,7 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
+				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			// load form fragments
