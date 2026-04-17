@@ -250,18 +250,24 @@ module.exports = (srv) => {
                     virement_out = Number(row.VIREMENT_OUT) || 0;
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
-
                     consumed = Number(existing[0].CONSUMED);
+
+                    var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
+                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
+                    var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
+                    var new_return = return_value + Number(existing[0].RETURN); 
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
                     // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
-                    var total_budget = original_budget + (virement_in + Number(existing[0].VIREMENT_IN)) + 
-                                      (virement_out + Number(existing[0].VIREMENT_OUT)) + (supplement + Number(existing[0].SUPPLEMENT)) + 
-                                      (return_value + Number(existing[0].RETURN));
+                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
+                    updatePayload.VIREMENT_IN = new_virement_in.toFixed(2);
+                    updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
+                    updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
+                    updatePayload.RETURN = new_return.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
