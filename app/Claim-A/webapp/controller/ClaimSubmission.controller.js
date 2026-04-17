@@ -2426,7 +2426,11 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id: { is_required: false },
 				bill_no: { is_required: false },
-				account_no: { is_required: false }
+				account_no: { is_required: false },
+				to_state: { is_editable: true },
+				to_location_office: { is_editable: true },
+				from_state: { is_editable: true },
+				from_location_office: { is_editable: true }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -3559,8 +3563,13 @@ sap.ui.define([
 		*/
 		onSelect_ClaimDetails_LocationType: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
+				oPropertyModel.setProperty("/from_location_office/is_editable", false);
+				oPropertyModel.setProperty("/to_location_office/is_editable", false);
+				oPropertyModel.setProperty("/to_state/is_editable", false);				
 				this.onChange_ClaimDetails_Kilometer();
 			}
 		},
@@ -3570,6 +3579,7 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_FromState: function (oEvent) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3580,11 +3590,19 @@ sap.ui.define([
 			if (oSelectedItem) {
 				// get claim type description
 				oInputModel.setProperty("/claim_item/descr/from_state_id", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.STATE_DESC));
+				oPropertyModel.setProperty("/from_location_office/is_editable", true);
+
+				if(oPropertyModel.getProperty("/to_location_office/is_editable") && oPropertyModel.getProperty("/to_state/is_editable") && oPropertyModel.getProperty("/from_location_office/is_editable")){
+					oInputModel.setProperty("/claim_item/from_location_office", null);
+					oInputModel.setProperty("/claim_item/to_location_office", null);
+					oInputModel.setProperty("/claim_item/to_state", null);
+					oPropertyModel.setProperty("/to_location_office/is_editable", false);
+					oPropertyModel.setProperty("/to_state/is_editable", false);
+				}
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_state_id", null);
 			}
-
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
@@ -3601,6 +3619,7 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_FromLocationOffice: function (oEvent) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3611,6 +3630,7 @@ sap.ui.define([
 			if (oSelectedItem) {
 				// get claim type description
 				oInputModel.setProperty("/claim_item/descr/from_location_office", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.LOCATION_DESC));
+				oPropertyModel.setProperty("/to_state/is_editable", true);
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_location_office", null);
@@ -3634,6 +3654,7 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_ToState: function (oEvent) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oSelect = this.byId("select_claimdetails_input_to_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3644,6 +3665,7 @@ sap.ui.define([
 			if (oSelectedItem) {
 				// get claim type description
 				oInputModel.setProperty("/claim_item/descr/to_state_id", oSelectedItem.getBindingContext("employee_view").getObject(this._oConstant.EntitiesFields.TO_STATE_DESC));
+				oPropertyModel.setProperty("/to_location_office/is_editable", true);
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/to_state_id", null);
@@ -3669,6 +3691,7 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_ToLocationOffice: async function (oEvent) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (!oInputModel) return;
 
