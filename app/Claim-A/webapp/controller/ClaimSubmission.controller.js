@@ -3375,15 +3375,7 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_Kilometer: async function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
-			var oInputModel = this.getView().getModel("claimitem_input");
-			//for elaun tukar darat
-			// if claim type item is darat, retrieve eligible amount
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
-				Utility.init(this.getOwnerComponent(), this.getView());
-				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
-				}
-			// calculate amount if rate per km exists 
+
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
 				await this._calculateRatePerKm(false);
 			}
@@ -3423,6 +3415,13 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/rate_per_km",oRatePerKm.id);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km",oRatePerKm.value);
 				}
+
+				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
+				}
+
 				if (
 					oPropertyModel.getProperty("/km/is_visible") &&
 					oPropertyModel.getProperty("/rate_per_km/is_visible")
@@ -3449,13 +3448,8 @@ sap.ui.define([
 				ClaimUtility.fetchPemberianPindahAmount();
 			} else {
 				await this._calculatePerDiem();
-			}
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
-				Utility.init(this.getOwnerComponent(), this.getView());
-				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
-				await this._calculateRatePerKm(false);
-				}
+			}		
+			await this._calculateRatePerKm(false);
 		},
 
 		_calculatePerDiem: async function () {
