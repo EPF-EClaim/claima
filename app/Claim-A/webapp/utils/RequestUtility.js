@@ -63,6 +63,35 @@ sap.ui.define([
 			}
 		},
 
+        /**
+         * Get PAR header info for claim submission
+         * @public
+         * @param {string} sReqID Request ID to fetch from database
+         * @returns Data for claim submission population, if not found returns null
+         */
+        getPARHeaderInfo: async function (sReqID) {
+            const oListBinding = this._oOwnerComponent.getModel().bindList("/ZREQUEST_HEADER", null, null, [
+				new Filter("REQUEST_ID", FilterOperator.EQ, sReqID)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return {
+                        tripStart: oData.TRIP_START_DATE,
+                        tripEnd: oData.TRIP_END_DATE,
+						eventStart: oData.EVENT_START_DATE,
+                        eventEnd: oData.EVENT_END_DATE,
+                        altcc: oData.ALTERNATE_COST_CENTER
+                    }
+                }
+            } catch (oError) {
+				return null; 
+			}
+        },
+
 		/**
          * Populate the allocated amount when needed 
          * @public

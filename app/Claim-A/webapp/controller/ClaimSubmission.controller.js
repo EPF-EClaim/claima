@@ -149,6 +149,7 @@ sap.ui.define([
 			}), "appModel");
 
 			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
+			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -237,16 +238,22 @@ sap.ui.define([
 				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
+			this.getView().getModel("editButtonModel").setProperty("/state", false);
 			// load form fragments
 			//// reset fragments
-			if (Object.keys(this._fragments).length !== 0) {
-				var oPage = this.byId("page_claimsubmission");
-				Object.entries(this._fragments).forEach(([key, value]) => {
-					this._fragments[key].then(function (oVBox) {
-						oPage.removeContent(oVBox);
-					});
-				});
+			const oPage = this.byId("page_claimsubmission")
+			oPage.removeAllContent();
+
+			// destroy ALL fragments
+			if (this._fragments) {
+				for (const sFrag of Object.keys(this._fragments)) {
+					try {
+						const oFrag = await this._fragments[sFrag];
+						oFrag?.destroy(true);
+					} catch {}
+				}
 			}
+			this._fragments = Object.create(null);
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
 		},
@@ -274,7 +281,7 @@ sap.ui.define([
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
-
+			
 			// display initial fragments
 			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
@@ -1760,7 +1767,59 @@ sap.ui.define([
 		},
 
 		onSaveHeaderPress: async function () {
+			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.saveHeader(Constants.SubmissionTypePrefix.CLAIMHEADER);
+		},
+
+		/**
+		 * Function for Edit button press
+		 * 1. Swaps button state
+		 * 2. Display fragment based on toggle
+		 * 3. Enable or disable header fields to be editable
+		 */
+		onEditHeaderPress: async function () {
+			const oButtonModel = this.getView().getModel("editButtonModel");
+			const bState = oButtonModel.getProperty("/state");
+			oButtonModel.setProperty("/state", !bState);			
+			await this._showHeaderFormFragment(!bState);
+			Common.init(this.getOwnerComponent(), this.getView());
+			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState);
+		},
+
+		/**
+		 * Show Input or Display header fragment based on button toggle
+		 * @private
+		 * @param {boolean} bEdit toggle for edit or display
+		 */
+		_showHeaderFormFragment: async function (bEdit) {
+			var oPage = this.byId("page_claimsubmission");
+
+			if( bEdit ) {	
+				await this._destroyFragment("claimsubmission_summary_claimheader");
+				await this._getFormFragment("claimsubmission_summary_claimheader_edit", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+			}
+			else {
+				await this._destroyFragment("claimsubmission_summary_claimheader_edit");
+				await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+			}
+		},
+
+		/**
+		 * Destroy selected fragment
+		 * @private
+		 * @param {string} sFrag fragment name
+		 */
+		_destroyFragment: async function (sFrag) {
+			var oPage = this.byId("page_claimsubmission");
+			const oFragment = await this._fragments[sFrag];
+			oPage.removeContent(oFragment);
+			oFragment.destroy(true);
+
+			delete this._fragments[sFrag];
 		},
 
 		onDownloadExcelReport: async function () {

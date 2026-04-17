@@ -1,6 +1,7 @@
 sap.ui.define([
     "sap/m/MessageBox",
     "sap/m/MessageToast",
+    "sap/ui/core/Fragment",
     "sap/ui/core/BusyIndicator",
     "claima/model/models",
     "claima/utils/ClaimUtility",
@@ -9,7 +10,7 @@ sap.ui.define([
     "claima/utils/DateUtility",
     "claima/utils/RequestUtility",
     "claima/utils/Utility"
-], function (MessageBox, MessageToast, BusyIndicator, Models, ClaimUtility, Constants, CustomValidator, DateUtility, RequestUtility, Utility) {
+], function (MessageBox, MessageToast, Fragment, BusyIndicator, Models, ClaimUtility, Constants, CustomValidator, DateUtility, RequestUtility, Utility) {
 	"use strict";
 
 	return {
@@ -187,19 +188,43 @@ sap.ui.define([
                         oEditableFields.setProperty("/startTrip", !bEdit);
                         oEditableFields.setProperty("/endTrip", !bEdit);
                         oEditableFields.setProperty("/altCostCenter", !bEdit)
-                            
-                        oEditableFields.setProperty("/startEvent", bEdit);
-                        oEditableFields.setProperty("/endEvent", bEdit);
-                        oEditableFields.setProperty("/location", bEdit);
-                        oEditableFields.setProperty("/comment", bEdit);
-                        if (!oClaimModel.getProperty("/claim_header/request_id")) {
+                        oEditableFields.setProperty("/startEvent", !bEdit);
+                        oEditableFields.setProperty("/endEvent", !bEdit);
+
+                        if(oClaimModel.getProperty("/claim_header/request_id")){
+                            RequestUtility.init(this._oOwnerComponent, this._oView);
+                            const oRequestData = await RequestUtility.getPARHeaderInfo(oClaimModel.getProperty("/claim_header/request_id"));
+                            if (!oRequestData.tripStart) {
+                                oEditableFields.setProperty("/startTrip", bEdit);
+                            }
+                            if (!oRequestData.tripEnd) {
+                                oEditableFields.setProperty("/endTrip", bEdit);
+                            }
+                            if (!oRequestData.eventStart) {
+                                oEditableFields.setProperty("/startEvent", bEdit);
+                            }
+                            if (!oRequestData.eventEnd) {
+                                oEditableFields.setProperty("/endEvent", bEdit);
+                            }
+                            if (!oRequestData.altcc) {
+                                const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+                                if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                    oEditableFields.setProperty("/altCostCenter", bEdit);
+                                }
+                            }
+                        } else {
                             oEditableFields.setProperty("/startTrip", bEdit);
                             oEditableFields.setProperty("/endTrip", bEdit);
+                            oEditableFields.setProperty("/startEvent", bEdit);
+                            oEditableFields.setProperty("/endEvent", bEdit);
+                            const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+                            if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                oEditableFields.setProperty("/altCostCenter", bEdit);
+                            }
                         }
-                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
-                            oEditableFields.setProperty("/altCostCenter", bEdit);
-                        }
+
+                        oEditableFields.setProperty("/location", bEdit);
+                        oEditableFields.setProperty("/comment", bEdit);
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {	
@@ -209,26 +234,33 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     const oReqModel = this._oView.getModel("request");
                     var oEditableFields = this._oView.getModel("reqHeaderEditableModel");
+                    const sReqTypeID = oReqModel.getProperty("/req_header/reqtypeid");
                     if (bEdit) {
+                        oEditableFields.setProperty("/startEvent", !bEdit);
+                        oEditableFields.setProperty("/endEvent", !bEdit);
                         oEditableFields.setProperty("/startEventRequired", !bEdit);
                         oEditableFields.setProperty("/endEventRequired", !bEdit);
                         oEditableFields.setProperty("/altCostCenter", !bEdit);
 
-                        oEditableFields.setProperty("/startEvent", bEdit);
-                        oEditableFields.setProperty("/endEvent", bEdit);
-                        RequestUtility.init(this._oOwnerComponent, this._oView);
-                        if (await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"))) {
-                            oEditableFields.setProperty("/startEventRequired", bEdit);
-                            oEditableFields.setProperty("/endEventRequired", bEdit);
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL ) {
+                            oEditableFields.setProperty("/startEvent", bEdit);
+                            oEditableFields.setProperty("/endEvent", bEdit);
+                            RequestUtility.init(this._oOwnerComponent, this._oView);
+                            if (await RequestUtility.getEventDateRequired(sReqTypeID)) {
+                                oEditableFields.setProperty("/startEventRequired", bEdit);
+                                oEditableFields.setProperty("/endEventRequired", bEdit);
+                            }
                         }
-                        oEditableFields.setProperty("/location", bEdit);
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT ) {
+                            oEditableFields.setProperty("/startTrip", bEdit);
+                            oEditableFields.setProperty("/endTrip", bEdit);
+                            oEditableFields.setProperty("/location", bEdit);
+                            const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtype"))
+                            if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                oEditableFields.setProperty("/altCostCenter", bEdit);
+                            }
+                        }
                         oEditableFields.setProperty("/comment", bEdit);
-                        oEditableFields.setProperty("/startTrip", bEdit);
-                        oEditableFields.setProperty("/endTrip", bEdit);
-                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtype"))
-                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
-                            oEditableFields.setProperty("/altCostCenter", bEdit);
-                        }
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {

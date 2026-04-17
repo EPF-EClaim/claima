@@ -56,8 +56,6 @@
                 text="{i18n>button_claimsummary_edit}"
                 id="btnEditHeader"
                 press=".onEditHeaderPress"
-                visible="{= ${claimsubmission_input>/claim_header/status_id} === ${constant>/ClaimStatus/DRAFT} ||
-                            ${claimsubmission_input>/claim_header/status_id} === ${constant>/ClaimStatus/SEND_BACK} }"
             />
 
         </OverflowToolbar>
@@ -116,9 +114,10 @@
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
                 
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_tripstartdate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/startTrip}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/trip_start_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -131,9 +130,10 @@
                     required="true"
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_tripenddate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/endTrip}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/trip_end_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -145,9 +145,10 @@
                     text="{i18n>label_claimsummary_claimheader_eventstartdate} {i18n>icon_info}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_eventstartdate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/startEvent}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/event_start_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -159,9 +160,10 @@
                     text="{i18n>label_claimsummary_claimheader_eventenddate} {i18n>icon_info}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_eventenddate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/endEvent}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/event_end_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -213,16 +215,19 @@
 
                 <!-- Comment -->
                 <Label text="{i18n>label_claimsummary_claimheader_comment}" />
-                <Text
+                <TextArea
                     id="text_claimsummary_claimheader_comment"
-                    text="{claimsubmission_input>/claim_header/comment}"
+                    editable="{claimSubmissionHeaderEditableModel>/comment}"
+                    value="{claimsubmission_input>/claim_header/comment}"
                 />
 
                 <!-- Location -->
                 <Label text="{i18n>label_claimsummary_claimheader_location}" />
-                <Text
+                <Input
                     id="text_claimsummary_claimheader_location"
-                    text="{claimsubmission_input>/claim_header/location}"
+                    editable="{claimSubmissionHeaderEditableModel>/location}"
+                    value="{claimsubmission_input>/claim_header/location}"
+                    placeholder="{i18n>placeholder_claiminput_location}"
                 />
 
                 <!-- Cost Center -->
@@ -234,9 +239,16 @@
 
                 <!-- Alternate Cost Center -->
                 <Label text="{i18n>label_claimsummary_claimheader_altcc}" />
-                <Text
-                    id="text_claimsummary_claimheader_altcc"
-                    text="{claimsubmission_input>/claim_header/alternate_cost_center} - {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                <mdc:Field
+                        id="text_claimsummary_claimheader_altcc"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center}"
+                        additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
+                        display="ValueDescription"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        }"
+                        valueHelp="valuehelp_claiminput_altcc"
                 />
 
                 <!-- Claim Status -->

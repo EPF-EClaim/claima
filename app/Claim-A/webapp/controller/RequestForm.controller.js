@@ -101,13 +101,14 @@ sap.ui.define([
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 
 			this.getView().setModel(Models.createClaimHeaderEditableModel(), "reqHeaderEditableModel");
+			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
 		},
 
 		/* =========================================================
 		* URL Access
 		* ======================================================= */
 
-		_onMatched(oEvent) {
+		async _onMatched(oEvent) {
 			let sRequestId = oEvent.getParameter("arguments").request_id;
 
 			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) { }
@@ -117,7 +118,24 @@ sap.ui.define([
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
 			this._oReqModel.setProperty('/view', 'view');
 
-			this._loadRequest(sRequestId);
+			this.getView().getModel("editButtonModel").setProperty("/state", false);
+			
+			const oPage = this.byId("request_form");
+
+    		// hard reset
+			oPage.removeAllContent();
+
+			// destroy ALL fragments
+			if (this._oFragments) {
+				for (const sFrag of Object.keys(this._oFragments)) {
+					try {
+						const oFrag = await this._oFragments[sFrag];
+						oFrag?.destroy(true);
+					} catch {}
+				}
+			}
+			this._oFragments = Object.create(null);
+			await this._loadRequest(sRequestId);
 		},
 
 		async _loadRequest(sReqId) {
@@ -125,6 +143,7 @@ sap.ui.define([
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
 				await PARequestSharedFunction._getItemList(this, sReqId);
+				await this._showHeaderFragment()
 				await this._showItemList(sReqId);
 			} catch (error) {
 				console.log(error);
@@ -186,6 +205,15 @@ sap.ui.define([
 
 			PARequestSharedFunction.determineFooterButton(this);
 		},
+
+		_showHeaderFragment: async function () {
+			var oPage = this.byId("request_form");
+			
+			await this._getFormFragment("request_header", true).then(function (oVBox) {
+				oPage.insertContent(oVBox, 0);
+			});
+		},
+
 
 		async _showItemList(sReqId) {
 			const oPage = this.byId("request_form");
@@ -463,7 +491,60 @@ sap.ui.define([
 		},
 
 		onSaveHeaderPress: async function () {
+			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
+		},
+
+		/**
+		 * Function for Edit button press
+		 * 1. Swaps button state
+		 * 2. Display fragment based on toggle
+		 * 3. Enable or disable header fields to be editable
+		 */
+		onEditHeaderPress: async function () {
+			const oButtonModel = this.getView().getModel("editButtonModel");
+			const bState = oButtonModel.getProperty("/state");	
+			oButtonModel.setProperty("/state", !bState);		
+			await this._showHeaderFormFragment(!bState);
+			Common.init(this.getOwnerComponent(), this.getView());
+			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState);
+		},
+
+		/**
+		 * Show Input or Display header fragment based on button toggle
+		 * @private
+		 * @param {boolean} bEdit toggle for edit or display
+		 */
+		_showHeaderFormFragment: async function (bEdit) {
+			var oPage = this.byId("request_form");
+
+			if( bEdit ) {	
+				await this._destroyFragment("request_header");
+				await this._getFormFragment("request_header_edit", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+				
+			}
+			else {
+				await this._destroyFragment("request_header_edit");
+				await this._getFormFragment("request_header", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+			}
+		},
+
+		/**
+		 * Destroy selected fragment
+		 * @private
+		 * @param {string} sFrag fragment name
+		 */
+		_destroyFragment: async function (sFrag) {
+			var oPage = this.byId("request_form");
+			const oFragment = await this._oFragments[sFrag];
+			oPage.removeContent(oFragment);
+			oFragment.destroy(true);
+
+			delete this._oFragments[sFrag];
 		},
 
 		/* =========================================================

@@ -83,6 +83,13 @@ sap.ui.define([
                     Object.assign({}, oHeaderEditable)
                 );
             },
+
+            createEditButtonModel: function () {
+                const oEditButtonModel = new JSONModel({
+                    state: false 
+                });
+                return oEditButtonModel;
+            }
         };
 
     });
