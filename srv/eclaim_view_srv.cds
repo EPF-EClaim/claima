@@ -426,7 +426,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPARTURE_TIME,
                 ARRIVAL_TIME,
                 DEPENDENT,
-                DEPENDENT_RELATIONSHIP,
                 POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
                 ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
