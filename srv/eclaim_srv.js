@@ -969,10 +969,6 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
-                if (!req.data.tips) {
-                    total_tips = 0.15 * total_amt_dp;
-                    total_amt_dp += total_tips;
-                }
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
                 time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
