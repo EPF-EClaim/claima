@@ -2289,14 +2289,21 @@ sap.ui.define([
 			ApproveDialog.open(this);
 		},
 
-		//event handle for confirm and cancel
-		onPressdisclaimerGalakanConfirm: function () {
-			this._oDisclaimerGalakanDialog.close();
-			ApproveDialog.open(this);
+		// Shared event handler for Confirm buttons
+		onDialogConfirm: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			
+			oDialog.close();
+
+			if (oDialog === this._oDisclaimerGalakanDialog) {
+				ApproveDialog.open(this);
+			}
 		},
 
-		onPressdisclaimerGalakanCancel: function () {
-			this._oDisclaimerGalakanDialog.close();
+		// Shared event handler for Cancel buttonss
+		onDialogCancel: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			oDialog.close();
 		},
 
 		onRejectRequest: function () {

@@ -251,26 +251,25 @@ sap.ui.define([
 			await this._afterLoadFragments();
 		},
 
-		//event handle for confirm and cancel
-		onPressDeclarationConfirm: function () {
-			this._openDeclarationDialog.close();
-			this._updateClaimSubmission(this._pendingAction);
+		// Shared event handler for Confirm buttons
+		onDialogConfirm: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			
+			oDialog.close();
+
+			if (oDialog === this._openDeclarationDialog) {
+				this._updateClaimSubmission(this._pendingAction);
+				
+			} else if (oDialog === this._openDisclaimerGalakanDialog) {
+				ApproveDialog.open(this);
+			}
 		},
 
-		onPressDeclarationCancel: function () {
-			this._openDeclarationDialog.close();
+		// Shared event handler for Cancel buttons
+		onDialogCancel: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			oDialog.close();
 		},
-
-		//event handle for confirm and cancel
-		onPressdisclaimerGalakanConfirm: function () {
-			this._openDisclaimerGalakanDialog.close();
-			ApproveDialog.open(this);
-		},
-
-		onPressdisclaimerGalakanCancel: function () {
-			this._openDisclaimerGalakanDialog.close();
-		},
-
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
