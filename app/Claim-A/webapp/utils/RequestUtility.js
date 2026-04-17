@@ -1,19 +1,19 @@
 sap.ui.define([
-    "claima/utils/Constants",
+    "sap/m/MessageBox",
     "sap/ui/core/Fragment",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"claima/utils/Utility",
+    "claima/utils/Utility",
 	"claima/utils/DateUtility",
-	"sap/m/MessageBox",
+    "claima/utils/Constants"
 ], function (
-    Constants,
+    MessageBox,
 	Fragment,
 	Filter,
 	FilterOperator,
 	Utility,
 	DateUtility,
-	MessageBox) {
+    Constants ) {
     "use strict";
 
     return {
@@ -71,33 +71,51 @@ sap.ui.define([
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem  = oReqModel.getProperty("/req_item");
             const aReqPart  = oReqModel.getProperty("/participant");
-            let calculatedAllocAmount;
+            let fCalculatedAllocatedAmount;
 
             if (oReqModel.getProperty("/view") === Constants.PARMode.CREATE ||
                 oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
                     case Constants.ClaimTypeItem.LODG_O:
+                    case Constants.ClaimTypeItem.LOD_TUKAR:
                         // calculate lodging amount
-                        calculatedAllocAmount = await this._retrieveLodgingAmount();
+                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
+                        }
                         break;
 
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
-                        calculatedAllocAmount = await this._retrieveEntitlementAmount();
-                        if (oReqItem.currency_rate) {
-                            calculatedAllocAmount = calculatedAllocAmount * parseFloat(oReqItem.currency_rate);
+                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
+                        if (!!oReqItem.currency_rate) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
+                        }
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
                         }
                         break;
                     
                     case Constants.ClaimTypeItem.LAUT:
                         this._getEntitledMeterCube();
                         break;
+
+                    case Constants.ClaimTypeItem.DARAT:
+                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
+                        if (oResult) {
+                            fCalculatedAllocatedAmount = oResult.fAmount;
+                            oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
+                            // check if using minimum eligible amount, show notification
+                            if (oResult.bMinimum) MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+                        }
+                        break;
                     
                     default:
                         // calculate kilometer amount 
-                        calculatedAllocAmount = this._calculateKilometer(oReqItem);
+                        fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
                         break;
 
                 }
@@ -105,11 +123,11 @@ sap.ui.define([
 
 
             // populate allocated amount
-            if (calculatedAllocAmount) {
+            if (fCalculatedAllocatedAmount) {
                 aReqPart.forEach((row, index) => {
                     if (row.PARTICIPANTS_ID) {
                         oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`,
-                            parseFloat(calculatedAllocAmount).toFixed(2)
+                            parseFloat(fCalculatedAllocatedAmount).toFixed(2)
                         );
                     }
                 });
@@ -119,6 +137,40 @@ sap.ui.define([
             var fEstAmount = this._calculateEstimatedAmount(oReqItem, aReqPart);
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
+
+        /** 
+         * Bind to an existing request header by request ID.
+         * Returns the bound context if found; otherwise returns null.
+		 * @param {object} oODataModel model used for request data binding
+		 * @param {string} sReqId Request ID to retrieve from the backend
+		 * @returns {object} Bound context of the request header, or null if not found
+		 */
+		getReqHeader: async function (oODataModel, sReqId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZREQUEST_HEADER('${encodeURIComponent(sReqId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
+        /**
+		 * Get condition for Event dates editability
+         * @public
+		 * @param {string} sRequestTypeID Request Type ID to be checked
+         * @returns {boolean} Determine Event Date is Required
+		 */
+		getEventDateRequired: function (sRequestTypeID) {
+			if (sRequestTypeID == Constants.RequestType.TRAVEL || sRequestTypeID == Constants.RequestType.EVENTS) {
+				return true;
+			}
+            return false;
+		},
 
 		/**
          * Calculate the total for km and rate per km 
@@ -187,14 +239,19 @@ sap.ui.define([
             var sEmpId          = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
             var sClaimType      = oReqHeader.claimtype;
             var sClaimTypeItem  = oReqItem.claim_type_item_id;
-            var sRegion         = oReqItem.sss || "01";
-            var nTravelDay      = oReqItem.travel_day;
-            var nTravelHour     = oReqItem.total_travel_hour;
+            var sRegion         = oReqItem.sss;
+            var nTravelDay      = oReqItem.travel_day || 0;
+            var nTravelHour     = oReqItem.total_travel_hour || 0;
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
 
-            if (!nTravelDay || !nTravelHour || !sRegion) return;
+            if (sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
+                var nTravelDay      = oReqItem.no_of_days || 0;
+                var nTravelHour     = oReqItem.no_of_days * 24 || 0;
+            }
+
+            if (!nTravelHour || !sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getAmountEntitlement(...)");
             
@@ -207,7 +264,7 @@ sap.ui.define([
 			oFunction.setParameter("lunch", nLunch);
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
-            oFunction.setParameter("tips", false);
+            oFunction.setParameter("exclude_tips", true);
             oFunction.setParameter("dependent", 0);
 
             try {
@@ -225,7 +282,7 @@ sap.ui.define([
                 oReqModel.setProperty("/req_item/daily_allowance", fDailyAllowance);
                 oReqModel.setProperty("/req_item/currency_code", sCurrency);
 
-                return fAmount + fDailyAllowance
+                return fAmount;
                 
 
             } catch (oError) {
@@ -263,7 +320,11 @@ sap.ui.define([
             var tTripEndTime    = oReqItem.trip_end_time;
 
             if (!dTripStartDate || !dTripEndDate || !tTripStartTime || !tTripEndTime) {
-                return; 
+                var dTripStartDate  = oReqItem.start_date;
+                var dTripEndDate    = oReqItem.end_date;
+                var tTripStartTime  = "00:00:00"
+                var tTripEndTime    = "24:00:00"
+                if (!dTripStartDate || !dTripEndDate || !tTripStartTime || !tTripEndTime) return;
             }
 
             const oStartDateTime = DateUtility.parseDateTime(dTripStartDate, tTripStartTime);

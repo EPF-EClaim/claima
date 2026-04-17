@@ -1,22 +1,26 @@
 
 sap.ui.define([
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/core/Fragment",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "sap/ui/model/json/JSONModel",
-	"sap/ui/core/BusyIndicator",
-	"sap/m/MessageToast",
-    "sap/ui/core/Fragment",
-    "claima/utils/Constants"
+    "sap/ui/model/Sorter",
+    "claima/utils/Constants",
+	"claima/utils/Utility"
 ], function (
-    Filter,
-    FilterOperator,
-    Sorter,
-    JSONModel,
+	MessageBox,
+	MessageToast,
 	BusyIndicator,
-    MessageToast,
-    Fragment,
-    Constants
+	Fragment,
+	Filter,
+	FilterOperator,
+	JSONModel,
+	Sorter,
+	Constants,
+    Utility
 ) {
     "use strict";
 
@@ -25,8 +29,9 @@ sap.ui.define([
          * Initialize the Utility 
          * @public
          */
-        init: function (oOwnerComponent) {
+        init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
         },
 
         /* =========================================================
@@ -45,8 +50,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -85,7 +89,7 @@ sap.ui.define([
 
             const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
-                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -157,8 +161,6 @@ sap.ui.define([
             oModel.setProperty(sListPath, aFiltered);
             oModel.setProperty(sCountPath, aFiltered.length);
         },
-
-
 
         /**
          * @public
@@ -233,7 +235,7 @@ sap.ui.define([
                 oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
             }
         },
-        
+
          /**
          * Determine whether the number of days calculation should be treated as
          * "number of nights" instead of inclusive calendar days.
@@ -254,19 +256,116 @@ sap.ui.define([
                 Constants.ClaimType.DLM_NEGARA,
                 Constants.ClaimType.LUAR_NEGARA,
                 Constants.ClaimType.KURSUS_DLM_NEGARA,
-                Constants.ClaimType.KURSUS_LUAR_NEGARA
+                Constants.ClaimType.KURSUS_LUAR_NEGARA,
+                Constants.ClaimType.ELAUN_TUKAR
             ];
 
             const aLodgingItems = [
                 Constants.ClaimTypeItem.HOTEL_L,
                 Constants.ClaimTypeItem.HOTEL_O,
                 Constants.ClaimTypeItem.LODGING_L,
-                Constants.ClaimTypeItem.LODG_O
+                Constants.ClaimTypeItem.LODG_O,
+                Constants.ClaimTypeItem.LOD_TUKAR
             ];
 
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
+
+        /**
+		* Retrieve the number of family member including the employee him/herself
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sClaimType) {
+			const oModel = this._oOwnerComponent.getModel();
+            const oContext = oModel.bindContext("/getNumberOfFamilyMembers(...)");
+
+            if (sClaimType === Constants.ClaimTypeItem.MKN_LOAN || 
+                sClaimType === Constants.ClaimTypeItem.MKN_TUKAR || 
+                sClaimType === Constants.ClaimTypeItem.LOD_TUKAR
+            ) {
+			    oContext.setParameter("IND", Constants.DependentIndicator.Spouse_Child); //Get count of spouse and children + self
+            } 
+
+			try {
+                await oContext.execute();
+
+                const oResult = await oContext.requestObject();
+    		    return oResult?.value ?? 0;
+            } catch (error) {
+                return 0;
+            }
+
+		},
+
+		/**
+		* Set filters for state and office location when values found for existing claim item
+		* @public
+		* @param {Object} oView - view from claim or PAR
+		* @param {Object} oItem - claim item data containing claim type item ID
+		*/
+		setFiltersExistingStateLocation: function (sSubmissionType) {
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.CLAIM:
+                    var oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+
+                    // set filters
+                    var sFromState = oItem.from_state_id;
+                    var sFromOffice = oItem.from_location_office;
+                    var sToState = oItem.to_state_id;
+
+                    // set selection fields
+                    var oSelectFromLoc = this._oView.byId("select_claimdetails_input_from_location");
+                    var oSelectToState = this._oView.byId("select_claimdetails_input_to_state_id");
+                    var oSelectToLoc = this._oView.byId("select_claimdetails_input_to_location");
+                    break;
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    var oItem = this._oOwnerComponent.getModel("request")?.getProperty("/req_item");
+                    
+                    // set filters
+                    var sFromState = oItem.from_state;
+                    var sFromOffice = oItem.from_location_office;
+                    var sToState = oItem.to_state;
+
+                    // set selection fields
+                    var oSelectFromLoc = this._oView.byId("item_from_location_office");
+                    var oSelectToState = this._oView.byId("item_to_state");
+                    var oSelectToLoc = this._oView.byId("item_to_location_office");
+                    break;
+            }
+
+			if (!sFromState || !sFromOffice || !sToState ||
+                !oSelectFromLoc || !oSelectToState || !oSelectToLoc) return;
+
+			// filter From Location (Office)
+			var oBindingFromLoc = oSelectFromLoc?.getBinding("items");
+			var aFiltersFromLoc = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.STATE_ID, FilterOperator.EQ, sFromState)
+			];
+			oBindingFromLoc?.filter(aFiltersFromLoc);
+
+			// filter To State
+			var oBindingToState = oSelectToState?.getBinding("items");
+			var aFiltersToState = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
+			];
+			oBindingToState?.filter(aFiltersToState);
+
+			// filter To Location (Office)
+			var oBindingToLoc = oSelectToLoc?.getBinding("items");
+			var aFiltersToLoc = [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.Status.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
+				new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
+			];
+			oBindingToLoc?.filter(aFiltersToLoc);
+		},
 
 		/**
 		 * Retrieve mileage based on selected office locations
@@ -299,14 +398,78 @@ sap.ui.define([
 				fMileage = parseFloat(oResult.value) || 0.0;
 
 			} catch (oError) {
-                MessageToast.show(oError);
+                MessageToast.show(oError.value);
 				fMileage = 0.0;
 			} finally {
 				BusyIndicator.hide();
 			}
 
             return fMileage;
-		}
+		},
+
+        /**
+         * method to call the backend service to get Pengangkutan Darat Amount
+         * @param {String} sSubmissionType 
+         */
+        determineDaratAmount: async function (sSubmissionType) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            let sRegion, fKilometer;
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
+                    sRegion       = oReqItem.sss; 
+                    fKilometer    = oReqItem.kilometer;
+                    break;
+                
+                default:
+                    MessageBox.error("Invalid submission type provided for calculation.");
+                    return null;
+            }
+
+            if (!sRegion || !fKilometer) return;
+
+            const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
+            
+            oFunction.setParameter("sRegion", sRegion);
+            oFunction.setParameter("fKilometer", fKilometer);
+
+            try {
+                BusyIndicator.show(0); 
+                
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            } finally {
+                BusyIndicator.hide();
+            }
+        },
+        getModeofTransferMaxDays: function (sModeOfTransfer){
+            const oConstantBindList = this._oOwnerComponent.getModel().bindList("/ZTRANSFER_MODE");
+			var aConstantFilters = [];
+            var aConstantAndFilters = [];
+
+            aConstantAndFilters.push(new Filter(Constants.EntitiesFields.TRANSFER_MODE_ID, FilterOperator.EQ, sModeOfTransfer));
+			aConstantAndFilters = new Filter(aConstantAndFilters, true);
+
+            aConstantFilters.push(new Filter(aConstantAndFilters));
+            aConstantFilters = new Filter(aConstantFilters, true);
+           
+            const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
+                // Process the filtered data contexts
+                var oConstants = aContexts.map(context => context.getObject())[0];
+                return oConstants.NUMBER_OF_DAYS;
+            });
+            
+            return iMaxDays;
+        },
 
     };
     });

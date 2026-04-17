@@ -10,6 +10,10 @@ const IPAD = require("./IPAD");
 const Handphone = require("./Handphone");
 const JalurLebar = require("./JalurLebar");
 const ElaunPindah = require("./ElaunPindah");
+const ElaunTukar = require("./ElaunTukar");
+const Istiadat = require("./Istiadat");
+const Mahkamah = require("./Mahkamah");
+const BegBimbit = require("./BegBimbit");
 
 module.exports = {
   /**
@@ -42,21 +46,25 @@ module.exports = {
     let aEmpRoleId = aEmpData.map((d) => d.ROLE);
     aEmpRoleId.push(Constant.Wildcard.All);
     aEmpRoleId.push(Constant.Wildcard.NA);
-    
+
     //Find which submission type logic to process
     let aSubmissionType = [];
-    aSubmissionType.push(aPayload[0].RecordId.substring(0,3));
+    aSubmissionType.push(aPayload[0].RecordId.substring(0, 3));
     aSubmissionType.push(Constant.Wildcard.All);
+
+    let aClaimType = aPayload.map((d) => d.ClaimType);
+    let aClaimTypeItem = aPayload.map((d) => d.ClaimTypeItem);
 
     // Build Eligibility Select Where Conditions
     let aEligibilityCondition = {
-      [Constant.EntitiesFields.SUBMISSION_TYPE]: {in: aSubmissionType},
+      [Constant.EntitiesFields.SUBMISSION_TYPE]: { in: aSubmissionType },
       [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
       [Constant.EntitiesFields.ROLE_ID]: { in: aEmpRoleId },
-      [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
-      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem
+      [Constant.EntitiesFields.CLAIM_TYPE_ID]: { in: aClaimType },
+      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: { in: aClaimTypeItem },
+      [Constant.EntitiesFields.STATUS]: Constant.ConfigStatus.ACTIVE
     };
- 
+
     // Claim Type that requires additional Job Group filtering
     if (
       aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
@@ -77,44 +85,47 @@ module.exports = {
       )
     );
     let oReturnPayload = [];
-
-    // loop each participant data
+    // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {
-      // Proceed to each Claim Type
+      aFilteredEligibility = aEligibilityRules.filter(function (data) {
+        return (data.CLAIM_TYPE_ID == aPayload[i].ClaimType);
+      });
       switch (aPayload[i].ClaimType) {
         case Constant.ClaimType.DLM_NEGARA:
           oReturnPayload = DalamNegara.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules
+            aFilteredEligibility
           );
           break;
 
         case Constant.ClaimType.LUAR_NEGARA:
-          oReturnPayload = LuarNegara.onEligibleCheck(
+          oReturnPayload = await LuarNegara.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules
+            aFilteredEligibility,
+            tx
           );
           break;
 
         case Constant.ClaimType.KURSUS_DLM_NEGARA:
           oReturnPayload = KursusDalam.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules
+            aFilteredEligibility
           );
           break;
 
         case Constant.ClaimType.KURSUS_LUAR_NEGARA:
-          oReturnPayload = KursusLuar.onEligibleCheck(
+          oReturnPayload = await KursusLuar.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules
+            aFilteredEligibility,
+            tx
           );
           break;
 
         case Constant.ClaimType.I_PAD:
           oReturnPayload = await IPAD.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
-            tx,
+            aFilteredEligibility,
+            tx
           );
           break;
 
@@ -122,26 +133,61 @@ module.exports = {
           oReturnPayload = await Handphone.onEligibleCheck(
             aPayload[i],
             aEmpData[0],
-            aEligibilityRules,
-            tx,
+            aFilteredEligibility,
+            tx
           );
           break;
 
         case Constant.ClaimType.JALUR_LEB:
           oReturnPayload = JalurLebar.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules
+            aFilteredEligibility
           );
           break;
 
         case Constant.ClaimType.ELAUN_PINDAH:
           aFilteredEmp = aEmpData.filter(function (data) {
-                return (data.EEID == aPayload[i].EmpId);
-            })
-           oReturnPayload = await ElaunPindah.onEligibleCheck(
+            return (data.EEID == aPayload[i].EmpId);
+          })
+          oReturnPayload = await ElaunPindah.onEligibleCheck(
             aPayload[i],
-            aEligibilityRules,
+            aFilteredEligibility,
             aFilteredEmp[0]
+          );
+          break;
+
+        case Constant.ClaimType.ELAUN_TUKAR:
+          aFilteredEmp = aEmpData.filter(function (data) {
+            return (data.EEID == aPayload[i].EmpId);
+          })
+          oReturnPayload = await ElaunTukar.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            aFilteredEmp[0]
+          );
+          break;
+
+        case Constant.ClaimType.ISTIADAT:
+          oReturnPayload = await Istiadat.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+        
+        case Constant.ClaimType.MAHKAMAH:
+          oReturnPayload = await Mahkamah.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+
+        case Constant.ClaimType.BEG_BIMBIT:
+          oReturnPayload = await BegBimbit.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
           );
           break;
 
@@ -153,8 +199,8 @@ module.exports = {
           break;
       }
       aPayload[i] = oReturnPayload; //Update Payload with Result value
-    }
 
-    return aPayload;
+      return aPayload;
+    }
   },
 };

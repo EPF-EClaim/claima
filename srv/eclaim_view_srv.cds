@@ -119,8 +119,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PURPOSE,
                 EST_AMOUNT,
                 DEPENDENT,
-                ZEMP_DEPENDENT.LEGAL_NAME,
-                ZEMP_DEPENDENT.RELATIONSHIP,
                 REMARK,
                 COURSE_TITLE,
                 KWSP_SPORTS_REPRESENTATION,
@@ -426,7 +424,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPARTURE_TIME,
                 ARRIVAL_TIME,
                 DEPENDENT,
-                DEPENDENT_RELATIONSHIP,
                 POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
                 ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
@@ -667,8 +664,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ARRIVAL_TIME,
                 ZCLAIM_ITEM.DEPENDENT,
                 ZCLAIM_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
-                ZCLAIM_ITEM.DEPENDENT_RELATIONSHIP,
-                ZCLAIM_ITEM.ZEMP_DEPENDENT.RELATIONSHIP,
                 ZCLAIM_ITEM.POLICY_NUMBER,
                 ZCLAIM_ITEM.INSURANCE_PROVIDER_ID,
                 ZCLAIM_ITEM.ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
@@ -845,9 +840,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.START_TIME,
                 ZREQUEST_ITEM.END_TIME,
                 ZREQUEST_ITEM.DEPENDENT,
-                ZREQUEST_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
-                ZREQUEST_ITEM.DEPENDENT_RELATIONSHIP,
-                ZREQUEST_ITEM.ZEMP_DEPENDENT.RELATIONSHIP,
                 ZREQUEST_ITEM.METER_CUBE_ENTITLED,
                 ZREQUEST_ITEM.METER_CUBE_ACTUAL,
                 ZREQUEST_ITEM.FARE_TYPE_ID,
@@ -1042,6 +1034,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTOSTATE.STATE_DESC             as TO_STATE_DESC,
             key TO_LOCATION_ID,
                 ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+                STATUS
         }
         group by
             FROM_STATE_ID,
@@ -1051,7 +1044,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             TO_STATE_ID,
             ZTOSTATE.STATE_DESC,
             TO_LOCATION_ID,
-            ZOFFICE_LOCATION1.LOCATION_DESC;
+            ZOFFICE_LOCATION1.LOCATION_DESC,
+            STATUS;
 
     entity ZCLM_TO_STATE_SELECTION        as
         select from ECLAIM.ZOFFICE_DISTANCE {
@@ -1061,6 +1055,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
             key TO_STATE_ID,
                 ZTOSTATE.STATE_DESC            as TO_STATE_DESC,
+                STATUS
         }
         group by
             FROM_STATE_ID,
@@ -1068,7 +1063,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             FROM_LOCATION_ID,
             ZOFFICE_LOCATION.LOCATION_DESC,
             TO_STATE_ID,
-            ZTOSTATE.STATE_DESC;
+            ZTOSTATE.STATE_DESC,
+            STATUS;
 
 
     entity ZCLM_COURSE_VIEW               as

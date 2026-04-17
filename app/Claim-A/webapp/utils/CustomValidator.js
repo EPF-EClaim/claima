@@ -1,13 +1,15 @@
 sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Constants",
+    "claima/utils/ClaimUtility",
     "claima/utils/Utility",
-    "claima/utils/ClaimUtility"
+    "claima/utils/RequestUtility"
 ], function (
     MessageBox,
     Constants,
+    ClaimUtility,
     Utility,
-    ClaimUtility
+    RequestUtility
 ) {
     "use strict";
 
@@ -42,7 +44,7 @@ sap.ui.define([
 
                     var oReqModel = this._oOwnerComponent.getModel("request");
                     var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
-
+                    
                     // HANDPHONE | TELEFON_B
                     if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
                         
@@ -75,6 +77,12 @@ sap.ui.define([
                                     bCanProceed = false;
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.MATAWANG:
+                                if(!oInputModel.getProperty("/claim_item/amount")) {
+                                    MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                    bCanProceed = false;
+                                }
+                                break;
                             default:
                                 break;
                         }
@@ -87,8 +95,8 @@ sap.ui.define([
                         if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
                             bCanProceed = false
+                        }
                     }
-                }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
@@ -136,8 +144,78 @@ sap.ui.define([
                             }
                         }
                     }
+                    ///Validate PEA total Amount exceeds 25k. 
+                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
+
+                        try {
+                            const oContext = this._oView.getModel().bindContext("/validatePEATotal(...)");
+                            const nHeaderTotal = Number(oClaimSubmissionModel.getProperty("/claim_header/total_claim_amount")) || 0;
+                            const nCurrentAmount = Number(oInputModel.getProperty("/claim_item/amount")) || 0;
+
+                            let nOldAmount = 0;
+                            if (!oInputModel.getProperty("/is_new")) {
+                                const sSubId = oInputModel.getProperty("/claim_item/claim_sub_id");
+                                const oExistingItem = (oClaimSubmissionModel.getProperty("/claim_items") || []).find(it => it.claim_sub_id === sSubId);
+                                nOldAmount = Number(oExistingItem?.amount) || 0;
+                            }
+                            oContext.setParameter("headerTotal", nHeaderTotal);
+                            oContext.setParameter("currentAmount", nCurrentAmount);
+                            oContext.setParameter("isNew", oInputModel.getProperty("/is_new"));
+                            oContext.setParameter("oldAmount", nOldAmount);
+                            await oContext.execute();
+                        } catch (oError) {
+                            const sMessage =
+                                oError?.message ||
+                                Utility.getText("msg_claimdetails_pedu_total_exceed_limit");
+                            MessageBox.error(sMessage);
+                            bCanProceed = false;
+                        }
+                    }
+                    // // validate item date range
+                    if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
+                        if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
+                            // stop claim details if incomplete
+                            bCanProceed = false;
+                        }
+                    }
                     
+                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
+                        bCanProceed = false;
+                    }
+                    break;
+                case Constants.SubmissionTypePrefix.REQUESTHEADER:
+                    var oReqModel = this._oOwnerComponent.getModel("request");
+                    if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
+                        // stop claim submission if incomplete
+                        bCanProceed = false;
+                    }
+                    RequestUtility.init(this._oOwnerComponent, this._oView)
+                    const bIsEventDateRequired = RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"));
+                    //// event start/end date (optional)
+                    if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
+                        if (!this._isValidDateRange(oReqModel.getProperty("/req_header/eventstartdate"), oReqModel.getProperty("/req_header/eventenddate"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                    }
+                    break;
+                case Constants.SubmissionTypePrefix.CLAIMHEADER:   
+                    var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+
                     if (!!oClaimSubmissionModel) {
+                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                        //// event start/end date (optional)
+                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
+                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
+                                // stop claim submission if incomplete
+                                bCanProceed = false;
+                            }
+                        }
+
                         var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
                             // course code pre-check
@@ -149,9 +227,7 @@ sap.ui.define([
                                 bCanProceed = false;
                             }
                         }
-                    }
-                    
-                    if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
+
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){
                             if(aItems[i].amount == 0){
@@ -161,10 +237,10 @@ sap.ui.define([
                             }
                         }
                     }
-
-                    
+                    break;
             }
             return bCanProceed;
+            
         },        
         onShowConfirmation: function(sPromptMessage) {
                 return new Promise((oResolve) => {
@@ -185,7 +261,37 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
-        }
+        },
+
+        /**
+         * Check if start and end dates are empty
+         * Check if start date is set before end date
+         * @private
+         * @param {string} sStartdate start date to be checked
+         * @param {string} sEnddate end date to be checked
+         * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
+         */
+        _isValidDateRange: function (sStartdate, sEnddate) {
+			// check for missing value
+			if (!sStartdate || !sEnddate) {
+                MessageBox.error(Utility.getText("msg_daterange_missing"));
+                return false;
+            }
+            else {
+                // check if values can be converted to valid dates
+                if (isNaN(new Date(sStartdate).getTime()) || isNaN(new Date(sEnddate).getTime())) {
+                    MessageBox.error(Utility.getText("msg_daterange_missing"));
+                    return false;
+                }
+            }
+
+			// check if end date earlier than start date
+			if (new Date(sStartdate) > new Date(sEnddate)) {
+                MessageBox.error(Utility.getText("msg_daterange_order"));
+                return false;
+            }
+			return true;
+		},
  
     };
 });

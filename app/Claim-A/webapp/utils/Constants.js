@@ -120,6 +120,10 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
+        "ClaimTypeLuarNegara": {
+            "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA", 
+            "LUAR_NEGARA": "LUAR_NEGARA"
+        },
         "EligibilityRule": {
             "ROLE_ID": "ROLE_ID",
             "PERSONAL_GRADE": "PERSONAL_GRADE",
@@ -254,6 +258,8 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+            "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
             "STATE_ID": "STATE_ID",
             "STATE_DESC": "STATE_DESC",
             "LOCATION_DESC": "LOCATION_DESC",
@@ -272,7 +278,10 @@ sap.ui.define([
             "STUDENT": "STUDENT",
             "EMP_ID": "EMP_ID",
             "REGION_ID": "REGION_ID",
-            "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS"
+            "TRIP_START_DATE" : "TRIP_START_DATE",
+            "TRIP_END_DATE" : "TRIP_END_DATE",
+            "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
+            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -341,7 +350,9 @@ sap.ui.define([
         },
         "SubmissionTypePrefix": {
             "REQUEST": "REQ",
-            "CLAIM": "CLM"
+            "CLAIM": "CLM",
+            "REQUESTHEADER": "REQHD",
+            "CLAIMHEADER": "CLMHD"
         },
         "CashAdvanceInfo": {
             "COST_CENTER": "100000000",
@@ -493,6 +504,17 @@ sap.ui.define([
         "CurrencyCode": {
             "MYR": "MYR",
             "USD": "USD"
+        }, 
+        "DependentIndicator": {
+            "Spouse_Child": "IND1"
+        },
+        "LenderName":{
+            "FINANCIAL_INSTITUTION" : "FN"
+        },
+        "ModeOfTransfer":{
+            "DALAM_STESEN": "DALAM_STESEN",
+            "LUAR_STESEN": "LUAR_STESEN",
+            "WILAYAH": "WILAYAH"
         }
     }
 });

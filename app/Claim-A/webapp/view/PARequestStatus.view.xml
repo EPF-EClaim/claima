@@ -137,7 +137,7 @@
                                     <customData>
                                         <core:CustomData
                                             key="path"
-                                            value="REQUEST_DATE"
+                                            value="TRIP_START_DATE"
                                         />
                                     </customData>
                                 </Button>
@@ -233,7 +233,7 @@
                             <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
-                                    path: 'request_status>REQUEST_DATE',
+                                    path: 'request_status>TRIP_START_DATE',
                                     type: 'sap.ui.model.odata.type.Date',
                                     formatOptions: { pattern: 'dd MMM yyyy' } 
                                 }"

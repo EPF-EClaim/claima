@@ -67,7 +67,8 @@ const Constant = {
         "ZREQUEST_ITEM": "ZREQUEST_ITEM",
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
-        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART"
+        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
+        "ZRATE_KM": "ZRATE_KM"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -79,7 +80,10 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -119,7 +123,6 @@ const Constant = {
         "PELANGGAN": "PELANGGAN",
         "PELBAGAI": "PELBAGAI",
         "PEM_PINDAH": "PEM_PINDAH",
-        "Pembelian Beg Bimbit": "Pembelian Beg Bimbit",
         "P'HARGAAN": "P'HARGAAN",
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
@@ -138,7 +141,10 @@ const Constant = {
         "YURAN_KLJ": "YURAN_KLJ",
         "I_PAD": "I-PAD",
         "TELEFON_B": "TELEFON_B",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -171,7 +177,14 @@ const Constant = {
         "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO",
-        "REGION_ID": "REGION_ID"
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "RATE_KM_ID": "RATE_KM_ID",
+        "RATE": "RATE",
+        "REGION_ID": "REGION_ID",
+        "STATUS": "STATUS",
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
     },
     Wildcard: {
         "All": "*",
@@ -266,7 +279,23 @@ const Constant = {
         MARRIED_4_OR_MORE_CHILDREN: "04"
     },
     
-    UnlimitedAmount: -1
+    UnlimitedAmount: -1,
+
+    FareType: {
+            "BUS": "01",
+            "EHAILING": "02",
+            "FERRY": "03",
+            "FLIGHT": "04",
+            "TRAIN": "05",
+            "TAXI": "06"
+        },
+    
+    ConfigStatus: {
+        "ACTIVE": "ACTIVE"
+    }, 
+    Indicator: {
+        Spouse_Child: "IND1"
+    }
 
 };
 

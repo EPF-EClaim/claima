@@ -165,7 +165,7 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+					for (var iContext = 0; iContext < aContexts.length; iContext++) {
 						var oData = aContexts[iContext].getObject();
 						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
 							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
@@ -215,63 +215,6 @@ sap.ui.define([
 		},
 
 		/**
-		* Retrieve backend data from db table based on selected claim item value
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEntity - name of table to check from database
-		* @param {array} aEntityFields - array of entity fields and values to filter by
-		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
-		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
-		*/
-		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			const oModel = this._oOwnerComponent.getModel();
-			// set filters based on given entity fields
-			var aSorters = [];
-			var aFilters = [];
-			for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
-				//// filter entity field to be checked by selection input or * (all)
-				var oFilterEntityField = new Filter({
-					filters: [
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
-						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				aFilters.push(oFilterEntityField);
-				aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
-			}
-			// ensure status is active
-			aFilters.push(
-				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
-				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-			);
-			const oListBinding = oModel.bindList(sEntity, null, aSorters, aFilters);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					var aReturnFields = [];
-					for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
-						aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
-					}
-					return aReturnFields;
-				} else {
-					return [];
-				}
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-				return [];
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		/**
 		 * Fetch entitlement amount from the backend function
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
@@ -279,23 +222,27 @@ sap.ui.define([
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
 			var nDay, nDependent;
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
-				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
-			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
+			//get total hours based on diffrence hour + day
+			var nHour = (nDay * 24) + oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id");
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) {
+				oClaimItemInputModel.setProperty(("/claim_item/exclude_tips"), true);
+			}
 			var bTips = oClaimItemInputModel.getProperty("/claim_item/exclude_tips");
-			
+
 			var oSessionModel = this.getView().getModel("session");
-    		var sEEID = oSessionModel.getProperty("/userId");
+			var sEEID = oSessionModel.getProperty("/userId");
 
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
@@ -315,13 +262,74 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 			oContext.setParameter("employeeid", sEEID);
 			oContext.setParameter("dependent", nDependent);
-			oContext.setParameter("tips", bTips);
+			oContext.setParameter("exclude_tips", bTips);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
 
 		},
 
+		/**
+		 * Check for default cost center assigned to claim type, if no data found, return null value
+		 * @public
+		 * @param {string} sClaimTypeId claim type to be checked
+		 * @returns {string} cost center selected
+		 */
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject() || null;
+
+				return oResult.sCostCenter;
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
+		 * Retrieve rate per km data for item based on vehicle type and claim type item
+		 * @public
+		 */
+		fetchRatePerKm: async function () {
+
+			let oResult = { id: null, value: null };
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oClaimItem = oInputModel.getProperty("/claim_item");
+
+			if (!oClaimItem || !oClaimItem.vehicle_type) return;
+
+			const dRateDate =
+				oClaimItem.start_date || oClaimItem.receipt_date;
+			try {
+				BusyIndicator.show(0);
+
+				const oFunction = this._oOwnerComponent
+					.getModel()
+					.bindContext("/getRatePerKm(...)");
+
+				oFunction.setParameter("sVehicleType", oClaimItem.vehicle_type);
+				oFunction.setParameter("sClaimTypeItem", oClaimItem.claim_type_item_id);
+				oFunction.setParameter("dRateDate", dRateDate);
+
+				await oFunction.execute();
+
+				const oData = oFunction.getBoundContext().getObject();
+				oResult = { id: oData.id, value: oData.value };
+
+			} catch (oError) {
+				MessageToast.show(oError?.message || "Failed to fetch Rate per KM");
+			} finally {
+				BusyIndicator.hide();
+			}
+			return oResult;
+		},
 		/**
 		 * Retrieve approved amount and marriage category data for user selecting Elaun Pengangkutan, based on Marital Status and Employee Type
 		 * @public
@@ -340,8 +348,8 @@ sap.ui.define([
 				dResult = oContext.getObject("value") || 0.00;
 
 			} catch (oError) {
-				MessageToast.show(oError);
-				dResult = 0.00;
+				MessageBox.error(oError.toString());
+				dResult = null;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -372,6 +380,87 @@ sap.ui.define([
 		},
 
 		/**
+		 * Retrieve eligible amount for user selecting lodging claim type item, based on Employee Grade
+		 * @public
+		 * @return {Decimal} - returns eligible amount retrieved from table
+		 */
+		fetchUserAmountLodging: async function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimType = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			// get eligible amount based on current user
+			var dResult = 0.00;
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountLodging(...)");
+
+				oFunction.setParameter("sClaimType", sClaimType);
+				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				dResult = oContext.getObject("value") || 0.00;
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				dResult = 0.00;
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return dResult;
+		},
+
+		/**
+		 * Calculate approved amount for lodging based on params
+		 * @public
+		 * @return {Decimal} dResult - returns approved amount based on above parameters
+		 */
+		calculateAmountLodging: function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
+			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
+			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/no_of_family_member");
+
+			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
+
+			// calculate approved amount
+			switch (sClaimTypeItem) {
+				case Constant.ClaimTypeItem.LOD_TUKAR:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					break;
+				default:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
+					break;
+			}
+			return !isNaN(dResult) ? dResult : 0.00;
+		},
+		
+		/**
+		 * Bind to existing claim header with claim ID, if not found return null value
+		 * @public
+		 * @param {object} oODataModel model used for claim data binding
+		 * @param {string} sClaimId claim ID to check from database
+		 * @returns {object} Bound context of the claim header, null value if not found
+		 */
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject();
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
 		 * Calls backend entitlement function using the logged-in employee ID
@@ -394,7 +483,7 @@ sap.ui.define([
 					);
 				});
 		},
-		
+
 		/**
 		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
@@ -407,7 +496,8 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
@@ -426,7 +516,7 @@ sap.ui.define([
 		 * @param {String} sRequestID - Pre-approval request ID
 		 * @returns {Boolean} bIsUsed - show if warning should be sent
 		 */
-		checkReusedPAR: async function(sRequestID) {
+		checkReusedPAR: async function (sRequestID) {
 			const oModel = this._oView.getModel();
 			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
 			oContext.setParameter("requestID", sRequestID);
@@ -434,20 +524,158 @@ sap.ui.define([
 		},
 
 		/**
-         * Get Fare Type filters based on Claim Type and Claim Item
-         * @public
-         * @param {string} sClaimTypeId
-         * @param {string} sClaimTypeItemId
-         * @returns {sap.ui.model.Filter[]} array of filters
-         */
-        getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
-            var aFilters = [];                
-            if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA ||sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
-                sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) 
-			{
-                aFilters.push(new Filter("FARE_TYPE_ID",FilterOperator.NE,Constant.FareType.FLIGHT));
-            }
-            return aFilters;
+		 * Get Fare Type filters based on Claim Type and Claim Item
+		 * @public
+		 * @param {string} sClaimTypeId
+		 * @param {string} sClaimTypeItemId
+		 * @returns {sap.ui.model.Filter[]} array of filters
+		 */
+		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+			var aFilters = [];
+			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
+				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
+			}
+			return aFilters;
+		},
+
+		/**
+		 * Calculate Matawang 3% fields - Uses CAP Backend to calculate.
+		 * @public
+		 */
+		calculateMatawangAmount: async function () {
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oCalculateMataWangAmountContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
+			oCalculateMataWangAmountContext.setParameter(
+				"claimItems",
+				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
+			);
+			return await oCalculateMataWangAmountContext.execute()
+				.then(() => oCalculateMataWangAmountContext.requestObject())
+				.then((oResult) => {
+
+					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+					const iMatawangIndex = aClaimItems.findIndex(
+						oItem => oItem.claim_type_item_id === Constant.ClaimTypeItem.MATAWANG
+					);
+
+					if (iMatawangIndex > -1) {
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/percentage_compensation`,
+							oResult.percentage
+						);
+						oSubmissionModel.setProperty(
+							`/claim_items/${iMatawangIndex}/amount`,
+							oResult.amount
+						);
+					}
+
+					else if (
+						oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+						Constant.ClaimTypeItem.MATAWANG
+					) {
+						oInputModel.setProperty(
+							"/claim_item/percentage_compensation",
+							oResult.percentage
+						);
+						oInputModel.setProperty(
+							"/claim_item/amount",
+							oResult.amount
+						);
+					}
+				});
+		},
+		/**
+		 * Save Matawang item after calculation.
+		 *
+		 * @public
+		 * @param {Function} fnSaveClaimItem - controller save function (callback)
+		 */
+		saveUpdatedMatawang: async function (fnSaveClaimItem) {
+
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const oPreviousClaimItem = oInputModel.getProperty("/claim_item");
+			const bPreviousIsNew = oInputModel.getProperty("/is_new");
+			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+
+			const iMatawangIndex = aClaimItems.findIndex(
+				oItem =>
+					oItem.claim_type_item_id ===
+					Constant.ClaimTypeItem.MATAWANG
+			);
+
+			if (iMatawangIndex === -1) {
+				return false;
+			}
+
+			const oMatawangItem = {
+				...aClaimItems[iMatawangIndex]
+			};
+			oInputModel.setProperty("/claim_item", oMatawangItem);
+			oInputModel.setProperty("/is_new", false);
+			await fnSaveClaimItem();
+			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
+			oInputModel.setProperty("/is_new", bPreviousIsNew);
+		}, 
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getSpouseChildNo: async function () {
+			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
+			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
+			
+ 			await oContext.execute();
+
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
+
+    		return oResult?.value ?? 0;
+		}, 
+
+		/**
+		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
+		 *
+		 * Calls backend calculation function using employee ID,region, marital status
+		 * and actual amount, then updates approved amount
+		 * in the claim item input model.
+		 *
+		 * @public
+		 * @returns Updates claim item fields upon completion
+		 */
+		fetchPemberianPindahAmount: function () {
+			var oInputModel = this._oView.getModel("claimitem_input");
+			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
+			oContext.setParameter("region", oInputModel.getProperty("/claim_item/region"));
+
+			var nApprovedAmount = 0;
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					//get eligible amount
+					var nEligibleAmount = oResult.value;
+					var nPercentageComp = oInputModel.getProperty("/claim_item/percentage_compensation");
+
+					if (oInputModel.getProperty("/claim_item/actual_amount")) {
+						//calculate approved amount 
+						//use claimed amount if it is lower than eligible amount
+						if (oInputModel.getProperty("/claim_item/actual_amount") < nEligibleAmount) {
+							nApprovedAmount = (oInputModel.getProperty("/claim_item/actual_amount") * (nPercentageComp/100)).toFixed(2);
+						} else {
+							nApprovedAmount = (nEligibleAmount * (nPercentageComp/100)).toFixed(2);
+						}
+					}
+					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
+				});
 		}
+		
 	}
 });
