@@ -19,14 +19,14 @@
 # }
 
 
-# # GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
+# GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
 # Authorization: Basic alice
 
 
 
 POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
 Content-Type: application/json
-# Authorization: Basic alice
+Authorization: Basic alice
  
    {
     "budget": [
@@ -35,6 +35,21 @@ Content-Type: application/json
             "FUND_CENTER": "222222222",
             "INTERNAL_ORDER": "1",
             "MATERIAL_GROUP": "44444444",
+            "ORIGINAL_BUDGET": "10.00",
+            "RETURN": "10.00",
+            "SUPPLEMENT": "10.00",
+            "VIREMENT_IN": "10.00",
+            "VIREMENT_OUT": "0.00",
+            "YEAR": "1995",
+            "HasActiveEntity": false,
+            "HasDraftEntity": false,
+            "IsActiveEntity": true
+        }, 
+        {
+            "COMMITMENT_ITEM": "710010",
+            "FUND_CENTER": "100000000",
+            "INTERNAL_ORDER": "1",
+            "MATERIAL_GROUP": "710010901",
             "ORIGINAL_BUDGET": "10.00",
             "RETURN": "10.00",
             "SUPPLEMENT": "10.00",
