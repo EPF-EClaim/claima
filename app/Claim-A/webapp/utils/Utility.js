@@ -450,7 +450,26 @@ sap.ui.define([
             } finally {
                 BusyIndicator.hide();
             }
-        }
+        },
+        getModeofTransferMaxDays: function (sModeOfTransfer){
+            const oConstantBindList = this._oOwnerComponent.getModel().bindList("/ZTRANSFER_MODE");
+			var aConstantFilters = [];
+            var aConstantAndFilters = [];
+
+            aConstantAndFilters.push(new Filter(Constants.EntitiesFields.TRANSFER_MODE_ID, FilterOperator.EQ, sModeOfTransfer));
+			aConstantAndFilters = new Filter(aConstantAndFilters, true);
+
+            aConstantFilters.push(new Filter(aConstantAndFilters));
+            aConstantFilters = new Filter(aConstantFilters, true);
+           
+            const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
+                // Process the filtered data contexts
+                var oConstants = aContexts.map(context => context.getObject())[0];
+                return oConstants.NUMBER_OF_DAYS;
+            });
+            
+            return iMaxDays;
+        },
 
     };
     });
