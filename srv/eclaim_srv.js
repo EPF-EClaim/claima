@@ -1416,6 +1416,57 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Get eligible amount for user employee on Lodging claim type items, based on Employee Grade
+     * @public
+     * @param {String} sClaimType - claim type to retrieve amount
+     * @param {String} sClaimTypeItem - claim type item to retrieve amount
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountLodging', async (req) => {
+        const { sClaimType, sClaimTypeItem } = req.data;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp) {
+                req.error(404, `No employee data found.`);
+            }
+            else {
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aPersonalGradeFilters = [Constant.Wildcard.All];
+                if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: sClaimType,
+                        CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                    })
+                    .orderBy([{ ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }]);
+
+                if (!oEligibilityRule) {
+                    req.error(404, `Eligible amount not found for given employee.`);
+                }
+                else {
+                    return oEligibilityRule.ELIGIBLE_AMOUNT;
+                }
+            }
+            
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
+        }
+    });
+
     srv.on('getOfficeDistance', async (req) => {
         const {
             sFromState,

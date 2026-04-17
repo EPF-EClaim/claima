@@ -380,6 +380,66 @@ sap.ui.define([
 		},
 
 		/**
+		 * Retrieve eligible amount for user selecting lodging claim type item, based on Employee Grade
+		 * @public
+		 * @return {Decimal} - returns eligible amount retrieved from table
+		 */
+		fetchUserAmountLodging: async function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimType = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			// get eligible amount based on current user
+			var dResult = 0.00;
+			try {
+				BusyIndicator.show(0);
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountLodging(...)");
+
+				oFunction.setParameter("sClaimType", sClaimType);
+				oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				dResult = oContext.getObject("value") || 0.00;
+
+			} catch (oError) {
+				MessageToast.show(oError);
+				dResult = 0.00;
+			} finally {
+				BusyIndicator.hide();
+			}
+
+			return dResult;
+		},
+
+		/**
+		 * Calculate approved amount for lodging based on params
+		 * @public
+		 * @return {Decimal} dResult - returns approved amount based on above parameters
+		 */
+		calculateAmountLodging: function () {
+			const oInputModel = this._oView.getModel("claimitem_input");
+			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
+			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
+			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/no_of_family_member");
+
+			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
+
+			// calculate approved amount
+			switch (sClaimTypeItem) {
+				case Constant.ClaimTypeItem.LOD_TUKAR:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					break;
+				default:
+					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
+					break;
+			}
+			return !isNaN(dResult) ? dResult : 0.00;
+		},
+		
+		/**
 		 * Bind to existing claim header with claim ID, if not found return null value
 		 * @public
 		 * @param {object} oODataModel model used for claim data binding
