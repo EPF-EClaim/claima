@@ -421,6 +421,12 @@ sap.ui.define([
                     sRegion       = oReqItem.sss; 
                     fKilometer    = oReqItem.kilometer;
                     break;
+
+                 case Constants.SubmissionTypePrefix.CLAIM:
+                    const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    sRegion     = oItem.region; 
+                    fKilometer  = oItem.km;
+                    break;
                 
                 default:
                     MessageBox.error("Invalid submission type provided for calculation.");
