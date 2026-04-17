@@ -86,8 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-			this._onDeclarationDialog = null;
-			this._onDisclaimerGalakanDialog = null;
+			this._oDeclarationDialog = null;
+			this._oDisclaimerGalakanDialog = null;
 
 
 			// decalre custom validator
@@ -257,10 +257,10 @@ sap.ui.define([
 			
 			oDialog.close();
 
-			if (oDialog === this._onDeclarationDialog) {
+			if (oDialog === this._oDeclarationDialog) {
 				this._updateClaimSubmission(this._pendingAction);
 				
-			} else if (oDialog === this._onDisclaimerGalakanDialog) {
+			} else if (oDialog === this._oDisclaimerGalakanDialog) {
 				ApproveDialog.open(this);
 			}
 		},
@@ -1598,14 +1598,14 @@ sap.ui.define([
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
 
-					if (!this._onDeclarationDialog) {
+					if (!this._oDeclarationDialog) {
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
 							controller: this
 						}).then(function (oDeclareDialog) {
 
-							this._onDeclarationDialog = oDeclareDialog;
+							this._oDeclarationDialog = oDeclareDialog;
 							this.getView().addDependent(oDeclareDialog);
 
 							var oText = Fragment.byId("declarationDialogFrag", "declarationText");
@@ -1620,7 +1620,7 @@ sap.ui.define([
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
 
-						this._onDeclarationDialog.open();
+						this._oDeclarationDialog.open();
 					}
 					break;
 				//// Back
@@ -1719,19 +1719,19 @@ sap.ui.define([
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
 
-						if (!this._onDisclaimerGalakanDialog) {
+						if (!this._oDisclaimerGalakanDialog) {
 
 							Fragment.load({
 								name: "claima.fragment.disclaimergalakan",
 								id: "disclaimergalakanDialogFrag",
 								controller: this
 							}).then(function (oDisclaimerGalakanDialog) {
-								this._onDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
+								this._oDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
 
-								this.getView().addDependent(this._onDisclaimerGalakanDialog);
+								this.getView().addDependent(this._oDisclaimerGalakanDialog);
 							}.bind(this));
 						}
-						this._onDisclaimerGalakanDialog.open();
+						this._oDisclaimerGalakanDialog.open();
 						return;
 					}
 					ApproveDialog.open(this);
