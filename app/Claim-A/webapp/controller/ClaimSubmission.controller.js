@@ -2335,7 +2335,6 @@ sap.ui.define([
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
-
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
