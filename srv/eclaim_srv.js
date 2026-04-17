@@ -969,10 +969,6 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
-                if (!req.data.tips) {
-                    total_tips = 0.15 * total_amt_dp;
-                    total_amt_dp += total_tips;
-                }
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
                 time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
@@ -1249,45 +1245,55 @@ module.exports = (srv) => {
     });
 
     /**
-     * Get rate per km id and description, based on Vehicle Type and Claim Type Item
+     * Get rate per km id and description, based on Vehicle Type, Claim Type Item Claim Item, Start Date or Receipt Date
      * @public
      * @param {String} sVehicleType - vehicle type to check in table 
-     * @param {String} sClaimTypeItem - claim type item to check in table 
+     * @param {String} sClaimTypeItem - claim type item to check in table
+     * @param {date} dRateDate - Date to check in table
      * @return {Object} rateperkm - return rate per km ID and description
      */
-    srv.on('getRatePerKm', async (req) => {
-        const { sVehicleType, sClaimTypeItem } = req.data;
+    srv.on("getRatePerKm", async (req) => {
+        const {
+            sVehicleType,
+            sClaimTypeItem,
+            dRateDate
+        } = req.data;
+
+        if (!dRateDate) {
+            return req.error(400, "Rate date is required.");
+        }
 
         try {
-            const sTodayDate = new Date().toISOString().slice(0, 10);
-            var aVehicleTypeFilters = [Constant.Wildcard.All];
-            if (!!sVehicleType) {
+            let aVehicleTypeFilters = [Constant.Wildcard.All];
+            if (sVehicleType) {
                 aVehicleTypeFilters.push(sVehicleType);
             }
-            var aClaimTypeItemFilters = [Constant.Wildcard.All];
-            if (!!sClaimTypeItem) {
+
+            let aClaimTypeItemFilters = [Constant.Wildcard.All];
+            if (sClaimTypeItem) {
                 aClaimTypeItemFilters.push(sClaimTypeItem);
             }
 
             const oRatePerKm = await SELECT.one
                 .from(Constant.Entities.ZRATE_KM)
-                .columns(Constant.EntitiesFields.RATE_KM_ID,Constant.EntitiesFields.RATE)
+                .columns(
+                    Constant.EntitiesFields.RATE_KM_ID,
+                    Constant.EntitiesFields.RATE
+                )
                 .where({
-                    // status check
                     STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                    // values to filter
+                    START_DATE: { "<=": dRateDate },
+                    END_DATE: { ">=": dRateDate },
                     VEHICLE_TYPE_ID: aVehicleTypeFilters,
-                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters,
-                 })
+                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters
+                })
                 .orderBy([
-                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: 'desc' }
+                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: "desc" },
+                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: "desc" }
                 ]);
 
             if (!oRatePerKm) {
-                return req.error(404, `Rate per km not found for given vehicle type.`);
+                return req.error(404, "Rate per KM not found for given parameters.");
             }
 
             return {
@@ -1296,10 +1302,12 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Rate per KM table.');
+            return req.error(
+                500,
+                "An error occurred while determining Rate per KM."
+            );
         }
     });
-
     /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
@@ -1351,13 +1359,13 @@ module.exports = (srv) => {
                 ]);
 
             if (!oEligibilityRule) {
-                return req.error(404, `Eligible amount not found for given employee.`);
+                req.error(404, `Eligible amount not found for given employee.`);
             }
 
             return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
@@ -1394,13 +1402,64 @@ module.exports = (srv) => {
                 ]);
 
             if (!aClaimSubmissions) {
-                return req.error(404, `Unable to retrieve previous claims.`);
+                req.error(404, `Unable to retrieve previous claims.`);
             }
 
             return (aClaimSubmissions.length > 0) ? aClaimSubmissions[0].ZCLAIM_HEADER.STATUS_ID : null;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+            req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+        }
+    });
+
+    /**
+     * Get eligible amount for user employee on Lodging claim type items, based on Employee Grade
+     * @public
+     * @param {String} sClaimType - claim type to retrieve amount
+     * @param {String} sClaimTypeItem - claim type item to retrieve amount
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountLodging', async (req) => {
+        const { sClaimType, sClaimTypeItem } = req.data;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp) {
+                req.error(404, `No employee data found.`);
+            }
+            else {
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aPersonalGradeFilters = [Constant.Wildcard.All];
+                if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: sClaimType,
+                        CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                    })
+                    .orderBy([{ ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }]);
+
+                if (!oEligibilityRule) {
+                    req.error(404, `Eligible amount not found for given employee.`);
+                }
+                else {
+                    return oEligibilityRule.ELIGIBLE_AMOUNT;
+                }
+            }
+            
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
@@ -1424,10 +1483,10 @@ module.exports = (srv) => {
                 return oRoute.MILEAGE;
             }
 
-            return req.error(404, 'No distance record found for the selected route.');
+            req.error(404, 'No distance record found for the selected route.');
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+            req.error(500, `Failed to retrieve mileage: ${error.message}`);
         }
     });
 
@@ -1482,8 +1541,7 @@ module.exports = (srv) => {
             return true;
 
         } catch (error) {
-            console.error("Mass delete failed:", error);
-            return req.error(500, `Failed to delete participants: ${error.message}`);
+            req.error(500, `Failed to delete participants: ${error.message}`);
         }
     });
 
@@ -1515,7 +1573,7 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
+            req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
         }
     });
 
@@ -1721,20 +1779,139 @@ module.exports = (srv) => {
 
         //get total dependent based on Employee ID - IND1 filter by spouse and child
         if (oEmp) {
-            if (sIndicator === Constant.Indicator.Spouse_Child){
+            if (sIndicator === Constant.Indicator.Spouse_Child) {
                 aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID, 
-                                                    RELATIONSHIP: { in: [Constant.RelationshipType.SPOUSE, 
-                                                                         Constant.Relationship.CHILD] }})
-            );
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID,
+                        RELATIONSHIP: {
+                            in: [Constant.RelationshipType.SPOUSE,
+                            Constant.Relationship.CHILD]
+                        }
+                    })
+                );
             } else {
                 aDependent = await tx.run(
-                SELECT.from(ZEMP_DEPENDENT).where({
-                   EMP_ID: oEmp.EEID 
-                })
-            );
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID
+                    })
+                );
             }
             return aDependent.length + 1;
         }
-    })
+    });
+
+    /**
+     * method to retrieve the minimum eligible amount and rate per km based on the requestor / claimant ranks
+     * @public
+     * @async
+     * @param {String} sRegion : location 
+     * @param {Float} fKilometer : input from requestor
+     * @returns {Object} DaratAmounts: returning minimum eligible amount & rate per km
+     */
+    srv.on('getPengangkutanDaratAmount', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZELIGIBILITY_RULE } = srv.entities;
+        const { sRegion, fKilometer } = req.data;
+
+        if (oEmp) {
+            const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+
+            if (!sMarriageCategory) {
+                req.error(404, `No marriage category available for employee.`);
+            }
+
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+
+            const oEligibilityRule = await SELECT.one.from(ZELIGIBILITY_RULE).where({
+                CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
+                CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.DARAT,
+                MARITAL_STATUS: oEmp.MARITAL,
+                MARRIAGE_CATEGORY: sMarriageCategory,
+                REGION_ID: sRegion,
+                STATUS: Constant.ConfigStatus.ACTIVE,
+                START_DATE: { '<=': sTodayDate },
+                END_DATE: { '>=': sTodayDate },
+            }).orderBy([
+                { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+            ]);
+
+            if (!oEligibilityRule) {
+                req.error(404, `Eligibility not found.`);
+            }
+
+            const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
+            const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
+
+            return {
+                fAmount: Math.max(fCalculatedAmount, fMinimumEligibleAmount),
+                fRate: oEligibilityRule.RATE,
+                bMinimum: fCalculatedAmount < fMinimumEligibleAmount
+            };
+        } else {
+            req.error(404, `Employee Not Found.`);
+        }
+    });
+
+     /**
+     * Get eligible amount for employee on Elaun Pemberian Pindah, based on Marital Status
+     * @public
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountPemPindah', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+        try {
+            if (oEmp) {
+                 const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+                  
+                if (!sMarriageCategory) {
+                    return req.error(404, `No marriage category available for employee.`);
+                }
+
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+            var aMaritalStatusValues = [Constant.Wildcard.All];
+            if (oEmp.MARITAL) {
+                aMaritalStatusValues.push(oEmp.MARITAL);
+            }
+            var aMarriageCategoryValues = [Constant.Wildcard.All];
+            if (sMarriageCategory) {
+                aMarriageCategoryValues.push(sMarriageCategory);
+            }
+
+            const oEligibilityRule = await SELECT.one
+                .from(Constant.Entities.ZELIGIBILITY_RULE)
+                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                .where({
+                    // claim type + claim type item
+                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
+                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
+                    PERSONAL_GRADE: oEmp.GRADE,
+                    REGION_ID: req.data.region,
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                    // values to filter
+                    MARITAL_STATUS: { 'in': aMaritalStatusValues },
+                    MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
+                })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+                ]);
+
+            if (!oEligibilityRule) {
+                return 0;
+            }
+
+            return oEligibilityRule.ELIGIBLE_AMOUNT;
+            }
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+        }
+    });
 }

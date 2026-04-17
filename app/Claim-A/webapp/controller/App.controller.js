@@ -61,7 +61,7 @@ sap.ui.define([
 
 		RequestUtility: RequestUtility,
 		DateUtility: DateUtility,
-		
+
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
@@ -396,6 +396,7 @@ sap.ui.define([
 					"last_send_back_time": null,
 					"reject_reason_date": null,
 					"reject_reason_time": null,
+					"mode_of_transfer": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -408,6 +409,7 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
+						"mode_of_transfer": null
 					}
 				},
 				"claim_items": [],
@@ -1811,7 +1813,25 @@ sap.ui.define([
 			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
 				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
 			}
-		}
+		},
 
+		onChange_ModeOfTransfer: async function (oEvent) {
+			// get mode of transfer key from fragment
+			var iMaxDays = await Utility.getModeofTransferMaxDays(oEvent.getSource().getSelectedItem().getKey());
+
+			if (!!iMaxDays) {
+				if (!!(this.oDialogFragment)) {
+					const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+					oDialogModel.setProperty("/req_no_of_days", iMaxDays);
+					oDialogModel.setProperty("/tripstartdate", null);
+					oDialogModel.setProperty("/tripenddate", null);
+				} else {
+					var oInputModel = this.getView().getModel("claimsubmission_input");
+					oInputModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
+					oInputModel.setProperty("/claim_header/trip_start_date", null);
+					oInputModel.setProperty("/claim_header/trip_end_date", null);
+				}
+			}
+		}
 	});
 });
