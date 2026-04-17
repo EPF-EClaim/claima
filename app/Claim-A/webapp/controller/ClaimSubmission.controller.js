@@ -2467,6 +2467,11 @@ sap.ui.define([
 			) {
 				this._filterFareType();
 			}
+
+			// if claim type item is lodging, retrieve eligible amount
+				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+				}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
