@@ -86,8 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-			this._openDeclarationDialog = null;
-			this._openDisclaimerGalakanDialog = null;
+			this._oDeclarationDialog = null;
+			this._oDisclaimerGalakanDialog = null;
 
 
 			// decalre custom validator
@@ -251,26 +251,25 @@ sap.ui.define([
 			await this._afterLoadFragments();
 		},
 
-		//event handle for confirm and cancel
-		onPressDeclarationConfirm: function () {
-			this._openDeclarationDialog.close();
-			this._updateClaimSubmission(this._pendingAction);
+		// Shared event handler for Confirm buttons
+		onDisclaimerDialogConfirm: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			
+			oDialog.close();
+
+			if (oDialog === this._oDeclarationDialog) {
+				this._updateClaimSubmission(this._pendingAction);
+				
+			} else if (oDialog === this._oDisclaimerGalakanDialog) {
+				ApproveDialog.open(this);
+			}
 		},
 
-		onPressDeclarationCancel: function () {
-			this._openDeclarationDialog.close();
+		// Shared event handler for Cancel buttons
+		onDisclaimerDialogCancel: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			oDialog.close();
 		},
-
-		//event handle for confirm and cancel
-		onPressdisclaimerGalakanConfirm: function () {
-			this._openDisclaimerGalakanDialog.close();
-			ApproveDialog.open(this);
-		},
-
-		onPressdisclaimerGalakanCancel: function () {
-			this._openDisclaimerGalakanDialog.close();
-		},
-
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
@@ -1599,14 +1598,14 @@ sap.ui.define([
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
 
-					if (!this._openDeclarationDialog) {
+					if (!this._oDeclarationDialog) {
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
 							controller: this
 						}).then(function (oDeclareDialog) {
 
-							this._openDeclarationDialog = oDeclareDialog;
+							this._oDeclarationDialog = oDeclareDialog;
 							this.getView().addDependent(oDeclareDialog);
 
 							var oText = Fragment.byId("declarationDialogFrag", "declarationText");
@@ -1621,7 +1620,7 @@ sap.ui.define([
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
 
-						this._openDeclarationDialog.open();
+						this._oDeclarationDialog.open();
 					}
 					break;
 				//// Back
@@ -1720,31 +1719,19 @@ sap.ui.define([
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
 
-						if (!this._openDisclaimerGalakanDialog) {
+						if (!this._oDisclaimerGalakanDialog) {
 
 							Fragment.load({
 								name: "claima.fragment.disclaimergalakan",
 								id: "disclaimergalakanDialogFrag",
 								controller: this
 							}).then(function (oDisclaimerGalakanDialog) {
+								this._oDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
 
-								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
-								this.getView().addDependent(oDisclaimerGalakanDialog);
-
-								var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-								oDisclaimerGalakanDialog.open();
-
+								this.getView().addDependent(this._oDisclaimerGalakanDialog);
 							}.bind(this));
-
-						} else {
-
-							var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-							this._openDisclaimerGalakanDialog.open();
 						}
+						this._oDisclaimerGalakanDialog.open();
 						return;
 					}
 					ApproveDialog.open(this);
@@ -2694,6 +2681,15 @@ sap.ui.define([
 						this._oConstant.EntitiesFields.REGION_ID,
 						isOverseas ? FilterOperator.EQ : FilterOperator.NE,
 						this._oConstant.Region.OVERSEA
+					)
+				);
+			}
+			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
+				aFilters.push(
+					new Filter(
+						this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,
+						FilterOperator.NE,
+						this._oConstant.FlightClass.BUSINESS
 					)
 				);
 			}

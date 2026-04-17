@@ -2150,6 +2150,9 @@ sap.ui.define([
 							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 
+						case Constants.ClaimTypeItem.FLIGHT_L:
+							this._removeBusinessClass();
+					
 						default:
 							break;
 					}
@@ -2243,7 +2246,7 @@ sap.ui.define([
 		* Approver Functions (Aiman)
 		* ======================================================= */
 
-		onApproveRequest: function () {
+		onApproveRequest: async function () {
 			// 1) Ensure Reject model exists (for comment)
 			let oReject = this.getView().getModel("Reject");
 			if (!oReject) {
@@ -2260,9 +2263,48 @@ sap.ui.define([
 			}
 			oType.setProperty("/mode", "APPROVE_REQ");
 
+			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
+			if (sClaimType=== this._oConstant.ClaimType.GALAKAN) {
+				try {
+					// 2. Specific Variable Name: Prevents conflicts with other dialogs
+					if (!this._oDisclaimerGalakanDialog) {
+						
+						this._oDisclaimerGalakanDialog = await Fragment.load({
+							id: this.getView().getId(),
+							name: "claima.fragment.disclaimergalakan",
+							controller: this
+						});
+						
+						this.getView().addDependent(this._oDisclaimerGalakanDialog);
+					}
+					this._oDisclaimerGalakanDialog.open();
+
+				} catch (oError) {
+					console.error("Failed to load Disclaimer Galakan Dialog:", oError);
+				}
+
+				return;
+			}
+
 			ApproveDialog.open(this);
 		},
 
+		// Shared event handler for Confirm buttons
+		onDisclaimerDialogConfirm: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			
+			oDialog.close();
+
+			if (oDialog === this._oDisclaimerGalakanDialog) {
+				ApproveDialog.open(this);
+			}
+		},
+
+		// Shared event handler for Cancel buttonss
+		onDisclaimerDialogCancel: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			oDialog.close();
+		},
 
 		onRejectRequest: function () {
 			// 1) Ensure form model
@@ -2668,6 +2710,15 @@ sap.ui.define([
 
 			// run populate allocated amount if applicable
 			RequestUtility.populateAllocatedAmount();
+		},
+
+		_removeBusinessClass: function () {
+			const oSelect   = this.byId("item_flight_class");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
+                            ]: [];
+			oBinding.filter(aFilters);
 		}
 
 	});
