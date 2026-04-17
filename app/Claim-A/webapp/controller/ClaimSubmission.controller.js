@@ -2434,6 +2434,11 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
+				var sDependent = oInputModel.getProperty("/claim_item/dependent");
+				if (sDependent) {
+					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
+				}
+
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2898,6 +2903,8 @@ sap.ui.define([
 				}
 			}
 
+			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
+
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -2986,7 +2993,7 @@ sap.ui.define([
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
 					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
-					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
+					DEPENDENT: sDependentList,
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
 					INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
