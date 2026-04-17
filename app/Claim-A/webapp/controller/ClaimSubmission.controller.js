@@ -86,8 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-			this._openDeclarationDialog = null;
-			this._openDisclaimerGalakanDialog = null;
+			this._oDeclarationDialog = null;
+			this._oDisclaimerGalakanDialog = null;
 
 
 			// decalre custom validator
@@ -251,26 +251,25 @@ sap.ui.define([
 			await this._afterLoadFragments();
 		},
 
-		//event handle for confirm and cancel
-		onPressDeclarationConfirm: function () {
-			this._openDeclarationDialog.close();
-			this._updateClaimSubmission(this._pendingAction);
+		// Shared event handler for Confirm buttons
+		onDisclaimerDialogConfirm: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			
+			oDialog.close();
+
+			if (oDialog === this._oDeclarationDialog) {
+				this._updateClaimSubmission(this._pendingAction);
+				
+			} else if (oDialog === this._oDisclaimerGalakanDialog) {
+				ApproveDialog.open(this);
+			}
 		},
 
-		onPressDeclarationCancel: function () {
-			this._openDeclarationDialog.close();
+		// Shared event handler for Cancel buttons
+		onDisclaimerDialogCancel: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+			oDialog.close();
 		},
-
-		//event handle for confirm and cancel
-		onPressdisclaimerGalakanConfirm: function () {
-			this._openDisclaimerGalakanDialog.close();
-			ApproveDialog.open(this);
-		},
-
-		onPressdisclaimerGalakanCancel: function () {
-			this._openDisclaimerGalakanDialog.close();
-		},
-
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
@@ -1599,14 +1598,14 @@ sap.ui.define([
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
 
-					if (!this._openDeclarationDialog) {
+					if (!this._oDeclarationDialog) {
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
 							controller: this
 						}).then(function (oDeclareDialog) {
 
-							this._openDeclarationDialog = oDeclareDialog;
+							this._oDeclarationDialog = oDeclareDialog;
 							this.getView().addDependent(oDeclareDialog);
 
 							var oText = Fragment.byId("declarationDialogFrag", "declarationText");
@@ -1621,7 +1620,7 @@ sap.ui.define([
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
 
-						this._openDeclarationDialog.open();
+						this._oDeclarationDialog.open();
 					}
 					break;
 				//// Back
@@ -1720,31 +1719,19 @@ sap.ui.define([
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
 
-						if (!this._openDisclaimerGalakanDialog) {
+						if (!this._oDisclaimerGalakanDialog) {
 
 							Fragment.load({
 								name: "claima.fragment.disclaimergalakan",
 								id: "disclaimergalakanDialogFrag",
 								controller: this
 							}).then(function (oDisclaimerGalakanDialog) {
+								this._oDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
 
-								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
-								this.getView().addDependent(oDisclaimerGalakanDialog);
-
-								var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-								oDisclaimerGalakanDialog.open();
-
+								this.getView().addDependent(this._oDisclaimerGalakanDialog);
 							}.bind(this));
-
-						} else {
-
-							var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-							this._openDisclaimerGalakanDialog.open();
 						}
+						this._oDisclaimerGalakanDialog.open();
 						return;
 					}
 					ApproveDialog.open(this);
@@ -2345,12 +2332,6 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
-			// set rate per km if no vehicle type field found
-			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
-				// clear rate per km ID field since formula uses default value
-				oInputModel.setProperty("/claim_item/rate_per_km", null);
-			}
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
@@ -2451,6 +2432,11 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
 				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
+				}
+
+				var sDependent = oInputModel.getProperty("/claim_item/dependent");
+				if (sDependent) {
+					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
 				}
 
 			}
@@ -2697,6 +2683,15 @@ sap.ui.define([
 					)
 				);
 			}
+			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
+				aFilters.push(
+					new Filter(
+						this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,
+						FilterOperator.NE,
+						this._oConstant.FlightClass.BUSINESS
+					)
+				);
+			}
 			oControl.bindAggregation("items", {
 				path: "employee>/" + sTable,
 				filters: aFilters,
@@ -2908,6 +2903,8 @@ sap.ui.define([
 				}
 			}
 
+			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
+
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -2996,7 +2993,7 @@ sap.ui.define([
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
 					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
-					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
+					DEPENDENT: sDependentList,
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
 					INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
@@ -3379,11 +3376,11 @@ sap.ui.define([
 		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
 		 * @public
 		 */
-		onChange_ClaimDetails_Kilometer: function () {
+		onChange_ClaimDetails_Kilometer: async function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
-			// calculate amount if rate per km exists 
+
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
-				this._calculateRatePerKm(false);
+				await this._calculateRatePerKm(false);
 			}
 		},
 
@@ -3421,6 +3418,13 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/rate_per_km",oRatePerKm.id);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km",oRatePerKm.value);
 				}
+
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")) {
+					Utility.init(this.getOwnerComponent(), this.getView());
+					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);		
+				}
+
 				if (
 					oPropertyModel.getProperty("/km/is_visible") &&
 					oPropertyModel.getProperty("/rate_per_km/is_visible")
@@ -3447,7 +3451,8 @@ sap.ui.define([
 				ClaimUtility.fetchPemberianPindahAmount();
 			} else {
 				await this._calculatePerDiem();
-			}
+			}		
+			await this._calculateRatePerKm(false);
 		},
 
 		_calculatePerDiem: async function () {
@@ -3565,11 +3570,11 @@ sap.ui.define([
 		* On selecting location type, reset kilometer value if KWSP Office is selected
 		* @public
 		*/
-		onSelect_ClaimDetails_LocationType: function () {
+		onSelect_ClaimDetails_LocationType: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
-				this.onChange_ClaimDetails_Kilometer();
+				await this.onChange_ClaimDetails_Kilometer();
 			}
 		},
 
@@ -3697,7 +3702,7 @@ sap.ui.define([
 				oInputModel.getProperty("/claim_item/to_state_id"),
 				oInputModel.getProperty("/claim_item/to_location_office")
 			));
-			this.onChange_ClaimDetails_Kilometer();
+			await this.onChange_ClaimDetails_Kilometer();
 		},
 
 		/* =========================================================
@@ -5089,6 +5094,15 @@ sap.ui.define([
 					return;
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
+			})
+
+			Object.keys(oInputModel.getData().claim_item.descr).forEach((sKey) => {
+				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID
+				) {
+					return;
+				}
+				oInputModel.setProperty(`/claim_item/descr/${sKey}`, null);
 			})
 		},
 		onSelect_ExcludeTips: async function () {
