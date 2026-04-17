@@ -1894,7 +1894,7 @@ module.exports = (srv) => {
 
                 const oEligibilityRule = await SELECT.one
                     .from(Constant.Entities.ZELIGIBILITY_RULE)
-                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT, Constant.EntitiesFields.SUBSIDISED_RATE)
                     .where({
                         // claim type + claim type item
                         CLAIM_TYPE_ID: req.data.sClaimType,
@@ -1917,8 +1917,8 @@ module.exports = (srv) => {
                 if (!oEligibilityRule) {
                     return 0;
                 }
-
-                var fFinalAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE);
+                console.log(oEligibilityRule);
+                var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
 
                 return {
                     fAmount         : oEligibilityRule.ELIGIBLE_AMOUNT,

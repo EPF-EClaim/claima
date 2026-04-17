@@ -410,12 +410,11 @@ sap.ui.define([
                 const oContext  = oFunction.getBoundContext();
 
                 const oResult   = oContext.getObject();
-                const oData     = oResult;
 
-                return oData.fAmount;
+                return oResult.fAmount;
 
             } catch (error) {
-                
+                return 0;
             }
 		}
         
