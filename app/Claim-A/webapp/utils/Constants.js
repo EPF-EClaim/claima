@@ -511,6 +511,11 @@ sap.ui.define([
             "DALAM_STESEN": "DALAM_STESEN",
             "LUAR_STESEN": "LUAR_STESEN",
             "WILAYAH": "WILAYAH"
+        },
+        "FlightClass": {
+            "FIRSTCLASS": "01",
+            "BUSINESS": "02",
+            "ECONOMY": "03"
         }
     }
 });

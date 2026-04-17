@@ -2150,6 +2150,9 @@ sap.ui.define([
 							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 
+						case Constants.ClaimTypeItem.FLIGHT_L:
+							this._removeBusinessClass();
+					
 						default:
 							break;
 					}
@@ -2668,6 +2671,15 @@ sap.ui.define([
 
 			// run populate allocated amount if applicable
 			RequestUtility.populateAllocatedAmount();
+		},
+
+		_removeBusinessClass: function () {
+			const oSelect   = this.byId("item_flight_class");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
+                            ]: [];
+			oBinding.filter(aFilters);
 		}
 
 	});
