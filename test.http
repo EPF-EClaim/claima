@@ -169,7 +169,7 @@ Authorization: Basic alice
          "CheckFields": [
             {
                "fieldName": "RECEIPT_DATE",
-               "value": "2026-04-17",
+               "value": "2025-04-17",
                "result": null
             },
             {
@@ -183,7 +183,7 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "LUAR_NEGARA",
+         "ClaimType": "BEG",
          "ClaimTypeItem": "PKN_PANAS",
          "EmpId": "886887",
          "RecordId": "CLM26000000874",

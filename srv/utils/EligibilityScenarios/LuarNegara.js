@@ -48,8 +48,6 @@ module.exports = {
             iHistFreq = iHistoricalData + iCurrentRecordItemData;
         }
 
-        console.log(iHistoricalData, iCurrentRecordItemData, iAllowedFreq);
-
         this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq);
         return oPayload;
 
