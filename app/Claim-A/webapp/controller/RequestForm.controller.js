@@ -696,13 +696,8 @@ sap.ui.define([
 			}
 		},
 
-		onDeleteAttachment1: function () {
-			this._sDeleteTarget = "doc1";
-			this._openDeleteAttachmentDialog();
-		},
-
-		onDeleteAttachment2: function () {
-			this._sDeleteTarget = "doc2";
+		onDeleteAttachment: function (sDeleteTarget) {
+			this._sDeleteTarget = sDeleteTarget;
 			this._openDeleteAttachmentDialog();
 		},
 
@@ -724,7 +719,7 @@ sap.ui.define([
 
 		onConfirmDeleteAttachment: async function () {
 			Attachment.init(this.getOwnerComponent(),this.getView());
-			Attachment.onConfirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, this._sDeleteTarget);
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, this._sDeleteTarget);
 				this._oDeleteAttachmentDialog.close();
 		},
 

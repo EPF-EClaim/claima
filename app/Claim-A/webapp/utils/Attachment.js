@@ -215,7 +215,7 @@ sap.ui.define([
 
 				switch (sSubmissionType) {
 					case Constants.SubmissionTypePrefix.CLAIM:
-						var oItemModel = this.oView.getModel("claimitem_input");
+						var oItemModel = this._oView.getModel("claimitem_input");
 
 						var sAttachmentId = oItemModel.getProperty(`/claim_item/attachment_file_${sTarget}`);
 						var sAttachment1_SFID = sAttachmentId.split(" - ")[0];

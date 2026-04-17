@@ -3139,16 +3139,10 @@ sap.ui.define([
 		 * Deletes the selected claim attachment after user confirmation
 		 * @public
 		 */
-		onDelete_Claim_Attachment_1: function () {
-			this._sDeleteTarget = "1";
+		onDelete_Claim_Attachment: function (sDeleteTarget) {
+			this._sDeleteTarget = sDeleteTarget;
 			this._openDeleteAttachmentDialog();
 		},
-
-		onDelete_Claim_Attachment_2: function () {
-			this._sDeleteTarget = "2";
-			this._openDeleteAttachmentDialog();
-		},
-
 		_openDeleteAttachmentDialog: function () {
 			if (!this._oDeleteAttachmentDialog) {
 				Fragment.load({
@@ -3167,7 +3161,7 @@ sap.ui.define([
 
 		onConfirmDeleteAttachment: async function () {
 			Attachment.init(this.getOwnerComponent(),this.getView());
-			Attachment.onConfirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, this._sDeleteTarget);
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, this._sDeleteTarget);
 				this._oDeleteAttachmentDialog.close();
 		},
 
