@@ -121,6 +121,10 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
+        "ClaimTypeLuarNegara": {
+            "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA", 
+            "LUAR_NEGARA": "LUAR_NEGARA"
+        },
         "EligibilityRule": {
             "ROLE_ID": "ROLE_ID",
             "PERSONAL_GRADE": "PERSONAL_GRADE",
