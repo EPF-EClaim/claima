@@ -461,7 +461,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                         fKilometer  : Decimal(5, 2)
                                     )                                                          returns DaratAmounts;
 
-    function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
+    type PemPindahAmount {
+        fAmount          : Decimal(15, 2);
+        fPercentage      : Decimal(15, 2);
+        fFinalAmount     : Decimal(15, 2);
+    }
+    function getUserEligibleAmountPemPindah(
+        sRegion: String,
+        sClaimType: String,
+        sClaimTypeItem: String
+        )                                                                                      returns PemPindahAmount;
     
     type PEAValidationResult {
             canProceed : Boolean;

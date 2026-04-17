@@ -142,6 +142,10 @@ sap.ui.define([
                         }
                         break;
                     
+                    case Constants.ClaimTypeItem.PINDAH:
+                        fCalculatedAllocatedAmount = await this._getPemberianPindahAmount();
+                        break;
+                    
                     default:
                         // calculate kilometer amount 
                         fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
@@ -412,6 +416,36 @@ sap.ui.define([
                 oReqModel.setProperty("/req_item/cube_eligible", 0);
             }
 		},
+
+        /**
+		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
+		 *
+		 * Calls backend calculation function using employee ID,region, marital status
+		 * and actual amount, then updates approved amount
+		 * in the claim item input model.
+		 *
+		 * @private
+		 * @returns Updates request item fields upon completion
+		 */
+		_getPemberianPindahAmount: async function () {
+			var oReqModel = this._oOwnerComponent.getModel("request");
+			const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
+			oFunction.setParameter("sRegion", oReqModel.getProperty("/req_item/sss"));
+			oFunction.setParameter("sClaimType", oReqModel.getProperty("/req_header/claimtype"));
+			oFunction.setParameter("sClaimTypeItem", oReqModel.getProperty("/req_item/claim_type_item_id"));
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+
+                const oResult   = oContext.getObject();
+
+                return oResult.fAmount;
+
+            } catch (error) {
+                return 0;
+            }
+		}
         
     };
 });
