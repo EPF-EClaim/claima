@@ -118,20 +118,41 @@
                                 <!-- Dependent (Dropdown) -->
                                 <form:FormElement label="{i18n>req_i_dependent}"
                                             visible="false"
-                                            id="i_dependant"  >
+                                            id="i_dependent"  >
                                     <form:fields>
                                         <Select 
+                                            width="100%"
                                             selectedKey="{request>/req_item/dependent}" 
                                             required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
-                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}">
+                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                             <items>
                                                 <core:Item key="{request>DEPENDENT_NO}" 
                                                         text="{request>LEGAL_NAME}" />
                                             </items>
                                         </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Dependent (Multi) -->
+                                <form:FormElement label="{i18n>req_i_dependent}"
+                                            visible="false"
+                                            id="i_dependent_multi"  >
+                                    <form:fields>
+                                        <MultiComboBox 
+                                            width="100%"
+                                            selectedKeys="{request>/req_item/dependent}"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                                            items="{path: 'request>/ZEMP_DEPENDENT',
+                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}" >
+                                            <core:Item key="{request>DEPENDENT_NO}" 
+                                                    text="{request>LEGAL_NAME}" />
+                                        </MultiComboBox>
                                     </form:fields>
                                 </form:FormElement>
 
