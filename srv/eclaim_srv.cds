@@ -1391,6 +1391,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
     
     function getUserClaimStatusEPengakut() returns String;
     
+    function getUserEligibleAmountLodging(
+        sClaimType: String,
+        sClaimTypeItem: String
+    ) returns Decimal(16, 2);
+    
     type reminders {
         empName     : String;
         empEmail    : String;
@@ -1441,5 +1446,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                     )                                                          returns DaratAmounts;
 
     function getUserEligibleAmountPemPindah(region: Integer)                                                  returns Decimal(15,2);
+    
+    type PEAValidationResult {
+            canProceed : Boolean;
+        }
 
+    function validatePEATotal(headerTotal: Decimal(15, 2),
+                              currentAmount: Decimal(15, 2),
+                              isNew: Boolean,
+                              oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 };

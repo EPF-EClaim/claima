@@ -200,7 +200,6 @@ entity ZREQUEST_ITEM : managed {
         START_TIME                 : Time;
         END_TIME                   : Time;
         DEPENDENT                  : String;
-        DEPENDENT_RELATIONSHIP     : String;
         METER_CUBE_ENTITLED        : Decimal(6, 2);
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         FARE_TYPE_ID               : String(2);
@@ -264,8 +263,7 @@ entity ZREQUEST_ITEM : managed {
         ZAREA                      : Association to one ZAREA
                                          on ZAREA.AREA_ID = AREA;
         ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT
-                                         and ZEMP_DEPENDENT.RELATIONSHIP = DEPENDENT_RELATIONSHIP;
+                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
         ZSPORTS_REPRESENTATION     : Association to ZSPORTS_REPRESENTATION
                                          on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
         ZFARE_TYPE                 : Association to ZFARE_TYPE
@@ -506,7 +504,6 @@ entity ZCLAIM_ITEM : managed {
         DEPARTURE_TIME             : Timestamp;
         ARRIVAL_TIME               : Timestamp;
         DEPENDENT                  : String;
-        DEPENDENT_RELATIONSHIP     : String;
         POLICY_NUMBER              : String;
         INSURANCE_PROVIDER_ID      : String(3);
         INSURANCE_PROVIDER_NAME    : String;
@@ -579,8 +576,7 @@ entity ZCLAIM_ITEM : managed {
         ZEMP_MASTER                : Association to one ZEMP_MASTER
                                          on ZEMP_MASTER.EEID = EMP_ID;
         ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT
-                                         and ZEMP_DEPENDENT.RELATIONSHIP = DEPENDENT_RELATIONSHIP;
+                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
         ZFARE_TYPE                 : Association to ZFARE_TYPE
                                          on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
         ZMATERIAL_GROUP            : Association to ZMATERIAL_GROUP
