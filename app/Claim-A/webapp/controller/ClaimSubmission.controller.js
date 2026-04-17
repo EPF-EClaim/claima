@@ -3416,10 +3416,10 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/descr/rate_per_km",oRatePerKm.value);
 				}
 
-				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
-				Utility.init(this.getOwnerComponent(), this.getView());
-				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
-				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")) {
+					Utility.init(this.getOwnerComponent(), this.getView());
+					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);		
 				}
 
 				if (
