@@ -2301,11 +2301,27 @@ annotate service.ZEMP_CA_PAYMENT with @(
                 $Type            : 'UI.DataField',
                 Value            : DISBURSEMENT_STATUS,
                 ![@UI.Importance]: #High,
-                Label            : 'Disbursement Status'
+                Label            : 'Disbursement Status',
             }
         ]
     }
 );
+
+annotate service.ZEMP_CA_PAYMENT with {
+
+    DISBURSEMENT_STATUS @(
+        Common.ValueList               : {
+            $Type         : 'Common.ValueListType',
+            CollectionPath: 'ZDISBURSEMENT_STATUS',
+            Parameters    : [{
+                $Type            : 'Common.ValueListParameterDisplayOnly',
+                ValueListProperty: 'DISBURSEMENT_STATUS_DESC'
+            }]
+        },
+        Common.ValueListWithFixedValues: true
+    );
+
+};
 
 annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
@@ -4596,8 +4612,8 @@ annotate service.ZWORKFLOW_RULE with @(
 
 annotate service.ZTRAIN_COURSE_PART with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [
+    Capabilities.SearchRestrictions    : {Searchable: false},
+    Common.SemanticKey                 : [
         COURSE_ID,
         COURSE_DESC,
         SESSION_NUMBER,
@@ -4607,14 +4623,14 @@ annotate service.ZTRAIN_COURSE_PART with @(
         START_DATE,
         END_DATE
     ],
-    Capabilities                   : {
+    Capabilities                       : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                             : {
+    UI                                 : {
         CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
