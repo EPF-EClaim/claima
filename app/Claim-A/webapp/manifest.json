@@ -2409,7 +2409,7 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": true,
+                                        "enableMassEdit": false,
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
