@@ -650,7 +650,7 @@ sap.ui.define([
 		 * @public
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPemberianPindahAmount: async function () {
+		fetchPemberianPindahAmount: function () {
 			var oInputModel = this._oView.getModel("claimitem_input");
 			var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
