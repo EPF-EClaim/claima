@@ -3167,25 +3167,9 @@ sap.ui.define([
 		},
 
 		onConfirmDeleteAttachment: async function () {
-			const oModel = this.getView().getModel("claimitem_input");
-			const sIndex = this._sDeleteTarget; // "1" or "2"
-
-			try {
-				oModel.setProperty(`/attachments/attachment${sIndex}/fileName`, null);
-				oModel.setProperty(`/attachments/attachment${sIndex}/fileContent`, null);
-				oModel.setProperty(`/claim_item/attachment_file_${sIndex}`, null);
-				oModel.setProperty(`/claim_item/attachment_file_${sIndex}_attachment_id`, null);
-				oModel.setProperty(`/claim_item/_del_attachment_${sIndex}`, true);
-
-				oModel.refresh(true);
-
-			} catch (e) {
-				MessageBox.error(
-					e.message || Utility.getText("msg_claiminput_attachment_delete_error")
-				);
-			} finally {
+			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.onConfirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, this._sDeleteTarget);
 				this._oDeleteAttachmentDialog.close();
-			}
 		},
 
 		onCancelDeleteAttachment: function () {

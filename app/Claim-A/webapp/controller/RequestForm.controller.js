@@ -723,37 +723,9 @@ sap.ui.define([
 		},
 
 		onConfirmDeleteAttachment: async function () {
-			var sTarget = this._sDeleteTarget; // "doc1" or "doc2"
-
-			try {
-				
-				var sAttachmentId = this._oReqModel.getProperty(`/req_item/${sTarget}_filename`);
-				var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
-
-				if (sAttachmentId) {
-					await Attachment.deleteAttachment(sAttachment1_SFID);
-				}
-
-				this._oReqModel.setProperty(`/req_item/${sTarget}`, null);
-				this._oReqModel.setProperty(`/req_item/${sTarget}_filename`, null);
-
-				if (sTarget === "doc1") {
-					this.byId("i_attachment_1_file")?.clear();
-					this.byId("i_attachment_1_file").setRequired(true);
-				}
-				if (sTarget === "doc2") {
-					this.byId("i_attachment_2_file")?.clear();
-				}
-
-				this._oReqModel.refresh(true);
+			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.onConfirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, this._sDeleteTarget);
 				this._oDeleteAttachmentDialog.close();
-
-			} catch (e) {
-				this._oDeleteAttachmentDialog.close();
-				MessageBox.error(
-					e.message || "Failed to delete attachment from SuccessFactors"
-				);
-			}
 		},
 
 		onCancelDeleteAttachment: function () {

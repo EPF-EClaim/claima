@@ -5,11 +5,18 @@ sap.ui.define([
     "sap/m/MessageToast",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
-	"claima/utils/Utility"
-], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator, MessageBox, Utility) {
+	"claima/utils/Utility",
+	"claima/utils/Constants"
+], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator, MessageBox, Utility, Constants) {
     "use strict";
 
     return {
+
+		init:function (oOwnerComponent,oView){
+			this._oOwnerComponent = oOwnerComponent;
+			this._oView = oView;
+		},
+
 
         /* =========================================================
         * Attachments Upload
@@ -201,6 +208,63 @@ sap.ui.define([
 			}
 
 			return true;
+		},
+
+		confirmDeleteAttachment: async function (sSubmissionType, sTarget) {
+			try {
+
+				switch (sSubmissionType) {
+					case Constants.SubmissionTypePrefix.CLAIM:
+						var oItemModel = this.oView.getModel("claimitem_input");
+
+						var sAttachmentId = oItemModel.getProperty(`/claim_item/attachment_file_${sTarget}`);
+						var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
+
+						if (sAttachmentId) {
+							await this.deleteAttachment(sAttachment1_SFID);
+						}
+
+						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileName`, null);
+						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileContent`, null);
+						oItemModel.setProperty(`/claim_item/attachment_file_${sTarget}`, null);
+						break;
+					case Constants.SubmissionTypePrefix.REQUEST:
+						var oItemModel = this._oOwnerComponent.getModel("request");
+
+						var sAttachmentId = oItemModel.getProperty(`/req_item/${sTarget}_filename`);
+						var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
+
+						if (sAttachmentId) {
+							await this.deleteAttachment(sAttachment1_SFID);
+						}
+
+						oItemModel.setProperty(`/req_item/${sTarget}`, null);
+						oItemModel.setProperty(`/req_item/${sTarget}_filename`, null);
+
+						if (sTarget === "doc1") {
+							this._oView.byId("i_attachment_1_file")?.clear();
+							this._oView.byId("i_attachment_1_file").setRequired(true);
+						}
+						if (sTarget === "doc2") {
+							this._oView.byId("i_attachment_2_file")?.clear();
+						}
+						break;
+				}
+				oItemModel.refresh(true);
+			} catch (e) {
+				switch (sSubmissionType) {
+					case Constants.SubmissionTypePrefix.CLAIM:
+						MessageBox.error(
+							e.message || Utility.getText("msg_claiminput_attachment_delete_error")
+						);
+						break;
+					case Constants.SubmissionTypePrefix.REQUEST:
+						MessageBox.error(
+							e.message || "Failed to delete attachment from SuccessFactors"
+						);
+						break;
+				}
+			}
 		},
 
         /* =========================================================
