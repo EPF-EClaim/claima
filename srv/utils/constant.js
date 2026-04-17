@@ -80,7 +80,10 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -120,7 +123,6 @@ const Constant = {
         "PELANGGAN": "PELANGGAN",
         "PELBAGAI": "PELBAGAI",
         "PEM_PINDAH": "PEM_PINDAH",
-        "Pembelian Beg Bimbit": "Pembelian Beg Bimbit",
         "P'HARGAAN": "P'HARGAAN",
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
@@ -139,7 +141,10 @@ const Constant = {
         "YURAN_KLJ": "YURAN_KLJ",
         "I_PAD": "I-PAD",
         "TELEFON_B": "TELEFON_B",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
