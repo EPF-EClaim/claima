@@ -35,6 +35,7 @@ sap.ui.define([
 	"claima/model/models",
 	"claima/utils/Constants",
 	"claima/utils/Common"
+	
 ], function (
 	Fragment,
 	Item,
@@ -3148,6 +3149,7 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
 					ClaimUtility.fetchPemberianPindahAmount();
+					var test =  ClaimUtility.fetchMarriageCategory();
 				} else {
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 				}

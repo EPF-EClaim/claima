@@ -675,6 +675,20 @@ sap.ui.define([
 					}
 					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
 				});
+		},
+
+		fetchMarriageCategory: function (){
+			var oInputModel = this._oView.getModel("claimitem_input");
+			var oSessionModel = this._oOwnerComponent.getModel("session");
+
+			const oContext = this._oView.getModel().bindContext("_getMarriageCategory(...)");
+			oContext.setParameter("sEmpId", oSessionModel.getProperty("/userId"));
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					oInputModel.setProperty("/claim_item/marriage_category", oResult.value);
+				})
 		}
 		
 	}
