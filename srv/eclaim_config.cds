@@ -4637,18 +4637,6 @@ annotate service.ZTRAIN_COURSE_PART with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
                 Value            : SESSION_NUMBER,
                 ![@UI.Importance]: #High,
                 Label            : 'Session Number'
@@ -4670,7 +4658,19 @@ annotate service.ZTRAIN_COURSE_PART with @(
                 Value            : PARTICIPANT_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Participant ID'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
         ]
     }
 );

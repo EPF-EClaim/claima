@@ -208,7 +208,7 @@
                 />
 
                 <!-- Actual Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount_actual}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_claim} : ${i18n>label_claimdetails_input_amount_actual} }" />
                 <Input
                     id="input_claimdetails_input_actual_amount"
                     value="{
@@ -279,43 +279,6 @@
                     editable="false"
                     visible="false"
                 />
-
-                <!-- Type of Vehicle -->
-				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
-				<Select
-					id="select_claimdetails_input_vehicle_type"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
-					change="onSelect_ClaimDetails_VehicleType"
-					liveChange="onSelect_ClaimDetails_VehicleType"
-					visible="{claimitem_property>/vehicle_type/is_visible}"
-					required="true"
-				>
-				</Select>
-
-                <!-- Kilometer -->
-                <Label text="{i18n>label_claimdetails_input_km}" 
-                  required="{claimitem_property>/km/is_required}"
-                  labelFor="input_claimdetails_input_km"/>
-                <Input
-                    id="input_claimdetails_input_km"
-                    value="{
-						path: 'claimitem_input>/claim_item/km',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							maxIntegerDigits: 6,
-							preserveDecimals: false
-                        },
-                        constraints: { minimum: 0.01 }
-					}"
-					change="onChange_ClaimDetails_Kilometer"
-					liveChange="onChange_ClaimDetails_Kilometer"
-					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
-                                ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
-					visible="{claimitem_property>/km/is_visible}"
-				/>
                                 
                 <!-- Amount (MYR) -->
                 <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
@@ -964,6 +927,29 @@
                         		   text="{employee_view>TO_LOCATION_DESC}" />
                     </items>
                 </Select>
+
+                <!-- Kilometer -->
+                <Label text="{i18n>label_claimdetails_input_km}" 
+                  required="{claimitem_property>/km/is_required}"
+                  labelFor="input_claimdetails_input_km"/>
+                <Input
+                    id="input_claimdetails_input_km"
+                    value="{
+						path: 'claimitem_input>/claim_item/km',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 6,
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
+					}"
+					change="onChange_ClaimDetails_Kilometer"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+                                ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
+					visible="{claimitem_property>/km/is_visible}"
+				/>
 
                 <!-- Room Type -->
                 <Label text="{i18n>label_claimdetails_input_roomtype}" />

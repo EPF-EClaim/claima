@@ -283,7 +283,6 @@ sap.ui.define([
                     material_code: null,
                     vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
                     dependent: null,
-                    // dependent_relationship: null,
                     fare_type_id: null,
                     insurance_package_id: null,
                     insurance_provider_id: null,

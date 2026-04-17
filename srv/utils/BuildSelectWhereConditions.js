@@ -71,6 +71,20 @@ module.exports = {
             throw new Error("Date must be in YYYY-MM-DD format");
         }
 
+        const [iCurrentYear] = sDate.split("-").map(Number);
+
+        // Adjust for when Year input, do full multi-year range
+        if (iInputYear > 0) {
+
+            const iStartYear = iCurrentYear - (iInputYear - 1);
+            const iEndYear   = iCurrentYear + (iInputYear - 1);
+
+            return {
+                dDateFrom: `${iStartYear}-01-01`,
+                dDateTo: `${iEndYear}-12-31`
+            };
+        }
+
         // Adjust each non-zero parameter by subtracting 1
         const iAdjYears = iInputYear > 0 ? iInputYear - 1 : 0;
         const iAdjMonths = iInputMonth > 0 ? iInputMonth - 1 : 0;
