@@ -2702,6 +2702,15 @@ sap.ui.define([
 					)
 				);
 			}
+			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
+				aFilters.push(
+					new Filter(
+						this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,
+						FilterOperator.NE,
+						this._oConstant.FlightClass.BUSINESS
+					)
+				);
+			}
 			oControl.bindAggregation("items", {
 				path: "employee>/" + sTable,
 				filters: aFilters,
