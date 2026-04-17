@@ -663,7 +663,8 @@ sap.ui.define([
 					//get eligible amount
 					var nEligibleAmount = oResult.value;
 					var nPercentageComp = oInputModel.getProperty("/claim_item/percentage_compensation");
-
+					oInputModel.setProperty("/claim_item/actual_amount", nEligibleAmount);
+					
 					if (oInputModel.getProperty("/claim_item/actual_amount")) {
 						//calculate approved amount 
 						//use claimed amount if it is lower than eligible amount
@@ -675,18 +676,6 @@ sap.ui.define([
 					}
 					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
 				});
-		},
-
-		fetchMarriageCategory: async function (){
-			var oInputModel = this._oView.getModel("claimitem_input");
-			var oSessionModel = this._oOwnerComponent.getModel("session");
-
-			const oContext = this._oView.getModel().bindContext("_getMarriageCategory(...)");
-			oContext.setParameter("sEmpId", oSessionModel.getProperty("/userId"));
-
-			const oResult = await oContext.requestObject();
-			
-			return oResult
 		}
 		
 	}

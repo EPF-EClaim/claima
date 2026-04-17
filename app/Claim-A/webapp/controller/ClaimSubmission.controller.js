@@ -35,7 +35,6 @@ sap.ui.define([
 	"claima/model/models",
 	"claima/utils/Constants",
 	"claima/utils/Common"
-	
 ], function (
 	Fragment,
 	Item,
@@ -2336,6 +2335,11 @@ sap.ui.define([
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
+
+				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
+					oPropertyModel.setProperty("/actual_amount/is_editable", false);
+					oPropertyModel.setProperty("/actual_amount/is_required", false);
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2398,7 +2402,7 @@ sap.ui.define([
 
 			// set claim item property model
 			var oClaimItemProperties = {
-				actual_amount: { is_visible: false },
+				actual_amount: { is_visible: false, is_editable: true, is_required: true },
 				amount: { is_visible: false },
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
@@ -3149,7 +3153,6 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
 					ClaimUtility.fetchPemberianPindahAmount();
-					var test =  ClaimUtility.fetchMarriageCategory();
 				} else {
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 				}
