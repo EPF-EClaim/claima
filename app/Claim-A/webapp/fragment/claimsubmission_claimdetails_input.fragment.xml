@@ -228,7 +228,7 @@
 					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="{claimitem_property>/actual_amount/is_visible}"
                     editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
-					required="{claimitem_property>/actual_amount/is_required}"
+					required="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
 				/>
 
                 <!-- Subsidised Amount (MYR) (50% of actual) -->

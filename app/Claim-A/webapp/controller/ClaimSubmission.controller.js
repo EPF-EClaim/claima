@@ -2402,7 +2402,7 @@ sap.ui.define([
 
 			// set claim item property model
 			var oClaimItemProperties = {
-				actual_amount: { is_visible: false, is_editable: true },
+				actual_amount: { is_visible: false },
 				amount: { is_visible: false },
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
