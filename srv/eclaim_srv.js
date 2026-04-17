@@ -974,10 +974,6 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
-                if (!req.data.tips) {
-                    total_tips = 0.15 * total_amt_dp;
-                    total_amt_dp += total_tips;
-                }
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
                 time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
@@ -1418,6 +1414,57 @@ module.exports = (srv) => {
 
         } catch (error) {
             req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+        }
+    });
+
+    /**
+     * Get eligible amount for user employee on Lodging claim type items, based on Employee Grade
+     * @public
+     * @param {String} sClaimType - claim type to retrieve amount
+     * @param {String} sClaimTypeItem - claim type item to retrieve amount
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountLodging', async (req) => {
+        const { sClaimType, sClaimTypeItem } = req.data;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp) {
+                req.error(404, `No employee data found.`);
+            }
+            else {
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aPersonalGradeFilters = [Constant.Wildcard.All];
+                if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: sClaimType,
+                        CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                    })
+                    .orderBy([{ ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }]);
+
+                if (!oEligibilityRule) {
+                    req.error(404, `Eligible amount not found for given employee.`);
+                }
+                else {
+                    return oEligibilityRule.ELIGIBLE_AMOUNT;
+                }
+            }
+            
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
