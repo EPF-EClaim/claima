@@ -2345,12 +2345,6 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
-			// set rate per km if no vehicle type field found
-			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
-				// clear rate per km ID field since formula uses default value
-				oInputModel.setProperty("/claim_item/rate_per_km", null);
-			}
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
@@ -3379,11 +3373,19 @@ sap.ui.define([
 		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
 		 * @public
 		 */
-		onChange_ClaimDetails_Kilometer: function () {
+		onChange_ClaimDetails_Kilometer: async function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			//for elaun tukar darat
+			// if claim type item is darat, retrieve eligible amount
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
+				}
 			// calculate amount if rate per km exists 
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
-				this._calculateRatePerKm(false);
+				await this._calculateRatePerKm(false);
 			}
 		},
 
@@ -3448,6 +3450,12 @@ sap.ui.define([
 			} else {
 				await this._calculatePerDiem();
 			}
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				oInputModel.setProperty("/claim_item/descr/rate_per_km",oResult.fRate);		
+				await this._calculateRatePerKm(false);
+				}
 		},
 
 		_calculatePerDiem: async function () {
@@ -3565,11 +3573,11 @@ sap.ui.define([
 		* On selecting location type, reset kilometer value if KWSP Office is selected
 		* @public
 		*/
-		onSelect_ClaimDetails_LocationType: function () {
+		onSelect_ClaimDetails_LocationType: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
-				this.onChange_ClaimDetails_Kilometer();
+				await this.onChange_ClaimDetails_Kilometer();
 			}
 		},
 
@@ -3697,7 +3705,7 @@ sap.ui.define([
 				oInputModel.getProperty("/claim_item/to_state_id"),
 				oInputModel.getProperty("/claim_item/to_location_office")
 			));
-			this.onChange_ClaimDetails_Kilometer();
+			await this.onChange_ClaimDetails_Kilometer();
 		},
 
 		/* =========================================================
@@ -5089,6 +5097,15 @@ sap.ui.define([
 					return;
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
+			})
+
+			Object.keys(oInputModel.getData().claim_item.descr).forEach((sKey) => {
+				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID
+				) {
+					return;
+				}
+				oInputModel.setProperty(`/claim_item/descr/${sKey}`, null);
 			})
 		},
 		onSelect_ExcludeTips: async function () {
