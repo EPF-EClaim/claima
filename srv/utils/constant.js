@@ -68,7 +68,8 @@ const Constant = {
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
-        "ZRATE_KM": "ZRATE_KM"
+        "ZRATE_KM": "ZRATE_KM",
+        "ZCONSTANTS": "ZCONSTANTS"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -184,7 +185,9 @@ const Constant = {
         "RATE": "RATE",
         "REGION_ID": "REGION_ID",
         "STATUS": "STATUS",
-        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS",
+        "ID": "ID",
+        "VALUE": "VALUE"        
     },
     Wildcard: {
         "All": "*",
@@ -295,6 +298,10 @@ const Constant = {
     }, 
     Indicator: {
         Spouse_Child: "IND1"
+    },
+    PositionEventId: ["ZA01", "ZA02", "ZA03", "ZA04", "ZA05", "ZA06", "ZA07", "Z801", "Z802"],
+    ConstantId: {
+        "TUKAR_ELIGIBLE_AFTER_DAYS": "TUKAR_ELIGIBLE_AFTER_DAYS"
     }
 
 };

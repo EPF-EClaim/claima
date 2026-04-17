@@ -25,7 +25,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/RequestUtility",
-	"claima/utils/ClaimUtility"
+	"claima/utils/ClaimUtility",
+	"sap/ui/commons/Message"
 ], function (
 	Popover,
 	Button,
@@ -53,7 +54,8 @@ sap.ui.define([
 	EligibilityCheck,
 	CustomValidator,
 	RequestUtility,
-	ClaimUtility
+	ClaimUtility,
+	Message
 ) {
 	"use strict";
 
@@ -1446,77 +1448,27 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 		},
 
-		_loadClaimTypeSelectionData: function (sReqType) {
+		_loadClaimTypeSelectionData: async function (sReqType) {
 			if (!sReqType) return;
 
-			if (this.oDialogFragment) {
-				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-				if (oDialogModel) {
-					oDialogModel.setProperty('/claimtype', "");
+			var oSelect = Fragment.byId("request", "req_claimtype");
+			var oBinding = oSelect.getBinding("items");
+
+			if (!oBinding) return;
+
+			var aFilters = [
+				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, "ACTIVE"),
+				new Filter(this._oConstant.EntitiesFields.REQUEST_TYPE, FilterOperator.EQ, sReqType)
+			];
+
+			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
+				var bEligibleForElaunTukar = await RequestUtility.checkElaunTukarEligibility();
+				if (!bEligibleForElaunTukar) {
+					aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
 				}
-			} else {
-				this._oReqModel.setProperty('/req_header/claimtype', "");
 			}
 
-			const oSelect = Fragment.byId("request", "req_claimtype");
-
-			if (oSelect) {
-				oSelect.setForceSelection(false);
-				oSelect.setSelectedKey("");
-			}
-
-			const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
-				new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-
-				if (this.oDialogFragment) {
-					this.oDialogFragment.setModel(oTypeModel, "claim_type_list");
-				} else {
-					this.getView().setModel(oTypeModel, "claim_type_list");
-				}
-
-			}).catch(err => console.error("ClaimType Load Failed", err));
-		},
-
-		_loadCourseCodeSelectionData: function (sClaimType) {
-			if (!sReqType) return;
-
-			if (this.oDialogFragment) {
-				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-				if (oDialogModel) {
-					oDialogModel.setProperty('/coursecode', "");
-				}
-			} else {
-				this._oReqModel.setProperty('/req_header/coursecode', "");
-			}
-
-			const oSelect = Fragment.byId("request", "req_coursecode");
-
-			if (oSelect) {
-				oSelect.setForceSelection(false);
-				oSelect.setSelectedKey("");
-			}
-
-			const oListBinding = this._oDataModel.bindList("/ZTRAIN_COURSE_PART", null, null, [
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, false)
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-
-				if (this.oDialogFragment) {
-					this.oDialogFragment.setModel(oTypeModel, "course_list");
-				} else {
-					this.getView().setModel(oTypeModel, "course_list");
-				}
-
-			}).catch(err => console.error("Course List Load Failed", err));
+			oBinding.filter(aFilters);
 		},
 
 		getFieldVisibility_ReqType: async function (oEvent) {

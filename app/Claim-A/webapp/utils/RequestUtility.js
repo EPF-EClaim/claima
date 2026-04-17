@@ -383,6 +383,21 @@ sap.ui.define([
                 oReqModel.setProperty("/req_item/cube_eligible", 0);
             }
 		},
+
+        checkElaunTukarEligibility: async function () {
+            const oDataModel    = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                
+                return oContext.getObject().value;  // true or false
+
+            } catch (oError) {
+                return false;
+            }
+        }
         
     };
 });

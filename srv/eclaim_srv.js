@@ -1961,4 +1961,47 @@ module.exports = (srv) => {
         }
         return { canProceed: true };
     });
+
+    srv.on('checkElaunTukarEligible', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+        if (!oEmp) {
+            return req.error(404, 'Employee not found'); 
+        }
+
+        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
+        const sPositionStartDate = oEmp.POSITION_START_DATE;
+
+        const oConstantRec = await SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .columns(Constant.EntitiesFields.VALUE) 
+            .where({
+                ID: Constant.ConstantId.TUKAR_ELIGIBLE_AFTER_DAYS
+            });
+
+        const iDays = parseInt(oConstantRec.VALUE, 10);
+
+        if (Constant.PositionEventId.includes(sPositionEvent)) {
+            
+            if (!sPositionStartDate) {
+                return false;
+            }
+
+            const dEligibleDate = new Date(sPositionStartDate);
+            
+            dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
+
+            const dCurrentDate = new Date();
+            dCurrentDate.setUTCHours(0, 0, 0, 0);
+
+            console.log("Start (UTC):", new Date(sPositionStartDate));
+            console.log("Eligible (UTC):", dEligibleDate);
+            console.log("Today (UTC):", dCurrentDate);
+
+            return dCurrentDate > dEligibleDate; 
+        }
+
+        return false;
+    });
 }
