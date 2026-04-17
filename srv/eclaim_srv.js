@@ -1424,15 +1424,16 @@ module.exports = (srv) => {
      * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getUserEligibleAmountLodging', async (req) => {
-        const tx = cds.tx(req);
-        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { sClaimType, sClaimTypeItem } = req.data;
 
-        if (!oEmp) {
-            req.error(404, `No employee data found.`);
-        }
-        else {
-            try {
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp) {
+                req.error(404, `No employee data found.`);
+            }
+            else {
                 const sTodayDate = new Date().toISOString().slice(0, 10);
                 var aPersonalGradeFilters = [Constant.Wildcard.All];
                 if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
@@ -1459,9 +1460,10 @@ module.exports = (srv) => {
                 else {
                     return oEligibilityRule.ELIGIBLE_AMOUNT;
                 }
-            } catch (error) {
-                req.error(500, 'An error occurred while checking Eligibility Rule table.');
             }
+            
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
