@@ -78,16 +78,24 @@ sap.ui.define([
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
                     case Constants.ClaimTypeItem.LODG_O:
+                    case Constants.ClaimTypeItem.LOD_TUKAR:
                         // calculate lodging amount
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
+                        }
                         break;
 
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
                         fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
-                        if (oReqItem.currency_rate) {
+                        if (!!oReqItem.currency_rate) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
+                        }
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
                         }
                         break;
                     
@@ -231,12 +239,17 @@ sap.ui.define([
             var sEmpId          = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
             var sClaimType      = oReqHeader.claimtype;
             var sClaimTypeItem  = oReqItem.claim_type_item_id;
-            var sRegion         = oReqItem.sss || "01";
-            var nTravelDay      = oReqItem.travel_day;
-            var nTravelHour     = oReqItem.total_travel_hour;
+            var sRegion         = oReqItem.sss;
+            var nTravelDay      = oReqItem.travel_day || 0;
+            var nTravelHour     = oReqItem.total_travel_hour || 0;
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
+
+            if (sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
+                var nTravelDay      = oReqItem.no_of_days || 0;
+                var nTravelHour     = oReqItem.no_of_days * 24 || 0;
+            }
 
             if (!nTravelHour || !sRegion) return;
 
@@ -269,7 +282,7 @@ sap.ui.define([
                 oReqModel.setProperty("/req_item/daily_allowance", fDailyAllowance);
                 oReqModel.setProperty("/req_item/currency_code", sCurrency);
 
-                return fAmount + fDailyAllowance
+                return fAmount;
                 
 
             } catch (oError) {
@@ -307,7 +320,11 @@ sap.ui.define([
             var tTripEndTime    = oReqItem.trip_end_time;
 
             if (!dTripStartDate || !dTripEndDate || !tTripStartTime || !tTripEndTime) {
-                return; 
+                var dTripStartDate  = oReqItem.start_date;
+                var dTripEndDate    = oReqItem.end_date;
+                var tTripStartTime  = "00:00:00"
+                var tTripEndTime    = "24:00:00"
+                if (!dTripStartDate || !dTripEndDate || !tTripStartTime || !tTripEndTime) return;
             }
 
             const oStartDateTime = DateUtility.parseDateTime(dTripStartDate, tTripStartTime);
