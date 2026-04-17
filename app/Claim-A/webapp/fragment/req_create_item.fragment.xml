@@ -621,6 +621,7 @@
                                             id="i_flight_class" >
                                     <form:fields>
                                         <Select 
+                                            id="item_flight_class"
                                             selectedKey="{request>/req_item/flight_class}" 
                                             required="true" 
                                             forceSelection="false"

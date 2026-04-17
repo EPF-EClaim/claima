@@ -972,7 +972,6 @@
                         constraints: { minimum: 0.01 }
 					}"
 					change="onChange_ClaimDetails_Kilometer"
-					liveChange="onChange_ClaimDetails_Kilometer"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
                                 ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
 					visible="{claimitem_property>/km/is_visible}"
