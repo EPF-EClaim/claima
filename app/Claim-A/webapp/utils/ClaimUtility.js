@@ -616,5 +616,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", nApprovedAmount);
 				});
 		}
+		
 	}
 });
