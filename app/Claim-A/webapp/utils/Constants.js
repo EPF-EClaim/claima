@@ -276,7 +276,8 @@ sap.ui.define([
             "REGION_ID": "REGION_ID",
             "TRIP_START_DATE" : "TRIP_START_DATE",
             "TRIP_END_DATE" : "TRIP_END_DATE",
-            "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS"
+            "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
+            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -505,6 +506,11 @@ sap.ui.define([
         },
         "LenderName":{
             "FINANCIAL_INSTITUTION" : "FN"
+        },
+        "ModeOfTransfer":{
+            "DALAM_STESEN": "DALAM_STESEN",
+            "LUAR_STESEN": "LUAR_STESEN",
+            "WILAYAH": "WILAYAH"
         }
     }
 });

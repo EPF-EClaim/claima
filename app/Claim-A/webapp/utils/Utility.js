@@ -256,14 +256,16 @@ sap.ui.define([
                 Constants.ClaimType.DLM_NEGARA,
                 Constants.ClaimType.LUAR_NEGARA,
                 Constants.ClaimType.KURSUS_DLM_NEGARA,
-                Constants.ClaimType.KURSUS_LUAR_NEGARA
+                Constants.ClaimType.KURSUS_LUAR_NEGARA,
+                Constants.ClaimType.ELAUN_TUKAR
             ];
 
             const aLodgingItems = [
                 Constants.ClaimTypeItem.HOTEL_L,
                 Constants.ClaimTypeItem.HOTEL_O,
                 Constants.ClaimTypeItem.LODGING_L,
-                Constants.ClaimTypeItem.LODG_O
+                Constants.ClaimTypeItem.LODG_O,
+                Constants.ClaimTypeItem.LOD_TUKAR
             ];
 
             return aNightClaimTypes.includes(oHeader.claim_type_id) &&
@@ -448,7 +450,26 @@ sap.ui.define([
             } finally {
                 BusyIndicator.hide();
             }
-        }
+        },
+        getModeofTransferMaxDays: function (sModeOfTransfer){
+            const oConstantBindList = this._oOwnerComponent.getModel().bindList("/ZTRANSFER_MODE");
+			var aConstantFilters = [];
+            var aConstantAndFilters = [];
+
+            aConstantAndFilters.push(new Filter(Constants.EntitiesFields.TRANSFER_MODE_ID, FilterOperator.EQ, sModeOfTransfer));
+			aConstantAndFilters = new Filter(aConstantAndFilters, true);
+
+            aConstantFilters.push(new Filter(aConstantAndFilters));
+            aConstantFilters = new Filter(aConstantFilters, true);
+           
+            const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
+                // Process the filtered data contexts
+                var oConstants = aContexts.map(context => context.getObject())[0];
+                return oConstants.NUMBER_OF_DAYS;
+            });
+            
+            return iMaxDays;
+        },
 
     };
     });
