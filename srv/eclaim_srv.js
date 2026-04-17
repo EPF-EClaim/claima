@@ -256,6 +256,7 @@ module.exports = (srv) => {
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
                     var new_return = return_value + Number(existing[0].RETURN); 
+                    original_budget = original_budget === 0? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
