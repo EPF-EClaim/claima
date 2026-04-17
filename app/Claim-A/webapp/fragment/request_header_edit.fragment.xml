@@ -6,7 +6,7 @@
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content">
 
-    <VBox >
+    <VBox id="request_header_fragment">
         <VBox
             id="request_form_header_box1"
             backgroundDesign="Solid"

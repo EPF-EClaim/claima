@@ -6,7 +6,7 @@
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content">
 
-    <VBox >
+    <VBox id="request_header_fragment">
         <VBox
             id="request_form_header_box1"
             backgroundDesign="Solid"
@@ -23,13 +23,6 @@
                     icon="sap-icon://excel-attachment"
                     text="{i18n>downloaddetails}"
                     press=".onDownloadExcelReport" />
-
-                <Button
-                    id="btnSaveHeader"
-                    icon="sap-icon://save"
-                    text="{i18n>req_view_btn_save}"
-                    press=".onSaveHeaderPress"
-                    visible="{reqHeaderEditableModel>/saveHeader}" />
 
                 <Button
                     id="btnEditHeader"

@@ -190,6 +190,9 @@ sap.ui.define([
                         oEditableFields.setProperty("/altCostCenter", !bEdit)
                         oEditableFields.setProperty("/startEvent", !bEdit);
                         oEditableFields.setProperty("/endEvent", !bEdit);
+                        oEditableFields.setProperty("/location", !bEdit);
+                        oEditableFields.setProperty("/comment", !bEdit);
+                        oEditableFields.setProperty("/saveHeader", !bEdit);
 
                         if(oClaimModel.getProperty("/claim_header/request_id")){
                             RequestUtility.init(this._oOwnerComponent, this._oView);
@@ -240,7 +243,12 @@ sap.ui.define([
                         oEditableFields.setProperty("/endEvent", !bEdit);
                         oEditableFields.setProperty("/startEventRequired", !bEdit);
                         oEditableFields.setProperty("/endEventRequired", !bEdit);
+                        oEditableFields.setProperty("/startTrip", !bEdit);
+                        oEditableFields.setProperty("/endTrip", !bEdit);
+                        oEditableFields.setProperty("/location", !bEdit);
                         oEditableFields.setProperty("/altCostCenter", !bEdit);
+                        oEditableFields.setProperty("/comment", !bEdit);
+                        oEditableFields.setProperty("/saveHeader", !bEdit);
 
                         if ( sReqTypeID == Constants.RequestType.TRAVEL ) {
                             oEditableFields.setProperty("/startEvent", bEdit);

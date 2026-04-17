@@ -120,8 +120,12 @@ sap.ui.define([
 
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
 			
-			const oPage = this.byId("request_form");
+			await this._loadRequest(sRequestId);
+		},
 
+		async _loadRequest(sReqId) {
+			BusyIndicator.show(0);
+			const oPage = this.byId("request_form");
     		// hard reset
 			oPage.removeAllContent();
 
@@ -135,15 +139,10 @@ sap.ui.define([
 				}
 			}
 			this._oFragments = Object.create(null);
-			await this._loadRequest(sRequestId);
-		},
-
-		async _loadRequest(sReqId) {
-			BusyIndicator.show(0);
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
 				await PARequestSharedFunction._getItemList(this, sReqId);
-				await this._showHeaderFragment()
+				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
 			} catch (error) {
 				console.log(error);
@@ -207,9 +206,10 @@ sap.ui.define([
 		},
 
 		_showHeaderFragment: async function () {
+			this._removeByLocalId("request_header_fragment");
 			var oPage = this.byId("request_form");
 			
-			await this._getFormFragment("request_header", true).then(function (oVBox) {
+			await this._getFormFragment("request_header").then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
 		},
