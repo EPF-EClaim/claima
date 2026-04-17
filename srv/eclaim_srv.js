@@ -1868,50 +1868,56 @@ module.exports = (srv) => {
                  const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
                   
                 if (!sMarriageCategory) {
-                    return req.error(404, `No marriage category available for employee.`);
+                    req.error(404, `No marriage category available for employee.`);
                 }
 
-            const sTodayDate = new Date().toISOString().slice(0, 10);
-            var aMaritalStatusValues = [Constant.Wildcard.All];
-            if (oEmp.MARITAL) {
-                aMaritalStatusValues.push(oEmp.MARITAL);
-            }
-            var aMarriageCategoryValues = [Constant.Wildcard.All];
-            if (sMarriageCategory) {
-                aMarriageCategoryValues.push(sMarriageCategory);
-            }
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aMaritalStatusValues = [Constant.Wildcard.All];
+                if (oEmp.MARITAL) {
+                    aMaritalStatusValues.push(oEmp.MARITAL);
+                }
+                var aMarriageCategoryValues = [Constant.Wildcard.All];
+                if (sMarriageCategory) {
+                    aMarriageCategoryValues.push(sMarriageCategory);
+                }
 
-            const oEligibilityRule = await SELECT.one
-                .from(Constant.Entities.ZELIGIBILITY_RULE)
-                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
-                .where({
-                    // claim type + claim type item
-                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
-                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
-                    PERSONAL_GRADE: oEmp.GRADE,
-                    REGION_ID: req.data.region,
-                    // status check
-                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                    // values to filter
-                    MARITAL_STATUS: { 'in': aMaritalStatusValues },
-                    MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
-                })
-                .orderBy([
-                    { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
-                ]);
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
+                        CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
+                        PERSONAL_GRADE: oEmp.GRADE,
+                        REGION_ID: req.data.region,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        MARITAL_STATUS: { 'in': aMaritalStatusValues },
+                        MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
+                    })
+                    .orderBy([
+                        { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                        { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+                    ]);
 
-            if (!oEligibilityRule) {
-                return 0;
-            }
+                if (!oEligibilityRule) {
+                    return 0;
+                }
 
-            return oEligibilityRule.ELIGIBLE_AMOUNT;
+                var fFinalAmount = oEligibilityRule.ELIGIBLE_AMOUNT * oEligibilityRule.SUBSIDISED_RATE;
+
+                return {
+                    fAmount         : oEligibilityRule.ELIGIBLE_AMOUNT,
+                    fRate           : oEligibilityRule.SUBSIDISED_RATE,
+                    fFinalAmount    : fFinalAmount
+                }
             }
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 }
