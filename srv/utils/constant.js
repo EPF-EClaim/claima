@@ -187,7 +187,8 @@ const Constant = {
         "STATUS": "STATUS",
         "TRANSPORT_CLASS": "TRANSPORT_CLASS",
         "ID": "ID",
-        "VALUE": "VALUE"        
+        "VALUE": "VALUE",
+        "SUBSIDISED_RATE": "SUBSIDISED_RATE"
     },
     Wildcard: {
         "All": "*",

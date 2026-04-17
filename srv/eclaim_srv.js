@@ -256,6 +256,7 @@ module.exports = (srv) => {
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
                     var new_return = return_value + Number(existing[0].RETURN); 
+                    original_budget = original_budget === 0? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
@@ -1879,7 +1880,7 @@ module.exports = (srv) => {
                 const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
 
                 if (!sMarriageCategory) {
-                    return req.error(404, `No marriage category available for employee.`);
+                    req.error(404, `No marriage category available for employee.`);
                 }
 
                 const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -1894,13 +1895,13 @@ module.exports = (srv) => {
 
                 const oEligibilityRule = await SELECT.one
                     .from(Constant.Entities.ZELIGIBILITY_RULE)
-                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT, Constant.EntitiesFields.SUBSIDISED_RATE)
                     .where({
                         // claim type + claim type item
-                        CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
-                        CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
                         PERSONAL_GRADE: oEmp.GRADE,
-                        REGION_ID: req.data.region,
+                        REGION_ID: req.data.sRegion,
                         // status check
                         STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
                         START_DATE: { '<=': sTodayDate },
@@ -1917,12 +1918,18 @@ module.exports = (srv) => {
                 if (!oEligibilityRule) {
                     return 0;
                 }
+                
+                var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
 
-                return oEligibilityRule.ELIGIBLE_AMOUNT;
+                return {
+                    fAmount         : oEligibilityRule.ELIGIBLE_AMOUNT,
+                    fPercentage     : oEligibilityRule.SUBSIDISED_RATE,
+                    fFinalAmount    : fFinalAmount
+                }
             }
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
     
