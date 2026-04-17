@@ -11,6 +11,9 @@ const Handphone = require("./Handphone");
 const JalurLebar = require("./JalurLebar");
 const ElaunPindah = require("./ElaunPindah");
 const ElaunTukar = require("./ElaunTukar");
+const Istiadat = require("./Istiadat");
+const Mahkamah = require("./Mahkamah");
+const BegBimbit = require("./BegBimbit");
 
 module.exports = {
   /**
@@ -96,9 +99,10 @@ module.exports = {
           break;
 
         case Constant.ClaimType.LUAR_NEGARA:
-          oReturnPayload = LuarNegara.onEligibleCheck(
+          oReturnPayload = await LuarNegara.onEligibleCheck(
             aPayload[i],
-            aFilteredEligibility
+            aFilteredEligibility,
+            tx
           );
           break;
 
@@ -110,9 +114,10 @@ module.exports = {
           break;
 
         case Constant.ClaimType.KURSUS_LUAR_NEGARA:
-          oReturnPayload = KursusLuar.onEligibleCheck(
+          oReturnPayload = await KursusLuar.onEligibleCheck(
             aPayload[i],
-            aFilteredEligibility
+            aFilteredEligibility,
+            tx
           );
           break;
 
@@ -120,7 +125,7 @@ module.exports = {
           oReturnPayload = await IPAD.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
-            tx,
+            tx
           );
           break;
 
@@ -129,7 +134,7 @@ module.exports = {
             aPayload[i],
             aEmpData[0],
             aFilteredEligibility,
-            tx,
+            tx
           );
           break;
 
@@ -159,6 +164,30 @@ module.exports = {
             aPayload[i],
             aFilteredEligibility,
             aFilteredEmp[0]
+          );
+          break;
+
+        case Constant.ClaimType.ISTIADAT:
+          oReturnPayload = await Istiadat.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+        
+        case Constant.ClaimType.MAHKAMAH:
+          oReturnPayload = await Mahkamah.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+
+        case Constant.ClaimType.BEG_BIMBIT:
+          oReturnPayload = await BegBimbit.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
           );
           break;
 

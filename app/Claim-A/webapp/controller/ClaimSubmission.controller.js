@@ -570,7 +570,6 @@ sap.ui.define([
 					currency_rate: it.CURRENCY_RATE,
 					departure_time: it.DEPARTURE_TIME,
 					dependent: it.DEPENDENT,
-					dependent_relationship: it.DEPENDENT_RELATIONSHIP,
 					emp_id: it.EMP_ID,
 					fare_type_id: it.FARE_TYPE_ID,
 					insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
@@ -632,7 +631,6 @@ sap.ui.define([
 					material_code: null,
 					vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
 					dependent: null,
-					dependent_relationship: null,
 					fare_type_id: null,
 					insurance_package_id: null,
 					insurance_provider_id: null,
@@ -1229,7 +1227,6 @@ sap.ui.define([
 					"currency_rate": null,
 					"departure_time": null,
 					"dependent": null,
-					"dependent_relationship": null,
 					"emp_id": null,
 					"fare_type_id": null,
 					"insurance_cert_end_date": null,
@@ -1275,7 +1272,6 @@ sap.ui.define([
 						"material_code": null,
 						"vehicle_ownership_id": null,
 						"dependent": null,
-						"dependent_relationship": null,
 						"fare_type_id": null,
 						"insurance_package_id": null,
 						"insurance_provider_id": null,
@@ -2739,7 +2735,6 @@ sap.ui.define([
 				});
 				return;
 			}
-
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
@@ -2997,7 +2992,6 @@ sap.ui.define([
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
 					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
-					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
 					INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
@@ -3184,7 +3178,7 @@ sap.ui.define([
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
 				ClaimUtility.fetchPengangkutanLautAmount();
-			} 
+			}
 		},
 
 		onChange_PengangkutanLautInputs: async function () {
@@ -3475,7 +3469,7 @@ sap.ui.define([
 					let fAmount = fKm * fRate;
 
 					if (oPropertyModel.getProperty("/toll/is_visible") &&fToll > 0) {
-						
+
 						fAmount += fToll;
 					}
 					oInputModel.setProperty("/claim_item/amount", fAmount);
@@ -4324,7 +4318,6 @@ sap.ui.define([
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
 						DEPARTURE_TIME: claim_item.departure_time ? new Date(claim_item.departure_time).toISOString() : null,
 						DEPENDENT: claim_item.dependent,
-						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
 						EMP_ID: claim_item.emp_id,
 						FARE_TYPE_ID: claim_item.fare_type_id,
 						INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(claim_item.insurance_cert_end_date),
