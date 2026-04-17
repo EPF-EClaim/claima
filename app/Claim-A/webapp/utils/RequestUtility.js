@@ -401,7 +401,9 @@ sap.ui.define([
 		_getPemberianPindahAmount: async function () {
 			var oReqModel = this._oOwnerComponent.getModel("request");
 			const oFunction = this._oOwnerComponent.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
-			oFunction.setParameter("region", oReqModel.getProperty("/req_item/sss"));
+			oFunction.setParameter("sRegion", oReqModel.getProperty("/req_item/sss"));
+			oFunction.setParameter("sClaimType", oReqModel.getProperty("/req_header/claimtype"));
+			oFunction.setParameter("sClaimTypeItem", oReqModel.getProperty("/req_item/claim_type_item_id"));
 
             try {
                 await oFunction.execute();

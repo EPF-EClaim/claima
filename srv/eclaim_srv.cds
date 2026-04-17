@@ -466,6 +466,18 @@ service eclaim_srv @(requires: 'authenticated-user') {
         fPercentage      : Decimal(15, 2);
         fFinalAmount     : Decimal(15, 2);
     }
-    function getUserEligibleAmountPemPindah(region: String)                                   returns PemPindahAmount;
+    function getUserEligibleAmountPemPindah(
+        sRegion: String,
+        sClaimType: String,
+        sClaimTypeItem: String
+        )                                                                                      returns PemPindahAmount;
+    
+    type PEAValidationResult {
+            canProceed : Boolean;
+        }
 
+    function validatePEATotal(headerTotal: Decimal(15, 2),
+                              currentAmount: Decimal(15, 2),
+                              isNew: Boolean,
+                              oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 };
