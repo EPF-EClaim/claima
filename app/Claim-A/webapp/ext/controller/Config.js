@@ -196,7 +196,6 @@ sap.ui.define([
                         text: "{DISBURSEMENT_STATUS_DESC}"
                     })
                 });
-
                 /* ================================
                  * DATE FIELDS (READ-ONLY)
                  * ================================ */
@@ -208,9 +207,8 @@ sap.ui.define([
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: false
+                    enabled: bIsZempCaPayment
                 });
-
                 /* ================================
                  * BOOLEAN FIELDS
                  * ================================ */
@@ -226,7 +224,6 @@ sap.ui.define([
                         new ListItem({ key: true, text: Utility.getText("yes") })
                     ]
                 });
-
                 /* ================================
                  * DEFAULT INPUT (READ-ONLY LOGIC)
                  * ================================ */
