@@ -1917,7 +1917,7 @@ module.exports = (srv) => {
                 if (!oEligibilityRule) {
                     return 0;
                 }
-                console.log(oEligibilityRule);
+                
                 var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
 
                 return {
