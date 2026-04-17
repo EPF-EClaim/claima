@@ -2263,9 +2263,48 @@ sap.ui.define([
 			}
 			oType.setProperty("/mode", "APPROVE_REQ");
 
+			if (this._oReqModel.getProperty("/req_header/claimtype") === this._oConstant.ClaimType.GALAKAN) {
+
+				if (!this._openDisclaimerGalakanDialog) {
+
+					Fragment.load({
+						name: "claima.fragment.disclaimergalakan",
+						id: "disclaimergalakanDialogFrag",
+						controller: this
+					}).then(function (oDisclaimerGalakanDialog) {
+
+						this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
+						this.getView().addDependent(oDisclaimerGalakanDialog);
+
+						var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
+						oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+						oDisclaimerGalakanDialog.open();
+
+					}.bind(this));
+
+				} else {
+
+					var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
+					oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+					this._openDisclaimerGalakanDialog.open();
+				}
+				return;
+			}
+
 			ApproveDialog.open(this);
 		},
 
+		//event handle for confirm and cancel
+		onPressdisclaimerGalakanConfirm: function () {
+			this._openDisclaimerGalakanDialog.close();
+			ApproveDialog.open(this);
+		},
+
+		onPressdisclaimerGalakanCancel: function () {
+			this._openDisclaimerGalakanDialog.close();
+		},
 
 		onRejectRequest: function () {
 			// 1) Ensure form model
