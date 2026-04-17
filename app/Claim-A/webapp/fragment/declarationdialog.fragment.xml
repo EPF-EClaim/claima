@@ -19,13 +19,13 @@
             <Button
                 type="Emphasized"
                 text="{i18n>button_claimsubmission_declaration_confirm}"
-                press=".onDialogConfirm" />
+                press=".onDisclaimerDialogConfirm" />
         </beginButton>
 
         <endButton>
             <Button
                 text="{i18n>button_claimsummary_cancel}"
-                press=".onDialogCancel" />
+                press=".onDisclaimerDialogCancel" />
         </endButton>
 
     </Dialog>

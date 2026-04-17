@@ -86,8 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-			this._openDeclarationDialog = null;
-			this._openDisclaimerGalakanDialog = null;
+			this._onDeclarationDialog = null;
+			this._onDisclaimerGalakanDialog = null;
 
 
 			// decalre custom validator
@@ -252,21 +252,21 @@ sap.ui.define([
 		},
 
 		// Shared event handler for Confirm buttons
-		onDialogConfirm: function (oEvent) {
+		onDisclaimerDialogConfirm: function (oEvent) {
 			var oDialog = oEvent.getSource().getParent();
 			
 			oDialog.close();
 
-			if (oDialog === this._openDeclarationDialog) {
+			if (oDialog === this._onDeclarationDialog) {
 				this._updateClaimSubmission(this._pendingAction);
 				
-			} else if (oDialog === this._openDisclaimerGalakanDialog) {
+			} else if (oDialog === this._onDisclaimerGalakanDialog) {
 				ApproveDialog.open(this);
 			}
 		},
 
 		// Shared event handler for Cancel buttons
-		onDialogCancel: function (oEvent) {
+		onDisclaimerDialogCancel: function (oEvent) {
 			var oDialog = oEvent.getSource().getParent();
 			oDialog.close();
 		},
@@ -1598,14 +1598,14 @@ sap.ui.define([
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
 
-					if (!this._openDeclarationDialog) {
+					if (!this._onDeclarationDialog) {
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
 							controller: this
 						}).then(function (oDeclareDialog) {
 
-							this._openDeclarationDialog = oDeclareDialog;
+							this._onDeclarationDialog = oDeclareDialog;
 							this.getView().addDependent(oDeclareDialog);
 
 							var oText = Fragment.byId("declarationDialogFrag", "declarationText");
@@ -1620,7 +1620,7 @@ sap.ui.define([
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
 
-						this._openDeclarationDialog.open();
+						this._onDeclarationDialog.open();
 					}
 					break;
 				//// Back
@@ -1719,19 +1719,19 @@ sap.ui.define([
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
 
-						if (!this._openDisclaimerGalakanDialog) {
+						if (!this._onDisclaimerGalakanDialog) {
 
 							Fragment.load({
 								name: "claima.fragment.disclaimergalakan",
 								id: "disclaimergalakanDialogFrag",
 								controller: this
 							}).then(function (oDisclaimerGalakanDialog) {
-								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
+								this._onDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
 
-								this.getView().addDependent(this._openDisclaimerGalakanDialog);
+								this.getView().addDependent(this._onDisclaimerGalakanDialog);
 							}.bind(this));
 						}
-						this._openDisclaimerGalakanDialog.open();
+						this._onDisclaimerGalakanDialog.open();
 						return;
 					}
 					ApproveDialog.open(this);

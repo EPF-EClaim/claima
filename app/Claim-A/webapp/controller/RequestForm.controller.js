@@ -2290,7 +2290,7 @@ sap.ui.define([
 		},
 
 		// Shared event handler for Confirm buttons
-		onDialogConfirm: function (oEvent) {
+		onDisclaimerDialogConfirm: function (oEvent) {
 			var oDialog = oEvent.getSource().getParent();
 			
 			oDialog.close();
@@ -2301,7 +2301,7 @@ sap.ui.define([
 		},
 
 		// Shared event handler for Cancel buttonss
-		onDialogCancel: function (oEvent) {
+		onDisclaimerDialogCancel: function (oEvent) {
 			var oDialog = oEvent.getSource().getParent();
 			oDialog.close();
 		},
