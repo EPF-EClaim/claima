@@ -42,7 +42,7 @@ sap.ui.define([
 			if (!sReqId) {
 				oReqModel.setProperty("/req_item_rows", []);
 				oReqModel.setProperty("/list_count", 0);
-				return [];
+				return;
 			}
 
 			const oListBinding = oController._oViewModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
@@ -98,6 +98,7 @@ sap.ui.define([
 			if (!req_id) {
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
+				return [];
 			}
 
 			const oModel = oController.getOwnerComponent().getModel('employee_view');
@@ -131,7 +132,8 @@ sap.ui.define([
 						EST_AMOUNT: parseFloat(oItem.EST_AMOUNT) || 0,
 						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1,
 						DEPARTURE_TIME: formatSafeDateTime(oItem.DEPARTURE_TIME),
-                		ARRIVAL_TIME:   formatSafeDateTime(oItem.ARRIVAL_TIME)
+                		ARRIVAL_TIME:   formatSafeDateTime(oItem.ARRIVAL_TIME),
+						DEPENDENT: 		JSON.parse(oItem.DEPENDENT) || []
 					};
 				});
 				oReq.setProperty("/req_item_rows", aItems);
