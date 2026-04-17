@@ -247,10 +247,7 @@ sap.ui.define([
 			}
 
 			Common.init(this.getOwnerComponent(), this.getView());
-			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
-				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
-			}
-			else {
+			if (sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.SEND_BACK) {
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
 			}
 			PARequestSharedFunction.determineFooterButton(this);
@@ -504,47 +501,9 @@ sap.ui.define([
 		onEditHeaderPress: async function () {
 			const oButtonModel = this.getView().getModel("editButtonModel");
 			const bState = oButtonModel.getProperty("/state");	
-			oButtonModel.setProperty("/state", !bState);		
-			await this._showHeaderFormFragment(!bState);
-			Common.init(this.getOwnerComponent(), this.getView());
-			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState);
-		},
-
-		/**
-		 * Show Input or Display header fragment based on button toggle
-		 * @private
-		 * @param {boolean} bEdit toggle for edit or display
-		 */
-		_showHeaderFormFragment: async function (bEdit) {
-			var oPage = this.byId("request_form");
-
-			if( bEdit ) {	
-				await this._destroyFragment("request_header");
-				await this._getFormFragment("request_header_edit", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
-				
-			}
-			else {
-				await this._destroyFragment("request_header_edit");
-				await this._getFormFragment("request_header", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
-			}
-		},
-
-		/**
-		 * Destroy selected fragment
-		 * @private
-		 * @param {string} sFrag fragment name
-		 */
-		_destroyFragment: async function (sFrag) {
-			var oPage = this.byId("request_form");
-			const oFragment = await this._oFragments[sFrag];
-			oPage.removeContent(oFragment);
-			oFragment.destroy(true);
-
-			delete this._oFragments[sFrag];
+			oButtonModel.setProperty("/state", !bState);
+			Common.init(this.getOwnerComponent(), this.getView());		
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState, this);
 		},
 
 		/* =========================================================

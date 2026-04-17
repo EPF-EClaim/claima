@@ -235,7 +235,6 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
@@ -1776,46 +1775,9 @@ sap.ui.define([
 		onEditHeaderPress: async function () {
 			const oButtonModel = this.getView().getModel("editButtonModel");
 			const bState = oButtonModel.getProperty("/state");
-			oButtonModel.setProperty("/state", !bState);			
-			await this._showHeaderFormFragment(!bState);
-			Common.init(this.getOwnerComponent(), this.getView());
-			await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState);
-		},
-
-		/**
-		 * Show Input or Display header fragment based on button toggle
-		 * @private
-		 * @param {boolean} bEdit toggle for edit or display
-		 */
-		_showHeaderFormFragment: async function (bEdit) {
-			var oPage = this.byId("page_claimsubmission");
-
-			if( bEdit ) {	
-				await this._destroyFragment("claimsubmission_summary_claimheader");
-				await this._getFormFragment("claimsubmission_summary_claimheader_edit", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
-			}
-			else {
-				await this._destroyFragment("claimsubmission_summary_claimheader_edit");
-				await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
-			}
-		},
-
-		/**
-		 * Destroy selected fragment
-		 * @private
-		 * @param {string} sFrag fragment name
-		 */
-		_destroyFragment: async function (sFrag) {
-			var oPage = this.byId("page_claimsubmission");
-			const oFragment = await this._fragments[sFrag];
-			oPage.removeContent(oFragment);
-			oFragment.destroy(true);
-
-			delete this._fragments[sFrag];
+			oButtonModel.setProperty("/state", !bState);	
+			Common.init(this.getOwnerComponent(), this.getView());		
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState, this);
 		},
 
 		onDownloadExcelReport: async function () {
