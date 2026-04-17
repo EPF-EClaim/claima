@@ -159,38 +159,38 @@
 #     "ID": "REQ26000000022"
 #    }
 
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
-# Content-Type: application/json
-# Authorization: Basic alice
+POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
+Content-Type: application/json
+Authorization: Basic alice
  
-#     {
-#      "aPayload": [
-#        {
-#          "CheckFields": [
-#             {
-#                "fieldName": "REGION_ID",
-#                "value": "02",
-#                "result": null
-#             },
-#             {
-#                "fieldName": "ELIGIBLE_AMOUNT",
-#                "value": "80000",
-#                "result": null
-#             },
-#             {
-#                "fieldName": "TRANSPORT_CLASS",
-#                "value": "07",
-#                "result": null
-#             }
-#             ],
-#          "ClaimType": "ELAUN_TUKAR",
-#          "ClaimTypeItem": "PINDAH",
-#          "EmpId": "900001",
-#          "RecordId": "CLM26000000874",
-#          "RecordSubId": "CLM26000000874001"
-#       }
-#      ]
-#     }
+    {
+     "aPayload": [
+       {
+         "CheckFields": [
+            {
+               "fieldName": "RECEIPT_DATE",
+               "value": "2026-04-17",
+               "result": null
+            },
+            {
+               "fieldName": "ELIGIBLE_AMOUNT",
+               "value": "80000",
+               "result": null
+            },
+            {
+               "fieldName": "TRANSPORT_CLASS",
+               "value": "07",
+               "result": null
+            }
+            ],
+         "ClaimType": "LUAR_NEGARA",
+         "ClaimTypeItem": "PKN_PANAS",
+         "EmpId": "886887",
+         "RecordId": "CLM26000000874",
+         "RecordSubId": "CLM26000000874001"
+      }
+     ]
+    }
 
 
 # POST http://localhost:4004/odata/v4/EmployeeSrv/getUserEligibleAmountEPengakut
