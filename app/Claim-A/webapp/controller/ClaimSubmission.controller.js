@@ -1731,24 +1731,12 @@ sap.ui.define([
 								id: "disclaimergalakanDialogFrag",
 								controller: this
 							}).then(function (oDisclaimerGalakanDialog) {
-
 								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
-								this.getView().addDependent(oDisclaimerGalakanDialog);
 
-								var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-								oDisclaimerGalakanDialog.open();
-
+								this.getView().addDependent(this._openDisclaimerGalakanDialog);
 							}.bind(this));
-
-						} else {
-
-							var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-							this._openDisclaimerGalakanDialog.open();
 						}
+						this._openDisclaimerGalakanDialog.open();
 						return;
 					}
 					ApproveDialog.open(this);

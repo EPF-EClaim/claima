@@ -2246,7 +2246,7 @@ sap.ui.define([
 		* Approver Functions (Aiman)
 		* ======================================================= */
 
-		onApproveRequest: function () {
+		onApproveRequest: async function () {
 			// 1) Ensure Reject model exists (for comment)
 			let oReject = this.getView().getModel("Reject");
 			if (!oReject) {
@@ -2263,33 +2263,26 @@ sap.ui.define([
 			}
 			oType.setProperty("/mode", "APPROVE_REQ");
 
-			if (this._oReqModel.getProperty("/req_header/claimtype") === this._oConstant.ClaimType.GALAKAN) {
+			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
+			if (sClaimType=== this._oConstant.ClaimType.GALAKAN) {
+				try {
+					// 2. Specific Variable Name: Prevents conflicts with other dialogs
+					if (!this._oDisclaimerGalakanDialog) {
+						
+						this._oDisclaimerGalakanDialog = await Fragment.load({
+							id: this.getView().getId(),
+							name: "claima.fragment.disclaimergalakan",
+							controller: this
+						});
+						
+						this.getView().addDependent(this._oDisclaimerGalakanDialog);
+					}
+					this._oDisclaimerGalakanDialog.open();
 
-				if (!this._openDisclaimerGalakanDialog) {
-
-					Fragment.load({
-						name: "claima.fragment.disclaimergalakan",
-						id: "disclaimergalakanDialogFrag",
-						controller: this
-					}).then(function (oDisclaimerGalakanDialog) {
-
-						this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
-						this.getView().addDependent(oDisclaimerGalakanDialog);
-
-						var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-						oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-						oDisclaimerGalakanDialog.open();
-
-					}.bind(this));
-
-				} else {
-
-					var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
-					oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
-
-					this._openDisclaimerGalakanDialog.open();
+				} catch (oError) {
+					console.error("Failed to load Disclaimer Galakan Dialog:", oError);
 				}
+
 				return;
 			}
 
@@ -2298,12 +2291,12 @@ sap.ui.define([
 
 		//event handle for confirm and cancel
 		onPressdisclaimerGalakanConfirm: function () {
-			this._openDisclaimerGalakanDialog.close();
+			this._oDisclaimerGalakanDialog.close();
 			ApproveDialog.open(this);
 		},
 
 		onPressdisclaimerGalakanCancel: function () {
-			this._openDisclaimerGalakanDialog.close();
+			this._oDisclaimerGalakanDialog.close();
 		},
 
 		onRejectRequest: function () {
