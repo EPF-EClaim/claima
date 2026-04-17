@@ -208,7 +208,7 @@
                 />
 
                 <!-- Actual Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount_actual}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_claim} : ${i18n>label_claimdetails_input_amount_actual} }" />
                 <Input
                     id="input_claimdetails_input_actual_amount"
                     value="{

@@ -146,32 +146,31 @@ sap.ui.define([
                     }
                     ///Validate PEA total Amount exceeds 25k. 
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
-                        const nHeaderTotal =Number(oClaimSubmissionModel.getProperty("/claim_header/final_amount_to_receive")) || 0;
-                        const nCurrentAmount = Number(oInputModel.getProperty("/claim_item/amount")) || 0;
-                        let nAdjustedTotal = nHeaderTotal + nCurrentAmount;
 
-                        // Editing existing item → subtract old amount first
-                        if (!oInputModel.getProperty("/is_new")) {
-                            const sSubId =
-                                oInputModel.getProperty("/claim_item/claim_sub_id");
+                        try {
+                            const oContext = this._oView.getModel().bindContext("/validatePEATotal(...)");
+                            const nHeaderTotal = Number(oClaimSubmissionModel.getProperty("/claim_header/total_claim_amount")) || 0;
+                            const nCurrentAmount = Number(oInputModel.getProperty("/claim_item/amount")) || 0;
 
-                            const oExistingItem = (
-                                oClaimSubmissionModel.getProperty("/claim_items") || []
-                            ).find(it => it.claim_sub_id === sSubId);
-
-                            const nOldAmount =
-                                Number(oExistingItem?.amount) || 0;
-
-                            nAdjustedTotal = nHeaderTotal - nOldAmount + nCurrentAmount;
-                        }
-
-                        if (nAdjustedTotal > 25000) {
-                            MessageBox.error(
-                                Utility.getText("msg_claimdetails_pedu_total_exceed_limit")
-                            );
+                            let nOldAmount = 0;
+                            if (!oInputModel.getProperty("/is_new")) {
+                                const sSubId = oInputModel.getProperty("/claim_item/claim_sub_id");
+                                const oExistingItem = (oClaimSubmissionModel.getProperty("/claim_items") || []).find(it => it.claim_sub_id === sSubId);
+                                nOldAmount = Number(oExistingItem?.amount) || 0;
+                            }
+                            oContext.setParameter("headerTotal", nHeaderTotal);
+                            oContext.setParameter("currentAmount", nCurrentAmount);
+                            oContext.setParameter("isNew", oInputModel.getProperty("/is_new"));
+                            oContext.setParameter("oldAmount", nOldAmount);
+                            await oContext.execute();
+                        } catch (oError) {
+                            const sMessage =
+                                oError?.message ||
+                                Utility.getText("msg_claimdetails_pedu_total_exceed_limit");
+                            MessageBox.error(sMessage);
                             bCanProceed = false;
                         }
-                    }                    
+                    }
                     // // validate item date range
                     if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
                         if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {

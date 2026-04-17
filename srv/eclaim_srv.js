@@ -1457,7 +1457,7 @@ module.exports = (srv) => {
                     return oEligibilityRule.ELIGIBLE_AMOUNT;
                 }
             }
-            
+
         } catch (error) {
             req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
@@ -1854,64 +1854,100 @@ module.exports = (srv) => {
         }
     });
 
-     /**
-     * Get eligible amount for employee on Elaun Pemberian Pindah, based on Marital Status
-     * @public
-     * @return {Decimal} - return eligible amount retrieved from table
-     */
+    /**
+    * Get eligible amount for employee on Elaun Pemberian Pindah, based on Marital Status
+    * @public
+    * @return {Decimal} - return eligible amount retrieved from table
+    */
     srv.on('getUserEligibleAmountPemPindah', async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         try {
             if (oEmp) {
-                 const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
-                  
+                const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+
                 if (!sMarriageCategory) {
                     return req.error(404, `No marriage category available for employee.`);
                 }
 
-            const sTodayDate = new Date().toISOString().slice(0, 10);
-            var aMaritalStatusValues = [Constant.Wildcard.All];
-            if (oEmp.MARITAL) {
-                aMaritalStatusValues.push(oEmp.MARITAL);
-            }
-            var aMarriageCategoryValues = [Constant.Wildcard.All];
-            if (sMarriageCategory) {
-                aMarriageCategoryValues.push(sMarriageCategory);
-            }
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aMaritalStatusValues = [Constant.Wildcard.All];
+                if (oEmp.MARITAL) {
+                    aMaritalStatusValues.push(oEmp.MARITAL);
+                }
+                var aMarriageCategoryValues = [Constant.Wildcard.All];
+                if (sMarriageCategory) {
+                    aMarriageCategoryValues.push(sMarriageCategory);
+                }
 
-            const oEligibilityRule = await SELECT.one
-                .from(Constant.Entities.ZELIGIBILITY_RULE)
-                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
-                .where({
-                    // claim type + claim type item
-                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
-                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
-                    PERSONAL_GRADE: oEmp.GRADE,
-                    REGION_ID: req.data.region,
-                    // status check
-                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                    // values to filter
-                    MARITAL_STATUS: { 'in': aMaritalStatusValues },
-                    MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
-                })
-                .orderBy([
-                    { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
-                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
-                ]);
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
+                        CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.PEM_PINDAH,
+                        PERSONAL_GRADE: oEmp.GRADE,
+                        REGION_ID: req.data.region,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        MARITAL_STATUS: { 'in': aMaritalStatusValues },
+                        MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
+                    })
+                    .orderBy([
+                        { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                        { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+                    ]);
 
-            if (!oEligibilityRule) {
-                return 0;
-            }
+                if (!oEligibilityRule) {
+                    return 0;
+                }
 
-            return oEligibilityRule.ELIGIBLE_AMOUNT;
+                return oEligibilityRule.ELIGIBLE_AMOUNT;
             }
 
         } catch (error) {
             return req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
+    });
+    
+    /**
+     * Validate PEA total amount by calculating:
+     * - existing PEA header total
+     * - new or updated line item amount
+     * 
+     * Ensures the final adjusted total does not exceed RM25,000.
+     *
+     * @public
+     * @return {Object} - return validation result indicating whether processing can proceed
+     */
+    srv.on('validatePEATotal', async (req) => {
+
+        const {
+            headerTotal,
+            currentAmount,
+            isNew,
+            oldAmount
+        } = req.data;
+
+        const nHeaderTotal = Number(headerTotal) || 0;
+        const nCurrentAmount = Number(currentAmount) || 0;
+        const nOldAmount = Number(oldAmount) || 0;
+        const bIsNew = Boolean(isNew);
+
+        let nAdjustedTotal = nHeaderTotal + nCurrentAmount;
+        // Editing existing item → subtract old amount first
+        if (!bIsNew) {
+            nAdjustedTotal = nHeaderTotal - nOldAmount + nCurrentAmount;
+        }
+        if (nAdjustedTotal > 25000) {
+            // Business validation error (NOT technical)
+            req.error(400, 'Total amount exceeds RM25,000');
+        }
+        return { canProceed: true };
     });
 }
