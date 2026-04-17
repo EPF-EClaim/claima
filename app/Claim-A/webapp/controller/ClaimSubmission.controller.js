@@ -2336,10 +2336,6 @@ sap.ui.define([
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
 
-				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
-					oPropertyModel.setProperty("/actual_amount/is_editable", false);
-					oPropertyModel.setProperty("/actual_amount/is_required", false);
-					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
