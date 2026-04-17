@@ -227,7 +227,7 @@
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="{claimitem_property>/actual_amount/is_visible}"
-                    editable="{claimitem_property>/actual_amount/is_editable}"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
 					required="{claimitem_property>/actual_amount/is_required}"
 				/>
 
