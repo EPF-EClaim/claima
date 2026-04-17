@@ -3147,7 +3147,7 @@ sap.ui.define([
 			if (!this._oDeleteAttachmentDialog) {
 				Fragment.load({
 					name: "claima.fragment.deleteattachment",
-					id: "deleteAttachmentDialogFrag",
+					id: "deleteAttachmentDialog",
 					controller: this
 				}).then(function (oDialog) {
 					this._oDeleteAttachmentDialog = oDialog;
