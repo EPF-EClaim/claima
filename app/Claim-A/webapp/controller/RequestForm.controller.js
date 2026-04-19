@@ -125,9 +125,9 @@ sap.ui.define([
 
 		async _loadRequest(sReqId) {
 			BusyIndicator.show(0);
-			const oPage = this.byId("request_form");
+			const oRequestFormPage = this.byId("request_form");
     		// hard reset
-			oPage.removeAllContent();
+			oRequestFormPage.removeAllContent();
 
 			// destroy ALL fragments
 			if (this._oFragments) {
@@ -209,7 +209,8 @@ sap.ui.define([
 			this._removeByLocalId("request_header_fragment");
 			var oPage = this.byId("request_form");
 			
-			await this._getFormFragment("request_header").then(function (oVBox) {
+			const sFragmentName = this.getView().getModel("editButtonModel").getProperty("/state") ? "request_header_edit" : "request_header"
+			await this._getFormFragment(sFragmentName).then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
 		},
@@ -503,7 +504,7 @@ sap.ui.define([
 			const bState = oButtonModel.getProperty("/state");	
 			oButtonModel.setProperty("/state", !bState);
 			Common.init(this.getOwnerComponent(), this.getView());		
-			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState, this);
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState, this.getView().getController());
 		},
 
 		/* =========================================================

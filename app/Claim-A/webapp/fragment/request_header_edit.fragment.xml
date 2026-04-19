@@ -30,12 +30,6 @@
                     text="{i18n>req_view_btn_save}"
                     press=".onSaveHeaderPress"
                     visible="{reqHeaderEditableModel>/saveHeader}" />
-
-                <Button
-                    id="btnEditHeader"
-                    icon="sap-icon://edit"
-                    text="{i18n>req_b_edit}"
-                    press=".onEditHeaderPress" />
             </OverflowToolbar>
 
             <form:Form 

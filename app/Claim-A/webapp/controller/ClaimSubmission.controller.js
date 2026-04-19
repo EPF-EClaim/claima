@@ -81,7 +81,7 @@ sap.ui.define([
 
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._fragments = Object.create(null);
+			this._oFragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
@@ -240,19 +240,19 @@ sap.ui.define([
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
 			// load form fragments
 			//// reset fragments
-			const oPage = this.byId("page_claimsubmission")
-			oPage.removeAllContent();
+			const oClaimSubmissionPage = this.byId("page_claimsubmission")
+			oClaimSubmissionPage.removeAllContent();
 
 			// destroy ALL fragments
-			if (this._fragments) {
-				for (const sFrag of Object.keys(this._fragments)) {
+			if (this._oFragments) {
+				for (const sFrag of Object.keys(this._oFragments)) {
 					try {
-						const oFrag = await this._fragments[sFrag];
+						const oFrag = await this._oFragments[sFrag];
 						oFrag?.destroy(true);
 					} catch {}
 				}
 			}
-			this._fragments = Object.create(null);
+			this._oFragments = Object.create(null);
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
 		},
@@ -291,11 +291,11 @@ sap.ui.define([
 
 		_getFormFragment: async function (sName, toCreate) {
 			const oView = this.getView();
-			if (this._fragments[sName]) {
-				return this._fragments[sName];
+			if (this._oFragments[sName]) {
+				return this._oFragments[sName];
 			}
 			else if (toCreate) {
-				this._fragments[sName] = Fragment.load({
+				this._oFragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
 					type: "XML",
@@ -304,7 +304,7 @@ sap.ui.define([
 					oView.addDependent(oFrag);
 					return oFrag;
 				});
-				return this._fragments[sName];
+				return this._oFragments[sName];
 			}
 			else {
 				return null;
@@ -1336,10 +1336,10 @@ sap.ui.define([
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
 
 			// Destroy previous detail fragment to avoid stale bindings
-			if (this._fragments["claimsubmission_claimdetails_input"]) {
-				const frag = await this._fragments["claimsubmission_claimdetails_input"];
+			if (this._oFragments["claimsubmission_claimdetails_input"]) {
+				const frag = await this._oFragments["claimsubmission_claimdetails_input"];
 				frag.destroy(true);
-				delete this._fragments["claimsubmission_claimdetails_input"];
+				delete this._oFragments["claimsubmission_claimdetails_input"];
 			}
 
 			BusyIndicator.show(0);
@@ -1764,7 +1764,7 @@ sap.ui.define([
 			const bState = oButtonModel.getProperty("/state");
 			oButtonModel.setProperty("/state", !bState);	
 			Common.init(this.getOwnerComponent(), this.getView());		
-			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState, this);
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState, this.getView().getController());
 		},
 
 		onDownloadExcelReport: async function () {

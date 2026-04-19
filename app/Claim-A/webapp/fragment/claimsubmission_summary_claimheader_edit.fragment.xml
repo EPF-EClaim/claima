@@ -49,15 +49,6 @@
                 visible="{claimSubmissionHeaderEditableModel>/saveHeader}"
             />
 
-            <!-- Edit header -->
-            <Button
-                type="Default"
-                icon="sap-icon://edit"
-                text="{i18n>button_claimsummary_edit}"
-                id="btnEditHeader"
-                press=".onEditHeaderPress"
-            />
-
         </OverflowToolbar>
         <f:SimpleForm
             editable="false"
