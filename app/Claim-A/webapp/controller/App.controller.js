@@ -25,8 +25,7 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/RequestUtility",
-	"claima/utils/ClaimUtility",
-	"sap/ui/commons/Message"
+	"claima/utils/ClaimUtility"
 ], function (
 	Popover,
 	Button,
@@ -54,8 +53,7 @@ sap.ui.define([
 	EligibilityCheck,
 	CustomValidator,
 	RequestUtility,
-	ClaimUtility,
-	Message
+	ClaimUtility
 ) {
 	"use strict";
 
@@ -1438,7 +1436,7 @@ sap.ui.define([
 			}
 
 			var aFilters = [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE)
 			];
 
 			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
@@ -1457,7 +1455,7 @@ sap.ui.define([
 			if (!oBinding) return;
 
 			var aFilters = [
-				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, "ACTIVE"),
+				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 				new Filter(this._oConstant.EntitiesFields.REQUEST_TYPE, FilterOperator.EQ, sReqType)
 			];
 

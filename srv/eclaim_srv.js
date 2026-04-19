@@ -1984,12 +1984,12 @@ module.exports = (srv) => {
             .from(Constant.Entities.ZCONSTANTS)
             .columns(Constant.EntitiesFields.VALUE) 
             .where({
-                ID: Constant.ConstantId.TUKAR_ELIGIBLE_AFTER_DAYS
+                ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER
             });
 
         const iDays = parseInt(oConstantRec.VALUE, 10);
 
-        if (Constant.PositionEventId.includes(sPositionEvent)) {
+        if (Object.values(Constant.PositionEventId).includes(sPositionEvent)) {
             
             if (!sPositionStartDate) {
                 return false;
@@ -2001,10 +2001,6 @@ module.exports = (srv) => {
 
             const dCurrentDate = new Date();
             dCurrentDate.setUTCHours(0, 0, 0, 0);
-
-            console.log("Start (UTC):", new Date(sPositionStartDate));
-            console.log("Eligible (UTC):", dEligibleDate);
-            console.log("Today (UTC):", dCurrentDate);
 
             return dCurrentDate > dEligibleDate; 
         }
