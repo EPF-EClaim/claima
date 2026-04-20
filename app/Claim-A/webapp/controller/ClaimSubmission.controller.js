@@ -81,7 +81,7 @@ sap.ui.define([
 
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._fragments = Object.create(null);
+			this._oClaimFragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
@@ -149,6 +149,7 @@ sap.ui.define([
 			}), "appModel");
 
 			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
+			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -234,19 +235,24 @@ sap.ui.define([
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, true);
 			}
 
+			this.getView().getModel("editButtonModel").setProperty("/state", false);
 			// load form fragments
 			//// reset fragments
-			if (Object.keys(this._fragments).length !== 0) {
-				var oPage = this.byId("page_claimsubmission");
-				Object.entries(this._fragments).forEach(([key, value]) => {
-					this._fragments[key].then(function (oVBox) {
-						oPage.removeContent(oVBox);
-					});
-				});
+			const oClaimSubmissionPage = this.byId("page_claimsubmission")
+			oClaimSubmissionPage.removeAllContent();
+
+			// destroy ALL fragments
+			if (this._oClaimFragments) {
+				for (const sFrag of Object.keys(this._oClaimFragments)) {
+					try {
+						const oFrag = await this._oClaimFragments[sFrag];
+						oFrag?.destroy(true);
+					} catch {}
+				}
 			}
+			this._oClaimFragments = Object.create(null);
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
 		},
@@ -273,7 +279,7 @@ sap.ui.define([
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
-
+			
 			// display initial fragments
 			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
@@ -285,11 +291,11 @@ sap.ui.define([
 
 		_getFormFragment: async function (sName, toCreate) {
 			const oView = this.getView();
-			if (this._fragments[sName]) {
-				return this._fragments[sName];
+			if (this._oClaimFragments[sName]) {
+				return this._oClaimFragments[sName];
 			}
 			else if (toCreate) {
-				this._fragments[sName] = Fragment.load({
+				this._oClaimFragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
 					type: "XML",
@@ -298,7 +304,7 @@ sap.ui.define([
 					oView.addDependent(oFrag);
 					return oFrag;
 				});
-				return this._fragments[sName];
+				return this._oClaimFragments[sName];
 			}
 			else {
 				return null;
@@ -1330,10 +1336,10 @@ sap.ui.define([
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
 
 			// Destroy previous detail fragment to avoid stale bindings
-			if (this._fragments["claimsubmission_claimdetails_input"]) {
-				const frag = await this._fragments["claimsubmission_claimdetails_input"];
-				frag.destroy(true);
-				delete this._fragments["claimsubmission_claimdetails_input"];
+			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
+				const oFrag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
+				oFrag.destroy(true);
+				delete this._oClaimFragments["claimsubmission_claimdetails_input"];
 			}
 
 			BusyIndicator.show(0);
@@ -1743,7 +1749,19 @@ sap.ui.define([
 		},
 
 		onSaveHeaderPress: async function () {
+			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.saveHeader(Constants.SubmissionTypePrefix.CLAIMHEADER);
+		},
+
+		/**
+		 * Function for Edit button press
+		 * 1. Swaps button state
+		 * 2. Display fragment based on toggle
+		 * 3. Enable or disable header fields to be editable
+		 */
+		onEditHeaderPress: async function () {	
+			Common.init(this.getOwnerComponent(), this.getView());		
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
 		onDownloadExcelReport: async function () {
