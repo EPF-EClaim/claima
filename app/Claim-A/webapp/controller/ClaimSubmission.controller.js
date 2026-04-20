@@ -2429,7 +2429,6 @@ sap.ui.define([
 				account_no: { is_required: false },
 				to_state: { is_editable: true },
 				to_location_office: { is_editable: true },
-				from_state: { is_editable: true },
 				from_location_office: { is_editable: true }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
@@ -2661,6 +2660,33 @@ sap.ui.define([
 						]
 					})
 			}
+		},
+
+		_LocationTypeDropdownFlow: function (){
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const oPropertyModel = this.getView().getModel("claimitem_property")
+			const oItem = oInputModel.getProperty("claim_item");
+
+			if(!oItem.from_state_id){
+				oItem.from_location_office = null;
+				oItem.to_state_id = null;
+				oItem.to_location_office = null;
+			}
+
+			if(!oItem.from_location_office){
+				oItem.to_state_id = null;
+				oItem.to_location_office = null;
+			}
+
+			if(!oItem.to_state_id){
+				oItem.to_location_office = null;
+			}
+
+			oInputModel.setProperty("/claim_item", oItem);
+
+			oPropertyModel.setProperty("/from_location_office/is_editable", !!oItem.from_state_id);
+			oPropertyModel.setProperty("/to_state/is_editable", !!oItem.from_location_office);
+			oPropertyModel.setProperty("/to_location_office/is_editable", !!oItem.to_state_id);
 		},
 
 		/**
