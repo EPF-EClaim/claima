@@ -24,7 +24,7 @@ sap.ui.define([
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
 
-            this._aHeaderConfiguration= {
+            this._aHeaderConfiguration = {
                 [Constants.SubmissionTypePrefix.CLAIMHEADER]: {
                     pageId: "page_claimsubmission",
                     fragmentPath: "claima.fragment",
@@ -303,10 +303,9 @@ sap.ui.define([
          * @public
          * @param {string} sClaimType claim type PAR or claim submission
 		 * @param {boolean} bEdit toggle for edit or display
-         * @param {object} oController parent controller
 		 */
 		editHeaderChange: async function (sClaimType, bEdit) {		
-			await this._toggleHeaderFragment(sClaimType, bEdit, this._oView.getController());
+			await this._toggleHeaderFragment(sClaimType, bEdit);
             await this.setHeaderEditable(sClaimType, bEdit);
 		},
 
@@ -314,10 +313,9 @@ sap.ui.define([
          * Switch between editable and display fragments
          * @param {string} sClaimType claim type to apply toggle, claim submission or Pre Approval request
          * @param {boolean} bEdit editable state
-         * @param {object} oController parent controller
          * @returns 
          */
-        _toggleHeaderFragment: async function (sClaimType, bEdit, oController) {
+        _toggleHeaderFragment: async function (sClaimType, bEdit) {
             const oHeaderConfiguration = this._aHeaderConfiguration[sClaimType];
             if (!oHeaderConfiguration) return;
 
@@ -325,8 +323,8 @@ sap.ui.define([
             const sLoadFragment = bEdit ? oHeaderConfiguration.edit : oHeaderConfiguration.display;
             const sDestroyFragment = bEdit ? oHeaderConfiguration.display : oHeaderConfiguration.edit;
 
-            await this._removeFragment(oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage, oController);
-            const oFragment = await this._loadFragment(oHeaderConfiguration, sLoadFragment, oController);
+            await this._removeFragment(oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage);
+            const oFragment = await this._loadFragment(oHeaderConfiguration, sLoadFragment);
 
             oSubmissionTypePage.insertContent(oFragment, 0);
         },
@@ -336,10 +334,10 @@ sap.ui.define([
          * @param {object} oHeaderConfiguration details of header to be removed
          * @param {string} sDestroyFragment name of fragment to be removed
          * @param {object} oSubmissionTypePage ID of page to remove fragment from
-         * @param {object} oController parent controller
          * @returns 
          */
-        _removeFragment: async function (oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage, oController) {
+        _removeFragment: async function (oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage) {
+            const oController = this._oView.getController();
             const oCache = oController[oHeaderConfiguration.fragmentCache];
             const oFragment = oCache?.[sDestroyFragment];
             if (!oFragment) return;
@@ -354,11 +352,11 @@ sap.ui.define([
          * Load header fragment for display
          * @param {object} oHeaderConfiguration details of header to be loaded
          * @param {string} sLoadFragment name of fragment to be loaded
-         * @param {object} oController parent controller
          * @returns 
          */
-        _loadFragment: async function (oHeaderConfiguration, sLoadFragment, oController) {
+        _loadFragment: async function (oHeaderConfiguration, sLoadFragment) {
             const oView = this._oView;
+            const oController = this._oView.getController();
             const oCache = oController[oHeaderConfiguration.fragmentCache];
 
             if (!oCache[sLoadFragment]) {
