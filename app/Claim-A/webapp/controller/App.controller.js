@@ -306,7 +306,7 @@ sap.ui.define([
 			var oEmployeeModel = this._getNewEmployeeModel("emp_current");
 
 			// Claim Submission Model
-			var oClaimSubmissionModel = new JSONModel({
+			var oData = {
 				"emp_master": oEmployeeModel.getData(),
 				"claimtype": {
 					"type": null,
@@ -421,10 +421,26 @@ sap.ui.define([
 					"fileName": null,
 					"fileContent": null
 				}
-			});
+			};
+			var oExistingModel = this.getView().getModel(modelName);
+
+			if(oExistingModel){
+				var oEmp = oExistingModel.getProperty(modelName);
+
+				oExistingModel.setData(structuredClone(oData));
+
+				if(oEmp){
+					oExistingModel.setProperty("/emp_master", oEmp);
+					oExistingModel.setProperty("/claim_header/emp_id", oEmp.emp_id);
+				}
+
+				return oExistingModel;
+			}
+
 			//// set input
+			var oClaimSubmissionModel = new JSONModel(oData);
 			this.getView().setModel(oClaimSubmissionModel, modelName);
-			return this.getView().getModel(modelName);
+			return oClaimSubmissionModel;
 		},
 
 		//// Functions - Claim Process
