@@ -144,34 +144,33 @@ sap.ui.define([
                             }
                         }
                     }
-                    
-                    if (!!oClaimSubmissionModel) {
-                        var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
-                        if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
-                            // course code pre-check
-                            var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
-                            var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
-                            if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
-                                bCanProceed = false;
+                    ///Validate PEA total Amount exceeds 25k. 
+                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
+
+                        try {
+                            const oContext = this._oView.getModel().bindContext("/validatePEATotal(...)");
+                            const nHeaderTotal = Number(oClaimSubmissionModel.getProperty("/claim_header/total_claim_amount")) || 0;
+                            const nCurrentAmount = Number(oInputModel.getProperty("/claim_item/amount")) || 0;
+
+                            let nOldAmount = 0;
+                            if (!oInputModel.getProperty("/is_new")) {
+                                const sSubId = oInputModel.getProperty("/claim_item/claim_sub_id");
+                                const oExistingItem = (oClaimSubmissionModel.getProperty("/claim_items") || []).find(it => it.claim_sub_id === sSubId);
+                                nOldAmount = Number(oExistingItem?.amount) || 0;
                             }
-                        }
-                        // validate date range
-			            //// trip start/end date
-                        if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"), oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"))) {
-                            // stop claim submission if incomplete
+                            oContext.setParameter("headerTotal", nHeaderTotal);
+                            oContext.setParameter("currentAmount", nCurrentAmount);
+                            oContext.setParameter("isNew", oInputModel.getProperty("/is_new"));
+                            oContext.setParameter("oldAmount", nOldAmount);
+                            await oContext.execute();
+                        } catch (oError) {
+                            const sMessage =
+                                oError?.message ||
+                                Utility.getText("msg_claimdetails_pedu_total_exceed_limit");
+                            MessageBox.error(sMessage);
                             bCanProceed = false;
                         }
-                        //// event start/end date (optional)
-                        if (oClaimSubmissionModel.getProperty("/claim_header/event_start_date") || oClaimSubmissionModel.getProperty("/claim_header/event_end_date")) {
-                            if (!this._isValidDateRange(oClaimSubmissionModel.getProperty("/claim_header/event_start_date"), oClaimSubmissionModel.getProperty("/claim_header/event_end_date"))) {
-                                // stop claim submission if incomplete
-                                bCanProceed = false;
-                            }
-                        }
                     }
-
                     // // validate item date range
                     if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
                         if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
@@ -179,16 +178,10 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
-
-                    if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
-                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                        for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount == 0){
-                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                bCanProceed = false;
-                                break;
-                            }
-                        }
+                    
+                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
+                        bCanProceed = false;
                     }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
@@ -232,6 +225,15 @@ sap.ui.define([
                             if (bCourseAlreadyApproved) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
+                            }
+                        }
+
+                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                        for(var i = 0; i < aItems.length; i++){
+                            if(aItems[i].amount == 0){
+                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                bCanProceed = false;
+                                break;
                             }
                         }
                     }

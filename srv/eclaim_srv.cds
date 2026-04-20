@@ -371,7 +371,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   breakfast: Integer,
                                   lunch: Integer,
                                   dinner: Integer,
-                                  tips: Boolean,
+                                  exclude_tips: Boolean,
                                   dependent: Integer)                                          returns perdiem;
 
     function getMeterCubeEntitlement ()                                          returns Decimal(15, 2);
@@ -399,13 +399,18 @@ service eclaim_srv @(requires: 'authenticated-user') {
         value   : Decimal(34);
     }
 
-    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String) returns rateperkm;
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date) returns rateperkm;
     
     function _getMarriageCategory(sEmpId: String, )                                            returns String;
 
     function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
     
     function getUserClaimStatusEPengakut() returns String;
+    
+    function getUserEligibleAmountLodging(
+        sClaimType: String,
+        sClaimTypeItem: String
+    ) returns Decimal(16, 2);
     
     type reminders {
         empName     : String;
@@ -446,4 +451,33 @@ service eclaim_srv @(requires: 'authenticated-user') {
     //IND1 - Spouse_Child
     function getNumberOfFamilyMembers(IND: String)                                             returns Integer;
 
+    type DaratAmounts {
+        fAmount          : Decimal(15, 2);
+        fRate            : Decimal(15, 2);
+        bMinimum         : Boolean
+    }
+    function getPengangkutanDaratAmount(
+                                        sRegion     : String,
+                                        fKilometer  : Decimal(5, 2)
+                                    )                                                          returns DaratAmounts;
+
+    type PemPindahAmount {
+        fAmount          : Decimal(15, 2);
+        fPercentage      : Decimal(15, 2);
+        fFinalAmount     : Decimal(15, 2);
+    }
+    function getUserEligibleAmountPemPindah(
+        sRegion: String,
+        sClaimType: String,
+        sClaimTypeItem: String
+        )                                                                                      returns PemPindahAmount;
+    
+    type PEAValidationResult {
+            canProceed : Boolean;
+        }
+
+    function validatePEATotal(headerTotal: Decimal(15, 2),
+                              currentAmount: Decimal(15, 2),
+                              isNew: Boolean,
+                              oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 };

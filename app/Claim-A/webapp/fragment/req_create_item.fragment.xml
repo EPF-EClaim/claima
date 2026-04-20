@@ -118,20 +118,41 @@
                                 <!-- Dependent (Dropdown) -->
                                 <form:FormElement label="{i18n>req_i_dependent}"
                                             visible="false"
-                                            id="i_dependant"  >
+                                            id="i_dependent"  >
                                     <form:fields>
                                         <Select 
+                                            width="100%"
                                             selectedKey="{request>/req_item/dependent}" 
                                             required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
-                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}">
+                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                             <items>
                                                 <core:Item key="{request>DEPENDENT_NO}" 
                                                         text="{request>LEGAL_NAME}" />
                                             </items>
                                         </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Dependent (Multi) -->
+                                <form:FormElement label="{i18n>req_i_dependent}"
+                                            visible="false"
+                                            id="i_dependent_multi"  >
+                                    <form:fields>
+                                        <MultiComboBox 
+                                            width="100%"
+                                            selectedKeys="{request>/req_item/dependent}"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                                            items="{path: 'request>/ZEMP_DEPENDENT',
+                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}" >
+                                            <core:Item key="{request>DEPENDENT_NO}" 
+                                                    text="{request>LEGAL_NAME}" />
+                                        </MultiComboBox>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -303,6 +324,7 @@
                                             value="{request>/req_item/start_date}"
                                             textAlign="Begin"
                                             required="true" 
+                                            change=".onSelectDate"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -319,6 +341,7 @@
                                             value="{request>/req_item/end_date}"
                                             textAlign="Begin"
                                             required="true" 
+                                            change=".onSelectDate"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -454,11 +477,8 @@
                                             visible="false"
                                             id="i_no_of_family_member" >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number"
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/no_of_family_member}"/>
+                                        <Text
+                                            text="{request>/req_item/no_of_family_member}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -601,6 +621,7 @@
                                             id="i_flight_class" >
                                     <form:fields>
                                         <Select 
+                                            id="item_flight_class"
                                             selectedKey="{request>/req_item/flight_class}" 
                                             required="true" 
                                             forceSelection="false"
@@ -1218,8 +1239,12 @@
                                         ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER} &amp;&amp;
                                         ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LODGING_L} &amp;&amp;
                                         ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LODG_O} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LOD_TUKAR} &amp;&amp;
                                         ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MAKAN_L} &amp;&amp;
-                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MAKAN_O}
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MAKAN_O} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/DARAT}
                                     }">
                                 </Input>
                             </table:template>

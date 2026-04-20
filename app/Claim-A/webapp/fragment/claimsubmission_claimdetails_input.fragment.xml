@@ -116,6 +116,19 @@
                                 text="{employee>LEGAL_NAME}" />
                     </items>
 				</Select>
+
+                <!-- Dependent (Multi) -->
+				<Label text="{i18n>label_claimdetails_input_dependent}" />
+                <MultiComboBox 
+					id="combo_claimdetails_input_dependent"
+                    selectedKeys="{claimitem_input>/claim_item/dependent}"
+                    required="true"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                    items="{path: 'employee>/ZEMP_DEPENDENT',
+                            sorter: { path: 'DEPENDENT_NO', descending: false }}" >
+                    <core:Item key="{employee>DEPENDENT_NO}" 
+                            text="{employee>LEGAL_NAME}" />
+                </MultiComboBox>
                 
                 <!-- Type of Professional Body -->
                 <Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -208,7 +221,7 @@
                 />
 
                 <!-- Actual Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount_actual}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_claim} : ${i18n>label_claimdetails_input_amount_actual} }" />
                 <Input
                     id="input_claimdetails_input_actual_amount"
                     value="{
@@ -227,7 +240,8 @@
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="{claimitem_property>/actual_amount/is_visible}"
-					required="true"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
+					required="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
 				/>
 
                 <!-- Subsidised Amount (MYR) (50% of actual) -->
@@ -281,7 +295,7 @@
                 />
                                 
                 <!-- Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
                 <Input
                     id="input_claimdetails_input_amount"
                     value="{
@@ -361,7 +375,14 @@
                 />
 
                 <!-- Receipt Date -->
-                <Label text="{i18n>label_claimdetails_input_receiptdate}" />
+                <Label
+                text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_receiptdate}
+                }"
+                />
                 <DatePicker
                     id="datepicker_claimdetails_input_receipt_date"
                     value="{
@@ -377,6 +398,7 @@
                     showCurrentDateButton="true"
                     visible="false"
                     required="true"
+                    change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',
@@ -417,7 +439,13 @@
                 />
 
 				<!-- Start Date -->
-				<Label text="{i18n>label_claimdetails_input_startdate}" />
+				<Label text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_startdate}
+                }" />
+                
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
                     value="{
@@ -536,7 +564,7 @@
 				/>
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{i18n>label_claimdetails_input_region}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_overseas}: ${i18n>label_claimdetails_input_region}}"/>
                 <Select
                     id="select_claimdetails_input_region"
                     forceSelection="false"
@@ -921,8 +949,7 @@
                     editable = "{claimitem_property>/to_location_office/is_editable}"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
-                            sorter: { path: 'TO_LOCATION_ID', descending: false },
-                            length: 1000}">
+                            sorter: { path: 'TO_LOCATION_ID', descending: false }}">
                     <items>
                         <core:Item key="{employee_view>TO_LOCATION_ID}" 
                         		   text="{employee_view>TO_LOCATION_DESC}" />
@@ -947,7 +974,6 @@
                         constraints: { minimum: 0.01 }
 					}"
 					change="onChange_ClaimDetails_Kilometer"
-					liveChange="onChange_ClaimDetails_Kilometer"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
                                 ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
 					visible="{claimitem_property>/km/is_visible}"
@@ -1364,6 +1390,10 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TELEFON_B}
+                    }"
                     maxDate="{
 						parts: [
 							'constant>/EntitiesFields/BILL_DATE',
