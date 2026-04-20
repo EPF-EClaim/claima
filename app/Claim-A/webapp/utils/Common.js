@@ -304,7 +304,9 @@ sap.ui.define([
          * @param {string} sClaimType claim type PAR or claim submission
 		 * @param {boolean} bEdit toggle for edit or display
 		 */
-		editHeaderChange: async function (sClaimType, bEdit) {		
+		editHeaderChange: async function (sClaimType, bEdit) {
+            const oButtonModel = this._oView.getModel("editButtonModel");
+			oButtonModel.setProperty("/state", bEdit);		
 			await this._toggleHeaderFragment(sClaimType, bEdit);
             await this.setHeaderEditable(sClaimType, bEdit);
 		},

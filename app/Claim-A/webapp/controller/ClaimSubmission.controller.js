@@ -1759,12 +1759,9 @@ sap.ui.define([
 		 * 2. Display fragment based on toggle
 		 * 3. Enable or disable header fields to be editable
 		 */
-		onEditHeaderPress: async function () {
-			const oButtonModel = this.getView().getModel("editButtonModel");
-			const bState = oButtonModel.getProperty("/state");
-			oButtonModel.setProperty("/state", !bState);	
+		onEditHeaderPress: async function () {	
 			Common.init(this.getOwnerComponent(), this.getView());		
-			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState);
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
 		onDownloadExcelReport: async function () {

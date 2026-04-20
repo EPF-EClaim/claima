@@ -510,11 +510,8 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
-			const oButtonModel = this.getView().getModel("editButtonModel");
-			const bState = oButtonModel.getProperty("/state");	
-			oButtonModel.setProperty("/state", !bState);
 			Common.init(this.getOwnerComponent(), this.getView());		
-			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !bState);
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
 		/* =========================================================
