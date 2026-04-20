@@ -1337,8 +1337,8 @@ sap.ui.define([
 
 			// Destroy previous detail fragment to avoid stale bindings
 			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
-				const frag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
-				frag.destroy(true);
+				const oFrag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
+				oFrag.destroy(true);
 				delete this._oClaimFragments["claimsubmission_claimdetails_input"];
 			}
 
