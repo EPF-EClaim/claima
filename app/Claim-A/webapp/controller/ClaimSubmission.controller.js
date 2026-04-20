@@ -3136,10 +3136,9 @@ sap.ui.define([
 		 * @public
 		 */
 		onDelete_Claim_Attachment: function (sDeleteTarget) {
-			this._sDeleteTarget = sDeleteTarget;
-			this._openDeleteAttachmentDialog();
+			this._openDeleteAttachmentDialog(sDeleteTarget);
 		},
-		_openDeleteAttachmentDialog: function () {
+		_openDeleteAttachmentDialog: function (sDeleteTarget) {
 			if (!this._oDeleteAttachmentDialog) {
 				Fragment.load({
 					name: "claima.fragment.deleteattachment",
@@ -3148,16 +3147,20 @@ sap.ui.define([
 				}).then(function (oDialog) {
 					this._oDeleteAttachmentDialog = oDialog;
 					this.getView().addDependent(oDialog);
+					oDialog.data("deleteTarget", sDeleteTarget);
 					oDialog.open();
 				}.bind(this));
 			} else {
+				this._oDeleteAttachmentDialog.data("deleteTarget", sDeleteTarget);
 				this._oDeleteAttachmentDialog.open();
 			}
 		},
 
 		onConfirmDeleteAttachment: async function () {
+			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+
 			Attachment.init(this.getOwnerComponent(),this.getView());
-			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, this._sDeleteTarget);
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
 				this._oDeleteAttachmentDialog.close();
 		},
 

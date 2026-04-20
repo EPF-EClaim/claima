@@ -216,11 +216,10 @@ sap.ui.define([
 				switch (sSubmissionType) {
 					case Constants.SubmissionTypePrefix.CLAIM:
 						var oItemModel = this._oView.getModel("claimitem_input");
-
 						var sAttachmentId = oItemModel.getProperty(`/claim_item/attachment_file_${sTarget}`);
-						var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
 
 						if (sAttachmentId) {
+							var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
 							await this.deleteAttachment(sAttachment1_SFID);
 						}
 
@@ -228,13 +227,13 @@ sap.ui.define([
 						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileContent`, null);
 						oItemModel.setProperty(`/claim_item/attachment_file_${sTarget}`, null);
 						break;
+						
 					case Constants.SubmissionTypePrefix.REQUEST:
 						var oItemModel = this._oOwnerComponent.getModel("request");
-
 						var sAttachmentId = oItemModel.getProperty(`/req_item/${sTarget}_filename`);
-						var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
 
 						if (sAttachmentId) {
+							var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
 							await this.deleteAttachment(sAttachment1_SFID);
 						}
 
