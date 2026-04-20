@@ -169,6 +169,7 @@ entity ZREQUEST_ITEM : managed {
         TRANSFER_DATE              : Date;
         NO_OF_DAYS                 : Integer;
         MARRIAGE_CATEGORY          : String(2);
+        TOTAL_TRAVELLER            : Integer;
         FAMILY_COUNT               : Integer;
         COST_CENTER                : String;
         GL_ACCOUNT                 : String(6);
@@ -379,6 +380,9 @@ entity ZCLAIM_HEADER : managed {
         APPROVER4                      : String(6);
         APPROVER5                      : String(6);
         SESSION_NUMBER                 : String(15);
+        MODE_OF_TRANSFER               : String(2);
+        TRAVEL_ALONE_FAMILY            : String(1);
+        TRAVEL_FAMILY_NOW_LATER        : String(2);
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -410,7 +414,13 @@ entity ZCLAIM_HEADER : managed {
         ZAPPROVER_DETAILS_CLAIMS       : Composition of many ZAPPROVER_DETAILS_CLAIMS
                                              on ZAPPROVER_DETAILS_CLAIMS.CLAIM_ID = CLAIM_ID;
         ZHOUSING_LOAN_SCHEME           : Association to ZHOUSING_LOAN_SCHEME
-                                             on ZHOUSING_LOAN_SCHEME.HOUSING_LOAN_SCHEME_ID = HOUSING_LOAN_SCHEME
+                                             on ZHOUSING_LOAN_SCHEME.HOUSING_LOAN_SCHEME_ID = HOUSING_LOAN_SCHEME;
+        ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
+                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
+        ZTRAVEL_TYPE                  : Association to ZTRAVEL_TYPE
+                                            on ZTRAVEL_TYPE.TRAVEL_TYPE_ID = TRAVEL_ALONE_FAMILY;
+        ZFAMILY_TIMING                : Association to ZFAMILY_TIMING
+                                            on ZFAMILY_TIMING.FAMILY_TIMING_ID = TRAVEL_FAMILY_NOW_LATER;
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -444,6 +454,7 @@ entity ZCLAIM_ITEM : managed {
         LODGING_ADDRESS            : String;
         MARRIAGE_CATEGORY          : String(2);
         AREA                       : String(6);
+        TOTAL_TRAVELLER            : Integer;
         NO_OF_FAMILY_MEMBER        : Integer;
         PARKING                    : Decimal;
         PHONE_NO                   : String;
