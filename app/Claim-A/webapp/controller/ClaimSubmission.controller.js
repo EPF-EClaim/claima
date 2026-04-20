@@ -81,7 +81,7 @@ sap.ui.define([
 
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._oFragments = Object.create(null);
+			this._oClaimFragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
@@ -244,15 +244,15 @@ sap.ui.define([
 			oClaimSubmissionPage.removeAllContent();
 
 			// destroy ALL fragments
-			if (this._oFragments) {
-				for (const sFrag of Object.keys(this._oFragments)) {
+			if (this._oClaimFragments) {
+				for (const sFrag of Object.keys(this._oClaimFragments)) {
 					try {
-						const oFrag = await this._oFragments[sFrag];
+						const oFrag = await this._oClaimFragments[sFrag];
 						oFrag?.destroy(true);
 					} catch {}
 				}
 			}
-			this._oFragments = Object.create(null);
+			this._oClaimFragments = Object.create(null);
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
 		},
@@ -291,11 +291,11 @@ sap.ui.define([
 
 		_getFormFragment: async function (sName, toCreate) {
 			const oView = this.getView();
-			if (this._oFragments[sName]) {
-				return this._oFragments[sName];
+			if (this._oClaimFragments[sName]) {
+				return this._oClaimFragments[sName];
 			}
 			else if (toCreate) {
-				this._oFragments[sName] = Fragment.load({
+				this._oClaimFragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
 					type: "XML",
@@ -304,7 +304,7 @@ sap.ui.define([
 					oView.addDependent(oFrag);
 					return oFrag;
 				});
-				return this._oFragments[sName];
+				return this._oClaimFragments[sName];
 			}
 			else {
 				return null;
@@ -1336,10 +1336,10 @@ sap.ui.define([
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
 
 			// Destroy previous detail fragment to avoid stale bindings
-			if (this._oFragments["claimsubmission_claimdetails_input"]) {
-				const frag = await this._oFragments["claimsubmission_claimdetails_input"];
+			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
+				const frag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
 				frag.destroy(true);
-				delete this._oFragments["claimsubmission_claimdetails_input"];
+				delete this._oClaimFragments["claimsubmission_claimdetails_input"];
 			}
 
 			BusyIndicator.show(0);
@@ -1764,7 +1764,7 @@ sap.ui.define([
 			const bState = oButtonModel.getProperty("/state");
 			oButtonModel.setProperty("/state", !bState);	
 			Common.init(this.getOwnerComponent(), this.getView());		
-			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState, this.getView().getController());
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !bState);
 		},
 
 		onDownloadExcelReport: async function () {

@@ -28,14 +28,14 @@ sap.ui.define([
                 [Constants.SubmissionTypePrefix.CLAIMHEADER]: {
                     pageId: "page_claimsubmission",
                     fragmentPath: "claima.fragment",
-                    fragmentCache: "_oFragments",
+                    fragmentCache: "_oClaimFragments",
                     display: "claimsubmission_summary_claimheader",
                     edit: "claimsubmission_summary_claimheader_edit"
                 },
                 [Constants.SubmissionTypePrefix.REQUESTHEADER]: {
                     pageId: "request_form",
                     fragmentPath: "claima.fragment",
-                    fragmentCache: "_oFragments",
+                    fragmentCache: "_oRequestFragments",
                     display: "request_header",
                     edit: "request_header_edit"
                 }
@@ -305,8 +305,8 @@ sap.ui.define([
 		 * @param {boolean} bEdit toggle for edit or display
          * @param {object} oController parent controller
 		 */
-		editHeaderChange: async function (sClaimType, bEdit, oController) {		
-			await this._toggleHeaderFragment(sClaimType, bEdit, oController);
+		editHeaderChange: async function (sClaimType, bEdit) {		
+			await this._toggleHeaderFragment(sClaimType, bEdit, this._oView.getController());
             await this.setHeaderEditable(sClaimType, bEdit);
 		},
 
