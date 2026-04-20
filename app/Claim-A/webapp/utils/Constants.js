@@ -282,7 +282,9 @@ sap.ui.define([
             "TRIP_START_DATE" : "TRIP_START_DATE",
             "TRIP_END_DATE" : "TRIP_END_DATE",
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
-            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID"
+            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID",
+            "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
+            "REQUEST_TYPE": "REQUEST_TYPE"
         },
         "Operators": {
             "EQUAL": "EQ",

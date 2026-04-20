@@ -67,7 +67,7 @@
 					forceSelection="false"
 					change=".RequestUtility.determineDefaultCostCenter"
 					items="{
-						path: 'claim_type_list>/types',
+						path: 'employee>/ZCLAIM_TYPE',
 						sorter: {
 							path: 'CLAIM_TYPE_ID',
 							descending: false
@@ -76,8 +76,8 @@
 				>
 					<items>
 						<core:Item
-							key="{claim_type_list>CLAIM_TYPE_ID}"
-							text="{claim_type_list>CLAIM_TYPE_DESC}"
+							key="{employee>CLAIM_TYPE_ID}"
+							text="{employee>CLAIM_TYPE_DESC}"
 						/>
 					</items>
 				</Select>

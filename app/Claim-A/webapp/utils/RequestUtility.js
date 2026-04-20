@@ -417,6 +417,7 @@ sap.ui.define([
             }
 		},
 
+        
         /**
 		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
 		 *
@@ -437,13 +438,26 @@ sap.ui.define([
             try {
                 await oFunction.execute();
                 const oContext  = oFunction.getBoundContext();
-
                 const oResult   = oContext.getObject();
 
                 return oResult.fAmount;
 
             } catch (error) {
                 return 0;
+            }
+        },
+
+        checkElaunTukarEligibility: async function () {
+            const oDataModel    = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                return oContext.getObject().value;  // true or false
+
+            } catch (oError) {
+                return false;
             }
 		}
         
