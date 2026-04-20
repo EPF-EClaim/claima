@@ -78,7 +78,7 @@
                                                                                                                required="{reqHeaderEditableModel>/endEventRequired}" 
                                                                                                                editable="{reqHeaderEditableModel>/endEvent}"                  
                                     /></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_location}"><form:fields><Input value="{request>/req_header/location}" editable="{reqHeaderEditableModel>/location}" placeholder="{i18n>placeholder_reqinput_location}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_destination} : ${i18n>req_location} }"><form:fields><Input value="{request>/req_header/location}" editable="{reqHeaderEditableModel>/location}" placeholder="{i18n>placeholder_reqinput_location}"/></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>

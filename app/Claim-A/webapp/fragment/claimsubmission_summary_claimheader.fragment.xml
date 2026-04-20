@@ -213,7 +213,7 @@
                 />
 
                 <!-- Location -->
-                <Label text="{i18n>label_claimsummary_claimheader_location}" />
+                <Label text="{= (${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>label_claimsummary_claimheader_destination} : ${i18n>label_claimsummary_claimheader_location} }" />
                 <Input
                     id="text_claimsummary_claimheader_location"
                     editable="{claimSubmissionHeaderEditableModel>/location}"

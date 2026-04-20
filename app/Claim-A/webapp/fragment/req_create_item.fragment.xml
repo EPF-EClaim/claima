@@ -830,7 +830,7 @@
                                 </form:FormElement>
 
                                 <!-- Semenanjung/Sarawak/Sabah -->
-                                <form:FormElement label="{i18n>req_i_sss}"
+                                <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_location} : ${i18n>req_i_sss} }"
                                             visible="false"
                                             id="i_sss" >
                                     <form:fields>

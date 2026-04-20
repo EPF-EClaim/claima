@@ -304,8 +304,9 @@
 						/>
 					</items>
 				</Select>
-				<Label text="{i18n>req_location}" />
-				<Input
+
+			    <Label text="{= (${reqDialog>/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${reqDialog>/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_destination} : ${i18n>req_location} }" />
+			    <Input 
 					id="req_location"
 					textAlign="Begin"
 					placeholder="{i18n>placeholder_reqinput_location}"
