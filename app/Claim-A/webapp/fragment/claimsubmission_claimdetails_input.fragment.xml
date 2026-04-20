@@ -564,7 +564,7 @@
 				/>
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_overseas}: ${i18n>label_claimdetails_input_region}}"/>
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_location}: ${i18n>label_claimdetails_input_region}}"/>
                 <Select
                     id="select_claimdetails_input_region"
                     forceSelection="false"
@@ -929,7 +929,7 @@
                 </Select>
 
                 <!-- To Location -->
-                <Label text="{i18n>label_claimdetails_input_location_to}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_destination}: ${i18n>label_claimdetails_input_location_to}}" />
                 <Input
                     id="input_claimdetails_input_to_location"
                     value="{claimitem_input>/claim_item/to_location}"
@@ -1004,7 +1004,7 @@
                 />
 
                 <!-- Location -->
-                <Label text="{i18n>label_claimdetails_input_location}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_destination}: ${i18n>label_claimdetails_input_location}}" />
                 <Input
                     id="input_claimdetails_input_location"
                     value="{claimitem_input>/claim_item/location}"
@@ -1023,7 +1023,7 @@
                 />
 
                 <!-- Currency Code -->
-                <Label text="{i18n>label_claimdetails_input_currencycode}"/>
+                <Label text="{i18n>label_claimdetails_input_currencycode} {i18n>icon_info}" tooltip="{i18n>tooltip_currency_rate}"/>
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"

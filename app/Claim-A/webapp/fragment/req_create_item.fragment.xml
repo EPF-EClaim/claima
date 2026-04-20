@@ -438,7 +438,7 @@
                                 </form:FormElement>
 
                                 <!-- Location -->
-                                <form:FormElement label="{i18n>req_i_location}"
+                                <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_i_destination} : ${i18n>req_i_location} }"
                                             visible="false"
                                             id="i_location"  >
                                     <form:fields>
@@ -830,7 +830,7 @@
                                 </form:FormElement>
 
                                 <!-- Semenanjung/Sarawak/Sabah -->
-                                <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_location} : ${i18n>req_i_sss} }"
+                                <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_i_location} : ${i18n>req_i_sss} }"
                                             visible="false"
                                             id="i_sss" >
                                     <form:fields>
@@ -1093,9 +1093,10 @@
                                 </form:FormElement>
 
                                 <!-- Currency Rate -->
-                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate}"
+                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate} {i18n>icon_info}"
                                             visible="false"
-                                            id="i_currency_rate"  >
+                                            id="i_currency_rate"
+                                            tooltip="{i18n>tooltip_currency_rate}"  >
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 

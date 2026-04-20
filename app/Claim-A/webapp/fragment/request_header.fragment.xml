@@ -1,0 +1,129 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content">
+
+    <VBox id="request_header_fragment">
+        <VBox
+            id="request_form_header_box1"
+            backgroundDesign="Solid"
+            class="roundedBox sapUiSmallMargin sapUiTinyMarginBottom"
+            rowGap="1rem">
+
+            <!-- Toolbar -->
+            <OverflowToolbar height="3rem">
+                <Title text="{i18n>req_form_header_title}"/>
+                <ToolbarSpacer/>
+
+                <Button
+                    id="PARDownloadExcelBtn"
+                    icon="sap-icon://excel-attachment"
+                    text="{i18n>downloaddetails}"
+                    press=".onDownloadExcelReport" />
+
+                <Button
+                    id="btnEditHeader"
+                    icon="sap-icon://edit"
+                    text="{i18n>req_b_edit}"
+                    press=".onEditHeaderPress"
+                    visible="{= ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
+                                ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} }" />
+            </OverflowToolbar>
+
+            <form:Form 
+                id="req_header1"
+                layout="ColumnLayout"
+                editable="false" >
+                <form:layout><form:ColumnLayout columnsL="2" columnsM="2" /></form:layout>
+                <form:formContainers>
+                    <form:FormContainer >
+                        <form:formElements>
+                            <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><Text text="{request>/req_header/tripstartdate}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><Text text="{request>/req_header/tripenddate}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><Text text="{request>/req_header/eventstartdate}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><Text text="{request>/req_header/eventenddate}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{= (${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} || ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA}) ? ${i18n>req_i_destination} : ${i18n>req_location} }"><form:fields><Text text="{request>/req_header/location}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_cc}"><form:fields><Text text="{request>/req_header/costcenter}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_acc}"><form:fields><Text id="req_alt_cost_center" text="{request>/req_header/altcostcenter} - {request>/req_header/altcostcenterdesc}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_caa}">
+                                <form:fields><Text text="{
+                                        path: 'request>/req_header/cashadvamt',
+                                        type: 'sap.ui.model.type.Float',
+                                        formatOptions: {
+                                            minFractionDigits: 2,
+                                            maxFractionDigits: 2,
+                                            groupingEnabled: true
+                                        }}" 
+                                    textDirection="RTL"></Text></form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_amt}">
+                                <form:fields><Text text="{
+                                        path: 'request>/req_header/reqamt',
+                                        type: 'sap.ui.model.type.Float',
+                                        formatOptions: {
+                                            minFractionDigits: 2,
+                                            maxFractionDigits: 2,
+                                            groupingEnabled: true
+                                        }}" 
+                                    textDirection="RTL"></Text></form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_rtype}"><form:fields><Text text="{request>/req_header/reqtype}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_attach1}"><form:fields><Link id="attachment1" press="onDocLinkPress" text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_attach2}"><form:fields><Link id="attachment2" press="onDocLinkPress" text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_claimtype}"><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
+                        </form:formElements>
+                    </form:FormContainer>
+                </form:formContainers>
+            </form:Form>
+            <dependents>
+                <mdc:ValueHelp
+                    id="valuehelp_req_altcc"
+                    delegate='{
+                        "name": "claima/utils/ValueHelpDelegate_Common",
+                        "payload": {
+                            "modelName": "employee",
+                            "entitySet": "employee>/ZCOST_CENTER",
+                            "keyField": "COST_CENTER_ID",
+                            "descriptionField": "COST_CENTER_DESC",
+                            "columns": [
+                                "{i18n>valuehelp_claiminput_altcc_col_id}",
+                                "{i18n>valuehelp_claiminput_altcc_col_name}"
+                            ],
+                            "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                            "openOnClick": true
+                        }
+                    }'
+                >
+                    <mdc:typeahead>
+                        <mdcvh:Popover>
+                            <mdcvhcnt:MTable
+                                keyPath="COST_CENTER_ID"
+                                descriptionPath="COST_CENTER_DESC"
+                                caseSensitive="false"
+                                useAsValueHelp="false" />
+                        </mdcvh:Popover>
+                    </mdc:typeahead>
+
+                    <mdc:dialog>
+                        <mdcvh:Dialog title="{i18n>valuehelp_claiminput_altcc}">
+                            <mdcvhcnt:MTable
+                                keyPath="COST_CENTER_ID"
+                                descriptionPath="COST_CENTER_DESC"
+                                caseSensitive="false" />
+                        </mdcvh:Dialog>
+                    </mdc:dialog>
+                </mdc:ValueHelp>
+            </dependents>
+
+        </VBox>
+    </VBox>
+</core:FragmentDefinition>
