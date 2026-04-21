@@ -3636,13 +3636,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/descr/from_state_id", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.STATE_DESC));
 				oPropertyModel.setProperty("/from_location_office/is_editable", true);
 
-				if(oPropertyModel.getProperty("/to_location_office/is_editable") && oPropertyModel.getProperty("/to_state/is_editable") && oPropertyModel.getProperty("/from_location_office/is_editable")){
-					oInputModel.setProperty("/claim_item/from_location_office", null);
-					oInputModel.setProperty("/claim_item/to_location_office", null);
-					oInputModel.setProperty("/claim_item/to_state", null);
-					oPropertyModel.setProperty("/to_location_office/is_editable", false);
-					oPropertyModel.setProperty("/to_state/is_editable", false);
-				}
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_state_id", null);
@@ -3674,7 +3667,6 @@ sap.ui.define([
 			if (oSelectedItem) {
 				// get claim type description
 				oInputModel.setProperty("/claim_item/descr/from_location_office", oSelectedItem.getBindingContext("employee").getObject(this._oConstant.EntitiesFields.LOCATION_DESC));
-				oPropertyModel.setProperty("/to_state/is_editable", true);
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_location_office", null);
@@ -3709,7 +3701,6 @@ sap.ui.define([
 			if (oSelectedItem) {
 				// get claim type description
 				oInputModel.setProperty("/claim_item/descr/to_state_id", oSelectedItem.getBindingContext("employee_view").getObject(this._oConstant.EntitiesFields.TO_STATE_DESC));
-				oPropertyModel.setProperty("/to_location_office/is_editable", true);
 			}
 			else {
 				oInputModel.setProperty("/claim_item/descr/to_state_id", null);

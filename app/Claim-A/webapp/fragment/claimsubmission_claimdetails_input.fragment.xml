@@ -897,7 +897,7 @@
                     change="onSelect_ClaimDetails_FromLocationOffice"
                     liveChange="onSelect_ClaimDetails_FromLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-                    editable = "{claimitem_property>/from_location_office/is_editable}"
+                    editable = "{= ${claimitem_input>/claim_item/from_state_id} !== null}"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false }}"
