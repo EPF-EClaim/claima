@@ -19,6 +19,15 @@
       "authenticationType": "xsuaa"
     },
     {
+      "source": "^/Analytics(.*)$",
+      "target": "/Analytics/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.Admin_CC", 
+                "$XSAPPNAME.Admin_System",
+                "$XSAPPNAME.DTD_Admin"]
+    },
+    {
       "source": "^(?:/app|/app/.*)?/resources/(.*)$",
       "target": "/resources/$1",
       "authenticationType": "xsuaa",
