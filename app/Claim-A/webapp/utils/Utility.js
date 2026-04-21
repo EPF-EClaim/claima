@@ -477,5 +477,28 @@ sap.ui.define([
             return iMaxDays;
         },
 
+        getMarriageCategory: async function (){
+            var oSessionModel = this._oOwnerComponent.getModel("session");
+            
+            const oFunction = oDataModel.bindContext("/getMarriageCategory(...)");
+            oFunction.setParameter("sEmpId", oSessionModel.getProperty("/userId"));
+
+            try{
+                BusyIndicator.show(0);
+
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+            }catch(error){
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            }finally{
+                BusyIndicator.hide();
+            }
+        }
+
     };
     });

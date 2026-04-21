@@ -119,7 +119,8 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"                        
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
+                        editable="{= ${} }"                        
                     >
                         <core:Item key="{employee>TRAVEL_TYPE_ID}" text="{employee>TRAVEL_TYPE_DESC}" />
                     </Select>

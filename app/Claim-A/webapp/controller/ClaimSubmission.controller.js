@@ -2372,6 +2372,12 @@ sap.ui.define([
 				var iDependent;
 				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
 				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
+				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
+					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
+				}
+				
 			}
 
 			// if claim type item is lodging, retrieve eligible amount
@@ -2431,7 +2437,8 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id: { is_required: false },
 				bill_no: { is_required: false },
-				account_no: { is_required: false }
+				account_no: { is_required: false },
+				number_of_traveller: { is_required: false, is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
