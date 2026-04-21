@@ -91,7 +91,9 @@ sap.ui.define([
 			this._oDataModel 		= this.getOwnerComponent().getModel();
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
-			this._oFragments 		= Object.create(null);
+			this._oRequestFragments 		= Object.create(null);
+			this._sDeleteTarget 	= null; //doc 1 or doc 2
+			this._oDeleteAttachmentDialog = null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent(), this.getView());
@@ -101,13 +103,14 @@ sap.ui.define([
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 
 			this.getView().setModel(Models.createClaimHeaderEditableModel(), "reqHeaderEditableModel");
+			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
 		},
 
 		/* =========================================================
 		* URL Access
 		* ======================================================= */
 
-		_onMatched(oEvent) {
+		async _onMatched(oEvent) {
 			let sRequestId = oEvent.getParameter("arguments").request_id;
 
 			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) { }
@@ -117,14 +120,31 @@ sap.ui.define([
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
 			this._oReqModel.setProperty('/view', 'view');
 
-			this._loadRequest(sRequestId);
+			this.getView().getModel("editButtonModel").setProperty("/state", false);
+			
+			await this._loadRequest(sRequestId);
 		},
 
 		async _loadRequest(sReqId) {
 			BusyIndicator.show(0);
+			const oRequestFormPage = this.byId("request_form");
+    		// hard reset
+			oRequestFormPage.removeAllContent();
+
+			// destroy ALL fragments
+			if (this._oRequestFragments) {
+				for (const sFrag of Object.keys(this._oRequestFragments)) {
+					try {
+						const oFrag = await this._oRequestFragments[sFrag];
+						oFrag?.destroy(true);
+					} catch {}
+				}
+			}
+			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
 				await PARequestSharedFunction._getItemList(this, sReqId);
+				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
 			} catch (error) {
 				console.log(error);
@@ -139,8 +159,8 @@ sap.ui.define([
 
 		async _getFormFragment(sName) {
 			const oView = this.getView();
-			if (!this._oFragments[sName]) {
-				this._oFragments[sName] = Fragment.load({
+			if (!this._oRequestFragments[sName]) {
+				this._oRequestFragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
 					type: "XML",
@@ -150,7 +170,7 @@ sap.ui.define([
 					return oFrag;
 				});
 			}
-			return this._oFragments[sName];
+			return this._oRequestFragments[sName];
 		},
 
 		async _replaceContentAt(oPage, iIndex, oControl) {
@@ -159,14 +179,20 @@ sap.ui.define([
 			oPage.insertContent(oControl, iSafe);
 		},
 
+		/**
+		 * Remove fragment from display
+		 * @param {string} sLocalId name of fragment to be removed
+		 * @returns 
+		 */
 		async _removeByLocalId(sLocalId) {
-			const ctrl = this.byId(sLocalId);
-			if (!ctrl) return;
-			const parent = ctrl.getParent && ctrl.getParent();
-			if (parent?.removeContent) parent.removeContent(ctrl);
-			else if (parent?.removeItem) parent.removeItem(ctrl);
-			ctrl.destroy();
-			this._oFragments = Object.create(null);
+			const oCache = this._oRequestFragments;
+            const oFragment = oCache?.[sLocalId];
+            if (!oFragment) return;
+
+            const oResolved = await oFragment;
+            this.byId("request_form").removeContent(oResolved);
+            oResolved.destroy(true);
+            delete oCache[sLocalId];
 		},
 
 		async _showItemCreate(bEdit) {
@@ -174,8 +200,8 @@ sap.ui.define([
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
-			await this._removeByLocalId(this.byId("request_item_list_fragment_d") ? "request_item_list_fragment_d" : "request_item_list_fragment");
-			await this._removeByLocalId("req_approval_log");
+			await this._removeByLocalId("req_item_list");
+			await this._removeByLocalId("approval_log");
 
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
@@ -187,13 +213,28 @@ sap.ui.define([
 			PARequestSharedFunction.determineFooterButton(this);
 		},
 
+		/**
+		 * Display editable/non-editable header fragment based on edit button state
+		 * If edit button state is true, displays editable fragment, if false, displays non-editable fragment
+		 */
+		_showHeaderFragment: async function () {
+			this._removeByLocalId("request_header");
+			var oRequestFormPage = this.byId("request_form");
+			
+			const sFragmentName = this.getView().getModel("editButtonModel").getProperty("/state") ? "request_header_edit" : "request_header"
+			await this._getFormFragment(sFragmentName).then(function (oVBox) {
+				oRequestFormPage.insertContent(oVBox, 0);
+			});
+		},
+
+
 		async _showItemList(sReqId) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
-			await this._removeByLocalId("request_item_list_fragment");
-			await this._removeByLocalId("request_create_item_fragment");
-			await this._removeByLocalId("req_approval_log");
+			await this._removeByLocalId("req_item_list");
+			await this._removeByLocalId("req_create_item");
+			await this._removeByLocalId("approval_log");
 
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
@@ -219,10 +260,7 @@ sap.ui.define([
 			}
 
 			Common.init(this.getOwnerComponent(), this.getView());
-			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
-				// await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, true);
-			}
-			else {
+			if (sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.SEND_BACK) {
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.REQUESTHEADER, false);
 			}
 			PARequestSharedFunction.determineFooterButton(this);
@@ -249,7 +287,7 @@ sap.ui.define([
 							press: async function () {
 								this.oBackDialog.close();
 								await PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-								await this._removeByLocalId("req_approval_log");
+								await this._removeByLocalId("approval_log");
 								var oHistory = History.getInstance();
 								var sPreviousHash = oHistory.getPreviousHash();
 								if (sPreviousHash) {
@@ -440,7 +478,7 @@ sap.ui.define([
 				this._oReqModel.setProperty('/req_item', {});
 			} else {
 				PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-				await this._removeByLocalId("req_approval_log");
+				await this._removeByLocalId("approval_log");
 				var oHistory = History.getInstance();
 				var sPreviousHash = oHistory.getPreviousHash();
 				if (sPreviousHash) {
@@ -463,7 +501,19 @@ sap.ui.define([
 		},
 
 		onSaveHeaderPress: async function () {
+			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
+		},
+
+		/**
+		 * Function for Edit button press
+		 * 1. Swaps button state
+		 * 2. Display fragment based on toggle
+		 * 3. Enable or disable header fields to be editable
+		 */
+		onEditHeaderPress: async function () {
+			Common.init(this.getOwnerComponent(), this.getView());		
+			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
 		/* =========================================================
@@ -693,6 +743,40 @@ sap.ui.define([
 				setEmpty();
 			}
 		},
+
+		onDeleteAttachment: function (sDeleteTarget) {
+			this._openDeleteAttachmentDialog(sDeleteTarget);
+		},
+
+		_openDeleteAttachmentDialog: function (sDeleteTarget) {
+			if (!this._oDeleteAttachmentDialog) {
+				Fragment.load({
+					name: "claima.fragment.deleteattachment",
+					id: "deleteAttachmentDialog",
+					controller: this
+				}).then(function (oDialog) {
+					this._oDeleteAttachmentDialog = oDialog;
+					this.getView().addDependent(oDialog);
+					oDialog.data("deleteTarget", sDeleteTarget);
+					oDialog.open();
+				}.bind(this));
+			} else {
+				this._oDeleteAttachmentDialog.data("deleteTarget", sDeleteTarget);
+				this._oDeleteAttachmentDialog.open();
+			}
+		},
+
+		onConfirmDeleteAttachment: async function () {
+			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+
+			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, sDeleteTarget);
+				this._oDeleteAttachmentDialog.close();
+		},
+
+		onCancelDeleteAttachment: function () {
+			this._oDeleteAttachmentDialog.close();
+			},
 
 		/* =========================================================
 		* Item List: Delete Row(s)
@@ -1163,6 +1247,10 @@ sap.ui.define([
 
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
+
+					if (!oReqItem.doc1_filename && !oReqItem.doc1) oPayload.ATTACHMENT1 = null;
+					if (!oReqItem.doc2_filename && !oReqItem.doc2) oPayload.ATTACHMENT2 = null;
+
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)

@@ -1,6 +1,7 @@
 sap.ui.define([
     "sap/m/MessageBox",
     "sap/m/MessageToast",
+    "sap/ui/core/Fragment",
     "sap/ui/core/BusyIndicator",
     "claima/model/models",
     "claima/utils/ClaimUtility",
@@ -9,7 +10,7 @@ sap.ui.define([
     "claima/utils/DateUtility",
     "claima/utils/RequestUtility",
     "claima/utils/Utility"
-], function (MessageBox, MessageToast, BusyIndicator, Models, ClaimUtility, Constants, CustomValidator, DateUtility, RequestUtility, Utility) {
+], function (MessageBox, MessageToast, Fragment, BusyIndicator, Models, ClaimUtility, Constants, CustomValidator, DateUtility, RequestUtility, Utility) {
 	"use strict";
 
 	return {
@@ -22,6 +23,23 @@ sap.ui.define([
         init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
+
+            this._aHeaderConfiguration = {
+                [Constants.SubmissionTypePrefix.CLAIMHEADER]: {
+                    pageId: "page_claimsubmission",
+                    fragmentPath: "claima.fragment",
+                    fragmentCache: "_oClaimFragments",
+                    display: "claimsubmission_summary_claimheader",
+                    edit: "claimsubmission_summary_claimheader_edit"
+                },
+                [Constants.SubmissionTypePrefix.REQUESTHEADER]: {
+                    pageId: "request_form",
+                    fragmentPath: "claima.fragment",
+                    fragmentCache: "_oRequestFragments",
+                    display: "request_header",
+                    edit: "request_header_edit"
+                }
+            };
         },
 
         /**
@@ -187,19 +205,46 @@ sap.ui.define([
                         oEditableFields.setProperty("/startTrip", !bEdit);
                         oEditableFields.setProperty("/endTrip", !bEdit);
                         oEditableFields.setProperty("/altCostCenter", !bEdit)
-                            
-                        oEditableFields.setProperty("/startEvent", bEdit);
-                        oEditableFields.setProperty("/endEvent", bEdit);
-                        oEditableFields.setProperty("/location", bEdit);
-                        oEditableFields.setProperty("/comment", bEdit);
-                        if (!oClaimModel.getProperty("/claim_header/request_id")) {
+                        oEditableFields.setProperty("/startEvent", !bEdit);
+                        oEditableFields.setProperty("/endEvent", !bEdit);
+                        oEditableFields.setProperty("/location", !bEdit);
+                        oEditableFields.setProperty("/comment", !bEdit);
+                        oEditableFields.setProperty("/saveHeader", !bEdit);
+
+                        if(oClaimModel.getProperty("/claim_header/request_id")){
+                            RequestUtility.init(this._oOwnerComponent, this._oView);
+                            const oRequestData = await RequestUtility.getPARHeaderInfo(oClaimModel.getProperty("/claim_header/request_id"));
+                            if (!oRequestData.tripStart) {
+                                oEditableFields.setProperty("/startTrip", bEdit);
+                            }
+                            if (!oRequestData.tripEnd) {
+                                oEditableFields.setProperty("/endTrip", bEdit);
+                            }
+                            if (!oRequestData.eventStart) {
+                                oEditableFields.setProperty("/startEvent", bEdit);
+                            }
+                            if (!oRequestData.eventEnd) {
+                                oEditableFields.setProperty("/endEvent", bEdit);
+                            }
+                            if (!oRequestData.altcc) {
+                                const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+                                if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                    oEditableFields.setProperty("/altCostCenter", bEdit);
+                                }
+                            }
+                        } else {
                             oEditableFields.setProperty("/startTrip", bEdit);
                             oEditableFields.setProperty("/endTrip", bEdit);
+                            oEditableFields.setProperty("/startEvent", bEdit);
+                            oEditableFields.setProperty("/endEvent", bEdit);
+                            const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+                            if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                oEditableFields.setProperty("/altCostCenter", bEdit);
+                            }
                         }
-                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
-                            oEditableFields.setProperty("/altCostCenter", bEdit);
-                        }
+
+                        oEditableFields.setProperty("/location", bEdit);
+                        oEditableFields.setProperty("/comment", bEdit);
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {	
@@ -209,26 +254,38 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     const oReqModel = this._oView.getModel("request");
                     var oEditableFields = this._oView.getModel("reqHeaderEditableModel");
+                    const sReqTypeID = oReqModel.getProperty("/req_header/reqtypeid");
                     if (bEdit) {
+                        oEditableFields.setProperty("/startEvent", !bEdit);
+                        oEditableFields.setProperty("/endEvent", !bEdit);
                         oEditableFields.setProperty("/startEventRequired", !bEdit);
                         oEditableFields.setProperty("/endEventRequired", !bEdit);
+                        oEditableFields.setProperty("/startTrip", !bEdit);
+                        oEditableFields.setProperty("/endTrip", !bEdit);
+                        oEditableFields.setProperty("/location", !bEdit);
                         oEditableFields.setProperty("/altCostCenter", !bEdit);
+                        oEditableFields.setProperty("/comment", !bEdit);
+                        oEditableFields.setProperty("/saveHeader", !bEdit);
 
-                        oEditableFields.setProperty("/startEvent", bEdit);
-                        oEditableFields.setProperty("/endEvent", bEdit);
-                        RequestUtility.init(this._oOwnerComponent, this._oView);
-                        if (await RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"))) {
-                            oEditableFields.setProperty("/startEventRequired", bEdit);
-                            oEditableFields.setProperty("/endEventRequired", bEdit);
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL ) {
+                            oEditableFields.setProperty("/startEvent", bEdit);
+                            oEditableFields.setProperty("/endEvent", bEdit);
+                            RequestUtility.init(this._oOwnerComponent, this._oView);
+                            if (await RequestUtility.getEventDateRequired(sReqTypeID)) {
+                                oEditableFields.setProperty("/startEventRequired", bEdit);
+                                oEditableFields.setProperty("/endEventRequired", bEdit);
+                            }
                         }
-                        oEditableFields.setProperty("/location", bEdit);
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT ) {
+                            oEditableFields.setProperty("/startTrip", bEdit);
+                            oEditableFields.setProperty("/endTrip", bEdit);
+                            oEditableFields.setProperty("/location", bEdit);
+                            const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtype"))
+                            if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
+                                oEditableFields.setProperty("/altCostCenter", bEdit);
+                            }
+                        }
                         oEditableFields.setProperty("/comment", bEdit);
-                        oEditableFields.setProperty("/startTrip", bEdit);
-                        oEditableFields.setProperty("/endTrip", bEdit);
-                        const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtype"))
-                        if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
-                            oEditableFields.setProperty("/altCostCenter", bEdit);
-                        }
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {
@@ -237,5 +294,87 @@ sap.ui.define([
                     break;
             }
 		},
+
+        /**
+		 * Function for Edit button press
+		 * 1. Swaps button state
+		 * 2. Display fragment based on toggle
+		 * 3. Enable or disable header fields to be editable
+         * @public
+         * @param {string} sClaimType claim type PAR or claim submission
+		 * @param {boolean} bEdit toggle for edit or display
+		 */
+		editHeaderChange: async function (sClaimType, bEdit) {
+            const oButtonModel = this._oView.getModel("editButtonModel");
+			oButtonModel.setProperty("/state", bEdit);		
+			await this._toggleHeaderFragment(sClaimType, bEdit);
+            await this.setHeaderEditable(sClaimType, bEdit);
+		},
+
+        /**
+         * Switch between editable and display fragments
+         * @param {string} sClaimType claim type to apply toggle, claim submission or Pre Approval request
+         * @param {boolean} bEdit editable state
+         * @returns 
+         */
+        _toggleHeaderFragment: async function (sClaimType, bEdit) {
+            const oHeaderConfiguration = this._aHeaderConfiguration[sClaimType];
+            if (!oHeaderConfiguration) return;
+
+            const oSubmissionTypePage = this._oView.byId(oHeaderConfiguration.pageId);
+            const sLoadFragment = bEdit ? oHeaderConfiguration.edit : oHeaderConfiguration.display;
+            const sDestroyFragment = bEdit ? oHeaderConfiguration.display : oHeaderConfiguration.edit;
+
+            await this._removeFragment(oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage);
+            const oFragment = await this._loadFragment(oHeaderConfiguration, sLoadFragment);
+
+            oSubmissionTypePage.insertContent(oFragment, 0);
+        },
+
+        /**
+         * Remove fragment from display
+         * @param {object} oHeaderConfiguration details of header to be removed
+         * @param {string} sDestroyFragment name of fragment to be removed
+         * @param {object} oSubmissionTypePage ID of page to remove fragment from
+         * @returns 
+         */
+        _removeFragment: async function (oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage) {
+            const oController = this._oView.getController();
+            const oCache = oController[oHeaderConfiguration.fragmentCache];
+            const oFragment = oCache?.[sDestroyFragment];
+            if (!oFragment) return;
+
+            const oResolved = await oFragment;
+            oSubmissionTypePage.removeContent(oResolved);
+            oResolved.destroy(true);
+            delete oCache[sDestroyFragment];
+        },
+
+        /**
+         * Load header fragment for display
+         * @param {object} oHeaderConfiguration details of header to be loaded
+         * @param {string} sLoadFragment name of fragment to be loaded
+         * @returns 
+         */
+        _loadFragment: async function (oHeaderConfiguration, sLoadFragment) {
+            const oView = this._oView;
+            const oController = this._oView.getController();
+            const oCache = oController[oHeaderConfiguration.fragmentCache];
+
+            if (!oCache[sLoadFragment]) {
+                oCache[sLoadFragment] = Fragment.load({
+                    id: oView.getId(),
+                    name: `${oHeaderConfiguration.fragmentPath}.${sLoadFragment}`,
+                    type: "XML",
+                    controller: oController
+                }).then(oFragment => {
+                    oView.addDependent(oFragment);
+                    return oFragment;
+                });
+            }
+
+            return oCache[sLoadFragment];
+        },
+
 	}
 });
