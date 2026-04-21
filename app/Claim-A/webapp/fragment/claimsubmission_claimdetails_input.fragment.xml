@@ -725,29 +725,6 @@
 					required="true"
 				/>
 
-                <!-- Number of Travellers -->
-				<Label text="{i18n>label_claimdetails_number_of_travellers}" />
-				<Input
-					id="input_claimdetails_input_number_of_travellers"
-					value="{claimitem_input>/claim_item/number_of_travellers}"
-					type="Number"
-					visible="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
-                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
-
-                    required="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
-                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
-				/>
-
 				<!-- Type of Vehicle -->
 				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
 				<Select
@@ -1347,6 +1324,18 @@
                     editable="false"
                     required="true"
                 />
+
+                <!-- Number of Travellers -->
+				<Label text="{i18n>label_claimdetails_number_of_travellers}" />
+				<Input
+					id="input_claimdetails_input_number_of_travellers"
+					value="{claimitem_input>/claim_item/number_of_travellers}"
+					type="Number"
+					visible="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
+                                ${claimitem_property>/no_of_family_member/is_visible} }"
+                    required="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
+                                ${claimitem_property>/no_of_family_member/is_visible} }"
+				/>
 
                 <!-- Category/Purpose -->
                 <Label text="{i18n>label_claimdetails_input_cat_purpose}" />
