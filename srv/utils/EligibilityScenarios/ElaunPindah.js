@@ -142,17 +142,10 @@ module.exports = {
     _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq) {
         var iIndex;
 
-        // PEM_PINDAH - return true if there is no historical claims within same Year/Month based on frequency and period
-        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-        if (iIndex == -1) return;
-        if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-            oPayload.CheckFields[iIndex].result = true;
-        } else {
-            oPayload.CheckFields[iIndex].result = false;
-            throw new Error("Frequency is per service");
+        // PEM_PINDAH - return true if there is no historical claims within same Period based on frequency
+        if ((!oRule) || (iExistingFreq > iAllowedFreq)) {
+            throw new Error("Claim Type has already been submitted previously.");
         }
-
-        iIndex = null;
 
         switch (oPayload.ClaimTypeItem) {
             // PEM_PINDAH - return true if claim amount is less than eligible amount

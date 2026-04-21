@@ -185,12 +185,12 @@ Authorization: Basic alice
          "CheckFields": [
             {
                "fieldName": "RECEIPT_DATE",
-               "value": "2026-04-17",
+               "value": "202-04-17",
                "result": null
             },
             {
                "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "80000",
+               "value": "800",
                "result": null
             },
             {
@@ -201,7 +201,7 @@ Authorization: Basic alice
             ],
          "ClaimType": "I-PAD",
          "ClaimTypeItem": "I-PAD",
-         "EmpId": "886887",
+         "EmpId": "903731",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
       }

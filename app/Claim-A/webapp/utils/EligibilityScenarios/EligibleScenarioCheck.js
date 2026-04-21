@@ -1,6 +1,6 @@
 sap.ui.define([
-"sap/m/MessageBox",
-"claima/utils/Utility"
+    "sap/m/MessageBox",
+    "claima/utils/Utility"
 ], function (MessageBox, Utility) {
     "use strict";
     return {
@@ -16,14 +16,10 @@ sap.ui.define([
             const oAction = oModel.bindContext("/EligibilityCheck(...)");
             let oReturnPayload = aPayload;
             oAction.setParameter("aPayload", oReturnPayload);
-            
-            try {
-                await oAction.execute();
-				const oResponse = oAction.getBoundContext().getObject();
-			    oReturnPayload = oResponse.value;
-            } catch (oError) {
-                MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
-            }
+
+            await oAction.execute();
+            const oResponse = oAction.getBoundContext().getObject();
+            oReturnPayload = oResponse.value;
 
             // Return Payload with Result Populated for front end validation
             return oReturnPayload;
