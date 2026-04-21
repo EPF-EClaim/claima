@@ -598,7 +598,7 @@ sap.ui.define([
 					daily_allowance: it.DAILY_ALLOWANCE,
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
-					number_of_travellers: it.NUMBER_OF_TRAVELLERS,
+					TOTAL_TRAVELLER: it.NUMBER_OF_TRAVELLERS,
 					descr: {},
 				}));
 
@@ -633,9 +633,6 @@ sap.ui.define([
 					to_location_office: null,
 					vehicle_type: it.VEHICLE_TYPE_DESC,
 					type_of_professional_body: null,
-					mode_of_transfer: TRANSFER_MODE_DESC,
-					travel_alone_family: TRAVEL_TYPE_DESC,
-					travel_family_now_later: FAMILY_TIMING_DESC,
 					no_of_days: null,
 					funeral_transportation: null,
 					material_code: null,
@@ -760,9 +757,9 @@ sap.ui.define([
 				last_send_back_time: null,
 				reject_reason_date: null,
 				reject_reason_time: null,
-				mode_of_transfer: o.MODE_OF_TRANSFER,
-				travel_alone_family: o.TRAVEL_ALONE_FAMILY,
-				travel_family_now_later: o.TRAVEL_FAMILY_NOW_LATER,
+				mode_of_transfer: o.TRANSFER_MODE_DESC,
+				travel_alone_family: o.TRAVEL_TYPE_DESC,
+				travel_family_now_later: o.FAMILY_TIMING_DESC,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -3056,7 +3053,7 @@ sap.ui.define([
 					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
-					NUMBER_OF_TRAVELLERS: oInputModel.getProperty("/claim_item/number_of_travellers")
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -4033,7 +4030,7 @@ sap.ui.define([
 					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
-					NUMBER_OF_TRAVELLERS: oInputModel.getProperty("/claim_item/number_of_travellers")
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				//// addon for new claim
@@ -4363,7 +4360,7 @@ sap.ui.define([
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
-						NUMBER_OF_TRAVELLERS: claim_item.number_of_travellers
+						TOTAL_TRAVELLER: claim_item.number_of_travellers
 					});
 
 					if (i >= itemCountDb) {

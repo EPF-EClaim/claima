@@ -683,13 +683,7 @@
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
 					required="true"
-					visible="{= ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
-                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+					visible="false"
                     items="{
                         path: 'employee>/ZTRANSFER_MODE',
                         sorter: [{ path: 'TRANSFER_MODE_ID' }],
@@ -737,8 +731,21 @@
 					id="input_claimdetails_input_number_of_travellers"
 					value="{claimitem_input>/claim_item/number_of_travellers}"
 					type="Number"
-					visible="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} }"
-                    required="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} }"
+					visible="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
+                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+
+                    required="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} &amp;&amp;
+                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
 				/>
 
 				<!-- Type of Vehicle -->

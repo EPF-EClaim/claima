@@ -1000,7 +1000,10 @@ sap.ui.define([
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
+				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
+				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
+				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
