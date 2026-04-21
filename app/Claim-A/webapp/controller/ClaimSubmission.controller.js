@@ -88,7 +88,8 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oDeclarationDialog = null;
 			this._oDisclaimerGalakanDialog = null;
-
+			this._sDeleteTarget = null;          // "1" or "2"
+			this._oDeleteAttachmentDialog = null;
 
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -3146,6 +3147,43 @@ sap.ui.define([
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
 			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+		},
+
+		/**
+		 * Deletes the selected claim attachment after user confirmation
+		 * @public
+		 */
+		onDelete_Claim_Attachment: function (sDeleteTarget) {
+			this._openDeleteAttachmentDialog(sDeleteTarget);
+		},
+		_openDeleteAttachmentDialog: function (sDeleteTarget) {
+			if (!this._oDeleteAttachmentDialog) {
+				Fragment.load({
+					name: "claima.fragment.deleteattachment",
+					id: "deleteAttachmentDialog",
+					controller: this
+				}).then(function (oDialog) {
+					this._oDeleteAttachmentDialog = oDialog;
+					this.getView().addDependent(oDialog);
+					oDialog.data("deleteTarget", sDeleteTarget);
+					oDialog.open();
+				}.bind(this));
+			} else {
+				this._oDeleteAttachmentDialog.data("deleteTarget", sDeleteTarget);
+				this._oDeleteAttachmentDialog.open();
+			}
+		},
+
+		onConfirmDeleteAttachment: async function () {
+			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+
+			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
+				this._oDeleteAttachmentDialog.close();
+		},
+
+		onCancelDeleteAttachment: function () {
+			this._oDeleteAttachmentDialog.close();
 		},
 
 		/**

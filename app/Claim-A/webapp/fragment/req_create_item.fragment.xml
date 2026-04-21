@@ -5,6 +5,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
+    xmlns:layout="sap.ui.layout"
     xmlns:table="sap.ui.table"
     xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
@@ -239,23 +240,48 @@
 
                                 <!-- Attachment 1 -->
                                 <form:FormElement label="{i18n>req_attach1}"
-                                            visible="false"
-                                            id="i_attachment_1" >
-                                    <form:fields>
-                                        <unified:FileUploader
-                                            change=".onImportChange1"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            required="true"
-                                            maximumFileSize='5.0'
-					                        mimeType="application/pdf,image/png,image/jpeg"
-                                            placeholder="{i18n>req_attachment_format}"
-                                            value="{request>/req_item/doc1}"
-                                            id="i_attachment_1_file" />
-                                        <Link
-                                            id="i_attachment1_link" 
-                                            press="onDocLinkPress" 
-                                            text="{request>/req_item/doc1_filename}"
-                                            visible="{= ${request>/req_item/doc1} !== null }" />
+                                                visible="false"
+                                                id="i_attachment_1">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange1"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="true"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc1}"
+                                        id="i_attachment_1_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment1_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc1_filename}"
+                                        visible="{= !!${request>/req_item/doc1_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc1')"
+                                            visible="{= !!${request>/req_item/doc1_filename} }" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
                                     </form:fields>
                                 </form:FormElement>
 
@@ -293,12 +319,31 @@
 					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
-                                            id="i_attachment_2_file" />
+                                            id="i_attachment_2_file" >
+                                        <unified:layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                        </unified:layoutData>
+                                        </unified:FileUploader>
                                         <Link
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc2_filename}"
-                                            visible="{= ${request>/req_item/doc2} !== null }" />
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
+                                         <layoutData>
+                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                        </layoutData>
+                                        </Link>
+                                         <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc2')"
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
+                                        
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                        </Button>
                                     </form:fields>
                                 </form:FormElement>
 

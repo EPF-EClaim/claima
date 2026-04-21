@@ -264,7 +264,7 @@ entity ZREQUEST_ITEM : managed {
         ZAREA                      : Association to one ZAREA
                                          on ZAREA.AREA_ID = AREA;
         ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
+                                         on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
         ZSPORTS_REPRESENTATION     : Association to ZSPORTS_REPRESENTATION
                                          on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
         ZFARE_TYPE                 : Association to ZFARE_TYPE
@@ -415,12 +415,12 @@ entity ZCLAIM_HEADER : managed {
                                              on ZAPPROVER_DETAILS_CLAIMS.CLAIM_ID = CLAIM_ID;
         ZHOUSING_LOAN_SCHEME           : Association to ZHOUSING_LOAN_SCHEME
                                              on ZHOUSING_LOAN_SCHEME.HOUSING_LOAN_SCHEME_ID = HOUSING_LOAN_SCHEME;
-        ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
-                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
-        ZTRAVEL_TYPE                  : Association to ZTRAVEL_TYPE
-                                            on ZTRAVEL_TYPE.TRAVEL_TYPE_ID = TRAVEL_ALONE_FAMILY;
-        ZFAMILY_TIMING                : Association to ZFAMILY_TIMING
-                                            on ZFAMILY_TIMING.FAMILY_TIMING_ID = TRAVEL_FAMILY_NOW_LATER;
+        ZTRANSFER_MODE                 : Association to ZTRANSFER_MODE
+                                             on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
+        ZTRAVEL_TYPE                   : Association to ZTRAVEL_TYPE
+                                             on ZTRAVEL_TYPE.TRAVEL_TYPE_ID = TRAVEL_ALONE_FAMILY;
+        ZFAMILY_TIMING                 : Association to ZFAMILY_TIMING
+                                             on ZFAMILY_TIMING.FAMILY_TIMING_ID = TRAVEL_FAMILY_NOW_LATER;
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -587,7 +587,7 @@ entity ZCLAIM_ITEM : managed {
         ZEMP_MASTER                : Association to one ZEMP_MASTER
                                          on ZEMP_MASTER.EEID = EMP_ID;
         ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
+                                         on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
         ZFARE_TYPE                 : Association to ZFARE_TYPE
                                          on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
         ZMATERIAL_GROUP            : Association to ZMATERIAL_GROUP
@@ -960,7 +960,7 @@ entity ZVEHICLE_OWNERSHIP : managed {
 entity ZEMP_DEPENDENT : managed {
     key EMP_ID                            : String        @mandatory  @Common.Label: 'Employee ID';
     key RELATIONSHIP                      : String        @mandatory  @Common.Label: 'Relationship';
-    key DEPENDENT_NO                      : Integer       @mandatory  @Common.Label: 'Dependent Number';
+    key DEPENDENT_NO                      : String(128)   @mandatory  @Common.Label: 'Dependent Number';
         SPOUSE_EMP_ID                     : String        @Common.Label: 'Spouse Employee ID';
         LEGAL_NAME                        : String        @Common.Label: 'Legal Name';
         NATIONAL_ID                       : String        @Common.Label: 'National ID';
