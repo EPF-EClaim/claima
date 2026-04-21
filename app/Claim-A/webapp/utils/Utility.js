@@ -485,7 +485,7 @@ sap.ui.define([
                 await oFunction.execute();
                 const oContext = oFunction.getBoundContext();
                 const oResult  = oContext.getObject();
-                return oResult;
+                return oResult.value;
                 
             } catch (oError) {
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
