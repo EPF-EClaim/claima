@@ -1303,17 +1303,18 @@ sap.ui.define([
 					ATTACHMENT1: oInputData.doc1 || null,
 					ATTACHMENT2: oInputData.doc2 || null,
 					COST_CENTER: sCostCenter || null,
-
 					EVENT_START_DATE: oInputData.eventstartdate || null,
 					EVENT_END_DATE: oInputData.eventenddate || null,
 					TRIP_START_DATE: oInputData.tripstartdate || null,
 					TRIP_END_DATE: oInputData.tripenddate || null,
-
 					STATUS: this._oConstant.ClaimStatus.DRAFT,
 					CLAIM_TYPE_ID: oInputData.claimtype || null,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10),
 					PREAPPROVAL_AMOUNT: parseFloat(0),
-					CASH_ADVANCE: parseFloat(0)
+					CASH_ADVANCE: parseFloat(0),
+					TRANSFER_MODE_ID: oInputData.transfermode || null,
+					TRAVEL_ALONE_FAMILY: oInputData.transferalonefamily || null,
+					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null
 				});
 
 				await oContext.created();
@@ -1533,6 +1534,7 @@ sap.ui.define([
 						Fragment.byId("request", "req_grptype").setEnabled(true);
 						break;
 				}
+				this.resetSelection(oEvent);
 				BusyIndicator.hide();
 			}
 		},
@@ -1573,6 +1575,30 @@ sap.ui.define([
 
 		onClickCancel: function () {
 			this.oDialogFragment.close();
+		},
+
+		/**
+		 * 
+		 */
+		resetSelection: function (oEvent) {
+			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			var sId = oEvent.getParameters().id;
+			var sSelect = sId.split("--").pop();
+
+			switch (sSelect) {
+				case "req_reqtype":
+					Fragment.byId("request", "req_claimtype").setSelectedKey("");
+                    Fragment.byId("request", "req_acc").setEditMode("Editable");
+                    oDialogModel.setProperty("/altcostcenter", null);
+                    oDialogModel.setProperty("/altcostcenter_desc", null);
+				case "req_claim_type":
+					Fragment.byId("request", "req_transfermode").setSelectedKey("");
+				case "req_transfermode":
+					Fragment.byId("request", "req_transferalonefamily").setSelectedKey("");
+				case "req_transferalonefamily":
+					Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey("");
+					break;
+			}
 		},
 
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

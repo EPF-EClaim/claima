@@ -523,6 +523,18 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "TravelAloneOrWithFamily": {
+            "ALONE": "1",
+            "WITH_FAMILY": "2"
+        },
+        "TravelWithFamilyNowOrLater": {
+            "NOW": "1",
+            "LATER": "2"
+        }, 
+        "PARSpecialFieldVisibilityForElaunTukar": {
+            "NumberOfFamilyMember": "i_no_of_family_member",
+            "NumberOfTraveller": "i_no_of_traveller"
         }
     }
 });

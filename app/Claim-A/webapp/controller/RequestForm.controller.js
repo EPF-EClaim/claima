@@ -2182,12 +2182,28 @@ sap.ui.define([
 
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
+						// set visible for the number of family member and traveller when choosing travel with Family Now
+						case Constants.ClaimTypeItem.LOD_TUKAR:
+						case Constants.ClaimTypeItem.MKN_TUKAR:
+							if (_oHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
+								Object.values(Constants.PARSpecialFieldVisibilityForElaunTukar).forEach(id => {
+									const control = this._resolveControl(id, "request");
+									if (control && typeof control.setVisible === "function") {
+										control.setVisible(true);
+									} else {
+										console.warn("Control not found or not visible-capable:", id);
+									}
+								});
+							}
+
+						// populate entitled amount 
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 						case Constants.ClaimTypeItem.LOD_TUKAR:
 							RequestUtility.populateAllocatedAmount();
 
+						// get number of night
 						case Constants.ClaimTypeItem.HOTEL_L:
 						case Constants.ClaimTypeItem.HOTEL_O:
 						case Constants.ClaimTypeItem.LODGING_L:
@@ -2197,8 +2213,10 @@ sap.ui.define([
 							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 
+						// remove business class option for FLIGHT_L
 						case Constants.ClaimTypeItem.FLIGHT_L:
 							this._removeBusinessClass();
+
 					
 						default:
 							break;
@@ -2759,6 +2777,10 @@ sap.ui.define([
 			RequestUtility.populateAllocatedAmount();
 		},
 
+		/**
+		 * remove flight business class option
+		 * @private
+		 */
 		_removeBusinessClass: function () {
 			const oSelect   = this.byId("item_flight_class");
 			const oBinding  = oSelect.getBinding("items");
@@ -2766,7 +2788,7 @@ sap.ui.define([
                                 new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
                             ]: [];
 			oBinding.filter(aFilters);
-		}
+		},
 
 	});
 });

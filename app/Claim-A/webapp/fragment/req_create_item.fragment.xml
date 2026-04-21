@@ -482,6 +482,19 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Number of Traveller -->
+                                <form:FormElement label="{i18n>req_i_no_of_traveller}"
+                                            visible="false"
+                                            id="i_no_of_traveller" >
+                                    <form:fields>
+                                        <m:Input 
+                                            required="true" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/no_of_traveller}"/>                                            
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Type of Vehicle -->
                                 <form:FormElement label="{i18n>req_i_vehicle_type}"
                                             visible="false"

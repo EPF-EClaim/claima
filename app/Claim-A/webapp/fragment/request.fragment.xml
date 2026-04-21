@@ -104,6 +104,52 @@
 						/>
 					</items>
 				</Select>
+				<Label text="{i18n>req_travel_alone_family}" />
+				<Select
+					id="req_transferalonefamily"
+					selectedKey="{reqDialog>/transferalonefamily}"
+					required="true"
+					forceSelection="false"
+					change=".resetSelection"
+					visible="{= ${reqDialog>/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"
+					items="{
+						path: 'employee>/ZTRAVEL_TYPE',
+						sorter: {
+							path: 'TRAVEL_TYPE_ID',
+							descending: false
+						}
+					}"
+				>
+					<items>
+						<core:Item
+							key="{employee>TRAVEL_TYPE_ID}"
+							text="{employee>TRAVEL_TYPE_DESC}"
+						/>
+					</items>
+				</Select>
+				<Label text="{i18n>req_travel_with_family_now_or_later}" />
+				<Select
+					id="req_transferfamilynowlater"
+					selectedKey="{reqDialog>/transferfamilynowlater}"
+					required="true"
+					forceSelection="false"
+					visible="{= ${reqDialog>/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
+								${reqDialog>/transferalonefamily} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY}}"
+					items="{
+						path: 'employee>/ZFAMILY_TIMING',
+						sorter: {
+							path: 'FAMILY_TIMING_ID',
+							descending: false
+						}
+					}"
+				>
+					<items>
+						<core:Item
+							key="{employee>FAMILY_TIMING_ID}"
+							text="{employee>FAMILY_TIMING_DESC}"
+						/>
+					</items>
+				</Select>
 				<Label
 					text="{i18n>req_tripstartdate} {i18n>icon_info}"
 					tooltip="{i18n>valuehelp_reqinput_tripdate}"
