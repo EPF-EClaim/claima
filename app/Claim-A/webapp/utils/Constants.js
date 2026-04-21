@@ -284,7 +284,9 @@ sap.ui.define([
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
             "TRANSFER_MODE_ID": "TRANSFER_MODE_ID",
             "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
-            "REQUEST_TYPE": "REQUEST_TYPE"
+            "REQUEST_TYPE": "REQUEST_TYPE",
+            "WITH_FAMILY": "2",
+            "TRAVEL_WITH_FAMILY_NOW": "1"
         },
         "Operators": {
             "EQUAL": "EQ",

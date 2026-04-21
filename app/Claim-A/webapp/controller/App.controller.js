@@ -396,6 +396,8 @@ sap.ui.define([
 					"reject_reason_date": null,
 					"reject_reason_time": null,
 					"mode_of_transfer": null,
+					"travel_alone_family": null,
+					"travel_family_now_later": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -408,7 +410,9 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
-						"mode_of_transfer": null
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 					}
 				},
 				"claim_items": [],

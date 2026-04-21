@@ -555,6 +555,8 @@ sap.ui.define([
 					type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
 					disclaimer_galakan: it.DISCLAIMER_GALAKAN,
 					mode_of_transfer: it.MODE_OF_TRANSFER,
+					travel_alone_family: it.TRAVEL_ALONE_FAMILY,
+					travel_family_now_later: it.TRAVEL_FAMILY_NOW_LATER,
 					transfer_date: it.TRANSFER_DATE,
 					no_of_days: it.NO_OF_DAYS,
 					family_count: it.FAMILY_COUNT,
@@ -596,6 +598,7 @@ sap.ui.define([
 					daily_allowance: it.DAILY_ALLOWANCE,
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
+					number_of_travellers: it.NUMBER_OF_TRAVELLERS,
 					descr: {},
 				}));
 
@@ -630,7 +633,9 @@ sap.ui.define([
 					to_location_office: null,
 					vehicle_type: it.VEHICLE_TYPE_DESC,
 					type_of_professional_body: null,
-					mode_of_transfer: null,
+					mode_of_transfer: TRANSFER_MODE_DESC,
+					travel_alone_family: TRAVEL_TYPE_DESC,
+					travel_family_now_later: FAMILY_TIMING_DESC,
 					no_of_days: null,
 					funeral_transportation: null,
 					material_code: null,
@@ -755,6 +760,9 @@ sap.ui.define([
 				last_send_back_time: null,
 				reject_reason_date: null,
 				reject_reason_time: null,
+				mode_of_transfer: o.MODE_OF_TRANSFER,
+				travel_alone_family: o.TRAVEL_ALONE_FAMILY,
+				travel_family_now_later: o.TRAVEL_FAMILY_NOW_LATER,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -767,6 +775,9 @@ sap.ui.define([
 					course_code: o.COURSE_CODE_DESC,
 					project_code: null,
 					attachment_email_approver: null,
+					mode_of_transfer: o.TRANSFER_MODE_DESC,
+					travel_alone_family: o.TRAVEL_TYPE_DESC,
+					travel_family_now_later: o.FAMILY_TIMING_DESC,
 				}
 			};
 		},
@@ -1114,6 +1125,9 @@ sap.ui.define([
 					"last_send_back_time": null,
 					"reject_reason_date": null,
 					"reject_reason_time": null,
+					"mode_of_transfer": null,
+					"travel_alone_family": null,
+					"travel_family_now_later": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -1126,6 +1140,9 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 					}
 				},
 				"claim_items": [],
@@ -1211,7 +1228,6 @@ sap.ui.define([
 					"dependent_name": null,
 					"type_of_professional_body": null,
 					"disclaimer_galakan": false,
-					"mode_of_transfer": null,
 					"transfer_date": null,
 					"no_of_days": null,
 					"family_count": null,
@@ -1253,6 +1269,7 @@ sap.ui.define([
 					"daily_allowance": null,
 					"exclude_tips": null,
 					"tips": null,
+					"number_of_travellers": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1271,7 +1288,6 @@ sap.ui.define([
 						"to_location_office": null,
 						"vehicle_type": null,
 						"type_of_professional_body": null,
-						"mode_of_transfer": null,
 						"no_of_days": null,
 						"funeral_transportation": null,
 						"material_code": null,
@@ -1838,10 +1854,12 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_insurance_purchase_date"), property: "insurance_purchase_date", field: "datepicker_claimdetails_input_insurance_purchase_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_insurance_cert_start_date"), property: "insurance_cert_start_date", field: "datepicker_claimdetails_input_insurance_cert_start_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_insurance_cert_end_date"), property: "insurance_cert_end_date", field: "datepicker_claimdetails_input_insurance_cert_end_date", type: "date", width: 18 },
-				{ label: Utility.getText("label_claimdetails_input_mode_of_transfer"), property: "mode_of_transfer", field: "select_claimdetails_input_mode_of_transfer", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_mode_of_transfer"), property: "mode_of_transfer", field: "select_claiminput_mode_of_transfer", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claiminput_travel_alone_family"), property: "travel_alone_family", field: "select_claiminput_travel_alone_family", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_transfer_date"), property: "transfer_date", field: "datepicker_claimdetails_input_transfer_date", type: "date", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_numberofdays"), property: "no_of_days", field: "input_claimdetails_input_no_of_days", type: "number", scale: 0, width: 10 },
 				{ label: Utility.getText("label_claimdetails_input_typeofvehicle"), property: "vehicle_type", field: "select_claimdetails_input_vehicle_type", type: "descr", width: 18 },
+				{ label: Utility.getText("label_claimdetails_number_of_travellers"), property: "number_of_travellers", field: "input_claimdetails_input_number_of_travellers", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_vehicleownership"), property: "vehicle_ownership_id", field: "select_claimdetails_input_vehicle_ownership_id", type: "descr", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_km_rate"), property: "rate_per_km", field: "input_claimdetails_input_rate_per_km", width: 14 },
 				{ label: Utility.getText("label_claimdetails_input_faretype"), property: "fare_type_id", field: "select_claimdetails_input_fare_type_id", type: "descr", width: 18 },
@@ -2997,7 +3015,6 @@ sap.ui.define([
 					DEPENDENT_NAME: oInputModel.getProperty("/claim_item/dependent_name"),
 					TYPE_OF_PROFESSIONAL_BODY: oInputModel.getProperty("/claim_item/type_of_professional_body"),
 					DISCLAIMER_GALAKAN: oInputModel.getProperty("/claim_item/disclaimer_galakan"),
-					MODE_OF_TRANSFER: oInputModel.getProperty("/claim_item/mode_of_transfer"),
 					TRANSFER_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/transfer_date")),
 					NO_OF_DAYS: oInputModel.getProperty("/claim_item/no_of_days"),
 					FAMILY_COUNT: oInputModel.getProperty("/claim_item/family_count"),
@@ -3038,7 +3055,8 @@ sap.ui.define([
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
 					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
-					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
+					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
+					NUMBER_OF_TRAVELLERS: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -3392,23 +3410,6 @@ sap.ui.define([
 			}
 			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
-			}
-		},
-
-		/**
-		* On selecting mode of transfer, set description in item model
-		* @public
-		*/
-		onSelect_ClaimDetails_ModeOfTransfer: function (oEvent) {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			var oModeOfTranfer = oEvent ? oEvent.getParameters().selectedItem : null;
-			if (oModeOfTranfer) {
-				// set mode of transfer description
-				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", oModeOfTranfer.getBindingContext("employee").getObject("TRANSFER_MODE_DESC"));
-			}
-			else {
-				// reset description value
-				oInputModel.setProperty("/claim_item/descr/mode_of_transfer", null);
 			}
 		},
 
@@ -4031,7 +4032,8 @@ sap.ui.define([
 					SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
+					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+					NUMBER_OF_TRAVELLERS: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				//// addon for new claim
@@ -4320,7 +4322,6 @@ sap.ui.define([
 						DEPENDENT_NAME: claim_item.dependent_name,
 						TYPE_OF_PROFESSIONAL_BODY: claim_item.type_of_professional_body,
 						DISCLAIMER_GALAKAN: claim_item.disclaimer_galakan,
-						MODE_OF_TRANSFER: claim_item.mode_of_transfer,
 						TRANSFER_DATE: DateUtility.getHanaDate(claim_item.transfer_date),
 						NO_OF_DAYS: claim_item.no_of_days,
 						FAMILY_COUNT: claim_item.family_count,
@@ -4361,7 +4362,8 @@ sap.ui.define([
 						VEHICLE_CLASS_ID: claim_item.vehicle_class_id,
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
-						EXCLUDE_TIPS: claim_item.exclude_tips
+						EXCLUDE_TIPS: claim_item.exclude_tips,
+						NUMBER_OF_TRAVELLERS: claim_item.number_of_travellers
 					});
 
 					if (i >= itemCountDb) {
@@ -4802,7 +4804,8 @@ sap.ui.define([
 				"input_claimdetails_meter_cube",
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
-				"input_claimdetails_input_daily_allowance"
+				"input_claimdetails_input_daily_allowance",
+				"input_claimdetails_input_number_of_travellers"
 			];
 
 			aControlIds.forEach(id => {
@@ -4931,7 +4934,8 @@ sap.ui.define([
 				"input_claimdetails_meter_cube",
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
-				"input_claimdetails_input_daily_allowance"
+				"input_claimdetails_input_daily_allowance",
+				"input_claimdetails_input_number_of_travellers"
 			];
 
 			aControlIds.forEach(id => {

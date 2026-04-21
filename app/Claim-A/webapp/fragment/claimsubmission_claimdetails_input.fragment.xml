@@ -731,6 +731,16 @@
 					required="true"
 				/>
 
+                <!-- Number of Travellers -->
+				<Label text="{i18n>label_claimdetails_number_of_travellers}" />
+				<Input
+					id="input_claimdetails_input_number_of_travellers"
+					value="{claimitem_input>/claim_item/number_of_travellers}"
+					type="Number"
+					visible="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} }"
+                    required="{= ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/EntitiesFields/TRAVEL_WITH_FAMILY_NOW} }"
+				/>
+
 				<!-- Type of Vehicle -->
 				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
 				<Select
