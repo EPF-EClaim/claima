@@ -100,6 +100,7 @@ sap.ui.define([
 
                             await oODataModel.submitBatch("$auto");
 
+                            await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(
                                 Utility.getText("msg_claimheader_updated", [sReqID])
                             );
@@ -167,6 +168,7 @@ sap.ui.define([
 
                             await oODataModel.submitBatch("$auto");
 
+                            await this.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(
                                 Utility.getText("msg_claimheader_updated", [sClaimId])
                             );
