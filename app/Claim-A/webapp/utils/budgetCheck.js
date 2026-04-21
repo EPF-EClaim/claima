@@ -341,7 +341,7 @@ sap.ui.define([
 							"MATERIAL_GROUP": row.MATERIAL_CODE,
 							"COMMITMENT_ITEM": row.GL_ACCOUNT,
 							"AMOUNT": parseFloat(row.EST_AMOUNT),
-							"CLAIM_TYPE_ITEM": row.CLAIM_TYPE_ITEM_ID,
+							"CLAIM_TYPE_ITEM": row.CLAIM_TYPE_ITEM_DESC,
 							"INDICATOR": sSubmissionType,
 							"ACTION": sAction
 						};
@@ -370,7 +370,7 @@ sap.ui.define([
 							"MATERIAL_GROUP": await this._getMaterialCode(oController._oModel, oHeader.claim_type_id, row.claim_type_item_id),
 							"COMMITMENT_ITEM": sCommitmentItem,
 							"AMOUNT": parseFloat(row.amount),
-							"CLAIM_TYPE_ITEM": row.claim_type_item_id,
+							"CLAIM_TYPE_ITEM": row.descr.claim_type_item_id,
 							"INDICATOR": sSubmissionType,
 							"ACTION": sAction
 						};
