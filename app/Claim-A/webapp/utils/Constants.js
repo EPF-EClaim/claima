@@ -538,6 +538,12 @@ sap.ui.define([
         },
         "RequestFormFields": {
             "NO_OF_TRAVELERS": "input_no_of_traveler"
+        },
+        "ElaunTukarStatus": {
+            "ALLOWED_CREATION": "01",
+            "ALLOWED_FAMILY_NOW_ONLY": "02",
+            "ON_GOING": "03",
+            "NOT_ALLOWED": "04"
         }
         
     }

@@ -5,7 +5,8 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
     "claima/utils/Utility",
 	"claima/utils/DateUtility",
-    "claima/utils/Constants"
+    "claima/utils/Constants",
+	"sap/ui/commons/Message"
 ], function (
     MessageBox,
 	Fragment,
@@ -22,10 +23,39 @@ sap.ui.define([
          * Initialize the RequestUtility
          * @public
          */
-        init: function(oOwnerComponent, oView) {
+        init: function(oOwnerComponent, oView, oDialogFragment) {
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
+            this._oDialogFragment = oDialogFragment;
 		},
+
+        onSelectClaimType: async function (oEvent, bEligibleForElaunTukar) {
+			var oSelectControl = oEvent.getSource();
+    		var sClaimTypeId = oSelectControl.getSelectedKey();
+
+            if (sClaimTypeId === Constants.ClaimType.ELAUN_TUKAR) {
+                var sMarriageCategory = await Utility.getMarriageCategoryBasedOnStatus();
+                if (sMarriageCategory === Constants.MarriageCategory.SINGLE) {
+                    Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
+                    Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                }
+
+                switch (bEligibleForElaunTukar) {
+                    case Constants.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY:
+                        Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
+                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                        Fragment.byId("request", "req_transferfamilynowlater").setEnabled(false);
+                        Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey(Constants.TravelWithFamilyNowOrLater.NOW);
+                        break;
+                    
+                    case Constants.ElaunTukarStatus.ON_GOING:
+                        MessageBox.warning(Utility.getText("req_d_w_on_going_elaun_tukar", []));
+                        break;
+                }
+            };
+
+            this.determineDefaultCostCenter(oEvent);
+        },
 
 		/**
          * Determine the default cost center for specific claim type
@@ -34,9 +64,10 @@ sap.ui.define([
         determineDefaultCostCenter: async function (oEvent) {
 			var oSelectControl = oEvent.getSource();
     		var sClaimTypeId = oSelectControl.getSelectedKey();
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+            const oDataModel    = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
 
-            const oFunction = this._oDataModel.bindContext("/checkDefaultCostCenter(...)");
+            const oFunction = oDataModel.bindContext("/checkDefaultCostCenter(...)");
             oFunction.setParameter("sClaimTypeId", sClaimTypeId);
           
             try {
@@ -462,21 +493,6 @@ sap.ui.define([
             } catch (error) {
                 return 0;
             }
-        },
-
-        checkElaunTukarEligibility: async function () {
-            const oDataModel    = this._oOwnerComponent.getModel();
-            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
-
-            try {
-                await oFunction.execute();
-                const oContext  = oFunction.getBoundContext();
-                return oContext.getObject().value;  // true or false
-
-            } catch (oError) {
-                return false;
-            }
-		}
-        
+        }
     };
 });

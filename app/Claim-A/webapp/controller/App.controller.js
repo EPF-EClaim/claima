@@ -59,7 +59,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 
-		RequestUtility: RequestUtility,
 		DateUtility: DateUtility,
 
 		onInit: async function () {
@@ -71,7 +70,8 @@ sap.ui.define([
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
 			// declare request utility
-			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
+			this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
@@ -88,6 +88,7 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
+
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -1216,40 +1217,40 @@ sap.ui.define([
 
 		onClickMyRequest: async function () {
 
-			if (!this.oDialogFragment) {
-				this.oDialogFragment = await Fragment.load({
+			if (!this._oDialogFragment) {
+				this._oDialogFragment = await Fragment.load({
 					id: "request",
 					name: "claima.fragment.request",
 					controller: this
 				});
 
-				this.getView().addDependent(this.oDialogFragment);
+				this.getView().addDependent(this._oDialogFragment);
 
 				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND", altcostcenter: "" });
-				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
+				this._oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
-				this.oDialogFragment.attachAfterClose(() => {
-					this.oDialogFragment.destroy();
-					this.oDialogFragment = null;
+				this._oDialogFragment.attachAfterClose(() => {
+					this._oDialogFragment.destroy();
+					this._oDialogFragment = null;
 				});
 			}
 
-			this.oDialogFragment.addStyleClass('requestDialog');
-			this.oDialogFragment.open();
+			this._oDialogFragment.addStyleClass('requestDialog');
+			this._oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
-			this._openAndPreload(this.oDialogFragment);
+			this._openAndPreload(this._oDialogFragment);
 		},
 
 		onClickCreateRequest: async function () {
 			BusyIndicator.show(0);
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 
 			try {
 
 				// validate mandatory fields
-				if (!this.getOwnerComponent().getValidator().validate(this.oDialogFragment)) {
+				if (!this.getOwnerComponent().getValidator().validate(this._oDialogFragment)) {
 					MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
@@ -1322,7 +1323,7 @@ sap.ui.define([
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 
 				if (sNewReqId) {
-					this.oDialogFragment.close();
+					this._oDialogFragment.close();
 
 					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
 
@@ -1342,13 +1343,13 @@ sap.ui.define([
 		},
 
 		onImportChange1(oEvent) {
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc1 = oEvent.getParameters("files").files[0];
 		},
 
 		onImportChange2(oEvent) {
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
 		},
@@ -1427,6 +1428,12 @@ sap.ui.define([
 			}
 		},
 
+		onSelect_ClaimType: function (oEvent) {
+			// declare request utility
+			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
+			RequestUtility.onSelectClaimType(oEvent, this._bEligibleForElaunTukar);
+		},
+
 		_applyReqTypeFilters: function (sUserType) {
 			var oSelect = Fragment.byId("request", "req_reqtype");
 
@@ -1461,9 +1468,12 @@ sap.ui.define([
 			];
 
 			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
-				var bEligibleForElaunTukar = await RequestUtility.checkElaunTukarEligibility();
-				if (!bEligibleForElaunTukar) {
-					aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
+				this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
+				switch (this._bEligibleForElaunTukar) {
+					case this._oConstant.ElaunTukarStatus.NOT_ALLOWED:
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
+						break;
+
 				}
 			}
 
@@ -1521,12 +1531,12 @@ sap.ui.define([
 			} finally {
 				switch (sReqType) {
 					case this._oConstant.RequestType.MOBILE:
-						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
-						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 
@@ -1574,14 +1584,14 @@ sap.ui.define([
 		},
 
 		onClickCancel: function () {
-			this.oDialogFragment.close();
+			this._oDialogFragment.close();
 		},
 
 		/**
 		 * 
 		 */
 		resetSelection: function (oEvent) {
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			var sId = oEvent.getParameters().id;
 			var sSelect = sId.split("--").pop();
 
@@ -1777,8 +1787,8 @@ sap.ui.define([
 			var iMaxDays = await Utility.getModeofTransferMaxDays(oEvent.getSource().getSelectedItem().getKey());
 
 			if (!!iMaxDays) {
-				if (!!(this.oDialogFragment)) {
-					const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+				if (!!(this._oDialogFragment)) {
+					const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 					oDialogModel.setProperty("/req_no_of_days", iMaxDays);
 					oDialogModel.setProperty("/tripstartdate", null);
 					oDialogModel.setProperty("/tripenddate", null);
