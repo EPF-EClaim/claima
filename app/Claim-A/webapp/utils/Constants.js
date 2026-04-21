@@ -534,7 +534,11 @@ sap.ui.define([
         }, 
         "PARSpecialFieldVisibilityForElaunTukar": {
             "NumberOfFamilyMember": "i_no_of_family_member",
-            "NumberOfTraveller": "i_no_of_traveller"
+            "NumberOfTraveller": "i_no_of_traveler"
+        },
+        "RequestFormFields": {
+            "NO_OF_TRAVELERS": "input_no_of_traveler"
         }
+        
     }
 });

@@ -2662,7 +2662,10 @@ sap.ui.define([
 		 * method to populate allocated amount if applicable
 		 * @public
 		 */
-		onInputAllocatedAmount: function () {
+		onInputAllocatedAmount: function (oEvent) {
+			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.NO_OF_TRAVELERS) {
+				this._onChangeTravelers(oEvent);
+			}
 			RequestUtility.populateAllocatedAmount();
 		},
 
@@ -2829,6 +2832,31 @@ sap.ui.define([
                             ]: [];
 			oBinding.filter(aFilters);
 		},
+
+		_onChangeTravelers: function (oEvent) {
+			var oInput = oEvent.getSource();
+			var iTravelers = parseInt(oInput.getValue(), 10);
+
+			var oModel = this.getView().getModel("request");
+			var iMaxFamilyMembers = parseInt(oModel.getProperty("/req_item/no_of_family_member"), 10);
+
+			oInput.setValueState("None");
+
+			if (isNaN(iTravelers)) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Please enter a valid number.");
+				return;
+			}
+
+			if (iTravelers > iMaxFamilyMembers) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers cannot exceed the number of family members (" + iMaxFamilyMembers + ").");
+				
+			} else if (iTravelers < 1) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers must be at least 1.");
+			}
+		}
 
 	});
 });

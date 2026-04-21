@@ -527,16 +527,18 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Number of Traveller -->
-                                <form:FormElement label="{i18n>req_i_no_of_traveller}"
+                                <!-- Number of Traveler -->
+                                <form:FormElement label="{i18n>req_i_no_of_traveler}"
                                             visible="false"
-                                            id="i_no_of_traveller" >
+                                            id="i_no_of_traveler" >
                                     <form:fields>
                                         <m:Input 
+                                            id="input_no_of_traveler"
                                             required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/no_of_traveller}"/>                                            
+                                            change=".onInputAllocatedAmount"
+                                            value="{request>/req_item/no_of_traveler}"/>                                            
                                     </form:fields>
                                 </form:FormElement>
 

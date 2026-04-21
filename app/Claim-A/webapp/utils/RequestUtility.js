@@ -107,15 +107,12 @@ sap.ui.define([
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
                     case Constants.ClaimTypeItem.LODG_O:
-                    case Constants.ClaimTypeItem.LOD_TUKAR:
-                        // calculate lodging amount
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
                         }
                         break;
 
-                    case Constants.ClaimTypeItem.MKN_TUKAR:
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
@@ -125,6 +122,26 @@ sap.ui.define([
                         }
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
+                        }
+                        break;
+
+                    case Constants.ClaimTypeItem.LOD_TUKAR:
+                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
+                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
+                        }
+                        break;
+                    
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
+                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
+                        this._calculateTravelDuration();
+                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
+                        if (!!oReqItem.currency_rate) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
+                        }
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
                         }
                         break;
                     
