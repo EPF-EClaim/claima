@@ -143,7 +143,7 @@ module.exports = {
         var iIndex;
 
         // PEM_PINDAH - return true if there is no historical claims within same Period based on frequency
-        if ((!oRule) || (iExistingFreq > iAllowedFreq)) {
+        if (iExistingFreq > iAllowedFreq) {
             throw new Error("Claim Type has already been submitted previously.");
         }
 
