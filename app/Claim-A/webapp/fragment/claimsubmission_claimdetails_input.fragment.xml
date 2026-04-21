@@ -564,7 +564,7 @@
 				/>
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_overseas}: ${i18n>label_claimdetails_input_region}}"/>
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_location} : ${i18n>label_claimdetails_input_region} }"/>
                 <Select
                     id="select_claimdetails_input_region"
                     forceSelection="false"
@@ -1004,7 +1004,7 @@
                 />
 
                 <!-- Location -->
-                <Label text="{i18n>label_claimdetails_input_location}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_destination} : ${i18n>label_claimdetails_input_location} }" />
                 <Input
                     id="input_claimdetails_input_location"
                     value="{claimitem_input>/claim_item/location}"
@@ -1041,7 +1041,7 @@
                     
                 />
                 <!-- Currency Rate -->
-                <Label text="{i18n>label_claimdetails_input_currencyrate}" />
+                <Label text="{i18n>label_claimdetails_input_currencyrate} {i18n>icon_info}" tooltip="{i18n>tooltip_currency_rate}" />
                 <Input
                     id="input_claimdetails_input_currency_rate"
                     value="{
