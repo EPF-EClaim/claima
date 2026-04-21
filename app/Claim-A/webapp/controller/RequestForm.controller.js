@@ -92,6 +92,8 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oRequestFragments 		= Object.create(null);
+			this._sDeleteTarget 	= null; //doc 1 or doc 2
+			this._oDeleteAttachmentDialog = null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
 			Utility.init(this.getOwnerComponent(), this.getView());
@@ -742,6 +744,40 @@ sap.ui.define([
 			}
 		},
 
+		onDeleteAttachment: function (sDeleteTarget) {
+			this._openDeleteAttachmentDialog(sDeleteTarget);
+		},
+
+		_openDeleteAttachmentDialog: function (sDeleteTarget) {
+			if (!this._oDeleteAttachmentDialog) {
+				Fragment.load({
+					name: "claima.fragment.deleteattachment",
+					id: "deleteAttachmentDialog",
+					controller: this
+				}).then(function (oDialog) {
+					this._oDeleteAttachmentDialog = oDialog;
+					this.getView().addDependent(oDialog);
+					oDialog.data("deleteTarget", sDeleteTarget);
+					oDialog.open();
+				}.bind(this));
+			} else {
+				this._oDeleteAttachmentDialog.data("deleteTarget", sDeleteTarget);
+				this._oDeleteAttachmentDialog.open();
+			}
+		},
+
+		onConfirmDeleteAttachment: async function () {
+			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+
+			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, sDeleteTarget);
+				this._oDeleteAttachmentDialog.close();
+		},
+
+		onCancelDeleteAttachment: function () {
+			this._oDeleteAttachmentDialog.close();
+			},
+
 		/* =========================================================
 		* Item List: Delete Row(s)
 		* ======================================================= */
@@ -1211,6 +1247,10 @@ sap.ui.define([
 
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
+
+					if (!oReqItem.doc1_filename && !oReqItem.doc1) oPayload.ATTACHMENT1 = null;
+					if (!oReqItem.doc2_filename && !oReqItem.doc2) oPayload.ATTACHMENT2 = null;
+
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
