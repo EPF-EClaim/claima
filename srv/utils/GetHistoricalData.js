@@ -89,6 +89,8 @@ module.exports = {
         * @returns {Object} Object containing Date From and Date To range
         */
     getDateRange: async function (sClaimType, sClaimTypeItem, sInputDate, tx) {
+        var dDateFrom, dDateTo;
+        var oDatetoFrom = { dDateFrom, dDateTo };
         var iMonthFreq = 0;
         var iYearFreq = 0;
         var iDateFreq = 0;
@@ -104,11 +106,19 @@ module.exports = {
                 iYearFreq = oClaimTypeItem.PERIOD;
                 break;
 
+            case Constant.PeriodUnit.SERVICE:
+                oDatetoFrom.dDateFrom = "1990-01-01";
+                oDatetoFrom.dDateTo = "9999-12-31"
+                return { oDatetoFrom, iItemFreq };
+                break;
+
             default:
                 throw new Error("No Period Unit found");
                 break;
         }
-        const oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
+        oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
+        // oDatetoFrom.dDateFrom = oDateDelta.dDateFrom;
+        // oDatetoFrom.dDateTo = oDateDelta.dDateTo;
         return { oDatetoFrom, iItemFreq } ;
     },
 

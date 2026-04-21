@@ -1,6 +1,8 @@
 const { Constant } = require("../constant");
 const ComparisonOperators = require('../ComparisonOperators');
 const GetDependentData = require("../GetDependentData");
+const GetHistoricalData = require('../GetHistoricalData')
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 module.exports = {
     /**
          * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -10,18 +12,20 @@ module.exports = {
          * @param {Object} oEmp - Employee Data
          * @returns {Object} oPayload - return original payload but with result field filled
          */
-    onEligibleCheck: async function (oPayload, aRules, oEmp) {
+    onEligibleCheck: async function (oPayload, aRules, oEmp, tx) {
         var oRule, aFilteredRules;
+        var iHistFreq = 0;
+        var iAllowedFreq = 0;
         // to extract the key values from oPayload
         var aPayload = this._parsePayload(oPayload)
-        
+
         //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
             var sMarriageCategory = await GetDependentData.getMarriageCategory(oPayload.EmpId);
 
             aFilteredRules = aRules.filter(function (rule) {
-                return (rule.REGION_ID == aPayload.sRegionId && 
-                    rule.MARITAL_STATUS == oEmp.MARITAL && 
+                return (rule.REGION_ID == aPayload.sRegionId &&
+                    rule.MARITAL_STATUS == oEmp.MARITAL &&
                     rule.MARRIAGE_CATEGORY == sMarriageCategory);
             });
             oRule = aFilteredRules[0];
@@ -34,7 +38,12 @@ module.exports = {
             throw new Error("No Eligibility Rules Found");
         };
 
-        this._validateClaimItem(aPayload, oRule, oPayload);
+        var oDateRange = await this._getDateRange(oPayload, tx);
+        iAllowedFreq = oDateRange.iItemFreq;
+
+        iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+
+        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq);
         return oPayload;
 
     },
@@ -67,14 +76,83 @@ module.exports = {
     },
 
     /**
+         * Get Data Range based on RECEIPT_DATE in Payload Checkfields
+         * @private
+         * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Object} tx - CDS Transaction
+         * @returns {Array} aDatetoFrom - Array filled with Date From and Date To
+         */
+    _getDateRange: async function (oPayload, tx) {
+        // get Date Range
+        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+        if (iIndex == -1) return;
+        return aDatetoFrom = await GetHistoricalData.getDateRange(
+            oPayload.ClaimType,
+            oPayload.ClaimTypeItem,
+            0,
+            tx);
+    },
+
+    /**
+         * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+         * @private
+         * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Object} dDateTo - Date To Range
+         * @param {Object} dDateFrom - Date From Range
+         * @param {Object} tx - CDS Transaction
+         * @returns {Object} oPayload - return original payload but with result field filled
+         */
+    _getHistoricalData: async function (oPayload, dDateTo, dDateFrom, tx) {
+        var sHeaderTable = "";
+        var sItemTable = "";
+        // get Historical Claims Data
+        // Map ClaimID or RequestID based on which HeaderTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+        } else {
+            sHeaderTable = Constant.Entities.ZREQUEST_HEADER
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+        }
+
+        const aItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+        };
+        const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
+        const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
+            sItemTable,
+            sItemcondition,
+            tx);
+
+        return iHistoricalData;
+    },
+
+    /**
     * Validates claim item against eligibility rule
     * @private
     * @param {Array} aPayload - key user input value in the form of object based on selected claim type item
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
+    * @param {Integer} iExistingFreq - Date frequency count
+    * @param {Integer} iAllowedFreq - Rules Frequency Count
     */
-    _validateClaimItem: function (aPayload, oRule, oPayload) {
+    _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq) {
         var iIndex;
+
+        // PEM_PINDAH - return true if there is no historical claims within same Year/Month based on frequency and period
+        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
+        if (iIndex == -1) return;
+        if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
+            oPayload.CheckFields[iIndex].result = true;
+        } else {
+            oPayload.CheckFields[iIndex].result = false;
+            throw new Error("Frequency is per service");
+        }
+
+        iIndex = null;
 
         switch (oPayload.ClaimTypeItem) {
             // PEM_PINDAH - return true if claim amount is less than eligible amount

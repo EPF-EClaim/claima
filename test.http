@@ -24,44 +24,44 @@
 
 
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+# Content-Type: application/json
+# Authorization: Basic alice
  
-   {
-    "budget": [
-        {
-            "COMMITMENT_ITEM": "710010",
-            "FUND_CENTER": "100010100",
-            "INTERNAL_ORDER": "1",
-            "MATERIAL_GROUP": "710010901",
-            "ORIGINAL_BUDGET": "20.00",
-            "RETURN": "10.00",
-            "SUPPLEMENT": "10.00",
-            "VIREMENT_IN": "10.00",
-            "VIREMENT_OUT": "10.00",
-            "YEAR": "2026",
-            "HasActiveEntity": false,
-            "HasDraftEntity": false,
-            "IsActiveEntity": true
-        }, 
-        {
-            "COMMITMENT_ITEM": "710010",
-            "FUND_CENTER": "100010101",
-            "INTERNAL_ORDER": "1",
-            "MATERIAL_GROUP": "710010901",
-            "ORIGINAL_BUDGET": "10.00",
-            "RETURN": "10.00",
-            "SUPPLEMENT": "10.00",
-            "VIREMENT_IN": "10.00",
-            "VIREMENT_OUT": "0.00",
-            "YEAR": "2026",
-            "HasActiveEntity": false,
-            "HasDraftEntity": false,
-            "IsActiveEntity": true
-        }
-    ]
-}
+#    {
+#     "budget": [
+#         {
+#             "COMMITMENT_ITEM": "710010",
+#             "FUND_CENTER": "100010100",
+#             "INTERNAL_ORDER": "1",
+#             "MATERIAL_GROUP": "710010901",
+#             "ORIGINAL_BUDGET": "20.00",
+#             "RETURN": "10.00",
+#             "SUPPLEMENT": "10.00",
+#             "VIREMENT_IN": "10.00",
+#             "VIREMENT_OUT": "10.00",
+#             "YEAR": "2026",
+#             "HasActiveEntity": false,
+#             "HasDraftEntity": false,
+#             "IsActiveEntity": true
+#         }, 
+#         {
+#             "COMMITMENT_ITEM": "710010",
+#             "FUND_CENTER": "100010101",
+#             "INTERNAL_ORDER": "1",
+#             "MATERIAL_GROUP": "710010901",
+#             "ORIGINAL_BUDGET": "10.00",
+#             "RETURN": "10.00",
+#             "SUPPLEMENT": "10.00",
+#             "VIREMENT_IN": "10.00",
+#             "VIREMENT_OUT": "0.00",
+#             "YEAR": "2026",
+#             "HasActiveEntity": false,
+#             "HasDraftEntity": false,
+#             "IsActiveEntity": true
+#         }
+#     ]
+# }
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -185,7 +185,7 @@ Authorization: Basic alice
          "CheckFields": [
             {
                "fieldName": "RECEIPT_DATE",
-               "value": "2025-04-17",
+               "value": "2026-04-17",
                "result": null
             },
             {
@@ -194,13 +194,13 @@ Authorization: Basic alice
                "result": null
             },
             {
-               "fieldName": "TRANSPORT_CLASS",
-               "value": "07",
+               "fieldName": "REGION_ID",
+               "value": "01",
                "result": null
             }
             ],
-         "ClaimType": "BEG",
-         "ClaimTypeItem": "PKN_PANAS",
+         "ClaimType": "I-PAD",
+         "ClaimTypeItem": "I-PAD",
          "EmpId": "886887",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
