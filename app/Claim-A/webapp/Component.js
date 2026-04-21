@@ -8,6 +8,7 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
+    "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
 	"claima/utils/RequestUtility"
@@ -99,6 +100,7 @@ sap.ui.define([
                 this._initActivityTracking();
                 this.startInactivityTimer();
 
+                this.getRouter().attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
                 this.getRouter().attachRouteMatched(this._onRouteMatched, this);
             },
 
@@ -409,6 +411,14 @@ sap.ui.define([
 
                 if (_oSideNavigation && _sKey) {
                     _oSideNavigation.setSelectedKey(_sKey);
+                }
+            }, 
+
+            _onBeforeRouteMatched: function (oEvent) {
+                var sRoute = oEvent.getParameter("name");
+                if ( sRoute.startsWith("Z")) {
+                    this.getRouter()?.navTo("Dashboard", {}, true);
+                    MessageBox.error("You are not authorized to access this page");
                 }
             }
 
