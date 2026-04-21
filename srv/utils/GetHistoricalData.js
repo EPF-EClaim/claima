@@ -117,8 +117,6 @@ module.exports = {
                 break;
         }
         oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
-        // oDatetoFrom.dDateFrom = oDateDelta.dDateFrom;
-        // oDatetoFrom.dDateTo = oDateDelta.dDateTo;
         return { oDatetoFrom, iItemFreq } ;
     },
 
