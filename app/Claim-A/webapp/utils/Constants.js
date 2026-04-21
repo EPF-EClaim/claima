@@ -525,6 +525,10 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "TravelType":{
+            "ALONE": "1",
+            "WITH_FAMILY": "2"
         }
     }
 });

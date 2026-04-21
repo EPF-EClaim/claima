@@ -314,6 +314,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"marriage_category": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -800,6 +801,7 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
+			oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -898,7 +900,10 @@ sap.ui.define([
 				}.bind(this)
 			);
 		},
-
+		onTravelAloneFamilySelect: function(oEvent){
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
+		},
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");

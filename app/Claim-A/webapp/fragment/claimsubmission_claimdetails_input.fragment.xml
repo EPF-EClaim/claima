@@ -733,6 +733,8 @@
 					type="Number"
 					visible="{claimitem_property>/number_of_traveller/is_visible}"
                     required="{claimitem_property>/number_of_traveller/is_required}"
+                    change="onChange_ClaimDetails_NumberOfDays"
+                    liveChange="onChange_ClaimDetails_NumberOfDays"
 				/>
 
 				<!-- Type of Vehicle -->

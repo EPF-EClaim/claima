@@ -224,7 +224,11 @@ sap.ui.define([
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
-			} else {
+			} else if(oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR){
+				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+				nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+			}
+			else{
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
@@ -423,7 +427,7 @@ sap.ui.define([
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
 			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
-			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/no_of_family_member");
+			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/number_of_travellers") ? oInputModel.getProperty("/claim_item/number_of_travellers") : oInputModel.getProperty("/claim_item/no_of_family_member");
 
 			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
 

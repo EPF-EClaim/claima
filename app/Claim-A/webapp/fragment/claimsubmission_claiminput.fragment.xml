@@ -111,7 +111,7 @@
                     <Select
                         id="select_claiminput_travel_alone_family"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claim_header/travel_alone_family}"
+                        selectedKey="{= ${claimsubmission_input>/claimtype/marriage_category} === ${constant>/MarriageCategory/SINGLE} ? ${constant>/TravelType/ALONE} : ${claimsubmission_input>/claim_header/travel_alone_family} }"
                         items="{
                             path: 'employee>/ZTRAVEL_TYPE',
                             sorter: [
@@ -120,7 +120,9 @@
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        editable="{= ${} }"                        
+                        editable="{= ${claimsubmission_input>/claimtype/marriage_category} !== ${constant>/MarriageCategory/SINGLE} }"
+                        change="onTravelAloneFamilySelect"
+                        liveChange="onTravelAloneFamilySelect"                        
                     >
                         <core:Item key="{employee>TRAVEL_TYPE_ID}" text="{employee>TRAVEL_TYPE_DESC}" />
                     </Select>
@@ -137,8 +139,8 @@
                                 { path: 'FAMILY_TIMING_ID' }
                             ]
                         }"
-                        visible="{= ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/EntitiesFields/WITH_FAMILY} }"
-                        required="{= ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/EntitiesFields/WITH_FAMILY} }"                        
+                        visible="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"
+                        required="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"                        
                     >
                         <core:Item key="{employee>FAMILY_TIMING_ID}" text="{employee>FAMILY_TIMING_DESC}" />
                     </Select>

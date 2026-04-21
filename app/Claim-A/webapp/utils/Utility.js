@@ -477,26 +477,19 @@ sap.ui.define([
             return iMaxDays;
         },
 
-        getMarriageCategory: async function (){
-            var oSessionModel = this._oOwnerComponent.getModel("session");
-            
-            const oFunction = oDataModel.bindContext("/getMarriageCategory(...)");
-            oFunction.setParameter("sEmpId", oSessionModel.getProperty("/userId"));
+        getMarriageCategoryBasedOnStatus:async function(){
+            const oDataModel = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/getMarriageCategoryBasedOnStatus(...)");
 
-            try{
-                BusyIndicator.show(0);
-
+            try {                
                 await oFunction.execute();
-                
                 const oContext = oFunction.getBoundContext();
                 const oResult  = oContext.getObject();
-
-                return oResult;
-            }catch(error){
-                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return oResult.value;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("error_marriage_category_not_found", []));
                 return null; 
-            }finally{
-                BusyIndicator.hide();
             }
         }
 
