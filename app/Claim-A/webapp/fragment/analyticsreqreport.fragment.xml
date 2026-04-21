@@ -4,8 +4,6 @@
     xmlns:f="sap.f"
     xmlns:table="sap.ui.table">
 
- 
-    <!-- Root must be a Page so NavContainer can navigate to it -->
     <Page
         id="analyticsReqReportPage"
         title="{i18n>ana_poptitle}">
@@ -24,7 +22,6 @@
                     </f:DynamicPageTitle>
                 </f:title>
                 <f:content>
-                    <!-- Classic Grid Table (replacing MDC) -->
                     <table:Table
                         id="analyticsreqtab"
                         rows="{employee_view>/ZEMP_REQUEST_REPORT_DETAILS}"
@@ -476,7 +473,33 @@
                             <table:Column width="14rem">
                                 <Label text="{i18n>total_part}" />
                                 <table:template><Text text="{employee_view>EST_NO_PARTICIPANT}" /></table:template>
-                            </table:Column>                          
+                            </table:Column>     
+                            <!--Start Added additonal fields-->
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>purpose}" />
+                                <table:template><Text text="{employee_view>PURPOSE}" /></table:template>
+                            </table:Column> 
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mobile_cat}" />
+                                <table:template><Text text="{employee_view>MOBILE_CATEGORY_PURPOSE_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mobile_cat_desc}" />
+                                <table:template><Text text="{employee_view>MOBILE_CATEGORY_PURPOSE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>kilometer}" />
+                                <table:template><Text text="{employee_view>KM}" /></table:template>
+                            </table:Column>  
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>rate_per_km}" />
+                                <table:template><Text text="{employee_view>RATE_PER_KM}" /></table:template>
+                            </table:Column>                    
 
                         </table:columns>
                     </table:Table>
