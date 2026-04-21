@@ -116,6 +116,19 @@
                                 text="{employee>LEGAL_NAME}" />
                     </items>
 				</Select>
+
+                <!-- Dependent (Multi) -->
+				<Label text="{i18n>label_claimdetails_input_dependent}" />
+                <MultiComboBox 
+					id="combo_claimdetails_input_dependent"
+                    selectedKeys="{claimitem_input>/claim_item/dependent}"
+                    required="true"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                    items="{path: 'employee>/ZEMP_DEPENDENT',
+                            sorter: { path: 'DEPENDENT_NO', descending: false }}" >
+                    <core:Item key="{employee>DEPENDENT_NO}" 
+                            text="{employee>LEGAL_NAME}" />
+                </MultiComboBox>
                 
                 <!-- Type of Professional Body -->
                 <Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -208,7 +221,7 @@
                 />
 
                 <!-- Actual Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount_actual}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_claim} : ${i18n>label_claimdetails_input_amount_actual} }" />
                 <Input
                     id="input_claimdetails_input_actual_amount"
                     value="{
@@ -227,7 +240,8 @@
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="{claimitem_property>/actual_amount/is_visible}"
-					required="true"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
+					required="{= ${claimitem_input>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
 				/>
 
                 <!-- Subsidised Amount (MYR) (50% of actual) -->
@@ -281,7 +295,7 @@
                 />
                                 
                 <!-- Amount (MYR) -->
-                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
                 <Input
                     id="input_claimdetails_input_amount"
                     value="{
@@ -361,7 +375,14 @@
                 />
 
                 <!-- Receipt Date -->
-                <Label text="{i18n>label_claimdetails_input_receiptdate}" />
+                <Label
+                text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_receiptdate}
+                }"
+                />
                 <DatePicker
                     id="datepicker_claimdetails_input_receipt_date"
                     value="{
@@ -377,6 +398,7 @@
                     showCurrentDateButton="true"
                     visible="false"
                     required="true"
+                    change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',
@@ -417,10 +439,25 @@
                 />
 
 				<!-- Start Date -->
-				<Label text="{i18n>label_claimdetails_input_startdate}" />
+				<Label text="{=
+                    (${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KM}
+                    || ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                    ? ${i18n>label_claimdetails_input_km_date}
+                    : ${i18n>label_claimdetails_input_startdate}
+                }" />
+                
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
-					value="{claimitem_input>/claim_item/start_date}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/start_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+                    }"
 					visible="{claimitem_property>/start_date/is_visible}"
 					minDate="{
 						parts: [
@@ -471,7 +508,16 @@
 				<Label text="{i18n>label_claimdetails_input_enddate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
-					value="{claimitem_input>/claim_item/end_date}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/end_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+                    }"
 					visible="{claimitem_property>/end_date/is_visible}"
 					minDate="{
 						parts: [
@@ -516,6 +562,19 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
                     required="true"
 				/>
+
+                 <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_overseas}: ${i18n>label_claimdetails_input_region}}"/>
+                <Select
+                    id="select_claimdetails_input_region"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/region}"
+                    change="onSelect_ClaimDetails_Region"
+                    liveChange="onSelect_ClaimDetails_Region"
+                    visible="false"
+                    required="true"
+				>
+				</Select>
 
 				<!-- Nama Pembekal Insuran -->
 				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
@@ -889,8 +948,7 @@
                     editable="{= !${claimsubmission_input>/view_only} }"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
-                            sorter: { path: 'TO_LOCATION_ID', descending: false },
-                            length: 1000}">
+                            sorter: { path: 'TO_LOCATION_ID', descending: false }}">
                     <items>
                         <core:Item key="{employee_view>TO_LOCATION_ID}" 
                         		   text="{employee_view>TO_LOCATION_DESC}" />
@@ -915,7 +973,6 @@
                         constraints: { minimum: 0.01 }
 					}"
 					change="onChange_ClaimDetails_Kilometer"
-					liveChange="onChange_ClaimDetails_Kilometer"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
                                 ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
 					visible="{claimitem_property>/km/is_visible}"
@@ -1208,7 +1265,7 @@
                 id="input_claimdetails_input_exclude_tips"
                 selected="{claimitem_input>/claim_item/exclude_tips}"
                 select="onSelect_ExcludeTips"
-                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                visible="false"
                 />
 
                 <!-- Tips Amount -->
@@ -1223,7 +1280,7 @@
 							preserveDecimals: false
 						}
 						}"
-                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    visible="false"
                     editable="false"
                 />
 
@@ -1236,19 +1293,6 @@
                     visible="false"
                     required="true"
                 />
-
-                <!-- Region (Semenanjung/Sabah/Sarawak) -->
-                <Label text="{i18n>label_claimdetails_input_region}" />
-                <Select
-                    id="select_claimdetails_input_region"
-                    forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/region}"
-                    change="onSelect_ClaimDetails_Region"
-                    liveChange="onSelect_ClaimDetails_Region"
-                    visible="false"
-                    required="true"
-				>
-				</Select>
 
                 <!-- Area (Negara/Wilayah) -->
                 <Label text="{i18n>label_claimdetails_input_area}" />
@@ -1345,6 +1389,10 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TELEFON_B}
+                    }"
                     maxDate="{
 						parts: [
 							'constant>/EntitiesFields/BILL_DATE',
@@ -1429,19 +1477,18 @@
                 />
                 
                 <Link
-                    width="90%"
                     id="link_claimdetails_input_attachment_file_1"
                     press="onView_Claim_Attachment('child','1')"
                     text="{claimitem_input>/claim_item/attachment_file_1}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
                 />
-
+                <!-- Attachment 1 delete button -->
                 <Button
-                    width="10%"
+                    width="5%"
                     icon="sap-icon://delete"
                     type="Transparent"
                     tooltip="Delete attachment"
-                    press="onDelete_Claim_Attachment_1"
+                    press="onDelete_Claim_Attachment('1')"
                     visible="{=
                         !${claimsubmission_input>/view_only}
                         &amp;&amp;
@@ -1474,20 +1521,19 @@
                     }"
                 />
 
-
                 <Link
                     id="link_claimdetails_input_attachment_file_2"
                     press="onView_Claim_Attachment('child','2')"
                     text="{claimitem_input>/claim_item/attachment_file_2}"
                     visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
                 />
-
+                <!-- Attachment 2 delete button -->
                 <Button
                     width="10%"
                     icon="sap-icon://delete"
                     type="Transparent"
                     tooltip="Delete attachment"
-                    press="onDelete_Claim_Attachment_2"
+                    press="onDelete_Claim_Attachment('2')"
                     visible="{=
                         !${claimsubmission_input>/view_only}
                         &amp;&amp;

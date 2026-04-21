@@ -67,7 +67,9 @@ const Constant = {
         "ZREQUEST_ITEM": "ZREQUEST_ITEM",
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
-        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART"
+        "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
+        "ZRATE_KM": "ZRATE_KM",
+        "ZCONSTANTS": "ZCONSTANTS"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -79,7 +81,10 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -119,7 +124,6 @@ const Constant = {
         "PELANGGAN": "PELANGGAN",
         "PELBAGAI": "PELBAGAI",
         "PEM_PINDAH": "PEM_PINDAH",
-        "Pembelian Beg Bimbit": "Pembelian Beg Bimbit",
         "P'HARGAAN": "P'HARGAAN",
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
@@ -138,7 +142,10 @@ const Constant = {
         "YURAN_KLJ": "YURAN_KLJ",
         "I_PAD": "I-PAD",
         "TELEFON_B": "TELEFON_B",
-        "JALUR_LEB": "JALUR_LEB"
+        "JALUR_LEB": "JALUR_LEB",
+        "ISTIADAT": "ISTIADAT",
+        "MAHKAMAH": "MAHKAMAH",
+        "BEG_BIMBIT": "BEG_BIMBIT"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -171,9 +178,17 @@ const Constant = {
         "SUBMISSION_TYPE": "SUBMISSION_TYPE",
         "RELATIONSHIP": "RELATIONSHIP",
         "DEPENDENT_NO": "DEPENDENT_NO",
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "VEHICLE_TYPE_DESC": "VEHICLE_TYPE_DESC",
+        "VEHICLE_TYPE_ID": "VEHICLE_TYPE_ID",
+        "RATE_KM_ID": "RATE_KM_ID",
+        "RATE": "RATE",
         "REGION_ID": "REGION_ID",
         "STATUS": "STATUS",
-        "TRANSPORT_CLASS": "TRANSPORT_CLASS"
+        "TRANSPORT_CLASS": "TRANSPORT_CLASS",
+        "ID": "ID",
+        "VALUE": "VALUE",
+        "SUBSIDISED_RATE": "SUBSIDISED_RATE"
     },
     Wildcard: {
         "All": "*",
@@ -281,6 +296,23 @@ const Constant = {
     
     ConfigStatus: {
         "ACTIVE": "ACTIVE"
+    }, 
+    Indicator: {
+        Spouse_Child: "IND1"
+    },
+    PositionEventId: {
+        TRANSFER_WITHIN_BRANCH: "ZA01", 
+        TRANSFER_INTER_BRANCH: "ZA02",
+        TRANSFER_WITHIN_DEPARTMENT: "ZA03",
+        TRANSFER_INTER_DIVISION: "ZA04",
+        TRANSFER_INTER_DEPARTMENT: "ZA05",
+        TRANSFER_DEPARTMENT_TO_BRANCH: "ZA06",
+        TRANSFER_BRANCH_TO_DEPARTMENT: "ZA07",
+        PROMOTION_WITH_PROBATION: "Z801",
+        PROMOTION_WITHOUT_PROBATION: "Z802"
+    },
+    ConstantId: {
+        ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
     }
 
 };

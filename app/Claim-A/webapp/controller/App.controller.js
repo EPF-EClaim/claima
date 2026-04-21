@@ -60,6 +60,7 @@ sap.ui.define([
 	return Controller.extend("claima.controller.App", {
 
 		RequestUtility: RequestUtility,
+		DateUtility: DateUtility,
 
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
@@ -394,6 +395,7 @@ sap.ui.define([
 					"last_send_back_time": null,
 					"reject_reason_date": null,
 					"reject_reason_time": null,
+					"mode_of_transfer": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -406,6 +408,7 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
+						"mode_of_transfer": null
 					}
 				},
 				"claim_items": [],
@@ -924,7 +927,7 @@ sap.ui.define([
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER))) {
 				return;
 			}
 
@@ -1433,7 +1436,7 @@ sap.ui.define([
 			}
 
 			var aFilters = [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE)
 			];
 
 			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
@@ -1443,77 +1446,27 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 		},
 
-		_loadClaimTypeSelectionData: function (sReqType) {
+		_loadClaimTypeSelectionData: async function (sReqType) {
 			if (!sReqType) return;
 
-			if (this.oDialogFragment) {
-				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-				if (oDialogModel) {
-					oDialogModel.setProperty('/claimtype', "");
+			var oSelect = Fragment.byId("request", "req_claimtype");
+			var oBinding = oSelect.getBinding("items");
+
+			if (!oBinding) return;
+
+			var aFilters = [
+				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter(this._oConstant.EntitiesFields.REQUEST_TYPE, FilterOperator.EQ, sReqType)
+			];
+
+			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
+				var bEligibleForElaunTukar = await RequestUtility.checkElaunTukarEligibility();
+				if (!bEligibleForElaunTukar) {
+					aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
 				}
-			} else {
-				this._oReqModel.setProperty('/req_header/claimtype', "");
 			}
 
-			const oSelect = Fragment.byId("request", "req_claimtype");
-
-			if (oSelect) {
-				oSelect.setForceSelection(false);
-				oSelect.setSelectedKey("");
-			}
-
-			const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
-				new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-
-				if (this.oDialogFragment) {
-					this.oDialogFragment.setModel(oTypeModel, "claim_type_list");
-				} else {
-					this.getView().setModel(oTypeModel, "claim_type_list");
-				}
-
-			}).catch(err => console.error("ClaimType Load Failed", err));
-		},
-
-		_loadCourseCodeSelectionData: function (sClaimType) {
-			if (!sReqType) return;
-
-			if (this.oDialogFragment) {
-				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-				if (oDialogModel) {
-					oDialogModel.setProperty('/coursecode', "");
-				}
-			} else {
-				this._oReqModel.setProperty('/req_header/coursecode', "");
-			}
-
-			const oSelect = Fragment.byId("request", "req_coursecode");
-
-			if (oSelect) {
-				oSelect.setForceSelection(false);
-				oSelect.setSelectedKey("");
-			}
-
-			const oListBinding = this._oDataModel.bindList("/ZTRAIN_COURSE_PART", null, null, [
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, false)
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-
-				if (this.oDialogFragment) {
-					this.oDialogFragment.setModel(oTypeModel, "course_list");
-				} else {
-					this.getView().setModel(oTypeModel, "course_list");
-				}
-
-			}).catch(err => console.error("Course List Load Failed", err));
+			oBinding.filter(aFilters);
 		},
 
 		getFieldVisibility_ReqType: async function (oEvent) {
@@ -1791,7 +1744,25 @@ sap.ui.define([
 			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
 				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
 			}
-		}
+		},
 
+		onChange_ModeOfTransfer: async function (oEvent) {
+			// get mode of transfer key from fragment
+			var iMaxDays = await Utility.getModeofTransferMaxDays(oEvent.getSource().getSelectedItem().getKey());
+
+			if (!!iMaxDays) {
+				if (!!(this.oDialogFragment)) {
+					const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+					oDialogModel.setProperty("/req_no_of_days", iMaxDays);
+					oDialogModel.setProperty("/tripstartdate", null);
+					oDialogModel.setProperty("/tripenddate", null);
+				} else {
+					var oInputModel = this.getView().getModel("claimsubmission_input");
+					oInputModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
+					oInputModel.setProperty("/claim_header/trip_start_date", null);
+					oInputModel.setProperty("/claim_header/trip_end_date", null);
+				}
+			}
+		}
 	});
 });

@@ -250,13 +250,25 @@ module.exports = (srv) => {
                     virement_out = Number(row.VIREMENT_OUT) || 0;
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
-
                     consumed = Number(existing[0].CONSUMED);
 
-                    var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
+                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
+                    var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
+                    var new_return = return_value + Number(existing[0].RETURN); 
+                    original_budget = original_budget === 0? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
+
+                    //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
+                    // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
+                    // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
+                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
+                    updatePayload.VIREMENT_IN = new_virement_in.toFixed(2);
+                    updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
+                    updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
+                    updatePayload.RETURN = new_return.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -928,7 +940,6 @@ module.exports = (srv) => {
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
         var total_tips = 0;
-        let total_daily_allowance = 0;
 
         //get employee personal grade 
         const result = await tx.run(
@@ -970,10 +981,6 @@ module.exports = (srv) => {
             //calculation for MKN_LOAN based on dependent
             if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
-                if (!req.data.tips) {
-                    total_tips = 0.15 * total_amt_dp;
-                    total_amt_dp += total_tips;
-                }
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
                 time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
@@ -990,7 +997,6 @@ module.exports = (srv) => {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
                     if (time_difference >= 8.0 && time_difference < 24.0) {
                         daily_allowance = entitlement.AMOUNT / 2;
-                        total_daily_allowance = 1;
                     }
                     meal_allowance += daily_allowance;
                 }
@@ -1012,14 +1018,14 @@ module.exports = (srv) => {
                 //to include tips calculation (15%) from total entitlement
                 // only applicable for claim submission
                 // if true, exclude tips and set total tips to be 0. Else, include 15% tips
-                if (!req.data.tips) {
+                if (!req.data.exclude_tips) {
                     total_tips = 0.15 * total_meal_allowance;
                     total_meal_allowance += total_tips;
                 }
 
                 return {
                     amount: total_meal_allowance,
-                    daily_allowance: total_daily_allowance,
+                    daily_allowance: daily_allowance,
                     currency_code: entitlement.CURRENCY,
                     tips_amount: total_tips
                 }
@@ -1251,6 +1257,70 @@ module.exports = (srv) => {
     });
 
     /**
+     * Get rate per km id and description, based on Vehicle Type, Claim Type Item Claim Item, Start Date or Receipt Date
+     * @public
+     * @param {String} sVehicleType - vehicle type to check in table 
+     * @param {String} sClaimTypeItem - claim type item to check in table
+     * @param {date} dRateDate - Date to check in table
+     * @return {Object} rateperkm - return rate per km ID and description
+     */
+    srv.on("getRatePerKm", async (req) => {
+        const {
+            sVehicleType,
+            sClaimTypeItem,
+            dRateDate
+        } = req.data;
+
+        if (!dRateDate) {
+            return req.error(400, "Rate date is required.");
+        }
+
+        try {
+            let aVehicleTypeFilters = [Constant.Wildcard.All];
+            if (sVehicleType) {
+                aVehicleTypeFilters.push(sVehicleType);
+            }
+
+            let aClaimTypeItemFilters = [Constant.Wildcard.All];
+            if (sClaimTypeItem) {
+                aClaimTypeItemFilters.push(sClaimTypeItem);
+            }
+
+            const oRatePerKm = await SELECT.one
+                .from(Constant.Entities.ZRATE_KM)
+                .columns(
+                    Constant.EntitiesFields.RATE_KM_ID,
+                    Constant.EntitiesFields.RATE
+                )
+                .where({
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { "<=": dRateDate },
+                    END_DATE: { ">=": dRateDate },
+                    VEHICLE_TYPE_ID: aVehicleTypeFilters,
+                    CLAIM_TYPE_ITEM_ID: aClaimTypeItemFilters
+                })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.VEHICLE_TYPE_ID], sort: "desc" },
+                    { ref: [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID], sort: "desc" }
+                ]);
+
+            if (!oRatePerKm) {
+                return req.error(404, "Rate per KM not found for given parameters.");
+            }
+
+            return {
+                id: oRatePerKm.RATE_KM_ID,
+                value: oRatePerKm.RATE
+            };
+
+        } catch (error) {
+            return req.error(
+                500,
+                "An error occurred while determining Rate per KM."
+            );
+        }
+    });
+    /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status
      * @public
      * @return {Decimal} - return eligible amount retrieved from table
@@ -1301,13 +1371,13 @@ module.exports = (srv) => {
                 ]);
 
             if (!oEligibilityRule) {
-                return req.error(404, `Eligible amount not found for given employee.`);
+                req.error(404, `Eligible amount not found for given employee.`);
             }
 
             return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
@@ -1344,13 +1414,64 @@ module.exports = (srv) => {
                 ]);
 
             if (!aClaimSubmissions) {
-                return req.error(404, `Unable to retrieve previous claims.`);
+                req.error(404, `Unable to retrieve previous claims.`);
             }
 
             return (aClaimSubmissions.length > 0) ? aClaimSubmissions[0].ZCLAIM_HEADER.STATUS_ID : null;
 
         } catch (error) {
-            return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+            req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+        }
+    });
+
+    /**
+     * Get eligible amount for user employee on Lodging claim type items, based on Employee Grade
+     * @public
+     * @param {String} sClaimType - claim type to retrieve amount
+     * @param {String} sClaimTypeItem - claim type item to retrieve amount
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getUserEligibleAmountLodging', async (req) => {
+        const { sClaimType, sClaimTypeItem } = req.data;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp) {
+                req.error(404, `No employee data found.`);
+            }
+            else {
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aPersonalGradeFilters = [Constant.Wildcard.All];
+                if (!!oEmp.GRADE) aPersonalGradeFilters.push(oEmp.GRADE);
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: sClaimType,
+                        CLAIM_TYPE_ITEM_ID: sClaimTypeItem,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        PERSONAL_GRADE: { 'in': aPersonalGradeFilters }
+                    })
+                    .orderBy([{ ref: [Constant.EntitiesFields.PERSONAL_GRADE], sort: 'desc' }]);
+
+                if (!oEligibilityRule) {
+                    req.error(404, `Eligible amount not found for given employee.`);
+                }
+                else {
+                    return oEligibilityRule.ELIGIBLE_AMOUNT;
+                }
+            }
+
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
 
@@ -1374,10 +1495,10 @@ module.exports = (srv) => {
                 return oRoute.MILEAGE;
             }
 
-            return req.error(404, 'No distance record found for the selected route.');
+            req.error(404, 'No distance record found for the selected route.');
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+            req.error(500, `Failed to retrieve mileage: ${error.message}`);
         }
     });
 
@@ -1432,8 +1553,7 @@ module.exports = (srv) => {
             return true;
 
         } catch (error) {
-            console.error("Mass delete failed:", error);
-            return req.error(500, `Failed to delete participants: ${error.message}`);
+            req.error(500, `Failed to delete participants: ${error.message}`);
         }
     });
 
@@ -1465,7 +1585,7 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            return req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
+            req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
         }
     });
 
@@ -1653,5 +1773,238 @@ module.exports = (srv) => {
             percentage: nPercentage,
             amount: nThreePercent
         };
+    });
+
+    /**
+     * Get Total count of dependent based on Employee ID
+     * IND1 - fetch Spouse and Child Only
+     * @public
+     * @async
+     * @returns {Integer} Total count of dependent 
+     */
+    srv.on('getNumberOfFamilyMembers', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZEMP_DEPENDENT } = srv.entities;
+        const sIndicator = req.data.IND;
+        var aDependent;
+
+        //get total dependent based on Employee ID - IND1 filter by spouse and child
+        if (oEmp) {
+            if (sIndicator === Constant.Indicator.Spouse_Child) {
+                aDependent = await tx.run(
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID,
+                        RELATIONSHIP: {
+                            in: [Constant.RelationshipType.SPOUSE,
+                            Constant.Relationship.CHILD]
+                        }
+                    })
+                );
+            } else {
+                aDependent = await tx.run(
+                    SELECT.from(ZEMP_DEPENDENT).where({
+                        EMP_ID: oEmp.EEID
+                    })
+                );
+            }
+            return aDependent.length + 1;
+        }
+    });
+
+    /**
+     * method to retrieve the minimum eligible amount and rate per km based on the requestor / claimant ranks
+     * @public
+     * @async
+     * @param {String} sRegion : location 
+     * @param {Float} fKilometer : input from requestor
+     * @returns {Object} DaratAmounts: returning minimum eligible amount & rate per km
+     */
+    srv.on('getPengangkutanDaratAmount', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const { ZELIGIBILITY_RULE } = srv.entities;
+        const { sRegion, fKilometer } = req.data;
+
+        if (oEmp) {
+            const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+
+            if (!sMarriageCategory) {
+                req.error(404, `No marriage category available for employee.`);
+            }
+
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+
+            const oEligibilityRule = await SELECT.one.from(ZELIGIBILITY_RULE).where({
+                CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
+                CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.DARAT,
+                MARITAL_STATUS: oEmp.MARITAL,
+                MARRIAGE_CATEGORY: sMarriageCategory,
+                REGION_ID: sRegion,
+                STATUS: Constant.ConfigStatus.ACTIVE,
+                START_DATE: { '<=': sTodayDate },
+                END_DATE: { '>=': sTodayDate },
+            }).orderBy([
+                { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+            ]);
+
+            if (!oEligibilityRule) {
+                req.error(404, `Eligibility not found.`);
+            }
+
+            const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
+            const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
+
+            return {
+                fAmount: Math.max(fCalculatedAmount, fMinimumEligibleAmount),
+                fRate: oEligibilityRule.RATE,
+                bMinimum: fCalculatedAmount < fMinimumEligibleAmount
+            };
+        } else {
+            req.error(404, `Employee Not Found.`);
+        }
+    });
+
+    /**
+    * Get eligible amount for employee on Elaun Pemberian Pindah, based on Marital Status
+    * @public
+    * @return {Decimal} - return eligible amount retrieved from table
+    */
+    srv.on('getUserEligibleAmountPemPindah', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+        try {
+            if (oEmp) {
+                const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+
+                if (!sMarriageCategory) {
+                    req.error(404, `No marriage category available for employee.`);
+                }
+
+                const sTodayDate = new Date().toISOString().slice(0, 10);
+                var aMaritalStatusValues = [Constant.Wildcard.All];
+                if (oEmp.MARITAL) {
+                    aMaritalStatusValues.push(oEmp.MARITAL);
+                }
+                var aMarriageCategoryValues = [Constant.Wildcard.All];
+                if (sMarriageCategory) {
+                    aMarriageCategoryValues.push(sMarriageCategory);
+                }
+
+                const oEligibilityRule = await SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT, Constant.EntitiesFields.SUBSIDISED_RATE)
+                    .where({
+                        // claim type + claim type item
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        PERSONAL_GRADE: oEmp.GRADE,
+                        REGION_ID: req.data.sRegion,
+                        // status check
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                        // values to filter
+                        MARITAL_STATUS: { 'in': aMaritalStatusValues },
+                        MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
+                    })
+                    .orderBy([
+                        { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                        { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' }
+                    ]);
+
+                if (!oEligibilityRule) {
+                    return 0;
+                }
+                
+                var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
+
+                return {
+                    fAmount         : oEligibilityRule.ELIGIBLE_AMOUNT,
+                    fPercentage     : oEligibilityRule.SUBSIDISED_RATE,
+                    fFinalAmount    : fFinalAmount
+                }
+            }
+
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Eligibility Rule table.');
+        }
+    });
+    
+    /**
+     * Validate PEA total amount by calculating:
+     * - existing PEA header total
+     * - new or updated line item amount
+     * 
+     * Ensures the final adjusted total does not exceed RM25,000.
+     *
+     * @public
+     * @return {Object} - return validation result indicating whether processing can proceed
+     */
+    srv.on('validatePEATotal', async (req) => {
+
+        const {
+            headerTotal,
+            currentAmount,
+            isNew,
+            oldAmount
+        } = req.data;
+
+        const nHeaderTotal = Number(headerTotal) || 0;
+        const nCurrentAmount = Number(currentAmount) || 0;
+        const nOldAmount = Number(oldAmount) || 0;
+        const bIsNew = Boolean(isNew);
+
+        let nAdjustedTotal = nHeaderTotal + nCurrentAmount;
+        // Editing existing item → subtract old amount first
+        if (!bIsNew) {
+            nAdjustedTotal = nHeaderTotal - nOldAmount + nCurrentAmount;
+        }
+        if (nAdjustedTotal > 25000) {
+            // Business validation error (NOT technical)
+            req.error(400, 'Total amount exceeds RM25,000');
+        }
+        return { canProceed: true };
+    });
+
+    srv.on('checkElaunTukarEligible', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+        if (!oEmp) {
+            return req.error(404, 'Employee not found'); 
+        }
+
+        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
+        const sPositionStartDate = oEmp.POSITION_START_DATE;
+
+        const oConstantRec = await SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .columns(Constant.EntitiesFields.VALUE) 
+            .where({
+                ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER
+            });
+
+        const iDays = parseInt(oConstantRec.VALUE, 10);
+
+        if (Object.values(Constant.PositionEventId).includes(sPositionEvent)) {
+            
+            if (!sPositionStartDate) {
+                return false;
+            }
+
+            const dEligibleDate = new Date(sPositionStartDate);
+            
+            dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
+
+            const dCurrentDate = new Date();
+            dCurrentDate.setUTCHours(0, 0, 0, 0);
+
+            return dCurrentDate > dEligibleDate; 
+        }
+
+        return false;
     });
 }

@@ -2352,7 +2352,7 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": true,
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2362,16 +2362,9 @@
                                     "actions": {
                                         "DataFieldForAction::eclaim_srv.Copy": {
                                             "enableOnSelect": "single"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
-                                }
+                                } 
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
@@ -4788,11 +4781,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": true,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS, PARTICIPANT_ID, START_DATE, END_DATE"
-                                        },
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
                                         "newCopy": {

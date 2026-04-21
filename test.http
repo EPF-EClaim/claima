@@ -19,33 +19,49 @@
 # }
 
 
-# GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
+# GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
 # Authorization: Basic alice
 
 
 
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-# Content-Type: application/json
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+Content-Type: application/json
+Authorization: Basic alice
  
-#    {
-#     "budget": [
-#         {
-#             "COMMITMENT_ITEM": "760001",
-#             "FUND_CENTER": "108S37004",
-#             "INTERNAL_ORDER": "1",
-#             "MATERIAL_GROUP": "760001959",
-#             "ORIGINAL_BUDGET": "10.00",
-#             "RETURN": "10.00",
-#             "SUPPLEMENT": "10.00",
-#             "VIREMENT_IN": "90.00",
-#             "VIREMENT_OUT": "0.00",
-#             "YEAR": "2026",
-#             "HasActiveEntity": false,
-#             "HasDraftEntity": false,
-#             "IsActiveEntity": true
-#         }
-#     ]
-# }
+   {
+    "budget": [
+        {
+            "COMMITMENT_ITEM": "710010",
+            "FUND_CENTER": "100010100",
+            "INTERNAL_ORDER": "1",
+            "MATERIAL_GROUP": "710010901",
+            "ORIGINAL_BUDGET": "20.00",
+            "RETURN": "10.00",
+            "SUPPLEMENT": "10.00",
+            "VIREMENT_IN": "10.00",
+            "VIREMENT_OUT": "10.00",
+            "YEAR": "2026",
+            "HasActiveEntity": false,
+            "HasDraftEntity": false,
+            "IsActiveEntity": true
+        }, 
+        {
+            "COMMITMENT_ITEM": "710010",
+            "FUND_CENTER": "100010101",
+            "INTERNAL_ORDER": "1",
+            "MATERIAL_GROUP": "710010901",
+            "ORIGINAL_BUDGET": "10.00",
+            "RETURN": "10.00",
+            "SUPPLEMENT": "10.00",
+            "VIREMENT_IN": "10.00",
+            "VIREMENT_OUT": "0.00",
+            "YEAR": "2026",
+            "HasActiveEntity": false,
+            "HasDraftEntity": false,
+            "IsActiveEntity": true
+        }
+    ]
+}
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -168,8 +184,8 @@ Authorization: Basic alice
        {
          "CheckFields": [
             {
-               "fieldName": "FARE_TYPE_ID",
-               "value": "02",
+               "fieldName": "RECEIPT_DATE",
+               "value": "2025-04-17",
                "result": null
             },
             {
@@ -183,8 +199,8 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
+         "ClaimType": "BEG",
+         "ClaimTypeItem": "PKN_PANAS",
          "EmpId": "886887",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
