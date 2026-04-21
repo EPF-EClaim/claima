@@ -60,7 +60,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                TRANSFER_MODE_ID,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
@@ -110,7 +116,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                TRANSFER_MODE_ID,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
 
@@ -200,7 +212,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CURRENCY_RATE,
                 ////Add additional field to cater on ELAUN GALAKAN
                 TYPE_OF_PROFESSIONAL_BODY,
-                ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC
+                ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
+                TOTAL_TRAVELLER
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -326,7 +339,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt,
                 COURSE_CODE,
                 ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
-                SESSION_NUMBER
+                SESSION_NUMBER,
+                MODE_OF_TRANSFER,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -463,7 +482,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-
+                TOTAL_TRAVELLER
         };
 
     entity ZEMP_REQUEST_STATUS            as
