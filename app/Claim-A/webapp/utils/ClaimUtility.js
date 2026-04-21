@@ -536,7 +536,12 @@ sap.ui.define([
 		 */
 		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
 			var aFilters = [];
-			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+			if ([Constant.ClaimType.KURSUS_DLM_NEGARA,
+			Constant.ClaimType.DLM_NEGARA,
+			Constant.ClaimType.KURSUS_LUAR_NEGARA,
+			Constant.ClaimType.LUAR_NEGARA,
+			Constant.ClaimType.ELAUN_TUKAR
+			].includes(sClaimTypeId)&&
 				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
 				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
 			}
