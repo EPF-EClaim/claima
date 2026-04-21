@@ -3324,9 +3324,8 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-				this._updateEntitlementAmount(oInputModel);
-			}else if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR){
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
+			oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR) {
 				this._updateEntitlementAmount(oInputModel);
 			}
 		},
