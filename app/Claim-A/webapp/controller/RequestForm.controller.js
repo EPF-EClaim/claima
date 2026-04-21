@@ -663,6 +663,7 @@ sap.ui.define([
 				currency_code		    : oReqItem.CURRENCY_CODE || null,
 				currency_rate			: oReqItem.CURRENCY_RATE || 0,
 				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
+				no_of_traveler			: oReqItem.TOTAL_TRAVELLER || null,
 				// extra hidden field value
 				cost_center				: oReqItem.COST_CENTER || "",
 				gl_account				: oReqItem.GL_ACCOUNT || "",
@@ -1134,6 +1135,11 @@ sap.ui.define([
 				return;
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
+				return;
+			}
+
 			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
 			if (parseFloat(fEstAmount) <= parseFloat(0)) {
 				MessageBox.error(Utility.getText("req_d_w_error_amount"))
@@ -1239,7 +1245,8 @@ sap.ui.define([
                     ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
 					CURRENCY_CODE:				  oReqItem.currency_code || null,
 					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
-					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
+					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
+					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2161,12 +2168,12 @@ sap.ui.define([
 
 			if (bReset) {
 				this._resetReqItemInputs();
-			}
 
-			const oLocationTypeSelect = this.byId("item_location_type");
-			if (oLocationTypeSelect) {
-				oLocationTypeSelect.setForceSelection(false);
-				oLocationTypeSelect.setSelectedKey("");
+				const oLocationTypeSelect = this.byId("item_location_type");
+				if (oLocationTypeSelect) {
+					oLocationTypeSelect.setForceSelection(false);
+					oLocationTypeSelect.setSelectedKey("");
+				}
 			}
 
 			BusyIndicator.show(0);
@@ -2241,7 +2248,9 @@ sap.ui.define([
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 						case Constants.ClaimTypeItem.LOD_TUKAR:
-							RequestUtility.populateAllocatedAmount();
+							if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+								RequestUtility.populateAllocatedAmount();
+							}
 
 						// get number of night
 						case Constants.ClaimTypeItem.HOTEL_L:
@@ -2837,8 +2846,7 @@ sap.ui.define([
 			var oInput = oEvent.getSource();
 			var iTravelers = parseInt(oInput.getValue(), 10);
 
-			var oModel = this.getView().getModel("request");
-			var iMaxFamilyMembers = parseInt(oModel.getProperty("/req_item/no_of_family_member"), 10);
+			var iMaxFamilyMembers = parseInt(this._oReqModel.getProperty("/req_item/no_of_family_member"), 10);
 
 			oInput.setValueState("None");
 
