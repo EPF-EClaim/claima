@@ -24,7 +24,8 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE",
-            "GALAKAN": "GALAKAN"
+            "GALAKAN": "GALAKAN",
+            "WILAYAH_ASAL": "WILAYAH_ASAL"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -282,7 +283,9 @@ sap.ui.define([
             "TRIP_START_DATE" : "TRIP_START_DATE",
             "TRIP_END_DATE" : "TRIP_END_DATE",
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
-            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID"
+            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID",
+            "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
+            "REQUEST_TYPE": "REQUEST_TYPE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -521,6 +524,11 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "Age": {
+            "EIGHTEEN": "18",
+            "NINETEEN": "19",
+            "TWENTY_FIVE": "25"
         }
     }
 });

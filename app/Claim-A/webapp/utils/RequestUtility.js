@@ -63,6 +63,35 @@ sap.ui.define([
 			}
 		},
 
+        /**
+         * Get PAR header info for claim submission
+         * @public
+         * @param {string} sReqID Request ID to fetch from database
+         * @returns Data for claim submission population, if not found returns null
+         */
+        getPARHeaderInfo: async function (sReqID) {
+            const oListBinding = this._oOwnerComponent.getModel().bindList("/ZREQUEST_HEADER", null, null, [
+				new Filter("REQUEST_ID", FilterOperator.EQ, sReqID)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return {
+                        tripStart: oData.TRIP_START_DATE,
+                        tripEnd: oData.TRIP_END_DATE,
+						eventStart: oData.EVENT_START_DATE,
+                        eventEnd: oData.EVENT_END_DATE,
+                        altcc: oData.ALTERNATE_COST_CENTER
+                    }
+                }
+            } catch (oError) {
+				return null; 
+			}
+        },
+
 		/**
          * Populate the allocated amount when needed 
          * @public
@@ -388,6 +417,7 @@ sap.ui.define([
             }
 		},
 
+        
         /**
 		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
 		 *
@@ -408,7 +438,6 @@ sap.ui.define([
             try {
                 await oFunction.execute();
                 const oContext  = oFunction.getBoundContext();
-
                 const oResult   = oContext.getObject();
 
                 return oResult.fAmount;
@@ -416,6 +445,87 @@ sap.ui.define([
             } catch (error) {
                 return 0;
             }
+        },
+
+        checkElaunTukarEligibility: async function () {
+            const oDataModel    = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                return oContext.getObject().value;  // true or false
+
+            } catch (oError) {
+                return false;
+            }
+		},
+
+	    getDependentFilter: function (){
+			var oReqModel = this._oOwnerComponent.getModel("request");
+            var oReqHeader = oReqModel.getProperty('/req_header');
+            var sEmpId = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
+
+            var oEmpFilter = new Filter(
+                Constants.EntitiesFields.EMP_ID,
+                FilterOperator.EQ,
+                sEmpId
+            );
+
+            switch(oReqHeader.claimtype){
+                case Constants.ClaimType.WILAYAH_ASAL:
+                   
+                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.EIGHTEEN);
+                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.NINETEEN);
+                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.TWENTY_FIVE);
+
+                    d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+
+                    var oSpouseFilter = new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.SPOUSE);
+
+                    var oChildBelow18 = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+                        ],
+                        and: true
+                    })
+
+                    var oChildStudying = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+                            new Filter(Constants.EntitiesFields.STUDENT, FilterOperator.EQ, true),
+                        ],
+                        and: true
+                    })
+
+                    var oDependentRuleFilter = new Filter({
+                        filters: [
+                            oSpouseFilter,
+                            oChildBelow18,
+                            oChildStudying
+                        ],
+                        and: false
+                    })
+
+                    return new Filter({
+                        filters: [
+                            oEmpFilter,
+                            oDependentRuleFilter
+                        ],
+                        and: true
+                    })
+                default:
+                    return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+            }
+
 		}
         
     };

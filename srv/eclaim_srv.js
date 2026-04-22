@@ -1968,4 +1968,71 @@ module.exports = (srv) => {
         }
         return { canProceed: true };
     });
+
+    srv.on('checkElaunTukarEligible', async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+        if (!oEmp) {
+            return req.error(404, 'Employee not found'); 
+        }
+
+        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
+        const sPositionStartDate = oEmp.POSITION_START_DATE;
+
+        const oConstantRec = await SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .columns(Constant.EntitiesFields.VALUE) 
+            .where({
+                ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER
+            });
+
+        const iDays = parseInt(oConstantRec.VALUE, 10);
+
+        if (Object.values(Constant.PositionEventId).includes(sPositionEvent)) {
+            
+            if (!sPositionStartDate) {
+                return false;
+            }
+
+            const dEligibleDate = new Date(sPositionStartDate);
+            
+            dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
+
+            const dCurrentDate = new Date();
+            dCurrentDate.setUTCHours(0, 0, 0, 0);
+
+            return dCurrentDate > dEligibleDate; 
+        }
+
+        return false;
+    });
+
+    srv.on('getMarriageCategoryBasedOnStatus', async (req) =>{
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if(oEmp){
+            const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+            const sMarriageStatus = oEmp.MARITAL;
+
+            if (!sMarriageCategory) {
+                req.error(404, `No marriage category available for employee.`);
+            }
+
+            switch(sMarriageCategory){
+                case Constant.MarriageCategory.MARRIED_NO_CHILDREN:
+                    if(sMarriageStatus == Constant.MaritalStatus.WIDOWED ||sMarriageStatus == Constant.MaritalStatus.SEPARATED || sMarriageStatus == Constant.MaritalStatus.DIVORCED){
+                        return Constant.MarriageCategory.SINGLE;
+                    }
+                    return sMarriageCategory;
+                case Constant.MarriageCategory.MARRIED_1_TO_3_CHILDREN:
+                    break;
+                case Constant.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN:
+                    break;  
+            }
+            return sMarriageCategory;
+        }else{
+            req.error(404, `Employee Not Found.`);
+        }
+    });
 }

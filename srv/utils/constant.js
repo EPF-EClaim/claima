@@ -68,7 +68,8 @@ const Constant = {
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
-        "ZRATE_KM": "ZRATE_KM"
+        "ZRATE_KM": "ZRATE_KM",
+        "ZCONSTANTS": "ZCONSTANTS"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -185,6 +186,8 @@ const Constant = {
         "REGION_ID": "REGION_ID",
         "STATUS": "STATUS",
         "TRANSPORT_CLASS": "TRANSPORT_CLASS",
+        "ID": "ID",
+        "VALUE": "VALUE",
         "SUBSIDISED_RATE": "SUBSIDISED_RATE"
     },
     Wildcard: {
@@ -224,7 +227,8 @@ const Constant = {
     },
     PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year"
+        "YEAR": "Year",
+        "SERVICE": "Service"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
@@ -296,6 +300,20 @@ const Constant = {
     }, 
     Indicator: {
         Spouse_Child: "IND1"
+    },
+    PositionEventId: {
+        TRANSFER_WITHIN_BRANCH: "ZA01", 
+        TRANSFER_INTER_BRANCH: "ZA02",
+        TRANSFER_WITHIN_DEPARTMENT: "ZA03",
+        TRANSFER_INTER_DIVISION: "ZA04",
+        TRANSFER_INTER_DEPARTMENT: "ZA05",
+        TRANSFER_DEPARTMENT_TO_BRANCH: "ZA06",
+        TRANSFER_BRANCH_TO_DEPARTMENT: "ZA07",
+        PROMOTION_WITH_PROBATION: "Z801",
+        PROMOTION_WITHOUT_PROBATION: "Z802"
+    },
+    ConstantId: {
+        ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
     }
 
 };
