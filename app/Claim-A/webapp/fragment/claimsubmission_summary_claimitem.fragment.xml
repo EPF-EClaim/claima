@@ -2,7 +2,8 @@
     xmlns="sap.m"
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
-    core:require="{FloatType: 'sap/ui/model/type/Float'}"
+    core:require="{FloatType: 'sap/ui/model/type/Float',
+				   DateType: 'sap/ui/model/odata/type/Date'}"
 >
     <VBox
         backgroundDesign="Solid"
@@ -96,9 +97,29 @@
 					<Text text="{i18n>columntext_claimsummary_amt}" />
 				</Column>
 
+				<!-- Receipt Number -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_receipt_number}" />
+				</Column>
+
+				<!-- Receipt Date -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_receipt_date}" />
+				</Column>
+
                 <!-- Remarks -->
                 <Column>
                     <Text text="{i18n>columntext_claimsummary_remarks}" />
+                </Column>
+
+                <!-- Attachment 1 -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_attachment1}" />
+                </Column>
+
+                <!-- Attachment 2 -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_attachment2}" />
                 </Column>
 
             </columns>
@@ -135,8 +156,34 @@
 							}"
                         />
 
+                        <!-- Receipt Number -->
+                        <Text
+                            text="{claimsubmission_input>receipt_number}"
+                        />
+
+                        <!-- Receipt Date -->
+                        <Text
+                            text="{
+								path: 'claimsubmission_input>receipt_date',
+								type: 'DateType',
+								formatOptions: { pattern: 'dd-MMM-yyyy' }
+							}"
+                        />
+
                         <!-- Remarks -->
                         <Text text="{claimsubmission_input>remark}" />
+
+                        <!-- Attachment 1 -->
+                        <Link
+                            press="onView_Claim_Attachment('child_t',null, $event)"
+                            text="{claimsubmission_input>attachment_file_1}"
+                        />
+
+                        <!-- Attachment 2 -->
+                        <Link
+                            press="onView_Claim_Attachment('child_t',null, $event)"
+                            text="{claimsubmission_input>attachment_file_2}"
+                        />
 
                     </cells>
                 </ColumnListItem>
