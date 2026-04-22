@@ -3080,6 +3080,18 @@ sap.ui.define([
 						for (const [key, value] of Object.entries(oBody.getData())) {
 							oCtx.setProperty(key, value);
 						}
+						// Delete attachment from SF during save when previously marked for deletion
+						if (Attachment._mDeleteAttachments?.doc1 && oAttachmentFile1) {
+							const sSFID = oAttachmentFile1.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_1", null);
+						}
+
+						if (Attachment._mDeleteAttachments?.doc2 && oAttachmentFile2) {
+							const sSFID = oAttachmentFile2.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_2", null);
+						}
 
 						await oModel.submitBatch("$auto");
 
@@ -3095,6 +3107,7 @@ sap.ui.define([
 								oInputModel.getProperty("/claim_item/attachment_file_2")
 							)
 						}
+						Attachment._mDeleteAttachments = {};
 						MessageToast.show(Utility.getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					}
 				}
