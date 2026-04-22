@@ -101,7 +101,8 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"                        
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }" 
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id}}"                    
                     >
                         <core:Item key="{employee>TRANSFER_MODE_ID}" text="{employee>TRANSFER_MODE_DESC}" />
                     </Select>
@@ -120,7 +121,7 @@
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        editable="{= ${claimsubmission_input>/claimtype/marriage_category} !== ${constant>/MarriageCategory/SINGLE} }"
+                        editable="{= ${claimsubmission_input>/claimtype/marriage_category} !== ${constant>/MarriageCategory/SINGLE} &amp;&amp; !${claimsubmission_input>/claimtype/requestform/request_id}}"
                         change="onTravelAloneFamilySelect"
                         liveChange="onTravelAloneFamilySelect"                        
                     >
@@ -140,7 +141,8 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"
-                        required="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"                        
+                        required="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"    
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id}}"                     
                     >
                         <core:Item key="{employee>FAMILY_TIMING_ID}" text="{employee>FAMILY_TIMING_DESC}" />
                     </Select>

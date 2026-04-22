@@ -3355,6 +3355,7 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_NumberOfDays: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
@@ -3362,7 +3363,7 @@ sap.ui.define([
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
 			oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR) {
-				this._updateEntitlementAmount(oInputModel);
+				this._updateEntitlementAmount(oInputModel,oClaimSubmissionModel);
 			}
 		},
 
@@ -3641,11 +3642,12 @@ sap.ui.define([
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
-			this._updateEntitlementAmount(oClaimItemInputModel);
+			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: async function () {
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
 			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
@@ -3660,7 +3662,7 @@ sap.ui.define([
 				await this._calculatePerDiem();
 			}
 
-			this._updateEntitlementAmount(oClaimItemInputModel);
+			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
 		/**
@@ -5115,10 +5117,10 @@ sap.ui.define([
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimInputModel name of the resource
 		 */
-		_updateEntitlementAmount: function (oClaimItemInputModel) {
+		_updateEntitlementAmount: function (oClaimItemInputModel,oClaimSubmissionModel) {
 			BusyIndicator.show(0);
 
-			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult => {
+			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel,oClaimSubmissionModel).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);

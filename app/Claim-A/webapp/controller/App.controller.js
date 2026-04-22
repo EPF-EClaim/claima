@@ -662,6 +662,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
+				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
+				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
+			
 			}
 			else {
 				// reset request form values

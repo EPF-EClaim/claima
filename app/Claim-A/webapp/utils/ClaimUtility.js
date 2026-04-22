@@ -219,14 +219,21 @@ sap.ui.define([
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
 		 */
-		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
+		fetchAndApplyEntitlement: function (oClaimItemInputModel, oSubmissionModel) {
 			var nDay, nDependent;
+			
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else if(oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR){
-				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
-				nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+				if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW){
+					nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+				}else{
+					nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+					nDependent = 1;
+
+				}
 			}
 			else{
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
@@ -424,6 +431,7 @@ sap.ui.define([
 		 */
 		calculateAmountLodging: function () {
 			const oInputModel = this._oView.getModel("claimitem_input");
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
 			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
@@ -434,7 +442,12 @@ sap.ui.define([
 			// calculate approved amount
 			switch (sClaimTypeItem) {
 				case Constant.ClaimTypeItem.LOD_TUKAR:
-					var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW){
+						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					}else{
+						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * 1;
+					}
+					
 					break;
 				default:
 					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
