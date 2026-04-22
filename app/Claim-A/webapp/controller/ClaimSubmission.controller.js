@@ -2793,6 +2793,36 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
 			}
 
+			//specific for ELEKTRIK, BIL_AIR and TELEFON_B claim type item
+			//during edit, it does not overwrite the receipt date with the new edited date because of the logic below
+			//now it will check for these three claim type and on edit, it will overwrite the old receipt date 
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.ELEKTRIK ||
+				oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.TELEFON_B ||
+				oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.BIL_AIR
+			){
+				if (!!oInputModel.getProperty("/claim_item/bill_date")) {
+					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"))
+				}
+			}
+
+			/* 	4 scenarios for Receipt Date to be populated
+					1. Get Receipt Date based on input
+					2. If Receipt Date is null, get item Bill Date
+					3. If Bill Date is null, get item Start Date
+					4. If Start Date is null, get header Trip Start Date 
+			*/
+			if (oInputModel.getProperty("/claim_item/receipt_date") === null) {
+				if (oInputModel.getProperty("/claim_item/bill_date") !== null) {
+					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
+				} else {
+					if (oInputModel.getProperty("/claim_item/start_date") !== null) {
+						oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/start_date"));
+					} else {
+						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
+					}
+				}
+			}
+
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
@@ -2823,11 +2853,6 @@ sap.ui.define([
 				"/claim_item/attachment_file_2"
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
-
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
-				return;
-			}
 
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
@@ -2902,29 +2927,6 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
-				return;
-			}
-
-			/* 	4 scenarios for Receipt Date to be populated
-					1. Get Receipt Date based on input
-					2. If Receipt Date is null, get item Bill Date
-					3. If Bill Date is null, get item Start Date
-					4. If Start Date is null, get header Trip Start Date 
-			*/
-			if (oInputModel.getProperty("/claim_item/receipt_date") === null) {
-				if (oInputModel.getProperty("/claim_item/bill_date") !== null) {
-					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
-				} else {
-					if (oInputModel.getProperty("/claim_item/start_date") !== null) {
-						oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/start_date"));
-					} else {
-						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
-					}
-				}
-			}
 
 			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
 
@@ -5124,6 +5126,11 @@ sap.ui.define([
 			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
 			const oInputItemModel = this.getView().getModel("claimitem_input");
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				return;
+			}
 
 			for (let item of aItems) {
 
