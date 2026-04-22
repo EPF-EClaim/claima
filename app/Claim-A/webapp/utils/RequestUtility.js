@@ -5,8 +5,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
     "claima/utils/Utility",
 	"claima/utils/DateUtility",
-    "claima/utils/Constants",
-	"sap/ui/commons/Message"
+    "claima/utils/Constants"
 ], function (
     MessageBox,
 	Fragment,
@@ -29,6 +28,12 @@ sap.ui.define([
             this._oDialogFragment = oDialogFragment;
 		},
 
+        /**
+         * trigger when selecting claim type
+         * @public
+         * @param {object} oEvent 
+         * @param {boolean} bEligibleForElaunTukar 
+         */
         onSelectClaimType: async function (oEvent, bEligibleForElaunTukar) {
 			var oSelectControl = oEvent.getSource();
     		var sClaimTypeId = oSelectControl.getSelectedKey();
@@ -129,6 +134,7 @@ sap.ui.define([
          */
         populateAllocatedAmount: async function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
+            const oReqHeader = oReqModel.getProperty("/req_header");
             const oReqItem  = oReqModel.getProperty("/req_item");
             const aReqPart  = oReqModel.getProperty("/participant");
             let fCalculatedAllocatedAmount;

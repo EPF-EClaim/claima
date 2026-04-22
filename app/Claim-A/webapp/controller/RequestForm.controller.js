@@ -2251,15 +2251,6 @@ sap.ui.define([
 							if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
 								RequestUtility.populateAllocatedAmount();
 							}
-
-						// get number of night
-						case Constants.ClaimTypeItem.HOTEL_L:
-						case Constants.ClaimTypeItem.HOTEL_O:
-						case Constants.ClaimTypeItem.LODGING_L:
-						case Constants.ClaimTypeItem.LODG_O:
-						case Constants.ClaimTypeItem.LOD_TUKAR:
-							var iNumberOfNight = iDiffDays - 1;
-							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 							break;
 
 						// remove business class option for FLIGHT_L
@@ -2810,20 +2801,6 @@ sap.ui.define([
 			const _oItem = this._oReqModel.getProperty("/req_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
-
-			switch (_oItem.claim_type_item_id) {
-				case Constants.ClaimTypeItem.HOTEL_L:
-				case Constants.ClaimTypeItem.HOTEL_O:
-				case Constants.ClaimTypeItem.LODGING_L:
-				case Constants.ClaimTypeItem.LODG_O:
-				case Constants.ClaimTypeItem.LOD_TUKAR:
-					var iNumberOfNight = iDiffDays - 1;
-					this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
-					break;
-			
-				default:
-					break;
-			}
 
 			// run populate allocated amount if applicable
 			RequestUtility.populateAllocatedAmount();
