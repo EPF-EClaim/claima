@@ -56,7 +56,6 @@ annotate service.ZRISK with @(
     }
 );
 
-
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -250,6 +249,7 @@ annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
     Common.SemanticKey             : [RANGE_ID],
     Capabilities.SearchRestrictions: {Searchable: false},
+
     UI                             : {
         CreateHidden: true,
         DeleteHidden: true,

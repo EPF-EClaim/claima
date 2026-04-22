@@ -647,7 +647,7 @@
                     "pattern": "ZTRAIN_COURSE_PART",
                     "name": "ZTRAIN_COURSE_PART",
                     "target": "ZTRAIN_COURSE_PART"
-                }                 
+                }
             ],
             "targets": {
                 "TargetMain": {
@@ -681,11 +681,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,BUFFER_FIELD1,BUFFER_FIELD2,START_DATE,END_DATE"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,BUFFER_FIELD1,BUFFER_FIELD2,START_DATE,END_DATE"
@@ -701,13 +702,6 @@
                                             "position": {
                                                 "placement": "Before"
                                             }
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -753,11 +747,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "RATE_KM_ID,STATUS,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "RATE_KM_ID,STATUS,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE"
@@ -770,13 +765,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -822,11 +810,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "LOCATION_ID,STATE_ID,LOCATION_DESC,LOCATION_GROUP,LEGAL_ENTITY,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LOCATION_ID,STATE_ID,LOCATION_DESC,LOCATION_GROUP,LEGAL_ENTITY,START_DATE,END_DATE,STATUS"
@@ -839,13 +828,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -891,14 +873,15 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "FROM_STATE_ID,FROM_LOCATION_ID,TO_STATE_ID,TO_LOCATION_ID,MILEAGE,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "FROM_STATE_ID,FROM_LOCATION_ID,TO_STATE_ID,TO_LOCATION_ID,MILEAGE,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "FROM_STATE_ID,FROM_LOCATION_ID,TO_STATE_ID,TO_LOCATION_ID,MILEAGE,START_DATE,END_DATE,STATUSS"
                                         }
                                     },
                                     "actions": {
@@ -908,13 +891,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -960,11 +936,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "IND_OR_GROUP_ID,IND_OR_GROUP_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "IND_OR_GROUP_ID,IND_OR_GROUP_DESC,START_DATE,END_DATE,STATUS"
@@ -977,13 +954,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1029,11 +999,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "LOC_TYPE_ID,LOC_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LOC_TYPE_ID,LOC_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -1046,13 +1017,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1098,11 +1062,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "MATERIAL_CODE_ID,MATERIAL_CODE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MATERIAL_CODE_ID,MATERIAL_CODE_DESC,START_DATE,END_DATE,STATUS"
@@ -1115,13 +1080,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1167,11 +1125,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
@@ -1184,13 +1143,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1236,11 +1188,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "RELATIONSHIP_TYPE_ID,RELATIONSHIP_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "RELATIONSHIP_TYPE_ID,RELATIONSHIP_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -1253,13 +1206,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1309,7 +1255,9 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "RISK_ID,RISK_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "RISK_ID,RISK_DESC,START_DATE,END_DATE,STATUS"
@@ -1321,13 +1269,6 @@
                                             "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1373,11 +1314,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "EMP_TYPE_ID,EMP_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -1390,13 +1332,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1549,11 +1484,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "BRANCH_ID,BRANCH_DESC,HEAD_OF_UNIT,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "BRANCH_ID,BRANCH_DESC,HEAD_OF_UNIT,START_DATE,END_DATE,STATUS"
@@ -1566,13 +1502,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1611,18 +1540,19 @@
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
                                         "selectAll": true,
-                                        "selectionMode": "Single",
+                                        "selectionMode": "Multi",
                                         "personalization": {
                                             "column": false,
                                             "filter": true,
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "DEPARTMENT_ID, DEPARTMENT_DESC,DEPARTMENT_DESC,START_DATE,END_DATE,STATUS,HEAD_OF_DEPARTMENT,SHORT_CODE,COST_CENTER,DIVISION"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "DEPARTMENT_ID, DEPARTMENT_DESC,DEPARTMENT_DESC,START_DATE,END_DATE,STATUS,HEAD_OF_DEPARTMENT,SHORT_CODE,COST_CENTER,DIVISION"
@@ -1635,13 +1565,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1687,11 +1610,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "HOUSING_LOAN_SCHEME_ID,HOUSING_LOAN_SCHEME_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "HOUSING_LOAN_SCHEME_ID,HOUSING_LOAN_SCHEME_DESC,START_DATE,END_DATE,STATUS"
@@ -1704,13 +1628,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1756,11 +1673,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "PERSONAL_GRADE,LOCATION,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "PERSONAL_GRADE,LOCATION,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,START_DATE,END_DATE,STATUS"
@@ -1773,13 +1691,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1825,11 +1736,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
@@ -1842,13 +1754,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1894,11 +1799,12 @@
                                             "sort": true
                                         },
                                         "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "ROLE_ID, ROLE_DESC,ROLE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
-                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "ROLE_ID, ROLE_DESC,ROLE_DESC,START_DATE,END_DATE,STATUS"
@@ -1911,13 +1817,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1965,12 +1864,14 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
+                                        "enableMassEdit": {
+                                            "visibleFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "enableMassEdit": false,
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -1979,13 +1880,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2033,27 +1927,25 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
+                                        "enableMassEdit": {
+                                            "visibleFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "enableMassEdit": false,
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
+                                        "DataFieldForAction::eclaim_srv.Copy": {
+                                            "enableOnSelect": "single"
+                                        },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
                                             "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2213,7 +2105,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "USER_TYPE_ID,USER_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2230,13 +2124,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2284,7 +2171,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2298,13 +2187,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2352,19 +2234,12 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": true,
-                                        "disableCopyToClipboard": true,
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "REQUEST_ID,EMP_ID,DISBURSEMENT_DATE,DISBURSEMENT_STATUS"
-                                        }
-                                    },
-                                    "actions": {
-                                        "DataFieldForAction::eclaim_srv.Copy": {
-                                            "enableOnSelect": "single"
-                                        }
+                                        "enableMassEdit": {
+                                            "visibleFields": "DISBURSEMENT_STATUS"
+                                        },
+                                        "disableCopyToClipboard": true
                                     }
-                                } 
+                                }
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
@@ -2409,7 +2284,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "STATUS_ID,STATUS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2423,17 +2300,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit",
-                                            "position": {
-                                                "placement": "After",
-                                                "anchor": "newCopy"
-                                            }
                                         }
                                     }
                                 }
@@ -2481,30 +2347,22 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
-                                        "DataFieldForAction::eclaim_srv.Copy": {
-                                            "enableOnSelect": "single"
-                                        },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
                                             "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2553,11 +2411,13 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,LEVEL,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS,LEVEL"
+                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,LEVEL,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2567,13 +2427,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2622,11 +2475,13 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,LEVEL,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
+                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,LEVEL,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2636,13 +2491,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2690,12 +2538,14 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                        },
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
-                                        },
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -2704,13 +2554,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2758,7 +2601,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "AREA_ID,AREA_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2772,13 +2617,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2827,7 +2665,9 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "COUNTRY_ID,COUNTRY_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2841,13 +2681,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2896,7 +2729,9 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "REGION_ID,REGION_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2910,13 +2745,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -2964,7 +2792,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "MARRIAGE_STATUS_ID,MARRIAGE_STATUS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -2978,13 +2808,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3032,7 +2855,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3046,13 +2871,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3100,7 +2918,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "COUNTRY_ID,STATE_ID,STATE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3114,13 +2934,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3168,12 +2981,14 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
+                                        "enableMassEdit": {
+                                            "visibleFields": "LENDER_ID,LENDER_NAME,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LENDER_ID,LENDER_NAME,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "enableMassEdit": false,
-                                        "disableCopyToClipboard": true
+                                        }
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3182,13 +2997,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3236,7 +3044,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "TRAVEL_DAYS_ID,START_DATE,END_DATE,TRAVEL_DAYS_DESC,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3250,13 +3060,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3304,7 +3107,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "METER_CUBE_ID,MARITAL_STATUS,DEPENDENT_TYPE_ID,AGE_CONDITION,AGE,METER_CUBE,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3318,13 +3123,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3372,7 +3170,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "FARE_TYPE_ID,FARE_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3386,13 +3186,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3440,7 +3233,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "HOTEL_LODGING_ID,HOTEL_LODGING_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3454,13 +3249,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3508,7 +3296,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "CLAIM_BASIS_ID,CLAIM_BASIS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3522,13 +3312,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3576,7 +3359,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "DEPENDENT_TYPE_ID,DEPENDENT_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3590,13 +3375,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3644,7 +3422,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "POSITION_EVENT_REASON_ID,POSITION_EVENT_REASON_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3658,13 +3438,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3712,7 +3485,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "SPORTS_REPRESENTATION_ID,SPORTS_REPRESENTATION_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3726,13 +3501,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3780,7 +3548,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "FAMILY_TIMING_ID,FAMILY_TIMING_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3794,13 +3564,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3848,7 +3611,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "TRAVEL_TYPE_ID,TRAVEL_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "TRAVEL_TYPE_ID,TRAVEL_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -3862,13 +3627,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                           "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3916,7 +3674,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "TRANSPORT_PASSING_ID,TRANSPORT_PASSING_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -3930,13 +3690,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -3984,11 +3737,13 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,NUMBER_OF_DAYS,START_DATE,END_DATE,STATUS"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS,NUMBER_OF_DAYS"
+                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,NUMBER_OF_DAYS,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -3998,13 +3753,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4052,7 +3800,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "STUDY_LEVELS_ID,STUDY_LEVELS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "STUDY_LEVELS_ID,STUDY_LEVELS_DESC,START_DATE,END_DATE,STATUS"
@@ -4066,13 +3816,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4120,7 +3863,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "PROFESIONAL_BODY_ID,PROFESIONAL_BODY_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "PROFESIONAL_BODY_ID,PROFESIONAL_BODY_DESC,START_DATE,END_DATE,STATUS"
@@ -4134,13 +3879,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4188,7 +3926,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "INSURANCE_PACKAGE_ID,ZINSURANCE_PACKAGE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "INSURANCE_PACKAGE_ID,ZINSURANCE_PACKAGE_DESC,START_DATE,END_DATE,STATUS"
@@ -4202,13 +3942,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4256,7 +3989,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "INSURANCE_PROVIDER_ID,INSURANCE_PROVIDER_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "INSURANCE_PROVIDER_ID,INSURANCE_PROVIDER_DESC,START_DATE,END_DATE,STATUS"
@@ -4270,13 +4005,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4324,7 +4052,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -4338,13 +4068,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4392,7 +4115,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "MOBILE_CATEGORY_PURPOSE_ID,MOBILE_CATEGORY_PURPOSE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MOBILE_CATEGORY_PURPOSE_ID,MOBILE_CATEGORY_PURPOSE_DESC,START_DATE,END_DATE,STATUS"
@@ -4406,13 +4131,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4460,7 +4178,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "YEAR,INTERNAL_ORDER,COMMITMENT_ITEM,FUND_CENTER,MATERIAL_GROUP,ORIGINAL_BUDGET,VIREMENT_IN,VIREMENT_OUT,SUPPLEMENT,RETURN,CURRENT_BUDGET,COMMITMENT,ACTUAL,CONSUMED,BUDGET_BALANCE,PROJECT_CODE,BUDGET_OWNER_ID,WBS_CODE,CURRENCY"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "YEAR,INTERNAL_ORDER,COMMITMENT_ITEM,FUND_CENTER,MATERIAL_GROUP,ORIGINAL_BUDGET,VIREMENT_IN,VIREMENT_OUT,SUPPLEMENT,RETURN,CURRENT_BUDGET,COMMITMENT,ACTUAL,CONSUMED,BUDGET_BALANCE,PROJECT_CODE,BUDGET_OWNER_ID,WBS_CODE,CURRENCY"
@@ -4474,13 +4194,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4576,7 +4289,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "DISBURSEMENT_STATUS_ID,DISBURSEMENT_STATUS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "DISBURSEMENT_STATUS_ID,DISBURSEMENT_STATUS_DESC,START_DATE,END_DATE,STATUS"
@@ -4590,13 +4305,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4644,7 +4352,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "WORKFLOW_CODE, WORKFLOW_TYPE, START_DATE, END_DATE"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "WORKFLOW_CODE, WORKFLOW_TYPE, START_DATE, END_DATE"
@@ -4658,13 +4368,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4712,7 +4415,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE"
@@ -4726,13 +4431,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -4755,7 +4453,7 @@
                         }
                     }
                 },
-                   "ZTRAIN_COURSE_PART": {
+                "ZTRAIN_COURSE_PART": {
                     "type": "Component",
                     "id": "ZTRAIN_COURSE_PART",
                     "name": "sap.fe.templates.ListReport",
@@ -4780,7 +4478,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS, PARTICIPANT_ID, START_DATE, END_DATE"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS, PARTICIPANT_ID, START_DATE, END_DATE"
@@ -4794,14 +4494,7 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                         "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                         }
+                                        }
                                     }
                                 }
                             },
@@ -5052,11 +4745,14 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "REASON_ID,REASON_TYPE,START_DATE,END_DATE,STATUS,REASON_DESC"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "REASON_ID,REASON_TYPE,START_DATE,END_DATE,STATUS,REASON_DESC"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -5065,13 +4761,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -5119,11 +4808,14 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "CURRENCY_ID,CURRENCY_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CURRENCY_ID,CURRENCY_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -5132,13 +4824,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -5186,7 +4871,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "VEHICLE_OWNERSHIP_ID,VEHICLE_OWNERSHIP_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "VEHICLE_OWNERSHIP_ID,VEHICLE_OWNERSHIP_DESC,START_DATE,END_DATE,STATUS"
@@ -5200,13 +4887,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -5254,7 +4934,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,ROLE_ID,POSITION_NO_DESC,ROW_COUNT,START_DATE,END_DATE,EMPLOYEE_TYPE,ASSIGNED_APPROVER,CONFIRMATION_DATE,PERSONAL_GRADE,MOBILE_PHONE_BILL,ELIGIBLE_AMOUNT,FREQUENCY,PERIOD,DEPENDENT,PERMITTED_DEPENDENT_COUNT,CLAIM_YEARS,SUBSIDISED_RATE,MARITAL_STATUS,DEPENDENT_TYPE_ID,VEHICLE_OWNERSHIP_ID,CLAIMABLE_PERIOD_DAYS,REGION_ID,MAXIMUM_DAYS,CLAIM_BASIS_ID,TRANSFER_MODE_ID,EVENT_REASON,NO_OF_NIGHT,VEHICLE_TYPE_ID,RATE,MARRIAGE_CATEGORY,FLIGHT_CLASS_ID,HOTEL_LODGING_ID,TRANSPORT_CLASS,TRANSPORT_PASSING_ID,INSURANCE_PACKAGE_ID,TRAVEL_DAYS_ID,CURRENCY,ROOM_TYPE_ID,IND_OR_GROUP,TRAVEL_HOURS,AGING_NUMBER,AGING_PERIOD,STATUS,SUBMISSION_TYPE,COST_CENTER"
+                                        },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -5268,13 +4950,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -5322,7 +4997,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "ID,VALUE"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "ID,VALUE"
@@ -5336,13 +5013,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -5390,7 +5060,9 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": {
+                                            "visibleFields": "ROLE,RANK"
+                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "ROLE,RANK"
@@ -5404,13 +5076,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
                                         }
                                     }
                                 }
