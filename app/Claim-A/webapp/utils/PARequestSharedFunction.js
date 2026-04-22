@@ -59,6 +59,7 @@ sap.ui.define([
 				const oData = aCtx[0].getObject();
 				
 				const oHeaderMap = {
+					empid:		    oData.EMP_ID || "",
 					purpose:        oData.OBJECTIVE_PURPOSE || "",
 					reqid:          oData.REQUEST_ID || "",
 					tripstartdate:  oData.TRIP_START_DATE || "",
@@ -71,7 +72,7 @@ sap.ui.define([
 					reqstatus:      oData.STATUS_DESC || "",
 					costcenter:     oData.COST_CENTER && oData.COST_CENTER_DESC ? `${oData.COST_CENTER} - ${oData.COST_CENTER_DESC}` : "",
 					altcostcenter: 	oData.ALTERNATE_COST_CENTER || "",
-					altcostcenterdesc: oData.ALT_COST_CENTER_DESC || "",
+					altcostcenterdesc:	oData.ALT_COST_CENTER_DESC || "",
 					cashadvamt:     parseFloat(oData.CASH_ADVANCE) || 0,
 					reqamt:         parseFloat(oData.PREAPPROVAL_AMOUNT) || 0,
 					reqtypeid:      oData.REQUEST_TYPE_ID || "",
@@ -81,7 +82,13 @@ sap.ui.define([
 					doc2:           oData.ATTACHMENT2 || "",
 					claimtype:      oData.CLAIM_TYPE_ID || "",
 					claimtypedesc:  oData.CLAIM_TYPE_DESC || "",
-					reqdate:        oData.REQUEST_DATE
+					reqdate:        oData.REQUEST_DATE,
+					transfermode: 	oData.TRANSFER_MODE_ID || "",
+					transfermodedesc:	oData.TRANSFER_MODE_DESC || "",
+					transferalonefamily: oData.TRAVEL_ALONE_FAMILY || "",
+					transferalonefamilydesc: 	oData.TRAVEL_TYPE_DESC || "",
+					transferfamilynowlater: 	oData.TRAVEL_FAMILY_NOW_LATER || "",
+					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || ""
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
