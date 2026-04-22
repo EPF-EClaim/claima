@@ -1,11 +1,13 @@
 sap.ui.define([
     "sap/m/MessageBox",
+	"sap/ui/core/Fragment",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
     "claima/utils/RequestUtility"
 ], function (
     MessageBox,
+    Fragment,
     Constants,
     ClaimUtility,
     Utility,
@@ -36,7 +38,7 @@ sap.ui.define([
             var bCanProceed = true;
             // Common validations (Applicable for both scenarios)
 
-            // Type and Item Type checking (Applicable for both scenarios)
+            // Type and Item Type checking (Applicable for both scenarios))
 
             // Scenario-based checking (Only limited to certain submission type)
             switch (sSubmissionType) {
@@ -61,6 +63,20 @@ sap.ui.define([
                                 MessageBox.error(Utility.getText("req_d_e_neg_amount"));
                                 bCanProceed = false; 
                             }
+                        }
+                    }
+
+                    // check number of traveller
+                    if (sClaimTypeItem === Constants.ClaimTypeItem.LOD_TUKAR) {
+                        var iNumberOfFamily = oReqModel.getProperty("/req_item/no_of_family_member");
+                        var iNumberOfTraveler = oReqModel.getProperty("/req_item/no_of_traveler");
+
+                        if (!iNumberOfTraveler) return;
+                        if (iNumberOfTraveler > iNumberOfFamily) {
+                            var oInput = this._oView.byId("input_no_of_traveler");
+				            oInput.setValueState("Error");   
+				            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
+                            bCanProceed = false;
                         }
                     }
                     break;

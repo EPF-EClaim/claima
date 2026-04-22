@@ -247,25 +247,17 @@ sap.ui.define([
 			});
 		},
 
-		async onCheckMobileEligibility(oController) {
-			const sEmployeeId = oController._oSessionModel.getProperty("/userId");
+		checkElaunTukarEligibility: async function (oDataModel) {
+            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
 
-			try {
-				const oFunction = oController._oDataModel.bindContext("/checkEligibleMobileClaim(...)");
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                return oContext.getObject().value; 
 
-				oFunction.setParameter("sEmployeeId", sEmployeeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-				return oResult.eligible;
-
-
-			} catch (oError) {
-				console.error("Failed to check eligibility", oError);
-			}
+            } catch (oError) {
+                return false;
+            }
 		}
 
 	};
