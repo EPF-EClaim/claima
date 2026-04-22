@@ -14,10 +14,8 @@ module.exports = {
          */
     onEligibleCheck: async function (oPayload, aRules, oEmp, tx) {
         var oRule, aFilteredRules;
-        var iHistFreq = 0;
-        var iAllowedFreq = 0;
         // to extract the key values from oPayload
-        var aPayload = this._parsePayload(oPayload)
+        var aPayload = this._parsePayload(oPayload);
 
         //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
@@ -39,11 +37,11 @@ module.exports = {
         };
 
         var oDateRange = await this._getDateRange(oPayload, tx);
-        iAllowedFreq = oDateRange.iItemFreq;
 
-        iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        var iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
 
-        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq);
+        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, oDateRange.iItemFreq, oCurrentRecordItemData.fTotalAmount);
         return oPayload;
 
     },
@@ -118,7 +116,6 @@ module.exports = {
         const aItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
             [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
         const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
@@ -131,6 +128,46 @@ module.exports = {
     },
 
     /**
+             * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+             * @private
+             * @param {Object} oPayload - payload contains user input passed from frontend
+             * @param {Object} dDateTo - Date To Range
+             * @param {Object} dDateFrom - Date From Range
+             * @param {Object} tx - CDS Transaction
+             * @returns {Object} oPayload - return original payload but with result field filled
+             */
+    _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
+        var sHeaderField = "";
+        var sItemField = "";
+        var sItemTable = "";
+        // get Current Items Data
+        // Map Headers and ClaimID or RequestID based on which ItemTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderField = Constant.EntitiesFields.CLAIMID;
+            sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+        } else {
+            sHeaderField = Constant.EntitiesFields.REQUESTID;
+            sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+        }
+
+        const aCurrentItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [sHeaderField]: oPayload.RecordId,
+            [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+        };
+        const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+            sCurrentItemcondition,
+            tx);
+    },
+
+    /**
     * Validates claim item against eligibility rule
     * @private
     * @param {Array} aPayload - key user input value in the form of object based on selected claim type item
@@ -139,10 +176,10 @@ module.exports = {
     * @param {Integer} iExistingFreq - Date frequency count
     * @param {Integer} iAllowedFreq - Rules Frequency Count
     */
-    _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq) {
+    _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq, fTotalAmount) {
         var iIndex;
 
-        // PEM_PINDAH - return true if there is no historical claims within same Period based on frequency
+        // PEM_PINDAH - reject if there is historical claims within same Period based on frequency
         if (iExistingFreq >= iAllowedFreq) {
             throw new Error("Claim Type has already been submitted previously.");
         }
@@ -157,9 +194,14 @@ module.exports = {
                 } else {
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
-                    } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                    } else {
+                        // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                        // current payload amount + total amount from all items
+                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount);
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            fCurrentTotal,
+                            parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }
                 break;

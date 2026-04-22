@@ -63,19 +63,29 @@ module.exports = {
         * @param {String} sItemTable - Item Table Name
         * @param {String} sItemcondition - Item Selection Where Conditions
         * @param {Object} tx - CDS Transaction
-        * @returns {Integer} Count of data within item table
+        * @returns {Object} Count of data and sum of amount within item table
         */
     getCurrentItemData: async function (sItemTable, sItemcondition, tx) {
+        var iItemCount = 0;
+        var fTotalAmount = 0;
+        var oCurrentItem = { iItemCount, fTotalAmount };
         try {
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
-                SELECT`count(*)`.from(sItemTable).where(`${sItemcondition}`)
+                SELECT.from(sItemTable).columns(`count(*)`, `sum(AMOUNT) as fTotalAmount`).where(`${sItemcondition}`)
             );
-            if (!!aItemData) return aItemData[0].count;
-            return 0;
+            if (!!aItemData) {
+                oCurrentItem.iItemCount = aItemData[0].count;
+            }
+            if (!!aItemData[0].fTotalAmount) {
+                oCurrentItem.fTotalAmount = aItemData[0].fTotalAmount;
+            }
+            console.log("oCurrentItem");
+            console.log(oCurrentItem);
+            return oCurrentItem;
         } catch (error) {
-            return 0;
+            return oCurrentItem;
         }
     },
 
@@ -117,7 +127,7 @@ module.exports = {
                 break;
         }
         oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
-        return { oDatetoFrom, iItemFreq } ;
+        return { oDatetoFrom, iItemFreq };
     },
 
     /**

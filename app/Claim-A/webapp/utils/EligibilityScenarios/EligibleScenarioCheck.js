@@ -1,7 +1,6 @@
 sap.ui.define([
-    "sap/m/MessageBox",
-    "claima/utils/Utility"
-], function (MessageBox, Utility) {
+
+], function () {
     "use strict";
     return {
         /**

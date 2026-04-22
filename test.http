@@ -185,7 +185,7 @@ Authorization: Basic alice
          "CheckFields": [
             {
                "fieldName": "RECEIPT_DATE",
-               "value": "202-04-17",
+               "value": "2026-04-17",
                "result": null
             },
             {
@@ -199,9 +199,9 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "I-PAD",
-         "ClaimTypeItem": "I-PAD",
-         "EmpId": "903731",
+         "ClaimType": "ELAUN_TUKAR",
+         "ClaimTypeItem": "PINDAH",
+         "EmpId": "886887",
          "RecordId": "CLM26000000874",
          "RecordSubId": "CLM26000000874001"
       }
