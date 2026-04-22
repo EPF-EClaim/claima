@@ -81,8 +81,7 @@ module.exports = {
             if (!!aItemData[0].fTotalAmount) {
                 oCurrentItem.fTotalAmount = aItemData[0].fTotalAmount;
             }
-            console.log("oCurrentItem");
-            console.log(oCurrentItem);
+
             return oCurrentItem;
         } catch (error) {
             return oCurrentItem;
