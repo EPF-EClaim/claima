@@ -14,8 +14,7 @@ module.exports = {
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
     var oRule, oDateRange;
-    var iHistoricalData = 0;
-    var iCurrentRecordItemData = 0;
+    var iAllowedFreq = 0;
     var iItemFreq = 0;
     try {
       if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
@@ -26,17 +25,19 @@ module.exports = {
         oDateRange = await this._getDateRange(oPayload, tx);
         iItemFreq = oDateRange.iItemFreq;
 
-        iHistoricalData = await this._getHistoricalData(
+        var iHistoricalData = await this._getHistoricalData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
 
-        iCurrentRecordItemData = await this._getCurrentRecordItemData(
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+
+        iAllowedFreq = iHistoricalData + oCurrentRecordItemData.iItemCount;
       }
     } catch (error) {
       throw new Error(`${error.message}`);
     };
     this._validateClaimItem(
-      oRule, oPayload, iHistoricalData + iCurrentRecordItemData, iItemFreq);
+      oRule, oPayload, iAllowedFreq, iItemFreq);
 
     return oPayload;
   },
@@ -185,7 +186,7 @@ module.exports = {
     };
     const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-    return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+    return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
       sCurrentItemcondition,
       tx);
   },

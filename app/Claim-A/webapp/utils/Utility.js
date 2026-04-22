@@ -477,5 +477,21 @@ sap.ui.define([
             return iMaxDays;
         },
 
+        getMarriageCategoryBasedOnStatus:async function(){
+            const oDataModel = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/getMarriageCategoryBasedOnStatus(...)");
+
+            try {                
+                await oFunction.execute();
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+                return oResult.value;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("error_marriage_category_not_found", []));
+                return null; 
+            }
+        }
+
     };
     });

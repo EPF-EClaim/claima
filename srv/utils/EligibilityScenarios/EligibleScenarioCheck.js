@@ -152,7 +152,8 @@ module.exports = {
           oReturnPayload = await ElaunPindah.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
-            aFilteredEmp[0]
+            aFilteredEmp[0],
+            tx
           );
           break;
 
@@ -163,7 +164,8 @@ module.exports = {
           oReturnPayload = await ElaunTukar.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
-            aFilteredEmp[0]
+            aFilteredEmp[0],
+            tx
           );
           break;
 
