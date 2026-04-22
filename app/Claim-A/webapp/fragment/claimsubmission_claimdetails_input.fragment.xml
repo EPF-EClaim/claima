@@ -103,7 +103,7 @@
 				<Select
 					id="select_claimdetails_input_dependent_name"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					selectedKey="{claimitem_input>/claim_item/dependent}"
 					items="{
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
@@ -112,7 +112,7 @@
 					required="true"
 				>
                     <items>
-                        <core:Item key="{employee>LEGAL_NAME}" 
+                        <core:Item key="{employee>DEPENDENT_NO}" 
                                 text="{employee>LEGAL_NAME}" />
                     </items>
 				</Select>
