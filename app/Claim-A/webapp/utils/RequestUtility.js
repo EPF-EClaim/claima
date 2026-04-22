@@ -189,10 +189,13 @@ sap.ui.define([
                     case Constants.ClaimTypeItem.DARAT:
                         const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
                         if (oResult) {
-                            fCalculatedAllocatedAmount = oResult.fAmount;
                             oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
+                            if (!oReqItem.kilometer) break;
+                            fCalculatedAllocatedAmount = oResult.fAmount;
                             // check if using minimum eligible amount, show notification
-                            if (oResult.bMinimum) MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+                            if (oResult.bMinimum) {
+                                MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+                            }
                         }
                         break;
                     
