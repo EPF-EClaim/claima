@@ -1245,6 +1245,21 @@ sap.ui.define([
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
+				// Delete attachment from SF during save when previously marked for deletion
+				const oldDoc1Filename = oReqItem.doc1_filename;
+				if (this._mDeleteAttachments?.doc1 && oldDoc1Filename) {
+					const sSFID = oldDoc1Filename.split(" - ")[0];
+					await Attachment.deleteAttachment(sSFID);
+					oPayload.ATTACHMENT1 = null;
+				}
+
+				const oldDoc2Filename = oReqItem.doc2_filename;
+				if (this._mDeleteAttachments?.doc2 && oldDoc2Filename) {
+					const sSFID = oldDoc2Filename.split(" - ")[0];
+					await Attachment.deleteAttachment(sSFID);
+					oPayload.ATTACHMENT2 = null;
+				}
+				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
 
