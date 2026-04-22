@@ -459,6 +459,73 @@ sap.ui.define([
             } catch (oError) {
                 return false;
             }
+		},
+
+	    getDependentFilter: function (){
+			var oReqModel = this._oOwnerComponent.getModel("request");
+            var oReqHeader = oReqModel.getProperty('/req_header');
+            var sEmpId = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
+
+            var oEmpFilter = new Filter(
+                Constants.EntitiesFields.EMP_ID,
+                FilterOperator.EQ,
+                sEmpId
+            );
+
+            switch(oReqHeader.claimtype){
+                case Constants.ClaimType.WILAYAH_ASAL:
+                   
+                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.EIGHTEEN);
+                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.NINETEEN);
+                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.TWENTY_FIVE);
+
+                    d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+
+                    var oSpouseFilter = new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.SPOUSE);
+
+                    var oChildBelow18 = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+                        ],
+                        and: true
+                    })
+
+                    var oChildStudying = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+                            new Filter(Constants.EntitiesFields.STUDENT, FilterOperator.EQ, true),
+                        ],
+                        and: true
+                    })
+
+                    var oDependentRuleFilter = new Filter({
+                        filters: [
+                            oSpouseFilter,
+                            oChildBelow18,
+                            oChildStudying
+                        ],
+                        and: false
+                    })
+
+                    return new Filter({
+                        filters: [
+                            oEmpFilter,
+                            oDependentRuleFilter
+                        ],
+                        and: true
+                    })
+                default:
+                    return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+            }
+
 		}
         
     };

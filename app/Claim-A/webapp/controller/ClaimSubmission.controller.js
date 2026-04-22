@@ -552,6 +552,7 @@ sap.ui.define([
 					anggota_id: it.ANGGOTA_ID,
 					anggota_name: it.ANGGOTA_NAME,
 					dependent_name: it.DEPENDENT_NAME,
+					dependent: it.DEPENDENT,
 					type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
 					disclaimer_galakan: it.DISCLAIMER_GALAKAN,
 					mode_of_transfer: it.MODE_OF_TRANSFER,
@@ -574,7 +575,6 @@ sap.ui.define([
 					currency_code: it.CURRENCY_CODE,
 					currency_rate: it.CURRENCY_RATE,
 					departure_time: it.DEPARTURE_TIME,
-					dependent: it.DEPENDENT,
 					emp_id: it.EMP_ID,
 					fare_type_id: it.FARE_TYPE_ID,
 					insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
@@ -1209,6 +1209,7 @@ sap.ui.define([
 					"anggota_id": null,
 					"anggota_name": null,
 					"dependent_name": null,
+					"dependent": null,
 					"type_of_professional_body": null,
 					"disclaimer_galakan": false,
 					"mode_of_transfer": null,
@@ -1231,7 +1232,6 @@ sap.ui.define([
 					"currency_code": null,
 					"currency_rate": null,
 					"departure_time": null,
-					"dependent": null,
 					"emp_id": null,
 					"fare_type_id": null,
 					"insurance_cert_end_date": null,
@@ -1820,6 +1820,7 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "select_claimdetails_input_dependent_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_dependent_combo"), property: "dependent", field: "combo_claimdetails_input_dependent", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
@@ -2419,7 +2420,8 @@ sap.ui.define([
 				marriage_category: { is_visible: false },
 				to_state_id: { is_required: false },
 				bill_no: { is_required: false },
-				account_no: { is_required: false }
+				account_no: { is_required: false },
+				combo_dependent: { is_editable: true }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2439,6 +2441,7 @@ sap.ui.define([
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
+				var oPropertyModel = this.getView().getModel("claimitem_property"); 
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
@@ -2468,6 +2471,7 @@ sap.ui.define([
 			if (oClaimSubmissionModel.getProperty("/view_only")) {
 				if (!this.byId("button_claimdetails_input_return").getVisible()) {
 					this.byId("button_claimdetails_input_return").setVisible(true);
+					oPropertyModel.setProperty("/combo_dependent/is_editable", false)
 				}
 				this._getFieldEditable_ClaimTypeItem();
 			}
@@ -2580,9 +2584,15 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
 			var oFilter = this._getDependentFilters();
+
 			var oSelect = this.byId("select_claimdetails_input_dependent_name");
+			var oSelectMulti = this.byId("combo_claimdetails_input_dependent");
+			
+			var oBindingMulti = oSelectMulti.getBinding("items");
 			var oBinding = oSelect.getBinding("items");
-			oBinding.filter(oFilter)
+
+			oBinding.filter(oFilter);
+			oBindingMulti.filter(oFilter);
 
 		},
 
@@ -4273,7 +4283,7 @@ sap.ui.define([
 				try {
 					oModel = this.getOwnerComponent().getModel();
 					oListBinding = null;
-
+					
 					// set body for update
 					var oBody = new JSONModel({
 						CLAIM_ID: claim_item.claim_id,
@@ -4335,6 +4345,7 @@ sap.ui.define([
 						DAILY_ALLOWANCE: claim_item.dailyallowance?.toString(),
 						ANGGOTA_ID: claim_item.anggota_id,
 						ANGGOTA_NAME: claim_item.anggota_name,
+						DEPENDENT: claim_item.dependent,
 						DEPENDENT_NAME: claim_item.dependent_name,
 						TYPE_OF_PROFESSIONAL_BODY: claim_item.type_of_professional_body,
 						DISCLAIMER_GALAKAN: claim_item.disclaimer_galakan,
@@ -4358,7 +4369,6 @@ sap.ui.define([
 						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
 						DEPARTURE_TIME: claim_item.departure_time ? new Date(claim_item.departure_time).toISOString() : null,
-						DEPENDENT: claim_item.dependent,
 						EMP_ID: claim_item.emp_id,
 						FARE_TYPE_ID: claim_item.fare_type_id,
 						INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(claim_item.insurance_cert_end_date),
@@ -4883,6 +4893,7 @@ sap.ui.define([
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
 				"select_claimdetails_input_dependent_name",
+				"combo_claimdetails_input_dependent",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
