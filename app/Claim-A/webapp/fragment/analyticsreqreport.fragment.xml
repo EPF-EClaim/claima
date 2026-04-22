@@ -499,8 +499,160 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>rate_per_km}" />
                                 <table:template><Text text="{employee_view>RATE_PER_KM}" /></table:template>
-                            </table:Column>                    
+                            </table:Column>    
 
+                            <table:Column width="12rem">
+                                <Label text="{i18n>flight_class}" />
+                                <table:template><Text text="{employee_view>FLIGHT_CLASS_DESC}" /></table:template>
+                            </table:Column>      
+
+                            <!-- location -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>location}" />
+                                <table:template><Text text="{employee_view>LOCATION_ITEM}" /></table:template>
+                            </table:Column>
+
+                            <!-- location_type -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>location_type}" />
+                                <table:template><Text text="{employee_view>LOC_TYPE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>country}" />
+                                <table:template><Text text="{employee_view>COUNTRY}" /></table:template>
+                            </table:Column>        
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>from_state_id}" />
+                                <table:template><Text text="{employee_view>FROM_STATE_ID}" /></table:template>
+                            </table:Column> 
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>from_state_desc}" />
+                                <table:template><Text text="{employee_view>FROM_STATE_DESC}" /></table:template>
+                            </table:Column>   
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>to_state}" />
+                                <table:template><Text text="{employee_view>TO_STATE_ID}" /></table:template>
+                            </table:Column> 
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>to_state_desc}" />
+                                <table:template><Text text="{employee_view>TO_STATE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>to_state_desc}" />
+                                <table:template><Text text="{employee_view>TO_STATE_DESC}" /></table:template>
+                            </table:Column>
+
+                             <!-- fromloc -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>fromloc}" />
+                                <table:template><Text text="{employee_view>FROM_LOCATION}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>fromloc}" />
+                                <table:template><Text text="{employee_view>FROM_LOCATION_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- fromloc_office -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>fromloc_office}" />
+                                <table:template><Text text="{employee_view>FROM_LOCATION_OFFICE}" /></table:template>
+                            </table:Column>
+
+                             <!-- to_loc -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>to_location}" />
+                                <table:template><Text text="{employee_view>TO_LOCATION}" /></table:template>
+                            </table:Column>
+
+                             <!-- to_loc -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>to_location_desc}" />
+                                <table:template><Text text="{employee_view>TO_LOCATION_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- to_loc_off -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>to_location_off}" />
+                                <table:template><Text text="{employee_view>TO_LOCATION_OFFICE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>toll}" />
+                                <table:template><Text text="{employee_view>TOLL}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>type_of_vehicle}" />
+                                <table:template><Text text="{employee_view>VEHICLE_TYPE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="18rem">
+                                <Label text="{i18n>semenanjung_or_sabah_sarawak}" />
+                                <table:template><Text text="{employee_view>REGION_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>room_type}" />
+                                <table:template><Text text="{employee_view>ROOM_TYPE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="16rem">
+                                <Label text="{i18n>lodging_cat}" />
+                                <table:template><Text text="{employee_view>LODGING_CATEGORY_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>wilayah}" />
+                                <table:template><Text text="{employee_view>AREA_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>start_time}" />
+                                <table:template><Text text="{employee_view>START_TIME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>req_i_end_time}" />
+                                <table:template><Text text="{employee_view>END_TIME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="16rem">
+                                <Label text="{i18n>dependent_name}" />
+                                <table:template><Text text="{employee_view>DEPENDENT_NAME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>meter_cube_ent}" />
+                                <table:template><Text text="{employee_view>METER_CUBE_ENTITLED}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>meter_cube_act}" />
+                                <table:template><Text text="{employee_view>METER_CUBE_ACTUAL}" /></table:template>
+                            </table:Column>
+
+                             <table:Column width="10rem">
+                                <Label text="{i18n>fare_type_id}" />
+                                <table:template><Text text="{employee_view>FARE_TYPE_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>fare_type_desc}" />
+                                <table:template><Text text="{employee_view>FARE_TYPE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>vehicle_class_id}" />
+                                <table:template><Text text="{employee_view>VEHICLE_CLASS_ID}" /></table:template>
+                            </table:Column>
+                            
                         </table:columns>
                     </table:Table>
                 </f:content>

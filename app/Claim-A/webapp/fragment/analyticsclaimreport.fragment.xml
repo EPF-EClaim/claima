@@ -887,11 +887,6 @@
                             </table:Column>
 
                             <table:Column width="10rem">
-                                <Label text="{i18n>dependent_rela}" />
-                                <table:template><Text text="{employee_view>DEPENDENT_RELATIONSHIP}" /></table:template>
-                            </table:Column>
-
-                            <table:Column width="10rem">
                                 <Label text="{i18n>policy_num}" />
                                 <table:template><Text text="{employee_view>POLICY_NUMBER}" /></table:template>
                             </table:Column>
@@ -945,6 +940,7 @@
                                 <Label text="{i18n>meter_cube_act}" />
                                 <table:template><Text text="{employee_view>METER_CUBE_ACTUAL}" /></table:template>
                             </table:Column>
+                            
                         </table:columns>
                     </table:Table>
                 </f:content>

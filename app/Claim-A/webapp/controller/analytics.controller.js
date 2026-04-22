@@ -678,12 +678,13 @@ sap.ui.define([
 
     _getExportColumnsForTarget: function () {
       // ===== Request SUMMARY =====
+      //{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
       if (this._analyticsTarget === "preApprovedSummary") {
         return [
-          { label: "Employee Name", property: "NAME", width: 20 },
-          { label: "Personal Grade", property: "GRADE", width: 20 },
-          { label: "SF Department/Branch ID", property: "DEP", width: 20 },
-          { label: "SF Department/Branch Name", property: "DEPARTMENT_DESC", width: 20 },
+          { label: Utility.getText("employee_name"), property: "NAME", width: 20 },
+          { label: Utility.getText("personal_grade"), property: "GRADE", width: 20 },
+          { label: Utility.getText("department_id"), property: "DEP", width: 20 },
+          { label: Utility.getText("department_name"), property: "DEPARTMENT_DESC", width: 20 },
           { label: "Unit/Seksyen", property: "UNIT_SECTION", width: 20 },
           { label: "Position Name", property: "POSITION_NAME", width: 20 },
           { label: "Employee ID", property: "EMP_ID", width: 12 },
@@ -832,8 +833,7 @@ sap.ui.define([
 
       // ===== Claim DETAILS =====
       return [
-
-        { label: "Employee Name", property: "NAME", width: 20 },
+        
         { label: "Personal Grade", property: "GRADE", width: 20 },
         { label: "SF Department/Branch ID", property: "DEP", width: 20 },
         { label: "SF Department/Branch Name", property: "DEPARTMENT_DESC", width: 20 },
