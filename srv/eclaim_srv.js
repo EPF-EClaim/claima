@@ -2007,4 +2007,32 @@ module.exports = (srv) => {
 
         return false;
     });
+
+    srv.on('getMarriageCategoryBasedOnStatus', async (req) =>{
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if(oEmp){
+            const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+            const sMarriageStatus = oEmp.MARITAL;
+
+            if (!sMarriageCategory) {
+                req.error(404, `No marriage category available for employee.`);
+            }
+
+            switch(sMarriageCategory){
+                case Constant.MarriageCategory.MARRIED_NO_CHILDREN:
+                    if(sMarriageStatus == Constant.MaritalStatus.WIDOWED ||sMarriageStatus == Constant.MaritalStatus.SEPARATED || sMarriageStatus == Constant.MaritalStatus.DIVORCED){
+                        return Constant.MarriageCategory.SINGLE;
+                    }
+                    return sMarriageCategory;
+                case Constant.MarriageCategory.MARRIED_1_TO_3_CHILDREN:
+                    break;
+                case Constant.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN:
+                    break;  
+            }
+            return sMarriageCategory;
+        }else{
+            req.error(404, `Employee Not Found.`);
+        }
+    });
 }

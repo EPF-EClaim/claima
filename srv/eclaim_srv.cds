@@ -1385,7 +1385,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date) returns rateperkm;
     
-    function _getMarriageCategory(sEmpId: String, )                                            returns String;
+    function getMarriageCategoryBasedOnStatus() returns String;
 
     function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
     

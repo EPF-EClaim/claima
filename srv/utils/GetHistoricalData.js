@@ -63,19 +63,28 @@ module.exports = {
         * @param {String} sItemTable - Item Table Name
         * @param {String} sItemcondition - Item Selection Where Conditions
         * @param {Object} tx - CDS Transaction
-        * @returns {Integer} Count of data within item table
+        * @returns {Object} Count of data and sum of amount within item table
         */
     getCurrentItemData: async function (sItemTable, sItemcondition, tx) {
+        var iItemCount = 0;
+        var fTotalAmount = 0;
+        var oCurrentItem = { iItemCount, fTotalAmount };
         try {
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
-                SELECT`count(*)`.from(sItemTable).where(`${sItemcondition}`)
+                SELECT.from(sItemTable).columns(`count(*)`, `sum(AMOUNT) as fTotalAmount`).where(`${sItemcondition}`)
             );
-            if (!!aItemData) return aItemData[0].count;
-            return 0;
+            if (!!aItemData) {
+                oCurrentItem.iItemCount = aItemData[0].count;
+            }
+            if (!!aItemData[0].fTotalAmount) {
+                oCurrentItem.fTotalAmount = aItemData[0].fTotalAmount;
+            }
+
+            return oCurrentItem;
         } catch (error) {
-            return 0;
+            return oCurrentItem;
         }
     },
 
@@ -89,6 +98,8 @@ module.exports = {
         * @returns {Object} Object containing Date From and Date To range
         */
     getDateRange: async function (sClaimType, sClaimTypeItem, sInputDate, tx) {
+        var dDateFrom, dDateTo;
+        var oDatetoFrom = { dDateFrom, dDateTo };
         var iMonthFreq = 0;
         var iYearFreq = 0;
         var iDateFreq = 0;
@@ -104,12 +115,18 @@ module.exports = {
                 iYearFreq = oClaimTypeItem.PERIOD;
                 break;
 
+            case Constant.PeriodUnit.SERVICE:
+                oDatetoFrom.dDateFrom = "1990-01-01";
+                oDatetoFrom.dDateTo = "9999-12-31"
+                return { oDatetoFrom, iItemFreq };
+                break;
+
             default:
                 throw new Error("No Period Unit found");
                 break;
         }
-        const oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
-        return { oDatetoFrom, iItemFreq } ;
+        oDatetoFrom = BuildSelectWhereConditions.subtractDateDelta(sInputDate, iYearFreq, iMonthFreq, iDateFreq);
+        return { oDatetoFrom, iItemFreq };
     },
 
     /**

@@ -15,8 +15,8 @@ module.exports = {
         var oRule = aRules[0];
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData, oDateRange.iItemFreq);
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData, oDateRange.iItemFreq, oCurrentRecordItemData.fTotalAmount);
         return oPayload;
     },
     /**
@@ -26,14 +26,14 @@ module.exports = {
          * @param {Object} tx - CDS Transaction
          * @returns {Array} aDatetoFrom - Array filled with Date From and Date To
          */
-    _getDateRange: async function(oPayload, tx){
+    _getDateRange: async function (oPayload, tx) {
         // get Date Range
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
         if (iIndex == -1) return;
         return aDatetoFrom = await GetHistoricalData.getDateRange(
             oPayload.ClaimType,
-            oPayload.ClaimTypeItem, 
-            oPayload.CheckFields[iIndex].value, 
+            oPayload.ClaimTypeItem,
+            oPayload.CheckFields[iIndex].value,
             tx);
     },
 
@@ -109,7 +109,7 @@ module.exports = {
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-        return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
             sCurrentItemcondition,
             tx);
     },
@@ -122,21 +122,16 @@ module.exports = {
     * @param {Integer} iExistingFreq - Date frequency count
     * @param {Integer} iAllowedFreq - Rules Frequency Count
     */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, fTotalAmount) {
         var iIndex;
+
+        // MAHKAMAH - reject if there is historical claims within same Period based on frequency
+        if (iExistingFreq >= iAllowedFreq) {
+            throw new Error("Claim Type has already been submitted previously.");
+        }
 
         switch (oPayload.ClaimTypeItem) {
             case Constant.ClaimTypeItem.MAHKAMAH:
-                // MAHKAMAH - return true if there is no historical claims within same Year/Month based on frequency and period
-                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                if (iIndex == -1) return;
-                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-                    oPayload.CheckFields[iIndex].result = true;
-                } else {
-                    oPayload.CheckFields[iIndex].result = false;
-                }
-
-                iIndex = null;
                 // MAHKAMAH - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
@@ -148,8 +143,10 @@ module.exports = {
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
                     } else {
+                        // current payload amount + total amount from all items
+                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount);
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                            oPayload.CheckFields[iIndex].value,
+                            fCurrentTotal,
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }

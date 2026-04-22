@@ -84,15 +84,15 @@ sap.ui.define([
 		* ======================================================= */
 
 		onInit() {
-			this._oRouter 			= this.getOwnerComponent().getRouter();
-			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
-			this._oReqModel 		= this.getOwnerComponent().getModel("request");
-			this._oApprovalLogModel	= this.getOwnerComponent().getModel('approval_log')
-			this._oDataModel 		= this.getOwnerComponent().getModel();
-			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
-			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
-			this._oRequestFragments 		= Object.create(null);
-			this._sDeleteTarget 	= null; //doc 1 or doc 2
+			this._oRouter = this.getOwnerComponent().getRouter();
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oReqModel = this.getOwnerComponent().getModel("request");
+			this._oApprovalLogModel = this.getOwnerComponent().getModel('approval_log')
+			this._oDataModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
+			this._oSessionModel = this.getOwnerComponent().getModel("session");
+			this._oRequestFragments = Object.create(null);
+			this._sDeleteTarget = null; //doc 1 or doc 2
 			this._oDeleteAttachmentDialog = null;
 
 			RequestUtility.init(this.getOwnerComponent(), this.getView());
@@ -121,14 +121,14 @@ sap.ui.define([
 			this._oReqModel.setProperty('/view', 'view');
 
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
-			
+
 			await this._loadRequest(sRequestId);
 		},
 
 		async _loadRequest(sReqId) {
 			BusyIndicator.show(0);
 			const oRequestFormPage = this.byId("request_form");
-    		// hard reset
+			// hard reset
 			oRequestFormPage.removeAllContent();
 
 			// destroy ALL fragments
@@ -137,7 +137,7 @@ sap.ui.define([
 					try {
 						const oFrag = await this._oRequestFragments[sFrag];
 						oFrag?.destroy(true);
-					} catch {}
+					} catch { }
 				}
 			}
 			this._oRequestFragments = Object.create(null);
@@ -186,13 +186,13 @@ sap.ui.define([
 		 */
 		async _removeByLocalId(sLocalId) {
 			const oCache = this._oRequestFragments;
-            const oFragment = oCache?.[sLocalId];
-            if (!oFragment) return;
+			const oFragment = oCache?.[sLocalId];
+			if (!oFragment) return;
 
-            const oResolved = await oFragment;
-            this.byId("request_form").removeContent(oResolved);
-            oResolved.destroy(true);
-            delete oCache[sLocalId];
+			const oResolved = await oFragment;
+			this.byId("request_form").removeContent(oResolved);
+			oResolved.destroy(true);
+			delete oCache[sLocalId];
 		},
 
 		async _showItemCreate(bEdit) {
@@ -220,7 +220,7 @@ sap.ui.define([
 		_showHeaderFragment: async function () {
 			this._removeByLocalId("request_header");
 			var oRequestFormPage = this.byId("request_form");
-			
+
 			const sFragmentName = this.getView().getModel("editButtonModel").getProperty("/state") ? "request_header_edit" : "request_header"
 			await this._getFormFragment(sFragmentName).then(function (oVBox) {
 				oRequestFormPage.insertContent(oVBox, 0);
@@ -413,14 +413,14 @@ sap.ui.define([
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
-									if(bApproversDetermined){
+									if (bApproversDetermined) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
 
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
 										await this._loadRequest(sCurrentReqId);
-									}else{
+									} else {
 										throw new Error(Utility.getText("msg_failed_no_approver"))
 									}
 
@@ -512,7 +512,7 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
-			Common.init(this.getOwnerComponent(), this.getView());		
+			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
@@ -603,72 +603,72 @@ sap.ui.define([
 			const sReqSubId = String(oReqItem.REQUEST_SUB_ID || "").trim();
 
 			this._oReqModel.setProperty("/req_item", {
-				req_subid				: sReqSubId,
-				claim_type				: oReqItem.CLAIM_TYPE_ID || "",
-				claim_type_item_id		: oReqItem.CLAIM_TYPE_ITEM_ID || "",
-				no_of_days				: oReqItem.NO_OF_DAYS ?? 0,
-				purpose					: oReqItem.PURPOSE || "",
-				est_amount				: oReqItem.EST_AMOUNT ?? 0,
-				dependent				: oReqItem.DEPENDENT || "",
-				remark					: oReqItem.REMARK || "",
-				course					: oReqItem.COURSE_TITLE || "",
-				sport_rep				: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
-				club_membership			: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
-				doc1_filename			: oReqItem.ATTACHMENT1 || "",
-				cat_purpose				: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
-				doc2_filename			: oReqItem.ATTACHMENT2 || "",
-				start_date				: oReqItem.START_DATE || "",
-				end_date				: oReqItem.END_DATE || "",
-				start_time				: oReqItem.START_TIME || "",
-				end_time				: oReqItem.END_TIME || "",
-				vehicle_ownership		: oReqItem.VEHICLE_OWNERSHIP_ID || "",
-				room_type				: oReqItem.ROOM_TYPE || "",
-				country					: oReqItem.COUNTRY || "",
-				location				: oReqItem.LOCATION || "",
-				area					: oReqItem.AREA || "",
-				no_of_family_member		: oReqItem.FAMILY_COUNT || 0,
-				type_of_vehicle			: oReqItem.VEHICLE_TYPE || "",
-				fare_type				: oReqItem.FARE_TYPE_ID || "",
-				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
-				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE || 0,
-				toll_amt				: oReqItem.TOLL || 0,
-				flight_class			: oReqItem.FLIGHT_CLASS || "",
-				location_type			: oReqItem.LOCATION_TYPE || "",
-				from_state				: oReqItem.FROM_STATE_ID || "",
-				from_location			: oReqItem.FROM_LOCATION || "",
-				from_location_office	: oReqItem.FROM_LOCATION_OFFICE || "",
-				to_state				: oReqItem.TO_STATE_ID || "",
-				to_location				: oReqItem.TO_LOCATION || "",
-				to_location_office		: oReqItem.TO_LOCATION_OFFICE || "",
-				mode_of_transfer		: oReqItem.MODE_OF_TRANSFER || "",
-				tarikh_pindah			: oReqItem.TRANSFER_DATE || "",
-				sss						: oReqItem.REGION || "",
-				marriage_cat			: oReqItem.MARRIAGE_CATEGORY || "",
-				cube_eligible			: oReqItem.METER_CUBE_ENTITLED | 0,
-				departure_time			: oReqItem.DEPARTURE_TIME || "",
-				arrival_time			: oReqItem.ARRIVAL_TIME || "",
-				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
-				cash_advance			: oReqItem.CASH_ADVANCE || false,
-				trip_start_date			: oReqItem.TRIP_START_DATE || null,
-				trip_end_date			: oReqItem.TRIP_END_DATE || null,
-				trip_start_time			: oReqItem.TRIP_START_TIME || null,
-				trip_end_time			: oReqItem.TRIP_END_TIME || null,
-				travel_day				: oReqItem.TRAVEL_DURATION_DAY || 0,
-				travel_hour				: oReqItem.TRAVEL_DURATION_HOUR || 0,
-				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
-				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
-				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
-				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
-				currency_code		    : oReqItem.CURRENCY_CODE || null,
-				currency_rate			: oReqItem.CURRENCY_RATE || 0,
-				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
+				req_subid: sReqSubId,
+				claim_type: oReqItem.CLAIM_TYPE_ID || "",
+				claim_type_item_id: oReqItem.CLAIM_TYPE_ITEM_ID || "",
+				no_of_days: oReqItem.NO_OF_DAYS ?? 0,
+				purpose: oReqItem.PURPOSE || "",
+				est_amount: oReqItem.EST_AMOUNT ?? 0,
+				dependent: oReqItem.DEPENDENT || "",
+				remark: oReqItem.REMARK || "",
+				course: oReqItem.COURSE_TITLE || "",
+				sport_rep: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
+				club_membership: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
+				doc1_filename: oReqItem.ATTACHMENT1 || "",
+				cat_purpose: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
+				doc2_filename: oReqItem.ATTACHMENT2 || "",
+				start_date: oReqItem.START_DATE || "",
+				end_date: oReqItem.END_DATE || "",
+				start_time: oReqItem.START_TIME || "",
+				end_time: oReqItem.END_TIME || "",
+				vehicle_ownership: oReqItem.VEHICLE_OWNERSHIP_ID || "",
+				room_type: oReqItem.ROOM_TYPE || "",
+				country: oReqItem.COUNTRY || "",
+				location: oReqItem.LOCATION || "",
+				area: oReqItem.AREA || "",
+				no_of_family_member: oReqItem.FAMILY_COUNT || 0,
+				type_of_vehicle: oReqItem.VEHICLE_TYPE || "",
+				fare_type: oReqItem.FARE_TYPE_ID || "",
+				vehicle_class: oReqItem.VEHICLE_CLASS || "",
+				kilometer: oReqItem.KILOMETER || 0,
+				rate_per_kilometer: oReqItem.RATE || 0,
+				toll_amt: oReqItem.TOLL || 0,
+				flight_class: oReqItem.FLIGHT_CLASS || "",
+				location_type: oReqItem.LOCATION_TYPE || "",
+				from_state: oReqItem.FROM_STATE_ID || "",
+				from_location: oReqItem.FROM_LOCATION || "",
+				from_location_office: oReqItem.FROM_LOCATION_OFFICE || "",
+				to_state: oReqItem.TO_STATE_ID || "",
+				to_location: oReqItem.TO_LOCATION || "",
+				to_location_office: oReqItem.TO_LOCATION_OFFICE || "",
+				mode_of_transfer: oReqItem.MODE_OF_TRANSFER || "",
+				tarikh_pindah: oReqItem.TRANSFER_DATE || "",
+				sss: oReqItem.REGION || "",
+				marriage_cat: oReqItem.MARRIAGE_CATEGORY || "",
+				cube_eligible: oReqItem.METER_CUBE_ENTITLED | 0,
+				departure_time: oReqItem.DEPARTURE_TIME || "",
+				arrival_time: oReqItem.ARRIVAL_TIME || "",
+				est_no_participant: oReqItem.EST_NO_PARTICIPANT ?? 0,
+				cash_advance: oReqItem.CASH_ADVANCE || false,
+				trip_start_date: oReqItem.TRIP_START_DATE || null,
+				trip_end_date: oReqItem.TRIP_END_DATE || null,
+				trip_start_time: oReqItem.TRIP_START_TIME || null,
+				trip_end_time: oReqItem.TRIP_END_TIME || null,
+				travel_day: oReqItem.TRAVEL_DURATION_DAY || 0,
+				travel_hour: oReqItem.TRAVEL_DURATION_HOUR || 0,
+				entitled_breakfast: oReqItem.ENTITLED_BREAKFAST || 0,
+				entitled_lunch: oReqItem.ENTITLED_LUNCH || 0,
+				entitled_dinner: oReqItem.ENTITLED_DINNER || 0,
+				daily_allowance: oReqItem.DAILY_ALLOWANCE || 0,
+				currency_code: oReqItem.CURRENCY_CODE || null,
+				currency_rate: oReqItem.CURRENCY_RATE || 0,
+				type_of_professional_body: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				// extra hidden field value
-				cost_center				: oReqItem.COST_CENTER || "",
-				gl_account				: oReqItem.GL_ACCOUNT || "",
-				material_code			: oReqItem.MATERIAL_CODE || "",
-				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
+				cost_center: oReqItem.COST_CENTER || "",
+				gl_account: oReqItem.GL_ACCOUNT || "",
+				material_code: oReqItem.MATERIAL_CODE || "",
+				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
+				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -720,15 +720,15 @@ sap.ui.define([
 				var sMode = this._oReqModel.getProperty("/view");
 
 				const aMapped = aParticipants.map((p) => ({
-					PARTICIPANTS_ID			: p.PARTICIPANTS_ID 	?? "",
-					PARTICIPANT_NAME		: p.NAME 				?? "",
-					PARTICIPANT_COST_CENTER	: p.CC 					?? "",
-					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? "",
-					_EDIT_MODE				: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
+					PARTICIPANTS_ID: p.PARTICIPANTS_ID ?? "",
+					PARTICIPANT_NAME: p.NAME ?? "",
+					PARTICIPANT_COST_CENTER: p.CC ?? "",
+					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? "",
+					_EDIT_MODE: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
 				}));
 
-				if ( this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
-					( sMode != this._oConstant.PARMode.VIEW && sMode != this._oConstant.PARMode.APPROVER) ) {
+				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP &&
+					(sMode != this._oConstant.PARMode.VIEW && sMode != this._oConstant.PARMode.APPROVER)) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
@@ -769,14 +769,14 @@ sap.ui.define([
 		onConfirmDeleteAttachment: async function () {
 			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
 
-			Attachment.init(this.getOwnerComponent(),this.getView());
+			Attachment.init(this.getOwnerComponent(), this.getView());
 			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, sDeleteTarget);
-				this._oDeleteAttachmentDialog.close();
+			this._oDeleteAttachmentDialog.close();
 		},
 
 		onCancelDeleteAttachment: function () {
 			this._oDeleteAttachmentDialog.close();
-			},
+		},
 
 		/* =========================================================
 		* Item List: Delete Row(s)
@@ -1141,9 +1141,14 @@ sap.ui.define([
 			}
 
 			// Eligibility Checking
-			var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
-			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
-			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
+			try {
+				var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
+				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
+				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
+			} catch (error) {
+				bCanProceed = false;
+				MessageBox.error(Utility.getText("msg_failed_generic_error", [error]));
+			};
 
 			if (!bCanProceed) return;
 
@@ -1161,90 +1166,105 @@ sap.ui.define([
 				}
 
 				if (oReqItem.cash_advance) {
-					oReqItem.cost_center 	= this._oConstant.CashAdvanceInfo.COST_CENTER;
-					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
+					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					oReqItem.cost_center 	= (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-") 
+					oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
 						? oReqHeader.altcostcenter
 						: oReqHeader.costcenter;
-					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
-					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
+					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
-					var dtDeparture_date 	= new Date(oReqItem.departure_time).toISOString() || null;
-					var dtArrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
+					var dtDeparture_date = new Date(oReqItem.departure_time).toISOString() || null;
+					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
 				}
 
 				let oPayload = {
-					EMP_ID: 					  sEmpId,
-					REQUEST_ID:                   sReqId,
-					CLAIM_TYPE_ID:                oData.req_header.claimtype,
-					CLAIM_TYPE_ITEM_ID:           oReqItem.claim_type_item_id,
-					PURPOSE:                      oReqItem.purpose || null,
-					REMARK:                       oReqItem.remark || null,
-					COURSE_TITLE:                 oReqItem.course || null,
-					DEPENDENT:                    JSON.stringify(oReqItem.dependent),
-					KWSP_SPORTS_REPRESENTATION:   oReqItem.sport_rep || null,
-					MOBILE_CATEGORY_PURPOSE_ID:   oReqItem.cat_purpose || null,
-					VEHICLE_OWNERSHIP_ID:         oReqItem.vehicle_ownership || null,
-					VEHICLE_TYPE:                 oReqItem.type_of_vehicle || null,
-					VEHICLE_CLASS_ID:             oReqItem.vehicle_class || null,
-					ROOM_TYPE:                    oReqItem.room_type || null,
-					FLIGHT_CLASS:                 oReqItem.flight_class || null,
-					FARE_TYPE_ID:                 oReqItem.fare_type || null,
-					MARRIAGE_CATEGORY:            oReqItem.marriage_cat || null,
-					MODE_OF_TRANSFER:             oReqItem.mode_of_transfer || null,
-					COUNTRY:                      oReqItem.country || null,
-					REGION:                       oReqItem.sss || null,
-					AREA:                         oReqItem.area || null,
-					LOCATION:                     oReqItem.location || null,
-					LOCATION_TYPE:                oReqItem.location_type || null,
-					FROM_STATE_ID:                oReqItem.from_state || null,
-					FROM_LOCATION:                oReqItem.from_location || null,
-					FROM_LOCATION_OFFICE:         oReqItem.from_location_office || null,
-					TO_STATE_ID:                  oReqItem.to_state || null,
-					TO_LOCATION:                  oReqItem.to_location || null,
-					TO_LOCATION_OFFICE:           oReqItem.to_location_office || null,
-					COST_CENTER:                  oReqItem.COST_CENTER || null,
-					GL_ACCOUNT:                   oReqItem.gl_account || null,
-					MATERIAL_CODE:                oReqItem.material_code || null,
-					START_DATE:                   oReqItem.start_date || null,
-					END_DATE:                     oReqItem.end_date || null,
-					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
-					START_TIME:                   oReqItem.start_time || null, 
-					END_TIME:                     oReqItem.end_time || null,
-					DEPARTURE_TIME:               dtDeparture_date || null,
-					ARRIVAL_TIME:                 dtArrival_date || null,
-					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
-					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
-					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
-					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
-					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
-					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
-					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
-					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
-					DECLARE_CLUB_MEMBERSHIP:      !!oReqItem.club_membership,
-					CASH_ADVANCE:                 !!oReqItem.cash_advance,
-					TRAVEL_DURATION_DAY:          parseFloat(oReqItem.travel_day || 0), 
-                    TRAVEL_DURATION_HOUR:         parseFloat(oReqItem.travel_hour || 0),
-                    TRIP_START_DATE:              oReqItem.trip_start_date || null,
-                    TRIP_END_DATE:                oReqItem.trip_end_date || null,
-                    TRIP_START_TIME:              oReqItem.trip_start_time || null,
-                    TRIP_END_TIME:                oReqItem.trip_end_time || null,
-                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
-                    ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
-                    ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
-                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
-					CURRENCY_CODE:				  oReqItem.currency_code || null,
-					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
-					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null
+					EMP_ID: sEmpId,
+					REQUEST_ID: sReqId,
+					CLAIM_TYPE_ID: oData.req_header.claimtype,
+					CLAIM_TYPE_ITEM_ID: oReqItem.claim_type_item_id,
+					PURPOSE: oReqItem.purpose || null,
+					REMARK: oReqItem.remark || null,
+					COURSE_TITLE: oReqItem.course || null,
+					DEPENDENT: JSON.stringify(oReqItem.dependent),
+					KWSP_SPORTS_REPRESENTATION: oReqItem.sport_rep || null,
+					MOBILE_CATEGORY_PURPOSE_ID: oReqItem.cat_purpose || null,
+					VEHICLE_OWNERSHIP_ID: oReqItem.vehicle_ownership || null,
+					VEHICLE_TYPE: oReqItem.type_of_vehicle || null,
+					VEHICLE_CLASS_ID: oReqItem.vehicle_class || null,
+					ROOM_TYPE: oReqItem.room_type || null,
+					FLIGHT_CLASS: oReqItem.flight_class || null,
+					FARE_TYPE_ID: oReqItem.fare_type || null,
+					MARRIAGE_CATEGORY: oReqItem.marriage_cat || null,
+					MODE_OF_TRANSFER: oReqItem.mode_of_transfer || null,
+					COUNTRY: oReqItem.country || null,
+					REGION: oReqItem.sss || null,
+					AREA: oReqItem.area || null,
+					LOCATION: oReqItem.location || null,
+					LOCATION_TYPE: oReqItem.location_type || null,
+					FROM_STATE_ID: oReqItem.from_state || null,
+					FROM_LOCATION: oReqItem.from_location || null,
+					FROM_LOCATION_OFFICE: oReqItem.from_location_office || null,
+					TO_STATE_ID: oReqItem.to_state || null,
+					TO_LOCATION: oReqItem.to_location || null,
+					TO_LOCATION_OFFICE: oReqItem.to_location_office || null,
+					COST_CENTER: oReqItem.COST_CENTER || null,
+					GL_ACCOUNT: oReqItem.gl_account || null,
+					MATERIAL_CODE: oReqItem.material_code || null,
+					START_DATE: oReqItem.start_date || null,
+					END_DATE: oReqItem.end_date || null,
+					TRANSFER_DATE: oReqItem.tarikh_pindah || null,
+					START_TIME: oReqItem.start_time || null,
+					END_TIME: oReqItem.end_time || null,
+					DEPARTURE_TIME: dtDeparture_date || null,
+					ARRIVAL_TIME: dtArrival_date || null,
+					NO_OF_DAYS: parseInt(oReqItem.no_of_days, 10) || 0,
+					FAMILY_COUNT: parseInt(oReqItem.no_of_family_member, 10) || 0,
+					EST_NO_PARTICIPANT: parseInt(oReqItem.est_no_participant, 10) || 1,
+					EST_AMOUNT: parseFloat(oReqItem.est_amount || 0),
+					KILOMETER: parseFloat(oReqItem.kilometer || 0),
+					RATE_PER_KM: oReqItem.rate_per_kilometer_id || null,
+					TOLL: parseFloat(oReqItem.toll_amt || 0),
+					METER_CUBE_ENTITLED: parseFloat(oReqItem.cube_eligible || 0),
+					METER_CUBE_ACTUAL: parseFloat(oReqItem.meter_cube_actual || 0),
+					DECLARE_CLUB_MEMBERSHIP: !!oReqItem.club_membership,
+					CASH_ADVANCE: !!oReqItem.cash_advance,
+					TRAVEL_DURATION_DAY: parseFloat(oReqItem.travel_day || 0),
+					TRAVEL_DURATION_HOUR: parseFloat(oReqItem.travel_hour || 0),
+					TRIP_START_DATE: oReqItem.trip_start_date || null,
+					TRIP_END_DATE: oReqItem.trip_end_date || null,
+					TRIP_START_TIME: oReqItem.trip_start_time || null,
+					TRIP_END_TIME: oReqItem.trip_end_time || null,
+					DAILY_ALLOWANCE: parseInt(oReqItem.daily_allowance, 10) || 0,
+					ENTITLED_BREAKFAST: parseInt(oReqItem.entitled_breakfast, 10) || 0,
+					ENTITLED_LUNCH: parseInt(oReqItem.entitled_lunch, 10) || 0,
+					ENTITLED_DINNER: parseInt(oReqItem.entitled_dinner, 10) || 0,
+					CURRENCY_CODE: oReqItem.currency_code || null,
+					CURRENCY_RATE: parseFloat(oReqItem.currency_rate || null),
+					TYPE_OF_PROFESSIONAL_BODY: oReqItem.type_of_professional_body || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
+				// Delete attachment from SF during save when previously marked for deletion
+				const oldDoc1Filename = oReqItem.doc1_filename;
+				if (this._mDeleteAttachments?.doc1 && oldDoc1Filename) {
+					const sSFID = oldDoc1Filename.split(" - ")[0];
+					await Attachment.deleteAttachment(sSFID);
+					oPayload.ATTACHMENT1 = null;
+				}
+
+				const oldDoc2Filename = oReqItem.doc2_filename;
+				if (this._mDeleteAttachments?.doc2 && oldDoc2Filename) {
+					const sSFID = oldDoc2Filename.split(" - ")[0];
+					await Attachment.deleteAttachment(sSFID);
+					oPayload.ATTACHMENT2 = null;
+				}
+				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
 
@@ -1264,7 +1284,7 @@ sap.ui.define([
 					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
 					await this._oDataModel.submitBatch("itemSave");
 
-					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID)
 
 				} else {
 					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1279,7 +1299,7 @@ sap.ui.define([
 					}
 
 					// upload Child MDF
-					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID, sAttachment2_SFID)
 
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
@@ -1320,12 +1340,12 @@ sap.ui.define([
 			}
 		},
 
-		onImportChange1( oEvent ) {
+		onImportChange1(oEvent) {
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc1 = oEvent.getParameters("files").files[0];
 		},
 
-		onImportChange2( oEvent ) {
+		onImportChange2(oEvent) {
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc2 = oEvent.getParameters("files").files[0];
 		},
@@ -1419,7 +1439,7 @@ sap.ui.define([
 			// Convert to JS Date
 			const dEventDate = new Date(dTripDate);
 			const dToday = new Date();
-			dToday.setHours(0,0,0,0);
+			dToday.setHours(0, 0, 0, 0);
 
 			// ✅ If event date is before today → backdated
 			if (dEventDate < dToday) {
@@ -1777,23 +1797,23 @@ sap.ui.define([
 				// Build Header Row
 				// -------------------------------
 				const headerRow = {
-					"Request ID"				: header.reqid,
-					"Purpose"					: header.purpose,
-					"Trip Start Date"			: header.tripstartdate,
-					"Trip End Date"				: header.tripenddate,
-					"Event Start Date"			: header.eventstartdate,
-					"Event End Date"			: header.eventenddate,
-					"Location"					: header.location || "",
-					"Individual/Group"			: header.grptype || "",
-					"Type of Transportation"	: header.transport || "",
-					"Request Status"			: header.reqstatus,
-					"Cost Center"				: header.costcenter,
-					"Alternate Cost Center"		: header.altcostcenter || "-",
-					"Cash Advance (MYR)"		: header.cashadvamt,
-					"Pre Approval Amount (MYR)"	: header.reqamt,
-					"Request Type"				: header.reqtype,
-					"Comment"					: header.comment || "",
-					"Claim Type"				: header.claimtype,
+					"Request ID": header.reqid,
+					"Purpose": header.purpose,
+					"Trip Start Date": header.tripstartdate,
+					"Trip End Date": header.tripenddate,
+					"Event Start Date": header.eventstartdate,
+					"Event End Date": header.eventenddate,
+					"Location": header.location || "",
+					"Individual/Group": header.grptype || "",
+					"Type of Transportation": header.transport || "",
+					"Request Status": header.reqstatus,
+					"Cost Center": header.costcenter,
+					"Alternate Cost Center": header.altcostcenter || "-",
+					"Cash Advance (MYR)": header.cashadvamt,
+					"Pre Approval Amount (MYR)": header.reqamt,
+					"Request Type": header.reqtype,
+					"Comment": header.comment || "",
+					"Claim Type": header.claimtype,
 				};
 
 				const headerColumns = [
@@ -2007,9 +2027,9 @@ sap.ui.define([
 					[
 						new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE ),
-						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE ),
-						new Filter("CATEGORY_ID", FilterOperator.NE, "X" )			// filter out claim type item that is not required for PAR
+						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE),
+						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
+						new Filter("CATEGORY_ID", FilterOperator.NE, "X")			// filter out claim type item that is not required for PAR
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
@@ -2047,11 +2067,11 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
-		calculateNumberOfHours () {
+		calculateNumberOfHours() {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
 			const sDeparture = oItem.departure_time;
-			const sArrival   = oItem.arrival_time;
+			const sArrival = oItem.arrival_time;
 
 			if (!sDeparture || !sArrival) {
 				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
@@ -2059,7 +2079,7 @@ sap.ui.define([
 			}
 
 			const dDeparture = new Date(sDeparture);
-			const dArrival   = new Date(sArrival);
+			const dArrival = new Date(sArrival);
 
 			if (isNaN(dDeparture.getTime()) || isNaN(dArrival.getTime())) {
 				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
@@ -2080,7 +2100,7 @@ sap.ui.define([
 			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
 		},
 
-		getFromLocationByState () {
+		getFromLocationByState() {
 			var oSelect = this.byId("item_from_location_office");
 
 			var oBinding = oSelect.getBinding("items");
@@ -2097,7 +2117,7 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 		},
 
-		getToLocationByState () {
+		getToLocationByState() {
 			var oSelect = this.byId("item_to_location_office");
 
 			var oBinding = oSelect.getBinding("items");
@@ -2117,12 +2137,12 @@ sap.ui.define([
 		async getRatePerKM() {
 			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
 			var dTripStartDate = this._oReqModel.getProperty("/req_header/tripstartdate");
-			
+
 			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
-			new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType),
-			new Filter("START_DATE", FilterOperator.LE, dTripStartDate),
-			new Filter("END_DATE", FilterOperator.GE, dTripStartDate),
-			new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE,)
+				new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType),
+				new Filter("START_DATE", FilterOperator.LE, dTripStartDate),
+				new Filter("END_DATE", FilterOperator.GE, dTripStartDate),
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE,)
 			]);
 
 			try {
@@ -2239,7 +2259,7 @@ sap.ui.define([
 
 						case Constants.ClaimTypeItem.FLIGHT_L:
 							this._removeBusinessClass();
-					
+
 						default:
 							break;
 					}
@@ -2252,7 +2272,7 @@ sap.ui.define([
 			}
 		},
 
-		_setAllControlsVisible (bVisible) {
+		_setAllControlsVisible(bVisible) {
 			const aControlIds = [
 				"i_no_of_days_1",
 				"i_purpose",
@@ -2351,17 +2371,17 @@ sap.ui.define([
 			oType.setProperty("/mode", "APPROVE_REQ");
 
 			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
-			if (sClaimType=== this._oConstant.ClaimType.GALAKAN) {
+			if (sClaimType === this._oConstant.ClaimType.GALAKAN) {
 				try {
 					// 2. Specific Variable Name: Prevents conflicts with other dialogs
 					if (!this._oDisclaimerGalakanDialog) {
-						
+
 						this._oDisclaimerGalakanDialog = await Fragment.load({
 							id: this.getView().getId(),
 							name: "claima.fragment.disclaimergalakan",
 							controller: this
 						});
-						
+
 						this.getView().addDependent(this._oDisclaimerGalakanDialog);
 					}
 					this._oDisclaimerGalakanDialog.open();
@@ -2379,7 +2399,7 @@ sap.ui.define([
 		// Shared event handler for Confirm buttons
 		onDisclaimerDialogConfirm: function (oEvent) {
 			var oDialog = oEvent.getSource().getParent();
-			
+
 			oDialog.close();
 
 			if (oDialog === this._oDisclaimerGalakanDialog) {
@@ -2542,9 +2562,9 @@ sap.ui.define([
 				);
 				*/
 				const sSubmissionType2 = sReqId.substring(0, 3);
-				try{
+				try {
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				}catch (oError){
+				} catch (oError) {
 
 				}
 
@@ -2606,9 +2626,9 @@ sap.ui.define([
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
 				*/
 				const sSubmissionType2 = sReqId.substring(0, 3);
-				try{
+				try {
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				}catch (oError){
+				} catch (oError) {
 
 				}
 
@@ -2653,18 +2673,18 @@ sap.ui.define([
 		 * @public
 		 */
 		onFilterToState: function () {
-            const oReqItem  = this._oReqModel.getProperty("/req_item");
+			const oReqItem = this._oReqModel.getProperty("/req_item");
 
-            var sFromState  = oReqItem.from_state;
+			var sFromState = oReqItem.from_state;
 			var sFromOffice = oReqItem.from_location_office;
 
-			const oSelect   = this.byId("item_to_state");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-								new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
-                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
-                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
-                            ]: [];
+			const oSelect = this.byId("item_to_state");
+			const oBinding = oSelect.getBinding("items");
+			const aFilters = oSelect ? [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
+			] : [];
 			oBinding.filter(aFilters);
 		},
 
@@ -2673,20 +2693,20 @@ sap.ui.define([
 		 * @public
 		 */
 		onFilterToOffice: function () {
-            const oReqItem  = this._oReqModel.getProperty("/req_item");
+			const oReqItem = this._oReqModel.getProperty("/req_item");
 
-            var sFromState  = oReqItem.from_state;
+			var sFromState = oReqItem.from_state;
 			var sFromOffice = oReqItem.from_location_office;
-            var sToState    = oReqItem.to_state;
+			var sToState = oReqItem.to_state;
 
-			const oSelect   = this.byId("item_to_location_office");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-								new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
-                                new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
-                                new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
-                                new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
-                            ]: [];
+			const oSelect = this.byId("item_to_location_office");
+			const oBinding = oSelect.getBinding("items");
+			const aFilters = oSelect ? [
+				new Filter(Constants.EntitiesFields.STATUS, FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE),
+				new Filter(Constants.EntitiesFields.FROM_STATE_ID, FilterOperator.EQ, sFromState),
+				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice),
+				new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
+			] : [];
 			oBinding.filter(aFilters);
 		},
 
@@ -2790,7 +2810,7 @@ sap.ui.define([
 					var iNumberOfNight = iDiffDays - 1;
 					this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
 					break;
-			
+
 				default:
 					break;
 			}
@@ -2800,11 +2820,11 @@ sap.ui.define([
 		},
 
 		_removeBusinessClass: function () {
-			const oSelect   = this.byId("item_flight_class");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-                                new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
-                            ]: [];
+			const oSelect = this.byId("item_flight_class");
+			const oBinding = oSelect.getBinding("items");
+			const aFilters = oSelect ? [
+				new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
+			] : [];
 			oBinding.filter(aFilters);
 		}
 
