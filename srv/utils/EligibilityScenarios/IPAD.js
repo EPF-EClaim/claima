@@ -15,8 +15,8 @@ module.exports = {
         var oRule = aRules[0];
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData, oDateRange.iItemFreq);
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq);
         return oPayload;
     },
     /**
@@ -109,7 +109,7 @@ module.exports = {
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-        return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
             sCurrentItemcondition,
             tx);
     },
@@ -141,7 +141,7 @@ module.exports = {
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
                 if (!oRule) {
-                    oPayload.CheckFields[iIndex].result = false;
+                    throw new Error("No Eligible Rules found for this user.");
                 } else {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)

@@ -15,6 +15,7 @@ sap.ui.define([
 		init:function (oOwnerComponent,oView){
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
+			this._mDeleteAttachments = {}; // Clear delete tracking
 		},
 
 
@@ -215,13 +216,8 @@ sap.ui.define([
 
 				switch (sSubmissionType) {
 					case Constants.SubmissionTypePrefix.CLAIM:
+						this._mDeleteAttachments[sTarget] = true; //Track delete intent (processed on Save)
 						var oItemModel = this._oView.getModel("claimitem_input");
-						var sAttachmentId = oItemModel.getProperty(`/claim_item/attachment_file_${sTarget}`);
-
-						if (sAttachmentId) {
-							var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
-							await this.deleteAttachment(sAttachment1_SFID);
-						}
 
 						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileName`, null);
 						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileContent`, null);
@@ -229,14 +225,10 @@ sap.ui.define([
 						break;
 						
 					case Constants.SubmissionTypePrefix.REQUEST:
+						this._mDeleteAttachments[sTarget] = true; //Track delete intent (processed on Save)
 						var oItemModel = this._oOwnerComponent.getModel("request");
-						var sAttachmentId = oItemModel.getProperty(`/req_item/${sTarget}_filename`);
 
-						if (sAttachmentId) {
-							var sAttachment1_SFID = sAttachmentId.split(" - ")[0];
-							await this.deleteAttachment(sAttachment1_SFID);
-						}
-
+						//Clear file content from UI model
 						oItemModel.setProperty(`/req_item/${sTarget}`, null);
 						oItemModel.setProperty(`/req_item/${sTarget}_filename`, null);
 

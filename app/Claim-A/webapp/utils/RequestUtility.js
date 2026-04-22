@@ -22,10 +22,45 @@ sap.ui.define([
          * Initialize the RequestUtility
          * @public
          */
-        init: function(oOwnerComponent, oView) {
+        init: function(oOwnerComponent, oView, oDialogFragment) {
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
+            this._oDialogFragment = oDialogFragment;
 		},
+
+        /**
+         * trigger when selecting claim type
+         * @public
+         * @param {object} oEvent 
+         * @param {boolean} bEligibleForElaunTukar 
+         */
+        onSelectClaimType: async function (oEvent, bEligibleForElaunTukar) {
+			var oSelectControl = oEvent.getSource();
+    		var sClaimTypeId = oSelectControl.getSelectedKey();
+
+            if (sClaimTypeId === Constants.ClaimType.ELAUN_TUKAR) {
+                var sMarriageCategory = await Utility.getMarriageCategoryBasedOnStatus();
+                if (sMarriageCategory === Constants.MarriageCategory.SINGLE) {
+                    Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
+                    Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                }
+
+                switch (bEligibleForElaunTukar) {
+                    case Constants.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY:
+                        Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
+                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                        Fragment.byId("request", "req_transferfamilynowlater").setEnabled(false);
+                        Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey(Constants.TravelWithFamilyNowOrLater.NOW);
+                        break;
+                    
+                    case Constants.ElaunTukarStatus.ON_GOING:
+                        MessageBox.warning(Utility.getText("req_d_w_on_going_elaun_tukar", []));
+                        break;
+                }
+            };
+
+            this.determineDefaultCostCenter(oEvent);
+        },
 
 		/**
          * Determine the default cost center for specific claim type
@@ -34,9 +69,10 @@ sap.ui.define([
         determineDefaultCostCenter: async function (oEvent) {
 			var oSelectControl = oEvent.getSource();
     		var sClaimTypeId = oSelectControl.getSelectedKey();
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+            const oDataModel    = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
 
-            const oFunction = this._oDataModel.bindContext("/checkDefaultCostCenter(...)");
+            const oFunction = oDataModel.bindContext("/checkDefaultCostCenter(...)");
             oFunction.setParameter("sClaimTypeId", sClaimTypeId);
           
             try {
@@ -98,6 +134,7 @@ sap.ui.define([
          */
         populateAllocatedAmount: async function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
+            const oReqHeader = oReqModel.getProperty("/req_header");
             const oReqItem  = oReqModel.getProperty("/req_item");
             const aReqPart  = oReqModel.getProperty("/participant");
             let fCalculatedAllocatedAmount;
@@ -107,15 +144,12 @@ sap.ui.define([
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
                     case Constants.ClaimTypeItem.LODG_O:
-                    case Constants.ClaimTypeItem.LOD_TUKAR:
-                        // calculate lodging amount
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
                         }
                         break;
 
-                    case Constants.ClaimTypeItem.MKN_TUKAR:
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
                         this._calculateTravelDuration();
@@ -125,6 +159,26 @@ sap.ui.define([
                         }
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
+                        }
+                        break;
+
+                    case Constants.ClaimTypeItem.LOD_TUKAR:
+                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
+                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
+                        }
+                        break;
+                    
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
+                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
+                        this._calculateTravelDuration();
+                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
+                        if (!!oReqItem.currency_rate) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
+                        }
+                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
                         }
                         break;
                     
@@ -447,18 +501,71 @@ sap.ui.define([
             }
         },
 
-        checkElaunTukarEligibility: async function () {
-            const oDataModel    = this._oOwnerComponent.getModel();
-            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+	    getDependentFilter: function (){
+			var oReqModel = this._oOwnerComponent.getModel("request");
+            var oReqHeader = oReqModel.getProperty('/req_header');
+            var sEmpId = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
 
-            try {
-                await oFunction.execute();
-                const oContext  = oFunction.getBoundContext();
-                return oContext.getObject().value;  // true or false
+            var oEmpFilter = new Filter(
+                Constants.EntitiesFields.EMP_ID,
+                FilterOperator.EQ,
+                sEmpId
+            );
 
-            } catch (oError) {
-                return false;
+            switch(oReqHeader.claimtype){
+                case Constants.ClaimType.WILAYAH_ASAL:
+                   
+                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.EIGHTEEN);
+                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.NINETEEN);
+                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.TWENTY_FIVE);
+
+                    d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+
+                    var oSpouseFilter = new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.SPOUSE);
+
+                    var oChildBelow18 = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+                        ],
+                        and: true
+                    })
+
+                    var oChildStudying = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+                            new Filter(Constants.EntitiesFields.STUDENT, FilterOperator.EQ, true),
+                        ],
+                        and: true
+                    })
+
+                    var oDependentRuleFilter = new Filter({
+                        filters: [
+                            oSpouseFilter,
+                            oChildBelow18,
+                            oChildStudying
+                        ],
+                        and: false
+                    })
+
+                    return new Filter({
+                        filters: [
+                            oEmpFilter,
+                            oDependentRuleFilter
+                        ],
+                        and: true
+                    })
+                default:
+                    return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
             }
+
 		}
         
     };
