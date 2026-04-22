@@ -885,7 +885,7 @@ module.exports = (srv) => {
             return result;
 
         } catch (error) {
-            return req.error(500, `Fail processing records: ${error.message}`);
+            return req.error(400, `Fail processing records: ${error.message}`);
         }
     });
     /**
