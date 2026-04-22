@@ -483,7 +483,7 @@
                                 </form:FormElement>
 
                                 <!-- Location -->
-                                <form:FormElement label="{i18n>req_i_location}"
+                                <form:FormElement label="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} ? ${i18n>req_i_destination} : ${i18n>req_i_location} }"
                                             visible="false"
                                             id="i_location"  >
                                     <form:fields>
@@ -875,7 +875,7 @@
                                 </form:FormElement>
 
                                 <!-- Semenanjung/Sarawak/Sabah -->
-                                <form:FormElement label="{i18n>req_i_sss}"
+                                <form:FormElement label="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} ? ${i18n>req_i_location} : ${i18n>req_i_sss} }"
                                             visible="false"
                                             id="i_sss" >
                                     <form:fields>
@@ -1138,7 +1138,8 @@
                                 </form:FormElement>
 
                                 <!-- Currency Rate -->
-                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate}"
+                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate} {i18n>icon_info}"
+                                            tooltip="{i18n>tooltip_currency_rate}"
                                             visible="false"
                                             id="i_currency_rate"  >
                                     <form:fields>

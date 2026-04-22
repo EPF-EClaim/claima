@@ -1307,7 +1307,7 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: function (oLevel, iFieldNumber) {
+		onView_Claim_Attachment: function (oLevel, iFieldNumber, oEvent) {
 			// Write to Success Factors API
 			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
@@ -1319,6 +1319,11 @@ sap.ui.define([
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
 				var iAttachmentId = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_" + iFieldNumber));
+				Attachment.onViewDocument(this, iAttachmentId);
+			}
+			else if (oLevel == 'child_t') {
+				// get child attachment from claim table
+				var iAttachmentId = this._determineAttachmentId(oEvent.getSource().getText());
 				Attachment.onViewDocument(this, iAttachmentId);
 			}
 			BusyIndicator.hide();
@@ -2291,11 +2296,9 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
-				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.DLM_NEGARA) {
-				this._filterFareType();
-			}
-
+			//for tambang excluding flight
+			this._filterFareType();
+			
 			//set disclaimer field as false if they are visible for validation
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
@@ -2481,11 +2484,7 @@ sap.ui.define([
 			}
 
 			//for tambang excluding flight
-			if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.KURSUS_DLM_NEGARA ||
-				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.DLM_NEGARA
-			) {
 				this._filterFareType();
-			}
 
 			// if claim type item is lodging, retrieve eligible amount
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
