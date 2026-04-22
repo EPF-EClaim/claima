@@ -2036,10 +2036,9 @@ sap.ui.define([
 		},
 
 		_getDependent() {
-			const sEmpId = this._oSessionModel.getProperty("/userId");
-			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
-			]);
+			//const sEmpId = this._oSessionModel.getProperty("/userId");
+			const aFilters = RequestUtility.getDependentFilter();
+			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, aFilters);
 
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
