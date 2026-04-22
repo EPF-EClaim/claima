@@ -2010,12 +2010,12 @@ module.exports = (srv) => {
             const sRecordStatus = record.STATUS_ID || record.STATUS; 
 
             // 2a. Priority Check: Is there an on-going application?
-            if (sRecordStatus === Constant.Status.DRAFT || sRecordStatus === Constant.Status.PENDING_APPROVAL) {
+            if (sRecordStatus === Constant.Status.DRAFT) {
                 return Constant.ElaunTukarStatus.ON_GOING; // "03"
             }
 
             // 2b. Secondary Check: Evaluate previously approved records
-            if (sRecordStatus === Constant.Status.APPROVED) {
+            if (sRecordStatus === Constant.Status.APPROVED || sRecordStatus === Constant.Status.PENDING_APPROVAL) {
                 if (record.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
                     record.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                     

@@ -2744,7 +2744,7 @@ sap.ui.define([
 
 			let aFilters = [];
 
-			if (sClaimTypeItem.endsWith("_L")) {
+			if (sClaimTypeItem.endsWith("_L") || sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
 				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.NE, Constants.Region.OVERSEA));
 
 			} else if (sClaimTypeItem.endsWith("_O")) {
