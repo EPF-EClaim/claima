@@ -1307,7 +1307,7 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: function (oLevel, iFieldNumber) {
+		onView_Claim_Attachment: function (oLevel, iFieldNumber, oEvent) {
 			// Write to Success Factors API
 			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
@@ -1319,6 +1319,11 @@ sap.ui.define([
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
 				var iAttachmentId = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_" + iFieldNumber));
+				Attachment.onViewDocument(this, iAttachmentId);
+			}
+			else if (oLevel == 'child_t') {
+				// get child attachment from claim table
+				var iAttachmentId = this._determineAttachmentId(oEvent.getSource().getText());
 				Attachment.onViewDocument(this, iAttachmentId);
 			}
 			BusyIndicator.hide();
