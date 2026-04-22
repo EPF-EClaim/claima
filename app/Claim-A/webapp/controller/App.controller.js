@@ -325,6 +325,9 @@ sap.ui.define([
 						"event_end_date": null,
 						"alternate_cost_center": null,
 						"cash_advance": null,
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 						"descr": {
 							"alternate_cost_center": null
 						}
@@ -815,7 +818,10 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/requestform/trip_end_date"));
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
-			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));			
+			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
+			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
+			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
