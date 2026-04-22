@@ -907,7 +907,7 @@ module.exports = (srv) => {
                     // values to filter
                     REQUEST_ID: sRequestId,
                     CASH_ADVANCE: true,
-                    SEND_TO_SF: true,
+                    SEND_TO_SF: true
                 })
                 .orderBy([{ ref: [Constant.EntitiesFields.REQUEST_SUB_ID], sort: 'asc' }]);
 
