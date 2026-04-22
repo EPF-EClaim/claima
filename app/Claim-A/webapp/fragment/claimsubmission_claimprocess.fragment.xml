@@ -134,7 +134,7 @@
                             sorter: [{ path: 'REQUEST_ID' }],
                             parameters: {
                                 $expand: 'COSTCENTER',
-                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC'
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC,TRANSFER_MODE_ID,TRAVEL_ALONE_FAMILY,TRAVEL_FAMILY_NOW_LATER'
                             }
                         }"
                         editable="{= !${claimsubmission_input>/req_emailapprove} }"

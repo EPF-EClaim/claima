@@ -283,6 +283,7 @@ sap.ui.define([
 				"updated_date": null,
 				"inserted_date": null,
 				"medical_insurance_entitlement": null,
+				"marital_category": null,
 				"descr": {
 					"cc": null,
 					"dep": null,
@@ -314,6 +315,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"marriage_category": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -324,6 +326,9 @@ sap.ui.define([
 						"event_end_date": null,
 						"alternate_cost_center": null,
 						"cash_advance": null,
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 						"descr": {
 							"alternate_cost_center": null
 						}
@@ -397,6 +402,8 @@ sap.ui.define([
 					"reject_reason_date": null,
 					"reject_reason_time": null,
 					"mode_of_transfer": null,
+					"travel_alone_family": null,
+					"travel_family_now_later": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -409,7 +416,9 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
-						"mode_of_transfer": null
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 					}
 				},
 				"claim_items": [],
@@ -653,6 +662,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
+				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
+				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
+			
 			}
 			else {
 				// reset request form values
@@ -796,6 +809,7 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
+			oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -810,6 +824,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
+			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
+			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
@@ -894,7 +911,10 @@ sap.ui.define([
 				}.bind(this)
 			);
 		},
-
+		onTravelAloneFamilySelect: function(oEvent){
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
+		},
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -997,7 +1017,10 @@ sap.ui.define([
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
+				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
+				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
+				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
