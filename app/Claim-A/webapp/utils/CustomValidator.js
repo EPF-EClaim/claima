@@ -71,7 +71,6 @@ sap.ui.define([
                         var iNumberOfFamily = oReqModel.getProperty("/req_item/no_of_family_member");
                         var iNumberOfTraveler = oReqModel.getProperty("/req_item/no_of_traveler");
 
-                        if (!iNumberOfTraveler) return;
                         if (iNumberOfTraveler > iNumberOfFamily) {
                             var oInput = this._oView.byId("input_no_of_traveler");
 				            oInput.setValueState("Error");   

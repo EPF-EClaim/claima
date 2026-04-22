@@ -504,7 +504,7 @@ sap.ui.define([
 	    getDependentFilter: function (){
 			var oReqModel = this._oOwnerComponent.getModel("request");
             var oReqHeader = oReqModel.getProperty('/req_header');
-            var sEmpId = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
+            var sEmpId = oReqHeader.empid;
 
             var oEmpFilter = new Filter(
                 Constants.EntitiesFields.EMP_ID,
