@@ -268,6 +268,29 @@ module.exports = {
                     );
                 }
                 break;
+
+            // TAMBANG - return true if selected transport class matches user's personal grade
+            case Constant.ClaimTypeItem.TAMBANG:
+                iIndex = oPayload.CheckFields.findIndex((field) =>
+                    field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
+
+                if (iIndex == -1) return;
+
+                // if no rule matches the selected transport class, return false
+                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
+                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
+                } else {
+                    oPayload.CheckFields[iIndex].result = true;
+                }
+                break;
         }
     }
 };
