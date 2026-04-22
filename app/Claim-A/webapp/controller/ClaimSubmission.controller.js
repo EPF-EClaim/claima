@@ -3040,6 +3040,10 @@ sap.ui.define([
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips")
 				});
 
+				// to save the attachment inside SF
+				var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
+                var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+
 				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
 					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
@@ -3050,8 +3054,8 @@ sap.ui.define([
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
-								oInputModel.getProperty("/claim_item/attachment_file_1"),
-								oInputModel.getProperty("/claim_item/attachment_file_2")
+								sAttachment1_SFID,
+								sAttachment2_SFID
 							)
 						}
 
@@ -3086,16 +3090,24 @@ sap.ui.define([
 							oCtx.setProperty(key, value);
 						}
 						// Delete attachment from SF during save when previously marked for deletion
-						if (Attachment._mDeleteAttachments?.doc1 && oAttachmentFile1) {
-							const sSFID = oAttachmentFile1.split(" - ")[0];
-							await Attachment.deleteAttachment(sSFID);
-							oCtx.setProperty("ATTACHMENT_FILE_1", null);
-						}
+						if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
+							var oldFile1 = oInputModel.getProperty("/claim_item/attachment_file_1_deleted");
 
-						if (Attachment._mDeleteAttachments?.doc2 && oAttachmentFile2) {
-							const sSFID = oAttachmentFile2.split(" - ")[0];
-							await Attachment.deleteAttachment(sSFID);
-							oCtx.setProperty("ATTACHMENT_FILE_2", null);
+							if (oldFile1) {
+								const sSFID = oldFile1.split(" - ")[0];
+								await Attachment.deleteAttachment(sSFID);
+								oCtx.setProperty("ATTACHMENT_FILE_1", null);
+							}
+						}
+						// Delete Attachment 2 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
+							var oldFile2 = oInputModel.getProperty("/claim_item/attachment_file_2_deleted");
+
+							if (oldFile2) {
+								const sSFID = oldFile2.split(" - ")[0];
+								await Attachment.deleteAttachment(sSFID);
+								oCtx.setProperty("ATTACHMENT_FILE_2", null);
+							}
 						}
 
 						await oModel.submitBatch("$auto");
@@ -3108,8 +3120,8 @@ sap.ui.define([
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
-								oInputModel.getProperty("/claim_item/attachment_file_1"),
-								oInputModel.getProperty("/claim_item/attachment_file_2")
+								sAttachment1_SFID,
+								sAttachment2_SFID
 							)
 						}
 						Attachment._mDeleteAttachments = {};
