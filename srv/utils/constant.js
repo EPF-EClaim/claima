@@ -227,7 +227,8 @@ const Constant = {
     },
     PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year"
+        "YEAR": "Year",
+        "SERVICE": "Service"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",

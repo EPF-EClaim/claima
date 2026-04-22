@@ -24,7 +24,8 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE",
-            "GALAKAN": "GALAKAN"
+            "GALAKAN": "GALAKAN",
+            "WILAYAH_ASAL": "WILAYAH_ASAL"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -544,6 +545,11 @@ sap.ui.define([
             "ALLOWED_FAMILY_NOW_ONLY": "02",
             "ON_GOING": "03",
             "NOT_ALLOWED": "04"
+        },
+        "Age": {
+            "EIGHTEEN": "18",
+            "NINETEEN": "19",
+            "TWENTY_FIVE": "25"
         }
         
     }
