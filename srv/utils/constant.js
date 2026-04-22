@@ -159,6 +159,7 @@ const Constant = {
         "CLAIM_SUB_ID": "CLAIM_SUB_ID",
         "REQUESTID": "REQUEST_ID",
         "REQUEST_SUB_ID": "REQUEST_SUB_ID",
+        "EST_AMOUNT": "EST_AMOUNT",
         "CLAIM_STATUS": "STATUS_ID",
         "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",

@@ -651,8 +651,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
-				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+
+				// populate cash advance amount based on items
+				oInputModel.setProperty("/claimtype/requestform/cash_advance", Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
 			}
 			else {
 				// reset request form values

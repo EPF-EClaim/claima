@@ -888,6 +888,46 @@ module.exports = (srv) => {
             return req.error(500, `Fail processing records: ${error.message}`);
         }
     });
+
+    /**
+     * Get cash advance amount from request, based on request items that have cash advance amount and has been sent to SF 
+     * @public
+     * @param {String} sRequestId - ID of pre-approval request
+     * @return {Decimal} - return total cash advance amount from records returned
+     */
+    srv.on('getApprovedCashAdvanceAmount', async (req) => {
+        const { sRequestId } = req.data;
+        if ( !sRequestId ) return 0.00;
+
+        try {
+            const aRequestItems = await SELECT
+                .from(Constant.Entities.ZREQUEST_ITEM)
+                .columns(Constant.EntitiesFields.EST_AMOUNT)
+                .where({
+                    // values to filter
+                    REQUEST_ID: sRequestId,
+                    CASH_ADVANCE: true,
+                    SEND_TO_SF: true,
+                })
+                .orderBy([{ ref: [Constant.EntitiesFields.REQUEST_SUB_ID], sort: 'asc' }]);
+
+            if (aRequestItems.length > 0) {
+                var dResult = 0.00;
+
+                for ( var iIndex = 0; iIndex < aRequestItems.length; iIndex++ ) {
+                    dResult += parseFloat(aRequestItems[iIndex].EST_AMOUNT);
+                }
+                return dResult;
+            }
+            else {
+                return 0.00;
+            }
+
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Request Item table.');
+        }
+    });
+
     /**
     * Perdiem calculation for Claim Submission
     * @public

@@ -353,6 +353,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   EligibilityCheck(aPayload: many EligibilityPayload)                               returns many Response;
 
+    function getApprovedCashAdvanceAmount(
+        sRequestId: String
+    ) returns Decimal(16, 2);
+    
     type perdiem {
         amount          : Decimal(15, 2);
         daily_allowance : Decimal(15, 2);
