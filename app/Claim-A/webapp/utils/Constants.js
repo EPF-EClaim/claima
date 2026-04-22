@@ -524,6 +524,11 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "Age": {
+            "EIGHTEEN": "18",
+            "NINETEEN": "19",
+            "TWENTY_FIVE": "25"
         }
     }
 });

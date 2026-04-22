@@ -475,9 +475,9 @@ sap.ui.define([
             switch(oReqHeader.claimtype){
                 case Constants.ClaimType.WILAYAH_ASAL:
                    
-                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
-                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
-                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.EIGHTEEN);
+                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.NINETEEN);
+                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.TWENTY_FIVE);
 
                     d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
                     d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
