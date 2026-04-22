@@ -111,7 +111,7 @@
                     <Select
                         id="select_claiminput_travel_alone_family"
                         forceSelection="false"
-                        selectedKey="{= ${claimsubmission_input>/claimtype/marriage_category} === ${constant>/MarriageCategory/SINGLE} ? ${constant>/TravelType/ALONE} : ${claimsubmission_input>/claim_header/travel_alone_family} }"
+                        selectedKey="{= ${claimsubmission_input>/claimtype/marriage_category} === ${constant>/MarriageCategory/SINGLE} ? ${constant>/TravelAloneOrWithFamily/ALONE} : ${claimsubmission_input>/claim_header/travel_alone_family} }"
                         items="{
                             path: 'employee>/ZTRAVEL_TYPE',
                             sorter: [
