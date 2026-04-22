@@ -913,7 +913,7 @@ module.exports = (srv) => {
             return result;
 
         } catch (error) {
-            req.error(500, `Fail processing records: ${error.message}`, req);
+            return req.error(500, `Fail processing records: ${error.message}`);
         }
     });
     /**
