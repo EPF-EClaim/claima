@@ -59,6 +59,7 @@ sap.ui.define([
 				const oData = aCtx[0].getObject();
 				
 				const oHeaderMap = {
+					empid:		    oData.EMP_ID || "",
 					purpose:        oData.OBJECTIVE_PURPOSE || "",
 					reqid:          oData.REQUEST_ID || "",
 					tripstartdate:  oData.TRIP_START_DATE || "",

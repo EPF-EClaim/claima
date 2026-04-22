@@ -2043,7 +2043,8 @@ sap.ui.define([
 		},
 
 		_getDependent() {
-			const sEmpId = this._oSessionModel.getProperty("/userId");
+			const sEmpId = this._oReqModel.getProperty("/req_header/empid");
+
 			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, [
 				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
 			]);
