@@ -24,7 +24,8 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE",
-            "GALAKAN": "GALAKAN"
+            "GALAKAN": "GALAKAN",
+            "WILAYAH_ASAL": "WILAYAH_ASAL"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -284,7 +285,9 @@ sap.ui.define([
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
             "TRANSFER_MODE_ID": "TRANSFER_MODE_ID",
             "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
-            "REQUEST_TYPE": "REQUEST_TYPE"
+            "REQUEST_TYPE": "REQUEST_TYPE",
+            "WITH_FAMILY": "2",
+            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -523,6 +526,33 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "TravelAloneOrWithFamily": {
+            "ALONE": "1",
+            "WITH_FAMILY": "2"
+        },
+        "TravelWithFamilyNowOrLater": {
+            "NOW": "1",
+            "LATER": "2"
+        }, 
+        "PARSpecialFieldVisibilityForElaunTukar": {
+            "NumberOfFamilyMember": "i_no_of_family_member",
+            "NumberOfTraveller": "i_no_of_traveler"
+        },
+        "RequestFormFields": {
+            "NO_OF_TRAVELERS": "input_no_of_traveler"
+        },
+        "ElaunTukarStatus": {
+            "ALLOWED_CREATION": "01",
+            "ALLOWED_FAMILY_NOW_ONLY": "02",
+            "ON_GOING": "03",
+            "NOT_ALLOWED": "04"
+        },
+        "Age": {
+            "EIGHTEEN": "18",
+            "NINETEEN": "19",
+            "TWENTY_FIVE": "25"
         }
+        
     }
 });

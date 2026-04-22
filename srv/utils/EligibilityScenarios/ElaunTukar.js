@@ -16,6 +16,9 @@ module.exports = {
         var oRule, aFilteredRules;
         // to extract the key values from oPayload
         var aPayload = this._parsePayload(oPayload);
+        var iHistFreq = 0;
+        var iAllowedFreq = 0;
+        var fTotalAmount = 0;
 
         //to find the matching eligibility rule for PINDAH as this may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PINDAH) {
@@ -27,6 +30,13 @@ module.exports = {
                     rule.MARRIAGE_CATEGORY == sMarriageCategory);
             });
             oRule = aFilteredRules[0];
+
+            var oDateRange = await this._getDateRange(oPayload, tx);
+            iAllowedFreq = oDateRange.iItemFreq;
+
+            iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+            var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+            fTotalAmount = oCurrentRecordItemData.fTotalAmount;
         }
         else {
             oRule = aRules[0];
@@ -36,12 +46,7 @@ module.exports = {
             throw new Error("No Eligibility Rules Found");
         };
 
-        var oDateRange = await this._getDateRange(oPayload, tx);
-
-        var iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-
-        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, oDateRange.iItemFreq, oCurrentRecordItemData.fTotalAmount);
+        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq, fTotalAmount);
         return oPayload;
 
     },

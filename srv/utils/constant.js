@@ -314,6 +314,12 @@ const Constant = {
     },
     ConstantId: {
         ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
+    },
+    ElaunTukarStatus: {
+        ALLOWED_CREATION: "01",
+        ALLOWED_FAMILY_NOW_ONLY: "02",
+        ON_GOING: "03",
+        NOT_ALLOWED: "04"
     }
 
 };

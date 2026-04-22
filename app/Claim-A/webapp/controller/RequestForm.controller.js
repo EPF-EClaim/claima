@@ -603,66 +603,67 @@ sap.ui.define([
 			const sReqSubId = String(oReqItem.REQUEST_SUB_ID || "").trim();
 
 			this._oReqModel.setProperty("/req_item", {
-				req_subid: sReqSubId,
-				claim_type: oReqItem.CLAIM_TYPE_ID || "",
-				claim_type_item_id: oReqItem.CLAIM_TYPE_ITEM_ID || "",
-				no_of_days: oReqItem.NO_OF_DAYS ?? 0,
-				purpose: oReqItem.PURPOSE || "",
-				est_amount: oReqItem.EST_AMOUNT ?? 0,
-				dependent: oReqItem.DEPENDENT || "",
-				remark: oReqItem.REMARK || "",
-				course: oReqItem.COURSE_TITLE || "",
-				sport_rep: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
-				club_membership: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
-				doc1_filename: oReqItem.ATTACHMENT1 || "",
-				cat_purpose: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
-				doc2_filename: oReqItem.ATTACHMENT2 || "",
-				start_date: oReqItem.START_DATE || "",
-				end_date: oReqItem.END_DATE || "",
-				start_time: oReqItem.START_TIME || "",
-				end_time: oReqItem.END_TIME || "",
-				vehicle_ownership: oReqItem.VEHICLE_OWNERSHIP_ID || "",
-				room_type: oReqItem.ROOM_TYPE || "",
-				country: oReqItem.COUNTRY || "",
-				location: oReqItem.LOCATION || "",
-				area: oReqItem.AREA || "",
-				no_of_family_member: oReqItem.FAMILY_COUNT || 0,
-				type_of_vehicle: oReqItem.VEHICLE_TYPE || "",
-				fare_type: oReqItem.FARE_TYPE_ID || "",
-				vehicle_class: oReqItem.VEHICLE_CLASS || "",
-				kilometer: oReqItem.KILOMETER || 0,
-				rate_per_kilometer: oReqItem.RATE || 0,
-				toll_amt: oReqItem.TOLL || 0,
-				flight_class: oReqItem.FLIGHT_CLASS || "",
-				location_type: oReqItem.LOCATION_TYPE || "",
-				from_state: oReqItem.FROM_STATE_ID || "",
-				from_location: oReqItem.FROM_LOCATION || "",
-				from_location_office: oReqItem.FROM_LOCATION_OFFICE || "",
-				to_state: oReqItem.TO_STATE_ID || "",
-				to_location: oReqItem.TO_LOCATION || "",
-				to_location_office: oReqItem.TO_LOCATION_OFFICE || "",
-				mode_of_transfer: oReqItem.MODE_OF_TRANSFER || "",
-				tarikh_pindah: oReqItem.TRANSFER_DATE || "",
-				sss: oReqItem.REGION || "",
-				marriage_cat: oReqItem.MARRIAGE_CATEGORY || "",
-				cube_eligible: oReqItem.METER_CUBE_ENTITLED | 0,
-				departure_time: oReqItem.DEPARTURE_TIME || "",
-				arrival_time: oReqItem.ARRIVAL_TIME || "",
-				est_no_participant: oReqItem.EST_NO_PARTICIPANT ?? 0,
-				cash_advance: oReqItem.CASH_ADVANCE || false,
-				trip_start_date: oReqItem.TRIP_START_DATE || null,
-				trip_end_date: oReqItem.TRIP_END_DATE || null,
-				trip_start_time: oReqItem.TRIP_START_TIME || null,
-				trip_end_time: oReqItem.TRIP_END_TIME || null,
-				travel_day: oReqItem.TRAVEL_DURATION_DAY || 0,
-				travel_hour: oReqItem.TRAVEL_DURATION_HOUR || 0,
-				entitled_breakfast: oReqItem.ENTITLED_BREAKFAST || 0,
-				entitled_lunch: oReqItem.ENTITLED_LUNCH || 0,
-				entitled_dinner: oReqItem.ENTITLED_DINNER || 0,
-				daily_allowance: oReqItem.DAILY_ALLOWANCE || 0,
-				currency_code: oReqItem.CURRENCY_CODE || null,
-				currency_rate: oReqItem.CURRENCY_RATE || 0,
-				type_of_professional_body: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
+				req_subid				: sReqSubId,
+				claim_type				: oReqItem.CLAIM_TYPE_ID || "",
+				claim_type_item_id		: oReqItem.CLAIM_TYPE_ITEM_ID || "",
+				no_of_days				: oReqItem.NO_OF_DAYS ?? 0,
+				purpose					: oReqItem.PURPOSE || "",
+				est_amount				: oReqItem.EST_AMOUNT ?? 0,
+				dependent				: oReqItem.DEPENDENT || "",
+				remark					: oReqItem.REMARK || "",
+				course					: oReqItem.COURSE_TITLE || "",
+				sport_rep				: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
+				club_membership			: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
+				doc1_filename			: oReqItem.ATTACHMENT1 || "",
+				cat_purpose				: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
+				doc2_filename			: oReqItem.ATTACHMENT2 || "",
+				start_date				: oReqItem.START_DATE || "",
+				end_date				: oReqItem.END_DATE || "",
+				start_time				: oReqItem.START_TIME || "",
+				end_time				: oReqItem.END_TIME || "",
+				vehicle_ownership		: oReqItem.VEHICLE_OWNERSHIP_ID || "",
+				room_type				: oReqItem.ROOM_TYPE || "",
+				country					: oReqItem.COUNTRY || "",
+				location				: oReqItem.LOCATION || "",
+				area					: oReqItem.AREA || "",
+				no_of_family_member		: oReqItem.FAMILY_COUNT || 0,
+				type_of_vehicle			: oReqItem.VEHICLE_TYPE || "",
+				fare_type				: oReqItem.FARE_TYPE_ID || "",
+				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
+				kilometer				: oReqItem.KILOMETER || 0,
+				rate_per_kilometer		: oReqItem.RATE || 0,
+				toll_amt				: oReqItem.TOLL || 0,
+				flight_class			: oReqItem.FLIGHT_CLASS || "",
+				location_type			: oReqItem.LOCATION_TYPE || "",
+				from_state				: oReqItem.FROM_STATE_ID || "",
+				from_location			: oReqItem.FROM_LOCATION || "",
+				from_location_office	: oReqItem.FROM_LOCATION_OFFICE || "",
+				to_state				: oReqItem.TO_STATE_ID || "",
+				to_location				: oReqItem.TO_LOCATION || "",
+				to_location_office		: oReqItem.TO_LOCATION_OFFICE || "",
+				mode_of_transfer		: oReqItem.MODE_OF_TRANSFER || "",
+				tarikh_pindah			: oReqItem.TRANSFER_DATE || "",
+				sss						: oReqItem.REGION || "",
+				marriage_cat			: oReqItem.MARRIAGE_CATEGORY || "",
+				cube_eligible			: oReqItem.METER_CUBE_ENTITLED | 0,
+				departure_time			: oReqItem.DEPARTURE_TIME || "",
+				arrival_time			: oReqItem.ARRIVAL_TIME || "",
+				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
+				cash_advance			: oReqItem.CASH_ADVANCE || false,
+				trip_start_date			: oReqItem.TRIP_START_DATE || null,
+				trip_end_date			: oReqItem.TRIP_END_DATE || null,
+				trip_start_time			: oReqItem.TRIP_START_TIME || null,
+				trip_end_time			: oReqItem.TRIP_END_TIME || null,
+				travel_day				: oReqItem.TRAVEL_DURATION_DAY || 0,
+				travel_hour				: oReqItem.TRAVEL_DURATION_HOUR || 0,
+				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
+				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
+				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
+				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
+				currency_code		    : oReqItem.CURRENCY_CODE || null,
+				currency_rate			: oReqItem.CURRENCY_RATE || 0,
+				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
+				no_of_traveler			: oReqItem.TOTAL_TRAVELLER || null,
 				// extra hidden field value
 				cost_center: oReqItem.COST_CENTER || "",
 				gl_account: oReqItem.GL_ACCOUNT || "",
@@ -1134,6 +1135,11 @@ sap.ui.define([
 				return;
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
+				return;
+			}
+
 			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
 			if (parseFloat(fEstAmount) <= parseFloat(0)) {
 				MessageBox.error(Utility.getText("req_d_w_error_amount"))
@@ -1182,84 +1188,85 @@ sap.ui.define([
 				}
 
 				let oPayload = {
-					EMP_ID: sEmpId,
-					REQUEST_ID: sReqId,
-					CLAIM_TYPE_ID: oData.req_header.claimtype,
-					CLAIM_TYPE_ITEM_ID: oReqItem.claim_type_item_id,
-					PURPOSE: oReqItem.purpose || null,
-					REMARK: oReqItem.remark || null,
-					COURSE_TITLE: oReqItem.course || null,
-					DEPENDENT: JSON.stringify(oReqItem.dependent),
-					KWSP_SPORTS_REPRESENTATION: oReqItem.sport_rep || null,
-					MOBILE_CATEGORY_PURPOSE_ID: oReqItem.cat_purpose || null,
-					VEHICLE_OWNERSHIP_ID: oReqItem.vehicle_ownership || null,
-					VEHICLE_TYPE: oReqItem.type_of_vehicle || null,
-					VEHICLE_CLASS_ID: oReqItem.vehicle_class || null,
-					ROOM_TYPE: oReqItem.room_type || null,
-					FLIGHT_CLASS: oReqItem.flight_class || null,
-					FARE_TYPE_ID: oReqItem.fare_type || null,
-					MARRIAGE_CATEGORY: oReqItem.marriage_cat || null,
-					MODE_OF_TRANSFER: oReqItem.mode_of_transfer || null,
-					COUNTRY: oReqItem.country || null,
-					REGION: oReqItem.sss || null,
-					AREA: oReqItem.area || null,
-					LOCATION: oReqItem.location || null,
-					LOCATION_TYPE: oReqItem.location_type || null,
-					FROM_STATE_ID: oReqItem.from_state || null,
-					FROM_LOCATION: oReqItem.from_location || null,
-					FROM_LOCATION_OFFICE: oReqItem.from_location_office || null,
-					TO_STATE_ID: oReqItem.to_state || null,
-					TO_LOCATION: oReqItem.to_location || null,
-					TO_LOCATION_OFFICE: oReqItem.to_location_office || null,
-					COST_CENTER: oReqItem.COST_CENTER || null,
-					GL_ACCOUNT: oReqItem.gl_account || null,
-					MATERIAL_CODE: oReqItem.material_code || null,
-					START_DATE: oReqItem.start_date || null,
-					END_DATE: oReqItem.end_date || null,
-					TRANSFER_DATE: oReqItem.tarikh_pindah || null,
-					START_TIME: oReqItem.start_time || null,
-					END_TIME: oReqItem.end_time || null,
-					DEPARTURE_TIME: dtDeparture_date || null,
-					ARRIVAL_TIME: dtArrival_date || null,
-					NO_OF_DAYS: parseInt(oReqItem.no_of_days, 10) || 0,
-					FAMILY_COUNT: parseInt(oReqItem.no_of_family_member, 10) || 0,
-					EST_NO_PARTICIPANT: parseInt(oReqItem.est_no_participant, 10) || 1,
-					EST_AMOUNT: parseFloat(oReqItem.est_amount || 0),
-					KILOMETER: parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM: oReqItem.rate_per_kilometer_id || null,
-					TOLL: parseFloat(oReqItem.toll_amt || 0),
-					METER_CUBE_ENTITLED: parseFloat(oReqItem.cube_eligible || 0),
-					METER_CUBE_ACTUAL: parseFloat(oReqItem.meter_cube_actual || 0),
-					DECLARE_CLUB_MEMBERSHIP: !!oReqItem.club_membership,
-					CASH_ADVANCE: !!oReqItem.cash_advance,
-					TRAVEL_DURATION_DAY: parseFloat(oReqItem.travel_day || 0),
-					TRAVEL_DURATION_HOUR: parseFloat(oReqItem.travel_hour || 0),
-					TRIP_START_DATE: oReqItem.trip_start_date || null,
-					TRIP_END_DATE: oReqItem.trip_end_date || null,
-					TRIP_START_TIME: oReqItem.trip_start_time || null,
-					TRIP_END_TIME: oReqItem.trip_end_time || null,
-					DAILY_ALLOWANCE: parseInt(oReqItem.daily_allowance, 10) || 0,
-					ENTITLED_BREAKFAST: parseInt(oReqItem.entitled_breakfast, 10) || 0,
-					ENTITLED_LUNCH: parseInt(oReqItem.entitled_lunch, 10) || 0,
-					ENTITLED_DINNER: parseInt(oReqItem.entitled_dinner, 10) || 0,
-					CURRENCY_CODE: oReqItem.currency_code || null,
-					CURRENCY_RATE: parseFloat(oReqItem.currency_rate || null),
-					TYPE_OF_PROFESSIONAL_BODY: oReqItem.type_of_professional_body || null
+					EMP_ID: 					  sEmpId,
+					REQUEST_ID:                   sReqId,
+					CLAIM_TYPE_ID:                oData.req_header.claimtype,
+					CLAIM_TYPE_ITEM_ID:           oReqItem.claim_type_item_id,
+					PURPOSE:                      oReqItem.purpose || null,
+					REMARK:                       oReqItem.remark || null,
+					COURSE_TITLE:                 oReqItem.course || null,
+					DEPENDENT:                    JSON.stringify(oReqItem.dependent),
+					KWSP_SPORTS_REPRESENTATION:   oReqItem.sport_rep || null,
+					MOBILE_CATEGORY_PURPOSE_ID:   oReqItem.cat_purpose || null,
+					VEHICLE_OWNERSHIP_ID:         oReqItem.vehicle_ownership || null,
+					VEHICLE_TYPE:                 oReqItem.type_of_vehicle || null,
+					VEHICLE_CLASS_ID:             oReqItem.vehicle_class || null,
+					ROOM_TYPE:                    oReqItem.room_type || null,
+					FLIGHT_CLASS:                 oReqItem.flight_class || null,
+					FARE_TYPE_ID:                 oReqItem.fare_type || null,
+					MARRIAGE_CATEGORY:            oReqItem.marriage_cat || null,
+					MODE_OF_TRANSFER:             oReqItem.mode_of_transfer || null,
+					COUNTRY:                      oReqItem.country || null,
+					REGION:                       oReqItem.sss || null,
+					AREA:                         oReqItem.area || null,
+					LOCATION:                     oReqItem.location || null,
+					LOCATION_TYPE:                oReqItem.location_type || null,
+					FROM_STATE_ID:                oReqItem.from_state || null,
+					FROM_LOCATION:                oReqItem.from_location || null,
+					FROM_LOCATION_OFFICE:         oReqItem.from_location_office || null,
+					TO_STATE_ID:                  oReqItem.to_state || null,
+					TO_LOCATION:                  oReqItem.to_location || null,
+					TO_LOCATION_OFFICE:           oReqItem.to_location_office || null,
+					COST_CENTER:                  oReqItem.COST_CENTER || null,
+					GL_ACCOUNT:                   oReqItem.gl_account || null,
+					MATERIAL_CODE:                oReqItem.material_code || null,
+					START_DATE:                   oReqItem.start_date || null,
+					END_DATE:                     oReqItem.end_date || null,
+					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
+					START_TIME:                   oReqItem.start_time || null, 
+					END_TIME:                     oReqItem.end_time || null,
+					DEPARTURE_TIME:               dtDeparture_date || null,
+					ARRIVAL_TIME:                 dtArrival_date || null,
+					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
+					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
+					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
+					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
+					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
+					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
+					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
+					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
+					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
+					DECLARE_CLUB_MEMBERSHIP:      !!oReqItem.club_membership,
+					CASH_ADVANCE:                 !!oReqItem.cash_advance,
+					TRAVEL_DURATION_DAY:          parseFloat(oReqItem.travel_day || 0), 
+                    TRAVEL_DURATION_HOUR:         parseFloat(oReqItem.travel_hour || 0),
+                    TRIP_START_DATE:              oReqItem.trip_start_date || null,
+                    TRIP_END_DATE:                oReqItem.trip_end_date || null,
+                    TRIP_START_TIME:              oReqItem.trip_start_time || null,
+                    TRIP_END_TIME:                oReqItem.trip_end_time || null,
+                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
+                    ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
+                    ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
+                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
+					CURRENCY_CODE:				  oReqItem.currency_code || null,
+					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
+					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
+					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
 				// Delete attachment from SF during save when previously marked for deletion
-				const oldDoc1Filename = oReqItem.doc1_filename;
-				if (this._mDeleteAttachments?.doc1 && oldDoc1Filename) {
+				if (this._oReqModel.getProperty("/req_item/doc1_delete")){
+					var oldDoc1Filename = this._oReqModel.getProperty(`/req_item/doc1_deleted_filename`);
 					const sSFID = oldDoc1Filename.split(" - ")[0];
 					await Attachment.deleteAttachment(sSFID);
 					oPayload.ATTACHMENT1 = null;
 				}
 
-				const oldDoc2Filename = oReqItem.doc2_filename;
-				if (this._mDeleteAttachments?.doc2 && oldDoc2Filename) {
+				if (this._oReqModel.getProperty("/req_item/doc2_delete")){
+					var oldDoc2Filename = this._oReqModel.getProperty(`/req_item/doc2_deleted_filename`);
 					const sSFID = oldDoc2Filename.split(" - ")[0];
 					await Attachment.deleteAttachment(sSFID);
 					oPayload.ATTACHMENT2 = null;
@@ -2056,10 +2063,8 @@ sap.ui.define([
 		},
 
 		_getDependent() {
-			const sEmpId = this._oSessionModel.getProperty("/userId");
-			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
-			]);
+			const aFilters = RequestUtility.getDependentFilter();
+			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, aFilters);
 
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
@@ -2181,12 +2186,12 @@ sap.ui.define([
 
 			if (bReset) {
 				this._resetReqItemInputs();
-			}
 
-			const oLocationTypeSelect = this.byId("item_location_type");
-			if (oLocationTypeSelect) {
-				oLocationTypeSelect.setForceSelection(false);
-				oLocationTypeSelect.setSelectedKey("");
+				const oLocationTypeSelect = this.byId("item_location_type");
+				if (oLocationTypeSelect) {
+					oLocationTypeSelect.setForceSelection(false);
+					oLocationTypeSelect.setSelectedKey("");
+				}
 			}
 
 			BusyIndicator.show(0);
@@ -2242,21 +2247,31 @@ sap.ui.define([
 
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
+						// set visible for the number of family member and traveller when choosing travel with Family Now
+						case Constants.ClaimTypeItem.LOD_TUKAR:
+						case Constants.ClaimTypeItem.MKN_TUKAR:
+							if (_oHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
+								Object.values(Constants.PARSpecialFieldVisibilityForElaunTukar).forEach(id => {
+									const control = this._resolveControl(id, "request");
+									if (control && typeof control.setVisible === "function") {
+										control.setVisible(true);
+									} else {
+										console.warn("Control not found or not visible-capable:", id);
+									}
+								});
+							}
+
+						// populate entitled amount 
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LODG_O:
 						case Constants.ClaimTypeItem.LOD_TUKAR:
-							RequestUtility.populateAllocatedAmount();
-
-						case Constants.ClaimTypeItem.HOTEL_L:
-						case Constants.ClaimTypeItem.HOTEL_O:
-						case Constants.ClaimTypeItem.LODGING_L:
-						case Constants.ClaimTypeItem.LODG_O:
-						case Constants.ClaimTypeItem.LOD_TUKAR:
-							var iNumberOfNight = iDiffDays - 1;
-							this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
+							if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+								RequestUtility.populateAllocatedAmount();
+							}
 							break;
 
+						// remove business class option for FLIGHT_L
 						case Constants.ClaimTypeItem.FLIGHT_L:
 							this._removeBusinessClass();
 
@@ -2664,7 +2679,10 @@ sap.ui.define([
 		 * method to populate allocated amount if applicable
 		 * @public
 		 */
-		onInputAllocatedAmount: function () {
+		onInputAllocatedAmount: function (oEvent) {
+			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.NO_OF_TRAVELERS) {
+				this._onChangeTravelers(oEvent);
+			}
 			RequestUtility.populateAllocatedAmount();
 		},
 
@@ -2742,7 +2760,7 @@ sap.ui.define([
 
 			let aFilters = [];
 
-			if (sClaimTypeItem.endsWith("_L")) {
+			if (sClaimTypeItem.endsWith("_L") || sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
 				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.NE, Constants.Region.OVERSEA));
 
 			} else if (sClaimTypeItem.endsWith("_O")) {
@@ -2801,24 +2819,14 @@ sap.ui.define([
 			var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 
-			switch (_oItem.claim_type_item_id) {
-				case Constants.ClaimTypeItem.HOTEL_L:
-				case Constants.ClaimTypeItem.HOTEL_O:
-				case Constants.ClaimTypeItem.LODGING_L:
-				case Constants.ClaimTypeItem.LODG_O:
-				case Constants.ClaimTypeItem.LOD_TUKAR:
-					var iNumberOfNight = iDiffDays - 1;
-					this._oReqModel.setProperty("/req_item/no_of_days", iNumberOfNight);
-					break;
-
-				default:
-					break;
-			}
-
 			// run populate allocated amount if applicable
 			RequestUtility.populateAllocatedAmount();
 		},
 
+		/**
+		 * remove flight business class option
+		 * @private
+		 */
 		_removeBusinessClass: function () {
 			const oSelect = this.byId("item_flight_class");
 			const oBinding = oSelect.getBinding("items");
@@ -2826,6 +2834,30 @@ sap.ui.define([
 				new Filter(Constants.EntitiesFields.FLIGHT_CLASS_ID, FilterOperator.NE, Constants.FlightClass.BUSINESS)
 			] : [];
 			oBinding.filter(aFilters);
+		},
+
+		_onChangeTravelers: function (oEvent) {
+			var oInput = oEvent.getSource();
+			var iTravelers = parseInt(oInput.getValue(), 10);
+
+			var iMaxFamilyMembers = parseInt(this._oReqModel.getProperty("/req_item/no_of_family_member"), 10);
+
+			oInput.setValueState("None");
+
+			if (isNaN(iTravelers)) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Please enter a valid number.");
+				return;
+			}
+
+			if (iTravelers > iMaxFamilyMembers) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers cannot exceed the number of family members (" + iMaxFamilyMembers + ").");
+				
+			} else if (iTravelers < 1) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers must be at least 1.");
+			}
 		}
 
 	});

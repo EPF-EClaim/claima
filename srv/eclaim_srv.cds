@@ -1320,8 +1320,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
-
     type EligibilityPayload {
         CheckFields   : many EligibilityCheckFields;
         ClaimType     : String;
