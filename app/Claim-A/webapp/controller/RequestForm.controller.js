@@ -1250,8 +1250,6 @@ sap.ui.define([
 				if (this._mDeleteAttachments?.doc1 && oldDoc1Filename) {
 					const sSFID = oldDoc1Filename.split(" - ")[0];
 					await Attachment.deleteAttachment(sSFID);
-
-					// update backend payload
 					oPayload.ATTACHMENT1 = null;
 				}
 
