@@ -951,7 +951,7 @@ module.exports = (srv) => {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
             //calculation for MKN_LOAN and MKN_TUKAR based on dependent
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN || req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_TUKAR) {
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {

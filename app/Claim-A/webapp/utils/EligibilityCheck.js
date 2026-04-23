@@ -2,11 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
+	"sap/ui/core/format/NumberFormat",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
 	ValueState,
+	NumberFormat,
 	Constants,
 	Utility) {
 	"use strict";
@@ -47,7 +49,8 @@ sap.ui.define([
 						"flight_class": "FLIGHT_CLASS_ID",
 						"marriage_cat": "MARRIAGE_CATEGORY",
 						"vehicle_class": "TRANSPORT_CLASS",
-						"no_of_hours": "TRAVEL_HOURS"
+						"no_of_hours": "TRAVEL_HOURS",
+						"no_of_traveler": "TOTAL_TRAVELLER"
 					};
 					break;
 
@@ -185,9 +188,16 @@ sap.ui.define([
 				}
 			});
 
+			var oFloatFormat = NumberFormat.getFloatInstance({
+				minFractionDigits: 2,
+				maxFractionDigits: 2,
+				groupingEnabled: true 
+			});
+
 			aPayload.forEach((oSinglePayload) => {
 				const aCheckFields = oSinglePayload.CheckFields || [];
 				const sEmpId = oSinglePayload.EmpId;
+				const sClaimTypeItem = Constants.ClaimTypeItemDesc[oSinglePayload.ClaimTypeItem] || oSinglePayload.ClaimTypeItem;
 
 				aCheckFields.forEach((oField) => {
 					if (oField.result === true || oField.result === null) {
@@ -195,8 +205,25 @@ sap.ui.define([
 					}
 
 					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+					let sErrorMsg;
 
-					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
+					switch (oField.fieldName) {
+						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
+							sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							break;
+						
+						case Constants.EntitiesFields.TRAVEL_DAYS_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_travel_days", [oField.result, sClaimTypeItem, sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
+							break;
+					
+						default:
+							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
+							break;
+					}
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
