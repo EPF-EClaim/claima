@@ -322,7 +322,18 @@ const Constant = {
         ALLOWED_FAMILY_NOW_ONLY: "02",
         ON_GOING: "03",
         NOT_ALLOWED: "04"
-    }
+    },
+    TravelAloneOrWithFamily: {
+        ALONE: "1",
+        WITH_FAMILY: "2",
+        ALONE_DESC: "ALONE",
+        WITH_FAMILY_DESC: "With Family"
+    },
+    TravelWithFamilyNowOrLater: {
+        NOW: "1",
+        LATER: "2",
+        LATER_DESC: "Travel with Family on Later Date"
+    }, 
 
 };
 
