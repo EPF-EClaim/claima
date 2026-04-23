@@ -133,6 +133,17 @@ sap.ui.define([
         }
         oBindingInfo.parameters.threshold = 300;
 
+        const oView = oValueHelp.getParent();
+        const sClaimTypeItem = oView.getModel("claimitem_input").getProperty("/claim_item/claim_type_item_id");
+
+        if(sClaimTypeItem){
+            oBindingInfo.filters.push(new Filter(
+                "LODGING_CATEGORY",
+                FilterOperator.NE,
+                "NA"
+            ));
+        }
+
         const oPayload = oValueHelp.getPayload();
 
         if(oPayload.filters?.length){
