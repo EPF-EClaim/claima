@@ -426,10 +426,10 @@ sap.ui.define([
                 var oRouter = this.getRouter();
 
                 this._oRolesLoadedPromise.then(function () {
-                    var isAdmin = oRoleModel.getProperty("/isAdminSystem") ||
+                    const isAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
                                   oRoleModel.getProperty("/isAdminCC");
-                    // restriction for manual url change without admin role
+                    // restriction for manual url change to Analytics and Configuration without admin role
                     if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !isAdmin) {
                         oRouter.navTo("Dashboard");
                         MessageBox.error(Utility.getText("msg_unauthorized_role"));
@@ -437,18 +437,6 @@ sap.ui.define([
                         oRouter.navTo(sRoute, {}, true);
                     }
                 }.bind(this));
-                
-                
-                
-                // if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !isAdmin) {
-                //     oEvent.preventDefault();
-                //     MessageBox.error(Utility.getText("msg_unauthorized_role"), {
-                //         onClose: function () {
-                //             oRouter.navTo("Dashboard");
-                //         }.bind(this)
-                //     });  
-                //     return;
-                // } 
             }
 
         });
