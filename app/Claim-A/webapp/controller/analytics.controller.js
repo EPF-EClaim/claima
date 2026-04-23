@@ -6,10 +6,11 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/FilterType"
+  "sap/ui/model/FilterType",
+  "claima/utils/Utility",
 ], function (
   Controller, MessageToast, Fragment, Spreadsheet,
-  JSONModel, Filter, FilterOperator, FilterType
+  JSONModel, Filter, FilterOperator, FilterType, Utility
 ) {
   "use strict";
 
