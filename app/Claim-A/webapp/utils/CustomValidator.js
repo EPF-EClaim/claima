@@ -76,7 +76,7 @@ sap.ui.define([
                             var oInput = this._oView.byId("input_no_of_traveler");
 				            oInput.setValueState("Error");   
 				            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
-                            MessageBox.error(Utility.getText("req_d_e_neg_amount"));
+                            MessageBox.error(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
                             bCanProceed = false;
                         }
                     }
