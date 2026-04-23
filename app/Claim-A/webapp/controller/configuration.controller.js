@@ -4,35 +4,41 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
+    "sap/ui/core/ListItem",
     "sap/m/Dialog",
     "sap/m/VBox",
     "sap/m/DatePicker",
     "sap/m/Button",
     "sap/m/Input",
     "sap/m/Label",
+    "sap/m/Select",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "claima/utils/Utility",
     "claima/utils/ExcelExport",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/export/library"
+    "sap/ui/export/library",
+    "claima/utils/Constants"
 ], (Controller,
     Sorter,
     Filter,
     FilterOperator,
     JSONModel,
+    ListItem,
     Dialog,
     VBox,
     DatePicker,
     Button,
     Input,
     Label,
+    Select,
     MessageToast,
     MessageBox,
     Utility,
     ExcelExport,
     Spreadsheet,
-    exportLibrary
+    exportLibrary,
+    Constants
 ) => {
     "use strict";
 
@@ -167,7 +173,16 @@ sap.ui.define([
                             const oControl = oInputs[i];
 
                             var sFieldName = oControl.getName();
-                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null :
+                                    oControl.getSelectedKey() === 'false' ? false :
+                                        oControl.getSelectedKey() === 'true' ? true :
+                                            oControl.getSelectedKey() === 'none' ? null :
+                                            oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
                             oNewEntry[sFieldName] = sNewInput;
                         }
                         oNewEntry["IsActiveEntity"] = true;
@@ -250,7 +265,7 @@ sap.ui.define([
             const oNewEntry = {};
             const oDetails = this._getDetails(oEvent);
             if (!oDetails) return;
-            var { oVBox, sPath, oSelected, oModel } = oDetails; 
+            var { oVBox, sPath, oSelected, oModel } = oDetails;
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
             const sEntityType = oEntityType.$Type;
@@ -274,8 +289,16 @@ sap.ui.define([
                             const oControl = oInputs[i];
 
                             var sFieldName = oControl.getName();
-                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
-
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null :
+                                    oControl.getSelectedKey() === 'false' ? false :
+                                        oControl.getSelectedKey() === 'true' ? true :
+                                            oControl.getSelectedKey() === 'none' ? null :
+                                                oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
                             oNewEntry[sFieldName] = sNewInput;
                         }
 
@@ -345,15 +368,25 @@ sap.ui.define([
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
                             const sFieldName = oControl.getName();
-                            const sValue = oControl.getValue() === '' ? null : oControl.getValue();
-                            oNewData[sFieldName] = sValue;
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null :
+                                    oControl.getSelectedKey() === 'false' ? false :
+                                        oControl.getSelectedKey() === 'true' ? true :
+                                            oControl.getSelectedKey() === 'none' ? null :
+                                            oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
 
-                            if (sFieldName === 'START_DATE') dStart = new Date(sValue);
-                            if (sFieldName === 'END_DATE') dEnd = new Date(sValue);
+                            oNewData[sFieldName] = sNewInput;
+
+                            if (sFieldName === 'START_DATE') dStart = new Date(sNewInput);
+                            if (sFieldName === 'END_DATE') dEnd = new Date(sNewInput);
 
                             if (
                                 aKeyFields.includes(sFieldName) &&
-                                oOriginalData[sFieldName] !== sValue
+                                oOriginalData[sFieldName] !== sNewInput
                             ) {
                                 bKeyChanged = true;
                             }
@@ -379,7 +412,16 @@ sap.ui.define([
                                     const oControl = oInputs[i];
 
                                     var sFieldName = oControl.getName();
-                                    var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                                    var sNewInput;
+                                    if (oControl.isA("sap.m.Select")) {
+                                        sNewInput = oControl.getSelectedKey() === '' ? null :
+                                            oControl.getSelectedKey() === 'false' ? false :
+                                                oControl.getSelectedKey() === 'true' ? true :
+                                                    oControl.getSelectedKey() === 'none' ? null :
+                                                    oControl.getSelectedKey();
+                                    } else {
+                                        sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                                    }
 
                                     oContext.setProperty(sFieldName, sNewInput);
                                 }
@@ -408,6 +450,7 @@ sap.ui.define([
             for (let i = 1; i < oInputs.length; i += 2) {
                 const oControl = oInputs[i];
                 const sFieldName = oControl.getName();
+                if (oControl.isA("sap.m.Select")) continue;
                 const sValue = oControl.getValue();
                 const bRequired = oDataType?.[sFieldName]?.$Nullable === false;
 
@@ -472,22 +515,62 @@ sap.ui.define([
                     required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
                 }));
                 oVBox.addStyleClass("sapUiSmallMarginTopBottom");
-                const oInput = fieldType?.includes('Edm.Date') ?
-                    new DatePicker({
-                        value: oData[fieldName] || null,
+
+                let oInput;
+
+                if (fieldType?.includes("Edm.Date")) {
+                    oInput =
+                        new DatePicker({
+                            value: oData[fieldName] || null,
+                            name: fieldName,
+                            width: "130%",
+                            displayFormat: "dd MMM yyyy",
+                            valueFormat: "yyyy-MM-dd",
+                            enabled: true
+                        });
+                } else if (fieldName === Constants.EntitiesFields.REQUEST_TYPE) {
+
+                    oInput = new Select({
                         name: fieldName,
                         width: "130%",
-                        displayFormat: "dd MMM yyyy",
-                        valueFormat: "yyyy-MM-dd",
-                        enabled: true
-                    }) :
-                    new Input({
+                        forceSelection: false,
+                        selectedKey: oData[fieldName] || ""
+                    });
+
+                    // Explicitly set the OData model
+                    oInput.setModel(oModel);
+
+                    // Bind items AFTER model is set
+                    oInput.bindItems({
+                        path: Constants.Entities.ZREQUEST_TYPE,
+                        template: new ListItem({
+                            key: "{REQUEST_TYPE_ID}",
+                            text: "{REQUEST_TYPE_DESC}"
+                        }),
+                        templateShareable: false
+                    });
+                } else if (fieldType?.includes("Edm.Boolean")) {
+
+                    oInput = new Select({
+                        name: fieldName,
+                        width: "130%",
+                        selectedKey: oData[fieldName] === true  ? "true"  :
+                                     oData[fieldName] === false ? "false" :
+                                     "",
+                        items: [
+                            new ListItem({ key: "", text: Utility.getText("none") }),
+                            new ListItem({ key: false, text: Utility.getText("no") }),
+                            new ListItem({ key: true, text: Utility.getText("yes") })
+                        ]
+                    });
+                } else {
+                    oInput = new Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
                         width: "130%",
                         enabled: true
                     });
-
+                }
                 oVBox.addItem(oInput);
             });
             return { oVBox, sPath, oSelected, oModel };
@@ -618,7 +701,7 @@ sap.ui.define([
                 { id: "filterClaimGrp", property: "IND_OR_GROUP" },
                 { id: "filterClaimFreq", property: "FREQUENCY" },
                 { id: "filterClaimPeriod", property: "PERIOD" },
-                { id: "filterClaimPeriodUnit", property: "PERIOD UNIT" },          
+                { id: "filterClaimPeriodUnit", property: "PERIOD UNIT" },
                 { id: "filterItemStartDate", property: "START_DATE" },
                 { id: "filterItemEndDate", property: "END_DATE" },
                 { id: "filterItemStatus", property: "STATUS" },
