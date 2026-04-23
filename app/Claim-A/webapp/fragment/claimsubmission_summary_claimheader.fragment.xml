@@ -219,7 +219,7 @@
                 <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
                 <Text
                     id="text_claimsummary_claimheader_mode_of_transfer"
-                    text="{claimsubmission_input>/claim_header/mode_of_transfer}"
+                    text="{claimsubmission_input>/claim_header/descr/mode_of_transfer}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
                 />
 
@@ -227,7 +227,7 @@
                 <Label text="{i18n>label_claiminput_travel_alone_family}" />
                 <Text
                     id="text_claimsummary_claimheader_travel_alone_family"
-                    text="{claimsubmission_input>/claim_header/travel_alone_family}"
+                    text="{claimsubmission_input>/claim_header/descr/travel_alone_family}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
                 />
 
@@ -235,7 +235,7 @@
                 <Label text="{i18n>label_claiminput_travel_family_now_later}" />
                 <Text
                     id="text_claimsummary_claimheader_travel_family_now_later"
-                    text="{claimsubmission_input>/claim_header/travel_family_now_later}"
+                    text="{claimsubmission_input>/claim_header/descr/travel_family_now_later}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
                                 ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY_DESC} }"
                 />
