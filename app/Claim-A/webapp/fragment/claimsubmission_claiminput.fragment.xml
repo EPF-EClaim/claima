@@ -101,10 +101,50 @@
                             ]
                         }"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
-                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"                        
-                        change="onChange_ModeOfTransfer"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }" 
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id}}"                    
                     >
                         <core:Item key="{employee>TRANSFER_MODE_ID}" text="{employee>TRANSFER_MODE_DESC}" />
+                    </Select>
+
+                    <!-- Travel Alone or Family -->
+                    <Label text="{i18n>label_claiminput_travel_alone_family}" />
+                    <Select
+                        id="select_claiminput_travel_alone_family"
+                        forceSelection="false"
+                        selectedKey="{= ${claimsubmission_input>/claimtype/marriage_category} === ${constant>/MarriageCategory/SINGLE} ? ${constant>/TravelAloneOrWithFamily/ALONE} : ${claimsubmission_input>/claim_header/travel_alone_family} }"
+                        items="{
+                            path: 'employee>/ZTRAVEL_TYPE',
+                            sorter: [
+                                { path: 'TRAVEL_TYPE_ID' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
+                        editable="{= ${claimsubmission_input>/claimtype/marriage_category} !== ${constant>/MarriageCategory/SINGLE} &amp;&amp; !${claimsubmission_input>/claimtype/requestform/request_id}}"
+                        change="onTravelAloneFamilySelect"
+                        liveChange="onTravelAloneFamilySelect"                        
+                    >
+                        <core:Item key="{employee>TRAVEL_TYPE_ID}" text="{employee>TRAVEL_TYPE_DESC}" />
+                    </Select>
+
+                    <!-- Travel Family Now Later -->
+                    <Label text="{i18n>label_claiminput_travel_family_now_later}" />
+                    <Select
+                        id="select_claiminput_travel_family_now_later"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claim_header/travel_family_now_later}"
+                        items="{
+                            path: 'employee>/ZFAMILY_TIMING',
+                            sorter: [
+                                { path: 'FAMILY_TIMING_ID' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"
+                        required="{= ${claimsubmission_input>/claim_header/travel_alone_family} ===  ${constant>/EntitiesFields/WITH_FAMILY} }"    
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id}}"                     
+                    >
+                        <core:Item key="{employee>FAMILY_TIMING_ID}" text="{employee>FAMILY_TIMING_DESC}" />
                     </Select>
 
                     <!-- Trip Start Date -->

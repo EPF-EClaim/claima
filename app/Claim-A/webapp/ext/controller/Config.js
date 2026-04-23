@@ -207,7 +207,7 @@ sap.ui.define([
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: !sDisable
+                    enabled: bIsZempCaPayment
                 });
                 /* ================================
                  * BOOLEAN FIELDS
