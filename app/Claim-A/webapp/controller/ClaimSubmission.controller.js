@@ -3695,7 +3695,7 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_FromState: function (oEvent) {
-=			var oSelect = this.byId("select_claimdetails_input_from_location");
+			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (!oBinding || !oInputModel) return;
