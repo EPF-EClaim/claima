@@ -71,7 +71,6 @@ sap.ui.define([
 
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
-			this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 

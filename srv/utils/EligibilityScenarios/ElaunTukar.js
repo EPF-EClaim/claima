@@ -32,13 +32,16 @@ module.exports = {
             var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, tx);
             fTotalAmount = oCurrentRecordItemData.fTotalAmount;
         }
+        else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
+            aFilteredRules = aRules.filter(function (rule) {
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
+            })
+
+            oRule = aFilteredRules[0];
+        }
         else {
             oRule = aRules[0];
         }
-
-        if (!oRule) {
-            throw new Error("No Eligibility Rules Found");
-        };
 
         this._validateClaimItem(aPayload, oRule, oPayload, fTotalAmount);
         return oPayload;
@@ -52,7 +55,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sRegionId, iTotalTraveler, sTravelDaysId;
+        var sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -72,11 +75,17 @@ module.exports = {
                 case Constant.EntitiesFields.TRAVEL_DAYS_ID:
                     sTravelDaysId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.FARE_TYPE_ID:
+                    sFareTypeId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.TRANSPORT_CLASS:
+                    sTransportClass = oPayload.CheckFields[i].value;
+                    break;
 
             }
         }
 
-        return { sRegionId, iTotalTraveler, sTravelDaysId };
+        return { sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass };
     },
 
     /**
@@ -167,7 +176,7 @@ module.exports = {
                     );
                 }
                 break;
-            
+
             // HOTEL - return true if claim amount is less than eligible amount * travel days
             case Constant.ClaimTypeItem.HOTEL_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
@@ -208,7 +217,6 @@ module.exports = {
             case Constant.ClaimTypeItem.TAMBANG:
                 iIndex = oPayload.CheckFields.findIndex((field) =>
                     field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
-
                 if (iIndex == -1) return;
 
                 // if no rule matches the selected transport class, return false
