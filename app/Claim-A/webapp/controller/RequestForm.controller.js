@@ -2120,7 +2120,6 @@ sap.ui.define([
 			];
 
 			oBinding.filter(aFilters);
-
 			this._oReqModel.setProperty("/req_item/from_location_office", null);
 			this._oReqModel.setProperty("/req_item/to_state", null);
 			this._oReqModel.setProperty("/req_item/to_location_office", null);
