@@ -235,7 +235,7 @@ module.exports = {
 
     switch (oPayload.ClaimTypeItem) {
       case Constant.ClaimTypeItem.TELEFON_B:
-        // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
+        // TELEFON_B - return true if there is no historical claims within same Year/Month based on frequency and period
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
           iIndex = oPayload.CheckFields.findIndex(
             (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
@@ -244,12 +244,12 @@ module.exports = {
           if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
             oPayload.CheckFields[iIndex].result = true;
           } else {
-            oPayload.CheckFields[iIndex].result = false;
+            throw new Error("Claim Type has exceeded allowed eligibility frequency.");
           }
         }
 
         iIndex = null;
-        // I-PAD - return true if claim amount is less than eligible amount
+        // TELEFON_B - return true if claim amount is less than eligible amount
         iIndex = oPayload.CheckFields.findIndex(
           (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
         );
