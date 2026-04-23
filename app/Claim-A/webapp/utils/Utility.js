@@ -503,7 +503,8 @@ sap.ui.define([
             const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
                 var oConstants = aContexts.map(context => context.getObject())[0];
-                return oConstants.NUMBER_OF_DAYS;
+                // Return value - 1 to include date selected
+                return oConstants.NUMBER_OF_DAYS - 1;
             });
             
             return iMaxDays;
@@ -517,8 +518,7 @@ sap.ui.define([
                 await oFunction.execute();
                 const oContext = oFunction.getBoundContext();
                 const oResult  = oContext.getObject();
-                // Return value - 1 to include date selected
-                return oResult.value - 1;
+                return oResult.value;
                 
             } catch (oError) {
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
