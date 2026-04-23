@@ -8,6 +8,7 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
+    "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
 	"claima/utils/RequestUtility"
@@ -21,6 +22,7 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	MessageToast,
+    MessageBox,
 	Validator,
 	CustomValidator,
 	RequestUtility) => {
@@ -99,7 +101,11 @@ sap.ui.define([
                 this._initActivityTracking();
                 this.startInactivityTimer();
 
+                this.getRouter().attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
                 this.getRouter().attachRouteMatched(this._onRouteMatched, this);
+                this._oRolesLoadedPromise = new Promise((resolve) => {
+                    this._fnRolesLoaded = resolve;
+                });
             },
 
             _loadCurrentUser: function () {
@@ -158,6 +164,7 @@ sap.ui.define([
                                     oRoleModel.setProperty("/Admin_role", true);
                                 }
                             })
+                            this._fnRolesLoaded();
 
                             sap.m.MessageToast.show('Email: ' + email);
                         } else {
@@ -168,6 +175,7 @@ sap.ui.define([
                         // If you’re still getting 404 here, your approuter may not expose /user-api
                         console.error('currentUser failed:', xhr.status, xhr.responseText);
                         sap.m.MessageToast.show('Failed to load user info (currentUser).');
+                        this._fnRolesLoaded();
                     }.bind(this)
                 });
             },
@@ -410,6 +418,37 @@ sap.ui.define([
                 if (_oSideNavigation && _sKey) {
                     _oSideNavigation.setSelectedKey(_sKey);
                 }
+            },
+
+            _onBeforeRouteMatched: function (oEvent) {
+                var sRoute = oEvent.getParameter("name");
+                var oRoleModel = this.getModel("roleModel");
+                var oRouter = this.getRouter();
+
+                this._oRolesLoadedPromise.then(function () {
+                    var isAdmin = oRoleModel.getProperty("/isAdminSystem") ||
+                                  oRoleModel.getProperty("/isDTDAdmin") ||
+                                  oRoleModel.getProperty("/isAdminCC");
+                    // restriction for manual url change without admin role
+                    if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !isAdmin) {
+                        oRouter.navTo("Dashboard");
+                        MessageBox.error(Utility.getText("msg_unauthorized_role"));
+                    } else {
+                        oRouter.navTo(sRoute, {}, true);
+                    }
+                }.bind(this));
+                
+                
+                
+                // if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !isAdmin) {
+                //     oEvent.preventDefault();
+                //     MessageBox.error(Utility.getText("msg_unauthorized_role"), {
+                //         onClose: function () {
+                //             oRouter.navTo("Dashboard");
+                //         }.bind(this)
+                //     });  
+                //     return;
+                // } 
             }
 
         });
