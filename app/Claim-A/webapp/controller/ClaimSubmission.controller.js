@@ -2862,7 +2862,7 @@ sap.ui.define([
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 			} catch (error) {
 				bCanProceed = false;
-				MessageBox.error(Utility.getText("msg_failed_generic_error", [error]));
+				MessageBox.error(error.message || Utility.getText("msg_failed_generic_error"));
 			};
 
 
