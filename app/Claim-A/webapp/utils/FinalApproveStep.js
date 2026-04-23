@@ -158,7 +158,6 @@ sap.ui.define([
                     EmpID: oRow.EMP_ID,
                     SubmissionDate: oRow.SUBMITTED_DATE,
                     FinalAmounttoReceive: oRow.FINAL_AMOUNT_TO_RECEIVE,
-                    CashAdvanceAmount: oRow.CASH_ADVANCE_AMOUNT,
                     LastModifiedDate: oRow.LAST_MODIFIED_DATE,
                     Amount: oRow.AMOUNT,
                     ReceiptDate: oRow.RECEIPT_DATE,
