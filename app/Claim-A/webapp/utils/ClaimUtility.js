@@ -230,7 +230,7 @@ sap.ui.define([
 					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 				}else{
-					nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 					nDependent = 1;
 
 				}
