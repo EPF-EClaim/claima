@@ -684,8 +684,13 @@ sap.ui.define([
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
-					oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
-					oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.PEM_PINDAH){
+						oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
+						oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					}else{
+						oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+					}
+					
 				});
 		}
 		
