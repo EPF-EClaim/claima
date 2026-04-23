@@ -27,9 +27,8 @@
                 <f:content>
                     <!-- Claim Type -->
                     <Label text="{i18n>label_claimprocess_claimtype}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_claimtype"
-                        forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/type}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE',
@@ -41,17 +40,15 @@
                                 $select: 'COST_CENTER,COST_CENTER_DESC'
                             }
                         }"
-                        change="onSelect_ClaimProcess_ClaimType"
-                        liveChange="onSelect_ClaimProcess_ClaimType"
+                        selectionChange="onSelect_ClaimProcess_ClaimType"
                     >
                         <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Claim Item -->
                     <Label text="{i18n>label_claimprocess_claimitem}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_claimitem"
-                        forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/item}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE_ITEM',
@@ -65,11 +62,10 @@
                             }
                         }"
                         editable="{= ${claimsubmission_input>/claimtype/type} !== null }"
-                        change="onSelect_ClaimProcess_ClaimItem"
-                        liveChange="onSelect_ClaimProcess_ClaimItem"
+                        selectionChange="onSelect_ClaimProcess_ClaimItem"
                     >
                         <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Category -->
                     <Label text="{i18n>label_claimprocess_category}" />
