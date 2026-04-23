@@ -133,7 +133,7 @@ module.exports = {
                 if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
-                    oPayload.CheckFields[iIndex].result = false;
+                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
                 }
 
                 iIndex = null;
