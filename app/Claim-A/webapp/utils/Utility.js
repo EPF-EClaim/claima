@@ -517,7 +517,8 @@ sap.ui.define([
                 await oFunction.execute();
                 const oContext = oFunction.getBoundContext();
                 const oResult  = oContext.getObject();
-                return oResult.value;
+                // Return value - 1 to include date selected
+                return oResult.value - 1;
                 
             } catch (oError) {
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
