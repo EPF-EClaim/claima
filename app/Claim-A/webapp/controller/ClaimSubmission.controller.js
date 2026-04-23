@@ -648,6 +648,10 @@ sap.ui.define([
 					vehicle_class_id: null,
 					attachment_file_1: null,
 					attachment_file_2: null,
+					mode_of_transfer: it.TRANSFER_MODE_DESC,
+					travel_alone_family: it.TRAVEL_TYPE_DESC,
+					travel_family_now_later: it.FAMILY_TIMING_DESC,
+					
 				}));
 
 				// assign description based on claim item index
