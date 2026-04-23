@@ -529,11 +529,14 @@ sap.ui.define([
         },
         "TravelAloneOrWithFamily": {
             "ALONE": "1",
-            "WITH_FAMILY": "2"
+            "WITH_FAMILY": "2",
+            "ALONE_DESC": "ALONE",
+            "WITH_FAMILY_DESC": "With Family"
         },
         "TravelWithFamilyNowOrLater": {
             "NOW": "1",
-            "LATER": "2"
+            "LATER": "2",
+            "LATER_DESC": "Travel with Family on Later Date"
         }, 
         "PARSpecialFieldVisibilityForElaunTukar": {
             "NumberOfFamilyMember": "i_no_of_family_member",
