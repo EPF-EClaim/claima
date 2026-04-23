@@ -268,7 +268,7 @@ sap.ui.define([
                 Constants.ClaimTypeItem.LOD_TUKAR
             ];
 
-            return aNightClaimTypes.includes(oHeader.claim_type_id) &&
+            return aNightClaimTypes.includes(oHeader.claimtype || oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
 
@@ -433,7 +433,7 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion || !fKilometer) return;
+            if (!sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             

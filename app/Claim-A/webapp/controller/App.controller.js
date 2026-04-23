@@ -59,7 +59,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 
-		RequestUtility: RequestUtility,
 		DateUtility: DateUtility,
 
 		onInit: async function () {
@@ -71,7 +70,8 @@ sap.ui.define([
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
 			// declare request utility
-			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
+			this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
@@ -88,6 +88,7 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
+
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -282,6 +283,7 @@ sap.ui.define([
 				"updated_date": null,
 				"inserted_date": null,
 				"medical_insurance_entitlement": null,
+				"marital_category": null,
 				"descr": {
 					"cc": null,
 					"dep": null,
@@ -313,6 +315,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"marriage_category": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -323,6 +326,9 @@ sap.ui.define([
 						"event_end_date": null,
 						"alternate_cost_center": null,
 						"cash_advance": null,
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 						"descr": {
 							"alternate_cost_center": null
 						}
@@ -396,6 +402,8 @@ sap.ui.define([
 					"reject_reason_date": null,
 					"reject_reason_time": null,
 					"mode_of_transfer": null,
+					"travel_alone_family": null,
+					"travel_family_now_later": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -408,7 +416,9 @@ sap.ui.define([
 						"course_code": null,
 						"project_code": null,
 						"attachment_email_approver": null,
-						"mode_of_transfer": null
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
 					}
 				},
 				"claim_items": [],
@@ -652,6 +662,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
+				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
+				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
+			
 			}
 			else {
 				// reset request form values
@@ -795,6 +809,7 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
+			oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -809,6 +824,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
+			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
+			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
@@ -893,7 +911,10 @@ sap.ui.define([
 				}.bind(this)
 			);
 		},
-
+		onTravelAloneFamilySelect: function(oEvent){
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
+		},
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -996,7 +1017,10 @@ sap.ui.define([
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
+				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
+				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
+				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
@@ -1216,40 +1240,40 @@ sap.ui.define([
 
 		onClickMyRequest: async function () {
 
-			if (!this.oDialogFragment) {
-				this.oDialogFragment = await Fragment.load({
+			if (!this._oDialogFragment) {
+				this._oDialogFragment = await Fragment.load({
 					id: "request",
 					name: "claima.fragment.request",
 					controller: this
 				});
 
-				this.getView().addDependent(this.oDialogFragment);
+				this.getView().addDependent(this._oDialogFragment);
 
 				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND", altcostcenter: "" });
-				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
+				this._oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
-				this.oDialogFragment.attachAfterClose(() => {
-					this.oDialogFragment.destroy();
-					this.oDialogFragment = null;
+				this._oDialogFragment.attachAfterClose(() => {
+					this._oDialogFragment.destroy();
+					this._oDialogFragment = null;
 				});
 			}
 
-			this.oDialogFragment.addStyleClass('requestDialog');
-			this.oDialogFragment.open();
+			this._oDialogFragment.addStyleClass('requestDialog');
+			this._oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
-			this._openAndPreload(this.oDialogFragment);
+			this._openAndPreload(this._oDialogFragment);
 		},
 
 		onClickCreateRequest: async function () {
 			BusyIndicator.show(0);
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 
 			try {
 
 				// validate mandatory fields
-				if (!this.getOwnerComponent().getValidator().validate(this.oDialogFragment)) {
+				if (!this.getOwnerComponent().getValidator().validate(this._oDialogFragment)) {
 					MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
@@ -1303,17 +1327,18 @@ sap.ui.define([
 					ATTACHMENT1: oInputData.doc1 || null,
 					ATTACHMENT2: oInputData.doc2 || null,
 					COST_CENTER: sCostCenter || null,
-
 					EVENT_START_DATE: oInputData.eventstartdate || null,
 					EVENT_END_DATE: oInputData.eventenddate || null,
 					TRIP_START_DATE: oInputData.tripstartdate || null,
 					TRIP_END_DATE: oInputData.tripenddate || null,
-
 					STATUS: this._oConstant.ClaimStatus.DRAFT,
 					CLAIM_TYPE_ID: oInputData.claimtype || null,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10),
 					PREAPPROVAL_AMOUNT: parseFloat(0),
-					CASH_ADVANCE: parseFloat(0)
+					CASH_ADVANCE: parseFloat(0),
+					TRANSFER_MODE_ID: oInputData.transfermode || null,
+					TRAVEL_ALONE_FAMILY: oInputData.transferalonefamily || null,
+					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null
 				});
 
 				await oContext.created();
@@ -1321,7 +1346,7 @@ sap.ui.define([
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 
 				if (sNewReqId) {
-					this.oDialogFragment.close();
+					this._oDialogFragment.close();
 
 					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
 
@@ -1341,13 +1366,13 @@ sap.ui.define([
 		},
 
 		onImportChange1(oEvent) {
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc1 = oEvent.getParameters("files").files[0];
 		},
 
 		onImportChange2(oEvent) {
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
 		},
@@ -1426,6 +1451,12 @@ sap.ui.define([
 			}
 		},
 
+		onSelect_ClaimType: function (oEvent) {
+			// declare request utility
+			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
+			RequestUtility.onSelectClaimType(oEvent, this._bEligibleForElaunTukar);
+		},
+
 		_applyReqTypeFilters: function (sUserType) {
 			var oSelect = Fragment.byId("request", "req_reqtype");
 
@@ -1460,9 +1491,12 @@ sap.ui.define([
 			];
 
 			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
-				var bEligibleForElaunTukar = await RequestUtility.checkElaunTukarEligibility();
-				if (!bEligibleForElaunTukar) {
-					aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
+				this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
+				switch (this._bEligibleForElaunTukar) {
+					case this._oConstant.ElaunTukarStatus.NOT_ALLOWED:
+						aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
+						break;
+
 				}
 			}
 
@@ -1520,12 +1554,12 @@ sap.ui.define([
 			} finally {
 				switch (sReqType) {
 					case this._oConstant.RequestType.MOBILE:
-						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
-						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 
@@ -1533,6 +1567,7 @@ sap.ui.define([
 						Fragment.byId("request", "req_grptype").setEnabled(true);
 						break;
 				}
+				this.resetSelection(oEvent);
 				BusyIndicator.hide();
 			}
 		},
@@ -1572,7 +1607,31 @@ sap.ui.define([
 		},
 
 		onClickCancel: function () {
-			this.oDialogFragment.close();
+			this._oDialogFragment.close();
+		},
+
+		/**
+		 * 
+		 */
+		resetSelection: function (oEvent) {
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+			var sId = oEvent.getParameters().id;
+			var sSelect = sId.split("--").pop();
+
+			switch (sSelect) {
+				case "req_reqtype":
+					Fragment.byId("request", "req_claimtype").setSelectedKey("");
+                    Fragment.byId("request", "req_acc").setEditMode("Editable");
+                    oDialogModel.setProperty("/altcostcenter", null);
+                    oDialogModel.setProperty("/altcostcenter_desc", null);
+				case "req_claim_type":
+					Fragment.byId("request", "req_transfermode").setSelectedKey("");
+				case "req_transfermode":
+					Fragment.byId("request", "req_transferalonefamily").setSelectedKey("");
+				case "req_transferalonefamily":
+					Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey("");
+					break;
+			}
 		},
 
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1751,8 +1810,8 @@ sap.ui.define([
 			var iMaxDays = await Utility.getModeofTransferMaxDays(oEvent.getSource().getSelectedItem().getKey());
 
 			if (!!iMaxDays) {
-				if (!!(this.oDialogFragment)) {
-					const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+				if (!!(this._oDialogFragment)) {
+					const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 					oDialogModel.setProperty("/req_no_of_days", iMaxDays);
 					oDialogModel.setProperty("/tripstartdate", null);
 					oDialogModel.setProperty("/tripenddate", null);

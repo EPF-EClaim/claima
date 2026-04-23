@@ -253,7 +253,7 @@
                                         id="i_attachment_1_file">
 
                                         <unified:layoutData>
-                                        <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
                                     </unified:layoutData>
 
                                     </unified:FileUploader>
@@ -265,7 +265,7 @@
                                         visible="{= !!${request>/req_item/doc1_filename} }" >
                                             
                                     <layoutData>
-                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
                                     </layoutData>
                                     </Link>
 
@@ -320,7 +320,7 @@
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" >
                                         <unified:layoutData>
-                                            <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                            <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
                                         </unified:layoutData>
                                         </unified:FileUploader>
                                         <Link
@@ -329,7 +329,7 @@
                                             text="{request>/req_item/doc2_filename}"
                                             visible="{= !!${request>/req_item/doc2_filename} }" >
                                          <layoutData>
-                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
                                         </layoutData>
                                         </Link>
                                          <Button
@@ -523,6 +523,21 @@
                                     <form:fields>
                                         <Text
                                             text="{request>/req_item/no_of_family_member}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Traveler -->
+                                <form:FormElement label="{i18n>req_i_no_of_traveler}"
+                                            visible="false"
+                                            id="i_no_of_traveler" >
+                                    <form:fields>
+                                        <m:Input 
+                                            id="input_no_of_traveler"
+                                            required="true" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"
+                                            value="{request>/req_item/no_of_traveler}"/>                                            
                                     </form:fields>
                                 </form:FormElement>
 
