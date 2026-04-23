@@ -2443,10 +2443,7 @@ sap.ui.define([
 				bill_no: { is_required: false },
 				account_no: { is_required: false },
 				number_of_traveller: { is_required: false, is_visible: false },
-				combo_dependent: { is_editable: true },
-				to_state: { is_editable: true },
-				to_location_office: { is_editable: true },
-				from_location_office: { is_editable: true }
+				combo_dependent: { is_editable: true }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -3686,7 +3683,6 @@ sap.ui.define([
 		*/
 		onSelect_ClaimDetails_LocationType: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
@@ -3732,7 +3728,6 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_FromLocationOffice: function (oEvent) {
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3766,7 +3761,6 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_ToState: function (oEvent) {
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oSelect = this.byId("select_claimdetails_input_to_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3802,7 +3796,6 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimDetails_ToLocationOffice: async function (oEvent) {
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (!oInputModel) return;
 
