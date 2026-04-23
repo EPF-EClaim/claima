@@ -426,11 +426,11 @@ sap.ui.define([
                 var oRouter = this.getRouter();
 
                 this._oRolesLoadedPromise.then(function () {
-                    const isAdmin = oRoleModel.getProperty("/isAdminSystem") ||
+                    const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
                                   oRoleModel.getProperty("/isAdminCC");
                     // restriction for manual url change to Analytics and Configuration without admin role
-                    if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !isAdmin) {
+                    if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");
                         MessageBox.error(Utility.getText("msg_unauthorized_role"));
                     } else {
