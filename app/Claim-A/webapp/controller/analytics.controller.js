@@ -24,8 +24,6 @@ sap.ui.define([
   const REQ_DET_TABLE_ID = "analyticsreqtab";          // Request Details
 
   return Controller.extend("claima.controller.analytics", {
-
-
     onInit: function () {
       this._oSessionModel = this.getOwnerComponent().getModel("session");
     },
@@ -843,6 +841,8 @@ sap.ui.define([
           { label: Utility.getText("to_location_off"), property: "TO_LOCATION_OFFICE", width: 24 },
           { label: Utility.getText("toll"), property: "TOLL", width: 24 },
           { label: Utility.getText("type_of_vehicle"), property: "VEHICLE_TYPE_DESC", width: 24 },
+          { label: Utility.getText("depart_time"), property: "DEPARTURE_TIME", width: 14 },
+          { label: Utility.getText("arrival_time"), property: "ARRIVAL_TIME", width: 14 },
           { label: Utility.getText("semenanjung_or_sabah_sarawak"), property: "REGION_DESC", width: 24 },
           { label: Utility.getText("room_type"), property: "ROOM_TYPE", width: 24 },
           { label: Utility.getText("lodging_cat"), property: "LODGING_CATEGORY_DESC", width: 24 },

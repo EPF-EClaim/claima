@@ -588,6 +588,16 @@
                                 <table:template><Text text="{employee_view>VEHICLE_TYPE_DESC}" /></table:template>
                             </table:Column>
 
+                            <table:Column width="14rem">
+                                <Label text="{i18n>depart_time}" />
+                                <table:template><Text text="{employee_view>DEPARTURE_TIME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>arrival_time}" />
+                                <table:template><Text text="{employee_view>ARRIVAL_TIME}" /></table:template>
+                            </table:Column>
+
                             <table:Column width="18rem">
                                 <Label text="{i18n>semenanjung_or_sabah_sarawak}" />
                                 <table:template><Text text="{employee_view>REGION_DESC}" /></table:template>
