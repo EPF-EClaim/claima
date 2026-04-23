@@ -14,6 +14,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         CostCenter           : String;
         GLAccount            : String;
         MaterialCode         : String;
+        CashAdvanceAmount    : Decimal(15, 2);
     }
 
 
@@ -936,7 +937,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                CASH_ADVANCE_AMOUNT
         };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as

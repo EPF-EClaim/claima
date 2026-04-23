@@ -717,6 +717,12 @@ annotate service.ZCOUNTRY with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LODGING_CATEGORY,
+                ![@UI.Importance]: #High,
+                Label            : 'Lodging Category'
             }
         ]
     }
@@ -4338,6 +4344,12 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : COST_CENTER,
                 ![@UI.Importance]: #High,
                 Label            : 'Cost_Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LODGING_CATEGORY,
+                ![@UI.Importance]: #High,
+                Label            : 'Lodging Category'
             }
         ]
     }
