@@ -1594,7 +1594,7 @@ sap.ui.define([
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
 
-		onAction_ClaimSubmission_Toolbar: function (oAction) {
+		onAction_ClaimSubmission_Toolbar: async function (oAction) {
 			// get action
 			switch (oAction) {
 				//// Save Draft
@@ -1622,6 +1622,11 @@ sap.ui.define([
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
+
+					if (await EligibilityCheck.checkElaunTukarEligibility(this._oModel)) {
+						MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
+						return;
+					}
 
 					if (!this._oDeclarationDialog) {
 						Fragment.load({
