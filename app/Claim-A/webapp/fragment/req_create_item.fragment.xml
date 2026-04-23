@@ -5,6 +5,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
+    xmlns:layout="sap.ui.layout"
     xmlns:table="sap.ui.table"
     xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
@@ -146,12 +147,11 @@
                                             width="100%"
                                             selectedKeys="{request>/req_item/dependent}"
                                             required="true"
-                                            enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                             <core:Item key="{request>DEPENDENT_NO}" 
-                                                    text="{request>LEGAL_NAME}" />
+                                                    text="{request>LEGAL_NAME}" enabled="{= ${request>/view} !== 'view' }"/>
                                         </MultiComboBox>
                                     </form:fields>
                                 </form:FormElement>
@@ -239,23 +239,48 @@
 
                                 <!-- Attachment 1 -->
                                 <form:FormElement label="{i18n>req_attach1}"
-                                            visible="false"
-                                            id="i_attachment_1" >
-                                    <form:fields>
-                                        <unified:FileUploader
-                                            change=".onImportChange1"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            required="true"
-                                            maximumFileSize='5.0'
-					                        mimeType="application/pdf,image/png,image/jpeg"
-                                            placeholder="{i18n>req_attachment_format}"
-                                            value="{request>/req_item/doc1}"
-                                            id="i_attachment_1_file" />
-                                        <Link
-                                            id="i_attachment1_link" 
-                                            press="onDocLinkPress" 
-                                            text="{request>/req_item/doc1_filename}"
-                                            visible="{= ${request>/req_item/doc1} !== null }" />
+                                                visible="false"
+                                                id="i_attachment_1">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange1"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="true"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc1}"
+                                        id="i_attachment_1_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment1_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc1_filename}"
+                                        visible="{= !!${request>/req_item/doc1_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc1')"
+                                            visible="{= !!${request>/req_item/doc1_filename} }" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
                                     </form:fields>
                                 </form:FormElement>
 
@@ -293,12 +318,31 @@
 					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
-                                            id="i_attachment_2_file" />
+                                            id="i_attachment_2_file" >
+                                        <unified:layoutData>
+                                            <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                        </unified:layoutData>
+                                        </unified:FileUploader>
                                         <Link
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc2_filename}"
-                                            visible="{= ${request>/req_item/doc2} !== null }" />
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
+                                         <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                        </layoutData>
+                                        </Link>
+                                         <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc2')"
+                                            visible="{= !!${request>/req_item/doc2_filename} }" >
+                                        
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                        </Button>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -438,7 +482,7 @@
                                 </form:FormElement>
 
                                 <!-- Location -->
-                                <form:FormElement label="{i18n>req_i_location}"
+                                <form:FormElement label="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} ? ${i18n>req_i_destination} : ${i18n>req_i_location} }"
                                             visible="false"
                                             id="i_location"  >
                                     <form:fields>
@@ -479,6 +523,21 @@
                                     <form:fields>
                                         <Text
                                             text="{request>/req_item/no_of_family_member}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Traveler -->
+                                <form:FormElement label="{i18n>req_i_no_of_traveler}"
+                                            visible="false"
+                                            id="i_no_of_traveler" >
+                                    <form:fields>
+                                        <m:Input 
+                                            id="input_no_of_traveler"
+                                            required="true" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"
+                                            value="{request>/req_item/no_of_traveler}"/>                                            
                                     </form:fields>
                                 </form:FormElement>
 
@@ -708,6 +767,7 @@
                                             selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_state}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_state} }"
                                             items="{
@@ -732,6 +792,7 @@
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_location_office}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_location_office} }"
                                             items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
@@ -767,6 +828,7 @@
                                             id="item_to_location_office"
                                             selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
+                                            editable="{= !!${request>/req_item/to_staterequest>/req_item/to_state}}"
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/to_state} }"
@@ -830,7 +892,7 @@
                                 </form:FormElement>
 
                                 <!-- Semenanjung/Sarawak/Sabah -->
-                                <form:FormElement label="{i18n>req_i_sss}"
+                                <form:FormElement label="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} ? ${i18n>req_i_location} : ${i18n>req_i_sss} }"
                                             visible="false"
                                             id="i_sss" >
                                     <form:fields>
@@ -1093,7 +1155,8 @@
                                 </form:FormElement>
 
                                 <!-- Currency Rate -->
-                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate}"
+                                <form:FormElement label="{i18n>label_claimdetails_input_currencyrate} {i18n>icon_info}"
+                                            tooltip="{i18n>tooltip_currency_rate}"
                                             visible="false"
                                             id="i_currency_rate"  >
                                     <form:fields>

@@ -1,4 +1,3 @@
-
 <mvc:View
     controllerName="claima.controller.configuration"
     xmlns="sap.m"
@@ -34,51 +33,6 @@
                 class="sapUiMediumMargin"
                 width="100%"
             >
-                <Toolbar width="90%">
-                    <Title text="{i18n>conf_zclaimtype}" />
-                    <ToolbarSpacer />
-                    <Button
-                        id="EditHeader"
-                        text="Edit"
-                        press="onEdit"
-                        enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} }"
-                    />
-                    <Button
-                        id="CopyHeader"
-                        text="Copy"
-                        press="onCopy"
-                        enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} }"
-                    />
-                    <Button
-                        id="CreateHeader"
-                        text="Create"
-                        press="onCreate"
-                        enabled="true"
-                        visible="{= ${/FeatureControl/operationEnabled} }"
-                    />
-                    <Button
-                        id="DeleteHeader"
-                        text="Delete"
-                        press="onDelete"
-                        enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} }"
-                    />
-                    <Button
-                        icon="sap-icon://action-settings"
-                        press="onOpenViewSettings"
-                        type="Transparent"
-                        tooltip="View Settings"
-                    />
-                    <Button
-                        icon="sap-icon://excel-attachment"
-                        press="onExportToExcel"
-                        type="Transparent"
-                        tooltip="{i18n>export_excel}"
-                    />
-                </Toolbar>
-
                 <Table
                     id="claimTable"
                     width="90%"
@@ -86,7 +40,54 @@
                     mode="MultiSelect"
                     selectionChange="onSelectionChange"
                     includeItemInSelection="true"
+                    sticky="ColumnHeaders,HeaderToolbar"
                 >
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="{i18n>conf_zclaimtype}" />
+                            <ToolbarSpacer />
+                            <Button
+                                id="EditHeader"
+                                text="Edit"
+                                press="onEdit"
+                                enabled="{view>/hasSelection}"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
+                            />
+                            <Button
+                                id="CopyHeader"
+                                text="Copy"
+                                press="onCopy"
+                                enabled="{view>/hasSelection}"
+                                visible="{= ${/FeatureControl/operationEnabled} }"
+                            />
+                            <Button
+                                id="CreateHeader"
+                                text="Create"
+                                press="onCreate"
+                                enabled="true"
+                                visible="{= ${/FeatureControl/operationEnabled} }"
+                            />
+                            <Button
+                                id="DeleteHeader"
+                                text="Delete"
+                                press="onDelete"
+                                enabled="{view>/hasSelection}"
+                                visible="{= ${/FeatureControl/operationEnabled} }"
+                            />
+                            <Button
+                                icon="sap-icon://action-settings"
+                                press="onOpenViewSettings"
+                                type="Transparent"
+                                tooltip="View Settings"
+                            />
+                            <Button
+                                icon="sap-icon://excel-attachment"
+                                press="onExportToExcel"
+                                type="Transparent"
+                                tooltip="{i18n>export_excel}"
+                            />
+                        </Toolbar>
+                    </headerToolbar>
                     <columns>
                         <Column>
                             <Text text="{i18n>claimtypeid}" />
@@ -97,7 +98,7 @@
                         <Column>
                             <Text text="{i18n>glacct}" />
                         </Column>
-                         <Column>
+                        <Column>
                             <Text text="{i18n>claimcc}" />
                         </Column>
                         <Column>
@@ -239,7 +240,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                                 <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>claimcc}"
                                 key="COST_CENTER"
                             >
@@ -283,7 +284,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                             <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>start_date}"
                                 key="Start Date"
                             >
@@ -294,7 +295,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                             <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>req_i_end_date}"
                                 key="End Date"
                             >
@@ -318,7 +319,7 @@
                             </ViewSettingsCustomItem>
                         </filterItems>
                     </ViewSettingsDialog>
-                     <ViewSettingsDialog
+                    <ViewSettingsDialog
                         id="viewSettingsDialogItem"
                         confirm="onConfirmViewSettings"
                         reset="onResetViewSettings"
@@ -349,19 +350,19 @@
                                 text="{i18n>submitted_type}"
                                 key="SUBMISSION_TYPE"
                             />
-                             <ViewSettingsItem
+                            <ViewSettingsItem
                                 text="{i18n>claim_grp}"
                                 key="IND_OR_GROUP"
                             />
-                             <ViewSettingsItem
+                            <ViewSettingsItem
                                 text="{i18n>claim_freq}"
                                 key="FREQUENCY"
                             />
-                             <ViewSettingsItem
+                            <ViewSettingsItem
                                 text="{i18n>claim_period}"
                                 key="PERIOD"
                             />
-                             <ViewSettingsItem
+                            <ViewSettingsItem
                                 text="{i18n>claim_period_unit}"
                                 key="PERIOD UNIT"
                             />
@@ -445,7 +446,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                             <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>claim_grp}"
                                 key="IND_OR_GROUP"
                             >
@@ -456,7 +457,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                              <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>claim_freq}"
                                 key="FREQUENCY"
                             >
@@ -467,7 +468,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                             <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>claim_period}"
                                 key="PERIOD"
                             >
@@ -478,7 +479,7 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
-                             <ViewSettingsCustomItem
+                            <ViewSettingsCustomItem
                                 text="{i18n>claim_period_unit}"
                                 key="PERIOD UNIT"
                             >

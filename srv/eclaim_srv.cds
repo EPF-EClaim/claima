@@ -336,8 +336,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
-
     type EligibilityPayload {
         CheckFields   : many EligibilityCheckFields;
         ClaimType     : String;
@@ -355,6 +353,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   EligibilityCheck(aPayload: many EligibilityPayload)                               returns many Response;
 
+    function getApprovedCashAdvanceAmount(
+        sRequestId: String
+    ) returns Decimal(16, 2);
+    
     type perdiem {
         amount          : Decimal(15, 2);
         daily_allowance : Decimal(15, 2);
@@ -401,7 +403,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date) returns rateperkm;
     
-    function _getMarriageCategory(sEmpId: String, )                                            returns String;
+    function getMarriageCategoryBasedOnStatus() returns String;
 
     function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
     
@@ -480,4 +482,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               currentAmount: Decimal(15, 2),
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
+
+    function checkElaunTukarEligible()                                                         returns Boolean;
 };

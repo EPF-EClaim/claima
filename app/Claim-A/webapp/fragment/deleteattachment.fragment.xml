@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    id="deleteAttachmentDialogFrag">
+
+    <Dialog
+        id="deleteAttachmentDialog"
+        type="Message"
+        state="Warning"
+        title="{i18n>req_d_w_delete_confirm}"
+        contentWidth="500px">
+
+        <Text
+            id="deleteAttachmentText"
+            text="{i18n>req_d_w_delete_msg}"
+            wrapping="true" />
+
+        <beginButton>
+            <Button
+                type="Emphasized"
+                text="{i18n>req_btn_confirm}"
+                press=".onConfirmDeleteAttachment" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="{i18n>req_b_cancel}"
+                press=".onCancelDeleteAttachment" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>
