@@ -1153,7 +1153,7 @@ sap.ui.define([
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 			} catch (error) {
 				bCanProceed = false;
-				MessageBox.error(Utility.getText("msg_failed_generic_error", [error]));
+				MessageBox.error(error.message || Utility.getText("msg_failed_generic_error"));
 			};
 
 			if (!bCanProceed) return;
@@ -2120,6 +2120,9 @@ sap.ui.define([
 			];
 
 			oBinding.filter(aFilters);
+			this._oReqModel.setProperty("/req_item/from_location_office", null);
+			this._oReqModel.setProperty("/req_item/to_state", null);
+			this._oReqModel.setProperty("/req_item/to_location_office", null);
 		},
 
 		getToLocationByState() {
@@ -2704,6 +2707,8 @@ sap.ui.define([
 				new Filter(Constants.EntitiesFields.FROM_LOCATION_ID, FilterOperator.EQ, sFromOffice)
 			] : [];
 			oBinding.filter(aFilters);
+			this._oReqModel.setProperty("/req_item/to_state", null);
+			this._oReqModel.setProperty("/req_item/to_location_office", null);
 		},
 
 		/**
@@ -2726,6 +2731,7 @@ sap.ui.define([
 				new Filter(Constants.EntitiesFields.TO_STATE_ID, FilterOperator.EQ, sToState)
 			] : [];
 			oBinding.filter(aFilters);
+			this._oReqModel.setProperty("/req_item/to_location_office", null);
 		},
 
 		/**
