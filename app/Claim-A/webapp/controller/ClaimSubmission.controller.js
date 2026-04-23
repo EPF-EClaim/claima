@@ -1623,7 +1623,9 @@ sap.ui.define([
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
 
-					if (await EligibilityCheck.checkElaunTukarEligibility(this._oModel)) {
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR &&
+						await EligibilityCheck.checkElaunTukarEligibility(this._oModel) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
 						MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
 						return;
 					}
@@ -3546,7 +3548,6 @@ sap.ui.define([
 				}
 
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")) {
-					Utility.init(this.getOwnerComponent(), this.getView());
 					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
 				}
