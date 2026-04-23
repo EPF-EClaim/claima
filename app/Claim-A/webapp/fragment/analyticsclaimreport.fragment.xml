@@ -72,7 +72,7 @@
                             <!-- employee_id -->
                             <table:Column width="10rem">
                                 <Label text="{i18n>employee_id}" />
-                                <table:template><ObjectNumber number="{employee_view>EMP_ID}" /></table:template>
+                                <table:template><Text text="{employee_view>EMP_ID}" /></table:template>
                             </table:Column>
 
                             <!-- claim_id -->
@@ -394,7 +394,7 @@
                                 <table:template><Text text="{employee_view>CLAIM_CATEGORY}" /></table:template>
                             </table:Column>
 
-                            <!-- claim_type (again) -->
+                            <!-- claim_type -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_type}" />
                                 <table:template><Text text="{employee_view>CLAIM_TYPE_DESC}" /></table:template>
@@ -457,7 +457,7 @@
                             </table:Column>
 
                             <!-- kilometer -->
-                            <table:Column width="10rem" hAlign="End">
+                            <table:Column width="10rem">
                                 <Label text="{i18n>kilometer}" />
                                 <table:template><Text text="{employee_view>KM}" /></table:template>
                             </table:Column>
@@ -665,7 +665,7 @@
                             </table:Column>
 
                             <!-- travel_duration_days -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>travel_duration_days}" />
                                 <table:template><Text text="{employee_view>TRAVEL_DURATION_DAY}" /></table:template>
                             </table:Column>
@@ -677,37 +677,37 @@
                             </table:Column>
 
                             <!-- provided_breakfast -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_breakfast}" />
                                 <table:template><Text text="{employee_view>PROVIDED_BREAKFAST}" /></table:template>
                             </table:Column>
 
                             <!-- provided_lunch -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_lunch}" />
                                 <table:template><Text text="{employee_view>PROVIDED_LUNCH}" /></table:template>
                             </table:Column>
 
                             <!-- provided_dinner -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_dinner}" />
                                 <table:template><Text text="{employee_view>PROVIDED_DINNER}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_breakfast -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_breakfast}" />
                                 <table:template><Text text="{employee_view>ENTITLED_BREAKFAST}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_lunch -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_lunch}" />
                                 <table:template><Text text="{employee_view>ENTITLED_LUNCH}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_dinner -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_dinner}" />
                                 <table:template><Text text="{employee_view>ENTITLED_DINNER}" /></table:template>
                             </table:Column>
@@ -722,6 +722,13 @@
                             <table:Column width="16rem">
                                 <Label text="{i18n>anggota_name}" />
                                 <table:template><Text text="{employee_view>ANGGOTA_NAME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>dependent}" />
+                                <table:template>
+                                    <Text text="{employee_view>DEPENDENT}" />
+                                </table:template>
                             </table:Column>
 
                             <!-- dependent_name -->
@@ -776,12 +783,12 @@
                                 <table:template><Text text="{employee_view>TRANSFER_DATE}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>num_days}" />
                                 <table:template><Text text="{employee_view>NO_OF_DAYS}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>num_fam_head}" />
                                 <table:template><Text text="{employee_view>FAMILY_COUNT}" /></table:template>
                             </table:Column>
@@ -816,7 +823,7 @@
                                 <table:template><Text text="{employee_view>STUDY_LEVELS_DESC}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>actual_amount}" />
                                 <table:template><Text text="{employee_view>ACTUAL_AMOUNT}" /></table:template>
                             </table:Column>
@@ -861,12 +868,12 @@
                                 <table:template><Text text="{employee_view>CURRENCY_RATE}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>currency_amount}" />
                                 <table:template><Text text="{employee_view>CURRENCY_AMOUNT}" /></table:template>
                             </table:Column>
 
-                             <table:Column width="10rem">
+                             <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>req_approve_amount}" />
                                 <table:template><Text text="{employee_view>REQUEST_APPROVAL_AMOUNT}" /></table:template>
                             </table:Column>
@@ -879,11 +886,6 @@
                             <table:Column width="10rem">
                                 <Label text="{i18n>arrival_time}" />
                                 <table:template><Text text="{employee_view>ARRIVAL_TIME}" /></table:template>
-                            </table:Column>
-
-                            <table:Column width="10rem">
-                                <Label text="{i18n>dependent}" />
-                                <table:template><Text text="{employee_view>DEPENDENT}" /></table:template>
                             </table:Column>
 
                             <table:Column width="10rem">
@@ -926,7 +928,7 @@
                                 <table:template><Text text="{employee_view>INSURANCE_CERT_END_DATE}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>days_category}" />
                                 <table:template><Text text="{employee_view>TRAVEL_DAYS_ID}" /></table:template>
                             </table:Column>

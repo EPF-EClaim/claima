@@ -355,13 +355,13 @@
                             </table:Column>
 
                             <!-- EST_AMOUNT -->
-                            <table:Column width="14rem">
+                            <table:Column width="14rem" hAlign="End">
                                 <Label text="{i18n>req_i_est_amt}" />
                                 <table:template><Text text="{employee_view>EST_AMOUNT}" /></table:template>
                             </table:Column>
 
                             <!-- EST_NO_PARTICIPANT -->
-                            <table:Column width="14rem">
+                            <table:Column width="14rem" hAlign="End">
                                 <Label text="{i18n>req_i_estparticipant}" />
                                 <table:template><Text text="{employee_view>EST_NO_PARTICIPANT}" /></table:template>
                             </table:Column>
@@ -452,7 +452,7 @@
                             </table:Column>
 
                              <!-- NO_OF_DAYS -->
-                            <table:Column width="14rem">
+                            <table:Column width="14rem" hAlign="End">
                                 <Label text="{i18n>num_days}" />
                                 <table:template><Text text="{employee_view>NO_OF_DAYS}" /></table:template>
                             </table:Column>
@@ -491,7 +491,7 @@
                                 <table:template><Text text="{employee_view>MOBILE_CATEGORY_PURPOSE_DESC}" /></table:template>
                             </table:Column>
 
-                            <table:Column width="10rem">
+                            <table:Column width="10rem" hAlign="End">
                                 <Label text="{i18n>kilometer}" />
                                 <table:template><Text text="{employee_view>KM}" /></table:template>
                             </table:Column>  
@@ -537,11 +537,6 @@
                                 <Label text="{i18n>to_state}" />
                                 <table:template><Text text="{employee_view>TO_STATE_ID}" /></table:template>
                             </table:Column> 
-
-                            <table:Column width="12rem">
-                                <Label text="{i18n>to_state_desc}" />
-                                <table:template><Text text="{employee_view>TO_STATE_DESC}" /></table:template>
-                            </table:Column>
 
                             <table:Column width="12rem">
                                 <Label text="{i18n>to_state_desc}" />
