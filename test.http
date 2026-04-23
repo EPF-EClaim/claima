@@ -182,11 +182,11 @@ Authorization: Basic alice
     {
      "aPayload": [
        {
-         "EmpId": "910438",
+         "EmpId": "886887",
          "RecordId": "CLM26000002324",
          "RecordSubId": "CLM26000002324012",
          "ClaimType": "ELAUN_TUKAR",
-         "ClaimTypeItem": "HOTEL_L",
+         "ClaimTypeItem": "TAMBANG",
          "CheckFields": [
             {
                   "fieldName": "ELIGIBLE_AMOUNT",
@@ -200,12 +200,12 @@ Authorization: Basic alice
             },
             {
                   "fieldName": "FARE_TYPE_ID",
-                  "value": "null",
+                  "value": "03",
                   "result": null
             },
             {
                   "fieldName": "TRANSPORT_CLASS",
-                  "value": "null",
+                  "value": "01",
                   "result": null
             },
             {
