@@ -330,7 +330,10 @@ sap.ui.define([
 						"travel_alone_family": null,
 						"travel_family_now_later": null,
 						"descr": {
-							"alternate_cost_center": null
+							"alternate_cost_center": null,
+							"mode_of_transfer": null,
+							"travel_alone_family": null,
+							"travel_family_now_later": null
 						}
 					},
 					"requestform_amt": null,
@@ -664,6 +667,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
 				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
 				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
+				oInputModel.setProperty("/claimtype/requestform/descr/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("ZTRANSFER_MODE/TRANSFER_MODE_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/descr/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("ZTRAVEL_TYPE/TRAVEL_TYPE_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/descr/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("ZFAMILY_TIMING/FAMILY_TIMING_DESC"));
 
 				// populate cash advance amount based on items
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", await Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
@@ -828,6 +834,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
 			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
 			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
+			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/descr/mode_of_transfer"));
+			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/descr/travel_alone_family"));
+			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/descr/travel_family_now_later"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));

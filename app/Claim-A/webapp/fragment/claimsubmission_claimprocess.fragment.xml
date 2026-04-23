@@ -129,8 +129,8 @@
                             path: 'employee>/ZREQUEST_HEADER',
                             sorter: [{ path: 'REQUEST_ID' }],
                             parameters: {
-                                $expand: 'COSTCENTER',
-                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC,TRANSFER_MODE_ID,TRAVEL_ALONE_FAMILY,TRAVEL_FAMILY_NOW_LATER'
+                                $expand: 'COSTCENTER,ZTRAVEL_TYPE,ZTRANSFER_MODE,ZFAMILY_TIMING',
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC,TRANSFER_MODE_ID,TRAVEL_ALONE_FAMILY,TRAVEL_FAMILY_NOW_LATER,ZTRAVEL_TYPE/TRAVEL_TYPE_DESC,ZTRANSFER_MODE/TRANSFER_MODE_DESC,ZFAMILY_TIMING/FAMILY_TIMING_DESC'
                             }
                         }"
                         editable="{= !${claimsubmission_input>/req_emailapprove} }"
