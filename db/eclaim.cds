@@ -279,7 +279,6 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
         ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
-
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -724,11 +723,15 @@ entity ZFLIGHT_CLASS : managed {
 }
 
 entity ZCOUNTRY : managed {
-    key COUNTRY_ID   : String(3)  @mandatory  @Common.Label: 'Country ID';
-        COUNTRY_DESC : String     @Common.Label: 'Country Description';
-        START_DATE   : Date       @Common.Label: 'Start Date';
-        END_DATE     : Date       @Common.Label: 'End Date';
-        STATUS       : String(10) @Common.Label: 'Status';
+    key COUNTRY_ID            : String(3)  @mandatory  @Common.Label: 'Country ID';
+        COUNTRY_DESC          : String     @Common.Label: 'Country Description';
+        START_DATE            : Date       @Common.Label: 'Start Date';
+        END_DATE              : Date       @Common.Label: 'End Date';
+        STATUS                : String(10) @Common.Label: 'Status';
+        LODGING_CATEGORY      : String(2)  @Common.Label: 'Lodging Category';
+        ZLODGING_CAT          : Association to ZLODGING_CAT
+                                    on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
+                                    
 }
 
 entity ZAREA : managed {
@@ -1301,6 +1304,7 @@ entity ZELIGIBILITY_RULE : managed {
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
         SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
         COST_CENTER               : String(4)      @Common.Label: 'Cost_Center';
+        LODGING_CATEGORY          : String(2)      @Common.Label: 'Lodging Category';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1344,7 +1348,9 @@ entity ZELIGIBILITY_RULE : managed {
         ZNUM_RANGE                : Association to ZNUM_RANGE
                                         on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
         ZCOST_CENTER              : Association to one ZCOST_CENTER
-                                        on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER
+                                        on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZLODGING_CAT              : Association to ZLODGING_CAT
+                                        on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

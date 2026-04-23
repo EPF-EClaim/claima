@@ -23,6 +23,7 @@ module.exports = (srv) => {
             EMP_ID:                  oItem.EmpID,
             SUBMITTED_DATE:          oItem.SubmissionDate,
             FINAL_AMOUNT_TO_RECEIVE: oItem.FinalAmounttoReceive,
+            CASH_ADVANCE_AMOUNT:     oItem.CashAdvanceAmount,
             LAST_MODIFIED_DATE:      oItem.LastModifiedDate,
             AMOUNT:                  oItem.Amount,
             RECEIPT_DATE:            oItem.ReceiptDate,
