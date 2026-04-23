@@ -236,6 +236,38 @@ sap.ui.define([
             }
         },
 
+        /**
+         * call backend service to retrieve cash advance amount for request based on approved items
+         * @public
+         * @param {String} sRequestId - ID of pre-approval request 
+         */
+        getApprovedCashAdvanceAmount: async function (sRequestId) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            var dResult = 0.00;
+            if (!sRequestId) return dResult;
+
+            try {
+                BusyIndicator.show(0); 
+                
+                const oFunction = oDataModel.bindContext("/getApprovedCashAdvanceAmount(...)");
+                
+                oFunction.setParameter("sRequestId", sRequestId);
+
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+				dResult = oContext.getObject("value") || 0.00;
+                
+            } catch (oError) {
+                MessageBox.error(oError.toString());
+                dResult = 0.00; 
+            } finally {
+                BusyIndicator.hide();
+            }
+
+            return dResult;
+        },
+
          /**
          * Determine whether the number of days calculation should be treated as
          * "number of nights" instead of inclusive calendar days.
@@ -268,7 +300,7 @@ sap.ui.define([
                 Constants.ClaimTypeItem.LOD_TUKAR
             ];
 
-            return aNightClaimTypes.includes(oHeader.claim_type_id) &&
+            return aNightClaimTypes.includes(oHeader.claimtype || oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
 
@@ -433,7 +465,7 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion || !fKilometer) return;
+            if (!sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             

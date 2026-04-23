@@ -866,6 +866,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.VEHICLE_CLASS_ID,
                 ZREQUEST_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
                 ZREQUEST_ITEM.PURPOSE,
+                ZREQUEST_ITEM.DEPARTURE_TIME,
+                ZREQUEST_ITEM.ARRIVAL_TIME,
+                ZREQUEST_ITEM.TOTAL_TRAVELLER,
         };
 
     entity ZEMP_APPROVER_REQUEST_DETAILS  as
