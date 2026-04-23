@@ -182,28 +182,63 @@ Authorization: Basic alice
     {
      "aPayload": [
        {
+         "EmpId": "910438",
+         "RecordId": "CLM26000002324",
+         "RecordSubId": "CLM26000002324012",
+         "ClaimType": "ELAUN_TUKAR",
+         "ClaimTypeItem": "HOTEL_L",
          "CheckFields": [
             {
-               "fieldName": "RECEIPT_DATE",
-               "value": "2026-04-17",
-               "result": null
+                  "fieldName": "ELIGIBLE_AMOUNT",
+                  "value": "500",
+                  "result": null
             },
             {
-               "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "800",
-               "result": null
+                  "fieldName": "TRAVEL_DAYS_ID",
+                  "value": "7",
+                  "result": null
             },
             {
-               "fieldName": "REGION_ID",
-               "value": "01",
-               "result": null
+                  "fieldName": "FARE_TYPE_ID",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "TRANSPORT_CLASS",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "FLIGHT_CLASS_ID",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "ROOM_TYPE_ID",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "MOBILE_PHONE_BILL",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "RECEIPT_DATE",
+                  "value": "2026-04-16",
+                  "result": null
+            },
+            {
+                  "fieldName": "TRAVEL_HOURS",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "REGION_ID",
+                  "value": "null",
+                  "result": null
             }
-            ],
-         "ClaimType": "ELAUN_TUKAR",
-         "ClaimTypeItem": "PINDAH",
-         "EmpId": "886887",
-         "RecordId": "CLM26000000874",
-         "RecordSubId": "CLM26000000874001"
+         ]
       }
      ]
     }

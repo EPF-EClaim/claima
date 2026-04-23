@@ -3565,7 +3565,19 @@ sap.ui.define([
 
 						fAmount += fToll;
 					}
-					oInputModel.setProperty("/claim_item/amount", fAmount);
+
+					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT ){
+						if(fAmount < oResult.fAmount){
+							MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+							oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+						}else{
+							oInputModel.setProperty("/claim_item/amount", fAmount);
+						}
+					}else{
+						oInputModel.setProperty("/claim_item/amount", fAmount);
+					}
+					
+					
 				}
 			} catch (oError) {
 				console.error("Failed to calculate Rate Per KM", oError);
