@@ -398,7 +398,8 @@ sap.ui.define([
 							try {
 								BusyIndicator.show(0);
 
-								if (await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
+								if (oReqData.req_header.claimtype === Constants.ClaimType.ELAUN_TUKAR &&
+									await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
 									MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
 									return;
 								}

@@ -2051,7 +2051,7 @@ module.exports = (srv) => {
 
             // 2a. Priority Check: Is there an on-going application?
             if (sRecordStatus === Constant.Status.DRAFT) {
-                return Constant.ElaunTukarStatus.ON_GOING; // "03"
+                sFinalStatus = Constant.ElaunTukarStatus.ON_GOING_PAR; // "03"
             }
 
             // 2b. Secondary Check: Evaluate previously approved records
