@@ -937,7 +937,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE, 
+                ZCLAIM_ITEM.MATERIAL_CODE,
                 CASH_ADVANCE_AMOUNT
         };
 
