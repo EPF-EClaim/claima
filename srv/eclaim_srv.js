@@ -620,34 +620,6 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('checkEligibleMobileClaim', async (req) => {
-        const { sEmployeeId } = req.data;
-
-        if (!sEmployeeId) {
-            return req.error(400, 'Please provide an Employee ID.');
-        }
-
-        try {
-            const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
-                .from('ZEMP_MASTER')
-                .where({ EEID: sEmployeeId });
-
-            if (!employeeRecord) {
-                return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
-            }
-
-            return {
-                eligible: employeeRecord.MOBILE_BILL_ELIGIBILITY,
-                amount: employeeRecord.MOBILE_BILL_ELIG_AMOUNT
-            };
-
-        } catch (error) {
-            // Handle unexpected database or server errors
-            console.error('Error fetching mobile eligibility:', error);
-            return req.error(500, 'An error occurred while checking eligibility.');
-        }
-    });
-
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
@@ -913,7 +885,7 @@ module.exports = (srv) => {
             return result;
 
         } catch (error) {
-            req.error(500, `Fail processing records: ${error.message}`, req);
+            return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
     /**
@@ -978,8 +950,8 @@ module.exports = (srv) => {
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
-            //calculation for MKN_LOAN based on dependent
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+            //calculation for MKN_LOAN and MKN_TUKAR based on dependent
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN || req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_TUKAR) {
                 total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day);
                 return { amount: total_amt_dp, tips_amount: total_tips };
             } else {
@@ -1977,35 +1949,90 @@ module.exports = (srv) => {
             return req.error(404, 'Employee not found'); 
         }
 
+        // ---------------------------------------------------------
+        // 1. Current Checking (Position & Date Logic)
+        // ---------------------------------------------------------
         const sPositionEvent = oEmp.POSITION_EVENT_REASON;
         const sPositionStartDate = oEmp.POSITION_START_DATE;
 
-        const oConstantRec = await SELECT.one
-            .from(Constant.Entities.ZCONSTANTS)
-            .columns(Constant.EntitiesFields.VALUE) 
-            .where({
-                ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER
-            });
-
-        const iDays = parseInt(oConstantRec.VALUE, 10);
-
-        if (Object.values(Constant.PositionEventId).includes(sPositionEvent)) {
-            
-            if (!sPositionStartDate) {
-                return false;
-            }
-
-            const dEligibleDate = new Date(sPositionStartDate);
-            
-            dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
-
-            const dCurrentDate = new Date();
-            dCurrentDate.setUTCHours(0, 0, 0, 0);
-
-            return dCurrentDate > dEligibleDate; 
+        if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
+            return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
-        return false;
+        const oConstantRec = await tx.run(
+            SELECT.one.from(Constant.Entities.ZCONSTANTS)
+                .columns(Constant.EntitiesFields.VALUE) 
+                .where({
+                    ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER
+                })
+        );
+
+        const iDays = parseInt(oConstantRec?.VALUE || '0', 10);
+
+        const dEligibleDate = new Date(sPositionStartDate);
+        dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
+
+        const dCurrentDate = new Date();
+        dCurrentDate.setUTCHours(0, 0, 0, 0);
+
+        // If the current date hasn't passed the eligible date, reject
+        if (dCurrentDate <= dEligibleDate) {
+            return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+        }
+
+        // ---------------------------------------------------------
+        // 2. Check Historical Data (ZCLAIM_HEADER & ZREQUEST_HEADER)
+        // ---------------------------------------------------------
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+        const sClaimType = Constant.ClaimType.ELAUN_TUKAR; 
+        const aBlockingStatuses = [Constant.Status.DRAFT, Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED];
+        const sEmployeeId = oEmp.EEID; 
+
+        const [aExistingClaims, aExistingRequests] = await Promise.all([
+            tx.run(SELECT.from(ZCLAIM_HEADER).where({
+                EMP_ID: sEmployeeId, 
+                CLAIM_TYPE_ID: sClaimType,
+                STATUS_ID: { 'in': aBlockingStatuses }
+            })),
+            tx.run(SELECT.from(ZREQUEST_HEADER).where({
+                EMP_ID: sEmployeeId,            
+                CLAIM_TYPE_ID: sClaimType,              
+                STATUS: { 'in': aBlockingStatuses } 
+            }))
+        ]);
+
+        const aAllRecords = [...(aExistingClaims || []), ...(aExistingRequests || [])];
+
+        let sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_CREATION;
+
+        for (const record of aAllRecords) {
+            // Normalize status variable since ZCLAIM uses STATUS_ID and ZREQUEST uses STATUS
+            const sRecordStatus = record.STATUS_ID || record.STATUS; 
+
+            // 2a. Priority Check: Is there an on-going application?
+            if (sRecordStatus === Constant.Status.DRAFT) {
+                return Constant.ElaunTukarStatus.ON_GOING; // "03"
+            }
+
+            // 2b. Secondary Check: Evaluate previously approved records
+            if (sRecordStatus === Constant.Status.APPROVED || sRecordStatus === Constant.Status.PENDING_APPROVAL) {
+                if (record.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    record.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
+                    
+                    // Allow, but restrict UI to Family Now Only. 
+                    // We keep looping just in case there is another record that is DRAFT/PENDING.
+                    sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; // "02"
+                } else {
+                    // If they claimed ALONE or WITH_FAMILY + NOW, they are strictly blocked.
+                    return Constant.ElaunTukarStatus.NOT_ALLOWED; // "04"
+                }
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 3. Passed all checks - Return Final Status
+        // ---------------------------------------------------------
+        return sFinalStatus; 
     });
 
     srv.on('getMarriageCategoryBasedOnStatus', async (req) =>{

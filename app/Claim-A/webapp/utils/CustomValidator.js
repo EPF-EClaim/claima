@@ -1,11 +1,13 @@
 sap.ui.define([
     "sap/m/MessageBox",
+	"sap/ui/core/Fragment",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
     "claima/utils/RequestUtility"
 ], function (
     MessageBox,
+    Fragment,
     Constants,
     ClaimUtility,
     Utility,
@@ -36,7 +38,7 @@ sap.ui.define([
             var bCanProceed = true;
             // Common validations (Applicable for both scenarios)
 
-            // Type and Item Type checking (Applicable for both scenarios)
+            // Type and Item Type checking (Applicable for both scenarios))
 
             // Scenario-based checking (Only limited to certain submission type)
             switch (sSubmissionType) {
@@ -63,12 +65,27 @@ sap.ui.define([
                             }
                         }
                     }
+
+                    // check number of traveller
+                    if (sClaimTypeItem === Constants.ClaimTypeItem.LOD_TUKAR) {
+                        var iNumberOfFamily = oReqModel.getProperty("/req_item/no_of_family_member");
+                        var iNumberOfTraveler = oReqModel.getProperty("/req_item/no_of_traveler");
+
+                        if (!iNumberOfTraveler) return;
+                        if (iNumberOfTraveler > iNumberOfFamily) {
+                            var oInput = this._oView.byId("input_no_of_traveler");
+				            oInput.setValueState("Error");   
+				            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
+                            bCanProceed = false;
+                        }
+                    }
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
-                    
+                    var oPropertyModel = this._oView.getModel("claimitem_property");
+
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
                             case Constants.ClaimTypeItem.TELEFON_B:
@@ -102,6 +119,15 @@ sap.ui.define([
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
                         if (!bConfirm) {
                             bCanProceed = false;
+                        }
+                    }
+
+                    if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == Constants.ClaimType.ELAUN_TUKAR ){
+                        if(oPropertyModel.getProperty("/number_of_traveller/is_visible") && oPropertyModel.getProperty("/no_of_family_member/is_visible")){
+                            if(oInputModel.getProperty("/claim_item/number_of_travellers") > oInputModel.getProperty("/claim_item/no_of_family_member")){
+                                MessageBox.error(Utility.getText("msg_number_of_traveller_exceed"));
+                                bCanProceed = false
+                            }
                         }
                     }
 

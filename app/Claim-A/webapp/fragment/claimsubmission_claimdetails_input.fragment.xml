@@ -103,7 +103,7 @@
 				<Select
 					id="select_claimdetails_input_dependent_name"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					selectedKey="{claimitem_input>/claim_item/dependent}"
 					items="{
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
@@ -112,13 +112,13 @@
 					required="true"
 				>
                     <items>
-                        <core:Item key="{employee>LEGAL_NAME}" 
+                        <core:Item key="{employee>DEPENDENT_NO}" 
                                 text="{employee>LEGAL_NAME}" />
                     </items>
 				</Select>
 
                 <!-- Dependent (Multi) -->
-				<Label text="{i18n>label_claimdetails_input_dependent}" />
+				<Label text="{i18n>label_claimdetails_input_dependent_combo}" />
                 <MultiComboBox 
 					id="combo_claimdetails_input_dependent"
                     selectedKeys="{claimitem_input>/claim_item/dependent}"
@@ -127,7 +127,7 @@
                     items="{path: 'employee>/ZEMP_DEPENDENT',
                             sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                     <core:Item key="{employee>DEPENDENT_NO}" 
-                            text="{employee>LEGAL_NAME}" />
+                            text="{employee>LEGAL_NAME}" enabled="{claimitem_property>/combo_dependent/is_editable}"/>
                 </MultiComboBox>
                 
                 <!-- Type of Professional Body -->
@@ -683,13 +683,7 @@
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
 					required="true"
-					visible="{= ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
-                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+					visible="false"
                     items="{
                         path: 'employee>/ZTRANSFER_MODE',
                         sorter: [{ path: 'TRANSFER_MODE_ID' }],
@@ -729,6 +723,18 @@
 					visible="{claimitem_property>/no_of_days/is_visible}"
 					editable="false"
 					required="true"
+				/>
+
+                <!-- Number of Travellers -->
+				<Label text="{i18n>label_claimdetails_number_of_travellers}" />
+				<Input
+					id="input_claimdetails_input_number_of_travellers"
+					value="{claimitem_input>/claim_item/number_of_travellers}"
+					type="Number"
+					visible="{claimitem_property>/number_of_traveller/is_visible}"
+                    required="{claimitem_property>/number_of_traveller/is_required}"
+                    change="onChange_ClaimDetails_NumberOfDays"
+                    liveChange="onChange_ClaimDetails_NumberOfDays"
 				/>
 
 				<!-- Type of Vehicle -->
