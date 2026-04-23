@@ -293,35 +293,6 @@
                     editable="false"
                     visible="false"
                 />
-                                
-                <!-- Amount (MYR) -->
-                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
-                <Input
-                    id="input_claimdetails_input_amount"
-                    value="{
-						path: 'claimitem_input>/claim_item/amount',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							maxIntegerDigits: 16,
-							preserveDecimals: false
-                        },
-                        constraints: { minimum: 0.01 }
-					}"
-					required="true"
-					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
-                        !${claimsubmission_input>/view_only} &amp;&amp;
-						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
-						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
-						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
-						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
-                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
-					}"
-					visible="{claimitem_property>/amount/is_visible}"
-				/>
 
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
@@ -762,18 +733,6 @@
 				>
 				</Select>
 
-				<!-- Rate Per Kilometer -->
-				<Label text="{i18n>label_claimdetails_input_km_rate}" />
-				<Input
-					id="input_claimdetails_input_rate_per_km"
-					value="{
-						path: 'claimitem_input>/claim_item/descr/rate_per_km',
-						type: 'FloatType'
-					}"
-					editable="false"
-					visible="{claimitem_property>/rate_per_km/is_visible}"
-				/>
-
                 <!-- Type of Fare -->
                 <Label text="{i18n>label_claimdetails_input_faretype}" />
                 <Select
@@ -985,6 +944,47 @@
 					visible="{claimitem_property>/km/is_visible}"
 				/>
 
+                <!-- Rate Per Kilometer -->
+				<Label text="{i18n>label_claimdetails_input_km_rate}" />
+				<Input
+					id="input_claimdetails_input_rate_per_km"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
+					editable="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
+				/>
+
+                <!-- Amount (MYR) -->
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
+                <Input
+                    id="input_claimdetails_input_amount"
+                    value="{
+						path: 'claimitem_input>/claim_item/amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
+					}"
+					required="true"
+					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
+                        !${claimsubmission_input>/view_only} &amp;&amp;
+						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
+                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
+				/>
+                
                 <!-- Room Type -->
                 <Label text="{i18n>label_claimdetails_input_roomtype}" />
                 <Select
