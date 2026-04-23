@@ -767,6 +767,7 @@
                                             selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_state}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_state} }"
                                             items="{
@@ -791,6 +792,7 @@
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_location_office}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_location_office} }"
                                             items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
@@ -826,6 +828,7 @@
                                             id="item_to_location_office"
                                             selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
+                                            editable="{= !!${request>/req_item/to_staterequest>/req_item/to_state}}"
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/to_state} }"
