@@ -2503,6 +2503,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
 				}
 
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+				){
+					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				}
+
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 

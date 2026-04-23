@@ -530,7 +530,7 @@ sap.ui.define([
         "TravelAloneOrWithFamily": {
             "ALONE": "1",
             "WITH_FAMILY": "2",
-            "ALONE_DESC": "ALONE",
+            "ALONE_DESC": "Alone",
             "WITH_FAMILY_DESC": "With Family"
         },
         "TravelWithFamilyNowOrLater": {
