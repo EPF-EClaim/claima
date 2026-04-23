@@ -398,6 +398,11 @@ sap.ui.define([
 							try {
 								BusyIndicator.show(0);
 
+								if (await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
+									MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
+									return;
+								}
+
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
@@ -2341,7 +2346,8 @@ sap.ui.define([
 				"i_daily_allowance",
 				"i_currency_code",
 				"i_currency_rate",
-				"i_type_of_prof_body"
+				"i_type_of_prof_body",
+				"i_no_of_traveler"
 			];
 
 			aControlIds.forEach(id => {
@@ -2853,7 +2859,7 @@ sap.ui.define([
 
 			if (isNaN(iTravelers)) {
 				oInput.setValueState("Error");
-				oInput.setValueStateText("Please enter a valid number.");
+				oInput.setValueStateText(Utility.getText("req_vs_e_invalid_number", []));
 				return;
 			}
 

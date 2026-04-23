@@ -45,6 +45,7 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUEST:
 
                     var oReqModel = this._oOwnerComponent.getModel("request");
+                    var sClaimType = oReqModel.getProperty("/req_header/claimtype");
                     var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
                     
                     // HANDPHONE | TELEFON_B
@@ -67,7 +68,7 @@ sap.ui.define([
                     }
 
                     // check number of traveller
-                    if (sClaimTypeItem === Constants.ClaimTypeItem.LOD_TUKAR) {
+                    if (sClaimType === Constants.ClaimType.ELAUN_TUKAR) {
                         var iNumberOfFamily = oReqModel.getProperty("/req_item/no_of_family_member");
                         var iNumberOfTraveler = oReqModel.getProperty("/req_item/no_of_traveler");
 
@@ -75,6 +76,7 @@ sap.ui.define([
                             var oInput = this._oView.byId("input_no_of_traveler");
 				            oInput.setValueState("Error");   
 				            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
+                            MessageBox.error(Utility.getText("req_d_e_neg_amount"));
                             bCanProceed = false;
                         }
                     }
