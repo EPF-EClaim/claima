@@ -433,7 +433,7 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion || !fKilometer) return;
+            if (!sRegion) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             

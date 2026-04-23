@@ -2756,11 +2756,12 @@ sap.ui.define([
 
 			const oBinding = oSelect.getBinding("items");
 
+			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype") || "";
 			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id") || "";
 
 			let aFilters = [];
 
-			if (sClaimTypeItem.endsWith("_L") || sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
+			if (sClaimTypeItem.endsWith("_L") || sClaimType === Constants.ClaimType.ELAUN_TUKAR) {
 				aFilters.push(new Filter(Constants.EntitiesFields.REGION_ID, FilterOperator.NE, Constants.Region.OVERSEA));
 
 			} else if (sClaimTypeItem.endsWith("_O")) {
