@@ -72,10 +72,17 @@ module.exports = {
                 case Constant.EntitiesFields.REGION_ID:
                     sRegionId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.TOTAL_TRAVELLER:
+                    iTotalTraveler = oPayload.CheckFields[i].value ? oPayload.CheckFields[i].value : 1;  // if null then default to 1
+                    break;
+                case Constant.EntitiesFields.TRAVEL_DAYS_ID:
+                    sTravelDaysId = oPayload.CheckFields[i].value;
+                    break;
+
             }
         }
 
-        return { sRegionId };
+        return { sRegionId, iTotalTraveler, sTravelDaysId };
     },
 
     /**
@@ -207,6 +214,81 @@ module.exports = {
                             fCurrentTotal,
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
+                }
+                break;
+
+            // DOBI - return true if user's traveling days >= eligible min days
+            case Constant.ClaimTypeItem.DOBI:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
+                if (iIndex == -1) return;
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                // calculate min days of traveling days required
+                else {
+                    oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(
+                        oPayload.CheckFields[iIndex].value,
+                        oRule.TRAVEL_DAYS_ID
+                    );
+                }
+                break;
+            
+            // HOTEL - return true if claim amount is less than eligible amount * travel days
+            case Constant.ClaimTypeItem.HOTEL_L:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
+                if (iIndex == -1) return;
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                // calculate max claim amount allowed
+                else {
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            parseFloat(oPayload.CheckFields[iIndex].value),
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId) * parseFloat(aPayload.iTotalTraveler)
+                        );
+                    }
+                }
+                break;
+
+            // FLIGHT_L - return true if selected flight class matches user's personal grade
+            case Constant.ClaimTypeItem.FLIGHT_L:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
+                if (iIndex == -1) return;
+                // if no rule matches the selected flight class, return false
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                else {
+                    oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                        oPayload.CheckFields[iIndex].value,
+                        oRule.FLIGHT_CLASS_ID
+                    );
+                }
+                break;
+
+            // TAMBANG - return true if selected transport class matches user's personal grade
+            case Constant.ClaimTypeItem.TAMBANG:
+                iIndex = oPayload.CheckFields.findIndex((field) =>
+                    field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
+
+                if (iIndex == -1) return;
+
+                // if no rule matches the selected transport class, return false
+                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
+                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
+                } else {
+                    oPayload.CheckFields[iIndex].result = true;
                 }
                 break;
         }

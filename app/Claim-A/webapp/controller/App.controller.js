@@ -544,7 +544,7 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimType: function (oEvent) {
+		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
 			// validate claim type
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -586,7 +586,7 @@ sap.ui.define([
 			// reset claim item
 			if (oInputModel.getProperty("/claimtype/item") !== null) {
 				oInputModel.setProperty("/claimtype/item", null);
-				this.onSelect_ClaimProcess_ClaimItem();
+				await this.onSelect_ClaimProcess_ClaimItem();
 			}
 			// reset course code
 			if (oInputModel.getProperty("/claimtype/course_code/course_id") !== null) {
@@ -595,7 +595,7 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_ClaimItem: function (oEvent) {
+		onSelect_ClaimProcess_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItem = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -632,7 +632,7 @@ sap.ui.define([
 			// reset request form
 			if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
 				oInputModel.setProperty("/claimtype/requestform/request_id", null);
-				this.onSelect_ClaimProcess_RequestForm();
+				await this.onSelect_ClaimProcess_RequestForm();
 			}
 		},
 
@@ -647,7 +647,7 @@ sap.ui.define([
 			}
 		},
 
-		onSelect_ClaimProcess_RequestForm: function (oEvent) {
+		onSelect_ClaimProcess_RequestForm: async function (oEvent) {
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -660,12 +660,13 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
-				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
 				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
 				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
-			
+
+				// populate cash advance amount based on items
+				oInputModel.setProperty("/claimtype/requestform/cash_advance", await Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
 			}
 			else {
 				// reset request form values
@@ -685,13 +686,13 @@ sap.ui.define([
 		* On enabling Email Approval, reset values for request form
 		* @public
 		*/
-		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
+		onSwitch_ClaimProcess_Req_EmailApprove: async function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			if (oInputModel.getProperty("/req_emailapprove")) {
 				// reset request form
 				if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
 					oInputModel.setProperty("/claimtype/requestform/request_id", null);
-					this.onSelect_ClaimProcess_RequestForm();
+					await this.onSelect_ClaimProcess_RequestForm();
 				}
 			}
 		},
