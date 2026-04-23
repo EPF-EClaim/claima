@@ -503,7 +503,8 @@ sap.ui.define([
             const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
                 var oConstants = aContexts.map(context => context.getObject())[0];
-                return oConstants.NUMBER_OF_DAYS;
+                // Return value - 1 to include date selected
+                return oConstants.NUMBER_OF_DAYS - 1;
             });
             
             return iMaxDays;

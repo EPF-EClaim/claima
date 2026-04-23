@@ -121,7 +121,7 @@ module.exports = {
 
         // ISTIADAT - reject if there is historical claims within same Period based on frequency
         if (iExistingFreq >= iAllowedFreq) {
-            throw new Error("Claim Type has already been submitted previously.");
+            throw new Error("Claim Type has exceeded allowed eligibility frequency.");
         }
 
         switch (oPayload.ClaimTypeItem) {
