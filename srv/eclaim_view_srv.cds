@@ -8,7 +8,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         EmpID                : String;
         SubmissionDate       : String;
         FinalAmounttoReceive : Decimal(15, 2);
-        CashAdvanceAmount    : Decimal(15, 2);
         LastModifiedDate     : String;
         Amount               : Decimal(15, 2);
         ReceiptDate          : String;
@@ -933,7 +932,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 LAST_MODIFIED_DATE,
                 SUBMITTED_DATE,
                 FINAL_AMOUNT_TO_RECEIVE,
-                CASH_ADVANCE_AMOUNT,
                 ZCLAIM_ITEM.RECEIPT_DATE,
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
