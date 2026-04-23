@@ -100,6 +100,7 @@
                                 { path: 'TRANSFER_MODE_DESC' }
                             ]
                         }"
+                        change="onChange_ModeOfTransfer"
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} }" 
                         editable="{= !${claimsubmission_input>/claimtype/requestform/request_id}}"                    
