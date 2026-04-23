@@ -3708,6 +3708,7 @@ sap.ui.define([
 			else {
 				oInputModel.setProperty("/claim_item/descr/from_state_id", null);
 			}
+			
 			// set filters
 			var sFromState = oInputModel.getProperty("/claim_item/from_state_id");
 			var aFilters = [new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.Status.ACTIVE)];
