@@ -69,7 +69,7 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	CustomValidator,
 	CustomDuplicationCheck,
-	Models,
+	models,
 	Constants,
 	Common
 ) {
@@ -149,8 +149,8 @@ sap.ui.define([
 				}
 			}), "appModel");
 
-			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
-			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
+			this.getView().setModel(models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
+			this.getView().setModel(models.createEditButtonModel(), "editButtonModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -2370,6 +2370,12 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
+			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+			){
+				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+			}
+
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
@@ -3365,7 +3371,7 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
-		onChange_ClaimDetails_NumberOfDays: async function () {
+		onChange_ClaimDetails_NumberOfDays: async function (oEvent) {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
@@ -3376,6 +3382,11 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
 			oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR) {
 				this._updateEntitlementAmount(oInputModel,oClaimSubmissionModel);
+			}
+			
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || 
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR){
+				this._onChangeTravelers(oEvent)
 			}
 		},
 
@@ -3555,12 +3566,47 @@ sap.ui.define([
 				console.error("Failed to calculate Rate Per KM", oError);
 			}
 		},
+		_onChangeTravelers: function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oInput = oEvent.getSource();
+			var iTravelers = parseInt(oInput.getValue(), 10);
+
+			var iMaxFamilyMembers = parseInt(oInputModel.getProperty("/claim_item/no_of_family_member"), 10);
+
+			oInput.setValueState("None");
+
+			if (isNaN(iTravelers)) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Please enter a valid number.");
+				return;
+			}
+
+			if (iTravelers > iMaxFamilyMembers) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers cannot exceed the number of family members (" + iMaxFamilyMembers + ").");
+				
+			} else if (iTravelers < 1) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers must be at least 1.");
+			}
+		},
 		onSelect_ClaimDetails_Region: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH || 
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PINDAH) {
 				ClaimUtility.fetchPemberianPindahAmount();
 			} else {
 				await this._calculatePerDiem();
+			}
+
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (oResult) {
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+					if (!oInputModel.getProperty("/claim_item/km")){
+						return;
+					}
+				}
 			}
 			await this._calculateRatePerKm(false);
 		},
