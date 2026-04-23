@@ -903,7 +903,7 @@
                     change="onSelect_ClaimDetails_FromLocationOffice"
                     liveChange="onSelect_ClaimDetails_FromLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-                    editable = "{= ${claimitem_input>/claim_item/from_state_id} !== null}"
+                    editable = "{= !!${claimitem_input>/claim_item/from_state_id} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false }}"
@@ -927,7 +927,7 @@
                             sorter: { path: 'TO_STATE_ID', descending: false }}"
 					change="onSelect_ClaimDetails_ToState"
 					liveChange="onSelect_ClaimDetails_ToState"
-                    editable = "{claimitem_property>/to_state/is_editable}"
+                    editable = "{= !!${claimitem_input>/claim_item/from_location_office}}"
                 >
                     <items>
                         <core:Item key="{employee_view>TO_STATE_ID}" 
@@ -952,7 +952,7 @@
                     change="onSelect_ClaimDetails_ToLocationOffice"
                     liveChange="onSelect_ClaimDetails_ToLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-                    editable = "{claimitem_property>/to_location_office/is_editable}"
+                    editable = "{= !!${claimitem_input>/claim_item/to_state_id}}"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
                             sorter: { path: 'TO_LOCATION_ID', descending: false }}">
