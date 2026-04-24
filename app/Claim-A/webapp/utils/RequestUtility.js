@@ -48,7 +48,7 @@ sap.ui.define([
                 switch (bEligibleForElaunTukar) {
                     case Constants.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY:
                         Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
-                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.WITH_FAMILY);
                         Fragment.byId("request", "req_transferfamilynowlater").setEnabled(false);
                         Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey(Constants.TravelWithFamilyNowOrLater.NOW);
                         break;
