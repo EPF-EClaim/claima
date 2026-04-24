@@ -275,8 +275,9 @@ sap.ui.define([
 			});
 		},
 
-		checkElaunTukarEligibility: async function (oDataModel) {
+		checkElaunTukarEligibility: async function (oDataModel, bIsClaim) {
             const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+			oFunction.setParameter("IS_CLAIM", bIsClaim);
 
             try {
                 await oFunction.execute();
