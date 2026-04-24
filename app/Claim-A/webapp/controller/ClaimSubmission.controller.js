@@ -598,7 +598,7 @@ sap.ui.define([
 					daily_allowance: it.DAILY_ALLOWANCE,
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
-					TOTAL_TRAVELLER: it.NUMBER_OF_TRAVELLERS,
+					number_of_travellers: it.TOTAL_TRAVELLER,
 					descr: {},
 				}));
 
@@ -2503,6 +2503,18 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
 				}
 
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+				){
+					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				}
+
+				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
+					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
+				}
+
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -3589,6 +3601,7 @@ sap.ui.define([
 			}
 		},
 		_onChangeTravelers: function (oEvent) {
+			if(!oEvent){return}
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oInput = oEvent.getSource();
 			var iTravelers = parseInt(oInput.getValue(), 10);
