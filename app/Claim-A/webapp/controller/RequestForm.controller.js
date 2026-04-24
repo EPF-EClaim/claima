@@ -651,7 +651,7 @@ sap.ui.define([
 				tarikh_pindah			: oReqItem.TRANSFER_DATE || "",
 				sss						: oReqItem.REGION || "",
 				marriage_cat			: oReqItem.MARRIAGE_CATEGORY || "",
-				cube_eligible			: oReqItem.METER_CUBE_ENTITLED | 0,
+				cube_eligible			: parseFloat(oReqItem.METER_CUBE_ENTITLED) || 0,
 				departure_time			: oReqItem.DEPARTURE_TIME || "",
 				arrival_time			: oReqItem.ARRIVAL_TIME || "",
 				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,

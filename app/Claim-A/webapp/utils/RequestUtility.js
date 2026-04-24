@@ -324,7 +324,7 @@ sap.ui.define([
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
-            var nDependent      = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 0;
+            var nDependent      = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
 
             if (sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
                 var nTravelDay      = oReqItem.no_of_days || 0;
