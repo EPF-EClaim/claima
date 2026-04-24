@@ -2074,21 +2074,6 @@ module.exports = (srv) => {
                 }
             }
 
-            // Check Requests Second
-            for (const request of aExistingRequests) {
-                const sStatus = request.STATUS; 
-                if (sStatus === Constant.Status.DRAFT) return Constant.ElaunTukarStatus.ON_GOING; 
-                
-                if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
-                        request.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
-                    } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
-                    }
-                }
-            }
-
         } else {
             // ==========================================
             // IF TRIGGERED FROM REQUEST UI
