@@ -191,7 +191,7 @@ module.exports = {
                     } else {
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
                             parseFloat(oPayload.CheckFields[iIndex].value),
-                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId) * parseFloat(aPayload.iTotalTraveler)
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
                         );
                     }
                 }

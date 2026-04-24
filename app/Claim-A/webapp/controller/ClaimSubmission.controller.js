@@ -1629,7 +1629,7 @@ sap.ui.define([
 
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR &&
-						await EligibilityCheck.checkElaunTukarEligibility(this._oModel) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
+						await EligibilityCheck.checkElaunTukarEligibility(this._oModel, true) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
 						MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
 						return;
 					}
