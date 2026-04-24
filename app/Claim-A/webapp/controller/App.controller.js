@@ -1491,7 +1491,7 @@ sap.ui.define([
 			];
 
 			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
-				this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel);
+				this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel, false);
 				switch (this._bEligibleForElaunTukar) {
 					case this._oConstant.ElaunTukarStatus.NOT_ALLOWED:
 						aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));
