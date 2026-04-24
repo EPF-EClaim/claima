@@ -2065,7 +2065,7 @@ module.exports = (srv) => {
                 
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
                     if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
-                        claim.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
+                        claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
                     } else {
                         return Constant.ElaunTukarStatus.NOT_ALLOWED; 
@@ -2085,9 +2085,10 @@ module.exports = (srv) => {
                 
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
                     if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
-                        request.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
+                        request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
                     } else {
+                        console.log("here_req", request)
                         return Constant.ElaunTukarStatus.NOT_ALLOWED; 
                     }
                 }
@@ -2100,7 +2101,7 @@ module.exports = (srv) => {
                 
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
                     if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
-                        claim.TRAVEL_WITH_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
+                        claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
                     } else {
                         return Constant.ElaunTukarStatus.NOT_ALLOWED; 

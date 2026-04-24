@@ -637,8 +637,8 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE || 0,
-				toll_amt				: oReqItem.TOLL || 0,
+				rate_per_kilometer		: parseFloat(oReqItem.RATE) || 0,
+				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
 				from_state				: oReqItem.FROM_STATE_ID || "",
@@ -1191,6 +1191,10 @@ sap.ui.define([
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
 					var dtDeparture_date = new Date(oReqItem.departure_time).toISOString() || null;
 					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
+				}
+
+				if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.DARAT) {
+					oReqItem.rate_per_kilometer_id = await Utility.getRatePerKmId(this._oDataModel, oReqItem.rate_per_kilometer, oReqHeader.tripstartdate);
 				}
 
 				let oPayload = {
