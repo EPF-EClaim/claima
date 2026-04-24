@@ -2052,7 +2052,6 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 3. Logic Branch: CLAIM SIDE vs REQUEST SIDE
         // ---------------------------------------------------------
-        console.log(bIsClaimSide);
         
         if (bIsClaimSide) {
             // ==========================================
@@ -2109,7 +2108,6 @@ module.exports = (srv) => {
                 }
             }
         }
-        console.log(sFinalStatus);
         // ---------------------------------------------------------
         // 4. Passed all checks - Return Final Status
         // ---------------------------------------------------------
