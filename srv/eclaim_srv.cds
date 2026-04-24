@@ -1467,5 +1467,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 
-    function checkElaunTukarEligible()                                                         returns Boolean;
+    function checkElaunTukarEligible(IS_CLAIM: Boolean)                                        returns Boolean;
 };

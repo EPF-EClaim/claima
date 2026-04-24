@@ -152,6 +152,7 @@ sap.ui.define([
 
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
                         this._calculateTravelDuration();
                         fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
                         if (!!oReqItem.currency_rate) {
@@ -166,18 +167,6 @@ sap.ui.define([
                         var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
-                        }
-                        break;
-                    
-                    case Constants.ClaimTypeItem.MKN_TUKAR:
-                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
-                        this._calculateTravelDuration();
-                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
-                        if (!!oReqItem.currency_rate) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
-                        }
-                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
                         }
                         break;
@@ -335,10 +324,11 @@ sap.ui.define([
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
+            var nDependent      = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 0;
 
             if (sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
                 var nTravelDay      = oReqItem.no_of_days || 0;
-                var nTravelHour     = oReqItem.no_of_days * 24 || 0;
+                var nTravelHour     = oReqItem.no_of_days * 24 || 1;
             }
 
             if (!nTravelHour || !sRegion) return;
@@ -355,7 +345,7 @@ sap.ui.define([
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
             oFunction.setParameter("exclude_tips", true);
-            oFunction.setParameter("dependent", 0);
+            oFunction.setParameter("dependent", nDependent);
 
             try {
                 await oFunction.execute();
