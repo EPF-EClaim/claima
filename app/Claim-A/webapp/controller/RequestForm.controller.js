@@ -637,7 +637,7 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: parseFloat(oReqItem.RATE) || 0,
+				rate_per_kilometer		: parseFloat(oReqItem.RATE_PER_KM) || 0,
 				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
@@ -1193,10 +1193,6 @@ sap.ui.define([
 					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
 				}
 
-				if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.DARAT) {
-					oReqItem.rate_per_kilometer_id = await Utility.getRatePerKmId(this._oDataModel, oReqItem.rate_per_kilometer, oReqHeader.tripstartdate);
-				}
-
 				let oPayload = {
 					EMP_ID: 					  sEmpId,
 					REQUEST_ID:                   sReqId,
@@ -1242,7 +1238,7 @@ sap.ui.define([
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
 					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
 					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
+					RATE_PER_KM:                  oReqItem.rate_per_kilometer || null,
 					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
