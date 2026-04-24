@@ -2510,7 +2510,8 @@ sap.ui.define([
 				}
 
 				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
-					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR && 
+					oPropertyModel.getProperty("/no_of_family_member/is_visible")){
 					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
 					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
 				}
