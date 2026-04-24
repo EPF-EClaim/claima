@@ -524,33 +524,6 @@ sap.ui.define([
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
                 return null; 
             }
-        },
-
-        /**
-         * get rate per km id for db saving purposes.
-         * @param {Object} oDataModel 
-         * @param {Float} fRate 
-         * @returns {String} RATE_KM_ID
-         */
-        getRatePerKmId: async function (oDataModel, fRate, dTripStartDate) {
-            const oListBinding = oDataModel.bindList("/ZRATE_KM", null, null, [
-                new Filter("RATE", FilterOperator.EQ, fRate),
-                new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, Constants.ClaimTypeItem.DARAT),
-				new Filter("START_DATE", FilterOperator.LE, dTripStartDate),
-				new Filter("END_DATE", FilterOperator.GE, dTripStartDate),
-				new Filter("STATUS", FilterOperator.EQ, Constants.ClaimTypeItemStatus.ACTIVE,)
-			]);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return oData.RATE_KM_ID;
-                }
-			} catch (oError) {
-				console.error("Error fetching Rate Per KM detail", oError);
-			}
         }
 
     };
