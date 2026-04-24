@@ -3635,6 +3635,7 @@ sap.ui.define([
 			}
 
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				Utility.init(this.getOwnerComponent(), this.getView());
 				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
 				if (oResult) {
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
