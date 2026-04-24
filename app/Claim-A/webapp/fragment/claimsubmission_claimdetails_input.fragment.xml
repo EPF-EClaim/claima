@@ -850,7 +850,7 @@
                 <Input
                     id="input_claimdetails_input_from_location"
                     value="{claimitem_input>/claim_item/from_location}"
-                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    visible="{claimitem_property>/from_location/is_visible}"
                     required="true"
                 />
                 <!-- From Location Office -->
@@ -899,7 +899,7 @@
                 <Input
                     id="input_claimdetails_input_to_location"
                     value="{claimitem_input>/claim_item/to_location}"
-                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    visible="{claimitem_property>/to_location/is_visible}"
                     required="true"
                 />
                 <!-- To Location Office -->
