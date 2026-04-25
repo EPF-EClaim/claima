@@ -293,6 +293,10 @@ sap.ui.define([
                 case Constants.EntitiesFields.START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMinDate = new Date(oHeader.tripstartdate);
+                                _dMinDate.setDate(_dMinDate.getDate());
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -317,6 +321,10 @@ sap.ui.define([
                 case Constants.EntitiesFields.END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMinDate = new Date(oHeader.tripstartdate);
+                                _dMinDate.setDate(_dMinDate.getDate());
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -468,6 +476,22 @@ sap.ui.define([
                             break;
                     }
                     break;
+
+                case Constants.EntitiesFields.TRANSFER_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMinDate = new Date(oHeader.tripstartdate);
+                                _dMinDate.setDate(_dMinDate.getDate());
+                            }
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
+                            break;
+                    }
+                    break;
+
             }
             if (_dMinDate !== null) {
                 _dMinDate = new Date(_dMinDate);
@@ -535,6 +559,10 @@ sap.ui.define([
                 case Constants.EntitiesFields.START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMaxDate = new Date(oHeader.tripenddate);
+                                _dMaxDate.setDate(_dMaxDate.getDate());
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -576,6 +604,10 @@ sap.ui.define([
                 case Constants.EntitiesFields.END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMaxDate = new Date(oHeader.tripenddate);
+                                _dMaxDate.setDate(_dMaxDate.getDate());
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -710,6 +742,21 @@ sap.ui.define([
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_trip_end_date_in_future"));
                             }
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.TRANSFER_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                _dMaxDate = new Date(oHeader.tripenddate);
+                                _dMaxDate.setDate(_dMaxDate.getDate());
+                            }
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
                             break;
                     }
                     break;

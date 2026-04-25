@@ -361,15 +361,50 @@
                                             visible="false"
                                             id="i_start_date" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/start_date}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/start_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true" 
                                             change=".onSelectDate"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/START_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/START_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/START_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -378,15 +413,50 @@
                                             visible="false"
                                             id="i_end_date" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/end_date}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/end_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true" 
                                             change=".onSelectDate"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -870,14 +940,49 @@
                                             visible="false"
                                             id="i_tarikh_pindah" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/tarikh_pindah}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/tarikh_pindah',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1010,7 +1115,7 @@
                                             visible="false"
                                             id="i_trip_start_date" >
                                     <form:fields>
-                                        <m:DatePicker
+                                        <DatePicker
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -1027,7 +1132,7 @@
                                             visible="false"
                                             id="i_trip_end_date" >
                                     <form:fields>
-                                        <m:DatePicker
+                                        <DatePicker
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"

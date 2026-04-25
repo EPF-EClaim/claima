@@ -1836,13 +1836,19 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { ZELIGIBILITY_RULE } = srv.entities;
-        const { sRegion, fKilometer } = req.data;
+        const { sRegion, fKilometer, bIsAlone } = req.data;
 
         if (oEmp) {
-            const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+            let sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+            let sMaritalStatus = oEmp.MARITAL;
 
             if (!sMarriageCategory) {
                 req.error(404, `No marriage category available for employee.`);
+            }
+
+            if (sMarriageCategory !== Constant.MarriageCategory.SINGLE && bIsAlone) {
+                sMarriageCategory = Constant.MarriageCategory.SINGLE;
+                sMaritalStatus = Constant.MaritalStatus.SINGLE;
             }
 
             const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -1850,7 +1856,7 @@ module.exports = (srv) => {
             const oEligibilityRule = await SELECT.one.from(ZELIGIBILITY_RULE).where({
                 CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_TUKAR,
                 CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.DARAT,
-                MARITAL_STATUS: oEmp.MARITAL,
+                MARITAL_STATUS: sMaritalStatus,
                 MARRIAGE_CATEGORY: sMarriageCategory,
                 REGION_ID: sRegion,
                 STATUS: Constant.ConfigStatus.ACTIVE,
@@ -1864,7 +1870,7 @@ module.exports = (srv) => {
             if (!oEligibilityRule) {
                 req.error(404, `Eligibility not found.`);
             }
-
+            console.log(oEligibilityRule);
             const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
             const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
 

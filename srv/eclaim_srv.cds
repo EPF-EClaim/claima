@@ -460,7 +460,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
     function getPengangkutanDaratAmount(
                                         sRegion     : String,
-                                        fKilometer  : Decimal(5, 2)
+                                        fKilometer  : Decimal(5, 2),
+                                        bIsAlone    : Boolean
                                     )                                                          returns DaratAmounts;
 
     type PemPindahAmount {

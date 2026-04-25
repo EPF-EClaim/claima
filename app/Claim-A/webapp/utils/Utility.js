@@ -443,7 +443,7 @@ sap.ui.define([
          * method to call the backend service to get Pengangkutan Darat Amount
          * @param {String} sSubmissionType 
          */
-        determineDaratAmount: async function (sSubmissionType) {
+        determineDaratAmount: async function (sSubmissionType, bIsAlone) {
             const oDataModel = this._oOwnerComponent.getModel();
             let sRegion, fKilometer;
 
@@ -471,6 +471,7 @@ sap.ui.define([
             
             oFunction.setParameter("sRegion", sRegion);
             oFunction.setParameter("fKilometer", fKilometer);
+            oFunction.setParameter("bIsAlone", bIsAlone)
 
             try {
                 BusyIndicator.show(0); 

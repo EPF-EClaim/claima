@@ -164,7 +164,7 @@
 							source: {
 								pattern: 'yyyy-MM-dd'
 							},
-							pattern: 'dd-MMM-yyyy'
+							pattern: 'dd MMM yyyy'
 						}
 					}"
 					showCurrentDateButton="true"
@@ -233,7 +233,7 @@
 							source: {
 								pattern: 'yyyy-MM-dd'
 							},
-							pattern: 'dd-MMM-yyyy'
+							pattern: 'dd MMM yyyy'
 						}
 					}"
 					showCurrentDateButton="true"

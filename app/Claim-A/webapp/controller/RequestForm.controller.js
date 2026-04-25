@@ -79,6 +79,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.RequestForm", {
 
+		DateUtility: DateUtility,
+
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
