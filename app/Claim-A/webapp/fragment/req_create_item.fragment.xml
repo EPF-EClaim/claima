@@ -1022,17 +1022,19 @@
 
                                 <!-- Marriage Category -->
                                 <form:FormElement label="{i18n>req_i_marriage}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} }"
                                             id="i_marriage_cat" >
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/marriage_cat}" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            required="true"
                                             items="{path: 'employee>/ZMARITAL_CAT',
                                                     sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".onInputAllocatedAmount">
                                             <items>
                                                 <core:Item key="{employee>MARRIAGE_CATEGORY_ID}" 
                                                         text="{employee>MARRIAGE_CATEGORY_DESC}" />

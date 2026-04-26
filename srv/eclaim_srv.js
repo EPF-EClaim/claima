@@ -1836,19 +1836,23 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const { ZELIGIBILITY_RULE } = srv.entities;
-        const { sRegion, fKilometer, bIsAlone } = req.data;
+        const { sRegion, fKilometer } = req.data;
 
         if (oEmp) {
-            let sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
-            let sMaritalStatus = oEmp.MARITAL;
+            if(req.data.sMaritalCategory){
+                var sMarriageCategory = req.data.sMaritalCategory;
+                if(req.data.sMaritalCategory == Constant.MarriageCategory.SINGLE){
+                    var sMaritalStatus = Constant.MaritalStatus.SINGLE;
+                }else{
+                    var sMaritalStatus = oEmp.MARITAL;
+                }
+            }else{
+                var sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+                var sMaritalStatus = oEmp.MARITAL;
+            }
 
             if (!sMarriageCategory) {
                 req.error(404, `No marriage category available for employee.`);
-            }
-
-            if (sMarriageCategory !== Constant.MarriageCategory.SINGLE && bIsAlone) {
-                sMarriageCategory = Constant.MarriageCategory.SINGLE;
-                sMaritalStatus = Constant.MaritalStatus.SINGLE;
             }
 
             const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -1895,16 +1899,22 @@ module.exports = (srv) => {
 
         try {
             if (oEmp) {
-                const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
-
+                if(req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE_DESC || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER_DESC){
+                    var sMarriageCategory = Constant.MarriageCategory.SINGLE;
+                    var sEmpMarital = Constant.MaritalStatus.SINGLE
+                }else{
+                    var sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
+                    var sEmpMarital = oEmp.MARITAL;
+                }
+                
                 if (!sMarriageCategory) {
                     req.error(404, `No marriage category available for employee.`);
                 }
 
                 const sTodayDate = new Date().toISOString().slice(0, 10);
                 var aMaritalStatusValues = [Constant.Wildcard.All];
-                if (oEmp.MARITAL) {
-                    aMaritalStatusValues.push(oEmp.MARITAL);
+                if (sEmpMarital) {
+                    aMaritalStatusValues.push(sEmpMarital);
                 }
                 var aMarriageCategoryValues = [Constant.Wildcard.All];
                 if (sMarriageCategory) {
