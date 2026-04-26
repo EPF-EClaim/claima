@@ -2524,6 +2524,10 @@ sap.ui.define([
 					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
 				}
 
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC){
+					oPropertyModel.setProperty("/marriage_category/is_visible", true);
+				}
+
 				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
 				Utility.init(this.getOwnerComponent(), this.getView());
 				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
@@ -3677,6 +3681,7 @@ sap.ui.define([
 					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
 					if (oResult) {
 						oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+						await this._calculateRatePerKm(false);
 						if (!oInputModel.getProperty("/claim_item/km")){
 							return;
 						}
