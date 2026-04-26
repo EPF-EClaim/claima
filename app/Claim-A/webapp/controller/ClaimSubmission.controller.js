@@ -2367,6 +2367,11 @@ sap.ui.define([
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
+				case this._oConstant.ClaimTypeItem.DARAT:
+					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC){
+						oPropertyModel.setProperty("/marriage_category/is_visible", true);
+					}
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2463,6 +2468,7 @@ sap.ui.define([
 				combo_dependent: { is_editable: true },
 				to_location: { is_visible: false },
 				from_location: { is_visible: false },
+				marriage_category: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -3661,6 +3667,23 @@ sap.ui.define([
 			await this._calculateRatePerKm(false);
 		},
 
+		onSelect_ClaimDetails_MarriageCategory: async function (){
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				if(oInputModel.getProperty("/claim_item/region") == null){
+					return;
+				}else{
+					Utility.init(this.getOwnerComponent(), this.getView());
+					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+					if (oResult) {
+						oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+						if (!oInputModel.getProperty("/claim_item/km")){
+							return;
+						}
+					}
+				}
+			}
+		},
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time

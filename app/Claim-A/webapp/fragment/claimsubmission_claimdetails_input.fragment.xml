@@ -183,8 +183,10 @@
                     selectedKey="{claimitem_input>/claim_item/marriage_category}"
                     forceSelection="false"
 					editable="{= !${claimsubmission_input>/view_only} }"
-                    visible="false"
+                    visible="{claimitem_property>/marriage_category/is_visible}"
                     required="true"
+                    change="onSelect_ClaimDetails_MarriageCategory"
+                    liveChange="onSelect_ClaimDetails_MarriageCategory"
                     items="{
                         path: 'employee>/ZMARITAL_CAT',
                         sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false }

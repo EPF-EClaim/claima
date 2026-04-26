@@ -536,7 +536,8 @@ sap.ui.define([
         "TravelWithFamilyNowOrLater": {
             "NOW": "1",
             "LATER": "2",
-            "LATER_DESC": "Travel with Family on Later Date"
+            "LATER_DESC": "Travel with Family on Later Date",
+            "NOW_DESC": "Travel with Family Now"
         }, 
         "PARSpecialFieldVisibilityForElaunTukar": {
             "NumberOfFamilyMember": "i_no_of_family_member",
