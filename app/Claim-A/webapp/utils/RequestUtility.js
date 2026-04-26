@@ -483,6 +483,8 @@ sap.ui.define([
 			oFunction.setParameter("sRegion", oReqModel.getProperty("/req_item/sss"));
 			oFunction.setParameter("sClaimType", oReqModel.getProperty("/req_header/claimtype"));
 			oFunction.setParameter("sClaimTypeItem", oReqModel.getProperty("/req_item/claim_type_item_id"));
+            oFunction.setParameter("sTravelAloneFamily", oReqModel.getProperty("/req_header/transferalonefamily"));
+            oFunction.setParameter("sTravelFamilyNowLater", oReqModel.getProperty("/req_header/transferfamilynowlater"));
 
             try {
                 await oFunction.execute();

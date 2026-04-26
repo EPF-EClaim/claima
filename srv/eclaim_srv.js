@@ -1899,7 +1899,8 @@ module.exports = (srv) => {
 
         try {
             if (oEmp) {
-                if(req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE_DESC || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER_DESC){
+                if((req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE_DESC || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER_DESC) ||
+                    (req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER)){
                     var sMarriageCategory = Constant.MarriageCategory.SINGLE;
                     var sEmpMarital = Constant.MaritalStatus.SINGLE
                 }else{
