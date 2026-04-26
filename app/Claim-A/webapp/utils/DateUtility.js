@@ -274,7 +274,7 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // Default Claim Type - minimum date = 90 days before header start date 
-                            if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR)  {
                                 _dMinDate = new Date(oHeader.trip_start_date);
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_receipt_date_in_past"));
@@ -303,7 +303,7 @@ sap.ui.define([
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_start_date_kursus_mindate"));
-                            } else if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            } else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 // Elaun Perpindahan - minimum date = move-in date
                                 _dMinDate = new Date(oHeader["trip_start_date"]);
                                 const dPastDate = new Date(_dMinDate);
@@ -334,7 +334,7 @@ sap.ui.define([
                                     _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("error_end_date_kursus_mindate"));
                                 }
-                            } else if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            } else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 _dMinDate = new Date(oHeader["trip_start_date"]);
                                 const dPastDate = new Date(_dMinDate);
                                 _dMinDate = dPastDate;
@@ -505,7 +505,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 // Elaun Perpindahan - maximum date = trip end date
                                 _dMaxDate = new Date(oHeader.trip_end_date);
                                 // set validator error message
@@ -555,7 +555,7 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_start_date_kursus_maxdate"));
                                 }
                             }
-                            else if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 // Elaun Perpindahan - maximum date = trip end date
                                 _dMaxDate = new Date(oHeader["trip_end_date"]);
                                 // set validator error message
@@ -587,7 +587,7 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_end_date_kursus_maxdate"));
                             }
-                            else if (sType === Constants.ClaimType.ELAUN_PINDAH) {
+                            else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 // Elaun Perpindahan - maximum date = trip end date
                                 _dMaxDate = new Date(oHeader["trip_end_date"]);
                                 // set validator error message

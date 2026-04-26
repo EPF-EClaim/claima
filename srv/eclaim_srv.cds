@@ -460,7 +460,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
     function getPengangkutanDaratAmount(
                                         sRegion     : String,
-                                        fKilometer  : Decimal(5, 2)
+                                        fKilometer  : Decimal(5, 2),
+                                        sMaritalCategory: String
                                     )                                                          returns DaratAmounts;
 
     type PemPindahAmount {
@@ -471,7 +472,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getUserEligibleAmountPemPindah(
         sRegion: String,
         sClaimType: String,
-        sClaimTypeItem: String
+        sClaimTypeItem: String,
+        sTravelAloneFamily: String,
+        sTravelFamilyNowLater: String
         )                                                                                      returns PemPindahAmount;
     
     type PEAValidationResult {

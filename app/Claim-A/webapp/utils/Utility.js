@@ -445,7 +445,7 @@ sap.ui.define([
          */
         determineDaratAmount: async function (sSubmissionType) {
             const oDataModel = this._oOwnerComponent.getModel();
-            let sRegion, fKilometer;
+            let sRegion, fKilometer,sMaritalCategory;
 
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
@@ -456,8 +456,16 @@ sap.ui.define([
 
                  case Constants.SubmissionTypePrefix.CLAIM:
                     const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    const sTravelAloneFamily = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_alone_family");
+                    const sTravelFamilyNowLater = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_family_now_later");
+
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
+                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC){
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    }else{
+                        sMaritalCategory = oItem.marriage_category ? oItem.marriage_category : null;
+                    }
                     break;
                 
                 default:
@@ -471,6 +479,7 @@ sap.ui.define([
             
             oFunction.setParameter("sRegion", sRegion);
             oFunction.setParameter("fKilometer", fKilometer);
+            oFunction.setParameter("sMaritalCategory", sMaritalCategory);
 
             try {
                 BusyIndicator.show(0); 
