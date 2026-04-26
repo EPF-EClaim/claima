@@ -287,7 +287,8 @@ sap.ui.define([
             "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
             "REQUEST_TYPE": "REQUEST_TYPE",
             "WITH_FAMILY": "2",
-            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now"
+            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
+            "TRANSFER_DATE": "TRANSFER_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -536,7 +537,8 @@ sap.ui.define([
         "TravelWithFamilyNowOrLater": {
             "NOW": "1",
             "LATER": "2",
-            "LATER_DESC": "Travel with Family on Later Date"
+            "LATER_DESC": "Travel with Family on Later Date",
+            "NOW_DESC": "Travel with Family Now"
         }, 
         "PARSpecialFieldVisibilityForElaunTukar": {
             "NumberOfFamilyMember": "i_no_of_family_member",

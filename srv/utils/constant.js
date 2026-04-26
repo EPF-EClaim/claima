@@ -326,7 +326,7 @@ const Constant = {
     TravelAloneOrWithFamily: {
         ALONE: "1",
         WITH_FAMILY: "2",
-        ALONE_DESC: "ALONE",
+        ALONE_DESC: "Alone",
         WITH_FAMILY_DESC: "With Family"
     },
     TravelWithFamilyNowOrLater: {
@@ -334,6 +334,12 @@ const Constant = {
         LATER: "2",
         LATER_DESC: "Travel with Family on Later Date"
     }, 
+    MarriageCategory: {
+        SINGLE: "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
+    }
 
 };
 

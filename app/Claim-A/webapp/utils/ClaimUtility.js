@@ -680,6 +680,8 @@ sap.ui.define([
 			oContext.setParameter("sRegion", oInputModel.getProperty("/claim_item/region"));
 			oContext.setParameter("sClaimType", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 			oContext.setParameter("sClaimTypeItem", oInputModel.getProperty("/claim_item/claim_type_item_id"));
+			oContext.setParameter("sTravelAloneFamily", oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family"));
+			oContext.setParameter("sTravelFamilyNowLater", oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later"));
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())
