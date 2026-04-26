@@ -287,7 +287,8 @@ sap.ui.define([
             "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
             "REQUEST_TYPE": "REQUEST_TYPE",
             "WITH_FAMILY": "2",
-            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now"
+            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
+            "TRANSFER_DATE": "TRANSFER_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",

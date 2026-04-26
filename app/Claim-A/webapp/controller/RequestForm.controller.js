@@ -79,6 +79,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.RequestForm", {
 
+		DateUtility: DateUtility,
+
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
@@ -2330,7 +2332,6 @@ sap.ui.define([
 				"i_tarikh_pindah",
 				"i_no_of_days_3",
 				"i_sss",
-				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",

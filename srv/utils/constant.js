@@ -334,6 +334,12 @@ const Constant = {
         LATER: "2",
         LATER_DESC: "Travel with Family on Later Date"
     }, 
+    MarriageCategory: {
+        SINGLE: "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
+    }
 
 };
 

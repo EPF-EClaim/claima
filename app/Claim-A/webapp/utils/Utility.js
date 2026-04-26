@@ -443,15 +443,25 @@ sap.ui.define([
          * method to call the backend service to get Pengangkutan Darat Amount
          * @param {String} sSubmissionType 
          */
-        determineDaratAmount: async function (sSubmissionType) {
+        determineDaratAmount: async function (sSubmissionType, bIsAlone) {
             const oDataModel = this._oOwnerComponent.getModel();
             let sRegion, fKilometer,sMaritalCategory;
 
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
                     const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
-                    sRegion       = oReqItem.sss; 
-                    fKilometer    = oReqItem.kilometer;
+                    const oReqHeader = this._oOwnerComponent.getModel("request").getProperty("/req_header");
+
+                    sRegion         = oReqItem.sss; 
+                    fKilometer      = oReqItem.kilometer;
+
+                    if (oReqHeader.transferalonefamily === Constants.TravelAloneOrWithFamily.ALONE || 
+                        oReqHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.LATER) {
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    } else {
+                        sMaritalCategory = oReqItem.marriage_cat ? oReqItem.marriage_cat : null;
+                    }
+
                     break;
 
                  case Constants.SubmissionTypePrefix.CLAIM:
@@ -473,7 +483,7 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion) return;
+            if (!sRegion, !sMaritalCategory) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             

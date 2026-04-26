@@ -1874,7 +1874,7 @@ module.exports = (srv) => {
             if (!oEligibilityRule) {
                 req.error(404, `Eligibility not found.`);
             }
-
+            console.log(oEligibilityRule);
             const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
             const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
 
