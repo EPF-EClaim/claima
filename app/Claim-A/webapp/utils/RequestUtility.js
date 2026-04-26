@@ -194,7 +194,7 @@ sap.ui.define([
                         fCalculatedAllocatedAmount = await this._getPemberianPindahAmount();
                         break;
                     
-                    default:
+                    case Constants.ClaimTypeItem.KILOMETER:
                         // calculate kilometer amount 
                         fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
                         break;
