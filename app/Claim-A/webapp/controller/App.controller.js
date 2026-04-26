@@ -923,6 +923,12 @@ sap.ui.define([
 		onTravelAloneFamilySelect: function(oEvent){
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
+			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oEvent.getSource().getSelectedItem().getText());
+		},
+		onSelectTravelFamilyNowLater: function(oEvent){
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/claim_header/travel_family_now_later", oEvent.getSource().getSelectedItem().getKey());
+			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oEvent.getSource().getSelectedItem().getText());
 		},
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
@@ -1831,6 +1837,10 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/trip_end_date", null);
 				}
 			}
+
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/claim_header/mode_of_transfer", oEvent.getSource().getSelectedItem().getKey());
+			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oEvent.getSource().getSelectedItem().getText());
 		}
 	});
 });
