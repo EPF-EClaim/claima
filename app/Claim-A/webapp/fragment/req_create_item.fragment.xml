@@ -1000,7 +1000,9 @@
 
                                 <!-- Marriage Category -->
                                 <form:FormElement label="{i18n>req_i_marriage}"
-                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} }"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} &amp;&amp;
+                                                      ( ${request>/req_header/transferalonefamily} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY} &amp;&amp;
+                                                        ${request>/req_header/transferfamilynowlater} === ${constant>/TravelWithFamilyNowOrLater/NOW} ) }"
                                             id="i_marriage_cat" >
                                     <form:fields>
                                         <Select 
