@@ -954,28 +954,6 @@
                                             }"
                                             required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            minDate="{
-                                                parts: [
-                                                    'constant>/EntitiesFields/END_DATE',
-                                                    'constant>/SubmissionTypePrefix/REQUEST',
-                                                    'request>/req_header/claimtype',
-                                                    'request>/req_item/claim_type_item_id',
-                                                    'request>/req_header',
-                                                    'request>/req_item'
-                                                ],
-                                                formatter: '.DateUtility.determineMinDate'
-                                            }"
-                                            maxDate="{
-                                                parts: [
-                                                    'constant>/EntitiesFields/END_DATE',
-                                                    'constant>/SubmissionTypePrefix/REQUEST',
-                                                    'request>/req_header/claimtype',
-                                                    'request>/req_item/claim_type_item_id',
-                                                    'request>/req_header',
-                                                    'request>/req_item'
-                                                ],
-                                                formatter: '.DateUtility.determineMaxDate'
-                                            }"
                                         >
                                             <customData>
                                                 <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
