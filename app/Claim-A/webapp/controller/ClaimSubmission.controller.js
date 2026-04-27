@@ -403,7 +403,18 @@ sap.ui.define([
 				}
 			}
 		},
+		onSelectCountry: async function(oEvent){
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == Constants.ClaimTypeItem.LODG_O){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.CLAIM);
+				
+				oInputModel.setProperty("/claim_item/lodging_category", oResult.sCategory);
+				oInputModel.setProperty("/claim_item/amount", oResult.iEligibleAmount);
+			}
+			
 
+		},
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
@@ -3423,8 +3434,10 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
-			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItemLodging.LODG_O ){
+				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+					oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
+				}
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
@@ -4217,7 +4230,6 @@ sap.ui.define([
 					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
-					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				//// addon for new claim
