@@ -374,7 +374,8 @@ sap.ui.define([
         },
         "Default": {
             "PROJECT_CODE": "NA",
-            "NULL": "null"
+            "NULL": "null",
+            "CASH_REPAY_GL": "244002"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",

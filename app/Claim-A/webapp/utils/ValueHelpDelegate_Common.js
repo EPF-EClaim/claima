@@ -136,8 +136,8 @@ sap.ui.define([
         oBindingInfo.parameters.threshold = 300;
 
         const oView = oValueHelp.getParent();
-        const sClaimTypeItem = oView.getModel("claimitem_input").getProperty("/claim_item/claim_type_item_id");
-        const sReqTypeItem = oView.getModel("request").getProperty("/req_item/claim_type_item_id");
+        const sClaimTypeItem = oView.getModel("claimitem_input")?.getProperty("/claim_item/claim_type_item_id") || null;
+        const sReqTypeItem = oView.getModel("request")?.getProperty("/req_item/claim_type_item_id") || null;
 
         if((!!sClaimTypeItem && sClaimTypeItem == Constants.ClaimTypeItemLodging.LODG_O) ||
             (!!sReqTypeItem && sReqTypeItem == Constants.ClaimTypeItemLodging.LODG_O) ){
