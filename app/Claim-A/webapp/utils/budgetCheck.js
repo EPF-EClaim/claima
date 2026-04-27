@@ -102,7 +102,7 @@ sap.ui.define([
 					var sDate			= new Date();
 					var sYear			= String(sDate.getFullYear());
 					var sFundCenter		= oHeader.alternate_cost_center || oHeader.cost_center;
-					var sInternalCode	= oHeader.project_code || "1";	// todo change to NA after flush db
+					var sInternalCode	= oHeader.project_code || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 					var sCommitmentItem	= await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
 
 					var aReturn = aItemRows
