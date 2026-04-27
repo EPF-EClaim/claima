@@ -490,7 +490,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     type LodgingOverseaAmountAndCat {
         sCategory: String;
-        iEligibleAmount: Decimal(15, 2);
+        iEligibleAmount: Decimal(16, 2);
     }
 
     function getLodgingOverseaAmountAndCat (sCountry: String, sClaimType: String, sClaimTypeItem: String) returns LodgingOverseaAmountAndCat;

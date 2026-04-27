@@ -404,6 +404,15 @@ sap.ui.define([
 			}
 		},
 		onSelectCountry: async function(oEvent){
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == Constants.ClaimTypeItem.LODG_O){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.CLAIM);
+				
+				oInputModel.setProperty("/claim_item/lodging_category", oResult.sCategory);
+				oInputModel.setProperty("/claim_item/amount", oResult.iEligibleAmount);
+			}
+			
 
 		},
 		_loadClaimById: async function (sClaimId) {

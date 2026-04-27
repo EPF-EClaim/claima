@@ -2165,7 +2165,7 @@ module.exports = (srv) => {
         const { ZCOUNTRY } = srv.entities;
         const sTodayDate = new Date().toISOString().slice(0, 10);
         try{
-            var oCountry = await tx.run(SELECT.one
+            var oLodgingCategory = await tx.run(SELECT.one
                 .from(Constant.Entities.ZCOUNTRY)
                 .columns(Constant.EntitiesFields.LODGING_CATEGORY)
                 .where({
@@ -2175,9 +2175,26 @@ module.exports = (srv) => {
                     END_DATE: { '>=': sTodayDate },
                 })
             )
-        return oCountry;
+
+            var oEligibleAmount = await tx.run(
+                SELECT.one
+                .from(Constant.Entities.ZELIGIBILITY_RULE)
+                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                .where({
+                    LODGING_CATEGORY: oLodgingCategory.LODGING_CATEGORY,
+                    CLAIM_TYPE_ID: req.data.sClaimType,
+                    CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                })
+            )
+        return {
+            sCategory: oLodgingCategory.LODGING_CATEGORY,
+            iEligibleAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+        };
         }catch(err){
-            return err;
+            req.error(404, `Amount not found.`);
         }
     });
 }
