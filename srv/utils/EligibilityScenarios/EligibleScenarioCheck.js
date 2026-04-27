@@ -14,6 +14,7 @@ const ElaunTukar = require("./ElaunTukar");
 const Istiadat = require("./Istiadat");
 const Mahkamah = require("./Mahkamah");
 const BegBimbit = require("./BegBimbit");
+const WilayahAsal = require("./WilayahAsal");
 
 module.exports = {
   /**
@@ -193,8 +194,13 @@ module.exports = {
           );
           break;
 
-        // case PELBAGAI: // Pelbagai no requirement checking needed
-        //     break;
+        case Constant.ClaimType.WILAYAH_ASAL:
+          oReturnPayload = await WilayahAsal.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
 
         default:
           oReturnPayload = aPayload[i];

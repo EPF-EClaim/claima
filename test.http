@@ -185,8 +185,8 @@ Authorization: Basic alice
          "EmpId": "886887",
          "RecordId": "CLM26000002324",
          "RecordSubId": "CLM26000002324012",
-         "ClaimType": "ELAUN_TUKAR",
-         "ClaimTypeItem": "TAMBANG",
+         "ClaimType": "WILAYAH_ASAL",
+         "ClaimTypeItem": "FLIGHT_WIL",
          "CheckFields": [
             {
                   "fieldName": "ELIGIBLE_AMOUNT",
