@@ -4230,7 +4230,6 @@ sap.ui.define([
 					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
 					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
-					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
 				});
 
 				//// addon for new claim
