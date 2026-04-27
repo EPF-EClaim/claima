@@ -65,9 +65,9 @@ sap.ui.define([
 
       const sToday = this.getView().getModel("vm").getProperty("/today");
 
-      const oFilter = new sap.ui.model.Filter({
+      const oFilter = new Filter({
         path: "VALID_TO",
-        operator: sap.ui.model.FilterOperator.GE,
+        operator: FilterOperator.GE,
         value1: sToday
       });
 
@@ -255,7 +255,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
+				new Filter("EMAIL", "EQ", sEMAIL)
 			]);
 
 			try {
@@ -305,10 +305,9 @@ sap.ui.define([
 
       // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
       const aFilters = [
-        new sap.ui.model.Filter("USER_ID",        sap.ui.model.FilterOperator.EQ, sUserId),
-        //new sap.ui.model.Filter("SUBSTITUTE_ID",  sap.ui.model.FilterOperator.EQ, sSubstituteId),
-        new sap.ui.model.Filter("VALID_TO",       sap.ui.model.FilterOperator.GE, sStart),
-        new sap.ui.model.Filter("VALID_FROM",     sap.ui.model.FilterOperator.LE, sEnd)
+        new Filter("USER_ID", FilterOperator.EQ, sUserId),
+        new Filter("VALID_TO", FilterOperator.GE, sStart),
+        new Filter("VALID_FROM", FilterOperator.LE, sEnd)
       ];
 
       const oList = oModel.bindList(
@@ -500,7 +499,7 @@ sap.ui.define([
         "/ZEMP_MASTER",
         null,                  // context
         null,                  // sorters
-        [ new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.EQ, sEEID) ],
+        [ new Filter("EEID",FilterOperator.EQ, sEEID) ],
         { $select: "EEID,EMAIL,NAME" } // ← fetch eeid,email and name 
       );
 
@@ -525,9 +524,9 @@ sap.ui.define([
       const looksLikeName = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sValue);
 
       // Build filters
-      const fEEID  = new sap.ui.model.Filter("EEID",  sap.ui.model.FilterOperator.EQ, sValue);
-      const fEMAIL = new sap.ui.model.Filter("EMAIL", sap.ui.model.FilterOperator.EQ, sValue);
-      const fName = new sap.ui.model.Filter("NAME", sap.ui.model.FilterOperator.EQ, sValue);
+      const fEEID  = new Filter("EEID",  FilterOperator.EQ, sValue);
+      const fEMAIL = new Filter("EMAIL", FilterOperator.EQ, sValue);
+      const fName = new Filter("NAME", FilterOperator.EQ, sValue);
 
       //  - If clearly email → filter by EMAIL only
       //  - Else if clearly EEID → filter by EEID only
@@ -540,7 +539,7 @@ sap.ui.define([
       } else if (looksLikeEEID) {
         aFilters = [ fEEID ];
       } else {
-        aFilters = [ new sap.ui.model.Filter({
+        aFilters = [ new Filter({
           filters: [ fEEID, fEMAIL, fName],
           and: false // OR
         }) ];
