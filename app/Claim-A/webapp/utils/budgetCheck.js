@@ -76,7 +76,7 @@ sap.ui.define([
 					var sFundCenter = (oHeader.altcostcenter && oHeader.altcostcenter !== "-") 
 										? oHeader.altcostcenter.split(" - ")[0]
 										: oHeader.costcenter.split(" - ")[0];
-					var sInternalCode	= oHeader.projectcode || "1";	// todo change to NA after flush db
+					var sInternalCode	= oHeader.projectcode || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 
 					var aPayload = aItemRows.map(row => {
 						return {
