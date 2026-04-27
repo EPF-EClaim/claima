@@ -85,7 +85,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "WILAYAH_ASAL": "WILAYAH_ASAL"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -146,7 +147,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "FLIGHT_WIL": "FLIGHT_WIL"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
