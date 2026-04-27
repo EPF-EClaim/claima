@@ -1471,4 +1471,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                        returns Boolean;
+
+    type LodgingOverseaAmountAndCat {
+        sCategory: String;
+        iEligibleAmount: Decimal(16, 2);
+    }
+
+    function getLodgingOverseaAmountAndCat (sCountry: String, sClaimType: String, sClaimTypeItem: String) returns LodgingOverseaAmountAndCat;
 };

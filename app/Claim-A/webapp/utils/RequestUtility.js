@@ -143,10 +143,18 @@ sap.ui.define([
                 oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
+                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
+                        break;
+                    
                     case Constants.ClaimTypeItem.LODG_O:
+                        fCalculatedAllocatedAmount = await this._retrieveOverseaLodgingAmount();
+                        break;
+
+                    case Constants.ClaimTypeItem.LOD_TUKAR:
+                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
                         if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
+                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
                         }
                         break;
 
@@ -159,26 +167,13 @@ sap.ui.define([
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
                         }
                         break;
-
-                    case Constants.ClaimTypeItem.LOD_TUKAR:
-                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
-                        fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();
-                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.LOD_TUKAR) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
-                        }
-                        break;
                     
                     case Constants.ClaimTypeItem.LAUT:
                         this._getEntitledMeterCube();
                         break;
 
                     case Constants.ClaimTypeItem.DARAT:
-                        let bIsAlone = true;
-                        if (oReqHeader.transferalonefamily === Constants.TravelAloneOrWithFamily.WITH_FAMILY &&
-                            oReqHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
-                            bIsAlone = false;
-                        }
-                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST, bIsAlone);
+                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
                         if (oResult) {
                             oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
                             if (!oReqItem.kilometer) break;
@@ -304,6 +299,20 @@ sap.ui.define([
             } catch (error) {
                 return parseFloat(0).toFixed(2);
             }
+
+        },
+
+        /**
+         * Retrieve the eligible lodging oversea amount from backend 
+         * @private
+         */
+        _retrieveOverseaLodgingAmount: async function () {
+            const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
+
+            var oResult     = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.REQUEST);
+            oReqModel.setProperty("/req_item/lodging_cat", oResult.sCategory);
+
+            return oResult.iEligibleAmount
 
         },
 

@@ -122,7 +122,7 @@
                 <MultiComboBox 
 					id="combo_claimdetails_input_dependent"
                     selectedKeys="{claimitem_input>/claim_item/dependent}"
-                    required="true"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                     visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                     items="{path: 'employee>/ZEMP_DEPENDENT',
                             sorter: { path: 'DEPENDENT_NO', descending: false }}" >
@@ -761,8 +761,7 @@
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
                     required="true"
-                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/FERRY}
-                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN})
+                    visible="{= ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN}
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
                     }"
@@ -1012,6 +1011,7 @@
                     visible="false"
                     required="true"
                     valueHelp="valuehelp_country"
+                    change="onSelectCountry"
                 />
 
                 <!-- Location -->
@@ -1328,6 +1328,7 @@
                     liveChange="onSelect_ClaimDetails_LodgingCategory"
                     visible="false"
                     required="true"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItemLodging/LODG_O}}"
 				>
 				</Select>
 

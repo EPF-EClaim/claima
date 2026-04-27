@@ -124,7 +124,6 @@
                                         <Select 
                                             width="100%"
                                             selectedKey="{request>/req_item/dependent}" 
-                                            required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
@@ -146,7 +145,6 @@
                                         <MultiComboBox 
                                             width="100%"
                                             selectedKeys="{request>/req_item/dependent}"
-                                            required="true"
                                             visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}" >
@@ -547,6 +545,7 @@
                                             display="ValueDescription"
                                             required="true" 
                                             valueHelp="valuehelp_country"
+                                            change=".onInputAllocatedAmount"
                                         />
                                     </form:fields>
                                 </form:FormElement>
@@ -1073,13 +1072,13 @@
 
                                 <!-- Lodging Category -->
                                 <form:FormElement label="{i18n>req_i_lodging}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O}}"
                                             id="i_lodging_cat" >
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/lodging_cat}" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            editable="false"
                                             items="{path: 'employee>/ZLODGING_CAT',
                                                     sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
                                                     filters: [
