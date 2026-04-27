@@ -471,7 +471,9 @@ sap.ui.define([
 
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
-                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC){
+                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC ||
+                        sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER
+                    ){
                         sMaritalCategory = Constants.MarriageCategory.SINGLE;
                     }else{
                         sMaritalCategory = oItem.marriage_category ? oItem.marriage_category : null;
