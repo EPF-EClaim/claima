@@ -2368,7 +2368,8 @@ sap.ui.define([
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
 				case this._oConstant.ClaimTypeItem.DARAT:
-					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC){
+					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC ||
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW){
 						oPropertyModel.setProperty("/marriage_category/is_visible", true);
 					}
 					break;
