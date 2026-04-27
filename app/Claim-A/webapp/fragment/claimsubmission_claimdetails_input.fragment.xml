@@ -1012,6 +1012,7 @@
                     visible="false"
                     required="true"
                     valueHelp="valuehelp_country"
+                    change="onSelectCountry"
                 />
 
                 <!-- Location -->

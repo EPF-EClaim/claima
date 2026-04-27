@@ -2159,4 +2159,25 @@ module.exports = (srv) => {
             req.error(404, `Employee Not Found.`);
         }
     });
+
+    srv.on('getLodgingOverseaAmountAndCat', async (req) =>{      
+        const tx = cds.tx(req);
+        const { ZCOUNTRY } = srv.entities;
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+        try{
+            var oCountry = await tx.run(SELECT.one
+                .from(Constant.Entities.ZCOUNTRY)
+                .columns(Constant.EntitiesFields.LODGING_CATEGORY)
+                .where({
+                    COUNTRY_ID: req.data.sCountry,
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                })
+            )
+        return oCountry;
+        }catch(err){
+            return err;
+        }
+    });
 }

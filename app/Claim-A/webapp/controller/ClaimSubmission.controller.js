@@ -403,7 +403,9 @@ sap.ui.define([
 				}
 			}
 		},
+		onSelectCountry: async function(oEvent){
 
+		},
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
@@ -3423,8 +3425,10 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
-			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItemLodging.LODG_O ){
+				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+					oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
+				}
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 

@@ -2,12 +2,14 @@ sap.ui.define([
     "sap/ui/mdc/ValueHelpDelegate",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/mdc/enums/RequestShowContainerReason"
+    "sap/ui/mdc/enums/RequestShowContainerReason",
+    "claima/utils/Constants",
 ], function (
     ValueHelpDelegate,
     Filter,
     FilterOperator,
-    RequestShowContainerReason
+    RequestShowContainerReason,
+    Constants
 ) {
     "use strict";
 
@@ -135,8 +137,10 @@ sap.ui.define([
 
         const oView = oValueHelp.getParent();
         const sClaimTypeItem = oView.getModel("claimitem_input").getProperty("/claim_item/claim_type_item_id");
+        const sReqTypeItem = oView.getModel("request").getProperty("/req_item/claim_type_item_id");
 
-        if(sClaimTypeItem){
+        if((!!sClaimTypeItem && sClaimTypeItem == Constants.ClaimTypeItemLodging.LODG_O) ||
+            (!!sReqTypeItem && sReqTypeItem == Constants.ClaimTypeItemLodging.LODG_O) ){
             oBindingInfo.filters.push(new Filter(
                 "LODGING_CATEGORY",
                 FilterOperator.NE,
