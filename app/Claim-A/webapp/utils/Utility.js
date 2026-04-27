@@ -471,7 +471,9 @@ sap.ui.define([
 
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
-                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC){
+                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC ||
+                        sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER
+                    ){
                         sMaritalCategory = Constants.MarriageCategory.SINGLE;
                     }else{
                         sMaritalCategory = oItem.marriage_category ? oItem.marriage_category : null;
@@ -542,6 +544,46 @@ sap.ui.define([
             } catch (oError) {
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
                 return null; 
+            }
+        },
+
+        getLodgingOverseaAmountAndCat: async function(sSubmissionType){
+            let sCountry,sClaimType,sClaimTypeItem;
+            const oDataModel = this._oOwnerComponent.getModel();
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    break;
+                case Constants.SubmissionTypePrefix.CLAIM:  
+                    const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+
+                    sCountry = oItem.country;
+                    sClaimType = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/claim_type_id");
+                    sClaimTypeItem = oItem.claim_type_item_id;
+                    break;
+                
+            }
+
+            const oFunction = oDataModel.bindContext("/getLodgingOverseaAmountAndCat(...)");
+            oFunction.setParameter("sCountry", sCountry);
+            oFunction.setParameter("sClaimType", sClaimType);
+            oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+            try {
+                BusyIndicator.show(0); 
+                
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            } finally {
+                BusyIndicator.hide();
             }
         }
 

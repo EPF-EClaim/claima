@@ -237,7 +237,11 @@
                     id="text_claimsummary_claimheader_travel_family_now_later"
                     text="{claimsubmission_input>/claim_header/descr/travel_family_now_later}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
-                                ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY_DESC} }"
+                                (
+                                    ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY} ||
+                                    ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY_DESC}
+                                )
+                                }"
                 />
 
                 <!-- Cost Center -->
