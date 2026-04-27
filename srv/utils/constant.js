@@ -69,7 +69,8 @@ const Constant = {
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
         "ZRATE_KM": "ZRATE_KM",
-        "ZCONSTANTS": "ZCONSTANTS"
+        "ZCONSTANTS": "ZCONSTANTS",
+        "ZCOUNTRY": "ZCOUNTRY"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -190,7 +191,8 @@ const Constant = {
         "ID": "ID",
         "VALUE": "VALUE",
         "SUBSIDISED_RATE": "SUBSIDISED_RATE",
-        "TOTAL_TRAVELLER": "TOTAL_TRAVELLER"
+        "TOTAL_TRAVELLER": "TOTAL_TRAVELLER",
+        "LODGING_CATEGORY": "LODGING_CATEGORY"
     },
     Wildcard: {
         "All": "*",

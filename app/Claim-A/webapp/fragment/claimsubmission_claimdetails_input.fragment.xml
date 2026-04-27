@@ -1012,6 +1012,7 @@
                     visible="false"
                     required="true"
                     valueHelp="valuehelp_country"
+                    change="onSelectCountry"
                 />
 
                 <!-- Location -->
@@ -1328,6 +1329,7 @@
                     liveChange="onSelect_ClaimDetails_LodgingCategory"
                     visible="false"
                     required="true"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItemLodging/LODG_O}}"
 				>
 				</Select>
 
