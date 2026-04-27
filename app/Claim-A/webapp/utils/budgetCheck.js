@@ -76,7 +76,7 @@ sap.ui.define([
 					var sFundCenter = (oHeader.altcostcenter && oHeader.altcostcenter !== "-") 
 										? oHeader.altcostcenter.split(" - ")[0]
 										: oHeader.costcenter.split(" - ")[0];
-					var sInternalCode	= oHeader.projectcode || "1";	// todo change to NA after flush db
+					var sInternalCode	= oHeader.projectcode || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 
 					var aPayload = aItemRows.map(row => {
 						return {
@@ -102,7 +102,7 @@ sap.ui.define([
 					var sDate			= new Date();
 					var sYear			= String(sDate.getFullYear());
 					var sFundCenter		= oHeader.alternate_cost_center || oHeader.cost_center;
-					var sInternalCode	= oHeader.project_code || "1";	// todo change to NA after flush db
+					var sInternalCode	= oHeader.project_code || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 					var sCommitmentItem	= await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
 
 					var aReturn = aItemRows

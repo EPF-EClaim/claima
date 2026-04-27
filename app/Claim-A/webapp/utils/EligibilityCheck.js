@@ -50,7 +50,8 @@ sap.ui.define([
 						"marriage_cat": "MARRIAGE_CATEGORY",
 						"vehicle_class": "TRANSPORT_CLASS",
 						"no_of_hours": "TRAVEL_HOURS",
-						"no_of_traveler": "TOTAL_TRAVELLER"
+						"no_of_traveler": "TOTAL_TRAVELLER",
+						"tripstartdate": "RECEIPT_DATE"
 					};
 					break;
 
@@ -104,8 +105,12 @@ sap.ui.define([
 					var aNewActiveFields = aActiveFields.map(field => {
 						var oNewField = { ...field };
 
-						if (oNewField.fieldName === "ELIGIBLE_AMOUNT" && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+						if (oNewField.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
+						}
+
+						if (oNewField.fieldName === Constants.EntitiesFields.RECEIPT_DATE && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+							oNewField.value = String(oController._oReqModel.getProperty("/req_header/tripstartdate"));
 						}
 
 						return oNewField;
