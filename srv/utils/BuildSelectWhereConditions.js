@@ -77,7 +77,7 @@ module.exports = {
         if (iInputYear > 0) {
 
             const iStartYear = iCurrentYear - (iInputYear - 1);
-            const iEndYear   = iCurrentYear + (iInputYear - 1);
+            const iEndYear = iCurrentYear + (iInputYear - 1);
 
             return {
                 dDateFrom: `${iStartYear}-01-01`,
@@ -122,6 +122,20 @@ module.exports = {
             dDateFrom: formatDate(dFirstDay),
             dDateTo: formatDate(dLastDay)
         };
+    },
+
+    formatTimeStamp(tTimeStamp) {
+        var sDateFormat =
+            `${tTimeStamp.getUTCFullYear()}-` +
+            `${String(tTimeStamp.getUTCMonth() + 1).padStart(2, "0")}-` +
+            `${String(tTimeStamp.getUTCDate()).padStart(2, "0")}`;
+
+        var sTimeFormat =
+            `${String(tTimeStamp.getUTCHours()).padStart(2, "0")}:` +
+            `${String(tTimeStamp.getUTCMinutes()).padStart(2, "0")}:` +
+            `${String(tTimeStamp.getUTCSeconds()).padStart(2, "0")}Z`;
+
+        return { sDateFormat, sTimeFormat };
     }
 
 };
