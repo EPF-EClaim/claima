@@ -5,8 +5,9 @@ sap.ui.define([
   "sap/m/MessageBox",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter"
-], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, Sorter) {
+  "sap/ui/model/Sorter",
+  "claima/utils/ValueHelpDelegate_MngeSub"
+], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, Sorter, ValueHelpDelegate_MngeSub ) {
   "use strict";
 
   return Controller.extend("claima.controller.ManageSub", {
@@ -22,7 +23,8 @@ sap.ui.define([
         subValid: false,
         subInfo: "",
         isApprover: false,
-        canDelete: false
+        canDelete: false,
+        subInput: ""
       });
       this.getView().setModel(oVM, "vm");
       this._oSessionModel 	= this.getOwnerComponent().getModel("session");
@@ -407,21 +409,15 @@ sap.ui.define([
           try {
             const oEmp = await this._getEmployeeByIdOrEmail(sVal);
             if (oEmp) {
-              oInp.setValueState("Success");
-              oInp.setValueStateText("");
               oVM.setProperty("/subValid", true);
               // Show both when available
-              const info = [oEmp.EEID, oEmp.EMAIL].filter(Boolean).join(" - ");
+              const info = [oEmp.EEID, oEmp.NAME].filter(Boolean).join(" - ");
               oVM.setProperty("/subInfo", info);
             } else {
-              oInp.setValueState("Error");
-              oInp.setValueStateText(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
               oVM.setProperty("/subValid", false);
               oVM.setProperty("/subInfo", "");
             }
           } catch (e) {
-            oInp.setValueState("Warning");
-            oInp.setValueStateText(this._i18n("backendUnavailable") || "Unable to validate employee right now.");
             oVM.setProperty("/subValid", false);
             oVM.setProperty("/subInfo", "");
           }
@@ -505,7 +501,7 @@ sap.ui.define([
         null,                  // context
         null,                  // sorters
         [ new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.EQ, sEEID) ],
-        { $select: "EEID,EMAIL" } // ← only fetch eeid,email
+        { $select: "EEID,EMAIL,NAME" } // ← fetch eeid,email and name 
       );
 
       try {
@@ -526,10 +522,12 @@ sap.ui.define([
       // Simple detection
       const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sValue);
       const looksLikeEEID  = /^[A-Za-z0-9]+$/.test(sValue); 
+      const looksLikeName = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sValue);
 
       // Build filters
       const fEEID  = new sap.ui.model.Filter("EEID",  sap.ui.model.FilterOperator.EQ, sValue);
       const fEMAIL = new sap.ui.model.Filter("EMAIL", sap.ui.model.FilterOperator.EQ, sValue);
+      const fName = new sap.ui.model.Filter("NAME", sap.ui.model.FilterOperator.EQ, sValue);
 
       //  - If clearly email → filter by EMAIL only
       //  - Else if clearly EEID → filter by EEID only
@@ -537,11 +535,13 @@ sap.ui.define([
       let aFilters;
       if (looksLikeEmail) {
         aFilters = [ fEMAIL ];
+      } else if (looksLikeName) {
+      aFilters = [ fName ];
       } else if (looksLikeEEID) {
         aFilters = [ fEEID ];
       } else {
         aFilters = [ new sap.ui.model.Filter({
-          filters: [ fEEID, fEMAIL ],
+          filters: [ fEEID, fEMAIL, fName],
           and: false // OR
         }) ];
       }
