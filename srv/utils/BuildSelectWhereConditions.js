@@ -124,16 +124,10 @@ module.exports = {
         };
     },
 
-    formatTimeStamp(tTimeStamp) {
-        var sDateFormat =
-            `${tTimeStamp.getUTCFullYear()}-` +
-            `${String(tTimeStamp.getUTCMonth() + 1).padStart(2, "0")}-` +
-            `${String(tTimeStamp.getUTCDate()).padStart(2, "0")}`;
-
-        var sTimeFormat =
-            `${String(tTimeStamp.getUTCHours()).padStart(2, "0")}:` +
-            `${String(tTimeStamp.getUTCMinutes()).padStart(2, "0")}:` +
-            `${String(tTimeStamp.getUTCSeconds()).padStart(2, "0")}Z`;
+    formatTimeStamp(tTimestamp) {
+        const oTimestamp = new Date(tTimestamp);
+        const sDateFormat = oTimestamp.toISOString().split('T')[0]; // YYYY-MM-DD
+        const sTimeFormat = oTimestamp.toTimeString().split(' ')[0]; // HH:MM:SS
 
         return { sDateFormat, sTimeFormat };
     }

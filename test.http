@@ -175,73 +175,73 @@
 #     "ID": "REQ26000000022"
 #    }
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
+# Content-Type: application/json
+# Authorization: Basic alice
  
-    {
-     "aPayload": [
-       {
-         "EmpId": "886887",
-         "RecordId": "CLM26000002324",
-         "RecordSubId": "CLM26000002324012",
-         "ClaimType": "WILAYAH_ASAL",
-         "ClaimTypeItem": "FLIGHT_WIL",
-         "CheckFields": [
-            {
-                  "fieldName": "ELIGIBLE_AMOUNT",
-                  "value": "500",
-                  "result": null
-            },
-            {
-                  "fieldName": "TRAVEL_DAYS_ID",
-                  "value": "7",
-                  "result": null
-            },
-            {
-                  "fieldName": "FARE_TYPE_ID",
-                  "value": "03",
-                  "result": null
-            },
-            {
-                  "fieldName": "TRANSPORT_CLASS",
-                  "value": "01",
-                  "result": null
-            },
-            {
-                  "fieldName": "FLIGHT_CLASS_ID",
-                  "value": "null",
-                  "result": null
-            },
-            {
-                  "fieldName": "ROOM_TYPE_ID",
-                  "value": "null",
-                  "result": null
-            },
-            {
-                  "fieldName": "MOBILE_PHONE_BILL",
-                  "value": "null",
-                  "result": null
-            },
-            {
-                  "fieldName": "RECEIPT_DATE",
-                  "value": "2026-04-16",
-                  "result": null
-            },
-            {
-                  "fieldName": "TRAVEL_HOURS",
-                  "value": "null",
-                  "result": null
-            },
-            {
-                  "fieldName": "REGION_ID",
-                  "value": "null",
-                  "result": null
-            }
-         ]
-      }
-     ]
-    }
+#     {
+#      "aPayload": [
+#        {
+#          "EmpId": "886887",
+#          "RecordId": "CLM26000002324",
+#          "RecordSubId": "CLM26000002324012",
+#          "ClaimType": "ELAUN_TUKAR",
+#          "ClaimTypeItem": "TAMBANG",
+#          "CheckFields": [
+#             {
+#                   "fieldName": "ELIGIBLE_AMOUNT",
+#                   "value": "500",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "TRAVEL_DAYS_ID",
+#                   "value": "7",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "FARE_TYPE_ID",
+#                   "value": "03",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "TRANSPORT_CLASS",
+#                   "value": "01",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "FLIGHT_CLASS_ID",
+#                   "value": "null",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "ROOM_TYPE_ID",
+#                   "value": "null",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "MOBILE_PHONE_BILL",
+#                   "value": "null",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "RECEIPT_DATE",
+#                   "value": "2026-04-16",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "TRAVEL_HOURS",
+#                   "value": "null",
+#                   "result": null
+#             },
+#             {
+#                   "fieldName": "REGION_ID",
+#                   "value": "null",
+#                   "result": null
+#             }
+#          ]
+#       }
+#      ]
+#     }
 
 
 # POST http://localhost:4004/odata/v4/EmployeeSrv/getUserEligibleAmountEPengakut
@@ -251,4 +251,15 @@ Authorization: Basic alice
 #    {
 #     "sEmpId": "010320"
 #    }
+
+POST http://localhost:4004/odata/v4/EmployeeSrv/updateApproverHeader
+Content-Type: application/json
+Authorization: Basic alice
+      
+{
+         "sStatus": "STAT04",
+         "sRecordId": "REQ26000000095"
+}
+     
+
 
