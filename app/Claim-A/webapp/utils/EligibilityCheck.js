@@ -78,7 +78,8 @@ sap.ui.define([
 						"mobile_category_purpose_id": "MOBILE_PHONE_BILL",
 						[receipt_date]: "RECEIPT_DATE",
 						"no_of_hours": "TRAVEL_HOURS",
-						"region" : "REGION_ID"
+						"region" : "REGION_ID",
+						"number_of_travellers": "TOTAL_TRAVELLER"
 					};
 					break;
 
@@ -274,8 +275,9 @@ sap.ui.define([
 			});
 		},
 
-		checkElaunTukarEligibility: async function (oDataModel) {
+		checkElaunTukarEligibility: async function (oDataModel, bIsClaim) {
             const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+			oFunction.setParameter("IS_CLAIM", bIsClaim);
 
             try {
                 await oFunction.execute();

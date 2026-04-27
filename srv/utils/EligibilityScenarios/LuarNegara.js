@@ -34,6 +34,13 @@ module.exports = {
 
             oRule = aFilteredRules[0];
         }
+        else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
+            aFilteredRules = aRules.filter(function (rule) {
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
+            })
+
+            oRule = aFilteredRules[0];
+        }
         else {
             // DOBI, HOTEL_L, LODG_O, LODGING_L, PARKING, PKN_PANAS will only return single eligible rule value based on user's personal grade
             oRule = aRules[0];
@@ -61,7 +68,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sTravelDaysId, sFlightClassId, sRoomTypeId;
+        var sTravelDaysId, sFlightClassId, sRoomTypeId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -81,10 +88,16 @@ module.exports = {
                 case Constant.EntitiesFields.ROOM_TYPE_ID:
                     sRoomTypeId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.FARE_TYPE_ID:
+                    sFareTypeId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.TRANSPORT_CLASS:
+                    sTransportClass = oPayload.CheckFields[i].value;
+                    break;
             }
         }
 
-        return { sTravelDaysId, sFlightClassId, sRoomTypeId };
+        return { sTravelDaysId, sFlightClassId, sRoomTypeId, sFareTypeId, sTransportClass };
     },
 
     /**
@@ -350,6 +363,29 @@ module.exports = {
                             fCurrentTotal,
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
+                }
+                break;
+
+            // TAMBANG - return true if selected transport class matches user's personal grade
+            case Constant.ClaimTypeItem.TAMBANG:
+                iIndex = oPayload.CheckFields.findIndex((field) =>
+                    field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
+
+                if (iIndex == -1) return;
+
+                // if no rule matches the selected transport class, return false
+                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
+                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
+                } else {
+                    oPayload.CheckFields[iIndex].result = true;
                 }
                 break;
         }

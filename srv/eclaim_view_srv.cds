@@ -14,6 +14,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         CostCenter           : String;
         GLAccount            : String;
         MaterialCode         : String;
+        CashAdvanceAmount    : Decimal(15, 2);
     }
 
 
@@ -156,7 +157,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
                 KILOMETER,
                 RATE_PER_KM,
-                ZRATE_KM.RATE,
                 TOLL,
                 FLIGHT_CLASS,
                 ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
@@ -372,7 +372,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PARKING,
                 PHONE_NO,
                 RATE_PER_KM,
-                ZRATE_KM.RATE,
                 RECEIPT_DATE,
                 RECEIPT_NUMBER,
                 REMARK,
@@ -826,7 +825,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.COURSE_TITLE,
                 ZREQUEST_ITEM.KILOMETER,
                 ZREQUEST_ITEM.RATE_PER_KM,
-                ZREQUEST_ITEM.ZRATE_KM.RATE,
                 ZREQUEST_ITEM.FLIGHT_CLASS,
                 ZREQUEST_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
                 ZREQUEST_ITEM.LOCATION_TYPE,
@@ -936,7 +934,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                CASH_ADVANCE_AMOUNT
         };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as

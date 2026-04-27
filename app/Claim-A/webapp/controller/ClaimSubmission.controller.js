@@ -69,7 +69,7 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	CustomValidator,
 	CustomDuplicationCheck,
-	Models,
+	models,
 	Constants,
 	Common
 ) {
@@ -149,8 +149,8 @@ sap.ui.define([
 				}
 			}), "appModel");
 
-			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
-			this.getView().setModel(Models.createEditButtonModel(), "editButtonModel");
+			this.getView().setModel(models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
+			this.getView().setModel(models.createEditButtonModel(), "editButtonModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -598,7 +598,7 @@ sap.ui.define([
 					daily_allowance: it.DAILY_ALLOWANCE,
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
-					TOTAL_TRAVELLER: it.NUMBER_OF_TRAVELLERS,
+					number_of_travellers: it.TOTAL_TRAVELLER,
 					descr: {},
 				}));
 
@@ -625,7 +625,7 @@ sap.ui.define([
 					lodging_category: it.LODGING_CATEGORY_DESC,
 					marriage_category: it.MARRIAGE_CATEGORY_DESC,
 					area: it.AREA_DESC,
-					rate_per_km: it.RATE,
+					rate_per_km: it.RATE_PER_KM,
 					room_type: it.ROOM_TYPE_DESC,
 					region: it.REGION_DESC,
 					from_state_id: null,
@@ -648,6 +648,10 @@ sap.ui.define([
 					vehicle_class_id: null,
 					attachment_file_1: null,
 					attachment_file_2: null,
+					mode_of_transfer: it.TRANSFER_MODE_DESC,
+					travel_alone_family: it.TRAVEL_TYPE_DESC,
+					travel_family_now_later: it.FAMILY_TIMING_DESC,
+					
 				}));
 
 				// assign description based on claim item index
@@ -1594,7 +1598,7 @@ sap.ui.define([
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
 
-		onAction_ClaimSubmission_Toolbar: function (oAction) {
+		onAction_ClaimSubmission_Toolbar: async function (oAction) {
 			// get action
 			switch (oAction) {
 				//// Save Draft
@@ -1622,6 +1626,13 @@ sap.ui.define([
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
 					this._pendingAction = oAction;
+
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR &&
+						await EligibilityCheck.checkElaunTukarEligibility(this._oModel, true) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
+						MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
+						return;
+					}
 
 					if (!this._oDeclarationDialog) {
 						Fragment.load({
@@ -2356,6 +2367,12 @@ sap.ui.define([
 					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 					break;
+				case this._oConstant.ClaimTypeItem.DARAT:
+					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC ||
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW){
+						oPropertyModel.setProperty("/marriage_category/is_visible", true);
+					}
+					break;
 			}
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2368,6 +2385,12 @@ sap.ui.define([
 			// set percentage (%) compensation based on claim item
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+			}
+
+			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+			){
+				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
 			}
 
 
@@ -2443,7 +2466,10 @@ sap.ui.define([
 				bill_no: { is_required: false },
 				account_no: { is_required: false },
 				number_of_traveller: { is_required: false, is_visible: false },
-				combo_dependent: { is_editable: true }
+				combo_dependent: { is_editable: true },
+				to_location: { is_visible: false },
+				from_location: { is_visible: false },
+				marriage_category: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2485,6 +2511,34 @@ sap.ui.define([
 				if (sDependent) {
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
 				}
+
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+				){
+					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				}
+
+				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR && 
+					oPropertyModel.getProperty("/no_of_family_member/is_visible")){
+					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
+					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
+				}
+
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC){
+					oPropertyModel.setProperty("/marriage_category/is_visible", true);
+				}
+
+				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (oResult) {
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+					if (!oInputModel.getProperty("/claim_item/km")){
+						return;
+					}
+				}
+			}
 
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
@@ -3005,7 +3059,7 @@ sap.ui.define([
 					NO_OF_FAMILY_MEMBER: oInputModel.getProperty("/claim_item/no_of_family_member"),
 					PARKING: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/parking"))),
 					PHONE_NO: oInputModel.getProperty("/claim_item/phone_no"),
-					RATE_PER_KM: oInputModel.getProperty("/claim_item/rate_per_km"),
+					RATE_PER_KM: oInputModel.getProperty("/claim_item/descr/rate_per_km"),
 					RECEIPT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/receipt_date")),
 					RECEIPT_NUMBER: oInputModel.getProperty("/claim_item/receipt_number"),
 					REMARK: oInputModel.getProperty("/claim_item/remark"),
@@ -3365,7 +3419,7 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
-		onChange_ClaimDetails_NumberOfDays: async function () {
+		onChange_ClaimDetails_NumberOfDays: async function (oEvent) {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
@@ -3376,6 +3430,11 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
 			oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR) {
 				this._updateEntitlementAmount(oInputModel,oClaimSubmissionModel);
+			}
+			
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || 
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR){
+				this._onChangeTravelers(oEvent)
 			}
 		},
 
@@ -3530,7 +3589,6 @@ sap.ui.define([
 				}
 
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT && !!oInputModel.getProperty("/claim_item/km") && !!oInputModel.getProperty("/claim_item/region")) {
-					Utility.init(this.getOwnerComponent(), this.getView());
 					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
 				}
@@ -3549,22 +3607,89 @@ sap.ui.define([
 
 						fAmount += fToll;
 					}
-					oInputModel.setProperty("/claim_item/amount", fAmount);
+
+					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT ){
+						if(fAmount < oResult.fAmount){
+							MessageBox.alert(Utility.getText("d_i_minimum_amount", [oResult.fAmount]))
+							oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+						}else{
+							oInputModel.setProperty("/claim_item/amount", fAmount);
+						}
+					}else{
+						oInputModel.setProperty("/claim_item/amount", fAmount);
+					}
+					
+					
 				}
 			} catch (oError) {
 				console.error("Failed to calculate Rate Per KM", oError);
 			}
 		},
+		_onChangeTravelers: function (oEvent) {
+			if(!oEvent){return}
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oInput = oEvent.getSource();
+			var iTravelers = parseInt(oInput.getValue(), 10);
+
+			var iMaxFamilyMembers = parseInt(oInputModel.getProperty("/claim_item/no_of_family_member"), 10);
+
+			oInput.setValueState("None");
+
+			if (isNaN(iTravelers)) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Please enter a valid number.");
+				return;
+			}
+
+			if (iTravelers > iMaxFamilyMembers) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers cannot exceed the number of family members (" + iMaxFamilyMembers + ").");
+				
+			} else if (iTravelers < 1) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Number of travelers must be at least 1.");
+			}
+		},
 		onSelect_ClaimDetails_Region: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH || 
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PINDAH) {
 				ClaimUtility.fetchPemberianPindahAmount();
 			} else {
 				await this._calculatePerDiem();
 			}
+
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				Utility.init(this.getOwnerComponent(), this.getView());
+				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (oResult) {
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+					if (!oInputModel.getProperty("/claim_item/km")){
+						return;
+					}
+				}
+			}
 			await this._calculateRatePerKm(false);
 		},
 
+		onSelect_ClaimDetails_MarriageCategory: async function (){
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				if(oInputModel.getProperty("/claim_item/region") == null){
+					return;
+				}else{
+					Utility.init(this.getOwnerComponent(), this.getView());
+					var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+					if (oResult) {
+						oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+						await this._calculateRatePerKm(false);
+						if (!oInputModel.getProperty("/claim_item/km")){
+							return;
+						}
+					}
+				}
+			}
+		},
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
@@ -3683,8 +3808,18 @@ sap.ui.define([
 		*/
 		onSelect_ClaimDetails_LocationType: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
+				oPropertyModel.setProperty("/to_location/is_visible", false);
+				oPropertyModel.setProperty("/from_location/is_visible", false);
+				await this.onChange_ClaimDetails_Kilometer();
+			}
+			//mine here
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.OTHER) {
+				oPropertyModel.setProperty("/to_location/is_visible", true);
+				oPropertyModel.setProperty("/from_location/is_visible", true);
 				await this.onChange_ClaimDetails_Kilometer();
 			}
 		},

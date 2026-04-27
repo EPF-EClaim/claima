@@ -48,7 +48,7 @@ sap.ui.define([
                 switch (bEligibleForElaunTukar) {
                     case Constants.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY:
                         Fragment.byId("request", "req_transferalonefamily").setEnabled(false);
-                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.ALONE);
+                        Fragment.byId("request", "req_transferalonefamily").setSelectedKey(Constants.TravelAloneOrWithFamily.WITH_FAMILY);
                         Fragment.byId("request", "req_transferfamilynowlater").setEnabled(false);
                         Fragment.byId("request", "req_transferfamilynowlater").setSelectedKey(Constants.TravelWithFamilyNowOrLater.NOW);
                         break;
@@ -152,13 +152,11 @@ sap.ui.define([
 
                     case Constants.ClaimTypeItem.MAKAN_L:
                     case Constants.ClaimTypeItem.MAKAN_O:
+                    case Constants.ClaimTypeItem.MKN_TUKAR:
                         this._calculateTravelDuration();
                         fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
                         if (!!oReqItem.currency_rate) {
                             fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
-                        }
-                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.no_of_family_member);
                         }
                         break;
 
@@ -170,24 +168,17 @@ sap.ui.define([
                         }
                         break;
                     
-                    case Constants.ClaimTypeItem.MKN_TUKAR:
-                        var iNumberOfTraveler = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
-                        this._calculateTravelDuration();
-                        fCalculatedAllocatedAmount = await this._retrieveEntitlementAmount();
-                        if (!!oReqItem.currency_rate) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(oReqItem.currency_rate);
-                        }
-                        if (oReqItem.claim_type_item_id === Constants.ClaimTypeItem.MKN_TUKAR) {
-                            fCalculatedAllocatedAmount = fCalculatedAllocatedAmount * parseFloat(iNumberOfTraveler);
-                        }
-                        break;
-                    
                     case Constants.ClaimTypeItem.LAUT:
                         this._getEntitledMeterCube();
                         break;
 
                     case Constants.ClaimTypeItem.DARAT:
-                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST);
+                        let bIsAlone = true;
+                        if (oReqHeader.transferalonefamily === Constants.TravelAloneOrWithFamily.WITH_FAMILY &&
+                            oReqHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
+                            bIsAlone = false;
+                        }
+                        const oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.REQUEST, bIsAlone);
                         if (oResult) {
                             oReqModel.setProperty("/req_item/rate_per_kilometer", oResult.fRate);
                             if (!oReqItem.kilometer) break;
@@ -203,7 +194,7 @@ sap.ui.define([
                         fCalculatedAllocatedAmount = await this._getPemberianPindahAmount();
                         break;
                     
-                    default:
+                    case Constants.ClaimTypeItem.KILOMETER:
                         // calculate kilometer amount 
                         fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
                         break;
@@ -213,7 +204,7 @@ sap.ui.define([
 
 
             // populate allocated amount
-            if (fCalculatedAllocatedAmount) {
+            if (fCalculatedAllocatedAmount >= 0) {
                 aReqPart.forEach((row, index) => {
                     if (row.PARTICIPANTS_ID) {
                         oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`,
@@ -296,7 +287,7 @@ sap.ui.define([
             var sEmpId          = this._oOwnerComponent.getModel('session')?.getProperty("/userId");
             var iNoOfDays       = oReqItem.no_of_days;
 
-            if (!sClaimType || !sClaimTypeItem || !sEmpId || !iNoOfDays) return;
+            if (!sClaimType || !sClaimTypeItem || !sEmpId || !iNoOfDays) return 0;
 
             const oFunction = oDataModel.bindContext("/getLodgingAmount(...)");
             oFunction.setParameter("sClaimTypeId", sClaimType);
@@ -335,10 +326,11 @@ sap.ui.define([
             var nBreakfast      = 0;        // always be 0 as this one is only applicable for claim
             var nLunch          = 0;        // always be 0 as this one is only applicable for claim
             var nDinner         = 0;        // always be 0 as this one is only applicable for claim
+            var nDependent      = oReqItem.no_of_traveler ? oReqItem.no_of_traveler : 1;
 
             if (sClaimTypeItem === Constants.ClaimTypeItem.MKN_TUKAR) {
                 var nTravelDay      = oReqItem.no_of_days || 0;
-                var nTravelHour     = oReqItem.no_of_days * 24 || 0;
+                var nTravelHour     = oReqItem.no_of_days * 24 || 1;
             }
 
             if (!nTravelHour || !sRegion) return;
@@ -355,7 +347,7 @@ sap.ui.define([
 			oFunction.setParameter("dinner", nDinner);
             oFunction.setParameter("employeeid", sEmpId);
             oFunction.setParameter("exclude_tips", true);
-            oFunction.setParameter("dependent", 0);
+            oFunction.setParameter("dependent", nDependent);
 
             try {
                 await oFunction.execute();
@@ -491,6 +483,8 @@ sap.ui.define([
 			oFunction.setParameter("sRegion", oReqModel.getProperty("/req_item/sss"));
 			oFunction.setParameter("sClaimType", oReqModel.getProperty("/req_header/claimtype"));
 			oFunction.setParameter("sClaimTypeItem", oReqModel.getProperty("/req_item/claim_type_item_id"));
+            oFunction.setParameter("sTravelAloneFamily", oReqModel.getProperty("/req_header/transferalonefamily"));
+            oFunction.setParameter("sTravelFamilyNowLater", oReqModel.getProperty("/req_header/transferfamilynowlater"));
 
             try {
                 await oFunction.execute();
@@ -504,6 +498,10 @@ sap.ui.define([
             }
         },
 
+        /**
+         * To get the dependent list of the requestor
+         * @returns Filter properties to the dependent field
+         */
 	    getDependentFilter: function (){
 			var oReqModel = this._oOwnerComponent.getModel("request");
             var oReqHeader = oReqModel.getProperty('/req_header');

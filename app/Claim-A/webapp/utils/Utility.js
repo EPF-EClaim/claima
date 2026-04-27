@@ -443,21 +443,41 @@ sap.ui.define([
          * method to call the backend service to get Pengangkutan Darat Amount
          * @param {String} sSubmissionType 
          */
-        determineDaratAmount: async function (sSubmissionType) {
+        determineDaratAmount: async function (sSubmissionType, bIsAlone) {
             const oDataModel = this._oOwnerComponent.getModel();
-            let sRegion, fKilometer;
+            let sRegion, fKilometer,sMaritalCategory;
 
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
                     const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
-                    sRegion       = oReqItem.sss; 
-                    fKilometer    = oReqItem.kilometer;
+                    const oReqHeader = this._oOwnerComponent.getModel("request").getProperty("/req_header");
+
+                    sRegion         = oReqItem.sss; 
+                    fKilometer      = oReqItem.kilometer;
+
+                    if (oReqHeader.transferalonefamily === Constants.TravelAloneOrWithFamily.ALONE || 
+                        oReqHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.LATER) {
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    } else {
+                        sMaritalCategory = oReqItem.marriage_cat ? oReqItem.marriage_cat : null;
+                    }
+
                     break;
 
                  case Constants.SubmissionTypePrefix.CLAIM:
                     const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    const sTravelAloneFamily = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_alone_family");
+                    const sTravelFamilyNowLater = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_family_now_later");
+
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
+                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC ||
+                        sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER
+                    ){
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    }else{
+                        sMaritalCategory = oItem.marriage_category ? oItem.marriage_category : null;
+                    }
                     break;
                 
                 default:
@@ -465,12 +485,13 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion) return;
+            if (!sRegion, !sMaritalCategory) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             
             oFunction.setParameter("sRegion", sRegion);
             oFunction.setParameter("fKilometer", fKilometer);
+            oFunction.setParameter("sMaritalCategory", sMaritalCategory);
 
             try {
                 BusyIndicator.show(0); 
@@ -503,7 +524,8 @@ sap.ui.define([
             const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
                 var oConstants = aContexts.map(context => context.getObject())[0];
-                return oConstants.NUMBER_OF_DAYS;
+                // Return value - 1 to include date selected
+                return oConstants.NUMBER_OF_DAYS - 1;
             });
             
             return iMaxDays;

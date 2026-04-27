@@ -227,10 +227,10 @@ sap.ui.define([
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 			} else if(oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR){
 				if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW){
-					nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
 				}else{
-					nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 					nDependent = 1;
 
 				}
@@ -680,12 +680,19 @@ sap.ui.define([
 			oContext.setParameter("sRegion", oInputModel.getProperty("/claim_item/region"));
 			oContext.setParameter("sClaimType", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 			oContext.setParameter("sClaimTypeItem", oInputModel.getProperty("/claim_item/claim_type_item_id"));
+			oContext.setParameter("sTravelAloneFamily", oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family"));
+			oContext.setParameter("sTravelFamilyNowLater", oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later"));
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
-					oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
-					oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.PEM_PINDAH){
+						oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
+						oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					}else{
+						oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+					}
+					
 				});
 		}
 		

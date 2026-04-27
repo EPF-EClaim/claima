@@ -79,6 +79,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.RequestForm", {
 
+		DateUtility: DateUtility,
+
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
@@ -398,6 +400,12 @@ sap.ui.define([
 							try {
 								BusyIndicator.show(0);
 
+								if (oReqData.req_header.claimtype === Constants.ClaimType.ELAUN_TUKAR &&
+									await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel, false) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
+									MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
+									return;
+								}
+
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
@@ -631,8 +639,8 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE || 0,
-				toll_amt				: oReqItem.TOLL || 0,
+				rate_per_kilometer		: parseFloat(oReqItem.RATE_PER_KM) || 0,
+				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
 				from_state				: oReqItem.FROM_STATE_ID || "",
@@ -645,7 +653,7 @@ sap.ui.define([
 				tarikh_pindah			: oReqItem.TRANSFER_DATE || "",
 				sss						: oReqItem.REGION || "",
 				marriage_cat			: oReqItem.MARRIAGE_CATEGORY || "",
-				cube_eligible			: oReqItem.METER_CUBE_ENTITLED | 0,
+				cube_eligible			: parseFloat(oReqItem.METER_CUBE_ENTITLED) || 0,
 				departure_time			: oReqItem.DEPARTURE_TIME || "",
 				arrival_time			: oReqItem.ARRIVAL_TIME || "",
 				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
@@ -1232,7 +1240,7 @@ sap.ui.define([
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
 					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
 					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
+					RATE_PER_KM:                  oReqItem.rate_per_kilometer || null,
 					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
@@ -2324,7 +2332,6 @@ sap.ui.define([
 				"i_tarikh_pindah",
 				"i_no_of_days_3",
 				"i_sss",
-				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",
@@ -2341,7 +2348,8 @@ sap.ui.define([
 				"i_daily_allowance",
 				"i_currency_code",
 				"i_currency_rate",
-				"i_type_of_prof_body"
+				"i_type_of_prof_body",
+				"i_no_of_traveler"
 			];
 
 			aControlIds.forEach(id => {
@@ -2853,7 +2861,7 @@ sap.ui.define([
 
 			if (isNaN(iTravelers)) {
 				oInput.setValueState("Error");
-				oInput.setValueStateText("Please enter a valid number.");
+				oInput.setValueStateText(Utility.getText("req_vs_e_invalid_number", []));
 				return;
 			}
 
