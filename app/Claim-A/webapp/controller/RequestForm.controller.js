@@ -2275,7 +2275,6 @@ sap.ui.define([
 						// populate entitled amount 
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
-						case Constants.ClaimTypeItem.LODG_O:
 						case Constants.ClaimTypeItem.LOD_TUKAR:
 							if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
 								RequestUtility.populateAllocatedAmount();
@@ -2335,7 +2334,6 @@ sap.ui.define([
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",
-				"i_lodging_cat",
 				"i_trip_start_date",
 				"i_trip_end_date",
 				"i_trip_start_time",

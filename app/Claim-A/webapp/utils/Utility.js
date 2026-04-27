@@ -553,6 +553,12 @@ sap.ui.define([
 
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
+                    const oReqHeader = this._oOwnerComponent.getModel("request")?.getProperty("/req_header");
+                    const oReqItem = this._oOwnerComponent.getModel("request")?.getProperty("/req_item");
+
+                    sCountry = oReqItem.country;
+                    sClaimType = oReqHeader.claimtype;
+                    sClaimTypeItem = oReqItem.claim_type_item_id;
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:  
                     const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
@@ -563,6 +569,8 @@ sap.ui.define([
                     break;
                 
             }
+
+            if (!sCountry) return;
 
             const oFunction = oDataModel.bindContext("/getLodgingOverseaAmountAndCat(...)");
             oFunction.setParameter("sCountry", sCountry);
