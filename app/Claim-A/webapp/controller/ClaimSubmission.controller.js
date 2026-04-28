@@ -3218,23 +3218,15 @@ sap.ui.define([
 						}
 						// Delete attachment from SF during save when previously marked for deletion
 						if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
-							var oldFile1 = oInputModel.getProperty("/claim_item/attachment_file_1_deleted");
-
-							if (oldFile1) {
-								const sSFID = oldFile1.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_1", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_1_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_1", null);
 						}
 						// Delete Attachment 2 from SF during save
 						if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
-							var oldFile2 = oInputModel.getProperty("/claim_item/attachment_file_2_deleted");
-
-							if (oldFile2) {
-								const sSFID = oldFile2.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_2", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_2_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_2", null);
 						}
 
 						await oModel.submitBatch("$auto");
@@ -3271,14 +3263,19 @@ sap.ui.define([
 			var domRef = oEvent.getSource().getFocusDomRef();
 			var file = domRef.files[0];
 			var reader = new FileReader();
+			const oInputModel = this.getView().getModel("claimitem_input");
 
 			reader.addEventListener("load", () => {
-				var oInputModel = this.getView().getModel("claimitem_input");
 				if (oInputModel) {
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileName", fileName);
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+					
 				}
 			});
+
+			if (oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber + "_delete")) {
+				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber + "_delete", null)
+			}
 
 			if (file) {
 				reader.readAsDataURL(file);
@@ -3327,9 +3324,10 @@ sap.ui.define([
 
 		onConfirmDeleteAttachment: async function () {
 			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+			const oClaimModel = this.getView().getModel("claimitem_input");
 
 			Attachment.init(this.getOwnerComponent(), this.getView());
-			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
+			Attachment.confirmDeleteAttachment(oClaimModel, this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
 			this._oDeleteAttachmentDialog.close();
 		},
 
