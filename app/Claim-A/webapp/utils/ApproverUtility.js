@@ -6,8 +6,9 @@ sap.ui.define([
     "claima/utils/Constants",
     "claima/utils/Utility",
     "claima/utils/DateUtility",
-    "claima/utils/WorkflowApproverHelper"
-], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper) {
+    "claima/utils/WorkflowApproverHelper",
+	"sap/m/MessageBox",
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper, MessageBox) {
     "use strict";
 
     async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
@@ -176,6 +177,22 @@ sap.ui.define([
 
         } else {
 
+            // If there are no higher levels
+            // Set header last approve date and last approve time 
+            const oAction = oViewModel.bindContext("/updateApproverHeader(...)");
+            oAction.setParameter("batch", {
+                sRecordId: sId,
+                sStatus: Constants.ClaimStatus.APPROVED
+            });
+
+            try {
+                await oAction.execute();
+            } catch (oError) {
+                MessageBox.error(oError.message);
+            } finally {
+                BusyIndicator.hide();
+            }
+
             const oBindingView = oModelView.bindList(
                 sTable2,
                 null,
@@ -316,6 +333,21 @@ sap.ui.define([
       
         //Call Update Status.
         Utility._updateStatus(oModel, sId, sActionStatus)
+
+        // Set header reject/pushback date and time 
+        const oAction = oViewModel.bindContext("/updateApproverHeader(...)");
+        oAction.setParameter("batch", {
+            sRecordId: sId,
+            sStatus: sActionStatus
+        });
+
+        try {
+            await oAction.execute();
+        } catch (oError) {
+            MessageBox.error(oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
 
         const oBindingBudget = oModelView.bindList(
             sBudgetViewTbl,
