@@ -471,7 +471,7 @@ sap.ui.define([
                 approver3: null,
                 approver4: null,
                 approver5: null,
-                last_send_back_date: null,
+                last_push_back_date: null,
                 course_code: o.COURSE_CODE,
                 session_number: o.SESSION_NUMBER,
                 project_code: null,
@@ -479,7 +479,7 @@ sap.ui.define([
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
                 reject_reason_id: null,
                 send_back_reason_id: null,
-                last_send_back_time: null,
+                last_push_back_time: null,
                 reject_reason_date: null,
                 reject_reason_time: null,
                 descr: {

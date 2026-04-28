@@ -98,8 +98,8 @@ entity ZREQUEST_HEADER : managed {
         LAST_APPROVED_TIME            : Time;
         TRAVEL_ALONE_FAMILY           : String(2);
         TRAVEL_FAMILY_NOW_LATER       : String(2);
-        LAST_SEND_BACK_DATE           : Date;
-        LAST_SEND_BACK_TIME           : Time;
+        LAST_PUSH_BACK_DATE           : Date;
+        LAST_PUSH_BACK_TIME           : Time;
         REJECT_REASON_ID              : String(3);
         REJECT_REASON_DATE            : Date;
         REJECT_REASON_TIME            : Time;
@@ -352,8 +352,8 @@ entity ZCLAIM_HEADER : managed {
         SUBMITTED_DATE                 : Date;
         LAST_APPROVED_DATE             : Date;
         LAST_APPROVED_TIME             : Time;
-        LAST_SEND_BACK_DATE            : Date;
-        LAST_SEND_BACK_TIME            : Time;
+        LAST_PUSH_BACK_DATE            : Date;
+        LAST_PUSH_BACK_TIME            : Time;
         REJECT_REASON_ID               : String(3);
         REJECT_REASON_DATE             : Date;
         REJECT_REASON_TIME             : Time;
