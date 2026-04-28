@@ -5,8 +5,11 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
 	"claima/utils/Constants",
     "claima/utils/WorkflowApproverHelper",
-    "claima/utils/Utility"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, WorkflowApproverHelper, Utility) {
+    "claima/utils/Utility",
+    "claima/utils/DateUtility",
+    "sap/ui/core/BusyIndicator",
+    "sap/m/MessageBox"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, WorkflowApproverHelper, Utility, DateUtility, BusyIndicator, MessageBox) {
     "use strict";
 
     return {
@@ -71,6 +74,7 @@ sap.ui.define([
             let aApproversDetails = [];             // Variable to store multiple approvers
             let aFullApproversDetails = [];         // Variable to store approvers with substitutes
             let aUniqueApproversDetails = [];       // Variable to store unique approvers
+            
 
 			const oListClaimHeaderBinding = oModel.bindList(Constants.Entities.ZCLAIM_HEADER, null,null, [
 				new Filter({ path: Constants.EntitiesFields.CLAIMID, operator: FilterOperator.EQ, value1: sClaimID })
@@ -511,11 +515,12 @@ sap.ui.define([
                             "LEVEL": oApprover.LEVEL,
                             "APPROVER_ID": oApprover.APPROVER_EEID,
                             "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : ""),
+                            "PROCESS_TIMESTAMP": oApprover.LEVEL === 0 ? DateUtility.formatTimestamp9(new Date(), { utc: false }) : null
                         });
                     }
                     //Call CAP action 
-                    const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                    let oAction = oModel.bindContext("/UpdateApproverDetails(...)");
                     oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
 
                     try {
@@ -523,6 +528,20 @@ sap.ui.define([
                     } catch (oError) {
                         MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
                         return false;
+                    }
+
+                    // Call CAP action to update header table
+                    oAction = oModel.bindContext("/updateApproverHeader(...)");
+                    oAction.setParameter("sRecordId", sClaimID,);
+                    oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
+                    ;
+
+                    try {
+                        await oAction.execute();
+                    } catch (oError) {
+                        MessageBox.error(oError.message);
+                    } finally {
+                        BusyIndicator.hide();
                     }
                 }
                 else{
@@ -946,11 +965,12 @@ sap.ui.define([
                             "LEVEL": oApprover.LEVEL,
                             "APPROVER_ID": oApprover.APPROVER_EEID,
                             "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : ""),
+                            "PROCESS_TIMESTAMP": oApprover.LEVEL === 0 ? DateUtility.formatTimestamp9(new Date(), { utc: false }) : null
                         });
                     }
                     //Call CAP action 
-                    const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                    let oAction = oModel.bindContext("/UpdateApproverDetails(...)");
                     oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
 
                     try {
@@ -958,7 +978,23 @@ sap.ui.define([
                     } catch (oError) {
                         MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
                         return false;
-                    }  
+                    } 
+                    // Call CAP action to update header table
+                    
+                    oAction = oModel.bindContext("/updateApproverHeader(...)");
+                    oAction.setParameter("batch", {
+                        sRecordId: sPARID,
+                        sStatus: Constants.ClaimStatus.APPROVED
+                    });
+
+                    try {
+                        await oAction.execute();
+                    } catch (oError) {
+                        MessageBox.error(oError.message);
+                    } finally {
+                        BusyIndicator.hide();
+                    }
+                    
                 }else{
                     MessageToast.show(Utility.getText("msg_failed_no_approver"))
                     return false;
