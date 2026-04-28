@@ -3218,23 +3218,15 @@ sap.ui.define([
 						}
 						// Delete attachment from SF during save when previously marked for deletion
 						if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
-							var oldFile1 = oInputModel.getProperty("/claim_item/attachment_file_1_deleted");
-
-							if (oldFile1) {
-								const sSFID = oldFile1.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_1", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_1_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_1", null);
 						}
 						// Delete Attachment 2 from SF during save
 						if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
-							var oldFile2 = oInputModel.getProperty("/claim_item/attachment_file_2_deleted");
-
-							if (oldFile2) {
-								const sSFID = oldFile2.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_2", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_2_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_2", null);
 						}
 
 						await oModel.submitBatch("$auto");
@@ -3271,14 +3263,19 @@ sap.ui.define([
 			var domRef = oEvent.getSource().getFocusDomRef();
 			var file = domRef.files[0];
 			var reader = new FileReader();
+			const oInputModel = this.getView().getModel("claimitem_input");
 
 			reader.addEventListener("load", () => {
-				var oInputModel = this.getView().getModel("claimitem_input");
 				if (oInputModel) {
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileName", fileName);
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+					
 				}
 			});
+
+			if (oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber + "_delete")) {
+				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber + "_delete", null)
+			}
 
 			if (file) {
 				reader.readAsDataURL(file);
@@ -3327,9 +3324,10 @@ sap.ui.define([
 
 		onConfirmDeleteAttachment: async function () {
 			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+			const oClaimModel = this.getView().getModel("claimitem_input");
 
 			Attachment.init(this.getOwnerComponent(), this.getView());
-			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
+			Attachment.confirmDeleteAttachment(oClaimModel, this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
 			this._oDeleteAttachmentDialog.close();
 		},
 
@@ -4221,8 +4219,6 @@ sap.ui.define([
 					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-					LAST_APPROVED_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
 					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
 					LOCATION: oInputModel.getProperty("/claim_header/location"),
 					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
@@ -4239,17 +4235,11 @@ sap.ui.define([
 					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
 					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					LAST_PUSH_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_push_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
-					REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-					PUSH_BACK_REASON_ID: oInputModel.getProperty("/claim_header/push_back_reason_id"),
-					LAST_PUSH_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_push_back_time")),
-					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
 				});
 
 				//// addon for new claim
