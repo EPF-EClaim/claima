@@ -92,7 +92,8 @@ sap.ui.define([
             "GALAKAN": "GALAKAN",
             "TELEFON_B": "TELEFON_B",
             "ELEKTRIK": "ELEKTRIK",
-            "BIL_AIR": "BIL_AIR"
+            "BIL_AIR": "BIL_AIR",
+            "IPAD":"I-PAD"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",

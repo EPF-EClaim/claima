@@ -68,12 +68,22 @@ module.exports = {
     getCurrentItemData: async function (sItemTable, sItemcondition, tx) {
         var iItemCount = 0;
         var fTotalAmount = 0;
+        var sAmountField;
         var oCurrentItem = { iItemCount, fTotalAmount };
+        if (sItemTable == Constant.Entities.ZCLAIM_ITEM) {
+            sAmountField = Constant.EntitiesFields.AMOUNT;
+        } else {
+            sAmountField = Constant.EntitiesFields.EST_AMOUNT;
+        }
+
         try {
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
-                SELECT.from(sItemTable).columns(`count(*)`, `sum(AMOUNT) as fTotalAmount`).where(`${sItemcondition}`)
+                SELECT.from(sItemTable).columns(
+                    { func: 'count', args: ['*'], as: 'count' },
+                    { func: 'sum', args: [{ ref: [sAmountField] }], as: 'fTotalAmount' }
+                ).where(`${sItemcondition}`)
             );
             if (!!aItemData) {
                 oCurrentItem.iItemCount = aItemData[0].count;
