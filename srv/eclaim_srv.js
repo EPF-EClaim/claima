@@ -7,6 +7,7 @@ const { results } = require('@sap/cds/lib/utils/cds-utils');
 const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
+const UpdateHeader = require('./utils/UpdateHeader');
 
 module.exports = (srv) => {
 
@@ -2195,6 +2196,28 @@ module.exports = (srv) => {
         };
         }catch(err){
             req.error(404, `Amount not found.`);
+        }
+    });
+
+    /**
+        * Update Header tables with approver actions
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updateApproverHeader', async (req) =>{
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+            
+            var result = await UpdateHeader.updateApproverActionToHeader( sRecordId, sStatus, tx );
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
 }
