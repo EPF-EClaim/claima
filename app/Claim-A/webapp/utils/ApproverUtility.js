@@ -335,6 +335,8 @@ sap.ui.define([
         //Call Update Status.
         Utility._updateStatus(oModel, sId, sActionStatus)
 
+        await oModel.submitBatch(sUpdateGroupId);
+
         // Set header reject/pushback date and time 
         const oAction = oModel.bindContext("/updateApproverHeader(...)");
         oAction.setParameter("sRecordId", sId,);
