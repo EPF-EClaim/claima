@@ -1501,7 +1501,7 @@
                     icon="sap-icon://delete"
                     type="Transparent"
                     tooltip="Delete attachment"
-                    press="onDelete_Claim_Attachment('1')"
+                    press="onDelete_Claim_Attachment('attachment_file_1')"
                     visible="{=
                         !${claimsubmission_input>/view_only}
                         &amp;&amp;
@@ -1546,7 +1546,7 @@
                     icon="sap-icon://delete"
                     type="Transparent"
                     tooltip="Delete attachment"
-                    press="onDelete_Claim_Attachment('2')"
+                    press="onDelete_Claim_Attachment('attachment_file_2')"
                     visible="{=
                         !${claimsubmission_input>/view_only}
                         &amp;&amp;
