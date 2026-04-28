@@ -124,7 +124,6 @@
                                         <Select 
                                             width="100%"
                                             selectedKey="{request>/req_item/dependent}" 
-                                            required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
@@ -146,13 +145,11 @@
                                         <MultiComboBox 
                                             width="100%"
                                             selectedKeys="{request>/req_item/dependent}"
-                                            required="true"
-                                            enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                             <core:Item key="{request>DEPENDENT_NO}" 
-                                                    text="{request>LEGAL_NAME}" />
+                                                    text="{request>LEGAL_NAME}" enabled="{= ${request>/view} !== 'view' }"/>
                                         </MultiComboBox>
                                     </form:fields>
                                 </form:FormElement>
@@ -254,7 +251,7 @@
                                         id="i_attachment_1_file">
 
                                         <unified:layoutData>
-                                        <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
                                     </unified:layoutData>
 
                                     </unified:FileUploader>
@@ -266,7 +263,7 @@
                                         visible="{= !!${request>/req_item/doc1_filename} }" >
                                             
                                     <layoutData>
-                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
                                     </layoutData>
                                     </Link>
 
@@ -321,7 +318,7 @@
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" >
                                         <unified:layoutData>
-                                            <form:ColumnElementData cellsLarge="7" cellsSmall="12" />
+                                            <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
                                         </unified:layoutData>
                                         </unified:FileUploader>
                                         <Link
@@ -330,7 +327,7 @@
                                             text="{request>/req_item/doc2_filename}"
                                             visible="{= !!${request>/req_item/doc2_filename} }" >
                                          <layoutData>
-                                            <form:ColumnElementData cellsLarge="11" cellsSmall="11"/>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
                                         </layoutData>
                                         </Link>
                                          <Button
@@ -362,15 +359,50 @@
                                             visible="false"
                                             id="i_start_date" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/start_date}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/start_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true" 
                                             change=".onSelectDate"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/START_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/START_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/START_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -379,15 +411,50 @@
                                             visible="false"
                                             id="i_end_date" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/end_date}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/end_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true" 
                                             change=".onSelectDate"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -478,6 +545,7 @@
                                             display="ValueDescription"
                                             required="true" 
                                             valueHelp="valuehelp_country"
+                                            change=".onInputAllocatedAmount"
                                         />
                                     </form:fields>
                                 </form:FormElement>
@@ -524,6 +592,21 @@
                                     <form:fields>
                                         <Text
                                             text="{request>/req_item/no_of_family_member}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Traveler -->
+                                <form:FormElement label="{i18n>req_i_no_of_traveler}"
+                                            visible="false"
+                                            id="i_no_of_traveler" >
+                                    <form:fields>
+                                        <m:Input 
+                                            id="input_no_of_traveler"
+                                            required="true" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"
+                                            value="{request>/req_item/no_of_traveler}"/>                                            
                                     </form:fields>
                                 </form:FormElement>
 
@@ -753,6 +836,7 @@
                                             selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_state}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_state} }"
                                             items="{
@@ -777,6 +861,7 @@
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
+                                            editable="{= !!${request>/req_item/from_location_office}}"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/from_location_office} }"
                                             items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
@@ -812,6 +897,7 @@
                                             id="item_to_location_office"
                                             selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
+                                            editable="{= !!${request>/req_item/to_staterequest>/req_item/to_state}}"
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         !!${request>/req_item/to_state} }"
@@ -853,14 +939,27 @@
                                             visible="false"
                                             id="i_tarikh_pindah" >
                                     <form:fields>
-                                        <m:DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
+                                        <DatePicker
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/tarikh_pindah}"
-                                            textAlign="Begin"
+                                            value="{
+                                                path: 'request>/req_item/tarikh_pindah',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             required="true"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
+                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
+                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -900,17 +999,21 @@
 
                                 <!-- Marriage Category -->
                                 <form:FormElement label="{i18n>req_i_marriage}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} &amp;&amp;
+                                                      ( ${request>/req_header/transferalonefamily} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY} &amp;&amp;
+                                                        ${request>/req_header/transferfamilynowlater} === ${constant>/TravelWithFamilyNowOrLater/NOW} ) }"
                                             id="i_marriage_cat" >
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/marriage_cat}" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            required="true"
                                             items="{path: 'employee>/ZMARITAL_CAT',
                                                     sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".onInputAllocatedAmount">
                                             <items>
                                                 <core:Item key="{employee>MARRIAGE_CATEGORY_ID}" 
                                                         text="{employee>MARRIAGE_CATEGORY_DESC}" />
@@ -969,13 +1072,13 @@
 
                                 <!-- Lodging Category -->
                                 <form:FormElement label="{i18n>req_i_lodging}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O}}"
                                             id="i_lodging_cat" >
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/lodging_cat}" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            editable="false"
                                             items="{path: 'employee>/ZLODGING_CAT',
                                                     sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
                                                     filters: [
@@ -993,7 +1096,7 @@
                                             visible="false"
                                             id="i_trip_start_date" >
                                     <form:fields>
-                                        <m:DatePicker
+                                        <DatePicker
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -1010,7 +1113,7 @@
                                             visible="false"
                                             id="i_trip_end_date" >
                                     <form:fields>
-                                        <m:DatePicker
+                                        <DatePicker
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"

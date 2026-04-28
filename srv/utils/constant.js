@@ -70,6 +70,7 @@ const Constant = {
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
         "ZRATE_KM": "ZRATE_KM",
         "ZCONSTANTS": "ZCONSTANTS",
+        "ZCOUNTRY": "ZCOUNTRY",
         "ZAPPROVER_DETAILS_CLAIMS" : "ZAPPROVER_DETAILS_CLAIMS",
         "ZAPPROVER_DETAILS_PREAPPROVAL" : "ZAPPROVER_DETAILS_PREAPPROVAL",
         "ZWORKFLOW_RULE": "ZWORKFLOW_RULE"
@@ -87,7 +88,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "WILAYAH_ASAL": "WILAYAH_ASAL"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -148,7 +150,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "FLIGHT_WIL": "FLIGHT_WIL"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -162,6 +165,7 @@ const Constant = {
         "CLAIM_SUB_ID": "CLAIM_SUB_ID",
         "REQUESTID": "REQUEST_ID",
         "REQUEST_SUB_ID": "REQUEST_SUB_ID",
+        "EST_AMOUNT": "EST_AMOUNT",
         "CLAIM_STATUS": "STATUS_ID",
         "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
@@ -192,6 +196,8 @@ const Constant = {
         "ID": "ID",
         "VALUE": "VALUE",
         "SUBSIDISED_RATE": "SUBSIDISED_RATE",
+        "TOTAL_TRAVELLER": "TOTAL_TRAVELLER",
+        "LODGING_CATEGORY": "LODGING_CATEGORY",
         "REQUEST_TYPE_ID": "REQUEST_TYPE_ID",
         "RISK": "RISK",
         "WORKFLOW_TYPE": "WORKFLOW_TYPE",
@@ -244,7 +250,8 @@ const Constant = {
     },
     PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year"
+        "YEAR": "Year",
+        "SERVICE": "Service"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
@@ -330,6 +337,29 @@ const Constant = {
     },
     ConstantId: {
         ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
+    },
+    ElaunTukarStatus: {
+        ALLOWED_CREATION: "01",
+        ALLOWED_FAMILY_NOW_ONLY: "02",
+        ON_GOING: "03",
+        NOT_ALLOWED: "04"
+    },
+    TravelAloneOrWithFamily: {
+        ALONE: "1",
+        WITH_FAMILY: "2",
+        ALONE_DESC: "Alone",
+        WITH_FAMILY_DESC: "With Family"
+    },
+    TravelWithFamilyNowOrLater: {
+        NOW: "1",
+        LATER: "2",
+        LATER_DESC: "Travel with Family on Later Date"
+    }, 
+    MarriageCategory: {
+        SINGLE: "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
     },
     ApproverActions: {
         APPROVE     : "APPROVE",

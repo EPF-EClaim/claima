@@ -103,7 +103,7 @@
 				<Select
 					id="select_claimdetails_input_dependent_name"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					selectedKey="{claimitem_input>/claim_item/dependent}"
 					items="{
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
@@ -112,22 +112,22 @@
 					required="true"
 				>
                     <items>
-                        <core:Item key="{employee>LEGAL_NAME}" 
+                        <core:Item key="{employee>DEPENDENT_NO}" 
                                 text="{employee>LEGAL_NAME}" />
                     </items>
 				</Select>
 
                 <!-- Dependent (Multi) -->
-				<Label text="{i18n>label_claimdetails_input_dependent}" />
+				<Label text="{i18n>label_claimdetails_input_dependent_combo}" />
                 <MultiComboBox 
 					id="combo_claimdetails_input_dependent"
                     selectedKeys="{claimitem_input>/claim_item/dependent}"
-                    required="true"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                     visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                     items="{path: 'employee>/ZEMP_DEPENDENT',
                             sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                     <core:Item key="{employee>DEPENDENT_NO}" 
-                            text="{employee>LEGAL_NAME}" />
+                            text="{employee>LEGAL_NAME}" enabled="{claimitem_property>/combo_dependent/is_editable}"/>
                 </MultiComboBox>
                 
                 <!-- Type of Professional Body -->
@@ -183,8 +183,10 @@
                     selectedKey="{claimitem_input>/claim_item/marriage_category}"
                     forceSelection="false"
 					editable="{= !${claimsubmission_input>/view_only} }"
-                    visible="false"
+                    visible="{claimitem_property>/marriage_category/is_visible}"
                     required="true"
+                    change="onSelect_ClaimDetails_MarriageCategory"
+                    liveChange="onSelect_ClaimDetails_MarriageCategory"
                     items="{
                         path: 'employee>/ZMARITAL_CAT',
                         sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false }
@@ -293,35 +295,6 @@
                     editable="false"
                     visible="false"
                 />
-                                
-                <!-- Amount (MYR) -->
-                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
-                <Input
-                    id="input_claimdetails_input_amount"
-                    value="{
-						path: 'claimitem_input>/claim_item/amount',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							maxIntegerDigits: 16,
-							preserveDecimals: false
-                        },
-                        constraints: { minimum: 0.01 }
-					}"
-					required="true"
-					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
-                        !${claimsubmission_input>/view_only} &amp;&amp;
-						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
-						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
-						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
-						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
-                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
-					}"
-					visible="{claimitem_property>/amount/is_visible}"
-				/>
 
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
@@ -683,13 +656,7 @@
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
 					required="true"
-					visible="{= ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
-                                ( ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LOD_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
-                                    ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
+					visible="false"
                     items="{
                         path: 'employee>/ZTRANSFER_MODE',
                         sorter: [{ path: 'TRANSFER_MODE_ID' }],
@@ -731,6 +698,18 @@
 					required="true"
 				/>
 
+                <!-- Number of Travellers -->
+				<Label text="{i18n>label_claimdetails_number_of_travellers}" />
+				<Input
+					id="input_claimdetails_input_number_of_travellers"
+					value="{claimitem_input>/claim_item/number_of_travellers}"
+					type="Number"
+					visible="{claimitem_property>/number_of_traveller/is_visible}"
+                    required="{claimitem_property>/number_of_traveller/is_required}"
+                    change="onChange_ClaimDetails_NumberOfDays"
+                    liveChange="onChange_ClaimDetails_NumberOfDays"
+				/>
+
 				<!-- Type of Vehicle -->
 				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
 				<Select
@@ -755,18 +734,6 @@
                     visible="false"
 				>
 				</Select>
-
-				<!-- Rate Per Kilometer -->
-				<Label text="{i18n>label_claimdetails_input_km_rate}" />
-				<Input
-					id="input_claimdetails_input_rate_per_km"
-					value="{
-						path: 'claimitem_input>/claim_item/descr/rate_per_km',
-						type: 'FloatType'
-					}"
-					editable="false"
-					visible="{claimitem_property>/rate_per_km/is_visible}"
-				/>
 
                 <!-- Type of Fare -->
                 <Label text="{i18n>label_claimdetails_input_faretype}" />
@@ -794,8 +761,7 @@
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
                     required="true"
-                    visible="{= (${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/FERRY}
-                            || ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN})
+                    visible="{= ${claimitem_input>/claim_item/fare_type_id} === ${constant>/FareType/TRAIN}
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id}
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
                     }"
@@ -885,7 +851,7 @@
                 <Input
                     id="input_claimdetails_input_from_location"
                     value="{claimitem_input>/claim_item/from_location}"
-                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    visible="{claimitem_property>/from_location/is_visible}"
                     required="true"
                 />
                 <!-- From Location Office -->
@@ -897,7 +863,7 @@
                     change="onSelect_ClaimDetails_FromLocationOffice"
                     liveChange="onSelect_ClaimDetails_FromLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-                    editable="{= !${claimsubmission_input>/view_only} }"
+                    editable = "{= !!${claimitem_input>/claim_item/from_state_id} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false }}"
@@ -921,6 +887,7 @@
                             sorter: { path: 'TO_STATE_ID', descending: false }}"
 					change="onSelect_ClaimDetails_ToState"
 					liveChange="onSelect_ClaimDetails_ToState"
+                    editable = "{= !!${claimitem_input>/claim_item/from_location_office}}"
                 >
                     <items>
                         <core:Item key="{employee_view>TO_STATE_ID}" 
@@ -933,7 +900,7 @@
                 <Input
                     id="input_claimdetails_input_to_location"
                     value="{claimitem_input>/claim_item/to_location}"
-                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    visible="{claimitem_property>/to_location/is_visible}"
                     required="true"
                 />
                 <!-- To Location Office -->
@@ -945,7 +912,7 @@
                     change="onSelect_ClaimDetails_ToLocationOffice"
                     liveChange="onSelect_ClaimDetails_ToLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-                    editable="{= !${claimsubmission_input>/view_only} }"
+                    editable = "{= !!${claimitem_input>/claim_item/to_state_id}}"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
                             sorter: { path: 'TO_LOCATION_ID', descending: false }}">
@@ -978,6 +945,49 @@
 					visible="{claimitem_property>/km/is_visible}"
 				/>
 
+                <!-- Rate Per Kilometer -->
+				<Label text="{i18n>label_claimdetails_input_km_rate}" />
+				<Input
+					id="input_claimdetails_input_rate_per_km"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
+					editable="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
+				/>
+
+                <!-- Amount (MYR) -->
+                <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} ? ${i18n>label_claimdetails_input_amount_approved} : ${i18n>label_claimdetails_input_amount} }" />
+                <Input
+                    id="input_claimdetails_input_amount"
+                    value="{
+						path: 'claimitem_input>/claim_item/amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
+					}"
+					required="true"
+					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;
+                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
+                        !${claimsubmission_input>/view_only} &amp;&amp;
+						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
+                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
+				/>
+                
                 <!-- Room Type -->
                 <Label text="{i18n>label_claimdetails_input_roomtype}" />
                 <Select
@@ -1001,6 +1011,7 @@
                     visible="false"
                     required="true"
                     valueHelp="valuehelp_country"
+                    change="onSelectCountry"
                 />
 
                 <!-- Location -->
@@ -1317,6 +1328,7 @@
                     liveChange="onSelect_ClaimDetails_LodgingCategory"
                     visible="false"
                     required="true"
+                    editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItemLodging/LODG_O}}"
 				>
 				</Select>
 

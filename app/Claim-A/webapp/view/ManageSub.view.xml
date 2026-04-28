@@ -1,6 +1,9 @@
 <mvc:View
     controllerName="claima.controller.ManageSub"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
     xmlns:f="sap.f"
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
@@ -21,7 +24,7 @@
                      parameters: {
                        $orderby: 'VALID_FROM desc'
                        , $expand: 'ZEMP_MASTER_SUBS',
-                         $select: 'SUBSTITUTE_ID,VALID_FROM,VALID_TO,ZEMP_MASTER_SUBS/EMAIL'   
+                         $select: 'SUBSTITUTE_ID,VALID_FROM,VALID_TO,ZEMP_MASTER_SUBS/EMAIL,ZEMP_MASTER_SUBS/NAME'   
                      }
                    }">
 
@@ -34,8 +37,9 @@
                  
                  
                 <columns>
-                    <Column width="12rem"><Text text="{i18n>tableColumnName}" /></Column>
-                    <Column width="16rem"><Text text="Asignee Email" /></Column>
+                    <Column width="6rem"><Text text="{i18n>tableColumnID}" /></Column>
+                    <Column width="15rem"><Text text="{i18n>tableColumnName}" /></Column>
+                    <Column width="13rem"><Text text="{i18n>tableColumnEmail}" /></Column>
                     <Column width="12rem"><Text text="{i18n>tableColumnPeriod}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnStart}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnEnd}" /></Column>
@@ -46,6 +50,9 @@
                         <cells>
                             <!-- Subsitute Column -->
                             <Text text="{SUBSTITUTE_ID}" />
+
+                            <!--Substitute Name -->
+                            <Text text="{ZEMP_MASTER_SUBS/NAME}" />
 
                             <!-- NEW: Email (from expanded nav property) -->
                             <Text text="{ZEMP_MASTER_SUBS/EMAIL}" />
@@ -92,6 +99,42 @@
             </OverflowToolbar>
         </footer>
 
+        <!-- Value Help for Employee selection (EEID + Name).-->
+        <dependents>
+                <mdc:ValueHelp
+                    id="valuehelp_managesub_emp"
+                    delegate="{
+                        name: 'claima/utils/ValueHelpDelegate_MngeSub',
+                        payload: {
+                            searchKeys: ['EEID', 'NAME', 'EMAIL'],
+                            columns: [
+                                'Employee ID',
+                                'Name',
+                                'Email'
+                            ],
+                            openOnClick: true
+                        }
+                    }">
+                    <mdc:typeahead>
+                        <mdcvh:Popover title="Select Employee">
+                            <mdcvhcnt:MTable
+                                keyPath="EEID"
+                                descriptionPath="NAME"
+                                caseSensitive="false"
+                                useAsValueHelp="true"/>
+                        </mdcvh:Popover>
+                    </mdc:typeahead>
+                    <mdc:dialog>
+                    <mdcvh:Dialog title="Select Employee">
+                        <mdcvhcnt:MTable
+                            keyPath="EEID"
+                            descriptionPath="NAME"
+                            useAsValueHelp="true"/>
+                            </mdcvh:Dialog>
+                    </mdc:dialog>
+                </mdc:ValueHelp>
+            </dependents>
+
         <Dialog id="dlgAdd" title="{i18n>addDlgTitle}" type="Message">
     <content>
         <VBox class="sapUiSmallMargin">
@@ -100,14 +143,18 @@
         <Label text="Enter Employee ID or Email" labelFor="inpUser"/>
 
         <VBox class="sapUiMediumMarginBottom">
-            <Input id="inpUser"
+            <mdc:Field 
+                id="inpUser"
+                value="{vm>/subInput}"
+                editMode="Editable"
+                valueHelp="valuehelp_managesub_emp"
                 liveChange=".onSubstituteIdChange"
-                placeholder="Enter here " />
-
+                placeholder="Enter here "
+                width="100%" />
             <!-- small space above the info line; -->
             <Text text="{vm>/subInfo}"
-                visible="{= !!${vm>/subInfo} }"
-                class="sapUiTinyMarginTop" />
+                visible="{= !!${vm>/subInfo} }" 
+                 class="sapUiTinyMarginTop"/>
         </VBox>
 
         <Label text="{i18n>tableColumnPeriod}" />

@@ -236,6 +236,38 @@ sap.ui.define([
             }
         },
 
+        /**
+         * call backend service to retrieve cash advance amount for request based on approved items
+         * @public
+         * @param {String} sRequestId - ID of pre-approval request 
+         */
+        getApprovedCashAdvanceAmount: async function (sRequestId) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            var dResult = 0.00;
+            if (!sRequestId) return dResult;
+
+            try {
+                BusyIndicator.show(0); 
+                
+                const oFunction = oDataModel.bindContext("/getApprovedCashAdvanceAmount(...)");
+                
+                oFunction.setParameter("sRequestId", sRequestId);
+
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+				dResult = oContext.getObject("value") || 0.00;
+                
+            } catch (oError) {
+                MessageBox.error(oError.toString());
+                dResult = 0.00; 
+            } finally {
+                BusyIndicator.hide();
+            }
+
+            return dResult;
+        },
+
          /**
          * Determine whether the number of days calculation should be treated as
          * "number of nights" instead of inclusive calendar days.
@@ -268,7 +300,7 @@ sap.ui.define([
                 Constants.ClaimTypeItem.LOD_TUKAR
             ];
 
-            return aNightClaimTypes.includes(oHeader.claim_type_id) &&
+            return aNightClaimTypes.includes(oHeader.claimtype || oHeader.claim_type_id) &&
                 aLodgingItems.includes(oItem.claim_type_item_id);
         },
 
@@ -411,21 +443,41 @@ sap.ui.define([
          * method to call the backend service to get Pengangkutan Darat Amount
          * @param {String} sSubmissionType 
          */
-        determineDaratAmount: async function (sSubmissionType) {
+        determineDaratAmount: async function (sSubmissionType, bIsAlone) {
             const oDataModel = this._oOwnerComponent.getModel();
-            let sRegion, fKilometer;
+            let sRegion, fKilometer,sMaritalCategory;
 
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
                     const oReqItem = this._oOwnerComponent.getModel("request").getProperty("/req_item");
-                    sRegion       = oReqItem.sss; 
-                    fKilometer    = oReqItem.kilometer;
+                    const oReqHeader = this._oOwnerComponent.getModel("request").getProperty("/req_header");
+
+                    sRegion         = oReqItem.sss; 
+                    fKilometer      = oReqItem.kilometer;
+
+                    if (oReqHeader.transferalonefamily === Constants.TravelAloneOrWithFamily.ALONE || 
+                        oReqHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.LATER) {
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    } else {
+                        sMaritalCategory = oReqItem.marriage_cat ? oReqItem.marriage_cat : null;
+                    }
+
                     break;
 
                  case Constants.SubmissionTypePrefix.CLAIM:
                     const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    const sTravelAloneFamily = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_alone_family");
+                    const sTravelFamilyNowLater = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_family_now_later");
+
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
+                    if(sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE_DESC || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER_DESC ||
+                        sTravelAloneFamily == Constants.TravelAloneOrWithFamily.ALONE || sTravelFamilyNowLater == Constants.TravelWithFamilyNowOrLater.LATER
+                    ){
+                        sMaritalCategory = Constants.MarriageCategory.SINGLE;
+                    }else{
+                        sMaritalCategory = oItem.marriage_category ? oItem.marriage_category : null;
+                    }
                     break;
                 
                 default:
@@ -433,12 +485,13 @@ sap.ui.define([
                     return null;
             }
 
-            if (!sRegion || !fKilometer) return;
+            if (!sRegion, !sMaritalCategory) return;
 
             const oFunction = oDataModel.bindContext("/getPengangkutanDaratAmount(...)");
             
             oFunction.setParameter("sRegion", sRegion);
             oFunction.setParameter("fKilometer", fKilometer);
+            oFunction.setParameter("sMaritalCategory", sMaritalCategory);
 
             try {
                 BusyIndicator.show(0); 
@@ -471,7 +524,8 @@ sap.ui.define([
             const iMaxDays = oConstantBindList.filter(aConstantFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
                 var oConstants = aContexts.map(context => context.getObject())[0];
-                return oConstants.NUMBER_OF_DAYS;
+                // Return value - 1 to include date selected
+                return oConstants.NUMBER_OF_DAYS - 1;
             });
             
             return iMaxDays;
@@ -490,6 +544,54 @@ sap.ui.define([
             } catch (oError) {
                 MessageBox.error(this.getText("error_marriage_category_not_found", []));
                 return null; 
+            }
+        },
+
+        getLodgingOverseaAmountAndCat: async function(sSubmissionType){
+            let sCountry,sClaimType,sClaimTypeItem;
+            const oDataModel = this._oOwnerComponent.getModel();
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    const oReqHeader = this._oOwnerComponent.getModel("request")?.getProperty("/req_header");
+                    const oReqItem = this._oOwnerComponent.getModel("request")?.getProperty("/req_item");
+
+                    sCountry = oReqItem.country;
+                    sClaimType = oReqHeader.claimtype;
+                    sClaimTypeItem = oReqItem.claim_type_item_id;
+                    break;
+                case Constants.SubmissionTypePrefix.CLAIM:  
+                    const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+
+                    sCountry = oItem.country;
+                    sClaimType = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/claim_type_id");
+                    sClaimTypeItem = oItem.claim_type_item_id;
+                    break;
+                
+            }
+
+            if (!sCountry) return;
+
+            const oFunction = oDataModel.bindContext("/getLodgingOverseaAmountAndCat(...)");
+            oFunction.setParameter("sCountry", sCountry);
+            oFunction.setParameter("sClaimType", sClaimType);
+            oFunction.setParameter("sClaimTypeItem", sClaimTypeItem);
+
+            try {
+                BusyIndicator.show(0); 
+                
+                await oFunction.execute();
+                
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+
+                return oResult;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("d_e_not_record_found", []));
+                return null; 
+            } finally {
+                BusyIndicator.hide();
             }
         }
 

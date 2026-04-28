@@ -169,7 +169,6 @@ entity ZREQUEST_ITEM : managed {
         TRANSFER_DATE              : Date;
         NO_OF_DAYS                 : Integer;
         MARRIAGE_CATEGORY          : String(2);
-        TOTAL_TRAVELLER            : Integer;
         FAMILY_COUNT               : Integer;
         COST_CENTER                : String;
         GL_ACCOUNT                 : String(6);
@@ -180,7 +179,7 @@ entity ZREQUEST_ITEM : managed {
         PURPOSE                    : String;
         MOBILE_CATEGORY_PURPOSE_ID : String(2);
         KILOMETER                  : Decimal(6, 2);
-        RATE_PER_KM                : String(2);
+        RATE_PER_KM                : String(10);
         FLIGHT_CLASS               : String;
         LOCATION_TYPE              : String(6);
         COUNTRY                    : String(3);
@@ -218,6 +217,7 @@ entity ZREQUEST_ITEM : managed {
         CURRENCY_CODE              : String;
         CURRENCY_RATE              : Decimal(6, 2);
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
+        TOTAL_TRAVELLER            : Integer;        
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -251,8 +251,6 @@ entity ZREQUEST_ITEM : managed {
                                          and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
                                          and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
                                          and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
-        ZRATE_KM                   : Association to ZRATE_KM
-                                         on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
         ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
                                          on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
         ZREGION                    : Association to ZREGION
@@ -279,7 +277,6 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
         ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
-
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -454,11 +451,10 @@ entity ZCLAIM_ITEM : managed {
         LODGING_ADDRESS            : String;
         MARRIAGE_CATEGORY          : String(2);
         AREA                       : String(6);
-        TOTAL_TRAVELLER            : Integer;
         NO_OF_FAMILY_MEMBER        : Integer;
         PARKING                    : Decimal;
         PHONE_NO                   : String;
-        RATE_PER_KM                : String(2);
+        RATE_PER_KM                : String(10);
         RECEIPT_DATE               : Date;
         RECEIPT_NUMBER             : String;
         REMARK                     : String;
@@ -528,6 +524,7 @@ entity ZCLAIM_ITEM : managed {
         DAILY_ALLOWANCE            : Integer;
         TIPS                       : Integer;
         EXCLUDE_TIPS               : Boolean;
+        TOTAL_TRAVELLER            : Integer;        
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -551,8 +548,6 @@ entity ZCLAIM_ITEM : managed {
                                          on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
         ZLOC_TYPE                  : Association to one ZLOC_TYPE
                                          on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
-        ZRATE_KM                   : Association to ZRATE_KM
-                                         on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
         ZCOUNTRY                   : Association to ZCOUNTRY
                                          on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
@@ -724,11 +719,15 @@ entity ZFLIGHT_CLASS : managed {
 }
 
 entity ZCOUNTRY : managed {
-    key COUNTRY_ID   : String(3)  @mandatory  @Common.Label: 'Country ID';
-        COUNTRY_DESC : String     @Common.Label: 'Country Description';
-        START_DATE   : Date       @Common.Label: 'Start Date';
-        END_DATE     : Date       @Common.Label: 'End Date';
-        STATUS       : String(10) @Common.Label: 'Status';
+    key COUNTRY_ID            : String(3)  @mandatory  @Common.Label: 'Country ID';
+        COUNTRY_DESC          : String     @Common.Label: 'Country Description';
+        START_DATE            : Date       @Common.Label: 'Start Date';
+        END_DATE              : Date       @Common.Label: 'End Date';
+        STATUS                : String(10) @Common.Label: 'Status';
+        LODGING_CATEGORY      : String(2)  @Common.Label: 'Lodging Category';
+        ZLODGING_CAT          : Association to ZLODGING_CAT
+                                    on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
+                                    
 }
 
 entity ZAREA : managed {
@@ -1301,6 +1300,7 @@ entity ZELIGIBILITY_RULE : managed {
         JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
         SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
         COST_CENTER               : String(4)      @Common.Label: 'Cost_Center';
+        LODGING_CATEGORY          : String(2)      @Common.Label: 'Lodging Category';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1344,7 +1344,9 @@ entity ZELIGIBILITY_RULE : managed {
         ZNUM_RANGE                : Association to ZNUM_RANGE
                                         on ZNUM_RANGE.PREFIX = SUBMISSION_TYPE;
         ZCOST_CENTER              : Association to one ZCOST_CENTER
-                                        on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER
+                                        on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZLODGING_CAT              : Association to ZLODGING_CAT
+                                        on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

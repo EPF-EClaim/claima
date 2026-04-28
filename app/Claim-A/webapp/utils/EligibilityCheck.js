@@ -2,11 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
+	"sap/ui/core/format/NumberFormat",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
 	ValueState,
+	NumberFormat,
 	Constants,
 	Utility) {
 	"use strict";
@@ -47,7 +49,9 @@ sap.ui.define([
 						"flight_class": "FLIGHT_CLASS_ID",
 						"marriage_cat": "MARRIAGE_CATEGORY",
 						"vehicle_class": "TRANSPORT_CLASS",
-						"no_of_hours": "TRAVEL_HOURS"
+						"no_of_hours": "TRAVEL_HOURS",
+						"no_of_traveler": "TOTAL_TRAVELLER",
+						"tripstartdate": "RECEIPT_DATE"
 					};
 					break;
 
@@ -75,7 +79,8 @@ sap.ui.define([
 						"mobile_category_purpose_id": "MOBILE_PHONE_BILL",
 						[receipt_date]: "RECEIPT_DATE",
 						"no_of_hours": "TRAVEL_HOURS",
-						"region" : "REGION_ID"
+						"region" : "REGION_ID",
+						"number_of_travellers": "TOTAL_TRAVELLER"
 					};
 					break;
 
@@ -100,8 +105,12 @@ sap.ui.define([
 					var aNewActiveFields = aActiveFields.map(field => {
 						var oNewField = { ...field };
 
-						if (oNewField.fieldName === "ELIGIBLE_AMOUNT" && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+						if (oNewField.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
+						}
+
+						if (oNewField.fieldName === Constants.EntitiesFields.RECEIPT_DATE && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+							oNewField.value = String(oController._oReqModel.getProperty("/req_header/tripstartdate"));
 						}
 
 						return oNewField;
@@ -185,9 +194,16 @@ sap.ui.define([
 				}
 			});
 
+			var oFloatFormat = NumberFormat.getFloatInstance({
+				minFractionDigits: 2,
+				maxFractionDigits: 2,
+				groupingEnabled: true 
+			});
+
 			aPayload.forEach((oSinglePayload) => {
 				const aCheckFields = oSinglePayload.CheckFields || [];
 				const sEmpId = oSinglePayload.EmpId;
+				const sClaimTypeItem = Constants.ClaimTypeItemDesc[oSinglePayload.ClaimTypeItem] || oSinglePayload.ClaimTypeItem;
 
 				aCheckFields.forEach((oField) => {
 					if (oField.result === true || oField.result === null) {
@@ -195,8 +211,25 @@ sap.ui.define([
 					}
 
 					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+					let sErrorMsg;
 
-					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
+					switch (oField.fieldName) {
+						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
+							sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							break;
+						
+						case Constants.EntitiesFields.TRAVEL_DAYS_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_travel_days", [oField.result, sClaimTypeItem, sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
+							break;
+					
+						default:
+							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
+							break;
+					}
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
@@ -247,25 +280,18 @@ sap.ui.define([
 			});
 		},
 
-		async onCheckMobileEligibility(oController) {
-			const sEmployeeId = oController._oSessionModel.getProperty("/userId");
+		checkElaunTukarEligibility: async function (oDataModel, bIsClaim) {
+            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+			oFunction.setParameter("IS_CLAIM", bIsClaim);
 
-			try {
-				const oFunction = oController._oDataModel.bindContext("/checkEligibleMobileClaim(...)");
+            try {
+                await oFunction.execute();
+                const oContext  = oFunction.getBoundContext();
+                return oContext.getObject().value; 
 
-				oFunction.setParameter("sEmployeeId", sEmployeeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-				return oResult.eligible;
-
-
-			} catch (oError) {
-				console.error("Failed to check eligibility", oError);
-			}
+            } catch (oError) {
+                return false;
+            }
 		}
 
 	};

@@ -14,8 +14,7 @@ module.exports = {
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
     var oRule, oDateRange;
-    var iHistoricalData = 0;
-    var iCurrentRecordItemData = 0;
+    var iAllowedFreq = 0;
     var iItemFreq = 0;
     try {
       if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
@@ -26,17 +25,19 @@ module.exports = {
         oDateRange = await this._getDateRange(oPayload, tx);
         iItemFreq = oDateRange.iItemFreq;
 
-        iHistoricalData = await this._getHistoricalData(
+        var iHistoricalData = await this._getHistoricalData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
 
-        iCurrentRecordItemData = await this._getCurrentRecordItemData(
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+
+        iAllowedFreq = iHistoricalData + oCurrentRecordItemData.iItemCount;
       }
     } catch (error) {
       throw new Error(`${error.message}`);
     };
     this._validateClaimItem(
-      oRule, oPayload, iHistoricalData + iCurrentRecordItemData, iItemFreq);
+      oRule, oPayload, iAllowedFreq, iItemFreq);
 
     return oPayload;
   },
@@ -185,7 +186,7 @@ module.exports = {
     };
     const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-    return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+    return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
       sCurrentItemcondition,
       tx);
   },
@@ -234,7 +235,7 @@ module.exports = {
 
     switch (oPayload.ClaimTypeItem) {
       case Constant.ClaimTypeItem.TELEFON_B:
-        // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
+        // TELEFON_B - return true if there is no historical claims within same Year/Month based on frequency and period
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
           iIndex = oPayload.CheckFields.findIndex(
             (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
@@ -243,12 +244,12 @@ module.exports = {
           if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
             oPayload.CheckFields[iIndex].result = true;
           } else {
-            oPayload.CheckFields[iIndex].result = false;
+            throw new Error("Claim Type has exceeded allowed eligibility frequency.");
           }
         }
 
         iIndex = null;
-        // I-PAD - return true if claim amount is less than eligible amount
+        // TELEFON_B - return true if claim amount is less than eligible amount
         iIndex = oPayload.CheckFields.findIndex(
           (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
         );

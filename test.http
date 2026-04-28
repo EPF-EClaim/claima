@@ -24,44 +24,44 @@
 
 
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+# Content-Type: application/json
+# Authorization: Basic alice
  
-   {
-    "budget": [
-        {
-            "COMMITMENT_ITEM": "710010",
-            "FUND_CENTER": "100010100",
-            "INTERNAL_ORDER": "1",
-            "MATERIAL_GROUP": "710010901",
-            "ORIGINAL_BUDGET": "20.00",
-            "RETURN": "10.00",
-            "SUPPLEMENT": "10.00",
-            "VIREMENT_IN": "10.00",
-            "VIREMENT_OUT": "10.00",
-            "YEAR": "2026",
-            "HasActiveEntity": false,
-            "HasDraftEntity": false,
-            "IsActiveEntity": true
-        }, 
-        {
-            "COMMITMENT_ITEM": "710010",
-            "FUND_CENTER": "100010101",
-            "INTERNAL_ORDER": "1",
-            "MATERIAL_GROUP": "710010901",
-            "ORIGINAL_BUDGET": "10.00",
-            "RETURN": "10.00",
-            "SUPPLEMENT": "10.00",
-            "VIREMENT_IN": "10.00",
-            "VIREMENT_OUT": "0.00",
-            "YEAR": "2026",
-            "HasActiveEntity": false,
-            "HasDraftEntity": false,
-            "IsActiveEntity": true
-        }
-    ]
-}
+#    {
+#     "budget": [
+#         {
+#             "COMMITMENT_ITEM": "710010",
+#             "FUND_CENTER": "100010100",
+#             "INTERNAL_ORDER": "1",
+#             "MATERIAL_GROUP": "710010901",
+#             "ORIGINAL_BUDGET": "20.00",
+#             "RETURN": "10.00",
+#             "SUPPLEMENT": "10.00",
+#             "VIREMENT_IN": "10.00",
+#             "VIREMENT_OUT": "10.00",
+#             "YEAR": "2026",
+#             "HasActiveEntity": false,
+#             "HasDraftEntity": false,
+#             "IsActiveEntity": true
+#         }, 
+#         {
+#             "COMMITMENT_ITEM": "710010",
+#             "FUND_CENTER": "100010101",
+#             "INTERNAL_ORDER": "1",
+#             "MATERIAL_GROUP": "710010901",
+#             "ORIGINAL_BUDGET": "10.00",
+#             "RETURN": "10.00",
+#             "SUPPLEMENT": "10.00",
+#             "VIREMENT_IN": "10.00",
+#             "VIREMENT_OUT": "0.00",
+#             "YEAR": "2026",
+#             "HasActiveEntity": false,
+#             "HasDraftEntity": false,
+#             "IsActiveEntity": true
+#         }
+#     ]
+# }
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -182,28 +182,63 @@ Authorization: Basic alice
     {
      "aPayload": [
        {
+         "EmpId": "886887",
+         "RecordId": "CLM26000002324",
+         "RecordSubId": "CLM26000002324012",
+         "ClaimType": "WILAYAH_ASAL",
+         "ClaimTypeItem": "FLIGHT_WIL",
          "CheckFields": [
             {
-               "fieldName": "RECEIPT_DATE",
-               "value": "2025-04-17",
-               "result": null
+                  "fieldName": "ELIGIBLE_AMOUNT",
+                  "value": "500",
+                  "result": null
             },
             {
-               "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "80000",
-               "result": null
+                  "fieldName": "TRAVEL_DAYS_ID",
+                  "value": "7",
+                  "result": null
             },
             {
-               "fieldName": "TRANSPORT_CLASS",
-               "value": "07",
-               "result": null
+                  "fieldName": "FARE_TYPE_ID",
+                  "value": "03",
+                  "result": null
+            },
+            {
+                  "fieldName": "TRANSPORT_CLASS",
+                  "value": "01",
+                  "result": null
+            },
+            {
+                  "fieldName": "FLIGHT_CLASS_ID",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "ROOM_TYPE_ID",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "MOBILE_PHONE_BILL",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "RECEIPT_DATE",
+                  "value": "2026-04-16",
+                  "result": null
+            },
+            {
+                  "fieldName": "TRAVEL_HOURS",
+                  "value": "null",
+                  "result": null
+            },
+            {
+                  "fieldName": "REGION_ID",
+                  "value": "null",
+                  "result": null
             }
-            ],
-         "ClaimType": "BEG",
-         "ClaimTypeItem": "PKN_PANAS",
-         "EmpId": "886887",
-         "RecordId": "CLM26000000874",
-         "RecordSubId": "CLM26000000874001"
+         ]
       }
      ]
     }

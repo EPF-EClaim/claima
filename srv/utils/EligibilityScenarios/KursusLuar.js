@@ -16,6 +16,7 @@ module.exports = {
         var oRule, aFilteredRules;
         var iHistFreq = 0;
         var iAllowedFreq = 0;
+        var fTotalAmount = 0;
 
         // to extract the key values from oPayload
         var aPayload = this._parsePayload(oPayload);
@@ -34,6 +35,13 @@ module.exports = {
 
             oRule = aFilteredRules[0];
         }
+        else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
+            aFilteredRules = aRules.filter(function (rule) {
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
+            })
+
+            oRule = aFilteredRules[0];
+        }
         else {
             // DOBI, HOTEL_L, LODG_O, LODGING_L, PARKING, PKN_PANAS will only return single eligible rule value based on user's personal grade
             oRule = aRules[0];
@@ -44,12 +52,12 @@ module.exports = {
             var oDateRange = await this._getDateRange(oPayload, tx);
             iAllowedFreq = oDateRange.iItemFreq;
 
-            var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-            var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-            iHistFreq = iHistoricalData + iCurrentRecordItemData;
+            iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+            var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+            fTotalAmount = oCurrentRecordItemData.fTotalAmount;
         }
 
-        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq);
+        this._validateClaimItem(aPayload, oRule, oPayload, iHistFreq, iAllowedFreq, fTotalAmount);
         return oPayload;
 
     },
@@ -61,7 +69,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sTravelDaysId, sFlightClassId, sRoomTypeId;
+        var sTravelDaysId, sFlightClassId, sRoomTypeId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -81,10 +89,16 @@ module.exports = {
                 case Constant.EntitiesFields.ROOM_TYPE_ID:
                     sRoomTypeId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.FARE_TYPE_ID:
+                    sFareTypeId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.TRANSPORT_CLASS:
+                    sTransportClass = oPayload.CheckFields[i].value;
+                    break;
             }
         }
 
-        return { sTravelDaysId, sFlightClassId, sRoomTypeId };
+        return { sTravelDaysId, sFlightClassId, sRoomTypeId, sFareTypeId, sTransportClass };
     },
 
     /**
@@ -177,7 +191,7 @@ module.exports = {
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
-        return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
             sCurrentItemcondition,
             tx);
     },
@@ -189,7 +203,7 @@ module.exports = {
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
     */
-    _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq) {
+    _validateClaimItem: function (aPayload, oRule, oPayload, iExistingFreq, iAllowedFreq, fTotalAmount) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -328,16 +342,11 @@ module.exports = {
                 break;
 
             case Constant.ClaimTypeItem.PKN_PANAS:
-                // PKN_PANAS - return true if there is no historical claims within same Year/Month based on frequency and period
-                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                if (iIndex == -1) return;
-                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-                    oPayload.CheckFields[iIndex].result = true;
-                } else {
-                    oPayload.CheckFields[iIndex].result = false;
+                // PKN_PANAS - reject if there is historical claims within same Period based on frequency
+                if (iExistingFreq >= iAllowedFreq) {
+                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
                 }
 
-                iIndex = null;
                 // PKN_PANAS - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
@@ -349,10 +358,35 @@ module.exports = {
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
                     } else {
+                        // current payload amount + total amount from all items
+                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount);
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                            oPayload.CheckFields[iIndex].value,
+                            fCurrentTotal,
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
+                }
+                break;
+
+            // TAMBANG - return true if selected transport class matches user's personal grade
+            case Constant.ClaimTypeItem.TAMBANG:
+                iIndex = oPayload.CheckFields.findIndex((field) =>
+                    field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
+
+                if (iIndex == -1) return;
+
+                // if no rule matches the selected transport class, return false
+                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
+                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
+                } else {
+                    oPayload.CheckFields[iIndex].result = true;
                 }
                 break;
         }

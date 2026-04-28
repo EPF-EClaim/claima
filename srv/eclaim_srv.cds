@@ -336,8 +336,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
-
     type EligibilityPayload {
         CheckFields   : many EligibilityCheckFields;
         ClaimType     : String;
@@ -355,6 +353,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   EligibilityCheck(aPayload: many EligibilityPayload)                               returns many Response;
 
+    function getApprovedCashAdvanceAmount(
+        sRequestId: String
+    ) returns Decimal(16, 2);
+    
     type perdiem {
         amount          : Decimal(15, 2);
         daily_allowance : Decimal(15, 2);
@@ -458,7 +460,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
     function getPengangkutanDaratAmount(
                                         sRegion     : String,
-                                        fKilometer  : Decimal(5, 2)
+                                        fKilometer  : Decimal(10, 2),
+                                        sMaritalCategory: String
                                     )                                                          returns DaratAmounts;
 
     type PemPindahAmount {
@@ -469,7 +472,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getUserEligibleAmountPemPindah(
         sRegion: String,
         sClaimType: String,
-        sClaimTypeItem: String
+        sClaimTypeItem: String,
+        sTravelAloneFamily: String,
+        sTravelFamilyNowLater: String
         )                                                                                      returns PemPindahAmount;
     
     type PEAValidationResult {
@@ -481,5 +486,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
 
-    function checkElaunTukarEligible()                                                         returns Boolean;
+    function checkElaunTukarEligible(IS_CLAIM: Boolean)                                        returns Boolean;
+
+    type LodgingOverseaAmountAndCat {
+        sCategory: String;
+        iEligibleAmount: Decimal(16, 2);
+    }
+
+    function getLodgingOverseaAmountAndCat (sCountry: String, sClaimType: String, sClaimTypeItem: String) returns LodgingOverseaAmountAndCat;
 };
