@@ -982,10 +982,8 @@ sap.ui.define([
                     // Call CAP action to update header table
                     
                     oAction = oModel.bindContext("/updateApproverHeader(...)");
-                    oAction.setParameter("batch", {
-                        sRecordId: sPARID,
-                        sStatus: Constants.ClaimStatus.APPROVED
-                    });
+                    oAction.setParameter("sRecordId", sPARID,);
+                    oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
 
                     try {
                         await oAction.execute();

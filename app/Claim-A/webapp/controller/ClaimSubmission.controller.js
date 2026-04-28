@@ -4221,8 +4221,6 @@ sap.ui.define([
 					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-					LAST_APPROVED_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
 					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
 					LOCATION: oInputModel.getProperty("/claim_header/location"),
 					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
@@ -4239,17 +4237,11 @@ sap.ui.define([
 					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
 					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					LAST_PUSH_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_push_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
-					REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-					PUSH_BACK_REASON_ID: oInputModel.getProperty("/claim_header/push_back_reason_id"),
-					LAST_PUSH_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_push_back_time")),
-					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
 				});
 
 				//// addon for new claim
