@@ -2,7 +2,7 @@ const { Constant } = require("./constant");
 const BuildSelectWhereConditions = require("./BuildSelectWhereConditions");
 module.exports = {
     updateApproverActionToHeader: async function (sRecordId, sStatus, tx) {
-        var sHeaderTable, sToUpdateFields, sWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField;
+        var sHeaderTable, sToUpdateFields, sWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField;
 
         // Build Where Condition
         switch (sRecordId.substring(0, 3)) {
@@ -23,7 +23,7 @@ module.exports = {
 
         var tTimestampDesc = Constant.EntitiesFields.PROCESS_TIMESTAMP + " " + Constant.WhereCondition.DESC;
         let aApproverConditions = {
-            [ sApproverIdField ]: sRecordId
+            [sApproverIdField]: sRecordId
         };
         const sApproverConditions = BuildSelectWhereConditions.buildWhereCondition(aApproverConditions);
 
@@ -31,7 +31,9 @@ module.exports = {
         var tTimestamp = await tx.run(
             SELECT.one.from(sApproverDetailsTable)
                 .where(`${sApproverConditions}`)
-                .columns(Constant.EntitiesFields.PROCESS_TIMESTAMP)
+                .columns(Constant.EntitiesFields.PROCESS_TIMESTAMP,
+                        Constant.EntitiesFields.REJECT_REASON_ID
+                )
                 .orderBy(`${tTimestampDesc}`)
                 .limit(1)
         );
@@ -42,7 +44,7 @@ module.exports = {
 
         //Split Timestamp into Date Time
         var oDateTime = BuildSelectWhereConditions.formatTimeStamp(tTimestamp.PROCESS_TIMESTAMP);
-        
+
         var dDate = oDateTime.sDateFormat;
         var tTime = oDateTime.sTimeFormat;
 
@@ -56,11 +58,15 @@ module.exports = {
             case Constant.Status.REJECTED:
                 sDateField = Constant.EntitiesFields.REJECT_REASON_DATE;
                 sTimeField = Constant.EntitiesFields.REJECT_REASON_TIME;
+                sReasonIdField = Constant.EntitiesFields.REJECT_REASON_ID;
+                sReasonId = tTimestamp.REJECT_REASON_ID;
                 break;
 
             case Constant.Status.SEND_BACK:
                 sDateField = Constant.EntitiesFields.LAST_SEND_BACK_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_SEND_BACK_TIME;
+                sReasonIdField = Constant.EntitiesFields.SEND_BACK_REASON_ID;
+                sReasonId = tTimestamp.REJECT_REASON_ID;
                 break;
 
             default:
@@ -74,12 +80,15 @@ module.exports = {
             [Constant.EntitiesFields.STATUS]: sStatus
         };
 
+        if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.SEND_BACK)) {
+            sToUpdateFields[sReasonIdField] =  sReasonId;
+        }
+        console.log(sToUpdateFields, tTimestamp);
         var sWhereConditions = {
             [sIdField]: sRecordId
         };
 
         return sResult = await this.updateHeader(sHeaderTable, sToUpdateFields, sWhereConditions, tx);
-        return "test";
     },
 
     updateHeader: async function (sHeaderTable, sToUpdateFields, sWhereConditions, tx) {

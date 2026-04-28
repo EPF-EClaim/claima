@@ -26,14 +26,14 @@ module.exports = {
          * @param {Object} tx - CDS Transaction
          * @returns {Array} aDatetoFrom - Array filled with Date From and Date To
          */
-    _getDateRange: async function(oPayload, tx){
+    _getDateRange: async function (oPayload, tx) {
         // get Date Range
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
         if (iIndex == -1) return;
         return aDatetoFrom = await GetHistoricalData.getDateRange(
             oPayload.ClaimType,
-            oPayload.ClaimTypeItem, 
-            oPayload.CheckFields[iIndex].value, 
+            oPayload.ClaimTypeItem,
+            oPayload.CheckFields[iIndex].value,
             tx);
     },
 
@@ -47,23 +47,25 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     _getHistoricalData: async function (oPayload, dDateTo, dDateFrom, tx) {
-        var sHeaderTable = "";
-        var sItemTable = "";
+        var sHeaderTable, sItemTable, sDateField;
+
         // get Historical Claims Data
         // Map ClaimID or RequestID based on which HeaderTable to use
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
             sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
             sItemTable = Constant.Entities.ZCLAIM_ITEM;
+            sDateField = Constant.EntitiesFields.RECEIPT_DATE;
         } else {
             sHeaderTable = Constant.Entities.ZREQUEST_HEADER
             sItemTable = Constant.Entities.ZREQUEST_ITEM;
+            sDateField = Constant.EntitiesFields.TRIP_START_DATE;
         }
 
         const aItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+            [sDateField]: { between: [dDateFrom, dDateTo] }
         };
         const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
@@ -84,19 +86,19 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
-        var sHeaderField = "";
-        var sItemField = "";
-        var sItemTable = "";
+        var sHeaderField, sItemField, sItemTable, sDateField;
         // get Current Items Data
         // Map Headers and ClaimID or RequestID based on which ItemTable to use
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
             sHeaderField = Constant.EntitiesFields.CLAIMID;
             sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
             sItemTable = Constant.Entities.ZCLAIM_ITEM;
+            sDateField = Constant.EntitiesFields.RECEIPT_DATE;
         } else {
             sHeaderField = Constant.EntitiesFields.REQUESTID;
             sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
             sItemTable = Constant.Entities.ZREQUEST_ITEM;
+            sDateField = Constant.EntitiesFields.TRIP_START_DATE;
         }
 
         const aCurrentItemcondition = {
@@ -105,7 +107,7 @@ module.exports = {
             [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+            [sDateField]: { between: [dDateFrom, dDateTo] }
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 

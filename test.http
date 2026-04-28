@@ -183,8 +183,8 @@
 #      "aPayload": [
 #        {
 #          "EmpId": "886887",
-#          "RecordId": "CLM26000002324",
-#          "RecordSubId": "CLM26000002324012",
+#          "RecordId": "REQ26000001388",
+#          "RecordSubId": "REQ26000001388001",
 #          "ClaimType": "ELAUN_TUKAR",
 #          "ClaimTypeItem": "TAMBANG",
 #          "CheckFields": [

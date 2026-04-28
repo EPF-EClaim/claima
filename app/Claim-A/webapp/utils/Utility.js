@@ -288,16 +288,14 @@ sap.ui.define([
                 Constants.ClaimType.DLM_NEGARA,
                 Constants.ClaimType.LUAR_NEGARA,
                 Constants.ClaimType.KURSUS_DLM_NEGARA,
-                Constants.ClaimType.KURSUS_LUAR_NEGARA,
-                Constants.ClaimType.ELAUN_TUKAR
+                Constants.ClaimType.KURSUS_LUAR_NEGARA
             ];
 
             const aLodgingItems = [
                 Constants.ClaimTypeItem.HOTEL_L,
                 Constants.ClaimTypeItem.HOTEL_O,
                 Constants.ClaimTypeItem.LODGING_L,
-                Constants.ClaimTypeItem.LODG_O,
-                Constants.ClaimTypeItem.LOD_TUKAR
+                Constants.ClaimTypeItem.LODG_O
             ];
 
             return aNightClaimTypes.includes(oHeader.claimtype || oHeader.claim_type_id) &&
