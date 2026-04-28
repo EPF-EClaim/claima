@@ -1453,6 +1453,7 @@
                     id="input_claimdetails_input_remarks"
                     value="{claimitem_input>/claim_item/remark}"
                     visible="false"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/IPAD}}"
                 />
 
                 <!-- Attachment 1 -->
