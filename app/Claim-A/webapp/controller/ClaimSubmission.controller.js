@@ -482,6 +482,7 @@ sap.ui.define([
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
 
