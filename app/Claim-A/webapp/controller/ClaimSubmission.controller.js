@@ -3020,6 +3020,21 @@ sap.ui.define([
 				return true;
 			}
 
+			// User re-uploaded a file → cancel any previous delete intent
+            if (sClaimItemPathPrefix === "/claim_item/attachment_file_1") {
+                oInputModel.setProperty("/claim_item/attachment_file_1_delete", false);
+                oInputModel.setProperty("/claim_item/attachment_file_1_deleted", null);
+                if (Attachment._mDeleteAttachments) {
+                    delete Attachment._mDeleteAttachments["1"];
+                }
+            }
+            if (sClaimItemPathPrefix === "/claim_item/attachment_file_2") {
+                oInputModel.setProperty("/claim_item/attachment_file_2_delete", false);
+                oInputModel.setProperty("/claim_item/attachment_file_2_deleted", null);
+                if (Attachment._mDeleteAttachments) {
+                    delete Attachment._mDeleteAttachments["2"];
+                }
+            }
 			BusyIndicator.show(0);
 
 			try {

@@ -1266,26 +1266,33 @@ sap.ui.define([
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
 				// Delete attachment from SF during save when previously marked for deletion
-				if (this._oReqModel.getProperty("/req_item/doc1_delete")){
-					var oldDoc1Filename = this._oReqModel.getProperty(`/req_item/doc1_deleted_filename`);
-					const sSFID = oldDoc1Filename.split(" - ")[0];
-					await Attachment.deleteAttachment(sSFID);
+				const bHasNewDoc1 = !!sAttachment1_SFID;
+				const bHasNewDoc2 = !!sAttachment2_SFID;
+
+				// Delete attachment 1 ONLY if delete intent is still valid
+				if (this._oReqModel.getProperty("/req_item/doc1_delete") &&!bHasNewDoc1) {
+					const oldDoc1Filename =
+						this._oReqModel.getProperty("/req_item/doc1_deleted_filename");
+					if (oldDoc1Filename) {
+						const sSFID = oldDoc1Filename.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+					}
 					oPayload.ATTACHMENT1 = null;
 				}
 
-				if (this._oReqModel.getProperty("/req_item/doc2_delete")){
-					var oldDoc2Filename = this._oReqModel.getProperty(`/req_item/doc2_deleted_filename`);
-					const sSFID = oldDoc2Filename.split(" - ")[0];
-					await Attachment.deleteAttachment(sSFID);
+				// Delete attachment 2 ONLY if delete intent is still valid
+				if (this._oReqModel.getProperty("/req_item/doc2_delete") &&!bHasNewDoc2) {
+					const oldDoc2Filename =
+						this._oReqModel.getProperty("/req_item/doc2_deleted_filename");
+					if (oldDoc2Filename) {
+						const sSFID = oldDoc2Filename.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+					}
 					oPayload.ATTACHMENT2 = null;
 				}
 				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
-
-					if (!oReqItem.doc1_filename && !oReqItem.doc1) oPayload.ATTACHMENT1 = null;
-					if (!oReqItem.doc2_filename && !oReqItem.doc2) oPayload.ATTACHMENT2 = null;
-
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
