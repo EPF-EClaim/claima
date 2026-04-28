@@ -194,7 +194,10 @@ const Constant = {
         "VALUE": "VALUE",
         "SUBSIDISED_RATE": "SUBSIDISED_RATE",
         "TOTAL_TRAVELLER": "TOTAL_TRAVELLER",
-        "LODGING_CATEGORY": "LODGING_CATEGORY"
+        "LODGING_CATEGORY": "LODGING_CATEGORY",
+        "EST_AMOUNT": "EST_AMOUNT",
+        "AMOUNT": "AMOUNT",
+        "TRIP_START_DATE": "TRIP_START_DATE"
     },
     Wildcard: {
         "All": "*",
