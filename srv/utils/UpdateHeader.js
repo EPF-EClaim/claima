@@ -83,7 +83,7 @@ module.exports = {
         if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.PUSH_BACK)) {
             sToUpdateFields[sReasonIdField] =  sReasonId;
         }
-        console.log(sToUpdateFields, tTimestamp);
+
         var sWhereConditions = {
             [sIdField]: sRecordId
         };
