@@ -48,6 +48,7 @@ sap.ui.define([
 						"room_type": "ROOM_TYPE_ID",
 						"flight_class": "FLIGHT_CLASS_ID",
 						"marriage_cat": "MARRIAGE_CATEGORY",
+						"fare_type": "FARE_TYPE_ID",
 						"vehicle_class": "TRANSPORT_CLASS",
 						"no_of_hours": "TRAVEL_HOURS",
 						"no_of_traveler": "TOTAL_TRAVELLER",

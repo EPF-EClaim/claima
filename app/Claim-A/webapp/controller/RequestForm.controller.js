@@ -2321,7 +2321,6 @@ sap.ui.define([
 				"i_no_of_family_member",
 				"i_type_of_vehicle",
 				"i_fare_type",
-				"i_vehicle_class",
 				"i_kilometer",
 				"i_rate_per_kilometer",
 				"i_toll",
