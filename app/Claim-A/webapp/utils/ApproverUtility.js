@@ -80,7 +80,7 @@ sap.ui.define([
         oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
 
         await oModel.submitBatch("$auto");
-        
+
         // STEP 4: Activate next level
         const iNextLevel = iCurrentLevel + 1;
         const oCtxNext = aContextList.find(oCtx => oCtx.getObject().LEVEL === iNextLevel);
@@ -181,11 +181,9 @@ sap.ui.define([
 
             // If there are no higher levels
             // Set header last approve date and last approve time 
-            const oAction = oViewModel.bindContext("/updateApproverHeader(...)");
-            oAction.setParameter("batch", {
-                sRecordId: sId,
-                sStatus: Constants.ClaimStatus.APPROVED
-            });
+            const oAction = oModel.bindContext("/updateApproverHeader(...)");
+            oAction.setParameter("sRecordId", sId,);
+            oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
 
             try {
                 await oAction.execute();
@@ -337,11 +335,9 @@ sap.ui.define([
         Utility._updateStatus(oModel, sId, sActionStatus)
 
         // Set header reject/pushback date and time 
-        const oAction = oViewModel.bindContext("/updateApproverHeader(...)");
-        oAction.setParameter("batch", {
-            sRecordId: sId,
-            sStatus: sActionStatus
-        });
+        const oAction = oModel.bindContext("/updateApproverHeader(...)");
+        oAction.setParameter("sRecordId", sId,);
+        oAction.setParameter("sStatus", sActionStatus);
 
         try {
             await oAction.execute();
