@@ -2199,6 +2199,11 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+        * Update Header tables with approver actions
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
     srv.on('updateApproverHeader', async (req) =>{
         try {
             const oPayload = req.data;

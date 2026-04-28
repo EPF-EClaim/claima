@@ -1,8 +1,16 @@
 const { Constant } = require("./constant");
 const BuildSelectWhereConditions = require("./BuildSelectWhereConditions");
 module.exports = {
+    /**
+        * Update Claim and Request Header Date Time fields for analytics and auditing
+        * @public
+        * @param {String} sRecordId - Claims / Request Record ID
+        * @param {String} sStatus - Status to be updated into header tables
+        * @param {Object} tx - CDS Transaction
+        * @returns {Integer} result number of records updated in header tables
+        */
     updateApproverActionToHeader: async function (sRecordId, sStatus, tx) {
-        var sHeaderTable, sToUpdateFields, sWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField;
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField;
 
         // Build Where Condition
         switch (sRecordId.substring(0, 3)) {
@@ -74,28 +82,40 @@ module.exports = {
                 break;
         }
 
-        sToUpdateFields = {
+        // Object of to be updated fields
+        oToUpdateFields = {
             [sDateField]: dDate,
             [sTimeField]: tTime,
             [Constant.EntitiesFields.STATUS]: sStatus
         };
 
+        // Reject and Push back has reason ID fields
         if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.PUSH_BACK)) {
-            sToUpdateFields[sReasonIdField] =  sReasonId;
+            oToUpdateFields[sReasonIdField] =  sReasonId;
         }
 
-        var sWhereConditions = {
+        // where condition
+        var oWhereConditions = {
             [sIdField]: sRecordId
         };
 
-        return sResult = await this.updateHeader(sHeaderTable, sToUpdateFields, sWhereConditions, tx);
+        return sResult = await this.updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
     },
 
-    updateHeader: async function (sHeaderTable, sToUpdateFields, sWhereConditions, tx) {
-        return sResult = await tx.run(
+    /**
+        * Update header table based on input parameters
+        * @public
+        * @param {String} sHeaderTable - Header Table Name
+        * @param {Object} oToUpdateFields - Object of to be updated fields
+        * @param {Object} oWhereConditions - Update statement Where Conditions
+        * @param {Object} tx - CDS Transaction
+        * @returns {Integer} number of records updated
+        */
+    updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
+        return iResult = await tx.run(
             UPDATE(sHeaderTable)
-                .set(sToUpdateFields)
-                .where(sWhereConditions));
+                .set(oToUpdateFields)
+                .where(oWhereConditions));
     }
 
 };
