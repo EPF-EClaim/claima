@@ -78,19 +78,19 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
-        var sHeaderField = "";
-        var sItemField = "";
-        var sItemTable = "";
+        var sHeaderField, sItemField, sItemTable, sDateField;
         // get Current Items Data
         // Map Headers and ClaimID or RequestID based on which ItemTable to use
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
             sHeaderField = Constant.EntitiesFields.CLAIMID;
             sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
             sItemTable = Constant.Entities.ZCLAIM_ITEM;
+            sDateField = Constant.EntitiesFields.RECEIPT_DATE;
         } else {
             sHeaderField = Constant.EntitiesFields.REQUESTID;
             sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
             sItemTable = Constant.Entities.ZREQUEST_ITEM;
+            sDateField = Constant.EntitiesFields.TRIP_START_DATE;
         }
 
         const aCurrentItemcondition = {
@@ -99,7 +99,7 @@ module.exports = {
             [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+            [sDateField]: { between: [dDateFrom, dDateTo] }
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
