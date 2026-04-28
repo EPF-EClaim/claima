@@ -36,7 +36,7 @@ module.exports = {
         const sApproverConditions = BuildSelectWhereConditions.buildWhereCondition(aApproverConditions);
 
         // Select from Approver Details
-        var tTimestamp = await tx.run(
+        var oTimestamp = await tx.run(
             SELECT.one.from(sApproverDetailsTable)
                 .where(`${sApproverConditions}`)
                 .columns(Constant.EntitiesFields.PROCESS_TIMESTAMP,
@@ -46,12 +46,12 @@ module.exports = {
                 .limit(1)
         );
 
-        if (!(!!tTimestamp)) {
+        if (!(!!oTimestamp)) {
             throw new Error("No Approver Details Record Found.");
         }
 
         //Split Timestamp into Date Time
-        var oDateTime = BuildSelectWhereConditions.formatTimeStamp(tTimestamp.PROCESS_TIMESTAMP);
+        var oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
 
         var dDate = oDateTime.sDateFormat;
         var tTime = oDateTime.sTimeFormat;
@@ -67,14 +67,14 @@ module.exports = {
                 sDateField = Constant.EntitiesFields.REJECT_REASON_DATE;
                 sTimeField = Constant.EntitiesFields.REJECT_REASON_TIME;
                 sReasonIdField = Constant.EntitiesFields.REJECT_REASON_ID;
-                sReasonId = tTimestamp.REJECT_REASON_ID;
+                sReasonId = oTimestamp.REJECT_REASON_ID;
                 break;
 
             case Constant.Status.PUSH_BACK:
                 sDateField = Constant.EntitiesFields.LAST_PUSH_BACK_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_PUSH_BACK_TIME;
                 sReasonIdField = Constant.EntitiesFields.PUSH_BACK_REASON_ID;
-                sReasonId = tTimestamp.REJECT_REASON_ID;
+                sReasonId = oTimestamp.REJECT_REASON_ID;
                 break;
 
             default:
