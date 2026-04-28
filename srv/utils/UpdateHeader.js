@@ -62,10 +62,10 @@ module.exports = {
                 sReasonId = tTimestamp.REJECT_REASON_ID;
                 break;
 
-            case Constant.Status.SEND_BACK:
-                sDateField = Constant.EntitiesFields.LAST_SEND_BACK_DATE;
-                sTimeField = Constant.EntitiesFields.LAST_SEND_BACK_TIME;
-                sReasonIdField = Constant.EntitiesFields.SEND_BACK_REASON_ID;
+            case Constant.Status.PUSH_BACK:
+                sDateField = Constant.EntitiesFields.LAST_PUSH_BACK_DATE;
+                sTimeField = Constant.EntitiesFields.LAST_PUSH_BACK_TIME;
+                sReasonIdField = Constant.EntitiesFields.PUSH_BACK_REASON_ID;
                 sReasonId = tTimestamp.REJECT_REASON_ID;
                 break;
 
@@ -80,7 +80,7 @@ module.exports = {
             [Constant.EntitiesFields.STATUS]: sStatus
         };
 
-        if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.SEND_BACK)) {
+        if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.PUSH_BACK)) {
             sToUpdateFields[sReasonIdField] =  sReasonId;
         }
         console.log(sToUpdateFields, tTimestamp);

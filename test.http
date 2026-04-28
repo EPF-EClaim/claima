@@ -257,7 +257,7 @@ Content-Type: application/json
 Authorization: Basic alice
       
 {
-         "sStatus": "STAT04",
+         "sStatus": "STAT03",
          "sRecordId": "REQ26000000095"
 }
      
