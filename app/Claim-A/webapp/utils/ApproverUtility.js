@@ -8,7 +8,8 @@ sap.ui.define([
     "claima/utils/DateUtility",
     "claima/utils/WorkflowApproverHelper",
 	"sap/m/MessageBox",
-], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper, MessageBox) {
+    "sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper, MessageBox, BusyIndicator) {
     "use strict";
 
     async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
