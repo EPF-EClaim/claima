@@ -69,7 +69,10 @@ const Constant = {
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
         "ZRATE_KM": "ZRATE_KM",
-        "ZCONSTANTS": "ZCONSTANTS"
+        "ZCONSTANTS": "ZCONSTANTS",
+        "ZAPPROVER_DETAILS_CLAIMS" : "ZAPPROVER_DETAILS_CLAIMS",
+        "ZAPPROVER_DETAILS_PREAPPROVAL" : "ZAPPROVER_DETAILS_PREAPPROVAL",
+        "ZWORKFLOW_RULE": "ZWORKFLOW_RULE"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -188,7 +191,21 @@ const Constant = {
         "TRANSPORT_CLASS": "TRANSPORT_CLASS",
         "ID": "ID",
         "VALUE": "VALUE",
-        "SUBSIDISED_RATE": "SUBSIDISED_RATE"
+        "SUBSIDISED_RATE": "SUBSIDISED_RATE",
+        "REQUEST_TYPE_ID": "REQUEST_TYPE_ID",
+        "RISK": "RISK",
+        "WORKFLOW_TYPE": "WORKFLOW_TYPE",
+        "START_DATE": "START_DATE",
+        "END_DATE": "END_DATE",
+        "RISK_LEVEL": "RISK_LEVEL",
+        "THRESHOLD_AMOUNT": "THRESHOLD_AMOUNT",
+        "THRESHOLD_VALUE": "THRESHOLD_VALUE",
+        "RECEIPT_DAY": "RECEIPT_DAY",
+        "RECEIPT_AGE": "RECEIPT_AGE",
+        "EMPLOYEE_COST_CENTER": "EMPLOYEE_COST_CENTER",
+        "CASH_ADVANCE": "CASH_ADVANCE",
+        "TRIP_START_DATE": "TRIP_START_DATE",
+        "OUTCOME_WORKFLOW_CODE": "OUTCOME_WORKFLOW_CODE"
     },
     Wildcard: {
         "All": "*",
@@ -313,6 +330,15 @@ const Constant = {
     },
     ConstantId: {
         ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
+    },
+    ApproverActions: {
+        APPROVE     : "APPROVE",
+        REJECT      : "REJECT",
+        PUSHBACK    : "PUSHBACK"
+    },
+    RiskLevels: {
+        HIGH    : "H",
+        LOW     : "L"
     }
 
 };

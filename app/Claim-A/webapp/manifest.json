@@ -31,6 +31,14 @@
                     "annotations": [],
                     "odataVersion": "4.0"
                 }
+            },
+            "workflowService": {
+                "uri": "/odata/v4/workflow/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
             }
         }
     },

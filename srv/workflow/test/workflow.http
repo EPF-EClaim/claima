@@ -1,0 +1,8 @@
+
+### Start workflow
+POST http://localhost:4004/odata/v4/workflow/startWorkflow
+Content-Type: application/json
+
+{
+  "id": "REQ26000000006"
+}
