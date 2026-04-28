@@ -79,6 +79,8 @@ sap.ui.define([
         oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
         oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
 
+        await oModel.submitBatch("$auto");
+        
         // STEP 4: Activate next level
         const iNextLevel = iCurrentLevel + 1;
         const oCtxNext = aContextList.find(oCtx => oCtx.getObject().LEVEL === iNextLevel);
