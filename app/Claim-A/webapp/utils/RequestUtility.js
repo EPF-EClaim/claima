@@ -308,11 +308,13 @@ sap.ui.define([
          */
         _retrieveOverseaLodgingAmount: async function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
+            const oReqItem  = oReqModel.getProperty('/req_item');
+            var iNoOfDays   = oReqItem.no_of_days;
 
             var oResult     = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.REQUEST);
             oReqModel.setProperty("/req_item/lodging_cat", oResult.sCategory);
 
-            return oResult.iEligibleAmount
+            return oResult.iEligibleAmount * iNoOfDays
 
         },
 

@@ -288,8 +288,7 @@ sap.ui.define([
                 Constants.ClaimType.DLM_NEGARA,
                 Constants.ClaimType.LUAR_NEGARA,
                 Constants.ClaimType.KURSUS_DLM_NEGARA,
-                Constants.ClaimType.KURSUS_LUAR_NEGARA,
-                Constants.ClaimType.ELAUN_TUKAR
+                Constants.ClaimType.KURSUS_LUAR_NEGARA
             ];
 
             const aLodgingItems = [
