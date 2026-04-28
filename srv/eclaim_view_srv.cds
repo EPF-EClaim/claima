@@ -541,7 +541,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_PUSH_BACK_DATE,
+                //LAST_PUSH_BACK_DATE,
                 createdBy
         };
 
@@ -659,7 +659,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_PUSH_BACK_DATE,
+                //LAST_PUSH_BACK_DATE,
                 createdBy,
                 ZCLAIM_ITEM.ROUND_TRIP,
                 ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
@@ -745,7 +745,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 APPROVER3,
                 APPROVER4,
                 APPROVER5,
-                LAST_PUSH_BACK_DATE,
+                //LAST_PUSH_BACK_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
                 SUBMITTED_DATE,
@@ -815,7 +815,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 APPROVER3,
                 APPROVER4,
                 APPROVER5,
-                LAST_PUSH_BACK_DATE,
+                //LAST_PUSH_BACK_DATE,
                 SUBMITTED_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE                                              as PAYMENT_DATE,

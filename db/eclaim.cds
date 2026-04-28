@@ -97,13 +97,10 @@ entity ZREQUEST_HEADER : managed {
         LAST_APPROVED_DATE            : Date;
         LAST_APPROVED_TIME            : Time;
         TRAVEL_ALONE_FAMILY           : String(2);
-        TRAVEL_FAMILY_NOW_LATER       : String(2);
-        LAST_PUSH_BACK_DATE           : Date;
-        LAST_PUSH_BACK_TIME           : Time;
+        TRAVEL_FAMILY_NOW_LATER       : String(2);     
         REJECT_REASON_ID              : String(3);
         REJECT_REASON_DATE            : Date;
         REJECT_REASON_TIME            : Time;
-        SEND_BACK_REASON_ID           : String(3);
         APPROVER1                     : String(6);
         APPROVER2                     : String(6);
         APPROVER3                     : String(6);
@@ -113,6 +110,9 @@ entity ZREQUEST_HEADER : managed {
         SUBMITTED_DATE                : Date;
         TRANSFER_MODE_ID              : String(2);
         PROJECT_CODE                  : String;
+        LAST_PUSH_BACK_DATE           : Date;
+        LAST_PUSH_BACK_TIME           : Time;      
+        PUSH_BACK_REASON_ID           : String(3);             
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -132,7 +132,7 @@ entity ZREQUEST_HEADER : managed {
         ZREJECT_REASON                : Association to ZREJECT_REASON
                                             on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON              : Association to ZREJECT_REASON
-                                            on ZSENDBACK_REASON.REASON_ID = SEND_BACK_REASON_ID;
+                                            on ZSENDBACK_REASON.REASON_ID = PUSH_BACK_REASON_ID;
         ZCLAIM_TYPE                   : Association to one ZCLAIM_TYPE
                                             on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
         ZAPPROVER_DETAILS_PREAPPROVAL : Composition of many ZAPPROVER_DETAILS_PREAPPROVAL
@@ -351,13 +351,10 @@ entity ZCLAIM_HEADER : managed {
         LAST_MODIFIED_DATE             : Date;
         SUBMITTED_DATE                 : Date;
         LAST_APPROVED_DATE             : Date;
-        LAST_APPROVED_TIME             : Time;
-        LAST_PUSH_BACK_DATE            : Date;
-        LAST_PUSH_BACK_TIME            : Time;
+        LAST_APPROVED_TIME             : Time;      
         REJECT_REASON_ID               : String(3);
         REJECT_REASON_DATE             : Date;
         REJECT_REASON_TIME             : Time;
-        SEND_BACK_REASON_ID            : String(3);
         PAYMENT_DATE                   : Date;
         LOCATION                       : String;
         SPOUSE_OFFICE_ADDRESS          : String;
@@ -380,6 +377,9 @@ entity ZCLAIM_HEADER : managed {
         MODE_OF_TRANSFER               : String(2);
         TRAVEL_ALONE_FAMILY            : String(1);
         TRAVEL_FAMILY_NOW_LATER        : String(2);
+        LAST_PUSH_BACK_DATE            : Date;
+        LAST_PUSH_BACK_TIME            : Time;    
+        PUSH_BACK_REASON_ID            : String(3);              
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -407,7 +407,7 @@ entity ZCLAIM_HEADER : managed {
         ZREJECT_REASON                 : Association to ZREJECT_REASON
                                              on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON               : Association to ZREJECT_REASON
-                                             on ZSENDBACK_REASON.REASON_ID = SEND_BACK_REASON_ID;
+                                             on ZSENDBACK_REASON.REASON_ID = PUSH_BACK_REASON_ID;
         ZAPPROVER_DETAILS_CLAIMS       : Composition of many ZAPPROVER_DETAILS_CLAIMS
                                              on ZAPPROVER_DETAILS_CLAIMS.CLAIM_ID = CLAIM_ID;
         ZHOUSING_LOAN_SCHEME           : Association to ZHOUSING_LOAN_SCHEME

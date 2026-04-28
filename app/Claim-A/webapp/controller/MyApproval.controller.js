@@ -478,7 +478,7 @@ sap.ui.define([
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
                 reject_reason_id: null,
-                send_back_reason_id: null,
+                push_back_reason_id: null,
                 last_push_back_time: null,
                 reject_reason_date: null,
                 reject_reason_time: null,
