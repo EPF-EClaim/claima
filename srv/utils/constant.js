@@ -211,7 +211,11 @@ const Constant = {
         "EMPLOYEE_COST_CENTER": "EMPLOYEE_COST_CENTER",
         "CASH_ADVANCE": "CASH_ADVANCE",
         "TRIP_START_DATE": "TRIP_START_DATE",
-        "OUTCOME_WORKFLOW_CODE": "OUTCOME_WORKFLOW_CODE"
+        "OUTCOME_WORKFLOW_CODE": "OUTCOME_WORKFLOW_CODE",
+        "ALTERNATE_COST_CENTER": "ALTERNATE_COST_CENTER",
+        "TOTAL_CLAIM_AMOUNT": "TOTAL_CLAIM_AMOUNT",
+        "PREAPPROVED_AMOUNT": "PREAPPROVED_AMOUNT",
+        "AMOUNT": "AMOUNT"
     },
     Wildcard: {
         "All": "*",
@@ -369,6 +373,11 @@ const Constant = {
     RiskLevels: {
         HIGH    : "H",
         LOW     : "L"
+    },
+    Operator: {
+        NOTEQUAL    : "NE",
+        EQUAL       : "EQ",
+        GREATERTHAN : "GT"
     }
 
 };

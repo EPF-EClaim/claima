@@ -38,7 +38,7 @@ async function fetchHeaderForWorkflow(oTx, sId, oDescriptor) {
             )
             .where( { [oDescriptor.idField]:sId })
     );
-    console.log('[workflow-determination/fetchHeaderForWorkflow] oHeader:', oHeader)
+    //console.log('[workflow-determination/fetchHeaderForWorkflow] oHeader:', oHeader)
     
     return oHeader;
 }
@@ -53,7 +53,7 @@ async function fetchItemsForWorkflow(oTx, sId, oDescriptor) {
             )
             .where( { [oDescriptor.idField]:sId })
     );
-    console.log('[workflow-determination/fetchItemsForWorkflow] aItems:', aItems)
+    //console.log('[workflow-determination/fetchItemsForWorkflow] aItems:', aItems)
    
     return aItems;
 }
@@ -90,7 +90,7 @@ async function retrieveWorkflowByClaimType(oTx, sId, oDescriptor) {
                     Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
                 )
         )
-        console.log('[workflow-determination/retrieveWorkflowByClaimType] aWorkflowContext:', aWorkflowContext)
+        //console.log('[workflow-determination/retrieveWorkflowByClaimType] aWorkflowContext:', aWorkflowContext)
         if(!aWorkflowContext) {
             return null;
         }
@@ -131,7 +131,7 @@ async function retrieveWorkflow(oTx, sId, oDescriptor) {
                     Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
                 )
         )
-        console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext:', aWorkflowContext)
+        //console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext:', aWorkflowContext)
         if(!aWorkflowContext) {
             return null;
         }
@@ -203,11 +203,145 @@ async function determineRiskLevel(oTx, sId, oDescriptor) {
     )
 
     //console.log('[workflow-determination/determineRiskLevel] sOverallRiskLevel:', sOverallRiskLevel)
-    return sOverallRiskLevel ? 'H' : 'L'
+    return sOverallRiskLevel ? Constant.RiskLevels.HIGH : Constant.RiskLevels.LOW
 
 }
 
+async function determineTotalAmt(oTx, sId, oDescriptor) {
+    
+    const oHeaderTable = oDescriptor.entityHeader;
+    const oTotalAmtContext = await oTx.run(
+        SELECT
+            .one
+            .from(oHeaderTable)
+            .where({
+                [oDescriptor.idField]   : sId
+            })
+            .columns(   
+                Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT,
+                Constant.EntitiesFields.PREAPPROVED_AMOUNT
+            )
+    )
+    const sTotalClaimAmt = Number(oTotalAmtContext[Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT]) || 0;
+    const sPreapprovedAmt = Number(oTotalAmtContext[Constant.EntitiesFields.PREAPPROVED_AMOUNT]) || 0;
+
+    // If Preapproved amount is 0, do not need to perform check
+    if(sTotalClaimAmt > sPreapprovedAmt && sPreapprovedAmt > 0) {
+        return Constant.Operator.GREATERTHAN;
+    }
+    return ''
+}
+
+async function determineMaxThresholdAmt(oTx, sId, oDescriptor) {
+    
+    const oItemsTable = oDescriptor.entityItem;
+    const oMaxThresholdAmt = await oTx.run(
+        SELECT
+            .one
+            .from(oItemsTable)
+            .where({
+                [oDescriptor.idField]   : sId
+            })
+            .columns({
+                xpr: ['max(', { ref: [Constant.EntitiesFields.AMOUNT] }, ')'],
+                as: 'MaxAmount'
+            })
+    )
+    if(!oMaxThresholdAmt){
+        return 0;
+    }
+    return oMaxThresholdAmt.MaxAmount;
+}
+
+async function determineEarliestReceiptDate(oTx, sId, oDescriptor) {
+    
+    const oItemsTable = oDescriptor.entityItem;
+    const oEarliestReceiptDate = await oTx.run(
+        SELECT
+            .one
+            .from(oItemsTable)
+            .where({
+                [oDescriptor.idField]   : sId
+            })
+            .columns({
+                xpr: ['min(', { ref: [Constant.EntitiesFields.RECEIPT_DATE] }, ')'],
+                as: 'EarliestReceiptDate'
+            })
+    )
+    if(!oEarliestReceiptDate){
+        return null;
+    }
+    return new Date(oEarliestReceiptDate.EarliestReceiptDate);
+}
+
+async function determineCostCenter(oTx, sId, oDescriptor) {
+    
+    const oHeaderTable = oDescriptor.entityHeader;
+    const oCostCenter = await oTx.run(
+        SELECT
+            .one
+            .from(oHeaderTable)
+            .where({
+                [oDescriptor.idField]   : sId
+            })
+            .columns(Constant.EntitiesFields.ALTERNATE_COST_CENTER)
+    )
+
+    //console.log('[workflow-determination/determineCostCenter] sCostCenter:', oCostCenter)
+    return oCostCenter[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL
+
+}
+
+async function determineCashAdvance(oTx, sId, oDescriptor) {
+    
+    const oHeaderTable = oDescriptor.entityHeader;
+    const oItemsTable = oDescriptor.entityItem;
+    let oCashAdvance = null;
+    if(oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        oCashAdvance = await oTx.run(
+            SELECT
+                .one
+                .from(oHeaderTable)
+                .where({
+                    [oDescriptor.idField]   : sId
+                })
+                .columns(Constant.EntitiesFields.CASH_ADVANCE_AMOUNT)
+        )
+        if(!oCashAdvance) {        
+            return null;
+        }
+        const sCashAdvanceAmount = Number(oCashAdvance[Constant.EntitiesFields.CASH_ADVANCE_AMOUNT]) || 0;
+        return sCashAdvanceAmount > 0;
+    }
+
+    if(oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
+        oCashAdvance = await oTx.run(
+            SELECT
+                .one
+                .from(oItemsTable)
+                .where({
+                    [oDescriptor.idField]                   : sId,
+                    [Constant.EntitiesFields.CASH_ADVANCE]  : true
+                })
+                .columns(Constant.EntitiesFields.CASH_ADVANCE)
+        )
+        if(!oCashAdvance) {
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+}
+
 async function determineWorkflow(oTx, sId) {
+
+    let sRiskLevel = '';
+    let sThresholdOperator = '';
+    let sMaxThresholdAmt = 0;
+    let dEarliestReceiptDate = new Date();
+    const dToday = new Date();
+    let sAgingDays = 0;
 
     const oDescriptor = resolveDocDescriptor(sId);
     if (!oDescriptor) {
@@ -234,17 +368,40 @@ async function determineWorkflow(oTx, sId) {
     }
 
     //4. Validate workflow rules
-    //4.1 Validate risk item
-    const sRiskLevel = await determineRiskLevel(oTx, sId, oDescriptor);
+    //4.1 Validate risk item (Claim only)
+    if(oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        sRiskLevel = await determineRiskLevel(oTx, sId, oDescriptor);
+
+    //4.2 Validate Threshold (Include total amt vs preapproved amt) (Claim only)
+    // Check for total amt vs preapproved amt
+    // If no total amt vs preapproved amt, then can check in workflow rules for threshold rule
+        sThresholdOperator = await determineTotalAmt(oTx, sId, oDescriptor);
+        if(sThresholdOperator !== Constant.Operator.GREATERTHAN) {
+            sMaxThresholdAmt = await determineMaxThresholdAmt( oTx, sId, oDescriptor);
+        }
+
+    //4.3 Validate Receipt date aging (Claim only)
+        dEarliestReceiptDate = await determineEarliestReceiptDate(oTx, sId, oDescriptor);
+    // Convert the date into days comparing current date
+        const sMilisecondsPerDay = 24 * 60 * 60 * 1000;
+        const sAgingMiliseconds = dToday.getTime() - dEarliestReceiptDate.getTime();
+        sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
+    }
     console.log('[workflow-determination/determineWorkflow] sRiskLevel:', sRiskLevel)
-
-    //4.2 Validate Threshold (Include total amt vs preapproved amt)
-
-    //4.3 Validate Receipt date aging
+    console.log('[workflow-determination/determineWorkflow] sThresholdOperator:', sThresholdOperator)
+    console.log('[workflow-determination/determineWorkflow] sMaxThresholdAmt:', sMaxThresholdAmt)
+    console.log('[workflow-determination/determineWorkflow] dEarliestReceiptDate:', dEarliestReceiptDate)
+    console.log('[workflow-determination/determineWorkflow] sAgingDays:', sAgingDays)
 
     //4.4 Validate Cost Center (EQ or NE)
+    const sCostCenter = await determineCostCenter(oTx, sId, oDescriptor);
+    console.log('[workflow-determination/determineWorkflow] sCostCenter:', sCostCenter)
 
     //4.5 Validate Cash Advance (true or NULL)
+    const bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
+    console.log('[workflow-determination/determineWorkflow] bIsCashAdvance:', bIsCashAdvance)
+
+    //4.6 Validate Trip Start Date
 
     if(!oHeader) {
         return null;
