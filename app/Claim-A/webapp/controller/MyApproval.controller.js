@@ -598,6 +598,7 @@ sap.ui.define([
                     bill_date: it.BILL_DATE,
                     claim_category: it.CLAIM_CATEGORY,
                     country: it.COUNTRY,
+                    dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : it.DEPENDENT !== "null" ? this._oConstant.DependentType.DEPENDENT : null,
                     disclaimer: it.DISCLAIMER,
                     start_date: it.START_DATE,
                     end_date: it.END_DATE,
