@@ -519,6 +519,7 @@ sap.ui.define([
                             "PROCESS_TIMESTAMP": oApprover.LEVEL === 0 ? DateUtility.formatTimestamp9(new Date(), { utc: false }) : null
                         });
                     }
+                    
                     //Call CAP action 
                     let oAction = oModel.bindContext("/UpdateApproverDetails(...)");
                     oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
@@ -530,18 +531,20 @@ sap.ui.define([
                         return false;
                     }
 
-                    // Call CAP action to update header table
-                    oAction = oModel.bindContext("/updateApproverHeader(...)");
-                    oAction.setParameter("sRecordId", sClaimID,);
-                    oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
-                    ;
+                    if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                        // Call CAP action to update header table
+                        oAction = oModel.bindContext("/updateApproverHeader(...)");
+                        oAction.setParameter("sRecordId", sClaimID,);
+                        oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
+                        ;
 
-                    try {
-                        await oAction.execute();
-                    } catch (oError) {
-                        MessageBox.error(oError.message);
-                    } finally {
-                        BusyIndicator.hide();
+                        try {
+                            await oAction.execute();
+                        } catch (oError) {
+                            MessageBox.error(oError.message);
+                        } finally {
+                            BusyIndicator.hide();
+                        }
                     }
                 }
                 else{
@@ -979,20 +982,21 @@ sap.ui.define([
                         MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
                         return false;
                     } 
-                    // Call CAP action to update header table
-                    
-                    oAction = oModel.bindContext("/updateApproverHeader(...)");
-                    oAction.setParameter("sRecordId", sPARID,);
-                    oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
+                    if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                        // Call CAP action to update header table
+                        
+                        oAction = oModel.bindContext("/updateApproverHeader(...)");
+                        oAction.setParameter("sRecordId", sPARID,);
+                        oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
 
-                    try {
-                        await oAction.execute();
-                    } catch (oError) {
-                        MessageBox.error(oError.message);
-                    } finally {
-                        BusyIndicator.hide();
+                        try {
+                            await oAction.execute();
+                        } catch (oError) {
+                            MessageBox.error(oError.message);
+                        } finally {
+                            BusyIndicator.hide();
+                        }
                     }
-                    
                 }else{
                     MessageToast.show(Utility.getText("msg_failed_no_approver"))
                     return false;
