@@ -2676,8 +2676,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_class_id", "ZVEHICLE_CLASS");
 			//// Flight Class
 			this._setClaimDetailSelectionField("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
-			//// Location Type
-			// this._setClaimDetailSelectionField("select_claimdetails_input_location_type", "ZLOC_TYPE");
 			//// Room Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
 			//// Region (Semenanjung/Sabah/Sarawak)
