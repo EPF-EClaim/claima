@@ -272,7 +272,7 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment('doc1')"
-                                            visible="{= !!${request>/req_item/doc1_filename} }" >
+                                            visible="{= !!${request>/req_item/doc1_filename} &amp;&amp; ${request>/view} !== 'view'}" >
                                     
                                             <layoutData>
                                                 <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
@@ -335,7 +335,7 @@
                                             icon="sap-icon://delete"
                                             type="Transparent"
                                             press="onDeleteAttachment('doc2')"
-                                            visible="{= !!${request>/req_item/doc2_filename} }" >
+                                            visible="{= !!${request>/req_item/doc2_filename} &amp;&amp; ${request>/view} !== 'view'}" >
                                         
                                             <layoutData>
                                                 <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
