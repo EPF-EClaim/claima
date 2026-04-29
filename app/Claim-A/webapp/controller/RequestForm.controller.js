@@ -1154,6 +1154,11 @@ sap.ui.define([
 				return;
 			}
 
+			// add tripstartdate from header to item level for eligibility checking
+			if (Object.values(Constants.FrequencyCheckClaimTypeItem).includes(oReqItem.claim_type_item_id)) {
+				oReqItem.trip_start_date = oReqHeader.tripstartdate;
+			}
+
 			// Eligibility Checking
 			try {
 				var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
