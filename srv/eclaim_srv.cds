@@ -139,7 +139,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCOST_CENTER.COST_CENTER_DESC as COST_CENTER_DESC,
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM  as Items
         };
-     entity ZREQUEST_ITEM                 as
+
+    entity ZREQUEST_ITEM                 as
         projection on ECLAIM.ZREQUEST_ITEM {
             @Core.Computed REQUEST_SUB_ID,
             *
@@ -1320,8 +1321,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
-
     type EligibilityPayload {
         CheckFields   : many EligibilityCheckFields;
         ClaimType     : String;
@@ -1338,6 +1337,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     action   EligibilityCheck(aPayload: many EligibilityPayload)                               returns many Response;
+
+    function getApprovedCashAdvanceAmount(sRequestId: String)                                  returns Decimal(16, 2);
 
     type perdiem {
         amount          : Decimal(15, 2);
@@ -1358,44 +1359,43 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   exclude_tips: Boolean,
                                   dependent: Integer)                                          returns perdiem;
 
-    function getMeterCubeEntitlement ()                                          returns Decimal(15, 2);
+    function getMeterCubeEntitlement()                                                         returns Decimal(15, 2);
 
     type meterCubeAmount {
         entitled : Decimal(15, 2);
         amount   : Decimal(15, 2);
     }
 
-    function calculatePengangkutanLautAmount( actualMeterCube: Decimal(15, 2),
+    function calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
                                              actualAmount: Decimal(15, 2))                     returns meterCubeAmount;
 
     type matawangAmount {
-        percentage  : Decimal(15, 2);
-        amount      : Decimal(15, 2);
+        percentage : Decimal(15, 2);
+        amount     : Decimal(15, 2);
     }
-    function calculateMatawangAmount(claimItems : LargeString)                                 returns matawangAmount;
+
+    function calculateMatawangAmount(claimItems: LargeString)                                  returns matawangAmount;
 
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String)                                      returns String;
 
     type rateperkm {
-        id      : String;
-        value   : Decimal(34);
+        id    : String;
+        value : Decimal(34);
     }
 
-    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date) returns rateperkm;
-    
-    function _getMarriageCategory(sEmpId: String, )                                            returns String;
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date)       returns rateperkm;
 
-    function getUserEligibleAmountEPengakut() returns Decimal(16, 2);
-    
-    function getUserClaimStatusEPengakut() returns String;
-    
-    function getUserEligibleAmountLodging(
-        sClaimType: String,
-        sClaimTypeItem: String
-    ) returns Decimal(16, 2);
-    
+    function getMarriageCategoryBasedOnStatus()                                                returns String;
+
+    function getUserEligibleAmountEPengakut()                                                  returns Decimal(16, 2);
+
+    function getUserClaimStatusEPengakut()                                                     returns String;
+
+    function getUserEligibleAmountLodging(sClaimType: String,
+                                          sClaimTypeItem: String)                              returns Decimal(16, 2);
+
     type reminders {
         empName     : String;
         empEmail    : String;
@@ -1436,32 +1436,45 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getNumberOfFamilyMembers(IND: String)                                             returns Integer;
 
     type DaratAmounts {
-        fAmount          : Decimal(15, 2);
-        fRate            : Decimal(15, 2);
-        bMinimum         : Boolean
+        fAmount  : Decimal(15, 2);
+        fRate    : Decimal(15, 2);
+        bMinimum : Boolean
     }
-    function getPengangkutanDaratAmount(
-                                        sRegion     : String,
-                                        fKilometer  : Decimal(5, 2)
-                                    )                                                          returns DaratAmounts;
+
+    function getPengangkutanDaratAmount(sRegion: String,
+                                        fKilometer: Decimal(10, 2),
+                                        sMaritalCategory: String)                              returns DaratAmounts;
 
     type PemPindahAmount {
-        fAmount          : Decimal(15, 2);
-        fPercentage      : Decimal(15, 2);
-        fFinalAmount     : Decimal(15, 2);
+        fAmount      : Decimal(15, 2);
+        fPercentage  : Decimal(15, 2);
+        fFinalAmount : Decimal(15, 2);
     }
-    function getUserEligibleAmountPemPindah(
-        sRegion: String,
-        sClaimType: String,
-        sClaimTypeItem: String
-        )                                                                                      returns PemPindahAmount;
-    
+
+    function getUserEligibleAmountPemPindah(sRegion: String,
+                                            sClaimType: String,
+                                            sClaimTypeItem: String,
+                                            sTravelAloneFamily: String,
+                                            sTravelFamilyNowLater: String)                     returns PemPindahAmount;
+
     type PEAValidationResult {
-            canProceed : Boolean;
-        }
+        canProceed : Boolean;
+    }
 
     function validatePEATotal(headerTotal: Decimal(15, 2),
                               currentAmount: Decimal(15, 2),
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                       returns PEAValidationResult;
+
+    function checkElaunTukarEligible(IS_CLAIM: Boolean)                                        returns Boolean;
+
+    type LodgingOverseaAmountAndCat {
+        sCategory: String;
+        iEligibleAmount: Decimal(16, 2);
+    }
+
+    function getLodgingOverseaAmountAndCat (sCountry: String, sClaimType: String, sClaimTypeItem: String) returns LodgingOverseaAmountAndCat;
+
+    action   updateApproverHeader(sRecordId: String,
+                                  sStatus: String)                                             returns Response;
 };

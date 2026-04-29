@@ -219,12 +219,24 @@ sap.ui.define([
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
 		 */
-		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
+		fetchAndApplyEntitlement: function (oClaimItemInputModel, oSubmissionModel) {
 			var nDay, nDependent;
+			
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
-			} else {
+			} else if(oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR){
+				if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC || 
+				   oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW){
+					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+				}else{
+					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+					nDependent = 1;
+
+				}
+			}
+			else{
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
@@ -420,17 +432,24 @@ sap.ui.define([
 		 */
 		calculateAmountLodging: function () {
 			const oInputModel = this._oView.getModel("claimitem_input");
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const dEligibleAmount = oInputModel.getProperty("/claim_item/eligible_amount");
 			const iNoOfDays = oInputModel.getProperty("/claim_item/no_of_days");
-			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/no_of_family_member");
+			const iNoOfFamilyMembers = oInputModel.getProperty("/claim_item/number_of_travellers") ? oInputModel.getProperty("/claim_item/number_of_travellers") : oInputModel.getProperty("/claim_item/no_of_family_member");
 
 			if (!sClaimTypeItem || !dEligibleAmount || !iNoOfDays) return 0.00;
 
 			// calculate approved amount
 			switch (sClaimTypeItem) {
 				case Constant.ClaimTypeItem.LOD_TUKAR:
-					var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC ||
+					   oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW){
+						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
+					}else{
+						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * 1;
+					}
+					
 					break;
 				default:
 					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
@@ -532,7 +551,12 @@ sap.ui.define([
 		 */
 		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
 			var aFilters = [];
-			if ((sClaimTypeId === Constant.ClaimType.KURSUS_DLM_NEGARA || sClaimTypeId === Constant.ClaimType.DLM_NEGARA) &&
+			if ([Constant.ClaimType.KURSUS_DLM_NEGARA,
+			Constant.ClaimType.DLM_NEGARA,
+			Constant.ClaimType.KURSUS_LUAR_NEGARA,
+			Constant.ClaimType.LUAR_NEGARA,
+			Constant.ClaimType.ELAUN_TUKAR
+			].includes(sClaimTypeId)&&
 				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
 				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
 			}
@@ -658,12 +682,19 @@ sap.ui.define([
 			oContext.setParameter("sRegion", oInputModel.getProperty("/claim_item/region"));
 			oContext.setParameter("sClaimType", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 			oContext.setParameter("sClaimTypeItem", oInputModel.getProperty("/claim_item/claim_type_item_id"));
+			oContext.setParameter("sTravelAloneFamily", oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family"));
+			oContext.setParameter("sTravelFamilyNowLater", oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later"));
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
-					oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
-					oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.PEM_PINDAH){
+						oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
+						oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					}else{
+						oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+					}
+					
 				});
 		}
 		

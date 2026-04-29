@@ -72,7 +72,7 @@
                             <!-- employee_id -->
                             <table:Column width="10rem">
                                 <Label text="{i18n>employee_id}" />
-                                <table:template><ObjectNumber number="{employee_view>EMP_ID}" /></table:template>
+                                <table:template><Text text="{employee_view>EMP_ID}" /></table:template>
                             </table:Column>
 
                             <!-- claim_id -->
@@ -154,13 +154,13 @@
                                 </table:template>
                             </table:Column>
 
-                            <!-- last_send_date -->
+                            <!-- last_push_date -->
                             <table:Column width="12rem">
-                                <Label text="{i18n>last_send_date}" />
+                                <Label text="{i18n>last_push_date}" />
                                 <table:template>
                                     <Text
                                         text="{
-                                            path: 'employee_view>LAST_SEND_BACK_DATE',
+                                            path: 'employee_view>LAST_PUSH_BACK_DATE',
                                             type: 'sap.ui.model.odata.type.Date',
                                             formatOptions: { pattern: 'dd MMM yyyy' }
                                         }"
@@ -394,7 +394,7 @@
                                 <table:template><Text text="{employee_view>CLAIM_CATEGORY}" /></table:template>
                             </table:Column>
 
-                            <!-- claim_type (again) -->
+                            <!-- claim_type -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_type}" />
                                 <table:template><Text text="{employee_view>CLAIM_TYPE_DESC}" /></table:template>
@@ -457,7 +457,7 @@
                             </table:Column>
 
                             <!-- kilometer -->
-                            <table:Column width="10rem" hAlign="End">
+                            <table:Column width="10rem">
                                 <Label text="{i18n>kilometer}" />
                                 <table:template><Text text="{employee_view>KM}" /></table:template>
                             </table:Column>
@@ -665,7 +665,7 @@
                             </table:Column>
 
                             <!-- travel_duration_days -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>travel_duration_days}" />
                                 <table:template><Text text="{employee_view>TRAVEL_DURATION_DAY}" /></table:template>
                             </table:Column>
@@ -677,37 +677,37 @@
                             </table:Column>
 
                             <!-- provided_breakfast -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_breakfast}" />
                                 <table:template><Text text="{employee_view>PROVIDED_BREAKFAST}" /></table:template>
                             </table:Column>
 
                             <!-- provided_lunch -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_lunch}" />
                                 <table:template><Text text="{employee_view>PROVIDED_LUNCH}" /></table:template>
                             </table:Column>
 
                             <!-- provided_dinner -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>provided_dinner}" />
                                 <table:template><Text text="{employee_view>PROVIDED_DINNER}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_breakfast -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_breakfast}" />
                                 <table:template><Text text="{employee_view>ENTITLED_BREAKFAST}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_lunch -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_lunch}" />
                                 <table:template><Text text="{employee_view>ENTITLED_LUNCH}" /></table:template>
                             </table:Column>
 
                             <!-- entitled_dinner -->
-                            <table:Column width="12rem">
+                            <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>entitled_dinner}" />
                                 <table:template><Text text="{employee_view>ENTITLED_DINNER}" /></table:template>
                             </table:Column>
@@ -724,12 +724,225 @@
                                 <table:template><Text text="{employee_view>ANGGOTA_NAME}" /></table:template>
                             </table:Column>
 
+                            <table:Column width="10rem">
+                                <Label text="{i18n>dependent}" />
+                                <table:template>
+                                    <Text text="{employee_view>DEPENDENT}" />
+                                </table:template>
+                            </table:Column>
+
                             <!-- dependent_name -->
                             <table:Column width="16rem">
                                 <Label text="{i18n>dependent_name}" />
                                 <table:template><Text text="{employee_view>DEPENDENT_NAME}" /></table:template>
                             </table:Column>
 
+                             <!-- Begin Add additional fields -->
+                            <!-- Round Trip -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>roundtrip}" />
+                                <table:template><Text text="{employee_view>ROUND_TRIP}" /></table:template>
+                            </table:Column>
+
+                            <!-- Type of professional body -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>type_of_prof_body}" />
+                                <table:template><Text text="{employee_view>TYPE_OF_PROFESSIONAL_BODY}" /></table:template>
+                            </table:Column>
+
+                            <!-- Disclaimer - Galakan -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>disclaimer_galakan}" />
+                                <table:template><Text text="{employee_view>disclaimer_galakan}" /></table:template>
+                            </table:Column>
+
+                            <!-- Vehicle Ownership -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>vehicle_own_id}" />
+                                <table:template><Text text="{employee_view>VEHICLE_OWNERSHIP_ID}" /></table:template>
+                            </table:Column>
+
+                            <!-- Vehicle Ownership Desc -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>vehicle_own_desc}" />
+                                <table:template><Text text="{employee_view>VEHICLE_OWNERSHIP_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mode_of_transfer}" />
+                                <table:template><Text text="{employee_view>MODE_OF_TRANSFER}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mode_of_transfer_desc}" />
+                                <table:template><Text text="{employee_view>TRANSFER_MODE_DESC}" /></table:template>
+                            </table:Column>
+
+                             <table:Column width="10rem">
+                                <Label text="{i18n>transfer_date}" />
+                                <table:template><Text text="{employee_view>TRANSFER_DATE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>num_days}" />
+                                <table:template><Text text="{employee_view>NO_OF_DAYS}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>num_fam_head}" />
+                                <table:template><Text text="{employee_view>FAMILY_COUNT}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>funeral_transport}" />
+                                <table:template><Text text="{employee_view>FUNERAL_TRANSPORTATION}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>course_title}" />
+                                <table:template><Text text="{employee_view>COURSE_TITLE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mobile_cat}" />
+                                <table:template><Text text="{employee_view>MOBILE_CATEGORY_PURPOSE_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>mobile_cat_desc}" />
+                                <table:template><Text text="{employee_view>MOBILE_CATEGORY_PURPOSE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>level_studies_id}" />
+                                <table:template><Text text="{employee_view>STUDY_LEVELS_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>level_studies_desc}" />
+                                <table:template><Text text="{employee_view>STUDY_LEVELS_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>actual_amount}" />
+                                <table:template><Text text="{employee_view>ACTUAL_AMOUNT}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>fare_type_id}" />
+                                <table:template><Text text="{employee_view>FARE_TYPE_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>fare_type_desc}" />
+                                <table:template><Text text="{employee_view>FARE_TYPE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>vehicle_class_id}" />
+                                <table:template><Text text="{employee_view>VEHICLE_CLASS_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>vehicle_class_desc}" />
+                                <table:template><Text text="{employee_view>VEHICLE_CLASS_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>need_foreign_cur}" />
+                                <table:template><Text text="{employee_view>NEED_FOREIGN_CURRENCY}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>currency_code}" />
+                                <table:template><Text text="{employee_view>CURRENCY_CODE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>currency_code_descr}" />
+                                <table:template><Text text="{employee_view>CURRENCY_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>currency_rate}" />
+                                <table:template><Text text="{employee_view>CURRENCY_RATE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>currency_amount}" />
+                                <table:template><Text text="{employee_view>CURRENCY_AMOUNT}" /></table:template>
+                            </table:Column>
+
+                             <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>req_approve_amount}" />
+                                <table:template><Text text="{employee_view>REQUEST_APPROVAL_AMOUNT}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>depart_time}" />
+                                <table:template><Text text="{employee_view>DEPARTURE_TIME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>arrival_time}" />
+                                <table:template><Text text="{employee_view>ARRIVAL_TIME}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>policy_num}" />
+                                <table:template><Text text="{employee_view>POLICY_NUMBER}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_provider_id}" />
+                                <table:template><Text text="{employee_view>INSURANCE_PROVIDER_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_provider_desc}" />
+                                <table:template><Text text="{employee_view>INSURANCE_PROVIDER_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_package_id}" />
+                                <table:template><Text text="{employee_view>INSURANCE_PACKAGE_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_package_desc}" />
+                                <table:template><Text text="{employee_view>ZINSURANCE_PACKAGE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_purch_date}" />
+                                <table:template><Text text="{employee_view>INSURANCE_PURCHASE_DATE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_cert_start}" />
+                                <table:template><Text text="{employee_view>INSURANCE_CERT_START_DATE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>insurance_cert_end}" />
+                                <table:template><Text text="{employee_view>INSURANCE_CERT_END_DATE}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem" hAlign="End">
+                                <Label text="{i18n>days_category}" />
+                                <table:template><Text text="{employee_view>TRAVEL_DAYS_ID}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>meter_cube_ent}" />
+                                <table:template><Text text="{employee_view>METER_CUBE_ENTITLED}" /></table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>meter_cube_act}" />
+                                <table:template><Text text="{employee_view>METER_CUBE_ACTUAL}" /></table:template>
+                            </table:Column>
+                            
                         </table:columns>
                     </table:Table>
                 </f:content>

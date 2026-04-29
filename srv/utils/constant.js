@@ -68,7 +68,9 @@ const Constant = {
         "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
         "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM",
         "ZREQ_ITEM_PART": "ZREQ_ITEM_PART",
-        "ZRATE_KM": "ZRATE_KM"
+        "ZRATE_KM": "ZRATE_KM",
+        "ZCONSTANTS": "ZCONSTANTS",
+        "ZCOUNTRY": "ZCOUNTRY"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -83,7 +85,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "WILAYAH_ASAL": "WILAYAH_ASAL"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -123,7 +126,7 @@ const Constant = {
         "PELANGGAN": "PELANGGAN",
         "PELBAGAI": "PELBAGAI",
         "PEM_PINDAH": "PEM_PINDAH",
-        "P'HARGAAN": "P'HARGAAN",
+        "PENGHARGAAN": "PENGHARGAAN",
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
         "PUNSIAN_BG": "PUNSIAN_BG",
@@ -144,7 +147,8 @@ const Constant = {
         "JALUR_LEB": "JALUR_LEB",
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
-        "BEG_BIMBIT": "BEG_BIMBIT"
+        "BEG_BIMBIT": "BEG_BIMBIT",
+        "FLIGHT_WIL": "FLIGHT_WIL"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -158,6 +162,7 @@ const Constant = {
         "CLAIM_SUB_ID": "CLAIM_SUB_ID",
         "REQUESTID": "REQUEST_ID",
         "REQUEST_SUB_ID": "REQUEST_SUB_ID",
+        "EST_AMOUNT": "EST_AMOUNT",
         "CLAIM_STATUS": "STATUS_ID",
         "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
@@ -185,7 +190,23 @@ const Constant = {
         "REGION_ID": "REGION_ID",
         "STATUS": "STATUS",
         "TRANSPORT_CLASS": "TRANSPORT_CLASS",
-        "SUBSIDISED_RATE": "SUBSIDISED_RATE"
+        "ID": "ID",
+        "VALUE": "VALUE",
+        "SUBSIDISED_RATE": "SUBSIDISED_RATE",
+        "TOTAL_TRAVELLER": "TOTAL_TRAVELLER",
+        "LODGING_CATEGORY": "LODGING_CATEGORY",
+        "EST_AMOUNT": "EST_AMOUNT",
+        "AMOUNT": "AMOUNT",
+        "TRIP_START_DATE": "TRIP_START_DATE",
+        "LAST_APPROVED_DATE": "LAST_APPROVED_DATE",
+        "LAST_APPROVED_TIME": "LAST_APPROVED_TIME",
+        "LAST_PUSH_BACK_DATE": "LAST_PUSH_BACK_DATE",
+        "LAST_PUSH_BACK_TIME": "LAST_PUSH_BACK_TIME",
+        "REJECT_REASON_DATE": "REJECT_REASON_DATE",
+        "REJECT_REASON_TIME": "REJECT_REASON_TIME",
+        "PROCESS_TIMESTAMP": "PROCESS_TIMESTAMP",
+        "REJECT_REASON_ID": "REJECT_REASON_ID",
+        "PUSH_BACK_REASON_ID": "PUSH_BACK_REASON_ID"
     },
     Wildcard: {
         "All": "*",
@@ -202,7 +223,7 @@ const Constant = {
     Status: {
         DRAFT : "STAT01", 
         PENDING_APPROVAL: "STAT02",
-        SEND_BACK: "STAT03",
+        PUSH_BACK: "STAT03",
         REJECTED: "STAT04",
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
@@ -224,7 +245,8 @@ const Constant = {
     },
     PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year"
+        "YEAR": "Year",
+        "SERVICE": "Service"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
@@ -296,6 +318,43 @@ const Constant = {
     }, 
     Indicator: {
         Spouse_Child: "IND1"
+    },
+    PositionEventId: {
+        TRANSFER_WITHIN_BRANCH: "ZA01", 
+        TRANSFER_INTER_BRANCH: "ZA02",
+        TRANSFER_WITHIN_DEPARTMENT: "ZA03",
+        TRANSFER_INTER_DIVISION: "ZA04",
+        TRANSFER_INTER_DEPARTMENT: "ZA05",
+        TRANSFER_DEPARTMENT_TO_BRANCH: "ZA06",
+        TRANSFER_BRANCH_TO_DEPARTMENT: "ZA07",
+        PROMOTION_WITH_PROBATION: "Z801",
+        PROMOTION_WITHOUT_PROBATION: "Z802"
+    },
+    ConstantId: {
+        ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
+    },
+    ElaunTukarStatus: {
+        ALLOWED_CREATION: "01",
+        ALLOWED_FAMILY_NOW_ONLY: "02",
+        ON_GOING: "03",
+        NOT_ALLOWED: "04"
+    },
+    TravelAloneOrWithFamily: {
+        ALONE: "1",
+        WITH_FAMILY: "2",
+        ALONE_DESC: "Alone",
+        WITH_FAMILY_DESC: "With Family"
+    },
+    TravelWithFamilyNowOrLater: {
+        NOW: "1",
+        LATER: "2",
+        LATER_DESC: "Travel with Family on Later Date"
+    }, 
+    MarriageCategory: {
+        SINGLE: "01",
+        MARRIED_NO_CHILDREN: "02",
+        MARRIED_1_TO_3_CHILDREN: "03",
+        MARRIED_4_OR_MORE_CHILDREN: "04"
     }
 
 };

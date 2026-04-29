@@ -1,4 +1,3 @@
-
 <core:FragmentDefinition
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
@@ -14,74 +13,31 @@
             width="100%"
         >
          <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>claimtypeid}  :  " />
-            <Text text="{CLAIM_TYPE_ID}" />
-        </HBox>
+                <Label text="{i18n>claimtypeid}  :  " />
+                <Text text="{CLAIM_TYPE_ID}" />
+            </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>claimtypedesc} :  " />
+                <Label text="{i18n>claimtypedesc} :  " />
             <Text text="{CLAIM_TYPE_DESC}" wrapping="true" />
-        </HBox>
+            </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>label_claimdetails_input_startdate} :  " />
+                <Label text="{i18n>label_claimdetails_input_startdate} :  " />
             <Text text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
-        </HBox>
+            </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>label_claimdetails_input_enddate}  :  " />
+                <Label text="{i18n>label_claimdetails_input_enddate}  :  " />
             <Text text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
-        </HBox>
+            </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>appr_status}  :" />
-            <Text text="{STATUS}" />
-        </HBox>
+                <Label text="{i18n>appr_status}  :" />
+                <Text text="{STATUS}" />
+            </HBox>
         </VBox>
         <VBox width="100%">
-            <Toolbar width="90%">
-                <Title text="{i18n>conf_zclaimtpeitem}" />
-                <ToolbarSpacer />
-                <Button
-                    id="EditItem"
-                    text="{i18n>req_b_edit}"
-                    press="onEdit"
-                    enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} }"
-                />
-                <Button
-                    id="CopyItem"
-                    text="{i18n>copy}"
-                    press="onCopy"
-                    enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} }"
-                />
-                <Button
-                    id="CreateItem"
-                    text="{i18n>create}"
-                    press="onCreate"
-                    enabled="true"
-                    visible="{= ${/FeatureControl/operationEnabled} }"
-                />
-                <Button
-                    id="DeleteItem"
-                    text="{i18n>req_b_delete}"
-                    press="onDelete"
-                    enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} }"
-                />
-                <Button
-                    icon="sap-icon://action-settings"
-                    press="onOpenViewItemSettings"
-                    type="Transparent"
-                    tooltip="View Settings"
-                />
-                <Button icon="sap-icon://excel-attachment" 
-                press="onExportToExcel" 
-                type="Transparent" 
-                tooltip="{i18n>export_excel}" />
-            </Toolbar>
-
             <Table
                 id="claimitemTable"
                 width="90%"
@@ -89,7 +45,53 @@
                 mode="MultiSelect"
                 selectionChange="onSelectionChange"
                 includeItemInSelection="true"
+                sticky="ColumnHeaders,HeaderToolbar"
             >
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>conf_zclaimtpeitem}" />
+                        <ToolbarSpacer />
+                        <Button
+                            id="EditItem"
+                            text="{i18n>req_b_edit}"
+                            press="onEdit"
+                            enabled="{view>/hasSelection}"
+                            visible="{= ${/FeatureControl/operationEnabled} }"
+                        />
+                        <Button
+                            id="CopyItem"
+                            text="{i18n>copy}"
+                            press="onCopy"
+                            enabled="{view>/hasSelection}"
+                            visible="{= ${/FeatureControl/operationEnabled} }"
+                        />
+                        <Button
+                            id="CreateItem"
+                            text="{i18n>create}"
+                            press="onCreate"
+                            enabled="true"
+                            visible="{= ${/FeatureControl/operationEnabled} }"
+                        />
+                        <Button
+                            id="DeleteItem"
+                            text="{i18n>req_b_delete}"
+                            press="onDelete"
+                            enabled="{view>/hasSelection}"
+                            visible="{= ${/FeatureControl/operationEnabled} }"
+                        />
+                        <Button
+                            icon="sap-icon://action-settings"
+                            press="onOpenViewItemSettings"
+                            type="Transparent"
+                            tooltip="View Settings"
+                        />
+                        <Button icon="sap-icon://excel-attachment" 
+                            press="onExportToExcel"
+                            type="Transparent"
+                            tooltip="{i18n>export_excel}" />
+                    </Toolbar>
+                </headerToolbar>
+
                 <columns>
                     <Column>
                         <Text text="{i18n>claimtypeitemid}" />
@@ -145,9 +147,9 @@
                             <Text text="{FREQUENCY}" />
                             <Text text="{PERIOD}" />
                             <Text text="{PERIOD_UNIT}" />
-                            <Text text="{START_DATE}" />                            
+                            <Text text="{START_DATE}" />
                             <Text text="{END_DATE}" />
-                            <Text text="{STATUS}" />                            
+                            <Text text="{STATUS}" />
                         </cells>
                     </ColumnListItem>
                 </items>

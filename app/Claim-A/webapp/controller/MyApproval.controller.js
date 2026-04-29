@@ -471,15 +471,15 @@ sap.ui.define([
                 approver3: null,
                 approver4: null,
                 approver5: null,
-                last_send_back_date: null,
+                last_push_back_date: null,
                 course_code: o.COURSE_CODE,
                 session_number: o.SESSION_NUMBER,
                 project_code: null,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
                 reject_reason_id: null,
-                send_back_reason_id: null,
-                last_send_back_time: null,
+                push_back_reason_id: null,
+                last_push_back_time: null,
                 reject_reason_date: null,
                 reject_reason_time: null,
                 descr: {
@@ -598,6 +598,7 @@ sap.ui.define([
                     bill_date: it.BILL_DATE,
                     claim_category: it.CLAIM_CATEGORY,
                     country: it.COUNTRY,
+                    dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : it.DEPENDENT !== "null" ? this._oConstant.DependentType.DEPENDENT : null,
                     disclaimer: it.DISCLAIMER,
                     start_date: it.START_DATE,
                     end_date: it.END_DATE,
@@ -938,7 +939,6 @@ sap.ui.define([
                     const oData = aContexts[0].getObject();
                     return oData[oFieldDescr];
                 } else {
-                    console.warn("No description found");
                     return null;
                 }
             } catch (oError) {

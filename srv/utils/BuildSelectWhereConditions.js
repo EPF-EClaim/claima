@@ -77,7 +77,7 @@ module.exports = {
         if (iInputYear > 0) {
 
             const iStartYear = iCurrentYear - (iInputYear - 1);
-            const iEndYear   = iCurrentYear + (iInputYear - 1);
+            const iEndYear = iCurrentYear + (iInputYear - 1);
 
             return {
                 dDateFrom: `${iStartYear}-01-01`,
@@ -122,6 +122,14 @@ module.exports = {
             dDateFrom: formatDate(dFirstDay),
             dDateTo: formatDate(dLastDay)
         };
+    },
+
+    formatTimeStamp(tTimestamp) {
+        const oTimestamp = new Date(tTimestamp);
+        const sDateFormat = oTimestamp.toISOString().split('T')[0]; // YYYY-MM-DD
+        const sTimeFormat = oTimestamp.toTimeString().split(' ')[0]; // HH:MM:SS
+
+        return { sDateFormat, sTimeFormat };
     }
 
 };

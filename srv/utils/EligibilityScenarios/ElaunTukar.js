@@ -1,6 +1,8 @@
 const { Constant } = require("../constant");
 const ComparisonOperators = require('../ComparisonOperators');
 const GetDependentData = require("../GetDependentData");
+const GetHistoricalData = require('../GetHistoricalData');
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 module.exports = {
     /**
          * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -10,31 +12,38 @@ module.exports = {
          * @param {Object} oEmp - Employee Data
          * @returns {Object} oPayload - return original payload but with result field filled
          */
-    onEligibleCheck: async function (oPayload, aRules, oEmp) {
+    onEligibleCheck: async function (oPayload, aRules, oEmp, tx) {
         var oRule, aFilteredRules;
         // to extract the key values from oPayload
-        var aPayload = this._parsePayload(oPayload)
-        
-        //to find the matching eligibility rule for PEM_PINDAH as this may return more than 1 eligible rule value
-        if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PEM_PINDAH) {
+        var aPayload = this._parsePayload(oPayload);
+        var fTotalAmount = 0;
+
+        //to find the matching eligibility rule for PINDAH as this may return more than 1 eligible rule value
+        if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PINDAH) {
             var sMarriageCategory = await GetDependentData.getMarriageCategory(oPayload.EmpId);
 
             aFilteredRules = aRules.filter(function (rule) {
-                return (rule.REGION_ID == aPayload.sRegionId && 
-                    rule.MARITAL_STATUS == oEmp.MARITAL && 
+                return (rule.REGION_ID == aPayload.sRegionId &&
+                    rule.MARITAL_STATUS == oEmp.MARITAL &&
                     rule.MARRIAGE_CATEGORY == sMarriageCategory);
             });
+            oRule = aFilteredRules[0];
+
+            var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, tx);
+            fTotalAmount = oCurrentRecordItemData.fTotalAmount;
+        }
+        else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
+            aFilteredRules = aRules.filter(function (rule) {
+                return rule.TRANSPORT_CLASS === aPayload.sTransportClass;//[Constant.EntitiesFields.TRANSPORT_CLASS];
+            })
+
             oRule = aFilteredRules[0];
         }
         else {
             oRule = aRules[0];
         }
 
-        if (!oRule) {
-            throw new Error("No Eligibility Rules Found");
-        };
-
-        this._validateClaimItem(aPayload, oRule, oPayload);
+        this._validateClaimItem(aPayload, oRule, oPayload, fTotalAmount);
         return oPayload;
 
     },
@@ -46,7 +55,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sRegionId;
+        var sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -60,10 +69,62 @@ module.exports = {
                 case Constant.EntitiesFields.REGION_ID:
                     sRegionId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.TOTAL_TRAVELLER:
+                    iTotalTraveler = oPayload.CheckFields[i].value ? oPayload.CheckFields[i].value : 1;  // if null then default to 1
+                    break;
+                case Constant.EntitiesFields.TRAVEL_DAYS_ID:
+                    sTravelDaysId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.FARE_TYPE_ID:
+                    sFareTypeId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.TRANSPORT_CLASS:
+                    sTransportClass = oPayload.CheckFields[i].value;
+                    break;
+
             }
         }
 
-        return { sRegionId };
+        return { sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass };
+    },
+
+    /**
+             * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+             * @private
+             * @param {Object} oPayload - payload contains user input passed from frontend
+             * @param {Object} dDateTo - Date To Range
+             * @param {Object} dDateFrom - Date From Range
+             * @param {Object} tx - CDS Transaction
+             * @returns {Object} oPayload - return original payload but with result field filled
+             */
+    _getCurrentRecordItemData: async function (oPayload, tx) {
+        var sHeaderField = "";
+        var sItemField = "";
+        var sItemTable = "";
+        // get Current Items Data
+        // Map Headers and ClaimID or RequestID based on which ItemTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderField = Constant.EntitiesFields.CLAIMID;
+            sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+        } else {
+            sHeaderField = Constant.EntitiesFields.REQUESTID;
+            sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+        }
+
+        const aCurrentItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [sHeaderField]: oPayload.RecordId,
+            [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem
+        };
+        const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+            sCurrentItemcondition,
+            tx);
     },
 
     /**
@@ -72,13 +133,15 @@ module.exports = {
     * @param {Array} aPayload - key user input value in the form of object based on selected claim type item
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
+    * @param {flaot} fTotalAmount - Total Amount of other similar claim type items within the current claims
     */
-    _validateClaimItem: function (aPayload, oRule, oPayload) {
+    _validateClaimItem: function (aPayload, oRule, oPayload, fTotalAmount) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
-            // PEM_PINDAH - return true if claim amount is less than eligible amount
-            case Constant.ClaimTypeItem.PEM_PINDAH:
+            // PINDAH - return true if claim amount is less than eligible amount
+            case Constant.ClaimTypeItem.PINDAH:
+
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
                 if (!oRule) {
@@ -86,10 +149,88 @@ module.exports = {
                 } else {
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
-                    } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                    } else {
+                        // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                        // current payload amount + total amount from all items
+                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount);
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            fCurrentTotal,
+                            parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
+                }
+                break;
+
+            // DOBI - return true if user's traveling days >= eligible min days
+            case Constant.ClaimTypeItem.DOBI:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
+                if (iIndex == -1) return;
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                // calculate min days of traveling days required
+                else {
+                    oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(
+                        oPayload.CheckFields[iIndex].value,
+                        oRule.TRAVEL_DAYS_ID
+                    );
+                }
+                break;
+
+            // HOTEL - return true if claim amount is less than eligible amount * travel days
+            case Constant.ClaimTypeItem.HOTEL_L:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
+                if (iIndex == -1) return;
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                // calculate max claim amount allowed
+                else {
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            parseFloat(oPayload.CheckFields[iIndex].value),
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
+                        );
+                    }
+                }
+                break;
+
+            // FLIGHT_L - return true if selected flight class matches user's personal grade
+            case Constant.ClaimTypeItem.FLIGHT_L:
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
+                if (iIndex == -1) return;
+                // if no rule matches the selected flight class, return false
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+                else {
+                    oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                        oPayload.CheckFields[iIndex].value,
+                        oRule.FLIGHT_CLASS_ID
+                    );
+                }
+                break;
+
+            // TAMBANG - return true if selected transport class matches user's personal grade
+            case Constant.ClaimTypeItem.TAMBANG:
+                iIndex = oPayload.CheckFields.findIndex((field) =>
+                    field.fieldName === Constant.EntitiesFields.TRANSPORT_CLASS);
+                if (iIndex == -1) return;
+
+                // if no rule matches the selected transport class, return false
+                if (aPayload.sFareTypeId == Constant.FareType.TRAIN) {
+                    if (!oRule) {
+                        oPayload.CheckFields[iIndex].result = false;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
+                            oPayload.CheckFields[iIndex].value,
+                            oRule.TRANSPORT_CLASS
+                        );
+                    };
+                } else {
+                    oPayload.CheckFields[iIndex].result = true;
                 }
                 break;
         }

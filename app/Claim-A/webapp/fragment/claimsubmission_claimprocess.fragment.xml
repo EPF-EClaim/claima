@@ -27,9 +27,8 @@
                 <f:content>
                     <!-- Claim Type -->
                     <Label text="{i18n>label_claimprocess_claimtype}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_claimtype"
-                        forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/type}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE',
@@ -41,17 +40,15 @@
                                 $select: 'COST_CENTER,COST_CENTER_DESC'
                             }
                         }"
-                        change="onSelect_ClaimProcess_ClaimType"
-                        liveChange="onSelect_ClaimProcess_ClaimType"
+                        selectionChange="onSelect_ClaimProcess_ClaimType"
                     >
                         <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Claim Item -->
                     <Label text="{i18n>label_claimprocess_claimitem}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_claimitem"
-                        forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/item}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE_ITEM',
@@ -65,11 +62,10 @@
                             }
                         }"
                         editable="{= ${claimsubmission_input>/claimtype/type} !== null }"
-                        change="onSelect_ClaimProcess_ClaimItem"
-                        liveChange="onSelect_ClaimProcess_ClaimItem"
+                        selectionChange="onSelect_ClaimProcess_ClaimItem"
                     >
                         <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Category -->
                     <Label text="{i18n>label_claimprocess_category}" />
@@ -133,8 +129,8 @@
                             path: 'employee>/ZREQUEST_HEADER',
                             sorter: [{ path: 'REQUEST_ID' }],
                             parameters: {
-                                $expand: 'COSTCENTER',
-                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC'
+                                $expand: 'COSTCENTER,ZTRAVEL_TYPE,ZTRANSFER_MODE,ZFAMILY_TIMING',
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC,TRANSFER_MODE_ID,TRAVEL_ALONE_FAMILY,TRAVEL_FAMILY_NOW_LATER,ZTRAVEL_TYPE/TRAVEL_TYPE_DESC,ZTRANSFER_MODE/TRANSFER_MODE_DESC,ZFAMILY_TIMING/FAMILY_TIMING_DESC'
                             }
                         }"
                         editable="{= !${claimsubmission_input>/req_emailapprove} }"

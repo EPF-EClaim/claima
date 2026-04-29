@@ -26,14 +26,14 @@ module.exports = {
          * @param {Object} tx - CDS Transaction
          * @returns {Array} aDatetoFrom - Array filled with Date From and Date To
          */
-    _getDateRange: async function(oPayload, tx){
+    _getDateRange: async function (oPayload, tx) {
         // get Date Range
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
         if (iIndex == -1) return;
         return aDatetoFrom = await GetHistoricalData.getDateRange(
             oPayload.ClaimType,
-            oPayload.ClaimTypeItem, 
-            oPayload.CheckFields[iIndex].value, 
+            oPayload.ClaimTypeItem,
+            oPayload.CheckFields[iIndex].value,
             tx);
     },
 
@@ -48,6 +48,7 @@ module.exports = {
          */
     _getHistoricalData: async function (oPayload, dDateTo, dDateFrom, tx) {
         var sHeaderTable, sItemTable, sDateField;
+
         // get Historical Claims Data
         // Map ClaimID or RequestID based on which HeaderTable to use
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
@@ -127,8 +128,8 @@ module.exports = {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
-            case Constant.ClaimTypeItem.BEG_BIMBIT:
-                // BEG_BIMBIT - return true if there is no historical claims within same Year/Month based on frequency and period
+            case Constant.ClaimTypeItem.FLIGHT_WIL:
+                // WILAYAH_ASAL - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 if (iIndex == -1) return;
                 if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
@@ -138,11 +139,11 @@ module.exports = {
                 }
 
                 iIndex = null;
-                // BEG_BIMBIT - return true if claim amount is less than eligible amount
+                // WILAYAH_ASAL - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
                 if (!oRule) {
-                    oPayload.CheckFields[iIndex].result = false;
+                    throw new Error("No Eligible Rules found for this user.");
                 } else {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)

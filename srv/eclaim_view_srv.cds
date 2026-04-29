@@ -14,6 +14,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         CostCenter           : String;
         GLAccount            : String;
         MaterialCode         : String;
+        CashAdvanceAmount    : Decimal(15, 2);
     }
 
 
@@ -60,7 +61,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                TRANSFER_MODE_ID,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
@@ -110,7 +117,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                TRANSFER_MODE_ID,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
 
@@ -154,7 +167,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
                 KILOMETER,
                 RATE_PER_KM,
-                ZRATE_KM.RATE,
                 TOLL,
                 FLIGHT_CLASS,
                 ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
@@ -200,7 +212,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CURRENCY_RATE,
                 ////Add additional field to cater on ELAUN GALAKAN
                 TYPE_OF_PROFESSIONAL_BODY,
-                ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC
+                ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
+                TOTAL_TRAVELLER
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -326,7 +339,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt,
                 COURSE_CODE,
                 ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
-                SESSION_NUMBER
+                SESSION_NUMBER,
+                MODE_OF_TRANSFER,
+                ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                TRAVEL_ALONE_FAMILY,
+                ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+                TRAVEL_FAMILY_NOW_LATER,
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -373,7 +392,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PARKING,
                 PHONE_NO,
                 RATE_PER_KM,
-                ZRATE_KM.RATE,
                 RECEIPT_DATE,
                 RECEIPT_NUMBER,
                 REMARK,
@@ -463,7 +481,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-
+                TOTAL_TRAVELLER
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -556,7 +574,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_SEND_BACK_DATE,
+                LAST_PUSH_BACK_DATE,
                 createdBy
         };
 
@@ -687,7 +705,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_SEND_BACK_DATE,
+                LAST_PUSH_BACK_DATE,
                 createdBy,
                 ZCLAIM_ITEM.ROUND_TRIP,
                 ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
@@ -786,7 +804,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 APPROVER3,
                 APPROVER4,
                 APPROVER5,
-                LAST_SEND_BACK_DATE,
+                LAST_PUSH_BACK_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
                 SUBMITTED_DATE,
@@ -869,7 +887,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 APPROVER3,
                 APPROVER4,
                 APPROVER5,
-                LAST_SEND_BACK_DATE,
+                LAST_PUSH_BACK_DATE,
                 SUBMITTED_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE                                              as PAYMENT_DATE,
@@ -879,7 +897,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.COURSE_TITLE,
                 ZREQUEST_ITEM.KILOMETER,
                 ZREQUEST_ITEM.RATE_PER_KM,
-                ZREQUEST_ITEM.ZRATE_KM.RATE,
                 ZREQUEST_ITEM.FLIGHT_CLASS,
                 ZREQUEST_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
                 ZREQUEST_ITEM.LOCATION_TYPE,
@@ -919,6 +936,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.VEHICLE_CLASS_ID,
                 ZREQUEST_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
                 ZREQUEST_ITEM.PURPOSE,
+                ZREQUEST_ITEM.DEPARTURE_TIME,
+                ZREQUEST_ITEM.ARRIVAL_TIME,
+                ZREQUEST_ITEM.TOTAL_TRAVELLER,
         };
 
     entity ZEMP_APPROVER_REQUEST_DETAILS  as
@@ -986,7 +1006,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                CASH_ADVANCE_AMOUNT
         };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as

@@ -24,7 +24,8 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE",
-            "GALAKAN": "GALAKAN"
+            "GALAKAN": "GALAKAN",
+            "WILAYAH_ASAL": "WILAYAH_ASAL"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -70,7 +71,7 @@ sap.ui.define([
             "PELBAGAI": "PELBAGAI",
             "PEM_PINDAH": "PEM_PINDAH",
             "Pembelian Beg Bimbit": "Pembelian Beg Bimbit",
-            "P'HARGAAN": "P'HARGAAN",
+            "PENGHARGAAN": "PENGHARGAAN",
             "PINDAH": "PINDAH",
             "PKN_PANAS": "PKN_PANAS",
             "PUNSIAN_BG": "PUNSIAN_BG",
@@ -91,7 +92,8 @@ sap.ui.define([
             "GALAKAN": "GALAKAN",
             "TELEFON_B": "TELEFON_B",
             "ELEKTRIK": "ELEKTRIK",
-            "BIL_AIR": "BIL_AIR"
+            "BIL_AIR": "BIL_AIR",
+            "IPAD":"I-PAD"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -140,7 +142,7 @@ sap.ui.define([
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "PENDING_APPROVAL": "PENDING APPROVAL",
-            "SEND_BACK": "SEND BACK",
+            "SEND_BACK": "PUSH BACK",
             "REJECTED": "REJECTED",
             "APPROVED": "APPROVED",
             "CANCELLED": "CANCELLED"
@@ -168,7 +170,7 @@ sap.ui.define([
         },
         "ApprovalProcessStatus": {
             "STATUS_REJECT": "REJECT",
-            "STATUS_SENDBACK": "SEND BACK",
+            "STATUS_SENDBACK": "PUSH BACK",
         },
         "ApprovalProcessAction": {
             "ACTION_NOTIFY": "Notify",
@@ -282,7 +284,12 @@ sap.ui.define([
             "TRIP_START_DATE" : "TRIP_START_DATE",
             "TRIP_END_DATE" : "TRIP_END_DATE",
             "DISBURSEMENT_STATUS": "DISBURSEMENT_STATUS",
-            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID"
+            "TRANSFER_MODE_ID": "TRANSFER_MODE_ID",
+            "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
+            "REQUEST_TYPE": "REQUEST_TYPE",
+            "WITH_FAMILY": "2",
+            "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
+            "TRANSFER_DATE": "TRANSFER_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -368,7 +375,8 @@ sap.ui.define([
         },
         "Default": {
             "PROJECT_CODE": "NA",
-            "NULL": "null"
+            "NULL": "null",
+            "CASH_REPAY_GL": "244002"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",
@@ -521,6 +529,151 @@ sap.ui.define([
             "FIRSTCLASS": "01",
             "BUSINESS": "02",
             "ECONOMY": "03"
+        },
+        "TravelAloneOrWithFamily": {
+            "ALONE": "1",
+            "WITH_FAMILY": "2",
+            "ALONE_DESC": "Alone",
+            "WITH_FAMILY_DESC": "With Family"
+        },
+        "TravelWithFamilyNowOrLater": {
+            "NOW": "1",
+            "LATER": "2",
+            "LATER_DESC": "Travel with Family on Later Date",
+            "NOW_DESC": "Travel with Family Now"
+        }, 
+        "PARSpecialFieldVisibilityForElaunTukar": {
+            "NumberOfFamilyMember": "i_no_of_family_member",
+            "NumberOfTraveller": "i_no_of_traveler"
+        },
+        "RequestFormFields": {
+            "NO_OF_TRAVELERS": "input_no_of_traveler"
+        },
+        "ElaunTukarStatus": {
+            "ALLOWED_CREATION": "01",
+            "ALLOWED_FAMILY_NOW_ONLY": "02",
+            "ON_GOING": "03",
+            "NOT_ALLOWED": "04"
+        },
+        "Age": {
+            "EIGHTEEN": "18",
+            "NINETEEN": "19",
+            "TWENTY_FIVE": "25"
+        },
+        "ClaimTypeItemDesc": {
+            "AFIDAVIT": "Tuntutan Afidavit",
+            "ALATULIS": "Alatulis & Percetakan",
+            "BACAAN": "Bahan Bacaan & Rujukan",
+            "BAGAI": "Pelbagai",
+            "BEG_BIMBIT": "Pembelian Beg Bimbit",
+            "BIL_AIR": "Bil Air Bangunan Disewa",
+            "BRAND_CO": "Brand Collateral",
+            "BYRN_SAKSI": "Perbelanjaan Saksi",
+            "BYR_YURAN": "Bayaran Yuran Sijil",
+            "B_BERKUNCI": "Beg Berkunci",
+            "CAJ_BAHAN": "Caj Penghantaran Bahan Bacaan",
+            "CASH_REPAY": "Cash Repayment",
+            "CERAMAH": "Elaun Penceramah Dalaman",
+            "CERAMAH_L": "Bayaran Penceramah Luar KWSP",
+            "DAFTAR_KEN": "Nombor Pendaftaran Kenderaan",
+            "DARAT": "Elaun Pengangkutan Darat",
+            "DATA_LINE": "Talian Data Komputer & Lain-Lain",
+            "DOBI": "Dobi",
+            "DUTI_SETEM": "Duti Setem",
+            "ELEKTRIK": "Bil Elektrik Bangunan Sendiri",
+            "EVENTS": "Events",
+            "EXCESS": "Excess Baggage",
+            "EXT_ENGAGE": "Ext. Engagement/Events",
+            "E_PENGAKUT": "Elaun Pengangkutan",
+            "FIN_LIT": "Financial Literacy Campaign",
+            "FIRST_AID": "First Aid Kit",
+            "FLIGHT_L": "Tambang Kapal Terbang Tempatan",
+            "FLIGHT_O": "Tambang Kapal Terbang Antarabangsa",
+            "FLIGHT_WIL": "Kapal Terbang Wilayah Asal",
+            "GALAKAN": "Elaun Galakan",
+            "GDL": "Lesen GDL Kelas E (MT)",
+            "GELNGGANG": "Sewa Gelanggang",
+            "HANTAR": "Caj Penghantaran Surat Khabar",
+            "HIASAN": "Hiasan Kaunter",
+            "HIASAN_BGN": "Hiasan Bangunan Sendiri",
+            "HIAS_BGN_S": "Hiasan Bangunan Disewa",
+            "HOTEL_L": "Hotel Dalam Negeri",
+            "HOTEL_O": "Hotel Oversea",
+            "I-PAD": "Tuntutan Bil iPad",
+            "IKLAN_PUB": "Iklan dan Penerbitan",
+            "INSURANCE": "Insurance",
+            "ISTIADAT": "Elaun Pakaian Istiadat",
+            "JALUR_LEB": "Jalur Lebar",
+            "JAM": "Jam Dinding",
+            "JAMUAN_O": "Jamuan Ringan Program Outreach",
+            "JAMUAN_R": "Jamuan Ringan",
+            "JENAZAH": "Kemudahan Membawa Jenazah",
+            "JKKP": "Program JKKP",
+            "KATERER": "Bayaran Katerer",
+            "KECERIAAN": "Keceriaan Kaunter",
+            "KEMATIAN": "Bantuan Kebajikan Kematian",
+            "KERAIAN": "Tuntutan Keraian KWSP Cawangan",
+            "KESIHATAN": "Program Promosi Kesihatan",
+            "KILOMETER": "Kilometer",
+            "KM": "Kilometer",
+            "KURIER": "Bayaran Perkhidmatan Kurier",
+            "LAPOR_THN": "Laporan Tahunan",
+            "LAUNDRY": "Tuntutan Dobi",
+            "LAUT": "Elaun Pengangkutan Laut",
+            "LEARN": "Learning Award",
+            "LESEN": "Lesen & Cukai Jalan",
+            "LESENPAPAN": "Lesen Papan Tanda",
+            "LODGING_L": "Elaun Lodging Tempatan",
+            "LODG_O": "Lodging Oversea",
+            "LOD_TUKAR": "Elaun Lodging Pertukaran",
+            "MAHKAMAH": "Elaun Pakaian Mahkamah",
+            "MAKAN_L": "Elaun Makan/Harian Tempatan",
+            "MAKAN_O": "Elaun Makan/Harian Antarabangsa",
+            "MAKLUMAT": "Carian Maklumat Ahli/Majikan",
+            "MATAWANG": "3% Kerugian Matawang",
+            "MED_ADVANCE": "Medical Advance",
+            "MISC": "Pelbagai",
+            "MKN_LOAN": "Elaun Makan",
+            "MKN_TUKAR": "Elaun Makan Pertukaran-Arahan Pengurusan",
+            "ONLINE_CRT": "Online Certification",
+            "ONLINE_L": "Online Learning",
+            "PENGHARGAAN": "Majlis Penghargaan Kepada Majikan",
+            "PARKING": "Parking",
+            "PEDU": "Post Education Assistance",
+            "PELANGGAN": "Program Hari Pelanggan",
+            "PELBAGAI": "Belanja Pelbagai",
+            "PEM_PINDAH": "Pemberian Perpindahan",
+            "PENY.KOMP": "Penyelenggaraan Perkakasan Komputer",
+            "PENY._PEJ": "Penyelenggaraan Peralatan Kelengkapan Pejabat",
+            "PENYGGARAN": "Perabot dan Kelengkapan",
+            "PETROL": "Petrol",
+            "PINDAH": "Pemberian Perpindahan",
+            "PKN_PANAS": "Elaun Pakaian Panas",
+            "POS": "Belanja Pos",
+            "PROMOSI": "Product Promotions",
+            "PUNSIAN_BG": "Pengungsian Bangunan",
+            "RUNCIT": "Belanja Runcit",
+            "SELENGGARA": "Penyelenggaraan Kenderaan Pejabat / Lesen",
+            "SERVICES": "Caj Perkhidmatan",
+            "SEWA": "Bayaran Sewa Dewan Utk Promotion At Hall",
+            "SEWAPETAK": "Sewa Petak Kereta",
+            "SUMPAH": "Yuran Pesuruhjaya Sumpah",
+            "S_K.KELAB": "Kemudahan Keahlian Kelab",
+            "S_KHABAR": "Pembelian Surat Khabar",
+            "S_VALUE": "Shared Value Internalization",
+            "TAKLIMAT": "Taklimat Umum",
+            "TAMBANG": "Tambang",
+            "TAX": "Yuran Ejen Percukaian",
+            "TELEFON": "Telefon / Internet",
+            "TELEFON_B": "Elaun Telefon",
+            "THERMO": "Thermometer",
+            "TIPS": "Tips, Gratuities/Porterage",
+            "TOLL": "Toll",
+            "TRAVEL_INSURANCE": "Medical Travel Insurance",
+            "VISA": "Visa & Passport",
+            "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
+            "YURAN_KLJ": "Bayaran Yuran KLJ"
         }
+        
     }
 });
