@@ -52,7 +52,7 @@ sap.ui.define([
 						"vehicle_class": "TRANSPORT_CLASS",
 						"no_of_hours": "TRAVEL_HOURS",
 						"no_of_traveler": "TOTAL_TRAVELLER",
-						"tripstartdate": "RECEIPT_DATE"
+						"trip_start_date": "RECEIPT_DATE"
 					};
 					break;
 
@@ -108,10 +108,6 @@ sap.ui.define([
 
 						if (oNewField.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
-						}
-
-						if (oNewField.fieldName === Constants.EntitiesFields.RECEIPT_DATE && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
-							oNewField.value = String(oController._oReqModel.getProperty("/req_header/tripstartdate"));
 						}
 
 						return oNewField;

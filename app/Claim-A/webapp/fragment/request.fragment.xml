@@ -66,6 +66,7 @@
 					required="true"
 					forceSelection="false"
 					change=".onSelect_ClaimType"
+					enabled="{= !!${reqDialog>/reqtype}}"
 					items="{
 						path: 'employee>/ZCLAIM_TYPE',
 						sorter: {
