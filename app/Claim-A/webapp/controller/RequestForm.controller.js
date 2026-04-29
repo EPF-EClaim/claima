@@ -779,7 +779,7 @@ sap.ui.define([
 			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
 
 			Attachment.init(this.getOwnerComponent(), this.getView());
-			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.REQUEST, sDeleteTarget);
+			Attachment.confirmDeleteAttachment(this._oReqModel, this._oConstant.SubmissionTypePrefix.REQUEST, sDeleteTarget);
 			this._oDeleteAttachmentDialog.close();
 		},
 
@@ -1264,27 +1264,23 @@ sap.ui.define([
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
-
-				// Delete attachment from SF during save when previously marked for deletion
-				if (this._oReqModel.getProperty("/req_item/doc1_delete")){
-					var oldDoc1Filename = this._oReqModel.getProperty(`/req_item/doc1_deleted_filename`);
-					const sSFID = oldDoc1Filename.split(" - ")[0];
-					await Attachment.deleteAttachment(sSFID);
-					oPayload.ATTACHMENT1 = null;
-				}
-
-				if (this._oReqModel.getProperty("/req_item/doc2_delete")){
-					var oldDoc2Filename = this._oReqModel.getProperty(`/req_item/doc2_deleted_filename`);
-					const sSFID = oldDoc2Filename.split(" - ")[0];
-					await Attachment.deleteAttachment(sSFID);
-					oPayload.ATTACHMENT2 = null;
-				}
 				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
 
-					if (!oReqItem.doc1_filename && !oReqItem.doc1) oPayload.ATTACHMENT1 = null;
-					if (!oReqItem.doc2_filename && !oReqItem.doc2) oPayload.ATTACHMENT2 = null;
+					if (oReqItem.doc1_delete) {
+						var sSFID = oReqItem.doc1_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT1 = null;
+						oReqItem.doc1_delete = null;
+					}
+
+					if (oReqItem.doc2_delete) {
+						var sSFID = oReqItem.doc2_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT2 = null;
+						oReqItem.doc2_delete = null;
+					}
 
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
@@ -1358,11 +1354,13 @@ sap.ui.define([
 		onImportChange1(oEvent) {
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc1 = oEvent.getParameters("files").files[0];
+			if(oData.doc1_delete) oData.doc1_delete = null;
 		},
 
 		onImportChange2(oEvent) {
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc2 = oEvent.getParameters("files").files[0];
+			if(oData.doc2_delete) oData.doc2_delete = null;
 		},
 
 		async _upsertParticipantsForItem(sReqId, sReqSubId, aParticipants) {
@@ -2321,7 +2319,6 @@ sap.ui.define([
 				"i_no_of_family_member",
 				"i_type_of_vehicle",
 				"i_fare_type",
-				"i_vehicle_class",
 				"i_kilometer",
 				"i_rate_per_kilometer",
 				"i_toll",

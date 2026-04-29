@@ -410,7 +410,8 @@ sap.ui.define([
 				var oResult = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.CLAIM);
 				
 				oInputModel.setProperty("/claim_item/lodging_category", oResult.sCategory);
-				oInputModel.setProperty("/claim_item/amount", oResult.iEligibleAmount);
+				oInputModel.setProperty("/claim_item/eligible_amount", oResult.iEligibleAmount);
+				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
 			
 
@@ -482,6 +483,7 @@ sap.ui.define([
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
 
@@ -761,15 +763,15 @@ sap.ui.define([
 				approver3: null,
 				approver4: null,
 				approver5: null,
-				last_send_back_date: null,
+				last_push_back_date: null,
 				course_code: o.COURSE_CODE,
 				session_number: o.SESSION_NUMBER,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
 				reject_reason_id: null,
-				send_back_reason_id: null,
-				last_send_back_time: null,
+				push_back_reason_id: null,
+				last_push_back_time: null,
 				reject_reason_date: null,
 				reject_reason_time: null,
 				mode_of_transfer: o.TRANSFER_MODE_DESC,
@@ -1126,15 +1128,15 @@ sap.ui.define([
 					"approver3": null,
 					"approver4": null,
 					"approver5": null,
-					"last_send_back_date": null,
+					"last_push_back_date": null,
 					"course_code": null,
 					"session_number": null,
 					"project_code": null,
 					"cash_advance_amount": null,
 					"preapproved_amount": null,
 					"reject_reason_id": null,
-					"send_back_reason_id": null,
-					"last_send_back_time": null,
+					"push_back_reason_id": null,
+					"last_push_back_time": null,
 					"reject_reason_date": null,
 					"reject_reason_time": null,
 					"mode_of_transfer": null,
@@ -2399,7 +2401,9 @@ sap.ui.define([
 			}
 
 			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
 			){
 				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
 			}
@@ -2410,18 +2414,24 @@ sap.ui.define([
 				var iDependent;
 				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
 				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
-				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
-					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+				if( ((oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC) || 
+					  oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW)
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR
+					&& (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR)){
 					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
 					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
 				}
-				
 			}
 
 			// if claim type item is lodging, retrieve eligible amount
-			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+				oInputModel.setProperty("/claim_item/eligible_amount", 0);
+			}else{
+				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+				}
 			}
+			
 
 			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
@@ -2524,20 +2534,27 @@ sap.ui.define([
 				}
 
 				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+				oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
 				){
 					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
 				}
 
-				if( (oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.EntitiesFields.TRAVEL_WITH_FAMILY_NOW) 
-					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR && 
-					oPropertyModel.getProperty("/no_of_family_member/is_visible")){
+				if( ((oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC) || 
+					  oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW)
+					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR 
+					&& (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR)
+						){
 					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
 					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
 				}
 
-				if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC){
-					oPropertyModel.setProperty("/marriage_category/is_visible", true);
+				if(oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.DARAT){
+					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC || 
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW){
+						oPropertyModel.setProperty("/marriage_category/is_visible", true);
+					}
 				}
 
 				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
@@ -2578,8 +2595,13 @@ sap.ui.define([
 				this._filterFareType();
 
 			// if claim type item is lodging, retrieve eligible amount
-			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-				oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+			// if claim type item is lodging, retrieve eligible amount
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+				oInputModel.setProperty("/claim_item/eligible_amount", 0);
+			}else{
+				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+				}
 			}
 		},
 
@@ -3196,23 +3218,15 @@ sap.ui.define([
 						}
 						// Delete attachment from SF during save when previously marked for deletion
 						if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
-							var oldFile1 = oInputModel.getProperty("/claim_item/attachment_file_1_deleted");
-
-							if (oldFile1) {
-								const sSFID = oldFile1.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_1", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_1_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_1", null);
 						}
 						// Delete Attachment 2 from SF during save
 						if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
-							var oldFile2 = oInputModel.getProperty("/claim_item/attachment_file_2_deleted");
-
-							if (oldFile2) {
-								const sSFID = oldFile2.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_2", null);
-							}
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_2_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_2", null);
 						}
 
 						await oModel.submitBatch("$auto");
@@ -3249,14 +3263,19 @@ sap.ui.define([
 			var domRef = oEvent.getSource().getFocusDomRef();
 			var file = domRef.files[0];
 			var reader = new FileReader();
+			const oInputModel = this.getView().getModel("claimitem_input");
 
 			reader.addEventListener("load", () => {
-				var oInputModel = this.getView().getModel("claimitem_input");
 				if (oInputModel) {
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileName", fileName);
 					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+					
 				}
 			});
+
+			if (oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber + "_delete")) {
+				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber + "_delete", null)
+			}
 
 			if (file) {
 				reader.readAsDataURL(file);
@@ -3305,9 +3324,10 @@ sap.ui.define([
 
 		onConfirmDeleteAttachment: async function () {
 			var sDeleteTarget = this._oDeleteAttachmentDialog.data("deleteTarget");
+			const oClaimModel = this.getView().getModel("claimitem_input");
 
 			Attachment.init(this.getOwnerComponent(), this.getView());
-			Attachment.confirmDeleteAttachment(this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
+			Attachment.confirmDeleteAttachment(oClaimModel, this._oConstant.SubmissionTypePrefix.CLAIM, sDeleteTarget);
 			this._oDeleteAttachmentDialog.close();
 		},
 
@@ -3434,10 +3454,8 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days (and number of family members if lodging pertukaran)
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItemLodging.LODG_O ){
-				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-					oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
-				}
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN || 
@@ -4201,8 +4219,6 @@ sap.ui.define([
 					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-					LAST_APPROVED_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
 					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
 					LOCATION: oInputModel.getProperty("/claim_header/location"),
 					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
@@ -4219,17 +4235,11 @@ sap.ui.define([
 					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
 					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					LAST_SEND_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
-					REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-					SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
-					LAST_SEND_BACK_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
-					REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
+					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
 				});
 
 				//// addon for new claim

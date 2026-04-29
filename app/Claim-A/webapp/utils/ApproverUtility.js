@@ -6,8 +6,10 @@ sap.ui.define([
     "claima/utils/Constants",
     "claima/utils/Utility",
     "claima/utils/DateUtility",
-    "claima/utils/WorkflowApproverHelper"
-], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper) {
+    "claima/utils/WorkflowApproverHelper",
+	"sap/m/MessageBox",
+    "sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper, MessageBox, BusyIndicator) {
     "use strict";
 
     async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
@@ -77,6 +79,8 @@ sap.ui.define([
 
         oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
         oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
+
+        await oModel.submitBatch("$auto");
 
         // STEP 4: Activate next level
         const iNextLevel = iCurrentLevel + 1;
@@ -175,6 +179,20 @@ sap.ui.define([
             });
 
         } else {
+
+            // If there are no higher levels
+            // Set header last approve date and last approve time 
+            const oAction = oModel.bindContext("/updateApproverHeader(...)");
+            oAction.setParameter("sRecordId", sId,);
+            oAction.setParameter("sStatus", Constants.ClaimStatus.APPROVED);
+
+            try {
+                await oAction.execute();
+            } catch (oError) {
+                MessageBox.error(oError.message);
+            } finally {
+                BusyIndicator.hide();
+            }
 
             const oBindingView = oModelView.bindList(
                 sTable2,
@@ -316,6 +334,21 @@ sap.ui.define([
       
         //Call Update Status.
         Utility._updateStatus(oModel, sId, sActionStatus)
+
+        await oModel.submitBatch(sUpdateGroupId);
+
+        // Set header reject/pushback date and time 
+        const oAction = oModel.bindContext("/updateApproverHeader(...)");
+        oAction.setParameter("sRecordId", sId,);
+        oAction.setParameter("sStatus", sActionStatus);
+
+        try {
+            await oAction.execute();
+        } catch (oError) {
+            MessageBox.error(oError.message);
+        } finally {
+            BusyIndicator.hide();
+        }
 
         const oBindingBudget = oModelView.bindList(
             sBudgetViewTbl,

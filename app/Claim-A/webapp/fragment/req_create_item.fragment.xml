@@ -634,7 +634,7 @@
                                 </form:FormElement>
 
                                 <!-- Fare Type -->
-                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                <form:FormElement label="{i18n>req_i_fare_type}"
                                             visible="false"
                                             id="i_fare_type" >
                                     <form:fields>
@@ -656,8 +656,8 @@
                                 </form:FormElement>
 
                                 <!-- Vehicle Class -->
-                                <form:FormElement label="{i18n>req_i_vehicle_type}"
-                                            visible="false"
+                                <form:FormElement label="{i18n>req_i_vehicle_class}"
+                                            visible="{= ${request>/req_item/fare_type} === ${constant>/FareType/TRAIN}}"
                                             id="i_vehicle_class" >
                                     <form:fields>
                                         <Select 

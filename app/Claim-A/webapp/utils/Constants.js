@@ -92,7 +92,8 @@ sap.ui.define([
             "GALAKAN": "GALAKAN",
             "TELEFON_B": "TELEFON_B",
             "ELEKTRIK": "ELEKTRIK",
-            "BIL_AIR": "BIL_AIR"
+            "BIL_AIR": "BIL_AIR",
+            "IPAD":"I-PAD"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -141,7 +142,7 @@ sap.ui.define([
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "PENDING_APPROVAL": "PENDING APPROVAL",
-            "SEND_BACK": "SEND BACK",
+            "SEND_BACK": "PUSH BACK",
             "REJECTED": "REJECTED",
             "APPROVED": "APPROVED",
             "CANCELLED": "CANCELLED"
@@ -169,7 +170,7 @@ sap.ui.define([
         },
         "ApprovalProcessStatus": {
             "STATUS_REJECT": "REJECT",
-            "STATUS_SENDBACK": "SEND BACK",
+            "STATUS_SENDBACK": "PUSH BACK",
         },
         "ApprovalProcessAction": {
             "ACTION_NOTIFY": "Notify",

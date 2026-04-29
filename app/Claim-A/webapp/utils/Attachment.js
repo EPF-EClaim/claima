@@ -211,69 +211,40 @@ sap.ui.define([
 			return true;
 		},
 
-		confirmDeleteAttachment: async function (sSubmissionType, sTarget) {
+		confirmDeleteAttachment: async function (oItemModel, sSubmissionType, sTarget) {
 			try {
-
 				switch (sSubmissionType) {
 					case Constants.SubmissionTypePrefix.CLAIM:
-						this._mDeleteAttachments[sTarget] = true; //Track delete intent (processed on Save)
-						var oItemModel = this._oView.getModel("claimitem_input");
-
-						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileName`, null);
-						oItemModel.setProperty(`/attachments/attachment${sTarget}/fileContent`, null);
-
-					// Mark attachment for deletion and preserve original filename
-					if (sTarget === "1") {
-							oItemModel.setProperty("/claim_item/attachment_file_1_delete", true);
-							oItemModel.setProperty("/claim_item/attachment_file_1_deleted",
-							oItemModel.getProperty("/claim_item/attachment_file_1"));
-							oItemModel.setProperty("/claim_item/attachment_file_1", null);
+					if (sTarget === "attachment_file_1") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
-					if (sTarget === "2") {
-							oItemModel.setProperty("/claim_item/attachment_file_2_delete", true);
-							oItemModel.setProperty("/claim_item/attachment_file_2_deleted",
-							oItemModel.getProperty("/claim_item/attachment_file_2"));
-							oItemModel.setProperty("/claim_item/attachment_file_2", null);
+					if (sTarget === "attachment_file_2") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
 						break;
 						
 					case Constants.SubmissionTypePrefix.REQUEST:
-						this._mDeleteAttachments[sTarget] = true; //Track delete intent (processed on Save)
-						var oItemModel = this._oOwnerComponent.getModel("request");
-
-						//Clear file content from UI model
-						oItemModel.setProperty(`/req_item/${sTarget}`, null);
-						// Mark attachment for deletion and preserve original filename
 						if (sTarget === "doc1") {
 							this._oView.byId("i_attachment_1_file")?.clear();
 							this._oView.byId("i_attachment_1_file").setRequired(true);
-							oItemModel.setProperty(`/req_item/${sTarget}_delete`, true);
-							oItemModel.setProperty(`/req_item/${sTarget}_deleted_filename`, 
-							oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}
 						if (sTarget === "doc2") {
 							this._oView.byId("i_attachment_2_file")?.clear();
-							oItemModel.setProperty(`/req_item/${sTarget}_delete`, true);
-							oItemModel.setProperty(`/req_item/${sTarget}_deleted_filename`, 
-							oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}
 						oItemModel.setProperty(`/req_item/${sTarget}_filename`, null);
 						break;
 				}
 				oItemModel.refresh(true);
 			} catch (e) {
-				switch (sSubmissionType) {
-					case Constants.SubmissionTypePrefix.CLAIM:
-						MessageBox.error(
-							e.message || Utility.getText("msg_claiminput_attachment_delete_error")
-						);
-						break;
-					case Constants.SubmissionTypePrefix.REQUEST:
-						MessageBox.error(
-							e.message || "Failed to delete attachment from SuccessFactors"
-						);
-						break;
-				}
+				MessageBox.error(e.message || Utility.getText("msg_attachment_delete_error"));
 			}
 		},
 
