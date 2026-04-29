@@ -562,6 +562,7 @@ sap.ui.define([
 					entitled_breakfast: it.ENTITLED_BREAKFAST,
 					entitled_lunch: it.ENTITLED_LUNCH,
 					entitled_dinner: it.ENTITLED_DINNER,
+					dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : this._oConstant.DependentType.DEPENDENT,
 					anggota_id: it.ANGGOTA_ID,
 					anggota_name: it.ANGGOTA_NAME,
 					dependent_name: it.DEPENDENT_NAME,
@@ -4933,8 +4934,6 @@ sap.ui.define([
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
-				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -5071,9 +5070,6 @@ sap.ui.define([
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
-				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
-				"combo_claimdetails_input_dependent",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",

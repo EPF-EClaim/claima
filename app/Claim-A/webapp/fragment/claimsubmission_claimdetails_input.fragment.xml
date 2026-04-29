@@ -109,6 +109,7 @@
 						sorter: { path: 'LEGAL_NAME', descending: false }
 					}"
 					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
+                    editable="{= !${claimsubmission_input>/view_only}}"
 					required="true"
 				>
                     <items>
