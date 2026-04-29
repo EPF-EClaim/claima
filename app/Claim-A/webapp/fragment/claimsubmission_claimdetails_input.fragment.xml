@@ -91,7 +91,7 @@
                         id="field_claimdetails_input_anggota_name"
                         value="{claimitem_input>/claim_item/anggota_id}"
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
-                        editMode="Editable"
+                        editMode="{= !${claimsubmission_input>/view_only} ? 'Editable' : 'ReadOnly'}"
                         display="ValueDescription"
                         visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA}}"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
