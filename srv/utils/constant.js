@@ -129,7 +129,7 @@ const Constant = {
         "PELANGGAN": "PELANGGAN",
         "PELBAGAI": "PELBAGAI",
         "PEM_PINDAH": "PEM_PINDAH",
-        "P'HARGAAN": "P'HARGAAN",
+        "PENGHARGAAN": "PENGHARGAAN",
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
         "PUNSIAN_BG": "PUNSIAN_BG",
