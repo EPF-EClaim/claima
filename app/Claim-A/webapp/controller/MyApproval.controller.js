@@ -938,7 +938,6 @@ sap.ui.define([
                     const oData = aContexts[0].getObject();
                     return oData[oFieldDescr];
                 } else {
-                    console.warn("No description found");
                     return null;
                 }
             } catch (oError) {
