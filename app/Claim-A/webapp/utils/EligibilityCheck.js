@@ -33,7 +33,7 @@ sap.ui.define([
 					var oItemData = oController._oReqModel.getProperty('/req_item');
 					var aItemPartData = oController._oReqModel.getProperty('/participant');
 					var sRecordId = oController._oReqModel.getProperty('/req_header/reqid');
-					var sRecordSubId = oItemData?.req_subid;
+					var sRecordSubId = oItemData?.req_subid || null;
 					var sClaimType = oController._oReqModel.getProperty('/req_header/claimtype');
 					var sClaimTypeItem = oItemData.claim_type_item_id;
 
