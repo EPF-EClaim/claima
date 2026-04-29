@@ -824,7 +824,15 @@
                     liveChange="onSelect_ClaimDetails_LocationType"
                     visible="false"
                     required="true"
+                    items="{path: 'employee>/ZLOC_TYPE',
+                            sorter: { path: 'LOC_TYPE_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+								
 				>
+                    <items>
+                        <core:Item key="{employee>LOC_TYPE_ID}" text="{employee>LOC_TYPE_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- From State -->
@@ -834,6 +842,7 @@
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/from_state_id}"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    required="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
