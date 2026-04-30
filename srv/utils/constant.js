@@ -229,7 +229,17 @@ const Constant = {
         "TOTAL_CLAIM_AMOUNT": "TOTAL_CLAIM_AMOUNT",
         "PREAPPROVED_AMOUNT": "PREAPPROVED_AMOUNT",
         "AMOUNT": "AMOUNT",
-        "DEP": "DEP"
+        "DEP": "DEP",
+        "WORKFLOW_CODE": "WORKFLOW_CODE",
+        "WORKFLOW_NAME": "WORKFLOW_NAME",
+        "WORKFLOW_APPROVAL_LEVELS": "WORKFLOW_APPROVAL_LEVELS",
+        "LEVEL": "LEVEL",
+        "APPROVER_ID": "APPROVER_ID",
+        "SUBSTITUTE_APPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+        "RANK": "RANK",
+        "EMAIL": "EMAIL",
+        "DIRECT_SUPERIOR": "DIRECT_SUPPERIOR",
+        "NAME": "NAME"
     },
     Wildcard: {
         "All": "*",
@@ -241,7 +251,12 @@ const Constant = {
     Role: {
         "CEO": "CEO", 
         "CEO_FI": "CEO_FI", 
-        "HOD": "HOD"
+        "HOD": "HOD",
+        "HOD_JKEW": "HOD_JKEW",
+        "BUDGET": "BUDGET",
+        "CASH_FI": "CASH_FI",
+        "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
+        "FI_SETTLEMENT_B": "FI_SETTLEMENT_B"
     }, 
     Status: {
         DRAFT : "STAT01", 

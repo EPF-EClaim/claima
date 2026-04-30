@@ -4,8 +4,8 @@ const approve = require("./workflow/action/workflow-approve");
 const reject = require("./workflow/action/workflow-reject");
 const pushback = require("./workflow/action/workflow-pushback");
 //const notification = require("/workflow/notification");
-const { determineWorkflow } = require("./workflow/determination/workflow-determination");
-const { determineApprovers } = require("./workflow/determination/approver-determination");
+const { determineWorkflow } = require("./workflow/determination/determination-workflow");
+const { determineApprovers } = require("./workflow/determination/determination-approver");
 
 const actionHandlers = {
     [Constant.ApproverActions.APPROVE]     : approve,
