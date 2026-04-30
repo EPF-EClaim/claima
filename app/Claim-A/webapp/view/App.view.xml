@@ -64,16 +64,16 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myrequest"
-                        text="{i18n>nav_preappstatus}"
-                        icon="sap-icon://activity-items"
+                        key="myreport"
+                        text="{i18n>nav_claimstatus}"
+                        icon="sap-icon://document-text"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myreport"
-                        text="{i18n>nav_claimstatus}"
-                        icon="sap-icon://document-text"
+                        key="myrequest"
+                        text="{i18n>nav_preappstatus}"
+                        icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
