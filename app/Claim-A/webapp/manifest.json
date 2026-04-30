@@ -127,6 +127,10 @@
             "approval_log": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/approval_log.json"
+            },
+            "claim" : {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/claim.json"
             }
         },
         "resources": {
