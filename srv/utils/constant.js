@@ -228,7 +228,8 @@ const Constant = {
         "ALTERNATE_COST_CENTER": "ALTERNATE_COST_CENTER",
         "TOTAL_CLAIM_AMOUNT": "TOTAL_CLAIM_AMOUNT",
         "PREAPPROVED_AMOUNT": "PREAPPROVED_AMOUNT",
-        "AMOUNT": "AMOUNT"
+        "AMOUNT": "AMOUNT",
+        "DEP": "DEP"
     },
     Wildcard: {
         "All": "*",
@@ -388,9 +389,12 @@ const Constant = {
         LOW     : "L"
     },
     Operator: {
-        NOTEQUAL    : "NE",
-        EQUAL       : "EQ",
-        GREATERTHAN : "GT"
+        NOTEQUAL            : "NE",
+        EQUAL               : "EQ",
+        GREATERTHAN         : "GT",
+        GREATERTHANOREQUAL  : "GE",
+        LESSTHANOREQUAL     : "LT",
+        LESSTHANOREQUAL     : "LE"
     }
 
 };

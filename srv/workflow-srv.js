@@ -5,7 +5,7 @@ const reject = require("./workflow/action/workflow-reject");
 const pushback = require("./workflow/action/workflow-pushback");
 //const notification = require("/workflow/notification");
 const { determineWorkflow } = require("./workflow/determination/workflow-determination");
-//const { determineApprovers } = require("/workflow/determination/approver-determination");
+const { determineApprovers } = require("./workflow/determination/approver-determination");
 
 const actionHandlers = {
     [Constant.ApproverActions.APPROVE]     : approve,
@@ -53,12 +53,13 @@ module.exports = (srv) => {
         if(!oWorkflowContext) {
             req.reject(400, "No workflow rule matched");
         }
+        console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         // 2. Determine approvers and substitutes
-        //const aApprovers = await determineApprovers(tx, sId, sWorkflowContext)
-
-        //if(!aApprovers.length) {
-        //    req.reject(400, "No approvers determined");
-        //}
+        const aApprovers = await determineApprovers(oTx, sId, oWorkflowContext)
+        console.log('[workflow-srv] aApprovers:', aApprovers)
+        if(!aApprovers.length) {
+            req.reject(400, "No approvers determined");
+        }
         // 3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
         //for (const oApprover of aApprovers) {
         //    await oTx.run(
