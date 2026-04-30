@@ -30,9 +30,11 @@ module.exports = {
             if (sHeaderTable == Constant.Entities.ZCLAIM_HEADER) {
                 aHeaders = aItemData.map((d) => d.CLAIM_ID);
                 sHeaderField = Constant.EntitiesFields.CLAIMID;
+                sStatusField = Constant.EntitiesFields.CLAIM_STATUS;
             } else {
                 aHeaders = aItemData.map((d) => d.REQUEST_ID);
                 sHeaderField = Constant.EntitiesFields.REQUESTID;
+                sStatusField = Constant.EntitiesFields.STATUS;
             }
 
             // Map Claim Status for Approved and Pending Approval
@@ -41,7 +43,7 @@ module.exports = {
             // Check if items within frequency are either Approved or Pending Approval
             let aHeaderCondition = {
                 [sHeaderField]: { in: aHeaders },
-                [Constant.EntitiesFields.CLAIM_STATUS]: { in: aStatus }
+                [sStatusField]: { in: aStatus }
             };
             const sHeaderCondition = BuildSelectWhereConditions.buildWhereCondition(aHeaderCondition);
             // Get Header Data
