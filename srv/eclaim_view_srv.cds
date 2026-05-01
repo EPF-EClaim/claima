@@ -935,7 +935,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
                 ZCLAIM_ITEM.MATERIAL_CODE,
-                CASH_ADVANCE_AMOUNT
+                CASH_ADVANCE_AMOUNT,
+                ALTERNATE_COST_CENTER
         };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
