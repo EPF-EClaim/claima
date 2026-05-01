@@ -1264,7 +1264,8 @@ sap.ui.define([
 					CURRENCY_CODE:				  oReqItem.currency_code || null,
 					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
-					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null
+					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
+					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
