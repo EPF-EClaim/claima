@@ -672,6 +672,7 @@ sap.ui.define([
 				currency_rate			: oReqItem.CURRENCY_RATE || 0,
 				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				no_of_traveler			: oReqItem.TOTAL_TRAVELLER || null,
+				lodging_cat				: oReqItem.LODGING_CATEGORY || null,
 				// extra hidden field value
 				cost_center: oReqItem.COST_CENTER || "",
 				gl_account: oReqItem.GL_ACCOUNT || "",
