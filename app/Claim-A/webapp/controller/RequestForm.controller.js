@@ -249,10 +249,10 @@ sap.ui.define([
 					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
 						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") ||
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
+						this._oReqModel.setProperty('/view', this._oConstant.AccessMode.APPROVER);
 						break;
 					} else {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
+						this._oReqModel.setProperty('/view', this._oConstant.AccessMode.VIEW);
 					}
 				}
 				const oApproval = await this._getFormFragment("approval_log");
@@ -536,7 +536,7 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
-			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
+			this._oReqModel.setProperty("/view", this._oConstant.AccessMode.CREATE);
 			await this._showItemCreate(false);
 			this._loadSelections();
 
@@ -681,11 +681,11 @@ sap.ui.define([
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
-			if (sState != this._oConstant.PARMode.APPROVER) {
-				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
+			if (sState != this._oConstant.AccessMode.APPROVER) {
+				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.AccessMode.EDIT : this._oConstant.AccessMode.VIEW);
 				this._getClaimTypeItemSelection();
 			} else {
-				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				this._oReqModel.setProperty("/view", this._oConstant.AccessMode.VIEWAPPR);
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
@@ -733,11 +733,11 @@ sap.ui.define([
 					PARTICIPANT_NAME: p.NAME ?? "",
 					PARTICIPANT_COST_CENTER: p.CC ?? "",
 					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? "",
-					_EDIT_MODE: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
+					_EDIT_MODE: sMode == this._oConstant.AccessMode.CREATE ? "Editable" : "Display"
 				}));
 
 				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP &&
-					(sMode != this._oConstant.PARMode.VIEW && sMode != this._oConstant.PARMode.APPROVER)) {
+					(sMode != this._oConstant.AccessMode.VIEW && sMode != this._oConstant.AccessMode.APPROVER)) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
@@ -1345,7 +1345,7 @@ sap.ui.define([
 				MessageToast.show("Success");
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
-					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
+					this._oReqModel.setProperty("/view", this._oConstant.AccessMode.VIEW);
 				}
 
 			} catch (e) {
@@ -2279,7 +2279,7 @@ sap.ui.define([
 						case Constants.ClaimTypeItem.LAUT:
 						case Constants.ClaimTypeItem.LODGING_L:
 						case Constants.ClaimTypeItem.LOD_TUKAR:
-							if (this._oReqModel.getProperty("/view") === Constants.PARMode.CREATE) {
+							if (this._oReqModel.getProperty("/view") === Constants.AccessMode.CREATE) {
 								RequestUtility.populateAllocatedAmount();
 							}
 							break;
@@ -2500,7 +2500,7 @@ sap.ui.define([
 			const oModelMain = this._oDataModel;
 			const oModelView = this._oViewModel;
 
-			if (sMode === this._oConstant.PARMode.APPROVE) {
+			if (sMode === this._oConstant.AccessMode.APPROVE) {
 
 				try {
 

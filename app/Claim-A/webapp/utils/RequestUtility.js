@@ -139,8 +139,8 @@ sap.ui.define([
             const aReqPart  = oReqModel.getProperty("/participant");
             let fCalculatedAllocatedAmount;
 
-            if (oReqModel.getProperty("/view") === Constants.PARMode.CREATE ||
-                oReqModel.getProperty("/view") === Constants.PARMode.EDIT ) {
+            if (oReqModel.getProperty("/view") === Constants.AccessMode.CREATE ||
+                oReqModel.getProperty("/view") === Constants.AccessMode.EDIT ) {
                 switch (oReqItem.claim_type_item_id) {
                     case Constants.ClaimTypeItem.LODGING_L:
                         fCalculatedAllocatedAmount = await this._retrieveLodgingAmount();

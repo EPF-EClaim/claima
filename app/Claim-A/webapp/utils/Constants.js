@@ -383,7 +383,7 @@ sap.ui.define([
             "REJECT": "REJECT",
             "APPROVE": "APPROVE"
         },
-        "PARMode": {
+        "AccessMode": {
             "VIEW": "view",
             "APPROVER": "approver",
             "EDIT": "i_edit",

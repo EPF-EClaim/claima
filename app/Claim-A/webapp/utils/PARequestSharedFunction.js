@@ -1,14 +1,14 @@
 sap.ui.define([
+	"sap/ui/core/format/DateFormat",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-	"sap/ui/core/format/DateFormat",
-	"claima/utils/ApprovalLog"
-], function (Filter,
-	FilterOperator,
-	Sorter,
+	"sap/ui/model/Sorter"
+], function (
 	DateFormat,
-	ApprovalLog) {
+	Filter,
+	FilterOperator,
+	Sorter
+) {
 	"use strict";
 
 	return {
@@ -182,20 +182,20 @@ sap.ui.define([
 			let bShowSave		= false;
 
 			switch(sState) {
-				case oController._oConstant.PARMode.APPROVER:	// approver
+				case oController._oConstant.AccessMode.APPROVER:	// approver
 					bShowBackScr	= true;
 					bShowReject 	= true;
 					bShowSendBack	= true;
 					bShowApprove	= true;
 					break;
 				
-				case oController._oConstant.PARMode.CREATE:		// create
-				case oController._oConstant.PARMode.EDIT:		// i_edit
+				case oController._oConstant.AccessMode.CREATE:		// create
+				case oController._oConstant.AccessMode.EDIT:		// i_edit
 					bShowCancel		= true;
 					bShowSave		= true;
 					break;
 
-				case oController._oConstant.PARMode.LIST:		// list
+				case oController._oConstant.AccessMode.LIST:		// list
 					switch (sReqStatus) {
 						case oController._oConstant.RequestStatus.DRAFT:			// draft
 						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
@@ -217,7 +217,7 @@ sap.ui.define([
 							break;					}
 					break;
 
-				case oController._oConstant.PARMode.VIEW:		// view
+				case oController._oConstant.AccessMode.VIEW:		// view
 					switch (sReqStatus) {
 						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
 						case oController._oConstant.RequestStatus.REJECTED:			// rejected
@@ -230,7 +230,7 @@ sap.ui.define([
 							bShowBack   	= true;
 							bShowDelete 	= true;
 							bShowSubmit 	= true;
-							oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.LIST);
+							oController._oReqModel.setProperty("/view", oController._oConstant.AccessMode.LIST);
 							break;
 
 						default:
@@ -239,9 +239,9 @@ sap.ui.define([
 					}
 					break;
 				
-				case oController._oConstant.PARMode.VIEWAPPR:		// i_edit
+				case oController._oConstant.AccessMode.VIEWAPPR:		// i_edit
 					bShowBackScr	= true;
-					oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+					oController._oReqModel.setProperty("/view", oController._oConstant.AccessMode.VIEW);
 					break;
 				
 				default:

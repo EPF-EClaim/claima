@@ -1,26 +1,22 @@
 sap.ui.define([
-	"sap/ui/core/mvc/Controller",
-	"sap/ui/model/json/JSONModel",
 	"sap/m/MessageToast",
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/mvc/Controller",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"claima/utils/Utility",
-	"sap/suite/ui/commons/BusinessCard",
-	"sap/m/BusyIndicator",
-	"sap/m/SelectDialog",
 	"claima/utils/DateUtility"
-], function (Controller,
-	JSONModel,
+], function (
 	MessageToast,
+	BusyIndicator,
+	Controller,
 	Filter,
 	FilterOperator,
 	Sorter,
 	Utility,
-	BusinessCard,
-	BusyIndicator,
-	SelectDialog,
-	DateUtility) {
+	DateUtility
+) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {

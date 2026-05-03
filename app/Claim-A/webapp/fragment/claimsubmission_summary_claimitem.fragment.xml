@@ -7,7 +7,7 @@
 >
     <VBox
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
+        class="roundedBox sapUiSmallMargin"
         rowGap="1rem">
         <!-- Claim Item Toolbar -->
         <OverflowToolbar
@@ -18,7 +18,7 @@
                 text="{
 					parts:[
 						{path:'i18n>title_claimsummary_claimitem'},
-						{path:'claimsubmission_input>/claim_items_count'}
+						{path:'claim>/claim_items_count'}
 					], 
 					formatter:'jQuery.sap.formatMessage'}"
             />
@@ -67,7 +67,7 @@
             selectionChange="onSelectionChange_ClaimSummary"
             itemPress="onItemPress_ClaimSubmission"
             items="{
-				path: 'claimsubmission_input>/claim_items',
+				path: 'claim>/claim_items',
 				sorter: {
 					path: 'claim_sub_id'
 				}
@@ -132,21 +132,21 @@
                     <cells>
                         <!-- Item ID -->
                         <ObjectIdentifier
-                            text="{claimsubmission_input>claim_sub_id}"
+                            text="{claim>CLAIM_SUB_ID}"
                         />
 
 						<!-- Claim Type -->
-						<Text text="{claimsubmission_input>descr/claim_type_id}" />
+						<Text text="{claim>CLAIM_TYPE_DESC}" />
 
                         <!-- Claim Item -->
                         <Text
-                            text="{claimsubmission_input>descr/claim_type_item_id}"
+                            text="{claim>CLAIM_TYPE_ITEM_DESC}"
                         />
 
                         <!-- Amount -->
                         <Text
                             text="{
-								path: 'claimsubmission_input>amount',
+								path: 'claim>AMOUNT',
 								type: 'FloatType',
 								formatOptions: {
 									minFractionDigits: 2,
@@ -158,31 +158,31 @@
 
                         <!-- Receipt Number -->
                         <Text
-                            text="{claimsubmission_input>receipt_number}"
+                            text="{claim>RECEIPT_NUMBER}"
                         />
 
                         <!-- Receipt Date -->
                         <Text
                             text="{
-								path: 'claimsubmission_input>receipt_date',
+								path: 'claim>RECEIPT_DATE',
 								type: 'DateType',
-								formatOptions: { pattern: 'dd-MMM-yyyy' }
+								formatOptions: { pattern: 'dd MMM yyyy' }
 							}"
                         />
 
                         <!-- Remarks -->
-                        <Text text="{claimsubmission_input>remark}" />
+                        <Text text="{claim>REMARK}" />
 
                         <!-- Attachment 1 -->
                         <Link
                             press="onView_Claim_Attachment('child_t',null, $event)"
-                            text="{claimsubmission_input>attachment_file_1}"
+                            text="{claim>ATTACHMENT_FILE_1}"
                         />
 
                         <!-- Attachment 2 -->
                         <Link
                             press="onView_Claim_Attachment('child_t',null, $event)"
-                            text="{claimsubmission_input>attachment_file_2}"
+                            text="{claim>ATTACHMENT_FILE_2}"
                         />
 
                     </cells>
