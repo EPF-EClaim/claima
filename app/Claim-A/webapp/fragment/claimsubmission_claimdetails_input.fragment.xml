@@ -62,7 +62,16 @@
                     change="onSelect_ClaimDetails_ClaimItem"
                     liveChange="onSelect_ClaimDetails_ClaimItem"
                     required="true"
+                    items="{
+						path:'employee>/ZCLAIM_TYPE_ITEM',
+						sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }
+					}"
+                    visible="false"
 				>
+                    <items>
+					    <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" 
+							       text="{employee>CLAIM_TYPE_ITEM_DESC}" />
+				    </items>
 				</Select>
 
                 <!-- Dependent/Anggota Selection -->
@@ -568,18 +577,9 @@
                     liveChange="onSelect_ClaimDetails_Region"
                     visible="false"
                     required="true"
-                    items="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemOverseas/MAKAN_O} ? 
-                    {
+                    items="{
                         path: 'employee>/ZREGION',
                         sorter: { path: 'REGION_ID', descending: false },
-                        filters: [{ path: 'REGION_ID', opreator 'NE', value1: ${constant>/Region/OVERSEA} }]
-                    }
-                    :
-                    {
-                        path: 'employee>/ZREGION',
-                        sorter: { path: 'REGION_ID', descending: false },
-                        filters: [{ path: 'REGION_ID', opreator 'EQ', value1: ${constant>/Region/OVERSEA} }]
-                    }
                     }"
 				>
                     <items>

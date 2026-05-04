@@ -583,7 +583,8 @@ sap.ui.define([
 			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 		_loadSelection: function(){
-
+			this._onConfigDropdownFilter();
+			this._getDependent();
 		},
 		_onConfigDropdownFilter: function(){
 			// list of id with configs for dropdown
