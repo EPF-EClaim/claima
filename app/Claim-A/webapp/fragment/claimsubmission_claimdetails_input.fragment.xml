@@ -60,6 +60,7 @@
                     forceSelection="false"
                     selectedKey="{claim>/claim_item/claim_type_item_id}"
                     change="initializeClaimTypeItemFields"
+                    liveChange="initializeClaimTypeItemFields"
                     required="true"
                     items="{
 						path:'employee>/ZCLAIM_TYPE_ITEM',

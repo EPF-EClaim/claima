@@ -826,14 +826,6 @@ sap.ui.define([
 					new Sorter('CLAIM_TYPE_ITEM_DESC'),
 					new Sorter('CLAIM_TYPE_ITEM_ID')
 				],
-				parameters: {
-					$expand: {
-						"ZSUBMISSION_TYPE": {
-							$select: "SUBMISSION_TYPE_DESC"
-						}
-					},
-					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
-				},
 				template: new Item({
 					key: "{employee>CLAIM_TYPE_ITEM_ID}",
 					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
