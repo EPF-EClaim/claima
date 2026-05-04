@@ -36,6 +36,7 @@
     },
     "is_new": false,
     "is_approver": false,
+    "view": null,
     "view_only": false,
     "claim_header": {
         "claim_id": null,
@@ -254,9 +255,9 @@
             "vehicle_class_id": null,
             "attachment_file_1": null,
             "attachment_file_2": null
-    },
-	"eligible_amount": null,
-	"no_of_hours": null
+        },
+        "eligible_amount": null,
+        "no_of_hours": null
 },
     "attachments": {
         "attachment1": {

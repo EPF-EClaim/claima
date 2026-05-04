@@ -66,6 +66,7 @@ sap.ui.define([
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
 			this._oReqModel = this.getOwnerComponent().getModel('request');
+			this._oClaimModel = this.getOwnerComponent().getModel("claim");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
@@ -442,7 +443,6 @@ sap.ui.define([
 		//// Functions - Claim Process
 		_onInit_ClaimProcess: async function () {
 			// set new claim submission model;
-			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			// clear email field
 			var oFileUploader = this.byId("fileuploader_claiminput_attachment");
 			if (oFileUploader) {
@@ -459,8 +459,8 @@ sap.ui.define([
 			}
 			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
 			if (oEmpData) {
-				oInputModel.setProperty("/emp_master", oEmpData);
-				await this._getEmpDataDescr(oInputModel);
+				this._oClaimModel.setProperty("/emp_master", oEmpData);
+				await this._getEmpDataDescr(this._oClaimModel);
 			}
 
 			// set claim items based on selected claim type
@@ -547,14 +547,13 @@ sap.ui.define([
 
 		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
 			// validate claim type
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
 				// get claim type description
-				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+				this._oClaimModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
 				// get cost center from claim type
-				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
-				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+				this._oClaimModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
+				this._oClaimModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
@@ -569,7 +568,7 @@ sap.ui.define([
 				oBindingSelectClaimItems.filter(aFilterSelectClaimItems);
 
 				// set filter for course code dropdown
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
+				if (Object.values(this._oConstant.ClaimTypeKursus).includes(this._oClaimModel.getProperty("/claimtype/type"))) {
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
 					var aFilterSelectCourseCode = [
@@ -582,42 +581,41 @@ sap.ui.define([
 				}
 			} else {
 				// reset claim type description
-				oInputModel.setProperty("/claimtype/descr/type", null);
+				this._oClaimModel.setProperty("/claimtype/descr/type", null);
 			}
 			// reset claim item
-			if (oInputModel.getProperty("/claimtype/item") !== null) {
-				oInputModel.setProperty("/claimtype/item", null);
+			if (this._oClaimModel.getProperty("/claimtype/item") !== null) {
+				this._oClaimModel.setProperty("/claimtype/item", null);
 				await this.onSelect_ClaimProcess_ClaimItem();
 			}
 			// reset course code
-			if (oInputModel.getProperty("/claimtype/course_code/course_id") !== null) {
-				oInputModel.setProperty("/claimtype/course_code/course_id", null);
+			if (this._oClaimModel.getProperty("/claimtype/course_code/course_id") !== null) {
+				this._oClaimModel.setProperty("/claimtype/course_code/course_id", null);
 				this.onSelect_ClaimProcess_CourseCode();
 			}
 		},
 
 		onSelect_ClaimProcess_ClaimItem: async function (oEvent) {
 			// validate claim item
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItem = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimItem) {
 				// populate claim item values
-				oInputModel.setProperty("/claimtype/descr/item", oClaimItem.getBindingContext("employee").getObject("CLAIM_TYPE_ITEM_DESC"));
-				oInputModel.setProperty("/claimtype/category", oClaimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE"));
-				oInputModel.setProperty("/claimtype/descr/category", oClaimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC"));
+				this._oClaimModel.setProperty("/claimtype/descr/item", oClaimItem.getBindingContext("employee").getObject("CLAIM_TYPE_ITEM_DESC"));
+				this._oClaimModel.setProperty("/claimtype/category", oClaimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE"));
+				this._oClaimModel.setProperty("/claimtype/descr/category", oClaimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC"));
 				this._onSelect_ClaimProcess_Category();
 
 				// set Request Form selection based on selected claim type item
-				if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
-					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
-					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
+				if (this._oClaimModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
+					this._oClaimModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+					this._oClaimModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
 				) {
 					// filter
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
 					var aFilterSelectRequestForm = [
-						new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+						new Filter('EMP_ID', FilterOperator.EQ, this._oClaimModel.getProperty("/emp_master/eeid")),
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, this._oClaimModel.getProperty("/claimtype/type")),
 						new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
 					];
 					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
@@ -625,64 +623,62 @@ sap.ui.define([
 			}
 			else {
 				// reset claim item values
-				oInputModel.setProperty("/claimtype/descr/item", null);
-				oInputModel.setProperty("/claimtype/category", null);
-				oInputModel.setProperty("/claimtype/descr/category", null);
+				this._oClaimModel.setProperty("/claimtype/descr/item", null);
+				this._oClaimModel.setProperty("/claimtype/category", null);
+				this._oClaimModel.setProperty("/claimtype/descr/category", null);
 				this._onSelect_ClaimProcess_Category();
 			}
 			// reset request form
-			if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
-				oInputModel.setProperty("/claimtype/requestform/request_id", null);
+			if (this._oClaimModel.getProperty("/claimtype/requestform/request_id") !== null) {
+				this._oClaimModel.setProperty("/claimtype/requestform/request_id", null);
 				await this.onSelect_ClaimProcess_RequestForm();
 			}
 		},
 
 		_onSelect_ClaimProcess_Category: function () {
 			// reset email approval
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/req_emailapprove") &&
-				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.PRE_APPROVE &&
-				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CASH_REPAYMENT &&
-				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CURR_SUBSIDY) {
-				oInputModel.setProperty("/req_emailapprove", false);
+			if (this._oClaimModel.getProperty("/req_emailapprove") &&
+				this._oClaimModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.PRE_APPROVE &&
+				this._oClaimModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CASH_REPAYMENT &&
+				this._oClaimModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CURR_SUBSIDY) {
+				this._oClaimModel.setProperty("/req_emailapprove", false);
 			}
 		},
 
 		onSelect_ClaimProcess_RequestForm: async function (oEvent) {
 			// validate claim item
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oRequestForm) {
 				// populate request form values
-				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
-				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/trip_end_date", oRequestForm.getBindingContext("employee").getObject("TRIP_END_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
-				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
-				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
-				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
-				oInputModel.setProperty("/claimtype/requestform/descr/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("ZTRANSFER_MODE/TRANSFER_MODE_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/descr/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("ZTRAVEL_TYPE/TRAVEL_TYPE_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/descr/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("ZFAMILY_TIMING/FAMILY_TIMING_DESC"));
+				this._oClaimModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
+				this._oClaimModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
+				this._oClaimModel.setProperty("/claimtype/requestform/trip_end_date", oRequestForm.getBindingContext("employee").getObject("TRIP_END_DATE"));
+				this._oClaimModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
+				this._oClaimModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
+				this._oClaimModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
+				this._oClaimModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				this._oClaimModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+				this._oClaimModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
+				this._oClaimModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
+				this._oClaimModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
+				this._oClaimModel.setProperty("/claimtype/requestform/descr/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("ZTRANSFER_MODE/TRANSFER_MODE_DESC"));
+				this._oClaimModel.setProperty("/claimtype/requestform/descr/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("ZTRAVEL_TYPE/TRAVEL_TYPE_DESC"));
+				this._oClaimModel.setProperty("/claimtype/requestform/descr/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("ZFAMILY_TIMING/FAMILY_TIMING_DESC"));
 
 				// populate cash advance amount based on items
-				oInputModel.setProperty("/claimtype/requestform/cash_advance", await Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
+				this._oClaimModel.setProperty("/claimtype/requestform/cash_advance", await Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
 			}
 			else {
 				// reset request form values
-				oInputModel.setProperty("/claimtype/requestform/objective_purpose", null);
-				oInputModel.setProperty("/claimtype/requestform/trip_start_date", null);
-				oInputModel.setProperty("/claimtype/requestform/trip_end_date", null);
-				oInputModel.setProperty("/claimtype/requestform/event_start_date", null);
-				oInputModel.setProperty("/claimtype/requestform/event_end_date", null);
-				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", null);
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
-				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
-				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/objective_purpose", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/trip_start_date", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/trip_end_date", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/event_start_date", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/event_end_date", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/alternate_cost_center", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/preapproval_amount", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/cash_advance", null);
+				this._oClaimModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
 			}
 		},
 
@@ -691,11 +687,10 @@ sap.ui.define([
 		* @public
 		*/
 		onSwitch_ClaimProcess_Req_EmailApprove: async function (oEvent) {
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/req_emailapprove")) {
+			if (this._oClaimModel.getProperty("/req_emailapprove")) {
 				// reset request form
-				if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
-					oInputModel.setProperty("/claimtype/requestform/request_id", null);
+				if (this._oClaimModel.getProperty("/claimtype/requestform/request_id") !== null) {
+					this._oClaimModel.setProperty("/claimtype/requestform/request_id", null);
 					await this.onSelect_ClaimProcess_RequestForm();
 				}
 			}
@@ -707,19 +702,18 @@ sap.ui.define([
 		*/
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
 			// validate claim item
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oCourseCode = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oCourseCode) {
 				// set course code description
-				oInputModel.setProperty("/claimtype/course_code/course_desc", oCourseCode.getBindingContext("employee_view").getObject("COURSE_DESC"));
+				this._oClaimModel.setProperty("/claimtype/course_code/course_desc", oCourseCode.getBindingContext("employee_view").getObject("COURSE_DESC"));
 
 				// set Session Number selection based on selected course code
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
+				if (Object.values(this._oConstant.ClaimTypeKursus).includes(this._oClaimModel.getProperty("/claimtype/type"))) {
 					var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
 					var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
 					var aFilterSelectSessionNumber = [
 						// ensure status is active
-						new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
+						new Filter("COURSE_ID", FilterOperator.EQ, this._oClaimModel.getProperty("/claimtype/course_code/course_id")),
 						new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
 						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
 						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
@@ -729,11 +723,11 @@ sap.ui.define([
 			}
 			else {
 				// reset claim item values
-				oInputModel.setProperty("/claimtype/course_code/course_desc", null);
+				this._oClaimModel.setProperty("/claimtype/course_code/course_desc", null);
 			}
 			// reset session number
-			if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
-				oInputModel.setProperty("/claimtype/course_code/session_number", null);
+			if (this._oClaimModel.getProperty("/claimtype/course_code/session_number") !== null) {
+				this._oClaimModel.setProperty("/claimtype/course_code/session_number", null);
 				this.onSelect_ClaimProcess_SessionNumber();
 			}
 		},
@@ -743,16 +737,15 @@ sap.ui.define([
 		* @public
 		*/
 		onSelect_ClaimProcess_SessionNumber: function (oEvent) {
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oSessionNumber = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oSessionNumber) {
 				// set start/end dates
-				oInputModel.setProperty("/claimtype/course_code/start_date", oSessionNumber.getBindingContext("employee").getObject("START_DATE"));
-				oInputModel.setProperty("/claimtype/course_code/end_date", oSessionNumber.getBindingContext("employee").getObject("END_DATE"));
+				this._oClaimModel.setProperty("/claimtype/course_code/start_date", oSessionNumber.getBindingContext("employee").getObject("START_DATE"));
+				this._oClaimModel.setProperty("/claimtype/course_code/end_date", oSessionNumber.getBindingContext("employee").getObject("END_DATE"));
 			}
 			else {
-				oInputModel.setProperty("/claimtype/course_code/start_date", null);
-				oInputModel.setProperty("/claimtype/course_code/end_date", null);
+				this._oClaimModel.setProperty("/claimtype/course_code/start_date", null);
+				this._oClaimModel.setProperty("/claimtype/course_code/end_date", null);
 			}
 		},
 
@@ -764,17 +757,14 @@ sap.ui.define([
 		},
 
 		onStartClaim_ClaimProcess: async function () {
-			// validate input data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-
 			// default undefined switch to false
-			if (oInputModel.getProperty("/req_emailapprove") === undefined) {
-				oInputModel.setProperty("/req_emailapprove", false);
+			if (this._oClaimModel.getProperty("/req_emailapprove") === undefined) {
+				this._oClaimModel.setProperty("/req_emailapprove", false);
 			}
 
 			//check if the same Request ID has been submitted for claim submission
-			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
-				var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
+			if (this.byId("select_claimprocess_requestform").getVisible() && !!this._oClaimModel.getProperty("/claimtype/requestform/request_id")) {
+				var sRequestID = this._oClaimModel.getProperty("/claimtype/requestform/request_id");
 
 				try {
 					const oResult = await ClaimUtility.checkReusedPAR(sRequestID);
@@ -812,73 +802,72 @@ sap.ui.define([
 		//// Functions - Claim Input
 		_onInit_ClaimInput: async function () {
 			// set data for claim header
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
-			oInputModel.setProperty("/is_new", true);
-			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
-			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
-			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
-			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
-			oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+			this._oClaimModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
+			this._oClaimModel.setProperty("/is_new", true);
+			this._oClaimModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
+			this._oClaimModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
+			this._oClaimModel.setProperty("/claim_header/claim_type_id", this._oClaimModel.getProperty("/claimtype/type"));
+			this._oClaimModel.setProperty("/claim_header/submission_type", this._oClaimModel.getProperty("/claimtype/category"));
+			this._oClaimModel.setProperty("/claim_header/cost_center", this._oClaimModel.getProperty("/emp_master/cc"));
 			//// request form values
-			oInputModel.setProperty("/claim_header/request_id", oInputModel.getProperty("/claimtype/requestform/request_id"));
-			oInputModel.setProperty("/claim_header/preapproved_amount", oInputModel.getProperty("/claimtype/requestform/preapproval_amount"));
-			oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/requestform/trip_start_date"));
-			oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/requestform/trip_end_date"));
-			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
-			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
-			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
-			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
-			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
-			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
-			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/descr/mode_of_transfer"));
-			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/descr/travel_alone_family"));
-			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/descr/travel_family_now_later"));
+			this._oClaimModel.setProperty("/claim_header/request_id", this._oClaimModel.getProperty("/claimtype/requestform/request_id"));
+			this._oClaimModel.setProperty("/claim_header/preapproved_amount", this._oClaimModel.getProperty("/claimtype/requestform/preapproval_amount"));
+			this._oClaimModel.setProperty("/claim_header/trip_start_date", this._oClaimModel.getProperty("/claimtype/requestform/trip_start_date"));
+			this._oClaimModel.setProperty("/claim_header/trip_end_date", this._oClaimModel.getProperty("/claimtype/requestform/trip_end_date"));
+			this._oClaimModel.setProperty("/claim_header/event_start_date", this._oClaimModel.getProperty("/claimtype/requestform/event_start_date"));
+			this._oClaimModel.setProperty("/claim_header/event_end_date", this._oClaimModel.getProperty("/claimtype/requestform/event_end_date"));
+			this._oClaimModel.setProperty("/claim_header/cash_advance_amount", this._oClaimModel.getProperty("/claimtype/requestform/cash_advance"));
+			this._oClaimModel.setProperty("/claim_header/mode_of_transfer", this._oClaimModel.getProperty("/claimtype/requestform/mode_of_transfer"));
+			this._oClaimModel.setProperty("/claim_header/travel_alone_family", this._oClaimModel.getProperty("/claimtype/requestform/travel_alone_family"));
+			this._oClaimModel.setProperty("/claim_header/travel_family_now_later", this._oClaimModel.getProperty("/claimtype/requestform/travel_family_now_later"));
+			this._oClaimModel.setProperty("/claim_header/descr/mode_of_transfer", this._oClaimModel.getProperty("/claimtype/requestform/descr/mode_of_transfer"));
+			this._oClaimModel.setProperty("/claim_header/descr/travel_alone_family", this._oClaimModel.getProperty("/claimtype/requestform/descr/travel_alone_family"));
+			this._oClaimModel.setProperty("/claim_header/descr/travel_family_now_later", this._oClaimModel.getProperty("/claimtype/requestform/descr/travel_family_now_later"));
 			//// set alternate cost center based on claim type / pre-approval
-			if (oInputModel.getProperty("/claimtype/cost_center")) {
-				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
-				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/descr/cost_center"));
+			if (this._oClaimModel.getProperty("/claimtype/cost_center")) {
+				this._oClaimModel.setProperty("/claim_header/alternate_cost_center", this._oClaimModel.getProperty("/claimtype/cost_center"));
+				this._oClaimModel.setProperty("/claim_header/descr/alternate_cost_center", this._oClaimModel.getProperty("/claimtype/descr/cost_center"));
 			}
-			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
-				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			else if (this._oClaimModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
+				this._oClaimModel.setProperty("/claim_header/alternate_cost_center", this._oClaimModel.getProperty("/claimtype/requestform/alternate_cost_center"));
+				this._oClaimModel.setProperty("/claim_header/descr/alternate_cost_center", this._oClaimModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
 			}
 			//// course code values
-			if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")) &&
-				oInputModel.getProperty("/claimtype/course_code/course_id")
+			if (Object.values(this._oConstant.ClaimTypeKursus).includes(this._oClaimModel.getProperty("/claimtype/type")) &&
+				this._oClaimModel.getProperty("/claimtype/course_code/course_id")
 			) {
-				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code/course_id"));
-				oInputModel.setProperty("/claim_header/session_number", oInputModel.getProperty("/claimtype/course_code/session_number"));
-				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/course_code/course_desc"));
+				this._oClaimModel.setProperty("/claim_header/course_code", this._oClaimModel.getProperty("/claimtype/course_code/course_id"));
+				this._oClaimModel.setProperty("/claim_header/session_number", this._oClaimModel.getProperty("/claimtype/course_code/session_number"));
+				this._oClaimModel.setProperty("/claim_header/descr/course_code", this._oClaimModel.getProperty("/claimtype/course_code/course_desc"));
 
 				// check if trip dates already auto-populated from pre-approval request, else populate with course code dates
-				if (!oInputModel.getProperty("/claim_header/trip_start_date")) {
-					oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
+				if (!this._oClaimModel.getProperty("/claim_header/trip_start_date")) {
+					this._oClaimModel.setProperty("/claim_header/trip_start_date", this._oClaimModel.getProperty("/claimtype/course_code/start_date"));
 				}
-				if (!oInputModel.getProperty("/claim_header/trip_end_date")) {
-					oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
+				if (!this._oClaimModel.getProperty("/claim_header/trip_end_date")) {
+					this._oClaimModel.setProperty("/claim_header/trip_end_date", this._oClaimModel.getProperty("/claimtype/course_code/end_date"));
 				}
 			}
 			else {
-				oInputModel.setProperty("/claim_header/course_code", null);
-				oInputModel.setProperty("/claim_header/session_number", null);
-				oInputModel.setProperty("/claim_header/descr/course_code", null);
+				this._oClaimModel.setProperty("/claim_header/course_code", null);
+				this._oClaimModel.setProperty("/claim_header/session_number", null);
+				this._oClaimModel.setProperty("/claim_header/descr/course_code", null);
 			}
 			//// initialized amount values
-			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
-			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
-			if (!oInputModel.getProperty("/claim_header/preapproved_amount")) {
-				oInputModel.setProperty("/claim_header/preapproved_amount", "0.00");
+			this._oClaimModel.setProperty("/claim_header/total_claim_amount", "0.00");
+			this._oClaimModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
+			if (!this._oClaimModel.getProperty("/claim_header/preapproved_amount")) {
+				this._oClaimModel.setProperty("/claim_header/preapproved_amount", "0.00");
 			}
-			if (!oInputModel.getProperty("/claim_header/cash_advance_amount")) {
-				oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
+			if (!this._oClaimModel.getProperty("/claim_header/cash_advance_amount")) {
+				this._oClaimModel.setProperty("/claim_header/cash_advance_amount", "0.00");
 			}
 			//// include description in data
-			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
-			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
-			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
-			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
+			this._oClaimModel.setProperty("/claim_header/descr/claim_type_id", this._oClaimModel.getProperty("/claimtype/descr/type"));
+			this._oClaimModel.setProperty("/claim_header/descr/submission_type", this._oClaimModel.getProperty("/claimtype/descr/category"));
+			this._oClaimModel.setProperty("/claim_header/descr/cost_center", this._oClaimModel.getProperty("/emp_master/descr/cc"));
+			this._oClaimModel.setProperty("/claim_header/descr/request_id", this._oClaimModel.getProperty("/claimtype/requestform/objective_purpose"));
 		},
 
 		_getJsonDate: function (date) {
@@ -920,19 +909,14 @@ sap.ui.define([
 			);
 		},
 		onTravelAloneFamilySelect: function(oEvent){
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
-			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oEvent.getSource().getSelectedItem().getText());
+			this._oClaimModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
+			this._oClaimModel.setProperty("/claim_header/descr/travel_alone_family", oEvent.getSource().getSelectedItem().getText());
 		},
 		onSelectTravelFamilyNowLater: function(oEvent){
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/claim_header/travel_family_now_later", oEvent.getSource().getSelectedItem().getKey());
-			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oEvent.getSource().getSelectedItem().getText());
+			this._oClaimModel.setProperty("/claim_header/travel_family_now_later", oEvent.getSource().getSelectedItem().getKey());
+			this._oClaimModel.setProperty("/claim_header/descr/travel_family_now_later", oEvent.getSource().getSelectedItem().getText());
 		},
 		onClaimSubmission_ClaimInput: async function () {
-			// validate input data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-
 			if (!this.getOwnerComponent().getValidator().validate(this.byId("idClaimSubmissionHeaderInput"))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
@@ -944,13 +928,13 @@ sap.ui.define([
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachment/fileName"),
-					oInputModel.getProperty("/attachment/fileContent"),
+					this._oClaimModel.getProperty("/attachment/fileName"),
+					this._oClaimModel.getProperty("/attachment/fileContent"),
 					this._oSessionModel.getProperty("/userId")
 				);
 				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
-					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					this._oClaimModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+					this._oClaimModel.setProperty("/claim_header/descr/attachment_email_approver", this._oClaimModel.getProperty("/attachment/fileName"));
 					BusyIndicator.hide();
 				}
 				else {
@@ -971,74 +955,72 @@ sap.ui.define([
 		},
 
 		_updateClaimSubmission: async function () {
-			// get input model
-			var oInputModel = this.getView().getModel("claimsubmission_input");
 			//// update last modified date
 			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
+			this._oClaimModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
 			//// set status for new claim as draft
-			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
-				oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
+			if (this._oClaimModel.getProperty("/is_new")) {
+				this._oClaimModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
+				this._oClaimModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 			}
 
 			// set body for update
 			var oBody = new JSONModel({
 				EMP_ID: this._oSessionModel.getProperty("/userId"),
-				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-				TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-				TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-				EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-				EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
-				SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
-				COMMENT: oInputModel.getProperty("/claim_header/comment"),
-				ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
-				COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
-				REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
-				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
-				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
-				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
-				LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-				SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-				LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-				LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
-				PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
-				LOCATION: oInputModel.getProperty("/claim_header/location"),
-				SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-				HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-				MOVE_IN_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
-				HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
-				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
-				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
-				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
-				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
-				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
-				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
-				APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
-				APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-				LAST_PUSH_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_push_back_date")),
-				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
-				SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
-				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
-				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-				PUSH_BACK_REASON_ID: oInputModel.getProperty("/claim_header/push_back_reason_id"),
-				LAST_PUSH_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_push_back_time")),
-				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
-				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
-				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
-				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
+				PURPOSE: this._oClaimModel.getProperty("/claim_header/purpose"),
+				TRIP_START_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/trip_start_date")),
+				TRIP_END_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/trip_end_date")),
+				EVENT_START_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/event_start_date")),
+				EVENT_END_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/event_end_date")),
+				SUBMISSION_TYPE: this._oClaimModel.getProperty("/claim_header/submission_type"),
+				COMMENT: this._oClaimModel.getProperty("/claim_header/comment"),
+				ALTERNATE_COST_CENTER: this._oClaimModel.getProperty("/claim_header/alternate_cost_center"),
+				COST_CENTER: this._oClaimModel.getProperty("/claim_header/cost_center"),
+				REQUEST_ID: this._oClaimModel.getProperty("/claim_header/request_id"),
+				ATTACHMENT_EMAIL_APPROVER: this._oClaimModel.getProperty("/claim_header/attachment_email_approver"),
+				STATUS_ID: this._oClaimModel.getProperty("/claim_header/status_id"),
+				CLAIM_TYPE_ID: this._oClaimModel.getProperty("/claim_header/claim_type_id"),
+				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
+				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
+				LAST_MODIFIED_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/last_modified_date")),
+				SUBMITTED_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/submitted_date")),
+				LAST_APPROVED_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/last_approved_date")),
+				LAST_APPROVED_TIME: this._getHanaTime(this._oClaimModel.getProperty("/claim_header/last_approved_time")),
+				PAYMENT_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/payment_date")),
+				LOCATION: this._oClaimModel.getProperty("/claim_header/location"),
+				SPOUSE_OFFICE_ADDRESS: this._oClaimModel.getProperty("/claim_header/spouse_office_address"),
+				HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/house_completion_date")),
+				MOVE_IN_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/move_in_date")),
+				HOUSING_LOAN_SCHEME: this._oClaimModel.getProperty("/claim_header/housing_loan_scheme"),
+				LENDER_NAME: this._oClaimModel.getProperty("/claim_header/lender_name"),
+				SPECIFY_DETAILS: this._oClaimModel.getProperty("/claim_header/specify_details"),
+				NEW_HOUSE_ADDRESS: this._oClaimModel.getProperty("/claim_header/new_house_address"),
+				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
+				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
+				APPROVER1: this._oClaimModel.getProperty("/claim_header/approver1"),
+				APPROVER2: this._oClaimModel.getProperty("/claim_header/approver2"),
+				APPROVER3: this._oClaimModel.getProperty("/claim_header/approver3"),
+				APPROVER4: this._oClaimModel.getProperty("/claim_header/approver4"),
+				APPROVER5: this._oClaimModel.getProperty("/claim_header/approver5"),
+				LAST_PUSH_BACK_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/last_push_back_date")),
+				COURSE_CODE: this._oClaimModel.getProperty("/claim_header/course_code"),
+				SESSION_NUMBER: this._oClaimModel.getProperty("/claim_header/session_number"),
+				PROJECT_CODE: this._oClaimModel.getProperty("/claim_header/project_code"),
+				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(this._oClaimModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
+				REJECT_REASON_ID: this._oClaimModel.getProperty("/claim_header/reject_reason_id"),
+				PUSH_BACK_REASON_ID: this._oClaimModel.getProperty("/claim_header/push_back_reason_id"),
+				LAST_PUSH_BACK_TIME: this._getHanaTime(this._oClaimModel.getProperty("/claim_header/last_push_back_time")),
+				REJECT_REASON_DATE: DateUtility.getHanaDate(this._oClaimModel.getProperty("/claim_header/reject_reason_date")),
+				REJECT_REASON_TIME: this._getHanaTime(this._oClaimModel.getProperty("/claim_header/reject_reason_time")),
+				MODE_OF_TRANSFER: this._oClaimModel.getProperty("/claim_header/mode_of_transfer"),
+				TRAVEL_ALONE_FAMILY: this._oClaimModel.getProperty("/claim_header/travel_alone_family"),
+				TRAVEL_FAMILY_NOW_LATER: this._oClaimModel.getProperty("/claim_header/travel_family_now_later"),
 			});
 			//// addon for new claim
-			if (oInputModel.getProperty("/is_new")) {
-				oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
+			if (this._oClaimModel.getProperty("/is_new")) {
+				oBody.setProperty("/CLAIM_ID", this._oClaimModel.getProperty("/claim_header/claim_id"));
 			}
 
 			try {
@@ -1048,7 +1030,7 @@ sap.ui.define([
 				var oListBinding;
 				var claimSaved;
 
-				if (oInputModel.getProperty("/is_new")) {
+				if (this._oClaimModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
 					oContext.created().then(async () => {
@@ -1057,9 +1039,9 @@ sap.ui.define([
 						// assign report number to new claim
 						var currentReportNumber = oContext.getProperty("CLAIM_ID");
 						if (!isNaN(currentReportNumber.slice(-1))) {
-							oInputModel.setProperty("/claim_header/claim_id", currentReportNumber);
-							oInputModel.setProperty("/reportnumber/reportno", currentReportNumber);
-							// oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+							this._oClaimModel.setProperty("/claim_header/claim_id", currentReportNumber);
+							this._oClaimModel.setProperty("/reportnumber/reportno", currentReportNumber);
+							// this._oClaimModel.setProperty("/reportnumber/current", currentReportNumber.current);
 						}
 						else {
 							this.oDialog = new Dialog({
@@ -1079,19 +1061,19 @@ sap.ui.define([
 						}
 						// Always post Parent MDF
 						await Attachment.postMDF(
-							oInputModel.getProperty("/claim_header/claim_id"),
-							oInputModel.getProperty("/claim_header/attachment_email_approver")
+							this._oClaimModel.getProperty("/claim_header/claim_id"),
+							this._oClaimModel.getProperty("/claim_header/attachment_email_approver")
 						)
 
 						if (claimSaved) {
-							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+							MessageToast.show(Utility.getText("msg_claimsubmission_created", [this._oClaimModel.getProperty("/claim_header/claim_id")]));
 						}
-						oInputModel.setProperty("/is_new", false);
+						this._oClaimModel.setProperty("/is_new", false);
 						// close Claim Input dialog
 						this.oDialog_ClaimInput.close();
 
 						// load Claim Submission page
-						this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
+						this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(this._oClaimModel.getProperty("/claim_header/claim_id"))) });
 					});
 				}
 
@@ -1110,10 +1092,9 @@ sap.ui.define([
 			var reader = new FileReader();
 
 			reader.addEventListener("load", () => {
-				var oInputModel = this.getView().getModel("claimsubmission_input");
-				if (oInputModel) {
-					oInputModel.setProperty("/attachment/fileName", fileName);
-					oInputModel.setProperty("/attachment/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+				if (this._oClaimModel) {
+					this._oClaimModel.setProperty("/attachment/fileName", fileName);
+					this._oClaimModel.setProperty("/attachment/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
 				}
 			});
 
@@ -1830,16 +1811,14 @@ sap.ui.define([
 					oDialogModel.setProperty("/tripstartdate", null);
 					oDialogModel.setProperty("/tripenddate", null);
 				} else {
-					var oInputModel = this.getView().getModel("claimsubmission_input");
-					oInputModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
-					oInputModel.setProperty("/claim_header/trip_start_date", null);
-					oInputModel.setProperty("/claim_header/trip_end_date", null);
+					this._oClaimModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
+					this._oClaimModel.setProperty("/claim_header/trip_start_date", null);
+					this._oClaimModel.setProperty("/claim_header/trip_end_date", null);
 				}
 			}
 
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/claim_header/mode_of_transfer", oEvent.getSource().getSelectedItem().getKey());
-			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oEvent.getSource().getSelectedItem().getText());
+			this._oClaimModel.setProperty("/claim_header/mode_of_transfer", oEvent.getSource().getSelectedItem().getKey());
+			this._oClaimModel.setProperty("/claim_header/descr/mode_of_transfer", oEvent.getSource().getSelectedItem().getText());
 		}
 	});
 });

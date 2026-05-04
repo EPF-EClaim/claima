@@ -110,6 +110,47 @@ sap.ui.define([
 			// URL Access
 			this._oRouter.getRoute("ClaimSubmission").attachPatternMatched(this._onMatched, this);
 
+			this.getOwnerComponent().setModel(new JSONModel({
+				fieldControl: {
+					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.BILL_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_PURCH_DATE]: {
+						customErrorMessage: "",
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_CERT_START_DATE]: {
+						customErrorMessage: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+					},
+					[this._oConstant.EntitiesFields.MOVE_IN_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.TRIP_START_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.TRIP_END_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					}
+				}
+			}), "appModel");
+
 			this.getView().setModel(models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
 			this.getView().setModel(models.createEditButtonModel(), "editButtonModel");
 		},
@@ -360,6 +401,7 @@ sap.ui.define([
 			const oClaimHeader = this._oClaimModel.getProperty("/claim_header");
 			this._oClaimModel.setProperty("/claim_item/claim_type_id", oClaimHeader.claim_type_id);
 			this._oClaimModel.setProperty("/claim_item/descr/claim_type_id", oClaimHeader.descr.claim_type_id);
+			this._loadAllSelection()
 		},
 
 		/* =========================================================
@@ -379,7 +421,7 @@ sap.ui.define([
 			if (bReset) {
 				this._resetClaimItemInputs();
 
-				const oLocationTypeSelect = this.byId("item_location_type");
+				const oLocationTypeSelect = this.byId("select_claimdetails_input_location_type");
 				if (oLocationTypeSelect) {
 					oLocationTypeSelect.setForceSelection(false);
 					oLocationTypeSelect.setSelectedKey("");
@@ -389,11 +431,11 @@ sap.ui.define([
 			BusyIndicator.show(0);
 
 			try {
-				const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
 					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.SUBMISSION_TYPE),
 					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.ITEM),
-					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
-					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem),
+					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType)
 				]);
 
 				const aCtx = await oListBinding.requestContexts(0, 1);
@@ -477,6 +519,36 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
+		},
+
+		_resetClaimItemInputs: function () {
+			const oClaimItem = this._oClaimModel.getProperty("/claim_item");
+			
+			const aExcludedFields = [
+				Constants.ExcludeField.CLAIM_TYPE_ID,
+				Constants.ExcludeField.DESCR,
+				Constants.ExcludeField.REQUEST_SUB_ID
+			];
+
+			Object.keys(oClaimItem).forEach((sKey) => {
+				if (aExcludedFields.includes(sKey)) {
+					return;
+				}
+
+				const vCurrentValue = oClaimItem[sKey];
+
+				if (sKey === "est_amount" || typeof vCurrentValue === "number") {
+					this._oClaimModel.setProperty(`/claim_item/${sKey}`, 0);
+				} else if (typeof vCurrentValue === "boolean") {
+					this._oClaimModel.setProperty(`/claim_item/${sKey}`, false);
+				} else {
+					this._oClaimModel.setProperty(`/claim_item/${sKey}`, null);
+				}
+			});
+
+			// set attachment 1 field to be required (mandatory)
+			this.byId("fileuploader_claimdetails_input_attachment_file_1").setRequired(true);
+
 		},
 
 		_setAllControlsVisible: function (bVisible) {
@@ -582,6 +654,10 @@ sap.ui.define([
 
 			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
+
+		// ===========================================
+		// Load selections
+		// ===========================================
 		_loadSelection: function(){
 			this._onConfigDropdownFilter();
 			this._getDependent();
@@ -716,11 +792,63 @@ sap.ui.define([
 				oBinding.filter(oFilter);
 			})
 		},
+		_onClaimItemDropdownFilter: function () {
+			// filter by submission type
+			if (this._oClaimModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				this._oClaimModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				this._oClaimModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
+				// filter items by claim header submission type + cash repayment
+				var oFilterSubsmissionType = new Filter({
+					filters: [
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CASH_REPAYMENT),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CURR_SUBSIDY),
+					],
+					and: false
+				});
+			} else {
+				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oClaimModel.getProperty("/claim_header/submission_type"));
+			}
+
+			// set dropdown for claim items
+			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
+				path: "employee>/ZCLAIM_TYPE_ITEM",
+				filters: [
+					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, this._oClaimModel.getProperty("/claim_header/claim_type_id")),
+					oFilterSubsmissionType,
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				],
+				sorter: [
+					new Sorter('CLAIM_TYPE_ITEM_DESC'),
+					new Sorter('CLAIM_TYPE_ITEM_ID')
+				],
+				parameters: {
+					$expand: {
+						"ZSUBMISSION_TYPE": {
+							$select: "SUBMISSION_TYPE_DESC"
+						}
+					},
+					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
+				},
+				template: new Item({
+					key: "{employee>CLAIM_TYPE_ITEM_ID}",
+					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
+				})
+			});
+		},
 		_loadAllSelection: function(){
 			//loads all the select items with the filters
 			this._getDependent();
 			this._onConfigDropdownFilter();
+			this._onClaimItemDropdownFilter();
 		},
+		// ===========================================
+		// dropdown specific logics
+		// ===========================================
 		onSelectCountry: async function(oEvent){
 			var oItem = this._oClaimModel.getProperty("/claim_item");
 			if(oItem.claim_type_item_id == Constants.ClaimTypeItem.LODG_O){

@@ -491,7 +491,8 @@ sap.ui.define([
             "GL_ACCOUNT": "gl_account",
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
-            "REQUEST_SUB_ID": "req_subid"
+            "REQUEST_SUB_ID": "req_subid",
+            "DESCR" : "descr"
         },
         "Region": {
             "SEMENANJUNG": "01",

@@ -92,6 +92,7 @@ sap.ui.define([
 					mode_of_transfer				: oData.TRANSFER_MODE_DESC,
 					travel_alone_family				: oData.TRAVEL_TYPE_DESC,
 					travel_family_now_later			: oData.FAMILY_TIMING_DESC,
+					submission_type                 : oData.SUBMISSION_TYPE,
 					descr: {
 						alternate_cost_center		: oData.ALT_COST_CENTER_DESC,
 						cost_center					: oData.COST_CENTER_DESC,
