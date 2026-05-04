@@ -265,5 +265,153 @@ sap.ui.define([
 			}
 			ClaimInitialization.determineFooterButton(this);
 		},
+		_loadSelection: function(){
+
+		},
+		_onConfigDropdownFilter: function(){
+			// list of id with configs for dropdown
+			var aDropdownList = [
+				"select_claimdetails_input_type_of_professional_body",
+				"select_claimdetails_input_funeral_transportation",
+				"select_claimdetails_input_study_levels_id",
+				"select_claimdetails_input_insurance_provider_id",
+				"select_claimdetails_input_insurance_package_id",
+				"select_claimdetails_input_vehicle_type",
+				"select_claimdetails_input_vehicle_ownership_id",
+				"select_claimdetails_input_fare_type_id",
+				"select_claimdetails_input_vehicle_class_id",
+				"select_claimdetails_input_flight_class",
+				"select_claimdetails_input_room_type",
+				"select_claimdetails_input_region",
+				"select_claimdetails_input_area",
+				"select_claimdetails_input_lodging_category",
+				"select_claimdetails_input_claim_category",
+				"select_claimdetails_input_mobile_category_purpose_id"
+			];
+			//filter by start, end date and also by status
+			var aFilters = [
+				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+			];
+
+			// need to add specific logic for region and claim type item FLIGHT_L when buttons work
+			//calls the array to load all the select with the filters
+			aDropdownList.forEach(sFieldId => {
+
+				var oSelect = this.byId(sFieldId);
+				var oBinding = oSelect.getBinding("items");
+				oBinding.filter(aFilters);
+			});
+		},
+
+		_getDependentFilters: function () {
+			// getting the models for item and header
+			var oItem = this._oClaimModel.getProperty("/claim_item") || {};
+			var oHeader =  this._oClaimModel.getProperty("/claim_header") || {};
+
+			if(!oItem || !oHeader) return;
+
+			var oEmpFilter = new Filter(
+				this._oConstant.EntitiesFields.EMP_ID,
+				FilterOperator.EQ,
+				oHeader.emp_id
+			);
+			// specific filter for specific claim type items
+			switch (oItem.claim_type_item_id) {
+				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oPeduFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					// filter by child aged < 18 and also aged between 19 - 25 with status as studying
+					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
+					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
+					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+
+					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+
+					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
+
+					var oChildBelow18 = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+						],
+						and: true
+					})
+
+					var oChildStudying = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
+						],
+						and: true
+					})
+
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							oSpouseFilter,
+							oChildBelow18,
+							oChildStudying
+						],
+						and: false
+					})
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
+				default:
+					return new Filter({
+						filters: [
+							oEmpFilter
+						]
+					})
+			}
+		},
+		_getDependent: function (){
+			var oFilter = this._getDependentFilters();
+			// 2 dropdown for dependent, one normal select and 1 is combobox
+			var aDropdownList = [
+				"select_claimdetails_input_dependent_name",
+				"combo_claimdetails_input_dependent"
+			];
+
+			aDropdownList.forEach(sFieldId => {
+				var oSelect = this.byId(sFieldId);
+				var oBinding = oSelect.getBinding("items");
+				oBinding.filter(oFilter);
+			})
+		},
+		_loadAllSelection: function(){
+			//loads all the select items with the filters
+			this._getDependent();
+			this._onConfigDropdownFilter();
+		},
+		onSelectCountry: async function(oEvent){
+			var oItem = this._oClaimModel.getProperty("/claim_item");
+			if(oItem.claim_type_item_id == Constants.ClaimTypeItem.LODG_O){
+				var oResult = await Utility.getLodgingOverseaAmountAndCat(Constants.SubmissionTypePrefix.CLAIM);
+				
+				this._oClaimModel.setProperty("/claim_item/lodging_category", oResult.sCategory);
+				this._oClaimModel.setProperty("/claim_item/eligible_amount", oResult.iEligibleAmount);
+				this._oClaimModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
+			}
+		},
 	});
 });

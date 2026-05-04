@@ -413,8 +413,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/eligible_amount", oResult.iEligibleAmount);
 				oInputModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
-			
-
 		},
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2295,6 +2293,8 @@ sap.ui.define([
 		},
 
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
+
+			//mines here
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2657,37 +2657,37 @@ sap.ui.define([
 
 		_setClaimDetailSelectionMaster: function () {
 			//// Type of Professional Body
-			this._setClaimDetailSelectionField("select_claimdetails_input_type_of_professional_body", "ZPROFESIONAL_BODY");
+			//this._setClaimDetai:SelectionField("select_claimdetails_input_type_of_professional_body", "ZPROFESIONAL_BODY");
 			//// Funeral Transportation
-			this._setClaimDetailSelectionField("select_claimdetails_input_funeral_transportation", "ZTRANSPORT_PASSING");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_funeral_transportation", "ZTRANSPORT_PASSING");
 			//// Level of Studies
-			this._setClaimDetailSelectionField("select_claimdetails_input_study_levels_id", "ZSTUDY_LEVELS");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_study_levels_id", "ZSTUDY_LEVELS");
 			//// Nama Pembekal Insuran
-			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_provider_id", "ZINSURANCE_PROVIDER");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_insurance_provider_id", "ZINSURANCE_PROVIDER");
 			//// Insurance Package
-			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, "ZINSURANCE_PACKAGE_DESC");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, "ZINSURANCE_PACKAGE_DESC");
 			//// Type of Vehicle
-			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
 			//// Vehicle Ownership ID (Sendiri/Penjabat)
-			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_ownership_id", "ZVEHICLE_OWNERSHIP");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_ownership_id", "ZVEHICLE_OWNERSHIP");
 			//// Type of Fare
-			this._setClaimDetailSelectionField("select_claimdetails_input_fare_type_id", "ZFARE_TYPE");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_fare_type_id", "ZFARE_TYPE");
 			//// Vehicle Class
-			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_class_id", "ZVEHICLE_CLASS");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_class_id", "ZVEHICLE_CLASS");
 			//// Flight Class
-			this._setClaimDetailSelectionField("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
 			//// Room Type
-			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
 			//// Region (Semenanjung/Sabah/Sarawak)
-			this._setClaimDetailSelectionField("select_claimdetails_input_region", "ZREGION");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_region", "ZREGION");
 			//// Area (Negara/Wilayah)
-			this._setClaimDetailSelectionField("select_claimdetails_input_area", "ZAREA");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_area", "ZAREA");
 			//// Lodging Category
-			this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
 			//// Category/Purpose
-			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
-			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
 			var oFilter = this._getDependentFilters();
 
@@ -3721,6 +3721,7 @@ sap.ui.define([
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
+			//backend this function
 			if (this.byId("datepicker_claimdetails_input_startdate").getVisible()) {
 				var startDate = "datepicker_claimdetails_input_startdate";
 				var startTime = "timepicker_claimdetails_input_starttime";
@@ -3755,7 +3756,7 @@ sap.ui.define([
 				(this.byId(startTime).getVisible() && !oClaimItemInputModel.getProperty(sStartTimeValue)) ||
 				(this.byId(endDate).getVisible() && !oClaimItemInputModel.getProperty(sEndDateValue)) ||
 				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue))
-			) {
+			) {??
 				return;
 			}
 

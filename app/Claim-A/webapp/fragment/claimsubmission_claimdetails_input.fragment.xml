@@ -1,6 +1,5 @@
 <core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
     xmlns:u="sap.ui.unified"
@@ -141,7 +140,14 @@
                     liveChange="onSelect_ClaimDetails_ProfBodyType"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZPROFESIONAL_BODY',
+                        sorter: { path: 'PROFESIONAL_BODY_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>PROFESIONAL_BODY_ID}" text="{employee>PROFESIONAL_BODY_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Policy Number -->
@@ -161,7 +167,14 @@
                     change="onSelect_ClaimDetails_FuneralTransport"
                     liveChange="onSelect_ClaimDetails_FuneralTransport"
                     visible="false"
+                    items="{
+                        path: 'employee>/ZTRANSPORT_PASSING',
+                        sorter: { path: 'TRANSPORT_PASSING_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>TRANSPORT_PASSING_ID}" text="{employee>TRANSPORT_PASSING_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Marital Status -->
@@ -336,7 +349,14 @@
                     liveChange="onSelect_ClaimDetails_LevelStudies"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZSTUDY_LEVELS',
+                        sorter: { path: 'STUDY_LEVELS_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>STUDY_LEVELS_ID}" text="{employee>STUDY_LEVELS_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Receipt Number -->
@@ -538,6 +558,7 @@
 				/>
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                 <!-- try to see if the conditional setting is workable when the buttons are working -->
                 <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_location} : ${i18n>label_claimdetails_input_region} }"/>
                 <Select
                     id="select_claimdetails_input_region"
@@ -547,7 +568,23 @@
                     liveChange="onSelect_ClaimDetails_Region"
                     visible="false"
                     required="true"
+                    items="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemOverseas/MAKAN_O} ? 
+                    {
+                        path: 'employee>/ZREGION',
+                        sorter: { path: 'REGION_ID', descending: false },
+                        filters: [{ path: 'REGION_ID', opreator 'NE', value1: ${constant>/Region/OVERSEA} }]
+                    }
+                    :
+                    {
+                        path: 'employee>/ZREGION',
+                        sorter: { path: 'REGION_ID', descending: false },
+                        filters: [{ path: 'REGION_ID', opreator 'EQ', value1: ${constant>/Region/OVERSEA} }]
+                    }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>REGION_ID}" text="{employee>REGION_DESC}" />
+                    </items>
 				</Select>
 
 				<!-- Nama Pembekal Insuran -->
@@ -559,7 +596,14 @@
 					change="onSelect_ClaimDetails_InsuranceProvider"
 					liveChange="onSelect_ClaimDetails_InsuranceProvider"
 					visible="{claimitem_property>/insurance_provider_id/is_visible}"
+                    items="{
+                        path: 'employee>/ZINSURANCE_PROVIDER',
+                        sorter: { path: 'INSURANCE_PROVIDER_ID', descending: false }
+                    }"  
 				>
+                    <items>
+                        <core:Item key="{employee>INSURANCE_PROVIDER_ID}" text="{employee>INSURANCE_PROVIDER_DESC}" />
+                    </items>
 				</Select>
 
 				<!-- Nama Pembekal Insuran (Long Text) -->
@@ -582,7 +626,14 @@
 					change="onSelect_ClaimDetails_InsurancePackage"
 					liveChange="onSelect_ClaimDetails_InsurancePackage"
 					visible="{claimitem_property>/insurance_package_id/is_visible}"
+                    items="{
+                        path: 'employee>/ZINSURANCE_PACKAGE',
+                        sorter: { path: 'INSURANCE_PACKAGE_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>INSURANCE_PACKAGE_ID}" text="{employee>ZINSURANCE_PACKAGE_DESC}" />
+                    </items>
 				</Select>
 
 				<!-- Date of Purchase of Insurance -->
@@ -721,7 +772,14 @@
 					liveChange="onSelect_ClaimDetails_VehicleType"
 					visible="{claimitem_property>/vehicle_type/is_visible}"
 					required="true"
+                    items="{
+                        path: 'employee>/ZVEHICLE_TYPE',
+                        sorter: { path: 'VEHICLE_TYPE_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>VEHICLE_TYPE_ID}" text="{employee>VEHICLE_TYPE_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Vehicle Ownership ID (Sendiri/Penjabat) -->
@@ -733,7 +791,14 @@
                     change="onSelect_ClaimDetails_VehicleOwnership"
                     liveChange="onSelect_ClaimDetails_VehicleOwnership"
                     visible="false"
+                    items="{
+                        path: 'employee>/ZVEHICLE_OWNERSHIP',
+                        sorter: { path: 'VEHICLE_OWNERSHIP_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>VEHICLE_OWNERSHIP_ID}" text="{employee>VEHICLE_OWNERSHIP_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Type of Fare -->
@@ -746,7 +811,14 @@
                     liveChange="onSelect_ClaimDetails_FareType"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZFARE_TYPE',
+                        sorter: { path: 'FARE_TYPE_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>FARE_TYPE_ID}" text="{employee>FARE_TYPE_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Vehicle Class -->
@@ -767,9 +839,8 @@
                             &amp;&amp; ${claimitem_input>/claim_item/claim_type_id} !== ${constant>/ClaimType/ELAUN_PINDAH}
                     }"
 				>
-                <items>
-                    <core:Item key="{employee>VEHICLE_CLASS_ID}" 
-                                text="{employee>VEHICLE_CLASS_DESC}" />
+                    <items>
+                        <core:Item key="{employee>VEHICLE_CLASS_ID}" text="{employee>VEHICLE_CLASS_DESC}" />
                     </items>
 				</Select>
 
@@ -783,7 +854,14 @@
                     liveChange="onSelect_ClaimDetails_FlightClass"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZFLIGHT_CLASS',
+                        sorter: { path: 'FLIGHT_CLASS_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>FLIGHT_CLASS_ID}" text="{employee>FLIGHT_CLASS_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Toll -->
@@ -886,7 +964,7 @@
 
                 <!-- To State -->
                 <Label text="{i18n>label_claimdetails_input_state_to}" 
-                required="{claimitem_property>/to_state_id/is_required}" />
+                required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL} }" />
                 <Select
                     id="select_claimdetails_input_to_state_id"
                     forceSelection="false"
@@ -1008,7 +1086,14 @@
                     liveChange="onSelect_ClaimDetails_RoomType"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZROOM_TYPE',
+                        sorter: { path: 'ROOM_TYPE_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>ROOM_TYPE_ID}" text="{employee>ROOM_TYPE_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Country -->
@@ -1325,7 +1410,14 @@
                     liveChange="onSelect_ClaimDetails_Area"
                     visible="false"
                     required="true"
+                    items="{
+                        path: 'employee>/ZAREA',
+                        sorter: { path: 'AREA_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>AREA_ID}" text="{employee>AREA_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Lodging Category -->
@@ -1339,7 +1431,14 @@
                     visible="false"
                     required="true"
                     editable="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItemLodging/LODG_O}}"
+                    items="{
+                        path: 'employee>/ZLODGING_CAT',
+                        sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>LODGING_CATEGORY_ID}" text="{employee>LODGING_CATEGORY_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Number of Family Members -->
@@ -1362,7 +1461,14 @@
                     change="onSelect_ClaimDetails_CatPurpose"
                     liveChange="onSelect_ClaimDetails_CatPurpose"
                     visible="false"
+                    items="{
+                        path: 'employee>/ZCLAIM_CATEGORY',
+                        sorter: { path: 'CLAIM_CAT_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>CLAIM_CAT_ID}" text="{employee>CLAIM_CATEGORY_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Category/Purpose (Mobile) -->
@@ -1374,7 +1480,14 @@
                     change="onSelect_ClaimDetails_CatPurposeMobile"
                     liveChange="onSelect_ClaimDetails_CatPurposeMobile"
                     visible="false"
+                    items="{
+                        path: 'employee>/ZMOBILE_CATEGORY_PURPOSE',
+                        sorter: { path: 'MOBILE_CATEGORY_PURPOSE_ID', descending: false }
+                    }"
 				>
+                    <items>
+                        <core:Item key="{employee>MOBILE_CATEGORY_PURPOSE_ID}" text="{employee>MOBILE_CATEGORY_PURPOSE_DESC}" />
+                    </items>
 				</Select>
 
                 <!-- Bill No -->
