@@ -52,7 +52,8 @@ sap.ui.define([
 						"vehicle_class": "TRANSPORT_CLASS",
 						"no_of_hours": "TRAVEL_HOURS",
 						"no_of_traveler": "TOTAL_TRAVELLER",
-						"trip_start_date": "RECEIPT_DATE"
+						"trip_start_date": "RECEIPT_DATE",
+						"lodging_cat": "LODGING_CATEGORY"
 					};
 					break;
 
@@ -81,7 +82,8 @@ sap.ui.define([
 						[receipt_date]: "RECEIPT_DATE",
 						"no_of_hours": "TRAVEL_HOURS",
 						"region" : "REGION_ID",
-						"number_of_travellers": "TOTAL_TRAVELLER"
+						"number_of_travellers": "TOTAL_TRAVELLER",
+						"lodging_category": "LODGING_CATEGORY"
 					};
 					break;
 

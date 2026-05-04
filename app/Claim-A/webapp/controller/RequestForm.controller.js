@@ -672,6 +672,7 @@ sap.ui.define([
 				currency_rate			: oReqItem.CURRENCY_RATE || 0,
 				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
 				no_of_traveler			: oReqItem.TOTAL_TRAVELLER || null,
+				lodging_cat				: oReqItem.LODGING_CATEGORY || null,
 				// extra hidden field value
 				cost_center: oReqItem.COST_CENTER || "",
 				gl_account: oReqItem.GL_ACCOUNT || "",
@@ -1264,7 +1265,8 @@ sap.ui.define([
 					CURRENCY_CODE:				  oReqItem.currency_code || null,
 					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
-					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null
+					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
+					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;

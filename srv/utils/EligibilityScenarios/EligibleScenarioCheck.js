@@ -78,6 +78,19 @@ module.exports = {
         in: aEmpJobGrp
       };
     };
+
+    // Claim Type Item that requires LODGING_CATEGORY filtering
+    if(
+      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.LODG_O
+    ) {
+      const iFieldIndex = aPayload[0].CheckFields.findIndex(
+        field => field.fieldName === Constant.EntitiesFields.LODGING_CATEGORY
+      );
+      if (iFieldIndex !== -1) {
+        aEligibilityCondition[Constant.EntitiesFields.LODGING_CATEGORY] = aPayload[0].CheckFields[iFieldIndex].value;
+      }
+    };
+
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
@@ -85,6 +98,7 @@ module.exports = {
         `${sEligibilityCondition}`
       )
     );
+    console.log(aEligibilityRules);
     let oReturnPayload = [];
     // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {

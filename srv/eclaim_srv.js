@@ -563,8 +563,6 @@ module.exports = (srv) => {
                 })
                 .where({ REQUEST_ID: sRequestId })
         );
-
-        console.log(`Updated Header ${sRequestId}: PreApproval=${totalEstAmount}, CashAdvance=${totalCashAdvance}`);
     }
 
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {

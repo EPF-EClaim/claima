@@ -1591,9 +1591,18 @@ sap.ui.define([
 			});
 
 			// calculate new total
-			const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+			var nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			if(oInputModel.getProperty("/claim_header/cash_advance_amount") > 0){
+				var iCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount"));
+				var nNewTotal =  nTotal - iCashAdvAmt;
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
+
+			}else{	
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+			}
+			
 
 			///Check to recalculate Mata Wang if it is required
 			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
