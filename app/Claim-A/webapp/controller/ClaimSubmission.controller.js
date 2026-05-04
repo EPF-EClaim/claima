@@ -4,7 +4,6 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
-	"sap/ui/core/ValueState",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
@@ -16,6 +15,8 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/ListMode",
+	"sap/m/library",
+	"sap/ui/core/library",
 	"claima/model/models",
 	"claima/utils/Utility",
 	"claima/utils/ClaimUtility",
@@ -42,7 +43,6 @@ sap.ui.define([
 	Controller,
 	BusyIndicator,
 	History,
-	ValueState,
 	JSONModel,
 	Filter,
 	FilterOperator,
@@ -54,6 +54,8 @@ sap.ui.define([
 	Button,
 	Label,
 	ListMode,
+	mLibrary,
+	coreLibrary,
 	models,
 	Utility,
 	ClaimUtility,
@@ -76,6 +78,10 @@ sap.ui.define([
 	ClaimInitialization
 ) {
 	"use strict";
+
+	const DialogType = mLibrary.DialogType;
+	const ValueState = coreLibrary.ValueState;
+	const ButtonType = mLibrary.ButtonType;
 
 	return Controller.extend("claima.controller.ClaimSubmission", {
 
@@ -112,7 +118,7 @@ sap.ui.define([
 		* URL Access
 		* ======================================================= */
 
-		async _onMatched(oEvent) {
+		_onMatched: async function (oEvent) {
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
 			try { sClaimId = decodeURIComponent(sClaimId); } catch (e) { }
@@ -127,7 +133,7 @@ sap.ui.define([
 			await this._loadClaim(sClaimId);
 		},
 
-		async _loadClaim(sClaimId) {
+		_loadClaim: async function (sClaimId) {
 			BusyIndicator.show(0);
 			const oClaimSubmissionPage = this.byId("page_claimsubmission");
 			// hard reset
@@ -161,7 +167,7 @@ sap.ui.define([
 		* Helpers: Fragment Management
 		* ======================================================= */
 
-		async _getFormFragment(sName) {
+		_getFormFragment: async function (sName) {
 			const oView = this.getView();
 			if (!this._oClaimFragments[sName]) {
 				this._oClaimFragments[sName] = Fragment.load({
@@ -177,7 +183,7 @@ sap.ui.define([
 			return this._oClaimFragments[sName];
 		},
 
-		async _replaceContentAt(oPage, iIndex, oControl) {
+		_replaceContentAt: async function (oPage, iIndex, oControl) {
 			// Ensure the slot exists
 			const iSafe = Math.min(iIndex, oPage.getContent().length);
 			oPage.insertContent(oControl, iSafe);
@@ -188,7 +194,7 @@ sap.ui.define([
 		 * @param {string} sLocalId name of fragment to be removed
 		 * @returns 
 		 */
-		async _removeByLocalId(sLocalId) {
+		_removeByLocalId: async function (sLocalId) {
 			const oCache = this._oClaimFragments;
 			const oFragment = oCache?.[sLocalId];
 			if (!oFragment) return;
@@ -199,7 +205,7 @@ sap.ui.define([
 			delete oCache[sLocalId];
 		},
 
-		async _showItemCreate(bEdit) {
+		_showItemCreate: async function (bEdit) {
 			const oPage = this.byId("page_claimsubmission");
 			if (!oPage) return;
 
@@ -227,7 +233,7 @@ sap.ui.define([
 		},
 
 
-		async _showItemList(sClaimId) {
+		_showItemList: async function (sClaimId) {
 			const oPage = this.byId("page_claimsubmission");
 			if (!oPage) return;
 
@@ -264,6 +270,317 @@ sap.ui.define([
 				await Common.setHeaderEditable(Constants.SubmissionTypePrefix.CLAIMHEADER, false);
 			}
 			ClaimInitialization.determineFooterButton(this);
+		},
+
+		/* =========================================================
+		* Footer / Navigation Buttons
+		* ======================================================= */
+
+		/**
+		 * On click method for the back button in xml
+		 */
+		onBack: function () {
+			const sClaimStatus = this._oClaimModel.getProperty("/claim_header/status_id");
+
+			if (sClaimStatus == this._oConstant.ClaimStatus.DRAFT ||
+				sClaimStatus == this._oConstant.ClaimStatus.SEND_BACK) {
+				if (!this._oBackDialog) {
+					this._oBackDialog = new Dialog({
+						title: "Warning",
+						type: DialogType.Message,
+						state: ValueState.Warning,
+						content: [new Label({ text: Utility.getText("req_d_w_back", []) })],
+						beginButton: new Button({
+							type: ButtonType.Emphasized,
+							text: "Confirm",
+							press: async function () {
+								this._oBackDialog.close();
+								await this._removeByLocalId("approval_log");
+								var oHistory = History.getInstance();
+								var sPreviousHash = oHistory.getPreviousHash();
+								if (sPreviousHash) {
+									window.history.go(-1);
+								} else {
+									this._oRouter.navTo("ClaimStatus");
+								}
+							}.bind(this)
+						}),
+						endButton: new Button({ text: "Cancel", press: () => this._oBackDialog.close() })
+					});
+				}
+				this._oBackDialog.open();
+			} else {
+				this._onBackView();
+			}
+		},
+
+		/**
+		 * on back view method if the dialog is not needed.
+		 */
+		_onBackView: async function () {
+			var oCreate = this.byId('claimsubmission_claimdetais_input');
+			const sClaimId = this._oClaimModel.getProperty("/claim_header/claim_id");
+			if (oCreate) {
+				this._showItemList(sClaimId);
+				this._oClaimModel.setProperty('/claim_item', {});		// set blank for the item details screen
+			} else {
+				await this._removeByLocalId("approval_log");
+				var oHistory = History.getInstance();
+				var sPreviousHash = oHistory.getPreviousHash();
+				if (sPreviousHash) {
+					window.history.go(-1);
+				} else {
+					this._oRouter.navTo("ClaimStatus");
+				}
+			}
+		},
+
+		/* =========================================================
+		* Header & Item List Area
+		* ======================================================= */
+
+		/**
+		 * Method to view the attachment in pop out dialog window
+		 * @param {Object} oEvent 
+		 */
+		onDocLinkPress: function(oEvent) {
+			// calling function from Attachment.js
+			let sDocument = oEvent.getSource().getText();
+			let sDocumentSFId = sDocument.split(" - ")[0];
+			Attachment.onViewDocument(this, sDocumentSFId);
+		},
+
+		/**
+		 * on click add claim item button method to go to the detail input screen
+		 */
+		onAddItem: async function (oEvent) {
+			this._oClaimModel.setProperty("/view", this._oConstant.AccessMode.CREATE);
+			await this._showItemCreate(false);
+
+			const oClaimHeader = this._oClaimModel.getProperty("/claim_header");
+			this._oClaimModel.setProperty("/claim_item/claim_type_id", oClaimHeader.claim_type_id);
+			this._oClaimModel.setProperty("/claim_item/descr/claim_type_id", oClaimHeader.descr.claim_type_id);
+		},
+
+		/* =========================================================
+		* Field Visibility Functions 
+		* ======================================================= */
+
+		initializeClaimTypeItemFields: async function (bReset = true) {
+			const sClaimTypeItem = this._oClaimModel.getProperty("/claim_item/claim_type_item_id");
+			const sClaimType = this._oClaimModel.getProperty("/claim_item/claim_type_id");
+
+			if (!sClaimTypeItem) {
+				console.warn("No claim type item found yet.");
+				return;
+			}
+
+			// reset model
+			if (bReset) {
+				this._resetClaimItemInputs();
+
+				const oLocationTypeSelect = this.byId("item_location_type");
+				if (oLocationTypeSelect) {
+					oLocationTypeSelect.setForceSelection(false);
+					oLocationTypeSelect.setSelectedKey("");
+				}
+			}
+
+			BusyIndicator.show(0);
+
+			try {
+				const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.SUBMISSION_TYPE),
+					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.ITEM),
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
+					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
+				]);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+
+				if (!aCtx || aCtx.length === 0) {
+					console.warn("No configuration rows for claim type item:", sClaimTypeItem);
+					this._setAllControlsVisible(false);
+					return;
+				}
+
+				const oData = aCtx[0].getObject();
+				const sFields = oData.FIELD || "";
+
+				const aFieldIds = sFields.replace(/[\[\]\s]/g, "").split(",").filter(id => id.length > 0);
+
+				this._setAllControlsVisible(false);
+
+				if (aFieldIds.length > 0) {
+					aFieldIds.forEach(id => {
+						const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
+						if (control && typeof control.setVisible === "function") {
+							control.setVisible(true);
+						} else {
+							console.warn("Control not found or not visible-capable:", id);
+						}
+					});
+
+					// const _oHeader = this._oClaimModel.getProperty("/req_header") || {};
+					// const _oItem = this._oClaimModel.getProperty("/req_item") || {};
+
+					// // calculate number of days
+					// var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
+					// this._oClaimModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+					// // get number of family members including requestor him/herself
+					// var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
+					// this._oClaimModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
+
+					// this._onFilterRegion();
+
+					// // set filters for state and location (office) fields if values exist
+					// Utility.init(this.getOwnerComponent(), this.getView());
+					// Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.REQUEST);
+
+					// // special initialization based on claim type item
+					// switch (sClaimTypeItem) {
+					// 	// set visible for the number of family member and traveller when choosing travel with Family Now
+					// 	case Constants.ClaimTypeItem.LOD_TUKAR:
+					// 	case Constants.ClaimTypeItem.MKN_TUKAR:
+					// 		if (_oHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
+					// 			Object.values(Constants.PARSpecialFieldVisibilityForElaunTukar).forEach(id => {
+					// 				const control = this._resolveControl(id, "request");
+					// 				if (control && typeof control.setVisible === "function") {
+					// 					control.setVisible(true);
+					// 				} else {
+					// 					console.warn("Control not found or not visible-capable:", id);
+					// 				}
+					// 			});
+					// 		}
+
+					// 	// populate entitled amount 
+					// 	case Constants.ClaimTypeItem.LAUT:
+					// 	case Constants.ClaimTypeItem.LODGING_L:
+					// 	case Constants.ClaimTypeItem.LOD_TUKAR:
+					// 		if (this._oClaimModel.getProperty("/view") === Constants.AccessMode.CREATE) {
+					// 			RequestUtility.populateAllocatedAmount();
+					// 		}
+					// 		break;
+
+					// 	// remove business class option for FLIGHT_L
+					// 	case Constants.ClaimTypeItem.FLIGHT_L:
+					// 		this._removeBusinessClass();
+
+					// 	default:
+					// 		break;
+					// }
+				}
+
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		_setAllControlsVisible: function (bVisible) {
+			const aControlIds = [
+				"select_claimdetails_input_depedent_or_anggota",
+				"select_claimdetails_input_type_of_professional_body",
+				"input_claimdetails_input_policy_number",
+				"select_claimdetails_input_funeral_transportation",
+				"input_claimdetails_input_actual_amount",
+				"input_claimdetails_input_subsidised_amount",
+				"input_claimdetails_input_request_approval_amount",
+				"input_claimdetails_input_amount",
+				"input_claimdetails_input_percentage_compensation",
+				"input_claimdetails_input_course_title",
+				"select_claimdetails_input_study_levels_id",
+				"input_claimdetails_input_receipt_number",
+				"datepicker_claimdetails_input_receipt_date",
+				"input_claimdetails_input_purpose",
+				"datepicker_claimdetails_input_startdate",
+				"timepicker_claimdetails_input_starttime",
+				"datepicker_claimdetails_input_enddate",
+				"timepicker_claimdetails_input_endtime",
+				"select_claimdetails_input_insurance_provider_id",
+				"select_claimdetails_input_insurance_package_id",
+				"datepicker_claimdetails_input_insurance_purchase_date",
+				"datepicker_claimdetails_input_insurance_cert_start_date",
+				"datepicker_claimdetails_input_insurance_cert_end_date",
+				"input_claimdetails_input_no_of_days",
+				"select_claimdetails_input_vehicle_type",
+				"select_claimdetails_input_vehicle_ownership_id",
+				"input_claimdetails_input_km",
+				"input_claimdetails_input_rate_per_km",
+				"select_claimdetails_input_fare_type_id",
+				"select_claimdetails_input_flight_class",
+				"input_claimdetails_input_toll",
+				"checkbox_claimdetails_input_parking",
+				"select_claimdetails_input_location_type",
+				"select_claimdetails_input_from_state_id",
+				"input_claimdetails_input_from_location",
+				"select_claimdetails_input_to_state_id",
+				"input_claimdetails_input_to_location",
+				"select_claimdetails_input_room_type",
+				"select_claimdetails_input_country",
+				"input_claimdetails_input_location",
+				"checkbox_claimdetails_input_needforeigncurrency",
+				"datepicker_claimdetails_input_trip_start_date",
+				"timepicker_claimdetails_input_trip_starttime",
+				"timepicker_claimdetails_input_departure_time",
+				"datepicker_claimdetails_input_trip_end_date",
+				"timepicker_claimdetails_input_trip_endtime",
+				"timepicker_claimdetails_input_arrival_time",
+				"input_claimdetails_input_travel_duration_day",
+				"input_claimdetails_input_travel_duration_hour",
+				"input_claimdetails_input_provided_breakfast",
+				"input_claimdetails_input_provided_lunch",
+				"input_claimdetails_input_provided_dinner",
+				"input_claimdetails_input_entitled_breakfast",
+				"input_claimdetails_input_entitled_lunch",
+				"input_claimdetails_input_entitled_dinner",
+				"input_claimdetails_input_lodging_address",
+				"select_claimdetails_input_region",
+				"select_claimdetails_input_area",
+				"select_claimdetails_input_lodging_category",
+				"input_claimdetails_input_no_of_family_member",
+				"select_claimdetails_input_claim_category",
+				"select_claimdetails_input_mobile_category_purpose_id",
+				"input_claimdetails_input_bill_no",
+				"input_claimdetails_input_account_no",
+				"datepicker_claimdetails_input_bill_date",
+				"input_claimdetails_input_phone_no",
+				"checkbox_claimdetails_input_disclaimer",
+				"input_claimdetails_input_remarks",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
+				"select_claimdetails__input_marriagecategory",
+				"input_claimdetails_meter_cube_actual",
+				"input_claimdetails_meter_cube",
+				"input_claimdetails_input_tips",
+				"input_claimdetails_input_exclude_tips",
+				"input_claimdetails_input_daily_allowance",
+				"input_claimdetails_input_number_of_travellers"
+			];
+
+			aControlIds.forEach(id => {
+				const c = this._resolveControl(id, "claimsubmission_claimdetails_input");
+				if (c && typeof c.setVisible === "function") {
+					c.setVisible(bVisible);
+				}
+			});
+		},
+
+		_resolveControl: function (sId, sFragmentId) {
+			let c = this.getView().byId(sId);
+			if (c) return c;
+
+			if (sFragmentId) {
+				c = Fragment.byId(this.getView().createId(sFragmentId), sId);
+				if (c) return c;
+
+				c = Fragment.byId(sFragmentId, sId);
+				if (c) return c;
+			}
+
+			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 	});
 });

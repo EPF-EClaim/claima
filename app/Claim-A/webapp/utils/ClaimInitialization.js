@@ -23,7 +23,7 @@ sap.ui.define([
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
 
-			// initialize local model
+			// initialize model
 			this._oClaimModel = this._oOwnerComponent.getModel("claim");
 			this._oDataModel = this._oOwnerComponent.getModel();
 			this._oViewModel = this._oOwnerComponent.getModel("employee_view");

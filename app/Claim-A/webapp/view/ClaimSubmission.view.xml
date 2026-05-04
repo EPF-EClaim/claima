@@ -20,7 +20,7 @@
                 <!-- Back -->
                 <Button
                     id="button_claimsubmission_back"
-                    press="onAction_ClaimSubmission_Toolbar('Back')"
+                    press=".onBack"
                     text="{i18n>button_claimsubmission_back}"
                 />
 
