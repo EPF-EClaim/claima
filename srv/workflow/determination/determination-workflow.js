@@ -56,7 +56,7 @@ async function retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor) {
                     [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
                     [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
                     [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
-                    [Constant.EntitiesFields.DEPARTMENT]        : sDepartment
+                    [Constant.EntitiesFields.DEPARTMENT_ID]     : sDepartment
                 })
                 .columns(
                     Constant.EntitiesFields.RISK_LEVEL,

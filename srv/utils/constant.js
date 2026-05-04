@@ -248,7 +248,8 @@ const Constant = {
         "VALID_TO": "VALID_TO",
         "USER_ID": "USER_ID",
         "SUBSTITUTE_ID": "SUBSTITUTE_ID",
-        "SUBMITTED_DATE": "SUBMITTED_DATE"
+        "SUBMITTED_DATE": "SUBMITTED_DATE",
+        "DEPARTMENT_ID": "DEPARTMENT_ID"
     },
     Wildcard: {
         "All": "*",
@@ -422,6 +423,10 @@ const Constant = {
         GREATERTHANOREQUAL  : "GE",
         LESSTHANOREQUAL     : "LT",
         LESSTHANOREQUAL     : "LE"
+    },
+    ApprovalProcessAction: {
+        "ACTION_NOTIFY" : "NOTIFY",
+        "ACTION_APPROVE": "APPROVE"
     }
 
 };

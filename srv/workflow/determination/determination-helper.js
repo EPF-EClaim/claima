@@ -1,9 +1,12 @@
 const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
+const {
+    retrieveEmployeeDetails
+} = require("../../workflow/workflow-helper");
 
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
-    return oTx.run(
+    return cds.run(
         SELECT
             .one
             .from(cds.entities['eclaim_srv.ZWORKFLOW_STEP'])
@@ -33,13 +36,13 @@ async function retrieveRoleRank(oTx, sRole) {
             [Constant.EntitiesFields.ROLE]  : sRole
         });
     }
-    return await oTx.run(sQuery)
+    return await cds.run(sQuery)
 }
 
 
 async function retrieveFromConstantTable(oTx, sId){
 
-    return await oTx.run(
+    return await cds.run(
         SELECT  
             .from(cds.entities['eclaim_srv.ZCONSTANTS'])
             .where({
@@ -90,7 +93,7 @@ async function retrieveBudgetDetails(oTx, sCostCenter, sYear) {
     let sEEID = "";
 
     // Fetch data
-    oBudgetContext = await oTx.run(
+    oBudgetContext = await cds.run(
         SELECT
             .one
             .from(sBudgetTablePath)
@@ -180,7 +183,7 @@ const sSubstitutionRulesTablePath = Constant.Entities.ZEMP_SUBSTITUTION_RULE;
 // Convert to ISO date string (YYYY-MM-DD)
 const dToday = dDate.toISOString().split("T")[0];
 
-const oSubstituteContext =
+const oSubstituteContext = await cds.run
     SELECT
         .one
         .from(sSubstitutionRulesTablePath)
@@ -256,10 +259,8 @@ async function insertRecords(sTableName, aRecordDetails, oTx) {
     return sResult;
 }
 module.exports = { 
-    resolveDocDescriptor,
     determineWorkflowStepContext,
     retrieveRoleRank,
-    retrieveEmployeeDetails,
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,

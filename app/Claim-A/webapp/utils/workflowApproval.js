@@ -71,6 +71,7 @@ sap.ui.define([
 			// claim header
 
             // Variable declaration for use of the entire function block
+            
             let aApproversDetails = [];             // Variable to store multiple approvers
             let aFullApproversDetails = [];         // Variable to store approvers with substitutes
             let aUniqueApproversDetails = [];       // Variable to store unique approvers

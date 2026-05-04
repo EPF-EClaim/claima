@@ -12,7 +12,13 @@ service workflow {
 
     action startWorkflow(
         id : String
-    );
+    ) returns{
+        success             : String;
+        documentID          : String;
+        documentPrefix      : String;
+        outcomeWorkflowCode : String;
+        message             : String;
+    };
     action processApproval(
         request : ApproverActionRequest
     );

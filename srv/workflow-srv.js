@@ -3,10 +3,15 @@ const { Constant } = require("./utils/constant");
 const approve = require("./workflow/action/workflow-approve");
 const reject = require("./workflow/action/workflow-reject");
 const pushback = require("./workflow/action/workflow-pushback");
-//const notification = require("/workflow/notification");
-const { determineWorkflow } = require("./workflow/determination/determination-workflow");
-const { determineApprovers } = require("./workflow/determination/determination-approver");
-const { setApproversContext } = require("./workflow/determination/determination-helper");
+const { 
+    determineWorkflow 
+} = require("./workflow/determination/determination-workflow");
+const { 
+    determineApprovers 
+} = require("./workflow/determination/determination-approver");
+const { 
+    setApproversContext 
+} = require("./workflow/determination/determination-helper");
 const { 
     deleteApproverDetails,
     insertRecords
@@ -14,6 +19,17 @@ const {
 const {
     resolveDocDescriptor
 } = require('./workflow/workflow-helper');
+const {
+    sendEmailToClaimant
+} = require('./workflow/notification/notification-claimant');
+const {
+    sendEmailToApprover
+} = require('./workflow/notification/notification-approver');
+const {
+    updateApproverActionToHeader,
+    updateHeader
+} = require('./utils/UpdateHeader');
+const { message } = require('@sap/cds/lib/log/cds-error');
 
 const actionHandlers = {
     [Constant.ApproverActions.APPROVE]     : approve,
@@ -56,7 +72,7 @@ module.exports = (srv) => {
 
         // 1. Determine workflow
         const oWorkflowContext = await determineWorkflow(oTx, sId);
-        //console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
+        console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         if(!oWorkflowContext) {
             req.reject(400, "No workflow rule matched");
         }
@@ -72,20 +88,32 @@ module.exports = (srv) => {
         }
         // 3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
         const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
-        const sDelete = await deleteApproverDetails(oDescriptor.approverTable, oDescriptor.approverIdField, sId, oTx);
-        const sInsert = await insertRecords(oDescriptor.approverTable, aApproversContextNew, oTx);
+        const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
+        const sInsert = await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
         console.log(sDelete);
         console.log(sInsert);
 
+
         // 4. Notify claimant/approver
         //If workflow is AUTO, send email to claimant to inform claimant that claim has been auto approved
+        //Also, update Header table with approved status and timestamp
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
+        let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-
+            sStatus = await updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+            sStatus = await sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
         }
         else {
-
+            sStatus = await sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
         }
+
+        return {
+            success         : sStatus,
+            documentID      : sId,
+            documentPrefix  : oDescriptor.entityPrefix,
+            workflowCode    : oWorkflowContext.OUTCOME_WORKFLOW_CODE,
+            message         : 'Workflow successfully started'  
+        };
         
     }),
     srv.on('processApproval', async req => {

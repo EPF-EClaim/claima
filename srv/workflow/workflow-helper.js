@@ -4,24 +4,26 @@ const { Constant } = require("../utils/constant");
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
-        entityPrefix    : Constant.WorkflowType.CLAIM,
-        entityHeader    : cds.entities['eclaim_srv.ZCLAIM_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZCLAIM_ITEM'],
-        entityApprovers : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_CLAIMS'],
-        idField         : Constant.EntitiesFields.CLAIMID,
-        typeField       : Constant.EntitiesFields.SUBMISSION_TYPE,
-        approverTable   : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_CLAIMS'],
-        approverIdField : Constant.ApproverDetailsTable.CLAIM_ID
+        entityPrefix        : Constant.WorkflowType.CLAIM,
+        entityHeader        : cds.entities['eclaim_srv.ZCLAIM_HEADER'],
+        entityItem          : cds.entities['eclaim_srv.ZCLAIM_ITEM'],
+        entityApprovers     : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_CLAIMS'],
+        idField             : Constant.EntitiesFields.CLAIMID,
+        typeField           : Constant.EntitiesFields.SUBMISSION_TYPE,
+        approverIdField     : Constant.ApproverDetailsTable.CLAIM_ID,
+        entityTypeDesc      : 'ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC',
+        entityTypeDescField : 'ZSUBMISSION_TYPE_SUBMISSION_TYPE_DESC'
     },
     [Constant.WorkflowType.REQUEST] : {
-        entityPrefix    : Constant.WorkflowType.REQUEST,
-        entityHeader    : cds.entities['eclaim_srv.ZREQUEST_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZREQUEST_ITEM'],
-        entityApprovers : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_PREAPPROVAL'],
-        idField         : Constant.EntitiesFields.REQUESTID,
-        typeField       : Constant.EntitiesFields.REQUEST_TYPE_ID,
-        approverTable   : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_PREAPPROVAL'],
-        approverIdField : Constant.ApproverDetailsTable.PREAPPROVAL_ID
+        entityPrefix        : Constant.WorkflowType.REQUEST,
+        entityHeader        : cds.entities['eclaim_srv.ZREQUEST_HEADER'],
+        entityItem          : cds.entities['eclaim_srv.ZREQUEST_ITEM'],
+        entityApprovers     : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_PREAPPROVAL'],
+        idField             : Constant.EntitiesFields.REQUESTID,
+        typeField           : Constant.EntitiesFields.REQUEST_TYPE_ID,
+        approverIdField     : Constant.ApproverDetailsTable.PREAPPROVAL_ID,
+        entityTypeDesc      : 'ZREQUEST_TYPE.REQUEST_TYPE_DESC',
+        entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC'
     }
 }
 function resolveDocDescriptor(sId) {
@@ -39,6 +41,7 @@ async function retrieveHeaderDetails(oTx, sId, oDescriptor) {
             .from(oDescriptor.entityHeader)
             .columns(   oDescriptor.idField,
                         oDescriptor.typeField,
+                        oDescriptor.entityTypeDesc,
                         Constant.EntitiesFields.EMP_ID,
                         Constant.EntitiesFields.COST_CENTER,
                         Constant.EntitiesFields.ALTERNATE_COST_CENTER
@@ -68,7 +71,7 @@ async function retrieveEmployeeDetails(oTx, sId, sEmail){
             [Constant.EntitiesFields.EMAIL]     : sEmail
         };
     }    
-    return await oTx.run(
+    const oEmployeeContext =  await cds.run(
         SELECT  
             .one
             .from(sEmpMasterTable)
@@ -82,6 +85,10 @@ async function retrieveEmployeeDetails(oTx, sId, sEmail){
                 Constant.EntitiesFields.ROLE,
             )
     )
+    if(!oEmployeeContext) {
+        return null;
+    }
+    return oEmployeeContext;
 }
 module.exports = { 
     resolveDocDescriptor,
