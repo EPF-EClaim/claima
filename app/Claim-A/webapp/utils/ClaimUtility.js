@@ -696,7 +696,22 @@ sap.ui.define([
 					}
 					
 				});
+		},
+		/**
+		 * Calculate the KM based on tickbox RoundTrip.
+		 *
+		 * Calls backend calculation function using KM field and multiple by 2.
+		 *
+		 * @public
+		 * @returns final amount KM after multiply by 2
+		 */
+
+		calculateRoundTripKM: async function (oModel, fKM) {
+			const oAction = oModel.bindContext("/calculateRoundTripKM(...)");
+			oAction.setParameter("fKM", fKM);
+			await oAction.execute();
+			const oResult = oAction.getBoundContext().getObject();
+			return oResult.fFinalAmount;
 		}
-		
 	}
 });

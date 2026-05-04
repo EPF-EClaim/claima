@@ -2861,7 +2861,6 @@ sap.ui.define([
 					break;
 			}
 		},
-
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -5434,5 +5433,58 @@ sap.ui.define([
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return true;
 		},
+		/**
+		 * Handles checkbox toggle for RoundTrip function. Multiply by 2 if active.
+		 *
+		 * @param {sap.ui.base.Event} oEvent - Checkbox event
+		 */
+		onSelectRoundTrip: async function (oEvent) {
+			var bIsSelected = oEvent.getParameter("selected");
+			var oCheckBox = oEvent.getSource();
+			var oKMInput = this.byId("input_claimdetails_km");
+			var oModel = this.getView().getModel("claimitem_input");
+			var fKM = oModel.getProperty("/claim_item/km");
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var dStartDate = oInputModel.getProperty("/claim_header/start_date");
+			var dEndDate = oInputModel.getProperty("claim_header/end_date");
+
+
+
+			if (bIsSelected) {
+
+				if (dStartDate !== dEndDate) {
+					MessageBox.error("Round Trip only applicable for same day and same location");
+					oCheckBox.setSelected(false);
+					return;
+				};
+
+				if (oModel.getProperty("/claim_item/_originalKM") === undefined) {
+					oModel.setProperty("/claim_item/_originalKM", fKM);
+				}
+				var fOriginalKM = oModel.getProperty("/claim_item/_originalKM");
+
+				if (fOriginalKM) {
+					var fFinalKM = await ClaimUtility.calculateRoundTripKM(
+						this.getView().getModel(),
+						fOriginalKM
+					);
+					if (oEvent.getSource().getSelected()) {
+						oModel.setProperty("/claim_item/km", fFinalKM);
+						this._calculateRatePerKm(false);
+						oKMInput.setEnabled(false);
+					}
+				}
+			}
+			else {
+				var fOriginalKM = oModel.getProperty("/claim_item/_originalKM");
+
+				if (fOriginalKM !== undefined) {
+					oModel.setProperty("/claim_item/km", fOriginalKM);
+					oModel.setProperty("/claim_item/_originalKM", undefined);
+				}
+				this._calculateRatePerKm(false);
+				oKMInput.setEnabled(true);
+			}
+		}
 	});
 });

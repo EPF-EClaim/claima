@@ -2220,4 +2220,19 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+        /**
+        * Update Header tables with approver actions
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('calculateRoundTripKM', async (req) =>{
+        const { fKM } = req.data;
+        if (!fKM) {
+            return { fFinalAmount: 0.00 };
+        }
+        const fResult = Math.round(fKM * 2 * 100) / 100;
+        return {
+            fFinalAmount: fResult
+        };
+    });
 }

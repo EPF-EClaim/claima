@@ -493,4 +493,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                             returns Response;
+    type Roundtripamount {
+        fFinalAmount: Decimal(15,2);
+    }
+    function calculateRoundTripKM (fKM: Decimal(15, 2))                                              returns Roundtripamount;
 };
