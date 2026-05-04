@@ -73,7 +73,10 @@ const Constant = {
         "ZCOUNTRY": "ZCOUNTRY",
         "ZAPPROVER_DETAILS_CLAIMS" : "ZAPPROVER_DETAILS_CLAIMS",
         "ZAPPROVER_DETAILS_PREAPPROVAL" : "ZAPPROVER_DETAILS_PREAPPROVAL",
-        "ZWORKFLOW_RULE": "ZWORKFLOW_RULE"
+        "ZWORKFLOW_RULE": "ZWORKFLOW_RULE",
+        "ZEMP_SUBSTITUTION_RULE": "ZEMP_SUBSTITUTION_RULE",
+        "ZAPPROVER_DETAILS_CLAIMS": "ZAPPROVER_DETAILS_CLAIMS",
+        "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -221,6 +224,7 @@ const Constant = {
         "THRESHOLD_VALUE": "THRESHOLD_VALUE",
         "RECEIPT_DAY": "RECEIPT_DAY",
         "RECEIPT_AGE": "RECEIPT_AGE",
+        "COST_CENTER": "COST_CENTER",
         "EMPLOYEE_COST_CENTER": "EMPLOYEE_COST_CENTER",
         "CASH_ADVANCE": "CASH_ADVANCE",
         "TRIP_START_DATE": "TRIP_START_DATE",
@@ -239,7 +243,12 @@ const Constant = {
         "RANK": "RANK",
         "EMAIL": "EMAIL",
         "DIRECT_SUPERIOR": "DIRECT_SUPPERIOR",
-        "NAME": "NAME"
+        "NAME": "NAME",
+        "VALID_FROM": "VALID_FROM",
+        "VALID_TO": "VALID_TO",
+        "USER_ID": "USER_ID",
+        "SUBSTITUTE_ID": "SUBSTITUTE_ID",
+        "SUBMITTED_DATE": "SUBMITTED_DATE"
     },
     Wildcard: {
         "All": "*",
@@ -256,7 +265,10 @@ const Constant = {
         "BUDGET": "BUDGET",
         "CASH_FI": "CASH_FI",
         "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
-        "FI_SETTLEMENT_B": "FI_SETTLEMENT_B"
+        "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
+        "MED_REVIEWER": "MED_REVIEWER",
+        "MED_APPROVER": "MED_APPROVER",
+        "AUTO": "AUTO"
     }, 
     Status: {
         DRAFT : "STAT01", 

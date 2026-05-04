@@ -2,31 +2,6 @@ const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
 
-const aEntityTableByPrefix = {
-    [Constant.WorkflowType.CLAIM]   : {
-        entityPrefix    : Constant.WorkflowType.CLAIM,
-        entityHeader    : cds.entities['eclaim_srv.ZCLAIM_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZCLAIM_ITEM'],
-        entityApprovers : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_CLAIMS'],
-        idField         : Constant.EntitiesFields.CLAIMID,
-        typeField       : Constant.EntitiesFields.SUBMISSION_TYPE 
-    },
-    [Constant.WorkflowType.REQUEST] : {
-        entityPrefix    : Constant.WorkflowType.REQUEST,
-        entityHeader    : cds.entities['eclaim_srv.ZREQUEST_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZREQUEST_ITEM'],
-        entityApprovers : cds.entities['eclaim_srv.ZAPPROVER_DETAILS_PREAPPROVAL'],
-        idField         : Constant.EntitiesFields.REQUESTID,
-        typeField       : Constant.EntitiesFields.REQUEST_TYPE_ID
-    }
-}
-function resolveDocDescriptor(sId) {
-    const sPrefix = sId.slice(0,3);
-
-    const oDescriptor = aEntityTableByPrefix[sPrefix]
-    //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
-    return oDescriptor
-}
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return oTx.run(
         SELECT
@@ -60,58 +35,8 @@ async function retrieveRoleRank(oTx, sRole) {
     }
     return await oTx.run(sQuery)
 }
-async function retrieveHeaderDetails(oTx, sId, oDescriptor) {
-    
-    const oHeader =  await oTx.run(
-        SELECT
-            .one
-            .from(oDescriptor.entityHeader)
-            .columns(   oDescriptor.idField,
-                        oDescriptor.typeField,
-                        Constant.EntitiesFields.EMP_ID,
-                        Constant.EntitiesFields.COST_CENTER,
-                        Constant.EntitiesFields.ALTERNATE_COST_CENTER
-            )
-            .where( { [oDescriptor.idField]:sId })
-    );
-    
-    return oHeader;
-}
-async function retrieveEmployeeDetails(oTx, sId, sEmail){
 
-    const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
-    let sWhereClause;
-    if(sId && sEmail) {
-        sWhereClause = {
-            [Constant.EntitiesFields.EEID]      : sId,
-            [Constant.EntitiesFields.EMAIL]     : sEmail
-        }
-    }
-    else if(sId) {
-        sWhereClause = {
-            [Constant.EntitiesFields.EEID]  : sId
-        };
-    }
-    else if(sEmail) {
-        sWhereClause = {
-            [Constant.EntitiesFields.EMAIL]     : sEmail
-        };
-    }    
-    return await oTx.run(
-        SELECT  
-            .one
-            .from(sEmpMasterTable)
-            .where(sWhereClause)
-            .columns(
-                Constant.EntitiesFields.EEID,
-                Constant.EntitiesFields.NAME,
-                Constant.EntitiesFields.DEP,
-                Constant.EntitiesFields.EMAIL,
-                Constant.EntitiesFields.DIRECT_SUPERIOR,
-                Constant.EntitiesFields.ROLE,
-            )
-    )
-}
+
 async function retrieveFromConstantTable(oTx, sId){
 
     return await oTx.run(
@@ -154,7 +79,7 @@ async function retrieveApprover(oTx, sEEID, iApproverRank, idepth = 0) {
     }
 
     // Otherwise recurse deeper up the chain
-    return await this.retrieveApprover(oTx, oDirectSuperior[Constant.EntitiesFields.EEID], iApproverRank, idepth + 1);
+    return await retrieveApprover(oTx, oDirectSuperior[Constant.EntitiesFields.EEID], iApproverRank, idepth + 1);
 }
 async function retrieveBudgetDetails(oTx, sCostCenter, sYear) {
     let oData = null;
@@ -201,14 +126,147 @@ async function retrieveBudgetDetails(oTx, sCostCenter, sYear) {
         BUDGET_OWNER_ID:    sEEID
     };
 }
+function populateApproverDetails(oApproverDetails, iLevel) {
+    if(!oApproverDetails) return null;
+        return {
+            EEID: oApproverDetails.EEID,
+            NAME: oApproverDetails.NAME,
+            EMAIL: oApproverDetails.EMAIL,
+            LEVEL: Number(iLevel) + 1,
+            GROUP: Number(iLevel) + 1
+        };
+}
+function normalizeApproversByGroup(aApproversDetails, oClaimantDetails) {
+    // 1. Remove duplicate approvers
+    // 2. Remove approvers who is the claimant
+    // 3. Renumber levels after operation
+    const oSeen = new Set();
+    let iLevel = 0;
+    let aUniqueApproversDetails = [];
+    let aResult = [];
+    oSeen.add(oClaimantDetails.EEID);
+    for (const oApprover of aApproversDetails){
+        if(!oSeen.has(oApprover.EEID)){
+            oSeen.add(oApprover.EEID);
+            aUniqueApproversDetails.push(oApprover);
+        }
+    }
 
+    // Group by GROUP (Preserve order)
+    const mGroupMap = new Map();
+    for(oApprover of aUniqueApproversDetails) {
+        if(!mGroupMap.has(oApprover.GROUP)) {
+            mGroupMap.set(oApprover.GROUP, []);
+        }
+        mGroupMap.get(oApprover.GROUP).push(oApprover);
+    }
+
+    iLevel = 0;
+    //Renumber LEVEL per GROUP
+    for(const [, aApproversInGroup] of mGroupMap) {
+        iLevel += 1 ;
+        for(const oApprover of aApproversInGroup) {
+            oApprover.LEVEL = iLevel;
+            aResult.push(oApprover);
+        }
+    }
+    return aResult;
+}
+async function retrieveSubstitute(oTx, sApproverEEID, dDate = new Date()) {
+
+// Main table path
+const sSubstitutionRulesTablePath = Constant.Entities.ZEMP_SUBSTITUTION_RULE;
+
+// Convert to ISO date string (YYYY-MM-DD)
+const dToday = dDate.toISOString().split("T")[0];
+
+const oSubstituteContext =
+    SELECT
+        .one
+        .from(sSubstitutionRulesTablePath)
+        .where({
+            [Constant.EntitiesFields.USER_ID]           : sApproverEEID,
+            [Constant.EntitiesFields.VALID_FROM]        : { '<=' : dToday},
+            [Constant.EntitiesFields.VALID_TO]          : { '>=' : dToday}
+        })
+        .columns(
+            Constant.EntitiesFields.USER_ID,
+            Constant.EntitiesFields.SUBSTITUTE_ID
+        );
+
+if(!oSubstituteContext) {
+    return null;
+}
+return oSubstituteContext.SUBSTITUTE_ID
+}
+function setApproversContext(oDescriptor, sId, aApproversContext) {
+    let aApproversContextNew = [];
+    for (const oApprover of aApproversContext) {
+        let sStatus = "";
+        let iLevel = Number(oApprover.LEVEL) || 0;
+        let dProcessTimestamp = null;
+        if(iLevel == 0) {
+            sStatus = Constant.Status.APPROVED;
+            dProcessTimestamp = new Date();
+        }
+        else if(iLevel == 1) {
+            sStatus = Constant.Status.PENDING_APPROVAL;
+        }
+        aApproversContextNew.push({
+            [oDescriptor.approverIdField]   : sId,
+            LEVEL                           : oApprover.LEVEL,
+            APPROVER_ID                     : oApprover.APPROVER_EEID,
+            SUBSTITUTE_APPROVER_ID          : oApprover.SUB_EEID,
+            STATUS                          : sStatus,
+            PROCESS_TIMESTAMP               : dProcessTimestamp
+
+        });
+    }
+
+    return aApproversContextNew;
+}
+/**
+ * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+ * @public
+ * @param {String} sTableName - Table name to delete records from;
+ * @param {String} sKeyName - Claim ID field name;
+ * @param {String} sClaimID - Claim ID / Preapproval ID;
+ * @param {Array} tx - CDS call;
+ * @returns {String} sResult - Result of deletion of records
+ */
+async function deleteApproverDetails(sTableName, sKeyName, sClaimID, oTx) {
+
+    sResult = await oTx.run(
+        DELETE.from(sTableName).where({ [sKeyName]: sClaimID })
+    )
+    return sResult;
+}
+/**
+ * Inserts Records into table
+ * @public
+ * @param {String} sTableName - Table name for records to be inserted;
+ * @param {Array} aRecordDetails - Array of records to be inserted;
+ * @param {Array} tx - CDS call;
+ * @returns {String} sResult - Result of Insertion of records
+ */
+async function insertRecords(sTableName, aRecordDetails, oTx) {
+    sResult = await oTx.run(
+        INSERT(aRecordDetails).into(sTableName)
+    )
+    return sResult;
+}
 module.exports = { 
     resolveDocDescriptor,
     determineWorkflowStepContext,
     retrieveRoleRank,
-    retrieveHeaderDetails,
     retrieveEmployeeDetails,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails
+    retrieveBudgetDetails,
+    populateApproverDetails,
+    normalizeApproversByGroup,
+    retrieveSubstitute,
+    setApproversContext,
+    deleteApproverDetails,
+    insertRecords
 };

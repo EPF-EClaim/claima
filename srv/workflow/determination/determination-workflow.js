@@ -1,31 +1,9 @@
 const cds = require('@sap/cds')
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql')
 const { Constant } = require("../../utils/constant");
-
-const aEntityTableByPrefix = {
-    [Constant.WorkflowType.CLAIM]   : {
-        entityPrefix    : Constant.WorkflowType.CLAIM,
-        entityHeader    : cds.entities['eclaim_srv.ZCLAIM_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZCLAIM_ITEM'],
-        idField         : Constant.EntitiesFields.CLAIMID,
-        typeField       : Constant.EntitiesFields.SUBMISSION_TYPE 
-    },
-    [Constant.WorkflowType.REQUEST] : {
-        entityPrefix    : Constant.WorkflowType.REQUEST,
-        entityHeader    : cds.entities['eclaim_srv.ZREQUEST_HEADER'],
-        entityItem      : cds.entities['eclaim_srv.ZREQUEST_ITEM'],
-        idField         : Constant.EntitiesFields.REQUESTID,
-        typeField       : Constant.EntitiesFields.REQUEST_TYPE_ID
-    }
-}
-
-function resolveDocDescriptor(sId) {
-    const sPrefix = sId.slice(0,3);
-
-    const oDescriptor = aEntityTableByPrefix[sPrefix]
-    //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
-    return oDescriptor
-}
+const {
+    resolveDocDescriptor
+} = require("../../workflow/workflow-helper")
 
 async function fetchHeaderForWorkflow(oTx, sId, oDescriptor) {
     
@@ -126,7 +104,7 @@ async function retrieveDepartment(oTx, sId, oDescriptor) {
 
 async function retrieveWorkflowByClaimType(oTx, sId, oDescriptor) {
     
-    const oToday = new Date()
+    const dToday = new Date()
 
     // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
     const oWorkflowRequestType = await normalizeWorkflowRequestType(oTx,sId,oDescriptor);
@@ -141,8 +119,8 @@ async function retrieveWorkflowByClaimType(oTx, sId, oDescriptor) {
                     [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
                     [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
                     [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
-                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
-                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday}
+                    [Constant.EntitiesFields.START_DATE]        : { '<=' : dToday},
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : dToday}
                 })
                 .columns(
                     Constant.EntitiesFields.RISK_LEVEL,
@@ -296,23 +274,27 @@ async function determineMaxThresholdAmt(oTx, sId, oDescriptor) {
 
 async function determineEarliestReceiptDate(oTx, sId, oDescriptor) {
     
-    const oItemsTable = oDescriptor.entityItem;
-    const oEarliestReceiptDate = await oTx.run(
-        SELECT
-            .one
-            .from(oItemsTable)
-            .where({
-                [oDescriptor.idField]   : sId
-            })
-            .columns({
-                xpr: ['min(', { ref: [Constant.EntitiesFields.RECEIPT_DATE] }, ')'],
-                as: 'EarliestReceiptDate'
-            })
-    )
-    if(!oEarliestReceiptDate){
-        return null;
+    if(oDescriptor.entityPrefix == Constant.WorkflowType.CLAIM) {
+
+        const oItemsTable = oDescriptor.entityItem;
+        const oEarliestReceiptDate = await oTx.run(
+            SELECT
+                .one
+                .from(oItemsTable)
+                .where({
+                    [oDescriptor.idField]   : sId
+                })
+                .columns({
+                    xpr: ['min(', { ref: [Constant.EntitiesFields.RECEIPT_DATE] }, ')'],
+                    as: 'EarliestReceiptDate'
+                })
+        )
+        if(!oEarliestReceiptDate){
+            return null;
+        }
+        return new Date(oEarliestReceiptDate.EarliestReceiptDate);
     }
-    return new Date(oEarliestReceiptDate.EarliestReceiptDate);
+    return null;
 }
 
 async function determineCashAdvance(oTx, sId, oDescriptor) {
@@ -470,6 +452,8 @@ async function determineWorkflow(oTx, sId) {
     let sTotalClaimAmt = 0;
     let oDeterminedWorkflowContext = null;
     let aWorkflowContext = [];
+    const sMilisecondsPerDay = 24 * 60 * 60 * 1000;
+    const sAgingMiliseconds = null;
 
     const oDescriptor = resolveDocDescriptor(sId);
     if (!oDescriptor) {
@@ -494,10 +478,11 @@ async function determineWorkflow(oTx, sId) {
     }
     
     dEarliestReceiptDate = await determineEarliestReceiptDate(oTx, sId, oDescriptor);
-    // Convert the date into days comparing current date
-    const sMilisecondsPerDay = 24 * 60 * 60 * 1000;
-    const sAgingMiliseconds = dToday.getTime() - dEarliestReceiptDate.getTime();
-    sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
+    if(dEarliestReceiptDate) {
+        // Convert the date into days comparing current date
+        sAgingMiliseconds = dToday.getTime() - dEarliestReceiptDate.getTime();
+        sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
+    }
     let sCostCenter = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE];

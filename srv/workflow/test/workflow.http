@@ -4,5 +4,5 @@ POST http://localhost:4004/odata/v4/workflow/startWorkflow
 Content-Type: application/json
 
 {
-  "id": "CLM26000001489"
+  "id": "REQ26000000011"
 }

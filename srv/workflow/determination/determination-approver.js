@@ -2,15 +2,21 @@ const cds = require('@sap/cds')
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql')
 const { Constant } = require("../../utils/constant");
 const {
-    resolveDocDescriptor,
     determineWorkflowStepContext,
     retrieveRoleRank,
-    retrieveHeaderDetails,
-    retrieveEmployeeDetails,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails
+    retrieveBudgetDetails,
+    populateApproverDetails,
+    normalizeApproversByGroup,
+    retrieveSubstitute
 } = require('./determination-helper');
+const {
+    resolveDocDescriptor,
+    retrieveHeaderDetails,
+    retrieveEmployeeDetails
+} = require("../../workflow/workflow-helper")
+
 
 async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor) {
     // Variable declarations for Approver Determination logic
@@ -23,120 +29,174 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
     let oPopulatedEmployee = null;  // Variable to store populated Employee
     let aWorkflowApprStep = [];
+    let aUniqueApproversDetails = [];
+    let aFullApproversDetails = [];
+    
     const sSystemDate = new Date();
     const sSystemYear = new Date(sSystemDate).getFullYear();
+    
     const aRoleRanks = await retrieveRoleRank(oTx);
+    
     const oHeader = await retrieveHeaderDetails(oTx, sId, oDescriptor)
+    
     const sFinalCC = oHeader[Constant.EntitiesFields.COST_CENTER] ?? oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? null;
     const oClaimantDetails = await retrieveEmployeeDetails(oTx, oHeader[Constant.EntitiesFields.EMP_ID], );
-    console.log(oClaimantDetails);
+    //console.log(oClaimantDetails);
+    
     const sLevels = Number(oWorkflowStepContext.WORKFLOW_APPROVAL_LEVELS) || 0;
     const sWorkflowName = oWorkflowStepContext.WORKFLOW_NAME;
     const aFIDep = await retrieveFromConstantTable(oTx, 'FI_DEP');
     const sFIDep = aFIDep[0].VALUE;
-    console.log(sFIDep);
-    if(sLevels > 1){
-        aWorkflowApprStep = sWorkflowName.split("-").map(s => s.trim());
-    }else{
-        aWorkflowApprStep = sWorkflowName.trim();
+    //console.log(sFIDep);
+    aWorkflowApprStep = 
+        sLevels > 1 
+            ? sWorkflowName.split("-").map(s => s.trim())
+            : [sWorkflowName.trim()];
+    //console.log("Start Determination");
+    //console.log(aWorkflowApprStep);
+    //console.log(sWorkflowName);
+    //console.log(sLevels);
+    if(sWorkflowName == Constant.Role.AUTO && sLevels == 0){
+        aUniqueApproversDetails.push({
+            EEID: Constant.Role.AUTO,
+            NAME: Constant.Role.AUTO,
+            EMAIL: null,
+            LEVEL: Number(0),
+            GROUP: Number(0)
+        });
     }
-    console.log("Start Determination");
-    for(const [iIndex, oWorkflowApprStep] of aWorkflowApprStep.entries){
+    else{
+        for(const [iIndex, oWorkflowApprStep] of aWorkflowApprStep.entries()){
 
-        // Start of Approver Determination logic
+            // Start of Approver Determination logic
 
-        // If claimant is in the same department as JKEW, HOD_JKEW will be considered as HOD and go thru the standard approver determination logic
-        if(oClaimantDetails.DEP === sFIDep && oWorkflowApprStep === Constant.Role.HOD_JKEW){
-            oWorkflowApprStep = Constant.Role.HOD;
-        }
-
-        // Populate current role rank
-        oCurrOutcome = aRoleRanks.find(r => r.ROLE === oWorkflowApprStep);
-
-            // Check if claimant is CEO
-        // If yes, approver for CEO is CEO_FI
-        if(oCurrOutcome != null && oClaimantDetails.ROLE === Constant.Role.CEO){
-            oWorkflowApprStep = Constant.Role.CEO_FI;
-            oCurrOutcome = null;
-        }        
-        
-        if(oCurrOutcome == null){
-            // Block to check for Special Approver within ZCONSTANTS table and budget approver
-            switch(oWorkflowApprStep){
-                case Constant.Role.BUDGET:  
-                    if(sFinalCC){
-                        oBudgetDetails = await retrieveBudgetDetails(oTx, sFinalCC, sSystemYear);
-                        if(!oBudgetDetails){
-                            MessageToast.show(Utility.getText("msg_failed_no_budget"));
-                            return false;
-                        }else{
-                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, iIndex);
-                            if(oPopulatedEmployee){
-                                oApproversDetails.push(oPopulatedEmployee);
-                            }
-                        }
-                    }else{
-                        MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
-                        return false;
-                    }
-                    break;
-                case Constant.Role.CEO_FI:
-                case Constant.Role.CASH_FI:
-                case Constant.Role.FI_SETTLEMENT_A:
-                case Constant.Role.FI_SETTLEMENT_B:
-                case Constant.Role.HOD_JKEW:
-                    // Possible multiple approvers retrieved from ZCONSTANTS table
-                    aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
-                    if(aConstantValues.length){
-                        for(const oId of aConstantValues){
-                            if(oId.VALUE){
-                                oApproverDetails = await retrieveEmployeeDetails(oTx, oId.VALUE);
-                                //oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                                //if(oPopulatedEmployee){
-                                //    aApproversDetails.push(oPopulatedEmployee);
-                                //}else{
-                                //    MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
-                                //    return false;
-                                //}
-                            }else{
-                                //MessageToast.show(Utility.getText("msg_failed_no_approver"));
-                                return null;
-                            }
-                        }
-                    }
-                    break;
-                default:
+            // If claimant is in the same department as JKEW, HOD_JKEW will be considered as HOD and go thru the standard approver determination logic
+            if(oClaimantDetails.DEP === sFIDep && oWorkflowApprStep === Constant.Role.HOD_JKEW){
+                oWorkflowApprStep = Constant.Role.HOD;
             }
-        }
-        else{
-            if(oClaimantDetails[Constant.EntitiesFields.RANK] < oCurrOutcome[Constant.EntitiesFields.RANK]){
-                iApproverRank = oCurrOutcome[Constant.EntitiesFields.RANK];
+
+            // Populate current role rank
+            oCurrOutcome = aRoleRanks.find(r => r.ROLE === oWorkflowApprStep);
+
+                // Check if claimant is CEO
+            // If yes, approver for CEO is CEO_FI
+            if(oCurrOutcome != null && oClaimantDetails.ROLE === Constant.Role.CEO){
+                oWorkflowApprStep = Constant.Role.CEO_FI;
+                oCurrOutcome = null;
+            }        
+            
+            if(oCurrOutcome == null){
+                // Block to check for Special Approver within ZCONSTANTS table and budget approver
+                switch(oWorkflowApprStep){
+                    case Constant.Role.BUDGET:  
+                        if(sFinalCC){
+                            oBudgetDetails = await retrieveBudgetDetails(oTx, sFinalCC, sSystemYear);
+                            if(!oBudgetDetails){
+                                MessageToast.show(Utility.getText("msg_failed_no_budget"));
+                                return false;
+                            }else{
+                                oApproverDetails = await retrieveEmployeeDetails(oTx, oId.VALUE);
+                                oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                                if(oPopulatedEmployee){
+                                    aApproversDetails.push(oPopulatedEmployee);
+                                }
+                            }
+                        }else{
+                            MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
+                            return false;
+                        }
+                        break;
+                    case Constant.Role.CEO_FI:
+                    case Constant.Role.CASH_FI:
+                    case Constant.Role.FI_SETTLEMENT_A:
+                    case Constant.Role.FI_SETTLEMENT_B:
+                    case Constant.Role.HOD_JKEW:
+                    case Constant.Role.MED_REVIEWER:
+                        // Possible multiple approvers retrieved from ZCONSTANTS table
+                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
+                        if(aConstantValues.length){
+                            for(const oId of aConstantValues){
+                                if(oId.VALUE){
+                                    oApproverDetails = await retrieveEmployeeDetails(oTx, oId.VALUE);
+                                    oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                                    if(oPopulatedEmployee){
+                                        aApproversDetails.push(oPopulatedEmployee);
+                                    }else{
+                                        return [];
+                                    }
+                                }else{
+                                    return [];
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                }
             }
             else{
-                iApproverRank = oClaimantDetails[Constant.EntitiesFields.RANK] + 1;
-            }
-            // Retrieve Approver based on iApproverRank
-            oApproverDetails = await retrieveApprover(oTx, oClaimantDetails[Constant.EntitiesFields.EEID], iApproverRank);
-            if(oApproverDetails){
-                    oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                if(oPopulatedEmployee){
-                    aApproversDetails.push(oPopulatedEmployee);
+                if(oClaimantDetails[Constant.EntitiesFields.RANK] < oCurrOutcome[Constant.EntitiesFields.RANK]){
+                    iApproverRank = oCurrOutcome[Constant.EntitiesFields.RANK];
                 }
-            }else{
-                // Placeholder for error handling
-            }
-            
-        } 
+                else{
+                    iApproverRank = oClaimantDetails[Constant.EntitiesFields.RANK] + 1;
+                }
+                // Retrieve Approver based on iApproverRank
+                oApproverDetails = await retrieveApprover(oTx, oClaimantDetails[Constant.EntitiesFields.EEID], iApproverRank);
+                if(oApproverDetails){
+                        oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                    if(oPopulatedEmployee){
+                        aApproversDetails.push(oPopulatedEmployee);
+                    }
+                }else{
+                    return [];
+                }
+                
+            } 
 
-        // Check if approver is found. If approver not found, do not store approver rank and current outcome
-        if(oApproverDetails){
-            iApproverRank = Number(oApproverDetails.RANK);                    
-            oPrevOutcome = oCurrOutcome;
+            // Check if approver is found. If approver not found, do not store approver rank and current outcome
+            if(oApproverDetails){
+                iApproverRank = Number(oApproverDetails.RANK);                    
+                oPrevOutcome = oCurrOutcome;
+            }
         }
+        aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
+    }
+    //console.log(aUniqueApproversDetails);
+    // Variable declaration for substitutes
+    let sSubstitute = null;         // Variable to store substitute user
+    let oSubstituteDetails = null;  // Variable to store substitute user details
+    let sSubstitute_eeid = "";       // Variable to store substitute EEID
+    let sSubstitute_name = "";       // Variable to store substitute name
+    let sSubstitute_email = "";      // Variable to store substitute email
+    // Retrieve substitute for approvers
+    for (const oApprover of aUniqueApproversDetails){
+        // If LEVEL = 0, Approver is Auto
+        if(oApprover.LEVEL > 0){
+            sSubstitute = await retrieveSubstitute(oTx, oApprover.EEID);
+            //console.log(sSubstitute);
+            if(sSubstitute){
+                oSubstituteDetails = await retrieveEmployeeDetails(oModel, sSubstitute);
+                if(oSubstituteDetails){
+                    sSubstitute_eeid = oSubstituteDetails.EEID;
+                    sSubstitute_name = oSubstituteDetails.NAME;
+                    sSubstitute_email = oSubstituteDetails.EMAIL;
+                }
+            }
+        }else{
+            sSubstitute_name = Constant.Role.AUTO;
+        }
+        aFullApproversDetails.push({
+            APPROVER_EEID   : oApprover.EEID,
+            APPROVER_NAME   : oApprover.NAME,
+            APPROVER_EMAIL  : oApprover.EMAIL,
+            LEVEL           : Number(oApprover.LEVEL),
+            SUB_EEID        : sSubstitute_eeid,
+            SUB_NAME        : sSubstitute_name,
+            SUB_EMAIL       : sSubstitute_email
+        });
     }
 
-    return aApproversDetails;
+    return aFullApproversDetails;
 }
 
 
@@ -170,49 +230,20 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
     }
 
     const oWorkflowStepContext = await determineWorkflowStepContext(oTx, oWorkflowContext.OUTCOME_WORKFLOW_CODE, oDescriptor)
-    console.log('[approver-determination/determineApprovers] oWorkflowStepContext:', oWorkflowStepContext)
+    //console.log('[approver-determination/determineApprovers] oWorkflowStepContext:', oWorkflowStepContext)
 
     if(!oWorkflowStepContext){
 
         return null;
     }
-    // AUTO APPROVE Scenario
-    if(oWorkflowStepContext[Constant.EntitiesFields.WORKFLOW_APPROVAL_LEVELS] === 0) {
-        aApproversContext.push(_setApproverContext(
-            oDescriptor, 
-            sId, 
-            oWorkflowStepContext[Constant.EntitiesFields.WORKFLOW_APPROVAL_LEVELS],
-            oWorkflowStepContext[Constant.EntitiesFields.WORKFLOW_NAME],
-            '',
-            Constant.Status.APPROVED
-        ))
-    }
-    else {
-        console.log('[approver-determination/determineApprovers] oWorkflowStepContext:', oWorkflowStepContext)
-        aApproversContext = runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor);
-    }
-    
-
+    aApproversContext = await runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor);
+   
+    if(!aApproversContext) {
+        return null;
+    }    
     return aApproversContext;
 }
 
-function _setApproverContext(oDescriptor, sId, sLevel, sApproverID, sSubApproverId, sStatus, sTimestamp = new Date()) {
-    return ({
-        [oDescriptor.idField]                               : sId,
-        [Constant.EntitiesFields.LEVEL]                     : sLevel,
-        [Constant.EntitiesFields.APPROVER_ID]               : sApproverID,
-        [Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]    : sSubApproverId,
-        [Constant.EntitiesFields.STATUS]                    : sStatus,
-        [Constant.EntitiesFields.PROCESS_TIMESTAMP]         : sTimestamp
-    })
-}
-function _populateApproverDetails(oApproverDetails, iLevel) {
-    if(!oApproverDetails) return null;
-        return {
-            EEID: oApproverDetails.EEID,
-            NAME: oApproverDetails.NAME,
-            EMAIL: oApproverDetails.EMAIL,
-            LEVEL: Number(iLevel) + 1
-        };
-}
+
+
 module.exports = { determineApprovers }

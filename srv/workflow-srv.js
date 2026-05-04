@@ -6,6 +6,14 @@ const pushback = require("./workflow/action/workflow-pushback");
 //const notification = require("/workflow/notification");
 const { determineWorkflow } = require("./workflow/determination/determination-workflow");
 const { determineApprovers } = require("./workflow/determination/determination-approver");
+const { setApproversContext } = require("./workflow/determination/determination-helper");
+const { 
+    deleteApproverDetails,
+    insertRecords
+} = require('./workflow/determination/determination-helper');
+const {
+    resolveDocDescriptor
+} = require('./workflow/workflow-helper');
 
 const actionHandlers = {
     [Constant.ApproverActions.APPROVE]     : approve,
@@ -41,9 +49,8 @@ module.exports = (srv) => {
 
         const { id : sId } = req.data
 
-        // Get the appropriate table based on id prefix
-        const sApproverDetailsTable = resolveApproverTable(sId);
-        if(!sApproverDetailsTable) {
+        const oDescriptor = resolveDocDescriptor(sId);
+        if (!oDescriptor) {
             req.reject(400, `Prefix not found for document: ${sId}`);
         }
 
@@ -55,26 +62,30 @@ module.exports = (srv) => {
         }
         console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         // 2. Determine approvers and substitutes
-        const aApprovers = await determineApprovers(oTx, sId, oWorkflowContext)
-        console.log('[workflow-srv] aApprovers:', aApprovers)
-        if(!aApprovers.length) {
+        const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
+        console.log('[workflow-srv] aApproversContext:', aApproversContext)
+        if(!aApproversContext.length) {
             req.reject(400, "No approvers determined");
         }
+        else {
+            console.log("Approver Determined for document: ", sId)
+        }
         // 3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
-        //for (const oApprover of aApprovers) {
-        //    await oTx.run(
-        //        INSERT.into(sApproverDetailsTable).entries({
-        //            CLAIM_ID                : sId,
-        //            LEVEL                   : oApprover.LEVEL,
-        //            APPROVER_ID             : oApprover.APPROVER_ID,
-        //            SUBSTITUTE_APPROVER_ID  : oApprover.SUBSTITUTE_APPROVER_ID,
-        //            STATUS                  : oApprover.STATUS
-        //        })
-        //    )
-        //}
+        const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
+        const sDelete = await deleteApproverDetails(oDescriptor.approverTable, oDescriptor.approverIdField, sId, oTx);
+        const sInsert = await insertRecords(oDescriptor.approverTable, aApproversContextNew, oTx);
+        console.log(sDelete);
+        console.log(sInsert);
 
         // 4. Notify claimant/approver
-        //await notification.approver-notification(oTx, sId, aApprovers[0])
+        //If workflow is AUTO, send email to claimant to inform claimant that claim has been auto approved
+        //Else, send email to approver 1 to inform approver that claim is awaiting approver action
+        if(aApproversContextNew[0].LEVEL == 0) {
+
+        }
+        else {
+
+        }
         
     }),
     srv.on('processApproval', async req => {
