@@ -1,8 +1,10 @@
+// Require START
 const cds = require('@sap/cds');
 const { Constant } = require("./utils/constant");
 const approve = require("./workflow/action/workflow-approve");
 const reject = require("./workflow/action/workflow-reject");
 const pushback = require("./workflow/action/workflow-pushback");
+const UpdateHeader = require("./utils/UpdateHeader");
 const { 
     determineWorkflow 
 } = require("./workflow/determination/determination-workflow");
@@ -25,10 +27,6 @@ const {
 const {
     sendEmailToApprover
 } = require('./workflow/notification/notification-approver');
-const {
-    updateApproverActionToHeader,
-    updateHeader
-} = require('./utils/UpdateHeader');
 const { message } = require('@sap/cds/lib/log/cds-error');
 
 const actionHandlers = {
@@ -41,6 +39,8 @@ const aApproverTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : Constant.Entities.ZAPPROVER_DETAILS_CLAIMS,
     [Constant.WorkflowType.REQUEST] : Constant.Entities.ZAPPROVER_DETAILS_PREAPPROVAL
 }
+
+// Require END
     
 module.exports = (srv) => {
 
@@ -100,7 +100,7 @@ module.exports = (srv) => {
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
         let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-            sStatus = await updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+            sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
             sStatus = await sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
         }
         else {
