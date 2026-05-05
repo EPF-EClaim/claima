@@ -4286,7 +4286,7 @@ sap.ui.define([
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 								if (bApproversDetermined) {
 									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
 								} else {
@@ -4372,7 +4372,7 @@ sap.ui.define([
 								// else, do not change claim status
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 								if (bApproversDetermined) {
 									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {

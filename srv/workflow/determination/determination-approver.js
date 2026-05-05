@@ -37,10 +37,10 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     
     const aRoleRanks = await retrieveRoleRank(oTx);
     
-    const oHeader = await retrieveHeaderDetails(oTx, sId, oDescriptor)
-    
+    const oHeader = await retrieveHeaderDetails(sId, oDescriptor)
     const sFinalCC = oHeader[Constant.EntitiesFields.COST_CENTER] ?? oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? null;
-    const oClaimantDetails = await retrieveEmployeeDetails(oTx, oHeader[Constant.EntitiesFields.EMP_ID], );
+    
+    const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
     //console.log(oClaimantDetails);
     
     const sLevels = Number(oWorkflowStepContext.WORKFLOW_APPROVAL_LEVELS) || 0;
@@ -241,6 +241,7 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
     if(!aApproversContext) {
         return null;
     }    
+    
     return aApproversContext;
 }
 

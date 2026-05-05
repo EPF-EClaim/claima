@@ -420,7 +420,7 @@ sap.ui.define([
 									var oModel = this.getView().getModel();
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
+									bApproversDetermined = await workflowApproval.onPARApproverDetermination(oModel, sCurrentReqId);
 									if (bApproversDetermined) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);

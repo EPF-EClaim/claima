@@ -12,7 +12,8 @@ const aEntityTableByPrefix = {
         typeField           : Constant.EntitiesFields.SUBMISSION_TYPE,
         approverIdField     : Constant.ApproverDetailsTable.CLAIM_ID,
         entityTypeDesc      : 'ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC',
-        entityTypeDescField : 'ZSUBMISSION_TYPE_SUBMISSION_TYPE_DESC'
+        entityTypeDescField : 'ZSUBMISSION_TYPE_SUBMISSION_TYPE_DESC',
+        entityAmount        : Constant.EntitiesFields.AMOUNT
     },
     [Constant.WorkflowType.REQUEST] : {
         entityPrefix        : Constant.WorkflowType.REQUEST,
@@ -23,7 +24,8 @@ const aEntityTableByPrefix = {
         typeField           : Constant.EntitiesFields.REQUEST_TYPE_ID,
         approverIdField     : Constant.ApproverDetailsTable.PREAPPROVAL_ID,
         entityTypeDesc      : 'ZREQUEST_TYPE.REQUEST_TYPE_DESC',
-        entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC'
+        entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC',
+        entityAmount        : Constant.EntitiesFields.EST_AMOUNT
     }
 }
 function resolveDocDescriptor(sId) {
@@ -33,9 +35,8 @@ function resolveDocDescriptor(sId) {
     //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
     return oDescriptor
 }
-async function retrieveHeaderDetails(oTx, sId, oDescriptor) {
-    
-    const oHeader =  await oTx.run(
+async function retrieveHeaderDetails(sId, oDescriptor) {
+    const oHeader =  await cds.run(
         SELECT
             .one
             .from(oDescriptor.entityHeader)
@@ -44,14 +45,14 @@ async function retrieveHeaderDetails(oTx, sId, oDescriptor) {
                         oDescriptor.entityTypeDesc,
                         Constant.EntitiesFields.EMP_ID,
                         Constant.EntitiesFields.COST_CENTER,
-                        Constant.EntitiesFields.ALTERNATE_COST_CENTER
+                        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+                        Constant.EntitiesFields.PROJECT_CODE
             )
             .where( { [oDescriptor.idField]:sId })
     );
-    
     return oHeader;
 }
-async function retrieveEmployeeDetails(oTx, sId, sEmail){
+async function retrieveEmployeeDetails(sId, sEmail){
 
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
     let sWhereClause;
@@ -90,8 +91,70 @@ async function retrieveEmployeeDetails(oTx, sId, sEmail){
     }
     return oEmployeeContext;
 }
+
+async function retrieveItems(sId, oDescriptor) {
+    
+    const aItems = await cds.run(
+        SELECT
+            .from(oDescriptor.entityItem)
+            .columns(   Constant.EntitiesFields.CLAIM_TYPE_ID,
+                        Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
+                        //Constant.EntitiesFields.COST_CENTER,
+                        //Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+                        Constant.EntitiesFields.GL_ACCOUNT,
+                        oDescriptor.entityAmount
+            )
+            .where( { [oDescriptor.idField]:sId })
+    );
+    //console.log('[workflow-determination/fetchItemsForWorkflow] aItems:', aItems)
+   
+    return aItems;
+}
+async function retrieveBudgetContext(sId, oDescriptor, sAction) {
+
+    const aBudgetContexts = [];
+    const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
+    if(!oHeaderContext) {
+        return null;
+    }
+    console.log("SubmittedDate: ", oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]);
+    const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
+    const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
+    const sFinalCostCenter = oHeaderContext[Constant.EntitiesFields.COST_CENTER] ?? oHeaderContext[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? null;
+    const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] ?? Constant.Wildcard.NA;
+    const aItemsContext = await retrieveItems(sId, oDescriptor);
+    if(!aItemsContext.length) {
+        return null;
+    }
+    for(const oItemContext of aItemsContext) {
+        
+        aBudgetContexts.push({
+            YEAR            : dSubmittedYear,
+            INTERNAL_ORDER  : sInternalOrder,
+            FUND_CENTER     : sFinalCostCenter,
+            MATERIAL_GROUP  : oItemContext[Constant.EntitiesFields.MATERIAL_CODE] ?? null,
+            COMMITMENT_ITEM : oItemContext[Constant.EntitiesFields.GL_ACCOUNT],
+            CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID],
+            AMOUNT          : oItemContext[oDescriptor.entityAmount],
+            INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
+            ACTION          : sAction //SUBMIT, REJECT, APPROVE;
+        })
+    }
+    return aBudgetContexts
+}
+function generateReturnMessage(bStatus, sId, sArea, sMessage){
+    return {
+        Success         : bStatus,
+        DocumentID      : sId,
+        Area            : sArea,
+        Message         : sMessage
+    };
+}
 module.exports = { 
     resolveDocDescriptor,
     retrieveHeaderDetails,
-    retrieveEmployeeDetails
+    retrieveEmployeeDetails,
+    retrieveBudgetContext,
+    retrieveItems,
+    generateReturnMessage
 };

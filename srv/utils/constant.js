@@ -249,7 +249,11 @@ const Constant = {
         "USER_ID": "USER_ID",
         "SUBSTITUTE_ID": "SUBSTITUTE_ID",
         "SUBMITTED_DATE": "SUBMITTED_DATE",
-        "DEPARTMENT_ID": "DEPARTMENT_ID"
+        "DEPARTMENT_ID": "DEPARTMENT_ID",
+        "EST_AMOUNT": "EST_AMOUNT",
+        "GL_ACCOUNT": "GL_ACCOUNT",
+        "MATERIAL_CODE": "MATERIAL_CODE",
+        "PROJECT_CODE": "PROJECT_CODE"
     },
     Wildcard: {
         "All": "*",

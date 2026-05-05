@@ -13,7 +13,7 @@ const {
 async function sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, sAction) {
 
     // Retrieve Header context
-    const oHeaderContext = await retrieveHeaderDetails(oTx, sId, oDescriptor);
+    const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
     if(!oHeaderContext){
         return null;
     }
