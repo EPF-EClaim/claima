@@ -203,8 +203,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ////Add additional field to cater on ELAUN GALAKAN
                 TYPE_OF_PROFESSIONAL_BODY,
                 ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
-                TOTAL_TRAVELLER,
-                FARE_TYPE_ID
+                TOTAL_TRAVELLER
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
