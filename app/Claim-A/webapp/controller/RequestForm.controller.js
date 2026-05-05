@@ -2692,9 +2692,28 @@ sap.ui.define([
 		 * method to populate allocated amount if applicable
 		 * @public
 		 */
-		onInputAllocatedAmount: function (oEvent) {
+		onInputAllocatedAmount: async function (oEvent) {
 			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.NO_OF_TRAVELERS) {
 				this._onChangeTravelers(oEvent);
+			}
+			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.KILOMETER) {
+				var oModel = this.getView().getModel("request");
+				var bIsRoundTrip = oModel.getProperty("/req_item/is_roundtrip");
+				var fKM = parseFloat(oModel.getProperty("/req_item/kilometer")) || 0;
+
+				if (bIsRoundTrip && fKM > 0) {
+					try {
+						var fRoundTripKM = await Utility.calculateRoundTripKM(
+							this.getView().getModel(),
+							fKM
+						);
+						oModel.setProperty("/req_item/roundtrip_km", fRoundTripKM);
+					} catch (e) {
+						MessageBox.error(
+							Utility.getText("msg_claimdetails_roundtrip_fail")
+						);
+					}
+				}
 			}
 			RequestUtility.populateAllocatedAmount();
 		},
@@ -2875,7 +2894,27 @@ sap.ui.define([
 				oInput.setValueState("Error");
 				oInput.setValueStateText("Number of travelers must be at least 1.");
 			}
-		}
+		},
 
+		onSelectRoundTrip: async function (oEvent) {
+			const oResult = await Utility.handleRoundTrip(
+				Constants.SubmissionTypePrefix.REQUEST,
+				oEvent
+			);
+
+			if (oResult?.error) {
+				MessageBox.error(oResult.error);
+				return;
+			}
+
+			if (oResult?.km !== undefined) {
+				this.getView()
+					.getModel("request")
+					.setProperty("/req_item/roundtrip_km", oResult.km);
+
+				// PAR-specific recalculation
+				RequestUtility.populateAllocatedAmount();
+			}
+		}
 	});
 });

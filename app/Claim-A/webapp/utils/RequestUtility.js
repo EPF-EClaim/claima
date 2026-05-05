@@ -259,6 +259,11 @@ sap.ui.define([
 
             if (!fKilometer || !fRatePerKm) return;
 
+            
+            if (oReqItem.is_roundtrip) {
+                fKilometer = fKilometer * 2;
+            }
+
             var fTotalAmount = parseFloat(fKilometer) * parseFloat(fRatePerKm);
 
             if (!isNaN(fTollAmt)) {

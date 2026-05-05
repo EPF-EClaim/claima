@@ -3633,10 +3633,14 @@ sap.ui.define([
 					oPropertyModel.getProperty("/km/is_visible") &&
 					oPropertyModel.getProperty("/rate_per_km/is_visible")
 				) {
-					const fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
+					let fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
 					const fRate = parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km")) || 0;
 					const fToll = parseFloat(oInputModel.getProperty("/claim_item/toll")) || 0;
-
+					
+					if (oInputModel.setProperty("/claim_item/rtkm"))
+					{
+						fKm = fKm * 2;
+					}
 					let fAmount = fKm * fRate;
 
 					if (oPropertyModel.getProperty("/toll/is_visible") && fToll > 0) {
@@ -5448,51 +5452,23 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
 		onSelectRoundTrip: async function (oEvent) {
-			var bIsSelected = oEvent.getParameter("selected");
-			var oCheckBox = oEvent.getSource();
-			var oKMInput = this.byId("input_claimdetails_km");
-			var oModel = this.getView().getModel("claimitem_input");
-			var fKM = oModel.getProperty("/claim_item/km");
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var dStartDate = oInputModel.getProperty("/claim_header/start_date");
-			var dEndDate = oInputModel.getProperty("claim_header/end_date");
+			const oResult = await Utility.handleRoundTrip(
+				Constants.SubmissionTypePrefix.CLAIM,
+				oEvent
+			);
 
-
-
-			if (bIsSelected) {
-
-				if (dStartDate !== dEndDate) {
-					MessageBox.error("Round Trip only applicable for same day and same location");
-					oCheckBox.setSelected(false);
-					return;
-				};
-
-				if (oModel.getProperty("/claim_item/_originalKM") === undefined) {
-					oModel.setProperty("/claim_item/_originalKM", fKM);
-				}
-				var fOriginalKM = oModel.getProperty("/claim_item/_originalKM");
-
-				if (fOriginalKM) {
-					var fFinalKM = await ClaimUtility.calculateRoundTripKM(
-						this.getView().getModel(),
-						fOriginalKM
-					);
-					if (oEvent.getSource().getSelected()) {
-						oModel.setProperty("/claim_item/km", fFinalKM);
-						this._calculateRatePerKm(false);
-						oKMInput.setEnabled(false);
-					}
-				}
+			if (oResult?.error) {
+				MessageBox.error(oResult.error);
+				return;
 			}
-			else {
-				var fOriginalKM = oModel.getProperty("/claim_item/_originalKM");
 
-				if (fOriginalKM !== undefined) {
-					oModel.setProperty("/claim_item/km", fOriginalKM);
-					oModel.setProperty("/claim_item/_originalKM", undefined);
-				}
+			if (oResult?.km !== undefined) {
+				this.getView()
+					.getModel("claimitem_input")
+					.setProperty("/claim_item/rtkm", oResult.km);
+
+				// claim-specific recalculation
 				this._calculateRatePerKm(false);
-				oKMInput.setEnabled(true);
 			}
 		}
 	});

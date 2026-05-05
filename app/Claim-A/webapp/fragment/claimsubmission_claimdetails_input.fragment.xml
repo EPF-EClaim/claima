@@ -951,9 +951,31 @@
 					}"
 					change="onChange_ClaimDetails_Kilometer"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
-                                 !${claimitem_input>/claim_item/is_roundtrip} &amp;&amp;
                                 ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
 					visible="{claimitem_property>/km/is_visible}"
+				/>
+
+                 <!-- Round Trip Kilometer -->
+                <Label text="{i18n>label_claimdetails_input_rtkm}" 
+                  required="{claimitem_property>/km/is_required}"
+                  visible="{= ${claimitem_input>/claim_item/is_roundtrip} === true }"
+                  labelFor="input_claimdetails_input_rtkm"/>
+                  
+                <Input
+                    id="input_claimdetails_input_rtkm"
+                    value="{
+						path: 'claimitem_input>/claim_item/rtkm',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 6,
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
+					}"
+					enabled="false" 
+					visible="{= ${claimitem_input>/claim_item/is_roundtrip} === true }"
 				/>
 
                  <!-- Round Trip -->

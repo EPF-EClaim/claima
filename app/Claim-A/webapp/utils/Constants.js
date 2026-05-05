@@ -547,7 +547,8 @@ sap.ui.define([
             "NumberOfTraveller": "i_no_of_traveler"
         },
         "RequestFormFields": {
-            "NO_OF_TRAVELERS": "input_no_of_traveler"
+            "NO_OF_TRAVELERS": "input_no_of_traveler",
+            "KILOMETER": "input_kilometer"
         },
         "ElaunTukarStatus": {
             "ALLOWED_CREATION": "01",
