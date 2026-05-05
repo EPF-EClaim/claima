@@ -547,6 +547,10 @@ sap.ui.define([
             "NumberOfFamilyMember": "i_no_of_family_member",
             "NumberOfTraveller": "i_no_of_traveler"
         },
+        "ClaimSpecialFieldVisibilityForElaunTukar":{
+            "NumberOfFamilyMember": "input_claimdetails_input_no_of_family_member",
+            "NumberOfTraveller": "input_claimdetails_input_number_of_travellers"
+        },
         "RequestFormFields": {
             "NO_OF_TRAVELERS": "input_no_of_traveler"
         },

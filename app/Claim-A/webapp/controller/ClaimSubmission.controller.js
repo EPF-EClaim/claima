@@ -463,16 +463,16 @@ sap.ui.define([
 						}
 					});
 
-					// const _oHeader = this._oClaimModel.getProperty("/req_header") || {};
-					// const _oItem = this._oClaimModel.getProperty("/req_item") || {};
+					 const _oHeader = this._oClaimModel.getProperty("/claim_header") || {};
+					 const _oItem = this._oClaimModel.getProperty("/claim_item") || {};
 
 					// // calculate number of days
 					// var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 					// this._oClaimModel.setProperty("/req_item/no_of_days", iDiffDays);
 
-					// // get number of family members including requestor him/herself
-					// var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
-					// this._oClaimModel.setProperty("/req_item/no_of_family_member", iNoOfFamilyMember);
+					// get number of family members including requestor him/herself
+					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
+					this._oClaimModel.setProperty("/claim_item/no_of_family_member", iNoOfFamilyMember);
 
 					// this._onFilterRegion();
 
@@ -480,14 +480,14 @@ sap.ui.define([
 					// Utility.init(this.getOwnerComponent(), this.getView());
 					// Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.REQUEST);
 
-					// // special initialization based on claim type item
+					//special initialization based on claim type item
 					// switch (sClaimTypeItem) {
 					// 	// set visible for the number of family member and traveller when choosing travel with Family Now
 					// 	case Constants.ClaimTypeItem.LOD_TUKAR:
 					// 	case Constants.ClaimTypeItem.MKN_TUKAR:
-					// 		if (_oHeader.transferfamilynowlater === Constants.TravelWithFamilyNowOrLater.NOW) {
-					// 			Object.values(Constants.PARSpecialFieldVisibilityForElaunTukar).forEach(id => {
-					// 				const control = this._resolveControl(id, "request");
+					// 		if (_oHeader.travel_family_now_later === Constants.TravelWithFamilyNowOrLater.NOW_DESC) {
+					// 			Object.values(Constants.ClaimSpecialFieldVisibilityForElaunTukar).forEach(id => {
+					// 				const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
 					// 				if (control && typeof control.setVisible === "function") {
 					// 					control.setVisible(true);
 					// 				} else {
@@ -495,19 +495,29 @@ sap.ui.define([
 					// 				}
 					// 			});
 					// 		}
-
-					// 	// populate entitled amount 
-					// 	case Constants.ClaimTypeItem.LAUT:
-					// 	case Constants.ClaimTypeItem.LODGING_L:
-					// 	case Constants.ClaimTypeItem.LOD_TUKAR:
-					// 		if (this._oClaimModel.getProperty("/view") === Constants.AccessMode.CREATE) {
-					// 			RequestUtility.populateAllocatedAmount();
-					// 		}
 					// 		break;
+					// 	case Constants.ClaimTypeItem.DARAT:
+					// 		if (_oHeader.travel_family_now_later === Constants.TravelWithFamilyNowOrLater.NOW_DESC) {
+					// 			const control = this._resolveControl("select_claimdetails__input_marriagecategory", "claimsubmission_claimdetails_input");
+					// 			if (control && typeof control.setVisible === "function") {
+					// 				control.setVisible(true);
+					// 			} else {
+					// 				console.warn("Control not found or not visible-capable:", id);
+					// 			}
+					// 		}
+					// 		break;	
+					// 	// populate entitled amount 
+					// 	// case Constants.ClaimTypeItem.LAUT:
+					// 	// case Constants.ClaimTypeItem.LODGING_L:
+					// 	// case Constants.ClaimTypeItem.LOD_TUKAR:
+					// 		// if (this._oClaimModel.getProperty("/view") === Constants.AccessMode.CREATE) { select_claimdetails__input_marriagecategory
+					// 		// 	RequestUtility.populateAllocatedAmount();
+					// 		// }
+					// 		// break;
 
 					// 	// remove business class option for FLIGHT_L
-					// 	case Constants.ClaimTypeItem.FLIGHT_L:
-					// 		this._removeBusinessClass();
+					// 	// case Constants.ClaimTypeItem.FLIGHT_L:
+					// 		//this._removeBusinessClass();
 
 					// 	default:
 					// 		break;
@@ -526,6 +536,7 @@ sap.ui.define([
 			
 			const aExcludedFields = [
 				Constants.ExcludeField.CLAIM_TYPE_ID,
+				Constants.ExcludeField.CLAIM_TYPE_ITEM_ID,
 				Constants.ExcludeField.DESCR,
 				Constants.ExcludeField.REQUEST_SUB_ID
 			];

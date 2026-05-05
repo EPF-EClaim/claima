@@ -697,6 +697,8 @@ sap.ui.define([
 					
 				});
 		}
+
+		// one logic to calculate all the required calculation field
 		
 	}
 });
