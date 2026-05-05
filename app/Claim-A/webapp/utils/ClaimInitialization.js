@@ -89,9 +89,9 @@ sap.ui.define([
 					session_number					: oData.SESSION_NUMBER,
 					cash_advance_amount				: oData.CASH_ADVANCE_AMOUNT,
 					preapproved_amount				: oData.PREAPPROVED_AMOUNT,
-					mode_of_transfer				: oData.TRANSFER_MODE_DESC,
-					travel_alone_family				: oData.TRAVEL_TYPE_DESC,
-					travel_family_now_later			: oData.FAMILY_TIMING_DESC,
+					mode_of_transfer				: oData.MODE_OF_TRANSFER,
+					travel_alone_family				: oData.TRAVEL_ALONE_FAMILY,
+					travel_family_now_later			: oData.TRAVEL_FAMILY_NOW_LATER,
 					submission_type                 : oData.SUBMISSION_TYPE,
 					descr: {
 						alternate_cost_center		: oData.ALT_COST_CENTER_DESC,

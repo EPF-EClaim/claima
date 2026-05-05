@@ -421,7 +421,7 @@ sap.ui.define([
 			if (bReset) {
 				this._resetClaimItemInputs();
 
-				const oLocationTypeSelect = this.byId("select_claimdetails_input_location_type");
+				const oLocationTypeSelect = this.byId("select_location_type");
 				if (oLocationTypeSelect) {
 					oLocationTypeSelect.setForceSelection(false);
 					oLocationTypeSelect.setSelectedKey("");
@@ -467,8 +467,8 @@ sap.ui.define([
 					 const _oItem = this._oClaimModel.getProperty("/claim_item") || {};
 
 					// // calculate number of days
-					// var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
-					// this._oClaimModel.setProperty("/req_item/no_of_days", iDiffDays);
+					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, _oHeader, _oItem);
+					this._oClaimModel.setProperty("/claim_item/no_of_days", iDiffDays);
 
 					// get number of family members including requestor him/herself
 					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
@@ -558,7 +558,7 @@ sap.ui.define([
 			});
 
 			// set attachment 1 field to be required (mandatory)
-			this.byId("fileuploader_claimdetails_input_attachment_file_1").setRequired(true);
+			this.byId("fileuploader_attachment_file_1").setRequired(true);
 
 		},
 
@@ -623,7 +623,6 @@ sap.ui.define([
 				"select_claimdetails_input_region",
 				"select_claimdetails_input_area",
 				"select_claimdetails_input_lodging_category",
-				"input_claimdetails_input_no_of_family_member",
 				"select_claimdetails_input_claim_category",
 				"select_claimdetails_input_mobile_category_purpose_id",
 				"input_claimdetails_input_bill_no",
@@ -634,7 +633,6 @@ sap.ui.define([
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment_file_1",
 				"fileuploader_claimdetails_input_attachment_file_2",
-				"select_claimdetails__input_marriagecategory",
 				"input_claimdetails_meter_cube_actual",
 				"input_claimdetails_meter_cube",
 				"input_claimdetails_input_tips",
@@ -676,22 +674,22 @@ sap.ui.define([
 		_onConfigDropdownFilter: function(){
 			// list of id with configs for dropdown
 			var aDropdownList = [
-				"select_claimdetails_input_type_of_professional_body",
-				"select_claimdetails_input_funeral_transportation",
-				"select_claimdetails_input_study_levels_id",
-				"select_claimdetails_input_insurance_provider_id",
-				"select_claimdetails_input_insurance_package_id",
-				"select_claimdetails_input_vehicle_type",
-				"select_claimdetails_input_vehicle_ownership_id",
-				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
-				"select_claimdetails_input_flight_class",
-				"select_claimdetails_input_room_type",
-				"select_claimdetails_input_region",
-				"select_claimdetails_input_area",
-				"select_claimdetails_input_lodging_category",
-				"select_claimdetails_input_claim_category",
-				"select_claimdetails_input_mobile_category_purpose_id"
+				"select_type_of_professional_body",
+				"select_funeral_transportation",
+				"select_study_levels_id",
+				"select_insurance_provider_id",
+				"select_insurance_package_id",
+				"select_vehicle_type",
+				"select_vehicle_ownership_id",
+				"select_fare_type_id",
+				"select_vehicle_class_id",
+				"select_flight_class",
+				"select_room_type",
+				"select_region",
+				"select_area",
+				"select_lodging_category",
+				"select_claim_category",
+				"select_mobile_category_purpose_id"
 			];
 			//filter by start, end date and also by status
 			var aFilters = [
@@ -793,8 +791,8 @@ sap.ui.define([
 			var oFilter = this._getDependentFilters();
 			// 2 dropdown for dependent, one normal select and 1 is combobox
 			var aDropdownList = [
-				"select_claimdetails_input_dependent_name",
-				"combo_claimdetails_input_dependent"
+				"select_dependent_name",
+				"combo_dependent"
 			];
 
 			aDropdownList.forEach(sFieldId => {
@@ -823,7 +821,7 @@ sap.ui.define([
 			}
 
 			// set dropdown for claim items
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
+			this.byId("select_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
 				filters: [
 					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, this._oClaimModel.getProperty("/claim_header/claim_type_id")),
