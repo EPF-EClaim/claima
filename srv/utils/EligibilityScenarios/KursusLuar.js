@@ -376,8 +376,7 @@ module.exports = {
                 if (iIndex == -1) return;
 
                 // if no rule matches the selected transport class, return false
-                if ((aPayload.sFareTypeId == Constant.FareType.FERRY) ||
-                    (aPayload.sFareTypeId == Constant.FareType.TRAIN)) {
+                if (aPayload.sFareTypeId == Constant.FareType.TRAIN) {
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
                     } else {

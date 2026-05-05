@@ -562,6 +562,7 @@ sap.ui.define([
 					entitled_breakfast: it.ENTITLED_BREAKFAST,
 					entitled_lunch: it.ENTITLED_LUNCH,
 					entitled_dinner: it.ENTITLED_DINNER,
+					dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : it.DEPENDENT !== "null" ? this._oConstant.DependentType.DEPENDENT : null,
 					anggota_id: it.ANGGOTA_ID,
 					anggota_name: it.ANGGOTA_NAME,
 					dependent_name: it.DEPENDENT_NAME,
@@ -650,7 +651,6 @@ sap.ui.define([
 					funeral_transportation: null,
 					material_code: null,
 					vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
-					dependent: null,
 					fare_type_id: null,
 					insurance_package_id: null,
 					insurance_provider_id: null,
@@ -1591,9 +1591,18 @@ sap.ui.define([
 			});
 
 			// calculate new total
-			const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+			var nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			if(oInputModel.getProperty("/claim_header/cash_advance_amount") > 0){
+				var iCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount"));
+				var nNewTotal =  nTotal - iCashAdvAmt;
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
+
+			}else{	
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+			}
+			
 
 			///Check to recalculate Mata Wang if it is required
 			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
@@ -2676,8 +2685,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_class_id", "ZVEHICLE_CLASS");
 			//// Flight Class
 			this._setClaimDetailSelectionField("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
-			//// Location Type
-			this._setClaimDetailSelectionField("select_claimdetails_input_location_type", "ZLOC_TYPE");
 			//// Room Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
 			//// Region (Semenanjung/Sabah/Sarawak)
@@ -4933,8 +4940,6 @@ sap.ui.define([
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
-				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -5071,9 +5076,6 @@ sap.ui.define([
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
-				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
-				"combo_claimdetails_input_dependent",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",

@@ -673,6 +673,11 @@ sap.ui.define([
             "VISA": "Visa & Passport",
             "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
             "YURAN_KLJ": "Bayaran Yuran KLJ"
+        },
+        "FrequencyCheckClaimTypeItem": {
+            "MAHKAMAH": "MAHKAMAH",
+            "PKN_PANAS": "PKN_PANAS",
+            "FLIGHT_WIL": "FLIGHT_WIL"
         }
         
     }
