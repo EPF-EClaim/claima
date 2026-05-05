@@ -71,17 +71,23 @@ sap.ui.define([
 			// claim header
 
             // Call CAP action to update header table
+
+            const oResponse = null;
             const oAction = oModel.bindContext("/startWorkflow(...)");
             oAction.setParameter("id", sClaimID,);
             
 
             try {
-                await oAction.execute();
+                oResponse = await oAction.execute();
             } catch (oError) {
                 MessageBox.error(oError.message);
+                return false;
             } finally {
                 BusyIndicator.hide();
             }
+            console.log(oResponse);
+
+            return true;
 
             // Variable declaration for use of the entire function block
             
@@ -629,17 +635,22 @@ sap.ui.define([
 			// request header
 
             // Call CAP action to update header table
+            const oResponse = null;
             const oAction = oModel.bindContext("/startWorkflow(...)");
             oAction.setParameter("id", sPARID,);
             
 
             try {
-                await oAction.execute();
+                oResponse = await oAction.execute();
             } catch (oError) {
                 MessageBox.error(oError.message);
+                return false;
             } finally {
                 BusyIndicator.hide();
             }
+            console.log(oResponse);
+
+            return true;
             // Variable declaration for use of the entire function block
             // let aApproversDetails = [];             // Variable to store multiple approvers
             // let aFullApproversDetails = [];         // Variable to store approvers with substitutes
