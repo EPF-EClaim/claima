@@ -708,7 +708,7 @@
                                 <form:FormElement
                                     label="{i18n>req_i_rtkilometer}"
                                     id="i_rtkilometer"
-                                    visible="{= ${request>/req_item/is_roundtrip} === true }">
+                                    visible="{= ${request>/req_item/round_trip} === true }">
                                     <form:fields>
                                         <Input
                                             value="{
@@ -730,7 +730,7 @@
                                             visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }">
                                     <form:fields>
                                         <CheckBox 
-                                            selected="{request>/req_item/is_roundtrip}"
+                                            selected="{request>/req_item/round_trip}"
                                             select="onSelectRoundTrip"
                                             enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>

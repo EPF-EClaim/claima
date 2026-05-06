@@ -1266,7 +1266,8 @@ sap.ui.define([
 					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
-					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null
+					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
+					ROUND_TRIP:					  !!oReqItem.round_trip 
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2698,7 +2699,7 @@ sap.ui.define([
 			}
 			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.KILOMETER) {
 				var oModel = this.getView().getModel("request");
-				var bIsRoundTrip = oModel.getProperty("/req_item/is_roundtrip");
+				var bIsRoundTrip = oModel.getProperty("/req_item/round_trip");
 				var fKM = parseFloat(oModel.getProperty("/req_item/kilometer")) || 0;
 
 				if (bIsRoundTrip && fKM > 0) {

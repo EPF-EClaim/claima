@@ -260,7 +260,7 @@ sap.ui.define([
             if (!fKilometer || !fRatePerKm) return;
 
             
-            if (oReqItem.is_roundtrip) {
+            if (oReqItem.round_trip) {
                 fKilometer = fKilometer * 2;
             }
 
