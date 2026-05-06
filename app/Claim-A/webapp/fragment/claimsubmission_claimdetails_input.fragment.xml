@@ -274,7 +274,7 @@
                                         },
                                         constraints: { minimum: 0.01 }
                                     }"
-                                    editable="{claimitem_property>/meter_cube_actual/is_editable}"
+                                    editable="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} }"
                                     
                                     required="true"
                                     liveChange="onChange_PengangkutanLautInputs"
@@ -1066,20 +1066,20 @@
 
                         <form:FormElement visible="{= ${claim>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"  id="select_claimdetails_input_to_state_id">
                             <form:label>
-                                <Label text="{i18n>label_claimdetails_input_state_to}" required="{claimitem_property>/to_state_id/is_required}" />
+                                <Label text="{i18n>label_claimdetails_input_state_to}" 
+                                        required="{= !!${claim>/claim_item/from_location_office} }" 
+                                />
                             </form:label>
                             <form:fields>
                                 <Select
                                     id="select_to_state_id"
                                     forceSelection="false"
                                     selectedKey="{claim>/claim_item/to_state_id}"
-                                    required="true"
+                                    required="{= !!${claim>/claim_item/from_location_office} }"
                                     items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION', sorter: { path: 'TO_STATE_ID', descending: false }}"
                                     change="onSelect_ClaimDetails_ToState"
                                     liveChange="onSelect_ClaimDetails_ToState"
-                                    editable = "{=  ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL} ||
-                                                    !!${claim>/claim_item/from_location_office} 
-                                                }"
+                                    editable = "{= !!${claim>/claim_item/from_location_office} }"
                                 >
                                     <items>
                                         <core:Item key="{employee_view>TO_STATE_ID}" text="{employee_view>TO_STATE_DESC}" />
@@ -1142,6 +1142,7 @@
                                         constraints: { minimum: 0.01 }
                                     }"
                                     change="onChange_ClaimDetails_Kilometer"
+                                    required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} ||  ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }"
                                     editable="{= !${claim>/view_only} &amp;&amp; ${claim>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
                                     
                                 />
@@ -1181,7 +1182,15 @@
                                         constraints: { minimum: 0.01 }
                                     }"
                                     required="true"
-                                    editable="{= !${claim>/claim_item/need_foreign_currency} &amp;&amp; ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp; ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp; !${claim>/view_only} &amp;&amp; !Object.values(${constant>/ClaimTypeItemLodging}).includes(${claim>/claim_item/claim_type_item_id}) &amp;&amp; ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp; !${claimitem_property>/rate_per_km/is_visible} &amp;&amp; !${claimitem_property>/actual_amount/is_visible} &amp;&amp; !${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp; !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claim>/claim_item/claim_type_item_id}) }"
+                                    editable="{= !${claim>/claim_item/need_foreign_currency} &amp;&amp; 
+                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;  
+                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp; 
+                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp; !${claim>/view_only} &amp;&amp; 
+                                                  !Object.values(${constant>/ClaimTypeItemLodging}).includes(${claim>/claim_item/claim_type_item_id}) &amp;&amp; 
+                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp; 
+                                                  !${claimitem_property>/rate_per_km/is_visible} &amp;&amp; !${claimitem_property>/actual_amount/is_visible} &amp;&amp; 
+                                                  !${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp; 
+                                                  !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claim>/claim_item/claim_type_item_id}) }"
                                     
                                 />
                             </form:fields>
@@ -1714,7 +1723,7 @@
                                     id="input_bill_no"
                                     value="{claim>/claim_item/bill_no}"
                                     
-                                    required="{claimitem_property>/bill_no/is_required}"
+                                    required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} }"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -1728,7 +1737,7 @@
                                     id="input_account_no"
                                     value="{claim>/claim_item/account_no}"
                                     
-                                    required="{claimitem_property>/account_no/is_required}"
+                                    required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK} }"
                                 />
                             </form:fields>
                         </form:FormElement>

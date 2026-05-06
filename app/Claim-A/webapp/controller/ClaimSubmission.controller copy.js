@@ -2354,7 +2354,7 @@ sap.ui.define([
 
 			switch (sKey) {
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
-					oPropertyModel.setProperty("/to_state_id/is_required", true);
+					oPropertyModel.setProperty("/to_state_id/is_required", true); //might not be needed as its not in db structure
 					break;
 
 				case this._oConstant.ClaimTypeItem.ELEKTRIK:
