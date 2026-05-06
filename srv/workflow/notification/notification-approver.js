@@ -10,7 +10,7 @@ const {
     sendEmailViaSAPIS
 } = require("./notification-helper");
 
-async function sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, sAction) {
+async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction) {
 
     // Retrieve Header context
     const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
@@ -19,7 +19,7 @@ async function sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, sAc
     }
     console.log(oHeaderContext);
     // Retrieve Claimant Context
-    const oClaimantContext = await retrieveEmployeeDetails(oTx, oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
+    const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
     if(!oClaimantContext) {
         return null;
     }

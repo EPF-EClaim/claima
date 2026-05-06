@@ -67,27 +67,30 @@ sap.ui.define([
         //     oAction.execute();
 
 		// },
-        onClaimsApproverDetermination: async function (oModel, sClaimID){
+        onApproverDetermination: async function (oModel, sId){
 			// claim header
 
             // Call CAP action to update header table
 
-            const oResponse = null;
+            let oResponse = null;
             const oAction = oModel.bindContext("/startWorkflow(...)");
-            oAction.setParameter("id", sClaimID,);
+            oAction.setParameter("id", sId,);
             
 
             try {
-                oResponse = await oAction.execute();
+                await oAction.execute();
+                const oContext = oAction.getBoundContext();
+                oResponse = await oContext.requestObject();
             } catch (oError) {
                 MessageBox.error(oError.message);
                 return false;
             } finally {
                 BusyIndicator.hide();
             }
+            
             console.log(oResponse);
-
-            return oResponse.Success;
+            MessageBox.error(oResponse.Message);
+            return oResponse.Success
 
             // Variable declaration for use of the entire function block
             
@@ -631,26 +634,31 @@ sap.ui.define([
             // return true;
 			
         },
-        onPARApproverDetermination: async function (oModel, sPARID){
-			// request header
+        // onPARApproverDetermination: async function (oModel, sPARID){
+		// 	// request header
 
-            // Call CAP action to update header table
-            const oResponse = null;
-            const oAction = oModel.bindContext("/startWorkflow(...)");
-            oAction.setParameter("id", sPARID,);
+        //     // Call CAP action to update header table
+        //     let oResponse = null;
+        //     const oAction = oModel.bindContext("/startWorkflow(...)");
+        //     oAction.setParameter("id", sPARID,);
             
 
-            try {
-                oResponse = await oAction.execute();
-            } catch (oError) {
-                MessageBox.error(oError.message);
-                return false;
-            } finally {
-                BusyIndicator.hide();
-            }
-            return oResponse.Success;
+        //     try {
+        //         await oAction.execute();
+        //         const oContext = oAction.getBoundContext();
+        //         const oResponse = await oContext.requestObject();
+        //     } catch (oError) {
+        //         MessageBox.error(oError.message);
+        //         return false;
+        //     } finally {
+        //         BusyIndicator.hide();
+        //     }
+            
+        //     console.log(oResponse);
+        //     MessageBox.error(oResponse.Message);
+        //     return oResponse.Success
 
-            return true;
+        //     return true;
             // Variable declaration for use of the entire function block
             // let aApproversDetails = [];             // Variable to store multiple approvers
             // let aFullApproversDetails = [];         // Variable to store approvers with substitutes

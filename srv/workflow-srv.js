@@ -4,7 +4,6 @@ const { Constant } = require("./utils/constant");
 const approve = require("./workflow/action/workflow-approve");
 const reject = require("./workflow/action/workflow-reject");
 const pushback = require("./workflow/action/workflow-pushback");
-const eclaim_srv = require('./eclaim_srv');
 const UpdateHeader = require("./utils/UpdateHeader");
 const { 
     determineWorkflow  
@@ -22,7 +21,8 @@ const {
 const {
     resolveDocDescriptor,
     retrieveBudgetContext,
-    generateReturnMessage
+    generateReturnMessage,
+    performBudgetChecking
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -74,19 +74,19 @@ module.exports = (srv) => {
             //req.reject(400, "No approvers determined");
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Determination')
         }
-
+        console.log('[workflow-srv] aApproversContext:', aApproversContext)
         //3. Perform budget checking for auto approve
         if(aApproversContext[0].LEVEL == 0) {
             aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
-            aReturn = await eclaim_srv.performBudgetChecking(oTx, aBudgetContext);
+            aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            if(oReturn) {
+                bStatus = false;
+                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
+            }
+            //   If successful, update Header table with approved status and timestamp
+            sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
         }
-        const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-        if(oReturn) {
-            bStatus = false;
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
-        }
-        //   If successful, update Header table with approved status and timestamp
-        sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
 
         //4. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
         const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
@@ -94,6 +94,7 @@ module.exports = (srv) => {
             bStatus = false;
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization')
         }
+        console.log('[workflow-srv] aApproversContextNew:', aApproversContextNew)
         const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
         const sInsert = await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
         console.log(sDelete);
@@ -104,15 +105,15 @@ module.exports = (srv) => {
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
         let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-            sStatus = await sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
+            sStatus = await sendEmailToClaimant(aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
         }
         else {
-            sStatus = await sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
+            sStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
         }
         if(!sStatus) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification')
         }
-
+        console.log('[workflow-srv] sStatus:', sStatus)
         return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started');
         
     }),

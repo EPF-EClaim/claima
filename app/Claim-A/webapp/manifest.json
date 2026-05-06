@@ -97,6 +97,13 @@
                     "groupId": "$auto"
                 }
             },
+            "workflow" : {
+                "dataSource": "workflowService",
+                "preload": true,
+                "settings": {
+                    "synchronizationMode": "None"
+                }
+            },
             "": {
                 "dataSource": "mainService",
                 "preload": true,

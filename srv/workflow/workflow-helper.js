@@ -150,11 +150,127 @@ function generateReturnMessage(bStatus, sId, sArea, sMessage){
         Message         : sMessage
     };
 }
+async function performBudgetChecking(oTx, aBudgetContext) {
+    const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
+    // const { budget } = req.data;
+
+    const toNum = (v) => Number(v) || 0;
+    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+    // const tx = cds.tx(req);
+    // const results = [];
+    // let error = false;
+
+    try {
+        let error = false;
+        let errorResults = [];
+        let successResults = [];
+
+        for (const entry of aBudgetContext) {
+            const condition = {
+                YEAR: entry.YEAR,
+                INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                FUND_CENTER: entry.FUND_CENTER,
+                MATERIAL_GROUP: entry.MATERIAL_GROUP,
+                COMMITMENT_ITEM: entry.COMMITMENT_ITEM
+            };
+
+            let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
+                ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
+                : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
+
+            if (!budgetRecord) {
+                error = true;
+                errorResults.push({
+                    ...condition,
+                    STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                });
+                continue;
+            }
+
+            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
+                (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
+                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
+                if (!bSufficient) {
+                    error = true;
+                    errorResults.push({
+                        ...condition,
+                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                        AMOUNT: entry.AMOUNT,
+                        AVAILABLE: budgetRecord.BUDGET_BALANCE
+                    });
+                    continue;
+                }
+            }
+
+            if (error) continue;
+
+            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+                successResults.push({
+                    ...condition,
+                    STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                });
+                continue;
+            }
+
+            let newCommitment = toNum(budgetRecord.COMMITMENT);
+            let newActual = toNum(budgetRecord.ACTUAL);
+            const amount = toNum(entry.AMOUNT);
+            if (entry.ACTION === Constant.BudgetProcessingAction.SUBMIT) {
+                newCommitment = round2(newCommitment - amount);
+            } else if (entry.ACTION === Constant.BudgetProcessingAction.APPROVE) {
+                newCommitment = round2(newCommitment + amount);
+                newActual = round2(newActual - amount);
+            } else if (entry.ACTION === Constant.BudgetProcessingAction.REJECT) {
+                newCommitment = round2(newCommitment + amount);
+            }
+
+            const newConsumed = round2(newCommitment + newActual);
+            const newBudgetBalance = round2(toNum(budgetRecord.CURRENT_BUDGET) + newConsumed);
+
+            await oTx.run(
+                UPDATE(ZBUDGET)
+                    .set({
+                        CONSUMED: newConsumed.toFixed(2),
+                        COMMITMENT: newCommitment.toFixed(2),
+                        BUDGET_BALANCE: newBudgetBalance.toFixed(2),
+                        ACTUAL: newActual.toFixed(2)
+                    })
+                    .where(condition)
+            );
+
+            successResults.push({
+                ...condition,
+                STATUS: Constant.BudgetCheckStatus.UPDATED,
+                CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                NEW_CONSUMED: newConsumed,
+                NEW_BUDGETBALANCE: newBudgetBalance
+            });
+        }
+
+        if (error) {
+            await oTx.rollback();
+            return errorResults;
+        }
+
+        await oTx.commit();
+        return successResults;
+
+    } catch (err) {
+        await oTx.rollback();
+        return err;
+        // req.error(400, `Budget checking failed: ${err.message}`);
+    }
+}
 module.exports = { 
     resolveDocDescriptor,
     retrieveHeaderDetails,
     retrieveEmployeeDetails,
     retrieveBudgetContext,
     retrieveItems,
-    generateReturnMessage
+    generateReturnMessage,
+    performBudgetChecking
 };

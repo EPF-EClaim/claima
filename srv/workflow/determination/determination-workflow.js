@@ -463,8 +463,8 @@ async function determineWorkflow(oTx, sId) {
     let sTotalClaimAmt = 0;
     let oDeterminedWorkflowContext = null;
     let aWorkflowContext = [];
-    const sMilisecondsPerDay = 24 * 60 * 60 * 1000;
-    const sAgingMiliseconds = null;
+    let sMilisecondsPerDay = 24 * 60 * 60 * 1000;
+    let sAgingMiliseconds = null;
 
     const oDescriptor = resolveDocDescriptor(sId);
     if (!oDescriptor) {

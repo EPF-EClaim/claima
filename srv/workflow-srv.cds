@@ -13,11 +13,10 @@ service workflow {
     action startWorkflow(
         id : String
     ) returns{
-        success             : String;
-        documentID          : String;
-        documentPrefix      : String;
-        outcomeWorkflowCode : String;
-        message             : String;
+        Success             : Boolean;
+        DocumentID          : String;
+        Area                : String;
+        Message             : String;
     };
     action processApproval(
         request : ApproverActionRequest
