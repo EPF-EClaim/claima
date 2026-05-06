@@ -474,6 +474,9 @@ sap.ui.define([
 					var iNoOfFamilyMember = await Utility.getNumberOfFamilyMembers(sClaimTypeItem);
 					this._oClaimModel.setProperty("/claim_item/no_of_family_member", iNoOfFamilyMember);
 
+					//
+					this._filterFareType();
+					ClaimUtility.onPopulateAllocatedAmount();
 					// this._onFilterRegion();
 
 					// // set filters for state and location (office) fields if values exist
@@ -481,47 +484,7 @@ sap.ui.define([
 					// Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.REQUEST);
 
 					//special initialization based on claim type item
-					// switch (sClaimTypeItem) {
-					// 	// set visible for the number of family member and traveller when choosing travel with Family Now
-					// 	case Constants.ClaimTypeItem.LOD_TUKAR:
-					// 	case Constants.ClaimTypeItem.MKN_TUKAR:
-					// 		if (_oHeader.travel_family_now_later === Constants.TravelWithFamilyNowOrLater.NOW_DESC) {
-					// 			Object.values(Constants.ClaimSpecialFieldVisibilityForElaunTukar).forEach(id => {
-					// 				const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
-					// 				if (control && typeof control.setVisible === "function") {
-					// 					control.setVisible(true);
-					// 				} else {
-					// 					console.warn("Control not found or not visible-capable:", id);
-					// 				}
-					// 			});
-					// 		}
-					// 		break;
-					// 	case Constants.ClaimTypeItem.DARAT:
-					// 		if (_oHeader.travel_family_now_later === Constants.TravelWithFamilyNowOrLater.NOW_DESC) {
-					// 			const control = this._resolveControl("select_claimdetails__input_marriagecategory", "claimsubmission_claimdetails_input");
-					// 			if (control && typeof control.setVisible === "function") {
-					// 				control.setVisible(true);
-					// 			} else {
-					// 				console.warn("Control not found or not visible-capable:", id);
-					// 			}
-					// 		}
-					// 		break;	
-					// 	// populate entitled amount 
-					// 	// case Constants.ClaimTypeItem.LAUT:
-					// 	// case Constants.ClaimTypeItem.LODGING_L:
-					// 	// case Constants.ClaimTypeItem.LOD_TUKAR:
-					// 		// if (this._oClaimModel.getProperty("/view") === Constants.AccessMode.CREATE) { select_claimdetails__input_marriagecategory
-					// 		// 	RequestUtility.populateAllocatedAmount();
-					// 		// }
-					// 		// break;
-
-					// 	// remove business class option for FLIGHT_L
-					// 	// case Constants.ClaimTypeItem.FLIGHT_L:
-					// 		//this._removeBusinessClass();
-
-					// 	default:
-					// 		break;
-					// }
+					
 				}
 
 			} catch (err) {
@@ -860,5 +823,17 @@ sap.ui.define([
 				this._oClaimModel.setProperty("/claim_item/amount", ClaimUtility.calculateAmountLodging());
 			}
 		},
+
+		_filterFareType: function () {
+			var oSelect = this.byId("select_fare_type_id");
+			var oBinding = oSelect.getBinding("items");
+			if (!oBinding) return;
+			var aFareTypeFilters = ClaimUtility.getFareTypeFilters(this._oClaimModel.getProperty("/claim_header/claim_type_id"), this._oClaimModel.getProperty("/claim_item/claim_type_item_id"));
+			oBinding.filter(aFareTypeFilters);
+		},
+
+		_onCalculate: async function (){
+			ClaimUtility.onCalculation();
+		}
 	});
 });

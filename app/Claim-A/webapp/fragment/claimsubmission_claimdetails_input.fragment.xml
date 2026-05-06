@@ -141,7 +141,7 @@
                                     items="{path: 'employee>/ZEMP_DEPENDENT',
                                             sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                     <core:Item key="{employee>DEPENDENT_NO}" 
-                                            text="{employee>LEGAL_NAME}" enabled="{claimitem_property>/combo_dependent/is_editable}"/>
+                                            text="{employee>LEGAL_NAME}" enabled="{= !${claim>/view_only} }"/>
                                 </MultiComboBox>
                             </form:fields>
                         </form:FormElement>
@@ -277,8 +277,7 @@
                                     editable="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} }"
                                     
                                     required="true"
-                                    liveChange="onChange_PengangkutanLautInputs"
-                                    change="onChange_PengangkutanLautInputs"
+                                    change="_onCalculate"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -301,8 +300,7 @@
                                         },
                                         constraints: { minimum: 0.01 }
                                     }"
-                                    change="onChange_ClaimDetails_ActualAmount"
-                                    liveChange="onChange_ClaimDetails_ActualAmount"
+                                    change="_onCalculate"
                                     
                                     editable="{= ${claim>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
                                     required="{= ${claim>/claim_item/claim_type_item_id} !==  ${constant>/ClaimTypeItem/PEM_PINDAH} }"
@@ -396,7 +394,13 @@
                                             preserveDecimals: false
                                         }
                                     }"
-                                    editable="{= !${claim>/view_only} &amp;&amp; !${claimitem_property>/amount/is_visible} }"
+                                    editable="{= !${claim>/view_only} &amp;&amp; 
+                                                  (
+                                                    !${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PEDU} ||
+                                                    !${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MATAWANG} ||
+                                                    !${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PEM_PINDAH}
+                                                  )
+                                               }"
                                     
                                 />
                             </form:fields>
@@ -517,7 +521,7 @@
                                     minDate="{ parts: ['constant>/EntitiesFields/START_DATE', 'claim>/claim_header/claim_id', 'claim>/claim_header/claim_type_id', 'claim>/claim_item/claim_type_item_id', 'claim>/claim_header', 'claim>/claim_item'], formatter: '.DateUtility.determineMinDate' }"
                                     maxDate="{ parts: ['constant>/EntitiesFields/START_DATE', 'claim>/claim_header/claim_id', 'claim>/claim_header/claim_type_id', 'claim>/claim_item/claim_type_item_id', 'claim>/claim_header', 'claim>/claim_item'], formatter: '.DateUtility.determineMaxDate' }"
                                     displayFormat="dd-MMM-yyyy"
-                                    change="onChange_ClaimDetails_StartEndDate"
+                                    change="_onCalculate"
                                     required="true"
                                 >
                                     <customData>
@@ -540,7 +544,7 @@
                                     
                                     displayFormat="HH:mm"
                                     valueFormat="HH:mm:ss"
-                                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+                                    change="_onCalculate"
                                     required="true"
                                 />
                             </form:fields>
@@ -562,7 +566,7 @@
                                     minDate="{ parts: ['constant>/EntitiesFields/END_DATE', 'claim>/claim_header/claim_id', 'claim>/claim_header/claim_type_id', 'claim>/claim_item/claim_type_item_id', 'claim>/claim_header', 'claim>/claim_item'], formatter: '.DateUtility.determineMinDate' }"
                                     maxDate="{ parts: ['constant>/EntitiesFields/END_DATE', 'claim>/claim_header/claim_id', 'claim>/claim_header/claim_type_id', 'claim>/claim_item/claim_type_item_id', 'claim>/claim_header', 'claim>/claim_item'], formatter: '.DateUtility.determineMaxDate' }"
                                     displayFormat="dd-MMM-yyyy"
-                                    change="onChange_ClaimDetails_StartEndDate"
+                                    change="_onCalculate"
                                     required="true"
                                 >
                                     <customData>
@@ -584,7 +588,8 @@
                                     value="{claim>/claim_item/end_time}"
                                     
                                     displayFormat="HH:mm"
-                                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+                                    valueFormat="HH:mm:ss"
+                                    change="_onCalculate"
                                     required="true"
                                 />
                             </form:fields>
@@ -1125,7 +1130,9 @@
 
                         <form:FormElement visible="false"  id="input_claimdetails_input_km">
                             <form:label>
-                                <Label text="{i18n>label_claimdetails_input_km}" required="{claimitem_property>/km/is_required}" labelFor="input_claimdetails_input_km"/>
+                                <Label text="{i18n>label_claimdetails_input_km}" 
+                                required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/DARAT} || ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}}" 
+                                labelFor="input_claimdetails_input_km"/>
                             </form:label>
                             <form:fields>
                                 <Input
@@ -1182,15 +1189,14 @@
                                         constraints: { minimum: 0.01 }
                                     }"
                                     required="true"
-                                    editable="{= !${claim>/claim_item/need_foreign_currency} &amp;&amp; 
-                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;  
-                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp; 
-                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp; !${claim>/view_only} &amp;&amp; 
-                                                  !Object.values(${constant>/ClaimTypeItemLodging}).includes(${claim>/claim_item/claim_type_item_id}) &amp;&amp; 
-                                                  ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp; 
-                                                  !${claimitem_property>/rate_per_km/is_visible} &amp;&amp; !${claimitem_property>/actual_amount/is_visible} &amp;&amp; 
-                                                  !${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp; 
-                                                  !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claim>/claim_item/claim_type_item_id}) }"
+                                    editable="{= !${claim>/claim_item/need_foreign_currency} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
+                                                !${claim>/view_only} &amp;&amp;
+                                                !Object.values(${constant>/ClaimTypeItemLodging}).includes(${claim>/claim_item/claim_type_item_id}) &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
+                                                !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claim>/claim_item/claim_type_item_id})}"
                                     
                                 />
                             </form:fields>
@@ -1342,7 +1348,7 @@
                                     value="{claim>/claim_item/trip_start_date}"
                                     
                                     displayFormat="dd-MMM-yyyy"
-                                    change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
+                                    change="_onCalculate"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -1846,7 +1852,7 @@
                                 <form:fields>
                                     <Link
                                         id="link_attachment_file_1"
-                                        press="onView_Claim_Attachment('child','1')"
+                                        press="onDocLinkPress"
                                         text="{claim>/claim_item/attachment_file_1}"
                                     />
                                     <Button
@@ -1892,7 +1898,7 @@
                             <form:fields>
                                 <Link
                                     id="link_attachment_file_2"
-                                    press="onView_Claim_Attachment('child','2')"
+                                    press="onDocLinkPress"
                                     text="{claim>/claim_item/attachment_file_2}"
                                 />
                                 <Button

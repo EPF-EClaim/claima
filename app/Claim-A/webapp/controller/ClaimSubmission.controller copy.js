@@ -2270,7 +2270,7 @@ sap.ui.define([
 			}
 		},
 
-		_getGLAccount: async function (oModel, claim_type) {
+		_getGLAccount: async function (oModel, claim_type) { // in budget checking file
 
 			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, claim_type)
@@ -2323,14 +2323,14 @@ sap.ui.define([
 
 			// When Location Type is visible but no selection yet, hide State and Location fields by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
-			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
-				this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
-				this.byId("select_claimdetails_input_from_location")?.setVisible(false);
-				this.byId("input_claimdetails_input_from_location")?.setVisible(false);
-				this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
-				this.byId("select_claimdetails_input_to_location")?.setVisible(false);
-				this.byId("input_claimdetails_input_to_location")?.setVisible(false);
-			}
+			// if (this.byId("select_claimdetails_input_location_type").getVisible()) {
+			// 	this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+			// 	this.byId("select_claimdetails_input_from_location")?.setVisible(false);
+			// 	this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+			// 	this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+			// 	this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+			// 	this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+			// }
 
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
@@ -2346,99 +2346,101 @@ sap.ui.define([
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
 			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
-			const bKmRequired = [
-				this._oConstant.ClaimTypeItem.DARAT,
-				this._oConstant.ClaimTypeItem.KILOMETER
-			].includes(sKey);
-			oPropertyModel.setProperty("/km/is_required", bKmRequired);
+			// const bKmRequired = [
+			// 	this._oConstant.ClaimTypeItem.DARAT,
+			// 	this._oConstant.ClaimTypeItem.KILOMETER
+			// ].includes(sKey);
+			// oPropertyModel.setProperty("/km/is_required", bKmRequired);
 
-			switch (sKey) {
-				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
-					oPropertyModel.setProperty("/to_state_id/is_required", true); //might not be needed as its not in db structure
-					break;
+			// switch (sKey) {
+			// 	case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+			// 		oPropertyModel.setProperty("/to_state_id/is_required", true); //might not be needed as its not in db structure
+			// 		break;
 
-				case this._oConstant.ClaimTypeItem.ELEKTRIK:
-					oPropertyModel.setProperty("/bill_no/is_required", true);
-					oPropertyModel.setProperty("/account_no/is_required", true);
-					break;
+			// 	case this._oConstant.ClaimTypeItem.ELEKTRIK:
+			// 		oPropertyModel.setProperty("/bill_no/is_required", true);
+			// 		oPropertyModel.setProperty("/account_no/is_required", true);
+			// 		break;
 
-				case this._oConstant.ClaimTypeItem.BIL_AIR:
-					oPropertyModel.setProperty("/bill_no/is_required", true);
-					oPropertyModel.setProperty("/account_no/is_required", true);
-					break;
+			// 	case this._oConstant.ClaimTypeItem.BIL_AIR:
+			// 		oPropertyModel.setProperty("/bill_no/is_required", true);
+			// 		oPropertyModel.setProperty("/account_no/is_required", true);
+			// 		break;
 
-				case this._oConstant.ClaimTypeItem.LAUT:
-					//entitled meter cube
-					oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
-					//actual meter cube
-					oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
+			// 	case this._oConstant.ClaimTypeItem.LAUT:
+			// 		//entitled meter cube
+			// 		oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+			// 		//actual meter cube
+			// 		oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
 
-					oPropertyModel.setProperty("/actual_amount/is_editable", true);
+			// 		oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
-					oPropertyModel.setProperty("/amount/is_editable", false);
-					await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
-					await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
-					break;
-				case this._oConstant.ClaimTypeItem.DARAT:
-					if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC ||
-						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW){
-						oPropertyModel.setProperty("/marriage_category/is_visible", true);
-					}
-					break;
-			}
+			// 		oPropertyModel.setProperty("/amount/is_editable", false);
+			// 		// didnt add this below in new controller
+			// 		await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+			// 		await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			// 		//ends here
+			// 		break;
+			// 	case this._oConstant.ClaimTypeItem.DARAT:
+			// 		if(oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC ||
+			// 			oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW){
+			// 			oPropertyModel.setProperty("/marriage_category/is_visible", true);
+			// 		}
+			// 		break;
+			// }
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days
-			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
-				this.onChange_ClaimDetails_NumberOfDays();
-			}
+			// if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+			// 	oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			// 	this.onChange_ClaimDetails_NumberOfDays();
+			// }
 
 			// set percentage (%) compensation based on claim item
-			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
-			}
+			// if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+			// 	await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+			// }
 
-			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
-			){
-				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
-			}
+			// if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+			// 	oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+			// 	oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+			// 	oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
+			// ){
+			// 	oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+			// }
 
 
-			// set number of family members based on claim item
-			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				var iDependent;
-				iDependent = await Utility.getNumberOfFamilyMembers(sKey);
-				oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
-				if( ((oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC) || 
-					  oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW)
-					&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR
-					&& (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR)){
-					oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
-					oPropertyModel.setProperty("/number_of_traveller/is_required", true);
-				}
-			}
+			// // set number of family members based on claim item
+			// if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+			// 	var iDependent;
+			// 	iDependent = await Utility.getNumberOfFamilyMembers(sKey);
+			// 	oInputModel.setProperty("/claim_item/no_of_family_member", iDependent);
+			// 	if( ((oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC) || 
+			// 		  oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW)
+			// 		&& oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR
+			// 		&& (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_TUKAR || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LOD_TUKAR)){
+			// 		oPropertyModel.setProperty("/number_of_traveller/is_visible", true);
+			// 		oPropertyModel.setProperty("/number_of_traveller/is_required", true);
+			// 	}
+			// }
 
 			// if claim type item is lodging, retrieve eligible amount
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
-				oInputModel.setProperty("/claim_item/eligible_amount", 0);
-			}else{
-				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
-				}
-			}
+			// if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+			// 	oInputModel.setProperty("/claim_item/eligible_amount", 0);
+			// }else{
+			// 	if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+			// 		oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+			// 	}
+			// }
 			
 
 			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
-				var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
-				// populate item values
-				if (dEligibleAmount === null) return;
-				else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
-			}
+			// if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
+			// 	var dEligibleAmount = await ClaimUtility.fetchUserAmountElaunPengangkutan();
+			// 	// populate item values
+			// 	if (dEligibleAmount === null) return;
+			// 	else oInputModel.setProperty("/claim_item/amount", dEligibleAmount);
+			// }
 
 			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
 				this._resetPerDiem();
@@ -3734,7 +3736,7 @@ sap.ui.define([
 				var sEndDateValue = "/claim_item/end_date";
 				var sEndTimeValue = "/claim_item/end_time";
 			}
-			else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) {
+			else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) { // ?? not used at all
 				startDate = "datepicker_claimdetails_input_trip_start_date";
 				startTime = "timepicker_claimdetails_input_trip_starttime";
 				endDate = "datepicker_claimdetails_input_trip_end_date";

@@ -493,4 +493,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                             returns Response;
+
+    type EmpDefaultAmount {
+        iEligibleAmount: Decimal(16,2);
+        iSubsidisedRate: Decimal(5,2);
+    }
+    function getEmpDefaultAmount(sClaimType: String, sClaimTypeItem: String) returns EmpDefaultAmount;
+
 };
+
+    

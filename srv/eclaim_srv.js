@@ -2220,4 +2220,34 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+
+    srv.on('getEmpDefaultAmount', async (req) =>{
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+        if(oEmp){
+            const oEligibilityRule = await SELECT.one
+                .from(Constant.Entities.ZELIGIBILITY_RULE)
+                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT, Constant.EntitiesFields.SUBSIDISED_RATE)
+                .where({
+                    // claim type + claim type item
+                    CLAIM_TYPE_ID: req.data.sClaimType,
+                    CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                })
+            if (!oEligibilityRule) {
+                return 0;
+            }
+            
+            return {
+                iEligibleAmount: oEligibilityRule.ELIGIBLE_AMOUNT,
+                iSubsidisedRate: oEligibilityRule.SUBSIDISED_RATE
+            };
+
+            
+        }
+    })
 }

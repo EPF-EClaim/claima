@@ -175,13 +175,13 @@
 
                         <!-- Attachment 1 -->
                         <Link
-                            press="onView_Claim_Attachment('child_t',null, $event)"
+                            press="onDocLinkPress"
                             text="{claim>ATTACHMENT_FILE_1}"
                         />
 
                         <!-- Attachment 2 -->
                         <Link
-                            press="onView_Claim_Attachment('child_t',null, $event)"
+                            press="onDocLinkPress"
                             text="{claim>ATTACHMENT_FILE_2}"
                         />
 
