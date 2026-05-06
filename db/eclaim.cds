@@ -215,7 +215,7 @@ entity ZREQUEST_ITEM : managed {
         ENTITLED_DINNER            : Integer;
         DAILY_ALLOWANCE            : Integer;
         CURRENCY_CODE              : String;
-        CURRENCY_RATE              : Decimal(6, 2);
+        CURRENCY_RATE              : Decimal(6, 4);
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
         TOTAL_TRAVELLER            : Integer;        
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
@@ -505,7 +505,7 @@ entity ZCLAIM_ITEM : managed {
         VEHICLE_CLASS_ID           : String(2);
         NEED_FOREIGN_CURRENCY      : Boolean;
         CURRENCY_CODE              : String;
-        CURRENCY_RATE              : Decimal(6, 2);
+        CURRENCY_RATE              : Decimal(6, 4);
         CURRENCY_AMOUNT            : Decimal(16, 2);
         REQUEST_APPROVAL_AMOUNT    : Decimal(16, 2);
         DEPARTURE_TIME             : Timestamp;
