@@ -401,7 +401,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         value : Decimal(34);
     }
 
-    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date)       returns rateperkm;
+    function getRatePerKm(sVehicleType: String, sClaimTypeItem: String, dRateDate: Date)       returns rateperkm; 
 
     function getMarriageCategoryBasedOnStatus()                                                returns String;
 
