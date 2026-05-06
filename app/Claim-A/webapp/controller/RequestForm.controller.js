@@ -639,7 +639,7 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: parseFloat(oReqItem.RATE_PER_KM) || 0,
+				rate_per_kilometer		: oReqItem.RATE_PER_KM || null,
 				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
@@ -2908,7 +2908,6 @@ sap.ui.define([
 				oInput.setValueStateText("Number of travelers must be at least 1.");
 			}
 		},
-
 		onSelectRoundTrip: async function (oEvent) {
 			const oResult = await Utility.handleRoundTrip(
 				Constants.SubmissionTypePrefix.REQUEST,
@@ -2921,13 +2920,10 @@ sap.ui.define([
 			}
 
 			if (oResult?.km !== undefined) {
-				this.getView()
-					.getModel("request")
-					.setProperty("/req_item/roundtrip_km", oResult.km);
-
-				// PAR-specific recalculation
-				RequestUtility.populateAllocatedAmount();
+				this.getView().getModel("request").setProperty("/req_item/roundtrip_km", oResult.km);
 			}
+			// PAR-specific recalculation
+			RequestUtility.populateAllocatedAmount();
 		}
 	});
 });

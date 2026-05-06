@@ -5481,9 +5481,9 @@ sap.ui.define([
 
 			if (oResult?.km !== undefined) {
 				this.getView().getModel("claimitem_input").setProperty("/claim_item/rtkm", oResult.km);
-				// claim-specific recalculation
-				this._calculateRatePerKm(false);
 			}
+			// claim-specific recalculation
+			this._calculateRatePerKm(false);
 		}
 	});
 });
