@@ -678,8 +678,14 @@ sap.ui.define([
 				gl_account: oReqItem.GL_ACCOUNT || "",
 				material_code: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0
+				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
+				round_trip 				: oReqItem.ROUND_TRIP || null
 			});
+
+			/// RoundTrip edit
+			if (this._oReqModel.getProperty("/req_item/round_trip")){
+				this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer")*2)
+			}
 
 			const sState = this._oReqModel.getProperty("/view");
 			if (sState != this._oConstant.PARMode.APPROVER) {
@@ -2775,6 +2781,12 @@ sap.ui.define([
 				this._oReqModel.getProperty("/req_item/to_state"),
 				this._oReqModel.getProperty("/req_item/to_location_office")
 			));
+
+			if (this._oReqModel.getProperty("/req_item/round_trip")) {
+				this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer")* 2);
+			} else {
+				this._oReqModel.setProperty("/req_item/roundtrip_km", null);
+			}
 			RequestUtility.populateAllocatedAmount();
 		},
 
