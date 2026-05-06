@@ -4,6 +4,9 @@ const { Constant } = require("../../utils/constant");
 const {
     resolveDocDescriptor
 } = require("../../workflow/workflow-helper")
+const {
+    retrieveWorkflowByClaimTypeAndRole
+} = require('./determination-helper');
 
 async function fetchHeaderForWorkflow(oTx, sId, oDescriptor) {
     
@@ -420,6 +423,11 @@ function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
     }
 
     const dTargetDate = normalizeDate(oDocumentRulesContext.tripStartDate);
+    if(!dTargetDate) {
+        throw new Error(
+            `Unsupported TRIP_START_DATE: ${oWorkflowContext.TRIP_START_DATE}`
+        );
+    }
     const dCurrentDate = new Date();
     dCurrentDate.setHours(0,0,0,0);
     switch(oWorkflowContext.TRIP_START_DATE) {
@@ -435,6 +443,9 @@ function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function normalizeDate(dDate) {
+    if(!dDate) {
+        return null;
+    }   
     const dNewDate = new Date(dDate);
     dNewDate.setHours(0,0,0,0);
     return dNewDate;
@@ -457,13 +468,13 @@ async function determineWorkflow(oTx, sId) {
 
     const oDescriptor = resolveDocDescriptor(sId);
     if (!oDescriptor) {
-        return null
+        return null;
     }
     //1. Retrieve Header details
     const oHeader = await fetchHeaderForWorkflow(oTx, sId, oDescriptor);
 
     //2. Retrieve Item details
-    const aItems = await fetchItemsForWorkflow(oTx, sId, oDescriptor);
+    // const aItems = await fetchItemsForWorkflow(oTx, sId, oDescriptor);
 
     //3. Build workflow context
     // Put all rules into the workflow context
@@ -483,9 +494,9 @@ async function determineWorkflow(oTx, sId) {
         sAgingMiliseconds = dToday.getTime() - dEarliestReceiptDate.getTime();
         sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
     }
-    let sCostCenter = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL
+    let sCostCenterContext = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
-    const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE];
+    const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
     const oDocumentRulesContext = {
         riskLevel       : sRiskLevel,
@@ -494,7 +505,7 @@ async function determineWorkflow(oTx, sId) {
         preapprovedAmt  : Number(sPreapprovedAmt) || 0,
         receiptDate     : dEarliestReceiptDate || null,
         agingDays       : Number(sAgingDays),
-        costCenter      : oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL,
+        costCenter      : sCostCenterContext,
         isCashAdvance   : bIsCashAdvance,
         tripStartDate   : sTripStartDate
     }
@@ -502,19 +513,31 @@ async function determineWorkflow(oTx, sId) {
     //console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
 
     //4. Retrieve Workflow rules based on header/item details
-    //4.1 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
-    //aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
+    //4.1 Retrieve workflow with priority for Claim type with Role (To be added into ZWORKFLOW_TABLE by Sean)
+    aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
+    console.log("Workflow by Submission Type + Claim Type + Role: ", aWorkflowContext);
 
-    //4.2 Retrieve Workflow with priority for Claim Type
+    //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
+    if(!aWorkflowContext.length) {
+        aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
+        console.log("Workflow by Submission Type + Claim Type + Department: ", aWorkflowContext);
+    }
+
+    //4.3 Retrieve Workflow with priority for Claim Type
     if(!aWorkflowContext.length){
         aWorkflowContext = await retrieveWorkflowByClaimType(oTx, sId, oDescriptor);
+        console.log("Workflow by Submission Type + Claim Type: ", aWorkflowContext);
     }
     //console.log('[workflow-determination/determineWorkflow] aWorkflowContext:', aWorkflowContext)
 
-    //4.3 Retrieve Workflow as normal based on Submission Type/Request Type
+    //4.4 Retrieve Workflow as normal based on Submission Type/Request Type
     if(!aWorkflowContext.length){
         aWorkflowContext = await retrieveWorkflow(oTx, sId, oDescriptor);
-        //console.log('[workflow-determination/determineWorkflow] aWorkflowContext:', aWorkflowContext)
+        console.log("Workflow by Submission Type: ", aWorkflowContext);
+    }
+
+    if(!aWorkflowContext.length){
+        return null;
     }
 
     //5. Validate workflow rules

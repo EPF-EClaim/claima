@@ -226,14 +226,13 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
     let aApproversContext = [];
     const oDescriptor = resolveDocDescriptor(sId);
     if (!oDescriptor) {
-        return null
+        return null;
     }
 
     const oWorkflowStepContext = await determineWorkflowStepContext(oTx, oWorkflowContext.OUTCOME_WORKFLOW_CODE, oDescriptor)
     //console.log('[approver-determination/determineApprovers] oWorkflowStepContext:', oWorkflowStepContext)
 
     if(!oWorkflowStepContext){
-
         return null;
     }
     aApproversContext = await runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor);

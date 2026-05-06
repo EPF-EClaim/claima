@@ -431,6 +431,14 @@ const Constant = {
     ApprovalProcessAction: {
         "ACTION_NOTIFY" : "NOTIFY",
         "ACTION_APPROVE": "APPROVE"
+    },
+    WorkflowArea: {
+        "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",
+        "WORKFLOW_DETERMINATION"    : "WORKFLOW_DETERMINATION",
+        "APPROVER_DETERMINATION"    : "APPROVER_DETERMINATION",
+        "WORKFLOW_TABLE_SAVING"     : "WORKFLOW_TABLE_SAVING",
+        "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
+        "BUDGET_CHECKING"           : "BUDGET_CHECKING"
     }
 
 };

@@ -41,7 +41,7 @@ async function sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, sAc
         }
     }
     catch(oError){
-        return oError
+        return null;
     }    
 }
 

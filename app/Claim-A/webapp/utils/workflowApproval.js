@@ -87,7 +87,7 @@ sap.ui.define([
             }
             console.log(oResponse);
 
-            return true;
+            return oResponse.Success;
 
             // Variable declaration for use of the entire function block
             
@@ -648,7 +648,7 @@ sap.ui.define([
             } finally {
                 BusyIndicator.hide();
             }
-            console.log(oResponse);
+            return oResponse.Success;
 
             return true;
             // Variable declaration for use of the entire function block

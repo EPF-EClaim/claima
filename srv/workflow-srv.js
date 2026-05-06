@@ -63,32 +63,27 @@ module.exports = (srv) => {
 
         //1. Determine workflow
         const oWorkflowContext = await determineWorkflow(oTx, sId);
-        //console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         if(!oWorkflowContext) {
-            req.reject(400, "No workflow rule matched");
+            //req.reject(400, "No workflow rule matched");
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'Error encountered during Workflow Determination')
         }
         console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         //2. Determine approvers and substitutes
         const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
-        console.log('[workflow-srv] aApproversContext:', aApproversContext)
         if(!aApproversContext.length) {
-            req.reject(400, "No approvers determined");
-        }
-        else {
-            console.log("Approver Determined for document: ", sId)
+            //req.reject(400, "No approvers determined");
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Determination')
         }
 
         //3. Perform budget checking for auto approve
-        
         if(aApproversContext[0].LEVEL == 0) {
             aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
-            console.log("aBudgetContext: ", aBudgetContext);
             aReturn = await eclaim_srv.performBudgetChecking(oTx, aBudgetContext);
         }
         const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
         if(oReturn) {
             bStatus = false;
-            return generateReturnMessage(bStatus, sId, 'Budget Checking', Constant.BudgetCheckStatus.NOT_FOUND)
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
         }
         //   If successful, update Header table with approved status and timestamp
         sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
@@ -97,7 +92,7 @@ module.exports = (srv) => {
         const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
         if(!aApproversContextNew.length) {
             bStatus = false;
-            return generateReturnMessage(bStatus, sId, 'Approver Determination', 'Approver not found')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization')
         }
         const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
         const sInsert = await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
@@ -109,20 +104,16 @@ module.exports = (srv) => {
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
         let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-            //sStatus = await sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
+            sStatus = await sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
         }
         else {
-            //sStatus = await sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
+            sStatus = await sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
+        }
+        if(!sStatus) {
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification')
         }
 
-        return {
-            success         : sStatus,
-            documentID      : sId,
-            documentPrefix  : oDescriptor.entityPrefix,
-            workflowCode    : oWorkflowContext.OUTCOME_WORKFLOW_CODE,
-            area            : 'EndWorkflow',
-            message         : 'Workflow successfully started'  
-        };
+        return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started');
         
     }),
     srv.on('processApproval', async req => {

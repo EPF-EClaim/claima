@@ -41,7 +41,7 @@ async function sendEmailToApprover(oTx, aApproversContext, sId, oDescriptor, sAc
         }
     }
     catch(oError){
-        return oError
+        return null;
     }
     
 }

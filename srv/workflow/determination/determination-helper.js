@@ -258,6 +258,96 @@ async function insertRecords(sTableName, aRecordDetails, oTx) {
     )
     return sResult;
 }
+async function retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId) {
+    
+    const oToday = new Date()
+
+    const oEmp = await retrieveEmployeeDetails(sEmpId);
+
+    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
+    const oWorkflowRequestType = await normalizeWorkflowRequestType(sId,oDescriptor);
+
+    if(!oWorkflowRequestType){
+        return null
+    }
+        // Retrieve workflow rules by workflow type/workflow request type/claim type id
+        const aWorkflowContext = await cds.run(
+            SELECT
+                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
+                .where({
+                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
+                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
+                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
+                    [Constant.EntitiesFields.ROLE]              : oEmp[Constant.EntitiesFields.ROLE]
+                })
+                .columns(
+                    Constant.EntitiesFields.RISK_LEVEL,
+                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
+                    Constant.EntitiesFields.THRESHOLD_VALUE,
+                    Constant.EntitiesFields.RECEIPT_DAY,    
+                    Constant.EntitiesFields.RECEIPT_AGE,
+                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
+                    Constant.EntitiesFields.CASH_ADVANCE,
+                    Constant.EntitiesFields.TRIP_START_DATE,
+                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
+                )
+        )
+        if(!aWorkflowContext) {
+            return null;
+        }
+    
+    return aWorkflowContext
+    
+}
+async function normalizeWorkflowRequestType(sId, oDescriptor) {
+    if(oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        const oWorkflowRequestType = await cds.run(
+            SELECT
+                .one
+                .from(oDescriptor.entityHeader)
+                .where({
+                    [oDescriptor.idField]   : sId
+                })
+                .columns(   Constant.EntitiesFields.SUBMISSION_TYPE,
+                            Constant.EntitiesFields.CLAIM_TYPE_ID
+                )
+        )
+        if(!oWorkflowRequestType) {
+            return null;
+        }
+        else{
+            return {
+                workflowRequestType : oWorkflowRequestType[Constant.EntitiesFields.SUBMISSION_TYPE],
+                claimTypeId         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
+            };
+        }
+    } 
+    if(oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
+        const oWorkflowRequestType = await cds.run(
+            SELECT
+                .one
+                .from(oDescriptor.entityHeader)
+                .where({
+                    [oDescriptor.idField]   : sId
+                })
+                .columns(   Constant.EntitiesFields.REQUEST_TYPE_ID,
+                            Constant.EntitiesFields.CLAIM_TYPE_ID
+                )
+        )
+        if(!oWorkflowRequestType) {
+            return null;
+        }
+        else{
+            return {
+                workflowRequestType : oWorkflowRequestType[Constant.EntitiesFields.REQUEST_TYPE_ID],
+                claimTypeID         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
+            };
+        }
+    }
+    return null;
+}
 module.exports = { 
     determineWorkflowStepContext,
     retrieveRoleRank,
@@ -269,5 +359,7 @@ module.exports = {
     retrieveSubstitute,
     setApproversContext,
     deleteApproverDetails,
-    insertRecords
+    insertRecords,
+    retrieveWorkflowByClaimTypeAndRole,
+    normalizeWorkflowRequestType
 };
