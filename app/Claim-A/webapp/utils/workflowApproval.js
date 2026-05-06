@@ -45,28 +45,28 @@ sap.ui.define([
 
 		// },
 
-        // //Aiman Added for MyApproval
-        // onSendEmailApprover: async function (oModel, aPayload){
+        //Aiman Added for MyApproval
+        onSendEmailApprover: async function (oModel, aPayload){
             
-        //     const aStringifyPayload = JSON.stringify(aPayload);
-        //     const aParsePayload = JSON.parse(aStringifyPayload);
+            const aStringifyPayload = JSON.stringify(aPayload);
+            const aParsePayload = JSON.parse(aStringifyPayload);
 
-        //     const oAction = oModel.bindContext("/sendEmail(...)");
-        //     oAction.setParameter("ApproverName" , aParsePayload.ApproverName);
-        //     oAction.setParameter("SubmissionDate" , aParsePayload.SubmissionDate);
-        //     oAction.setParameter("ClaimantName" , aParsePayload.ClaimantName);
-        //     oAction.setParameter("ClaimType" , aParsePayload.ClaimType);
-        //     oAction.setParameter("ClaimID" , aParsePayload.ClaimID);
-        //     oAction.setParameter("RecipientName" , aParsePayload.RecipientName);
-        //     oAction.setParameter("Action" , aParsePayload.Action);
-        //     oAction.setParameter("ReceiverEmail" , aParsePayload.ReceiverEmail);
-        //     oAction.setParameter("NextApproverName" , aParsePayload.NextApproverName);
-        //     oAction.setParameter("RejectReason" , aParsePayload.RejectReason);
-        //     oAction.setParameter("ApproverComments" , aParsePayload.ApproverComments);
+            const oAction = oModel.bindContext("/sendEmail(...)");
+            oAction.setParameter("ApproverName" , aParsePayload.ApproverName);
+            oAction.setParameter("SubmissionDate" , aParsePayload.SubmissionDate);
+            oAction.setParameter("ClaimantName" , aParsePayload.ClaimantName);
+            oAction.setParameter("ClaimType" , aParsePayload.ClaimType);
+            oAction.setParameter("ClaimID" , aParsePayload.ClaimID);
+            oAction.setParameter("RecipientName" , aParsePayload.RecipientName);
+            oAction.setParameter("Action" , aParsePayload.Action);
+            oAction.setParameter("ReceiverEmail" , aParsePayload.ReceiverEmail);
+            oAction.setParameter("NextApproverName" , aParsePayload.NextApproverName);
+            oAction.setParameter("RejectReason" , aParsePayload.RejectReason);
+            oAction.setParameter("ApproverComments" , aParsePayload.ApproverComments);
 
-        //     oAction.execute();
+            oAction.execute();
 
-		// },
+		},
         onApproverDetermination: async function (oModel, sId){
 			// claim header
 
