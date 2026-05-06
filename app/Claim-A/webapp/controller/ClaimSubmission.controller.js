@@ -315,6 +315,8 @@ sap.ui.define([
 		_afterLoadFragments: async function () {
 			// ReInit claimutility because of model undefined upon refresh on claim submission view
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+			// ReInit utility because of model undefined upon refresh on claim submission view
+			Utility.init(this.getOwnerComponent(), this.getView());
 			// enable view attachment at claim summary
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
@@ -2611,6 +2613,10 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 				}
 			}
+			//if round trip set to yes
+			if (oInputModel.getProperty("/claim_item/round_trip")) {
+				await this.onChange_ClaimDetails_Kilometer();
+			}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -3583,9 +3589,20 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_Kilometer: async function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oInputModel = this.getView().getModel("claimitem_input");
 
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
 				await this._calculateRatePerKm(false);
+			}
+
+			//Added for Round Trip
+			if (oInputModel.getProperty("/claim_item/round_trip")) {
+				var fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
+				if (fKm > 0) {
+					oInputModel.setProperty("/claim_item/rtkm", fKm * 2);
+				} else {
+					oInputModel.setProperty("/claim_item/rtkm", null);
+				}
 			}
 		},
 
@@ -3637,7 +3654,7 @@ sap.ui.define([
 					const fRate = parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km")) || 0;
 					const fToll = parseFloat(oInputModel.getProperty("/claim_item/toll")) || 0;
 					
-					if (oInputModel.setProperty("/claim_item/rtkm"))
+					if (oInputModel.getProperty("/claim_item/round_trip"))
 					{
 						fKm = fKm * 2;
 					}
@@ -5463,10 +5480,7 @@ sap.ui.define([
 			}
 
 			if (oResult?.km !== undefined) {
-				this.getView()
-					.getModel("claimitem_input")
-					.setProperty("/claim_item/rtkm", oResult.km);
-
+				this.getView().getModel("claimitem_input").setProperty("/claim_item/rtkm", oResult.km);
 				// claim-specific recalculation
 				this._calculateRatePerKm(false);
 			}

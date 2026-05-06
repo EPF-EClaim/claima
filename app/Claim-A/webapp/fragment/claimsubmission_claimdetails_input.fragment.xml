@@ -957,8 +957,7 @@
 
                  <!-- Round Trip Kilometer -->
                 <Label text="{i18n>label_claimdetails_input_rtkm}" 
-                  required="{claimitem_property>/km/is_required}"
-                  visible="{= ${claimitem_input>/claim_item/is_roundtrip} === true }"
+                  visible="{= ${claimitem_input>/claim_item/round_trip} === true }"
                   labelFor="input_claimdetails_input_rtkm"/>
                   
                 <Input
@@ -975,7 +974,8 @@
                         constraints: { minimum: 0.01 }
 					}"
 					enabled="false" 
-					visible="{= ${claimitem_input>/claim_item/is_roundtrip} === true }"
+					visible="{= ${claimitem_input>/claim_item/round_trip} === true }"
+                    change="onChange_ClaimDetails_Kilometer"
 				/>
 
                  <!-- Round Trip -->
@@ -984,7 +984,7 @@
                     id="checkbox_claimdetails_input_roundtrip"
                     visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }"
                     wrapping="true"
-                    selected="{claimitem_input>/claim_item/is_roundtrip}"
+                    selected="{claimitem_input>/claim_item/round_trip}"
                     select="onSelectRoundTrip"
                 />
 
