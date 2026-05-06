@@ -217,7 +217,8 @@ entity ZREQUEST_ITEM : managed {
         CURRENCY_CODE              : String;
         CURRENCY_RATE              : Decimal(16, 4);
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        TOTAL_TRAVELLER            : Integer;        
+        TOTAL_TRAVELLER            : Integer;     
+        ROUND_TRIP                 : Boolean;   
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
