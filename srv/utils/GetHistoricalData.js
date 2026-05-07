@@ -128,8 +128,8 @@ module.exports = {
                 break;
 
             case Constant.PeriodUnit.SERVICE:
-                oDatetoFrom.dDateFrom = "1990-01-01";
-                oDatetoFrom.dDateTo = "9999-12-31"
+                oDatetoFrom.dDateFrom = null;
+                oDatetoFrom.dDateTo = null;
                 return { oDatetoFrom, iItemFreq };
                 break;
 
