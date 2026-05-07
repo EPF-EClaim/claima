@@ -113,6 +113,30 @@
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
 					}"
+                    minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
                 />
 
                 <!-- Trip End Date -->
@@ -129,6 +153,31 @@
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
 					}"
+
+                    minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
                 />
 
                 <!-- Event Start Date -->
