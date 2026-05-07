@@ -73,7 +73,6 @@ module.exports = (srv) => {
                 "";
 
             let sOrigin = null;
-
             try {
                 const authHeader = req.http?.req?.headers?.authorization ?? '';
                 const token = authHeader.split(' ')[1];
@@ -86,7 +85,6 @@ module.exports = (srv) => {
             } catch (e) {
                 console.log("Token parsing failed:", e.message);
             }
-
             const email = String(emailFromToken).trim().toLowerCase();
             const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
             //no record maintained in ZEMP_MASTER table

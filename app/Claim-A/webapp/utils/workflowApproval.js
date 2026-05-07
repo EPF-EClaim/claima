@@ -89,7 +89,6 @@ sap.ui.define([
             }
             
             console.log(oResponse);
-            MessageBox.error(oResponse.Message);
             return oResponse.Success
 
             // Variable declaration for use of the entire function block
@@ -1161,7 +1160,7 @@ sap.ui.define([
         //         LEVEL: Number(iLevel) + 1
         //     };
         // }
-    };
+    // };
     
 });
 
