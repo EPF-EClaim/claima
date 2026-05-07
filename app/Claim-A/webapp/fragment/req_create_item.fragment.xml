@@ -727,7 +727,7 @@
                                 <!-- Round Trip -->
                                  <form:FormElement label="{i18n>label_claimdetails_input_roundtrip}"
                                             id="i_roundtrip" 
-                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }">
+                                            visible="false">
                                     <form:fields>
                                         <CheckBox 
                                             selected="{request>/req_item/round_trip}"
