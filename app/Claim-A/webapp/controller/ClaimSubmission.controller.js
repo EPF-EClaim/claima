@@ -2408,14 +2408,15 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
-			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
-			){
-				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+			if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
+				){
+					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				}
 			}
-
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
