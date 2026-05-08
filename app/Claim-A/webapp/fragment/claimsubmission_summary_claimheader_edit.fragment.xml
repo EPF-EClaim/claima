@@ -110,17 +110,22 @@
                     editable="{claimSubmissionHeaderEditableModel>/startTrip}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/trip_start_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                },
+                                pattern:'dd-MMM-yyyy'
+                            }
 					}"
                     minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_START_DATE',
                                 'constant>/WorkflowType/CLAIM',
-                                'claimsubmission_input>/claimtype/type',
+                                'claimsubmission_input>/claim_header/claim_type_id',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header/trip_end_date'
                             ],
                             formatter: '.DateUtility.determineMinDate'
@@ -129,10 +134,10 @@
                             parts: [
                                 'constant>/EntitiesFields/TRIP_START_DATE',
                                 'constant>/WorkflowType/CLAIM',
-                                'claimsubmission_input>/claimtype/type',
+                                'claimsubmission_input>/claim_header/claim_type_id',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header/trip_end_date'
                             ],
                             formatter: '.DateUtility.determineMaxDate'
@@ -150,18 +155,23 @@
                     editable="{claimSubmissionHeaderEditableModel>/endTrip}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/trip_end_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						type: 'sap.ui.model.type.Date',
+                            formatOptions:{
+                                source:{
+                                    pattern:'yyyy-MM-dd'
+                                },
+                                pattern:'dd-MMM-yyyy'
+                            }
 					}"
 
                     minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_END_DATE',
                                 'constant>/WorkflowType/CLAIM',
-                                'claimsubmission_input>/claimtype/type',
+                                'claimsubmission_input>/claim_header/claim_type_id',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header/trip_start_date'
                             ],
                             formatter: '.DateUtility.determineMinDate'
@@ -170,10 +180,10 @@
                             parts: [
                                 'constant>/EntitiesFields/TRIP_END_DATE',
                                 'constant>/WorkflowType/CLAIM',
-                                'claimsubmission_input>/claimtype/type',
+                                'claimsubmission_input>/claim_header/claim_type_id',
                                 { value: 'null' },
                                 'claimsubmission_input>/claim_header',
-                                'claimsubmission_input>/claimtype/item',
+                                { value: 'null' },
                                 'claimsubmission_input>/claim_header/trip_start_date'
                             ],
                             formatter: '.DateUtility.determineMaxDate'
