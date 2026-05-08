@@ -3779,7 +3779,7 @@ sap.ui.define([
 				//set initial value for meal entitlement based on traveldays
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
-
+					//entitled meal = travel days
 					var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
 					if (nEntBfast >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);

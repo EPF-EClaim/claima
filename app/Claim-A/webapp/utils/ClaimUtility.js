@@ -246,7 +246,7 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimModel.getProperty("/claim_item/provided_dinner"));
-			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) {
+			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) { // check if its not the claim type item to set as true 
 				oClaimModel.setProperty(("/claim_item/exclude_tips"), true);
 			}
 			var bTips = oClaimModel.getProperty("/claim_item/exclude_tips");
