@@ -1085,11 +1085,8 @@ entity ZWORKFLOW_RULE : managed {
         CASH_ADVANCE          : Boolean       @Common.Label: 'Cash Advance';
         TRIP_START_DATE       : String(2)     @Common.Label: 'Trip Start Date';
         ROLE                  : String(15)    @Common.Label: 'Role';
-        DEPARTMENT_ID         : String(10)    @Common.Label: 'Department ID';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
-        ZDEPARTMENT           : Association to ZDEPARTMENT
-                                    on ZDEPARTMENT.DEPARTMENT_ID = DEPARTMENT_ID;
 }
 
 entity ZCURRENCY : managed {
