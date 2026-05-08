@@ -54,10 +54,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         sLevels > 1 
             ? sWorkflowName.split("-").map(s => s.trim())
             : [sWorkflowName.trim()];
-    console.log("Start Determination");
-    //console.log(aWorkflowApprStep);
-    //console.log(sWorkflowName);
-    //console.log(sLevels);
     if(sWorkflowName == Constant.Role.AUTO && sLevels == 0){
         aUniqueApproversDetails.push({
             EEID: Constant.Role.AUTO,
@@ -157,8 +153,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 }
                 
             } 
-
-            console.log("Approver Found: ", oApproverDetails)
             // Check if approver is found. If approver not found, do not store approver rank and current outcome
             if(oApproverDetails){
                 iApproverRank = Number(oApproverDetails.RANK);                    
@@ -167,7 +161,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         }
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
-    console.log("aUniqueApproversDetails: ", aUniqueApproversDetails)
     //console.log(aUniqueApproversDetails);
     // Variable declaration for substitutes
     let sSubstitute = null;         // Variable to store substitute user
@@ -202,7 +195,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             SUB_EMAIL       : sSubstitute_email
         });
     }
-    console.log("aFullApproversDetails: ", aFullApproversDetails)
 
     return aFullApproversDetails;
 }
@@ -244,7 +236,6 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
         return null;
     }
     aApproversContext = await runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor);
-   console.log('[approver-determination/determineApprovers] aApproversContext:', aApproversContext)
     if(!aApproversContext) {
         return null;
     }    

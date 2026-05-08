@@ -208,6 +208,8 @@ function setApproversContext(oDescriptor, sId, aApproversContext) {
         let sStatus = "";
         let iLevel = Number(oApprover.LEVEL) || 0;
         let dProcessTimestamp = null;
+
+        // If item is auto approval, set the timestamp for approval
         if(iLevel == 0) {
             sStatus = Constant.Status.APPROVED;
             dProcessTimestamp = new Date();
@@ -249,7 +251,7 @@ async function deleteApproverDetails(sTableName, sKeyName, sClaimID, oTx) {
  * @public
  * @param {String} sTableName - Table name for records to be inserted;
  * @param {Array} aRecordDetails - Array of records to be inserted;
- * @param {Array} tx - CDS call;
+ * @param {Array} oTx - CDS call;
  * @returns {String} sResult - Result of Insertion of records
  */
 async function insertRecords(sTableName, aRecordDetails, oTx) {

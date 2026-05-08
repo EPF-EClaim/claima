@@ -1,9 +1,6 @@
 // Require START
 const cds = require('@sap/cds');
 const { Constant } = require("./utils/constant");
-const approve = require("./workflow/action/workflow-approve");
-const reject = require("./workflow/action/workflow-reject");
-const pushback = require("./workflow/action/workflow-pushback");
 const UpdateHeader = require("./utils/UpdateHeader");
 const { 
     determineWorkflow  
@@ -30,13 +27,24 @@ const {
 const {
     sendEmailToApprover
 } = require('./workflow/notification/notification-approver');
+const {
+    updateApproverDetailsTable,
+    verifyCorrectApproverForAction,
+    checkFinalLevelApproverStatus
+} = require('./workflow/action/action-helper');
 const { message } = require('@sap/cds/lib/log/cds-error');
 
-const actionHandlers = {
-    [Constant.ApproverActions.APPROVE]     : approve,
-    [Constant.ApproverActions.REJECT]      : reject,
-    [Constant.ApproverActions.PUSHBACK]    : pushback
+const actionValues = {
+    [Constant.ApproverActions.APPROVE]      : Constant.Status.APPROVED,
+    [Constant.ApproverActions.REJECT]       : Constant.Status.REJECTED,
+    [Constant.ApproverActions.PUSHBACK]     : Constant.Status.PUSH_BACK
 }
+const budgetActionValues = {
+    [Constant.ApproverActions.APPROVE]      : Constant.ApproverActions.APPROVE,
+    [Constant.ApproverActions.REJECT]       : Constant.ApproverActions.REJECT,
+    [Constant.ApproverActions.PUSHBACK]     : Constant.ApproverActions.REJECT
+}
+
 
 const aApproverTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : Constant.Entities.ZAPPROVER_DETAILS_CLAIMS,
@@ -49,32 +57,26 @@ module.exports = (srv) => {
 
     srv.on('startWorkflow', async req => {
         const oTx = cds.tx(req)
-
         const { id : sId } = req.data
-        
         let bStatus = true;
         let aReturn = [];
-
         const oDescriptor = resolveDocDescriptor(sId);
         let aBudgetContext = [];
         if (!oDescriptor) {
-            req.reject(400, `Prefix not found for document: ${sId}`);
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`);
         }
 
         //1. Determine workflow
         const oWorkflowContext = await determineWorkflow(oTx, sId);
         if(!oWorkflowContext) {
-            //req.reject(400, "No workflow rule matched");
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'Error encountered during Workflow Determination')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched')
         }
         console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         //2. Determine approvers and substitutes
         const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
         if(!aApproversContext.length) {
-            //req.reject(400, "No approvers determined");
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Determination')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'No approvers determined')
         }
-        console.log('[workflow-srv] aApproversContext:', aApproversContext)
         //3. Perform budget checking for auto approve
         if(aApproversContext[0].LEVEL == 0) {
             aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
@@ -118,19 +120,56 @@ module.exports = (srv) => {
         
     }),
     srv.on('processApproval', async req => {
-        const { sId, sAction, sComments, sRejectionReason } = req.data.request
+        const { 
+            Id              : sId = null, 
+            UserId          : sUserId = null, 
+            Action          : sAction = null, 
+            Comments        : sComments = null, 
+            RejectionReason : sRejectionReason = null 
+        } = req.data.request
+
+        const oDescriptor = resolveDocDescriptor(sId);
+
         const oTx = cds.tx(req)
-
-        const aHandler = actionHandlers[sAction]
-
+        const sActionValue = actionValues[sAction]
         if(!aHandler) {
-            req.reject(400, `Unsupported workflow action: ${sAction}`)
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Unsupported workflow action: ${sAction}`);
         }
-        await aHandler({
-            oTx, 
-            sId,
-            sComments,
-            sRejectionReason
-        })
+        const sBudgetActionValue = budgetActionValues[sAction];
+
+        // Verify if Approver is correct approver
+        const bStatus = await verifyCorrectApproverForAction(sId, sUserId, oDescriptor);
+        if(!bStatus) {
+            //Return error message
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Invalid Approver ${sUserId} for Document ${sId}`);
+        }
+
+        // Once Approver is validated, perform action
+        bStatus = await updateApproverDetailsTable(oTx, sId, sUserId, sActionValue, sComments, sRejectionReason, oDescriptor);
+        if(!bStatus) {
+            //Return error message
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Error Encountered during action: ${sAction} for Document ${sId}`);
+        }
+
+        // Check if approver is final level approver or if action is REJECT/PUSH BACK. If yes, perform budget checking
+        const bFinalLevelApprover = await checkFinalLevelApproverStatus(sId, oDescriptor);
+        if(sActionValue == Constant.Status.REJECTED || sActionValue == Constant.Status.PUSH_BACK || bFinalLevelApprover) {
+            const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, sBudgetActionValue);
+            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            if(oReturn) {
+                bStatus = false;
+                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
+            }
+        }
+
+        // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the timestamp and Reject Reason if necessary
+        const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, sActionValue, oTx);
+
+        // Notify claimant/next level approver
+        // If action is REJECT/PUSH BACK, notify claimant
+        // If action is APPROVE, notify next level approver
+        // If action is APPROVE and there are no next level approver, notify claimant
+
     })
 }

@@ -514,20 +514,20 @@ async function determineWorkflow(oTx, sId) {
 
     //4. Retrieve Workflow rules based on header/item details
     //4.1 Retrieve workflow with priority for Claim type with Role (To be added into ZWORKFLOW_TABLE by Sean)
-    aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
-    console.log("Workflow by Submission Type + Claim Type + Role: ", aWorkflowContext);
+    // aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
+    // console.log("Workflow by Submission Type + Claim Type + Role: ", aWorkflowContext);
 
-    //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
-    if(!aWorkflowContext.length) {
-        aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
-        console.log("Workflow by Submission Type + Claim Type + Department: ", aWorkflowContext);
-    }
+    // //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
+    // if(!aWorkflowContext.length) {
+    //     aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
+    //     console.log("Workflow by Submission Type + Claim Type + Department: ", aWorkflowContext);
+    // }
 
-    //4.3 Retrieve Workflow with priority for Claim Type
-    if(!aWorkflowContext.length){
-        aWorkflowContext = await retrieveWorkflowByClaimType(oTx, sId, oDescriptor);
-        console.log("Workflow by Submission Type + Claim Type: ", aWorkflowContext);
-    }
+    // //4.3 Retrieve Workflow with priority for Claim Type
+    // if(!aWorkflowContext.length){
+    //     aWorkflowContext = await retrieveWorkflowByClaimType(oTx, sId, oDescriptor);
+    //     console.log("Workflow by Submission Type + Claim Type: ", aWorkflowContext);
+    // }
     //console.log('[workflow-determination/determineWorkflow] aWorkflowContext:', aWorkflowContext)
 
     //4.4 Retrieve Workflow as normal based on Submission Type/Request Type
