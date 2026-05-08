@@ -238,7 +238,7 @@ sap.ui.define([
 			}
 			else{
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
-				nDependent = 0;
+				nDependent = 1;
 			}
 			//get total hours based on diffrence hour + day
 			var nHour = (nDay * 24) + oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
