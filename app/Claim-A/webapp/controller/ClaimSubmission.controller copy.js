@@ -5286,7 +5286,7 @@ sap.ui.define([
 
 			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel,oClaimSubmissionModel).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
-					//reset amount
+					//reset amount //dont need
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {

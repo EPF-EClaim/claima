@@ -224,7 +224,7 @@ sap.ui.define([
 
 			if ((oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MKN_LOAN)) {
 				nDay = oClaimModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimModel.getProperty("/claim_item/no_of_days");
-				nDependent = oClaimModel.getProperty("/claim_item/no_of_family_member");
+				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member") ? oClaimItemInputModel.getProperty("/claim_item/no_of_family_member") : 1;
 			} else if(oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MKN_TUKAR){
 				if(oClaimModel.getProperty("/claim_header/travel_family_now_later") == Constants.TravelWithFamilyNowOrLater.NOW){
 					nDay = oClaimModel.getProperty("/claim_item/no_of_days");
@@ -236,7 +236,7 @@ sap.ui.define([
 			}
 			else{
 				nDay = oClaimModel.getProperty("/claim_item/travel_duration_day");
-				nDependent = 0;
+				nDependent = 1;
 			}
 			//get total hours based on diffrence hour + day
 			var nHour = (nDay * 24) + oClaimModel.getProperty("/claim_item/travel_duration_hour");
@@ -246,14 +246,10 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimModel.getProperty("/claim_item/provided_dinner"));
-			if (!this.byId("input_claimdetails_input_exclude_tips").getVisible()) { // check if its not the claim type item to set as true 
-				oClaimModel.setProperty(("/claim_item/exclude_tips"), true);
-			}
 			var bTips = oClaimModel.getProperty("/claim_item/exclude_tips");
 
 			var oSessionModel = this._oOwnerComponent.getModel("session");
 			var sEEID = oSessionModel.getProperty("/userId");
-
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
@@ -790,20 +786,31 @@ sap.ui.define([
 			const oHeader = oClaimModel.getProperty("/claim_header");
 			const oItem = oClaimModel.getProperty("/claim_item")
 
-			
+			const oResult = this.fetchAndApplyEntitlement();			
 
 		},
 
 		onCalculateTravelDuration: async function(){
 			const oClaimModel = this._oOwnerComponent.getModel("claim");
+			const oHeader = oClaimModel.getProperty("/claim_header");
+			const oItem = oClaimModel.getProperty("/claim_item");
+
 			const dStartDate = oClaimModel.getProperty("/claim_item/start_date");
 			const dEndDate = oClaimModel.getProperty("/claim_item/end_date");
 			const dStartTime = oClaimModel.getProperty("/claim_item/start_time");
 			const dEndTime= oClaimModel.getProperty("/claim_item/end_time");
-
+			
 			if(!dStartDate || !dEndDate) return;
 
-			oClaimModel.setProperty("/claim_item/travel_duration_day", await DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oHeader, oItem));
+			const iNoOfDays = await DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oHeader, oItem);
+
+			oClaimModel.setProperty("/claim_item/travel_duration_day", iNoOfDays);
+
+			if(oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_O || oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_L){
+				oClaimModel.setProperty("/claim_item/entitled_breakfast", iNoOfDays);
+				oClaimModel.setProperty("/claim_item/entitled_lunch", iNoOfDays);
+				oClaimModel.setProperty("/claim_item/entitled_dinner", iNoOfDays);
+			}
 
 			if(!dStartTime || !dEndTime) return;
 
@@ -815,8 +822,8 @@ sap.ui.define([
 			const iRemainingHours = iTotalHours % 24;
 			
 			oClaimModel.setProperty("/claim_item/travel_duration_hour", Math.floor(iRemainingHours));
-		}
-
+		},
+		
 
 
 	}

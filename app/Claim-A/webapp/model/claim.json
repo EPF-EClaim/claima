@@ -219,7 +219,7 @@
         "travel_days_id": null,
         "vehicle_class_id": null,
         "daily_allowance": null,
-        "exclude_tips": null,
+        "exclude_tips": true,
         "tips": null,
         "number_of_travellers": null,
         "descr": {
