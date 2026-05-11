@@ -204,7 +204,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TYPE_OF_PROFESSIONAL_BODY,
                 ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
                 TOTAL_TRAVELLER,
-                FARE_TYPE_ID
+                FARE_TYPE_ID,
+                ROUND_TRIP
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
