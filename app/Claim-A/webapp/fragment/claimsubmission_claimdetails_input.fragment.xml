@@ -1307,7 +1307,7 @@
                                         },
                                         constraints: { minimum: 0.01 }
                                     }"     
-                                    change="onChange_ClaimDetails_CurrencyRate"
+                                    change="_onCalculate"
                                     editable="{=  ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}  || !!${claim>/claim_item/need_foreign_currency} }"  
                                     required="{= ${claim>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} || !!${claim>/claim_item/need_foreign_currency} }"           
                                 />
@@ -1331,7 +1331,7 @@
                                         },
                                         constraints: { minimum: 0.01 }
                                     }"
-                                    change="onChange_ClaimDetails_CurrencyRate"
+                                    change="_onCalculate"
                                     editable="{= !!${claim>/claim_item/need_foreign_currency} }"
                                     required="{= ${claim>/claim_item/need_foreign_currency}}"
                                 />

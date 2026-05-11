@@ -5296,27 +5296,27 @@ sap.ui.define([
 					return;
 				}
 
-				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) { //just populate MAKAN_O and _L
 					oClaimItemInputModel.setProperty(
 						"/claim_item/daily_allowance",
 						oResult.daily_allowance
 					);
 				}
 
-				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+				if (this.byId("select_claimdetails_input_currency_code").getVisible()) { //MAKAN_O and TAMBANG
 					oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
 					oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
 					//initialize amount(MYR)
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
-					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
+					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) { // if got currency rate in model
 						var nAmountMYR = (oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount"));
 						oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
 					}
-				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
+				} else if (this.byId("input_claimdetails_input_amount").getVisible()) { // everything else = populate amt?
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
 				}
 
-				if (this.byId("input_claimdetails_input_tips").getVisible()) {
+				if (this.byId("input_claimdetails_input_tips").getVisible()) { // MAKAN_O
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
 				}
 

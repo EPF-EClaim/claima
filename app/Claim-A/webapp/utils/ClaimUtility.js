@@ -728,11 +728,13 @@ sap.ui.define([
 				case Constants.ClaimTypeItem.LODGING_L:
 					await this.fetchUserAmountLodging();
 					break;
-				
 
 				case Constants.ClaimTypeItem.MAKAN_L:
 				case Constants.ClaimTypeItem.MAKAN_O:
-					this.onCalculateTravelDuration();
+					await this.onCalculateEntitlement();
+					await this.onCalculatePerDiem();
+					break;
+				case Constants.ClaimTypeItem.TAMBANG:
 					await this.onCalculatePerDiem();
 					break;
 
@@ -783,14 +785,45 @@ sap.ui.define([
 		onCalculatePerDiem: async function(){
 			const oDataModel = this._oOwnerComponent.getModel();
 			const oClaimModel = this._oOwnerComponent.getModel("claim");
-			const oHeader = oClaimModel.getProperty("/claim_header");
-			const oItem = oClaimModel.getProperty("/claim_item")
+			const sClaimTypeItem = oClaimModel.getProperty("/claim_item/claim_type_item_id");
 
-			const oResult = this.fetchAndApplyEntitlement();			
+			const oResult = await this.fetchAndApplyEntitlement();
+			// if(!!oResult || oResult.amount == 0){
+			// 	return;
+			// }
 
+			switch(sClaimTypeItem){
+				case Constants.ClaimTypeItem.MAKAN_O:
+					oClaimModel.setProperty("/claim_item/daily_allowance", oResult.daily_allowance);
+
+					oClaimModel.setProperty("/claim_item/currency_code", oResult.currency_code);
+					oClaimModel.setProperty("/claim_item/currency_amount", oResult.amount);
+
+					if(oClaimModel.getProperty("/claim_item/currency_rate") && oClaimModel.getProperty("/claim_item/currency_amount")){
+						var nAmountMYR = (oClaimModel.getProperty("/claim_item/currency_rate") * oClaimModel.getProperty("/claim_item/currency_amount"));
+						oClaimModel.setProperty("/claim_item/amount", nAmountMYR);
+					}
+
+					oClaimModel.setProperty("/claim_item/tips", oResult.tips_amount);
+
+					break;
+				case Constants.ClaimTypeItem.MAKAN_L:
+					oClaimModel.setProperty("/claim_item/daily_allowance", oResult.daily_allowance);
+					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
+					break;
+				case Constants.ClaimTypeItem.TAMBANG:
+					
+					break;
+				default:
+					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
+					break;
+			}
+
+
+			//oResult. amount daily_allowance currency_code tips_amount
 		},
 
-		onCalculateTravelDuration: async function(){
+		onCalculateEntitlement: async function(){
 			const oClaimModel = this._oOwnerComponent.getModel("claim");
 			const oHeader = oClaimModel.getProperty("/claim_header");
 			const oItem = oClaimModel.getProperty("/claim_item");
