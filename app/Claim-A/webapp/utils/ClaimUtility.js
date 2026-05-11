@@ -788,9 +788,9 @@ sap.ui.define([
 			const sClaimTypeItem = oClaimModel.getProperty("/claim_item/claim_type_item_id");
 
 			const oResult = await this.fetchAndApplyEntitlement();
-			// if(!!oResult || oResult.amount == 0){
-			// 	return;
-			// }
+			if(!!oResult || oResult.amount == 0){
+				return;
+			}
 
 			switch(sClaimTypeItem){
 				case Constants.ClaimTypeItem.MAKAN_O:
@@ -812,7 +812,14 @@ sap.ui.define([
 					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
 					break;
 				case Constants.ClaimTypeItem.TAMBANG:
-					
+					oClaimModel.setProperty("/claim_item/currency_code", oResult.currency_code);
+					oClaimModel.setProperty("/claim_item/currency_amount", oResult.amount);
+
+					if(oClaimModel.getProperty("/claim_item/currency_rate") && oClaimModel.getProperty("/claim_item/currency_amount")){
+						var nAmountMYR = (oClaimModel.getProperty("/claim_item/currency_rate") * oClaimModel.getProperty("/claim_item/currency_amount"));
+						oClaimModel.setProperty("/claim_item/amount", nAmountMYR);
+					}
+
 					break;
 				default:
 					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
