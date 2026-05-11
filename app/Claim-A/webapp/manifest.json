@@ -4554,7 +4554,7 @@
                                         "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
-                                            "column": false,
+                                            "column": true,
                                             "filter": true,
                                             "sort": true
                                         },
@@ -4601,7 +4601,7 @@
                                         "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
-                                            "column": false,
+                                            "column": true,
                                             "filter": true,
                                             "sort": true
                                         },
@@ -4648,7 +4648,7 @@
                                         "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
-                                            "column": false,
+                                            "column": true,
                                             "filter": true,
                                             "sort": true
                                         },
@@ -4695,7 +4695,7 @@
                                         "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
-                                            "column": false,
+                                            "column": true,
                                             "filter": true,
                                             "sort": true
                                         },

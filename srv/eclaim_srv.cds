@@ -271,8 +271,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZWORKFLOW_RULE                as projection on ECLAIM.ZWORKFLOW_RULE;
 
+    @cds.redirection.target
     entity ZAPPROVER_DETAILS_CLAIMS      as projection on ECLAIM.ZAPPROVER_DETAILS_CLAIMS;
 
+    @cds.redirection.target
     entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
     entity ZSUBSTITUTION_RULES           as projection on ECLAIM.ZSUBSTITUTION_RULES;
@@ -497,9 +499,343 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                                       returns Response;
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY     as
-        projection on ECLAIM.ZCLAIM_HEADER {
+    entity ZEMP_APPROVER_REQUEST_DETAILS as
+        projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {
+            key PREAPPROVAL_ID,
+            key LEVEL,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                APPROVER_ID,
+                ZEMP_MASTER_APPROVER.NAME         as APPROVER_NAME,
+                ZEMP_MASTER_APPROVER.EMAIL        as APPROVER_EMAIL,
+                SUBSTITUTE_APPROVER_ID,
+                ZEMP_MASTER_SUBS.NAME             as SUBSTITUTE_NAME,
+                ZEMP_MASTER_SUBS.EMAIL            as SUBSTITUTE_EMAIL,
+                ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
+                ZREQUEST_HEADER.EMP_ID,
+                ZREQUEST_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
+                ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
+                ZREQUEST_HEADER.REQUEST_DATE,
+                ZREQUEST_HEADER.CASH_ADVANCE,
+                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT,
+                REJECT_REASON_ID,
+                ZREJECT_REASON.REASON_DESC,
+                PROCESS_TIMESTAMP,
+                COMMENT,
+                modifiedAt
+        };
+
+    entity ZEMP_APPROVER_CLAIM_DETAILS   as
+        projection on ECLAIM.ZAPPROVER_DETAILS_CLAIMS {
             key CLAIM_ID,
+            key LEVEL,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                APPROVER_ID,
+                ZEMP_MASTER_APPROVER.NAME       as APPROVER_NAME,
+                ZEMP_MASTER_APPROVER.EMAIL      as APPROVER_EMAIL,
+                SUBSTITUTE_APPROVER_ID,
+                ZEMP_MASTER_SUBS.NAME           as SUBSTITUTE_NAME,
+                ZEMP_MASTER_SUBS.EMAIL          as SUBSTITUTE_EMAIL,
+                ZCLAIM_HEADER.EMP_ID,
+                ZCLAIM_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
+                ZCLAIM_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
+                ZCLAIM_HEADER.PURPOSE,
+                ZCLAIM_HEADER.SUBMITTED_DATE,
+                ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE,
+                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT,
+                ZCLAIM_HEADER.PREAPPROVED_AMOUNT,
+                REJECT_REASON_ID,
+                ZREJECT_REASON.REASON_DESC,
+                PROCESS_TIMESTAMP,
+                COMMENT,
+                modifiedAt
+        };
+
+    view ZAPPROVER_REQUEST_PIVOT as
+        select from ZEMP_APPROVER_REQUEST_DETAILS {
+            key PREAPPROVAL_ID,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_ID
+                    end) as APPROVER1      : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_NAME
+                    end) as APPROVER1_NAME : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_ID
+                    end) as APPROVER2      : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_NAME
+                    end) as APPROVER2_NAME : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_ID
+                    end) as APPROVER3      : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_NAME
+                    end) as APPROVER3_NAME : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_ID
+                    end) as APPROVER4      : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_NAME
+                    end) as APPROVER4_NAME : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_ID
+                    end) as APPROVER5      : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_NAME
+                    end) as APPROVER5_NAME : String
+        }
+        group by
+            PREAPPROVAL_ID;
+
+    view ZAPPROVER_CLAIM_PIVOT as
+        select from ZEMP_APPROVER_CLAIM_DETAILS {
+            key CLAIM_ID,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_ID
+                    end) as APPROVER1      : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_NAME
+                    end) as APPROVER1_NAME : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_ID
+                    end) as APPROVER2      : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_NAME
+                    end) as APPROVER2_NAME : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_ID
+                    end) as APPROVER3      : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_NAME
+                    end) as APPROVER3_NAME : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_ID
+                    end) as APPROVER4      : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_NAME
+                    end) as APPROVER4_NAME : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_ID
+                    end) as APPROVER5      : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_NAME
+                    end) as APPROVER5_NAME : String
+        }
+        group by
+            CLAIM_ID;
+
+    entity ZEMP_REQUEST_REPORT_SUMMARY   as
+        select from ECLAIM.ZREQUEST_HEADER as HEADER
+        left join ZAPPROVER_REQUEST_PIVOT as PIVOT
+            on PIVOT.PREAPPROVAL_ID = HEADER.REQUEST_ID
+        {
+            key REQUEST_ID,
+                EMP_ID,
+                REQUEST_TYPE_ID,
+                ZREQUEST_TYPE.REQUEST_TYPE_DESC,
+                CASH_ADVANCE_DATE,
+                COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC,
+                ALTERNATE_COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                TOTAL_AMOUNT,
+                CASH_ADVANCE,
+                OBJECTIVE_PURPOSE,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                EVENT_START_DATE,
+                EVENT_END_DATE,
+                LOCATION,
+                TYPE_OF_TRANSPORTATION,
+                REMARK,
+                ZEMP_MASTER.UNIT_SECTION,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+                REQUEST_DATE,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.POSITION_NAME,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
+                LAST_PUSH_BACK_DATE,
+                LAST_APPROVED_DATE,
+                CASH_ADVANCE_DATE           as PAYMENT_DATE,
+                SUBMITTED_DATE,
+                CLAIM_TYPE_ID,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                ZCLAIM_TYPE.GL_ACCOUNT,
+                ZCLAIM_TYPE.ZGL_ACCOUNT.GL_ACCOUNT_DESC,
+                createdBy,
+                IND_OR_GROUP,
+                ZINDIV_GROUP.IND_OR_GROUP_DESC,
+                 // Calculate the difference between Submitted and Last Approved date
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer
+        };
+
+    entity ZEMP_REQUEST_REPORT_DETAILS   as
+        select from ECLAIM.ZREQUEST_HEADER as HEADER
+        left join ZAPPROVER_REQUEST_PIVOT as PIVOT
+            on PIVOT.PREAPPROVAL_ID = HEADER.REQUEST_ID
+        {
+            key REQUEST_ID,
+            key ZREQUEST_ITEM.REQUEST_SUB_ID,
+                EMP_ID,
+                REQUEST_TYPE_ID,
+                ZREQUEST_TYPE.REQUEST_TYPE_DESC,
+                CASH_ADVANCE_DATE,
+                COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC,
+                ALTERNATE_COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
+                TOTAL_AMOUNT,
+                CASH_ADVANCE,
+                OBJECTIVE_PURPOSE,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                EVENT_START_DATE,
+                EVENT_END_DATE,
+                LOCATION,
+                TYPE_OF_TRANSPORTATION,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                ZREQUEST_ITEM.CLAIM_TYPE_ID,
+                ZREQUEST_ITEM.CLAIM_TYPE_ITEM_ID,
+                ZREQUEST_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
+                ZREQUEST_ITEM.EST_AMOUNT,
+                ZREQUEST_ITEM.EST_NO_PARTICIPANT,
+                REQUEST_DATE,
+                ZREQUEST_ITEM.CASH_ADVANCE                                     as CASH_ADV_YES_NO,
+                ZREQUEST_ITEM.START_DATE,
+                ZREQUEST_ITEM.END_DATE,
+                ZREQUEST_ITEM.REMARK,
+                ZEMP_MASTER.UNIT_SECTION,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.POSITION_NAME,
+                ZREQUEST_ITEM.DECLARE_CLUB_MEMBERSHIP,
+                ZREQUEST_ITEM.KWSP_SPORTS_REPRESENTATION,
+                ZREQUEST_ITEM.ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_DESC,
+                ZREQUEST_ITEM.SPORTS_CLAIM_DISCLAIMER,
+                ZREQUEST_ITEM.VEHICLE_OWNERSHIP_ID,
+                ZREQUEST_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
+                ZREQUEST_ITEM.MODE_OF_TRANSFER,
+                ZREQUEST_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                ZREQUEST_ITEM.TRANSFER_DATE,
+                ZREQUEST_ITEM.NO_OF_DAYS,
+                ZREQUEST_ITEM.MARRIAGE_CATEGORY,
+                ZREQUEST_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
+                ZREQUEST_ITEM.FAMILY_COUNT,
+                ZREQUEST_ITEM.GL_ACCOUNT,
+                ZREQUEST_ITEM.MATERIAL_CODE,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
+                LAST_PUSH_BACK_DATE,
+                SUBMITTED_DATE,
+                LAST_APPROVED_DATE,
+                CASH_ADVANCE_DATE                                              as PAYMENT_DATE,
+                CLAIM_TYPE_ID                                                  as CLAIM_TYPE_HEADER,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC                                    as CLAIM_TYPE_DESC_HEADER,
+                createdBy,
+                ZREQUEST_ITEM.COURSE_TITLE,
+                ZREQUEST_ITEM.KILOMETER,
+                ZREQUEST_ITEM.RATE_PER_KM,
+                ZREQUEST_ITEM.FLIGHT_CLASS,
+                ZREQUEST_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
+                ZREQUEST_ITEM.LOCATION_TYPE,
+                ZREQUEST_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
+                ZREQUEST_ITEM.COUNTRY,
+                ZREQUEST_ITEM.ZCOUNTRY.COUNTRY_DESC,
+                ZREQUEST_ITEM.FROM_STATE_ID,
+                ZREQUEST_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
+                ZREQUEST_ITEM.TO_STATE_ID,
+                ZREQUEST_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
+                ZREQUEST_ITEM.FROM_LOCATION,
+                ZREQUEST_ITEM.FROM_LOCATION_OFFICE,
+                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
+                ZREQUEST_ITEM.TO_LOCATION,
+                ZREQUEST_ITEM.TO_LOCATION_OFFICE,
+                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+                ZREQUEST_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
+                ZREQUEST_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
+                ZREQUEST_ITEM.TOLL,
+                ZREQUEST_ITEM.VEHICLE_TYPE,
+                ZREQUEST_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
+                ZREQUEST_ITEM.REGION,
+                ZREQUEST_ITEM.ZREGION.REGION_DESC,
+                ZREQUEST_ITEM.ROOM_TYPE,
+                ZREQUEST_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
+                ZREQUEST_ITEM.LODGING_CATEGORY,
+                ZREQUEST_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
+                ZREQUEST_ITEM.AREA,
+                ZREQUEST_ITEM.ZAREA.AREA_DESC,
+                ZREQUEST_ITEM.START_TIME,
+                ZREQUEST_ITEM.END_TIME,
+                ZREQUEST_ITEM.DEPENDENT,
+                ZREQUEST_ITEM.METER_CUBE_ENTITLED,
+                ZREQUEST_ITEM.METER_CUBE_ACTUAL,
+                ZREQUEST_ITEM.FARE_TYPE_ID,
+                ZREQUEST_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
+                ZREQUEST_ITEM.VEHICLE_CLASS_ID,
+                ZREQUEST_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
+                ZREQUEST_ITEM.PURPOSE,
+                ZREQUEST_ITEM.DEPARTURE_TIME,
+                ZREQUEST_ITEM.ARRIVAL_TIME,
+                ZREQUEST_ITEM.TOTAL_TRAVELLER,
+                 // Calculate the difference between Submitted and Last Approved date
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                
+        };
+
+
+    entity ZEMP_CLAIM_REPORT_SUMMARY     as
+        select from ECLAIM.ZCLAIM_HEADER as HEADER
+        left join ZAPPROVER_CLAIM_PIVOT as PIVOT
+            on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
+        {
+            key HEADER.CLAIM_ID,
                 EMP_ID,
                 ZREQUEST_HEADER.REQUEST_ID,
                 ZREQUEST_HEADER.REQUEST_DATE,
@@ -531,22 +867,32 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 TRIP_START_DATE,
                 TRIP_END_DATE,
                 LOCATION,
-                APPROVER1,
-                APPROVER2,
-                APPROVER3,
-                APPROVER4,
-                APPROVER5,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
                 ZEMP_MASTER.UNIT_SECTION,
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
                 LAST_PUSH_BACK_DATE,
-                createdBy
+                createdBy, 
+                 // Calculate the difference between Submitted and Last Approved date
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                
         };
 
     entity ZEMP_CLAIM_REPORT_DETAILS     as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
+        select from ECLAIM.ZCLAIM_HEADER as HEADER
+        left join ZAPPROVER_CLAIM_PIVOT as PIVOT
+            on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
+        {
+            key HEADER.CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
                 EMP_ID,
                 ZEMP_MASTER.NAME,
@@ -649,11 +995,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.MATERIAL_CODE,
                 ZREQUEST_HEADER.REQUEST_ID,
                 ZREQUEST_HEADER.REQUEST_DATE,
-                APPROVER1,
-                APPROVER2,
-                APPROVER3,
-                APPROVER4,
-                APPROVER5,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
                 ZEMP_MASTER.UNIT_SECTION,
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
@@ -706,169 +1057,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
                 ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
-        };
-
-    entity ZEMP_REQUEST_REPORT_SUMMARY   as
-        projection on ECLAIM.ZREQUEST_HEADER {
-            key REQUEST_ID,
-                EMP_ID,
-                REQUEST_TYPE_ID,
-                ZREQUEST_TYPE.REQUEST_TYPE_DESC,
-                CASH_ADVANCE_DATE,
-                COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC,
-                ALTERNATE_COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
-                TOTAL_AMOUNT,
-                CASH_ADVANCE,
-                OBJECTIVE_PURPOSE,
-                TRIP_START_DATE,
-                TRIP_END_DATE,
-                EVENT_START_DATE,
-                EVENT_END_DATE,
-                LOCATION,
-                TYPE_OF_TRANSPORTATION,
-                REMARK,
-                ZEMP_MASTER.UNIT_SECTION,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
-                REQUEST_DATE,
-                STATUS,
-                ZSTATUS.STATUS_DESC,
-                ZEMP_MASTER.NAME,
-                ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.DEP,
-                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-                ZEMP_MASTER.POSITION_NAME,
-                APPROVER1,
-                APPROVER2,
-                APPROVER3,
-                APPROVER4,
-                APPROVER5,
-                LAST_PUSH_BACK_DATE,
-                LAST_APPROVED_DATE,
-                CASH_ADVANCE_DATE           as PAYMENT_DATE,
-                SUBMITTED_DATE,
-                CLAIM_TYPE_ID,
-                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE.GL_ACCOUNT,
-                ZCLAIM_TYPE.ZGL_ACCOUNT.GL_ACCOUNT_DESC,
-                createdBy,
-                IND_OR_GROUP,
-                ZINDIV_GROUP.IND_OR_GROUP_DESC
-        };
-
-    entity ZEMP_REQUEST_REPORT_DETAILS   as
-        projection on ECLAIM.ZREQUEST_HEADER {
-            key REQUEST_ID,
-            key ZREQUEST_ITEM.REQUEST_SUB_ID,
-                EMP_ID,
-                REQUEST_TYPE_ID,
-                ZREQUEST_TYPE.REQUEST_TYPE_DESC,
-                CASH_ADVANCE_DATE,
-                COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC,
-                ALTERNATE_COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
-                TOTAL_AMOUNT,
-                CASH_ADVANCE,
-                OBJECTIVE_PURPOSE,
-                TRIP_START_DATE,
-                TRIP_END_DATE,
-                EVENT_START_DATE,
-                EVENT_END_DATE,
-                LOCATION,
-                TYPE_OF_TRANSPORTATION,
-                STATUS,
-                ZSTATUS.STATUS_DESC,
-                ZREQUEST_ITEM.CLAIM_TYPE_ID,
-                ZREQUEST_ITEM.CLAIM_TYPE_ITEM_ID,
-                ZREQUEST_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-                ZREQUEST_ITEM.EST_AMOUNT,
-                ZREQUEST_ITEM.EST_NO_PARTICIPANT,
-                REQUEST_DATE,
-                ZREQUEST_ITEM.CASH_ADVANCE                                     as CASH_ADV_YES_NO,
-                ZREQUEST_ITEM.START_DATE,
-                ZREQUEST_ITEM.END_DATE,
-                ZREQUEST_ITEM.REMARK,
-                ZEMP_MASTER.UNIT_SECTION,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
-                ZEMP_MASTER.NAME,
-                ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.DEP,
-                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-                ZEMP_MASTER.POSITION_NAME,
-                ZREQUEST_ITEM.DECLARE_CLUB_MEMBERSHIP,
-                ZREQUEST_ITEM.KWSP_SPORTS_REPRESENTATION,
-                ZREQUEST_ITEM.ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_DESC,
-                ZREQUEST_ITEM.SPORTS_CLAIM_DISCLAIMER,
-                ZREQUEST_ITEM.VEHICLE_OWNERSHIP_ID,
-                ZREQUEST_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
-                ZREQUEST_ITEM.MODE_OF_TRANSFER,
-                ZREQUEST_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
-                ZREQUEST_ITEM.TRANSFER_DATE,
-                ZREQUEST_ITEM.NO_OF_DAYS,
-                ZREQUEST_ITEM.MARRIAGE_CATEGORY,
-                ZREQUEST_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
-                ZREQUEST_ITEM.FAMILY_COUNT,
-                ZREQUEST_ITEM.GL_ACCOUNT,
-                ZREQUEST_ITEM.MATERIAL_CODE,
-                APPROVER1,
-                APPROVER2,
-                APPROVER3,
-                APPROVER4,
-                APPROVER5,
-                LAST_PUSH_BACK_DATE,
-                SUBMITTED_DATE,
-                LAST_APPROVED_DATE,
-                CASH_ADVANCE_DATE                                              as PAYMENT_DATE,
-                CLAIM_TYPE_ID                                                  as CLAIM_TYPE_HEADER,
-                ZCLAIM_TYPE.CLAIM_TYPE_DESC                                    as CLAIM_TYPE_DESC_HEADER,
-                createdBy,
-                ZREQUEST_ITEM.COURSE_TITLE,
-                ZREQUEST_ITEM.KILOMETER,
-                ZREQUEST_ITEM.RATE_PER_KM,
-                ZREQUEST_ITEM.FLIGHT_CLASS,
-                ZREQUEST_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
-                ZREQUEST_ITEM.LOCATION_TYPE,
-                ZREQUEST_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
-                ZREQUEST_ITEM.COUNTRY,
-                ZREQUEST_ITEM.ZCOUNTRY.COUNTRY_DESC,
-                ZREQUEST_ITEM.FROM_STATE_ID,
-                ZREQUEST_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
-                ZREQUEST_ITEM.TO_STATE_ID,
-                ZREQUEST_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
-                ZREQUEST_ITEM.FROM_LOCATION,
-                ZREQUEST_ITEM.FROM_LOCATION_OFFICE,
-                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
-                ZREQUEST_ITEM.TO_LOCATION,
-                ZREQUEST_ITEM.TO_LOCATION_OFFICE,
-                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
-                ZREQUEST_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
-                ZREQUEST_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
-                ZREQUEST_ITEM.TOLL,
-                ZREQUEST_ITEM.VEHICLE_TYPE,
-                ZREQUEST_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
-                ZREQUEST_ITEM.REGION,
-                ZREQUEST_ITEM.ZREGION.REGION_DESC,
-                ZREQUEST_ITEM.ROOM_TYPE,
-                ZREQUEST_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
-                ZREQUEST_ITEM.LODGING_CATEGORY,
-                ZREQUEST_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
-                ZREQUEST_ITEM.AREA,
-                ZREQUEST_ITEM.ZAREA.AREA_DESC,
-                ZREQUEST_ITEM.START_TIME,
-                ZREQUEST_ITEM.END_TIME,
-                ZREQUEST_ITEM.DEPENDENT,
-                ZREQUEST_ITEM.METER_CUBE_ENTITLED,
-                ZREQUEST_ITEM.METER_CUBE_ACTUAL,
-                ZREQUEST_ITEM.FARE_TYPE_ID,
-                ZREQUEST_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
-                ZREQUEST_ITEM.VEHICLE_CLASS_ID,
-                ZREQUEST_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
-                ZREQUEST_ITEM.PURPOSE,
-                ZREQUEST_ITEM.DEPARTURE_TIME,
-                ZREQUEST_ITEM.ARRIVAL_TIME,
-                ZREQUEST_ITEM.TOTAL_TRAVELLER,
+                 // Calculate the difference between Submitted and Last Approved date
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                  
         };
 
     entity ZEMP_CASHADVANCE_REPORT       as

@@ -2249,8 +2249,6 @@ module.exports = (srv) => {
                 req.query.where(ccFilter);
             }
 
-            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
-
         } catch (error) {
             console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
@@ -2286,8 +2284,6 @@ module.exports = (srv) => {
             } else {
                 req.query.where(ccFilter);
             }
-
-            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
 
         } catch (error) {
             console.error("Error in CC auto-population:", error);
@@ -2325,8 +2321,6 @@ module.exports = (srv) => {
                 req.query.where(ccFilter);
             }
 
-            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
-
         } catch (error) {
             console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
@@ -2362,8 +2356,6 @@ module.exports = (srv) => {
             } else {
                 req.query.where(ccFilter);
             }
-
-            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
 
         } catch (error) {
             console.error("Error in CC auto-population:", error);
