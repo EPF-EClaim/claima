@@ -100,13 +100,54 @@
                         expanded="false"
                     />
 
+                    <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false">
+                        <tnt:NavigationListItem
+                            icon="sap-icon://doc-attachment"
+                            text="Claim Report"
+                            enabled="true"
+                        >
+                        <tnt:items>
+                                <tnt:NavigationListItem
+                                    text="{i18n>ana_title1}"
+                                    key="clm_summary"
+                                />
+                                 <tnt:NavigationListItem
+                                    key="clm_details" 
+                                    text="{i18n>ana_title2}"
+                                />
+                        </tnt:items>
+                        </tnt:NavigationListItem>
+
+                        <tnt:NavigationListItem
+                            icon="sap-icon://manager-insight"
+                            text="Pre-Approval Report"
+                            enabled="true"
+                        >
+                        <tnt:items>
+                                <tnt:NavigationListItem
+                                    key="req_summary" 
+                                    text="{i18n>ana_title3}"
+                                />
+                                 <tnt:NavigationListItem
+                                    key="req_details" 
+                                    text="{i18n>ana_title4}"
+                                />
+                    </tnt:items>
+                        </tnt:NavigationListItem>
+                        <tnt:NavigationListItem
+                            icon="sap-icon://money-bills"
+                            text="Cash Advance"
+                            enabled="true"
+                        >
+                        </tnt:NavigationListItem>
+                    </tnt:NavigationListGroup>                        
+
                     <tnt:NavigationListGroup text="Configuration" expanded="false">
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
-                            visible="{roleModel>/Admin_role}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem

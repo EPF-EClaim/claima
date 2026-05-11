@@ -4624,8 +4624,8 @@ annotate service.ZWORKFLOW_RULE with @(
 
 annotate service.ZTRAIN_COURSE_PART with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions    : {Searchable: false},
-    Common.SemanticKey                 : [
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [
         COURSE_ID,
         COURSE_DESC,
         SESSION_NUMBER,
@@ -4635,14 +4635,13 @@ annotate service.ZTRAIN_COURSE_PART with @(
         START_DATE,
         END_DATE
     ],
-    Capabilities                       : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
-
-    UI                                 : {
+    UI                             : {
         CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
@@ -4702,3 +4701,2269 @@ annotate service.ZTRAIN_COURSE_PART with @(
         ]
     }
 );
+
+annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claims Report Summary',
+            TypeNamePlural: 'Claims Report Summary',
+        },
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Grade'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UNIT_SECTION,
+                ![@UI.Importance]: #High,
+                Label            : 'Unit'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Position'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission DATE'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER1,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 1'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 2'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER3,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 3'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER4,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 4'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 5'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Approved Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_PUSH_BACK_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Last Sent Back Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Days Approved'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PAYMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Payment Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALTERNATE_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALT_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'GL No (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOTAL_CLAIM_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Claim Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Amount to Receive'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SESSION_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Session Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Remark'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Location'
+            }
+        ],
+
+    }
+) {
+    ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
+    COST_CENTER_DESC     @(Common.Label: 'Cost Center Description');
+    CASH_ADVANCE_DATE    @(Common.Label: 'Cash Advance Date');
+    COURSE_ID            @(
+        Common.Label                   : 'Course Code',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : COURSE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZEMP_COURSE_VALUE_HELP',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: COURSE_ID,
+                    ValueListProperty: 'COURSE_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: COURSE_DESC,
+                    ValueListProperty: 'COURSE_DESC'
+                }
+            ]
+        }
+    );
+    SUBMISSION_TYPE      @(
+        Common.Label                   : 'Submission Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : SUBMISSION_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Submission Type Selection',
+            CollectionPath: 'ZSUBMISSION_TYPE',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: SUBMISSION_TYPE_ID,
+                    ValueListProperty: 'SUBMISSION_TYPE_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: SUBMISSION_TYPE_DESC,
+                    ValueListProperty: 'SUBMISSION_TYPE_DESC'
+                }
+            ]
+        }
+    );
+};
+
+annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claims Report Details',
+            TypeNamePlural: 'Claims Report Details',
+        },
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Grade'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UNIT_SECTION,
+                ![@UI.Importance]: #High,
+                Label            : 'Unit'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Position'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_SUB_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Sub ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission DATE'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER1,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 1'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 2'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER3,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 3'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER4,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 4'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 5'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Approved Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_PUSH_BACK_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Last Sent Back Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Days Approved'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PAYMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Payment Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALTERNATE_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALT_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'GL No (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Code Material (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOTAL_CLAIM_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Claim Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Amount to Receive'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SESSION_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Session Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Remark'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE_HEADER,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE_HEADER,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PERCENTAGE_COMPENSATION,
+                ![@UI.Importance]: #High,
+                Label            : '% Compensation'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACCOUNT_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Account No'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BILL_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Bill Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BILL_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Bill No'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_CATEGORY,
+                ![@UI.Importance]: #High,
+                Label            : 'Category/Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Item'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY,
+                ![@UI.Importance]: #High,
+                Label            : 'Country'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DISCLAIMER,
+                ![@UI.Importance]: #High,
+                Label            : 'Category/Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'End Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FLIGHT_CLASS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Flight Class'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'From Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_LOCATION_OFFICE,
+                ![@UI.Importance]: #High,
+                Label            : 'From Location (Office)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : KM,
+                ![@UI.Importance]: #High,
+                Label            : 'Kilometer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_ITEM,
+                ![@UI.Importance]: #High,
+                Label            : 'Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOC_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Location type '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LODGING_ADDRESS,
+                ![@UI.Importance]: #High,
+                Label            : 'Lodging Address'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LODGING_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Lodging Category'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AREA_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Negara/wilayah'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NO_OF_FAMILY_MEMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Num of Family Members'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PARKING,
+                ![@UI.Importance]: #High,
+                Label            : 'Parking '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PHONE_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Phone No'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE_PER_KM,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate Per Kilometer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RECEIPT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Receipt Date '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RECEIPT_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Receipt Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARK,
+                ![@UI.Importance]: #High,
+                Label            : 'Remark'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROOM_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Room Type '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REGION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Semenanjung Or Sabah Sarawak'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_STATE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'State'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location(Office)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION_OFFICE,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location (Office)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOLL,
+                ![@UI.Importance]: #High,
+                Label            : 'Toll'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOTAL_EXP_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Expenses Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Vehicle'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_FARE,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle (Tambang)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DURATION_DAY,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel duration (days)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DURATION_HOUR,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel duration (hours)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROVIDED_BREAKFAST,
+                ![@UI.Importance]: #High,
+                Label            : 'Provided_Breakfast'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROVIDED_LUNCH,
+                ![@UI.Importance]: #High,
+                Label            : 'Provided_Lunch'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROVIDED_DINNER,
+                ![@UI.Importance]: #High,
+                Label            : 'Provided_Dinner'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ENTITLED_BREAKFAST,
+                ![@UI.Importance]: #High,
+                Label            : 'Entitled_Breakfast'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ENTITLED_LUNCH,
+                ![@UI.Importance]: #High,
+                Label            : 'Entitled_Lunch'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ENTITLED_DINNER,
+                ![@UI.Importance]: #High,
+                Label            : 'Entitled_Dinner'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ANGGOTA_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Anggota ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ANGGOTA_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Anggota Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROUND_TRIP,
+                ![@UI.Importance]: #High,
+                Label            : 'Round Trip'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROFESIONAL_BODY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Profesional Body'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DISCLAIMER_GALAKAN,
+                ![@UI.Importance]: #High,
+                Label            : 'Disclaimer Galakan'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Transfer Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NO_OF_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Days'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FAMILY_COUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of family member (per head)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSPORT_PASSING_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Transportation for the Passing'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_TITLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Title'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Actual Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NEED_FOREIGN_CURRENCY,
+                ![@UI.Importance]: #High,
+                Label            : 'Need Foreign Currency?'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_RATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency Rate'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_APPROVAL_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Request Approval Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTURE_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Departure Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ARRIVAL_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Arrival Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_RELATIONSHIP,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Relationship'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POLICY_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Policy Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_PROVIDER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Provider'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_PROVIDER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Provider Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_PURCHASE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Purchase Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_CERT_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Cert Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_CERT_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Cert End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DAYS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel Days'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE_ENTITLED,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube Entitled'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE_ACTUAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube Actual'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ZINSURANCE_PACKAGE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Package'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FARE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Fare'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_CLASS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Train/Ship Class'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MOBILE_CATEGORY_PURPOSE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Mobile Category/Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STUDY_LEVELS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Education Level'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_MODE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Mode of Transfer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_OWNERSHIP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Self/Company Vehicle'
+            },
+        ],
+
+    }
+) {
+    ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
+    COST_CENTER_DESC     @(Common.Label: 'Cost Center Description'); 
+    CASH_ADVANCE_DATE    @(Common.Label: 'Cash Advance Date');
+    CLAIM_TYPE_ITEM_ID @(
+        Common.Label                   : 'Claim Type Item',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : CLAIM_TYPE_ITEM_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE_ITEM',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CLAIM_TYPE_ITEM_ID,
+                    ValueListProperty: 'CLAIM_TYPE_ITEM_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CLAIM_TYPE_ITEM_DESC,
+                    ValueListProperty: 'CLAIM_TYPE_ITEM_DESC'
+                }
+            ]
+        }
+    );
+    LOCATION_TYPE      @(
+        Common.Label                   : 'Location Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : LOC_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZLOC_TYPE',
+            Parameters    : [{
+                // This pulls the description into the dropdown list
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: LOC_TYPE_DESC,
+                ValueListProperty: 'LOC_TYPE_DESC'
+            }]
+        }
+    );
+};
+
+annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Pre-Approved Request Details',
+            TypeNamePlural: 'Pre-Approved Request Details',
+        },
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Grade'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UNIT_SECTION,
+                ![@UI.Importance]: #High,
+                Label            : 'Unit'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Position'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_SUB_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request Sub ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : 'REQUEST_TYPE_DESC',
+                ![@UI.Importance]: #High,
+                Label            : 'Request Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submitted Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER1,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 1'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 2'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER3,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 3'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER4,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 4'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 5'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Approved Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_PUSH_BACK_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Last Sent Back Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Days Approved'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance Received Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PAYMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Payment Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALTERNATE_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALT_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'GL No (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Code Material (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOTAL_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Request Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : OBJECTIVE_PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARK,
+                ![@UI.Importance]: #High,
+                Label            : 'Remarks/Justification'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EVENT_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Event Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EVENT_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Event End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TYPE_OF_TRANSPORTATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Transportation'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Item'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EST_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Estimated Amount (MYR)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EST_NO_PARTICIPANT,
+                ![@UI.Importance]: #High,
+                Label            : 'Estimated No. of Participants'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARK,
+                ![@UI.Importance]: #High,
+                Label            : 'Remark/Justification'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DECLARE_CLUB_MEMBERSHIP,
+                ![@UI.Importance]: #High,
+                Label            : 'Berdasarkan terma keahlian kelab, sila nyatakan sama ada keahlian ini boleh dipindah milik atau tidak?'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SPORTS_REPRESENTATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : ' Mewakili KWSP dalam aktiviti sukan anjuran pengurusan KWSP atau Pihak Luar'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SPORTS_CLAIM_DISCLAIMER,
+                ![@UI.Importance]: #High,
+                Label            : 'Disclaimer: Sebarang penyertaan dalam sukan anjuran jabatan dan cawangan masing-masing adalah tidak layak membuat tuntutan'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_OWNERSHIP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle (Sendiri/Pejabat)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_MODE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Mode of Transfer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Tarikh Pindah'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NO_OF_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Days'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FAMILY_COUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of family member (per head)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EST_NO_PARTICIPANT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Participant'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_TITLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Title'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : KILOMETER,
+                ![@UI.Importance]: #High,
+                Label            : 'Kilometer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE_PER_KM,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate Per Kilometer'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FLIGHT_CLASS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Flight Class'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOC_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Location type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Country '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_STATE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'From State'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_STATE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'To State'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_LOCATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'From Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'From Location (Office)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location(Office)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MOBILE_CATEGORY_PURPOSE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Mobile Category/Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOLL,
+                ![@UI.Importance]: #High,
+                Label            : 'Toll'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Vehicle'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REGION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Semenanjung Or Sabah Sarawak'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROOM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Room Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LODGING_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Lodging Category'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AREA_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Area'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_TIME,
+                ![@UI.Importance]: #High,
+                Label            : 'End Time'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_RELATIONSHIP,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Relationship'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RELATIONSHIP,
+                ![@UI.Importance]: #High,
+                Label            : 'Relationship'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE_ENTITLED,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube Entitled'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE_ACTUAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube Actual'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FARE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Type Of Fare'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_CLASS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Train/Ship Class'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+
+        ],
+    }
+) {
+    ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
+    COST_CENTER_DESC     @(Common.Label: 'Cost Center Description');
+    CASH_ADVANCE_DATE    @(Common.Label: 'Cash Advance Date');
+    PAYMENT_DATE         @(Common.Label: 'Payment Date');
+    CASH_ADVANCE         @(Common.Label: 'Cash Advance');    
+    CLAIM_TYPE_ITEM_ID   @(
+        Common.Label                   : 'Claim Type Item',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : CLAIM_TYPE_ITEM_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE_ITEM',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CLAIM_TYPE_ITEM_ID,
+                    ValueListProperty: 'CLAIM_TYPE_ITEM_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CLAIM_TYPE_ITEM_DESC,
+                    ValueListProperty: 'CLAIM_TYPE_ITEM_DESC'
+                }
+            ]
+        }
+    );
+    LOCATION_TYPE        @(
+        Common.Label                   : 'Location Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : LOC_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZLOC_TYPE',
+            Parameters    : [{
+                // This pulls the description into the dropdown list
+                $Type            : 'Common.ValueListParameterOut',
+                LocalDataProperty: LOC_TYPE_DESC,
+                ValueListProperty: 'LOC_TYPE_DESC'
+            }]
+        }
+    );
+};
+
+annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo     : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Pre-Approved Request Summary',
+            TypeNamePlural: 'Pre-Approved Request Summary',
+        },
+        SelectionFields: [
+            STATUS_DESC,
+            DEP
+        ],
+        LineItem       : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Grade'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UNIT_SECTION,
+                ![@UI.Importance]: #High,
+                Label            : 'Unit'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Position'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Request Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Request Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission DATE'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER1,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 1'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 2'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER3,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 3'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER4,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 4'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5,
+                ![@UI.Importance]: #High,
+                Label            : 'Approvers 5'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Approved Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_PUSH_BACK_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Last Push Back Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Days Approved'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance Received Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PAYMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Payment Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Status Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALTERNATE_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ALT_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Alternate Cost Center Text'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'GL No (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'GL Description (Claim Item)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TOTAL_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Total Request Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : OBJECTIVE_PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARK,
+                ![@UI.Importance]: #High,
+                Label            : 'Remarks/Justification'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EVENT_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Event Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EVENT_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Event End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TYPE_OF_TRANSPORTATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Type of Transportation'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : IND_OR_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Individual or Group'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : IND_OR_GROUP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Individual or Group Description'
+            }
+        ],
+    }
+
+) {
+    ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
+    COST_CENTER_DESC     @(Common.Label: 'Cost Center Description');
+    PAYMENT_DATE         @(Common.Label: 'Payment Date');
+    CASH_ADVANCE_DATE    @(Common.Label: 'Cash Advance Date');
+    CASH_ADVANCE         @(Common.Label: 'Cash Advance');
+    
+    STATUS               @(
+        Common.Label                   : 'Status',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Status Selection',
+            CollectionPath: 'ZSTATUS',
+            // Your lookup table
+            Parameters    : [{
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: STATUS_DESC,
+                ValueListProperty: 'STATUS_DESC' // The field name in ZSTATUS table
+            }]
+        }
+    );
+    COST_CENTER          @(
+        Common.Label                   : 'Cost Center',
+        //UI.Hidden                      : true,
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: COST_CENTER_DESC,
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
+    DEP                  @(
+        Common.Label                   : 'Department',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : DEPARTMENT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Department Selection',
+            CollectionPath: 'ZDEPARTMENT',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: DEP,
+                    ValueListProperty: 'DEPARTMENT_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: DEPARTMENT_DESC,
+                    ValueListProperty: 'DEPARTMENT_DESC'
+                }
+            ]
+        }
+    );
+    GL_ACCOUNT           @(
+        Common.Label                   : 'GL Account',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : GL_ACCOUNT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'GL Account Selection',
+            CollectionPath: 'ZGL_ACCOUNT',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: GL_ACCOUNT,
+                    ValueListProperty: 'GL_ACCOUNT_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: GL_ACCOUNT_DESC,
+                    ValueListProperty: 'GL_ACCOUNT_DESC'
+                }
+            ]
+        }
+    );
+    CLAIM_TYPE_ID        @(
+        Common.Label                   : 'Claim Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : CLAIM_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CLAIM_TYPE_ID,
+                    ValueListProperty: 'CLAIM_TYPE_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CLAIM_TYPE_DESC,
+                    ValueListProperty: 'CLAIM_TYPE_DESC'
+                }
+            ]
+        }
+    );
+    REQUEST_TYPE_ID      @(
+        Common.Label                   : 'Request Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : REQUEST_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZREQUEST_TYPE',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: REQUEST_TYPE_ID,
+                    ValueListProperty: 'REQUEST_TYPE_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: REQUEST_TYPE_DESC,
+                    ValueListProperty: 'REQUEST_TYPE_DESC'
+                }
+            ]
+        }
+    );
+    IND_OR_GROUP         @(
+        Common.Label                   : 'Individual or Group',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Individual or Group Selection',
+            CollectionPath: 'ZINDIV_GROUP',
+            // Your lookup table
+            Parameters    : [{
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: IND_OR_GROUP_DESC,
+                ValueListProperty: 'IND_OR_GROUP_DESC' // The field name in ZSTATUS table
+            }]
+        }
+    );
+    NAME                 @(
+        Common.Label                   : 'Employee Name',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Employee Selection',
+            CollectionPath: 'ZEMP_MASTER',
+            // Your lookup table
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: EEID,
+                    ValueListProperty: 'EEID' // The field name in ZSTATUS table
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: NAME,
+                    ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+}

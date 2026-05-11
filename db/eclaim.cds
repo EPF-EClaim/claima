@@ -3,39 +3,53 @@ namespace ECLAIM;
 using {managed} from '@sap/cds/common';
 
 entity ZEMP_MASTER : managed {
-    key EEID                          : String @mandatory;
-        NAME                          : String;
-        GRADE                         : String;
-        CC                            : String;
-        POS                           : String;
-        DEP                           : String(10);
-        UNIT_SECTION                  : String(10);
-        B_PLACE                       : String;
-        MARITAL                       : String(2);
-        JOB_GROUP                     : String(8);
-        OFFICE_LOCATION               : String(10);
-        ADDRESS_LINE1                 : String;
-        ADDRESS_LINE2                 : String;
-        ADDRESS_LINE3                 : String;
-        POSTCODE                      : String;
-        STATE                         : String(4);
-        COUNTRY                       : String(3);
-        CONTACT_NO                    : String;
-        EMAIL                         : String;
-        DIRECT_SUPPERIOR              : String;
-        ROLE                          : String(3);
-        USER_TYPE                     : String;
-        MEDICAL_INSURANCE_ENTITLEMENT : Decimal(7, 2);
-        MOBILE_BILL_ELIGIBILITY       : String;
-        MOBILE_BILL_ELIG_AMOUNT       : Decimal(7, 2);
-        EMPLOYEE_TYPE                 : String;
-        POSITION_NAME                 : String;
-        POSITION_START_DATE           : Date;
-        POSITION_EVENT_REASON         : String;
-        CONFIRMATION_DATE             : Date;
-        EFFECTIVE_DATE                : Date;
-        UPDATED_DATE                  : Date;
-        INSERTED_DATE                 : Date;
+    key EEID                          : String        @mandatory;
+        NAME                          : String        @Common.Label: 'Employee Name';
+        GRADE                         : String        @Common.Label: 'Personal Grade';
+        CC                            : String        @Common.Label: 'Cost Center';
+        POS                           : String        @Common.Label: 'Position Number';
+        DEP                           : String(10)    @Common.Label: 'Department';
+        UNIT_SECTION                  : String(10)    @Common.Label: 'Unit ';
+        B_PLACE                       : String        @Common.Label: 'Place Of Birth';
+        MARITAL                       : String(2)     @Common.Label: 'Marital Status';
+        JOB_GROUP                     : String(8)     @Common.Label: 'Job Group';
+        OFFICE_LOCATION               : String(10)    @Common.Label: 'Office Location';
+        ADDRESS_LINE1                 : String        @Common.Label: 'Address Line 1';
+        ADDRESS_LINE2                 : String        @Common.Label: 'Address Line 2';
+        ADDRESS_LINE3                 : String        @Common.Label: 'Address Line 3';
+        POSTCODE                      : String        @Common.Label: 'Postcode';
+        STATE                         : String(4)     @Common.Label: 'State';
+        COUNTRY                       : String(3)     @Common.Label: 'Country';
+        CONTACT_NO                    : String        @Common.Label: 'Contact No.';
+        EMAIL                         : String        @Common.Label: 'Email';
+        DIRECT_SUPPERIOR              : String        @Common.Label: 'Direct Supperior';
+        ROLE                          : String(3)     @Common.Label: 'Role';
+        USER_TYPE                     : String        @Common.Label: 'User Type';
+        MEDICAL_INSURANCE_ENTITLEMENT : Decimal(7, 2) @Common.Label: 'Medical Insurance Entitlement';
+        MOBILE_BILL_ELIGIBILITY       : String        @Common.Label: 'Mobile Phone Bill Eligibility';
+        MOBILE_BILL_ELIG_AMOUNT       : Decimal(7, 2) @Common.Label: 'Mobile Phone Bill Eligible Amount Per Month';
+        EMPLOYEE_TYPE                 : String        @Common.Label: 'Employee Type';
+        POSITION_NAME                 : String        @Common.Label: 'Position Name';
+        POSITION_START_DATE           : Date          @Common.Label: 'Position Start Date';
+        POSITION_EVENT_REASON         : String        @Common.Label: 'Position Event Reason';
+        CONFIRMATION_DATE             : Date          @Common.Label: 'Confirmation Date';
+        EFFECTIVE_DATE                : Date          @Common.Label: 'Effective Date';
+        UPDATED_DATE                  : Date          @Common.Label: 'Updated Date';
+        INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
+        JOB_GRADE                     : String(3)     @Common.Label: 'Job Grade';
+        DIVISION                      : String(3)     @Common.Label: 'Division';
+        HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
+        HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
+        UNIVERSITY_NAME               : String(30)    @Common.Label: 'University Name';
+        HIRE_DATE                     : Date          @Common.Label: 'Hire Date';
+        RETIREMENT_DATE               : Date          @Common.Label: 'Retirement Date';
+        CONTRACT_END_DATE             : Date          @Common.Label: 'Contract End Date';
+        AGE                           : String(5)     @Common.Label: 'Age';
+        YEARS_IN_EPF                  : String(5)     @Common.Label: 'Years in EPF';
+        SECTION_REGION                : String(10)    @Common.Label: 'Section Region';
+        UNIT_BRANCH                   : String(10)    @Common.Label: 'Unit Branch';
+        SUB_UNIT_BRANCH               : String(10)    @Common.Label: 'Sub Unit Branch';
+        BUSINESS_PHONE                : String(15)    @Common.Label: 'Business Phone';
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER
@@ -65,54 +79,54 @@ entity ZEMP_MASTER : managed {
 }
 
 entity ZREQUEST_HEADER : managed {
-    key REQUEST_ID                    : String @mandatory;
-        EMP_ID                        : String;
-        REQUEST_TYPE_ID               : String;
-        CLAIM_TYPE_ID                 : String;
-        OBJECTIVE_PURPOSE             : String;
-        TRIP_START_DATE               : Date;
-        TRIP_END_DATE                 : Date;
-        EVENT_START_DATE              : Date;
-        EVENT_END_DATE                : Date;
-        APPROVED_DATE                 : Date;
-        REQUEST_DATE                  : Date;
-        IND_OR_GROUP                  : String(4);
-        REMARK                        : String;
-        ALTERNATE_COST_CENTER         : String;
-        PREAPPROVAL_AMOUNT            : Decimal(16, 2);
-        TOTAL_AMOUNT                  : Decimal(16, 2);
-        ATTACHMENT1                   : String;
-        ATTACHMENT2                   : String;
-        LOCATION                      : String;
-        TYPE_OF_TRANSPORTATION        : String;
-        EVENT_FIELD1                  : String;
-        EVENT_FIELD2                  : String;
-        EVENT_FIELD3                  : String;
-        EVENT_FIELD4                  : String;
-        EVENT_FIELD5                  : String;
-        STATUS                        : String;
-        COST_CENTER                   : String;
+    key REQUEST_ID                    : String         @mandatory  @Common.Label: 'Request ID';
+        EMP_ID                        : String         @Common.Label: 'Employee ID';
+        REQUEST_TYPE_ID               : String         @Common.Label: 'Request Type';
+        CLAIM_TYPE_ID                 : String         @Common.Label: 'Claim Type';
+        OBJECTIVE_PURPOSE             : String         @Common.Label: 'Purpose';
+        TRIP_START_DATE               : Date           @Common.Label: 'Trip Start Date';
+        TRIP_END_DATE                 : Date           @Common.Label: 'Trip End Date';
+        EVENT_START_DATE              : Date           @Common.Label: 'Event Start Date';
+        EVENT_END_DATE                : Date           @Common.Label: 'Event End Date';
+        APPROVED_DATE                 : Date           @Common.Label: 'Approved Date';
+        REQUEST_DATE                  : Date           @Common.Label: 'Request Date';
+        IND_OR_GROUP                  : String(4)      @Common.Label: 'Individual/Group';
+        REMARK                        : String         @Common.Label: 'Remark';
+        ALTERNATE_COST_CENTER         : String         @Common.Label: 'Alternate Cost Center';
+        PREAPPROVAL_AMOUNT            : Decimal(16, 2) @Common.Label: 'Pre-Approval Amount';
+        TOTAL_AMOUNT                  : Decimal(16, 2) @Common.Label: 'Total Amount';
+        ATTACHMENT1                   : String         @Common.Label: 'Attachment 1';
+        ATTACHMENT2                   : String         @Common.Label: 'Attachment 2';
+        LOCATION                      : String         @Common.Label: 'Location';
+        TYPE_OF_TRANSPORTATION        : String         @Common.Label: 'Type of Transportation';
+        EVENT_FIELD1                  : String         @Common.Label: 'Event Field 1';
+        EVENT_FIELD2                  : String         @Common.Label: 'Event Field 2';
+        EVENT_FIELD3                  : String         @Common.Label: 'Event Field 3';
+        EVENT_FIELD4                  : String         @Common.Label: 'Event Field 4';
+        EVENT_FIELD5                  : String         @Common.Label: 'Event Field 5';
+        STATUS                        : String         @Common.Label: 'Status';
+        COST_CENTER                   : String         @Common.Label: 'Cost Center';
         CASH_ADVANCE                  : Decimal(16, 2);
         CASH_ADVANCE_DATE             : Date;
-        LAST_APPROVED_DATE            : Date;
-        LAST_APPROVED_TIME            : Time;
-        TRAVEL_ALONE_FAMILY           : String(2);
-        TRAVEL_FAMILY_NOW_LATER       : String(2);     
-        REJECT_REASON_ID              : String(3);
-        REJECT_REASON_DATE            : Date;
-        REJECT_REASON_TIME            : Time;
-        APPROVER1                     : String(6);
-        APPROVER2                     : String(6);
-        APPROVER3                     : String(6);
-        APPROVER4                     : String(6);
-        APPROVER5                     : String(6);
-        LAST_MODIFIED_DATE            : Date;
-        SUBMITTED_DATE                : Date;
-        TRANSFER_MODE_ID              : String(2);
-        PROJECT_CODE                  : String;
-        LAST_PUSH_BACK_DATE           : Date;
-        LAST_PUSH_BACK_TIME           : Time;      
-        PUSH_BACK_REASON_ID           : String(3);             
+        LAST_APPROVED_DATE            : Date           @Common.Label: 'Last Approved Date';
+        LAST_APPROVED_TIME            : Time           @Common.Label: 'Last Approved Time';
+        TRAVEL_ALONE_FAMILY           : String(2)      @Common.Label: 'Travel (Sendirian/With Family)';
+        TRAVEL_FAMILY_NOW_LATER       : String(2)      @Common.Label: 'With Family Now or Later?';
+        REJECT_REASON_ID              : String(3)      @Common.Label: 'Reject Reason ID';
+        REJECT_REASON_DATE            : Date           @Common.Label: 'Reject Reason Date';
+        REJECT_REASON_TIME            : Time           @Common.Label: 'Reject Reason Time';
+        APPROVER1                     : String(6)      @Common.Label: 'Approver 1';
+        APPROVER2                     : String(6)      @Common.Label: 'Approver 2';
+        APPROVER3                     : String(6)      @Common.Label: 'Approver 3';
+        APPROVER4                     : String(6)      @Common.Label: 'Approver 4';
+        APPROVER5                     : String(6)      @Common.Label: 'Approver 5';
+        LAST_MODIFIED_DATE            : Date           @Common.Label: 'Last Modified Date';
+        SUBMITTED_DATE                : Date           @Common.Label: 'Submitted Date';
+        TRANSFER_MODE_ID              : String(2)      @Common.Label: 'Transfer Mode ID';
+        PROJECT_CODE                  : String         @Common.Label: 'Project Code';
+        LAST_PUSH_BACK_DATE           : Date           @Common.Label: 'Last Push Back Date';
+        LAST_PUSH_BACK_TIME           : Time           @Common.Label: 'Last Push Back Time';
+        PUSH_BACK_REASON_ID           : String(3)      @Common.Label: 'Push Back Reason ID';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -148,77 +162,77 @@ entity ZREQUEST_HEADER : managed {
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID                 : String @mandatory;
-    key REQUEST_SUB_ID             : String @mandatory;
-        EMP_ID                     : String;
-        CLAIM_TYPE_ITEM_ID         : String;
-        CLAIM_TYPE_ID              : String;
-        EST_AMOUNT                 : Decimal(16, 2);
-        EST_NO_PARTICIPANT         : Integer;
-        CASH_ADVANCE               : Boolean;
-        START_DATE                 : Date;
-        END_DATE                   : Date;
-        REMARK                     : String;
-        SEND_TO_SF                 : Boolean;
-        LOCATION                   : String;
-        DECLARE_CLUB_MEMBERSHIP    : Boolean;
-        KWSP_SPORTS_REPRESENTATION : String(2);
-        SPORTS_CLAIM_DISCLAIMER    : Boolean;
-        VEHICLE_OWNERSHIP_ID       : String(2);
-        MODE_OF_TRANSFER           : String(2);
-        TRANSFER_DATE              : Date;
-        NO_OF_DAYS                 : Integer;
-        MARRIAGE_CATEGORY          : String(2);
-        FAMILY_COUNT               : Integer;
-        COST_CENTER                : String;
-        GL_ACCOUNT                 : String(6);
-        MATERIAL_CODE              : String;
-        COURSE_TITLE               : String;
-        ATTACHMENT1                : String;
-        ATTACHMENT2                : String;
-        PURPOSE                    : String;
-        MOBILE_CATEGORY_PURPOSE_ID : String(2);
-        KILOMETER                  : Decimal(6, 2);
-        RATE_PER_KM                : String(10);
-        FLIGHT_CLASS               : String;
-        LOCATION_TYPE              : String(6);
-        COUNTRY                    : String(3);
-        FROM_STATE_ID              : String(4); //office distance
-        TO_STATE_ID                : String(4); //office distance
-        TO_LOCATION                : String; //free text
-        TO_LOCATION_OFFICE         : String(10); //office distance
-        FROM_LOCATION              : String; //free text
-        FROM_LOCATION_OFFICE       : String(10); //office distance
-        TOLL                       : Decimal(16, 2);
-        VEHICLE_TYPE               : String(2);
-        DEPARTURE_TIME             : Timestamp;
-        ARRIVAL_TIME               : Timestamp;
-        REGION                     : String(2);
-        ROOM_TYPE                  : String(2);
-        LODGING_CATEGORY           : String(2);
-        AREA                       : String(6);
-        START_TIME                 : Time;
-        END_TIME                   : Time;
-        DEPENDENT                  : String;
-        METER_CUBE_ENTITLED        : Decimal(6, 2);
-        METER_CUBE_ACTUAL          : Decimal(6, 2);
-        FARE_TYPE_ID               : String(2);
-        VEHICLE_CLASS_ID           : String(2);
-        TRIP_START_DATE            : Date;
-        TRIP_END_DATE              : Date;
-        TRIP_START_TIME            : Time;
-        TRIP_END_TIME              : Time;
-        TRAVEL_DURATION_DAY        : Decimal(3, 1);
-        TRAVEL_DURATION_HOUR       : Decimal(4, 1);
-        ENTITLED_BREAKFAST         : Integer;
-        ENTITLED_LUNCH             : Integer;
-        ENTITLED_DINNER            : Integer;
-        DAILY_ALLOWANCE            : Integer;
-        CURRENCY_CODE              : String;
-        CURRENCY_RATE              : Decimal(16, 4);
-        TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        TOTAL_TRAVELLER            : Integer;     
-        ROUND_TRIP                 : Boolean;   
+    key REQUEST_ID                 : String         @mandatory  @Common.Label: 'Pre-Approval ID';
+    key REQUEST_SUB_ID             : String         @mandatory  @Common.Label: 'Pre-Approval Sub ID';
+        EMP_ID                     : String         @Common.Label: 'Employee ID';
+        CLAIM_TYPE_ITEM_ID         : String         @Common.Label: 'Claim Item';
+        CLAIM_TYPE_ID              : String         @Common.Label: 'Claim Type';
+        EST_AMOUNT                 : Decimal(16, 2) @Common.Label: 'Estimated Amount';
+        EST_NO_PARTICIPANT         : Integer        @Common.Label: 'Estimated Number of Participant';
+        CASH_ADVANCE               : Boolean        @Common.Label: 'Cash Advance (Yes/No)';
+        START_DATE                 : Date           @Common.Label: 'Start Date';
+        END_DATE                   : Date           @Common.Label: 'End Date';
+        REMARK                     : String         @Common.Label: 'Remark';
+        SEND_TO_SF                 : Boolean        @Common.Label: 'Send to SF';
+        LOCATION                   : String         @Common.Label: 'Location';
+        DECLARE_CLUB_MEMBERSHIP    : Boolean        @Common.Label: 'Declare Club Membership';
+        KWSP_SPORTS_REPRESENTATION : String(2)      @Common.Label: 'KWSP Sports Representation';
+        SPORTS_CLAIM_DISCLAIMER    : Boolean        @Common.Label: 'Sports Claim Disclaimer';
+        VEHICLE_OWNERSHIP_ID       : String(2)      @Common.Label: 'Vehicle Ownership ID';
+        MODE_OF_TRANSFER           : String(2)      @Common.Label: 'Mode of Transfer';
+        TRANSFER_DATE              : Date           @Common.Label: 'Transfer Date';
+        NO_OF_DAYS                 : Integer        @Common.Label: 'Number of Days';
+        MARRIAGE_CATEGORY          : String(2)      @Common.Label: 'Marriage Category';
+        FAMILY_COUNT               : Integer        @Common.Label: 'Family Count';
+        COST_CENTER                : String         @Common.Label: 'Cost Center';
+        GL_ACCOUNT                 : String(6)      @Common.Label: 'GL Account';
+        MATERIAL_CODE              : String         @Common.Label: 'Material Code';
+        COURSE_TITLE               : String         @Common.Label: 'Course Title';
+        ATTACHMENT1                : String         @Common.Label: 'Attachment 1';
+        ATTACHMENT2                : String         @Common.Label: 'Attachment 2';
+        PURPOSE                    : String         @Common.Label: 'Purpose';
+        MOBILE_CATEGORY_PURPOSE_ID : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
+        KILOMETER                  : Decimal(6, 2)  @Common.Label: 'Kilometer';
+        RATE_PER_KM                : String(10)     @Common.Label: 'Rate Per Kilometer';
+        FLIGHT_CLASS               : String         @Common.Label: 'Flight Class';
+        LOCATION_TYPE              : String(6)      @Common.Label: 'Location Type';
+        COUNTRY                    : String(3)      @Common.Label: 'Country';
+        FROM_STATE_ID              : String(4)      @Common.Label: 'From State'; //office distance
+        TO_STATE_ID                : String(4)      @Common.Label: 'To State'; //office distance
+        TO_LOCATION                : String         @Common.Label: 'To Location'; //free text
+        TO_LOCATION_OFFICE         : String(10)     @Common.Label: 'To Location (Office)'; //office distance
+        FROM_LOCATION              : String         @Common.Label: 'From Location'; //free text
+        FROM_LOCATION_OFFICE       : String(10)     @Common.Label: 'From Location (Office)'; //office distance
+        TOLL                       : Decimal(16, 2) @Common.Label: 'Toll';
+        VEHICLE_TYPE               : String(2)      @Common.Label: 'Vehicle Type';
+        DEPARTURE_TIME             : Timestamp      @Common.Label: 'Departure Time';
+        ARRIVAL_TIME               : Timestamp      @Common.Label: 'Arrival Time';
+        REGION                     : String(2)      @Common.Label: 'Region';
+        ROOM_TYPE                  : String(2)      @Common.Label: 'Room Type';
+        LODGING_CATEGORY           : String(2)      @Common.Label: 'Lodging Category';
+        AREA                       : String(6)      @Common.Label: 'Area';
+        START_TIME                 : Time           @Common.Label: 'Start Time';
+        END_TIME                   : Time           @Common.Label: 'End Time';
+        DEPENDENT                  : String         @Common.Label: 'Dependent';
+        METER_CUBE_ENTITLED        : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
+        METER_CUBE_ACTUAL          : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
+        FARE_TYPE_ID               : String(2)      @Common.Label: 'Fare Type ID';
+        VEHICLE_CLASS_ID           : String(2)      @Common.Label: 'Vehicle Class ID';
+        TRIP_START_DATE            : Date           @Common.Label: 'Trip Start Date';
+        TRIP_END_DATE              : Date           @Common.Label: 'Trip End Date';
+        TRIP_START_TIME            : Time           @Common.Label: 'Trip Start Time ';
+        TRIP_END_TIME              : Time           @Common.Label: 'Trip End Time';
+        TRAVEL_DURATION_DAY        : Decimal(3, 1)  @Common.Label: 'Travel Duration Day';
+        TRAVEL_DURATION_HOUR       : Decimal(4, 1)  @Common.Label: 'Travel Duration Hour';
+        ENTITLED_BREAKFAST         : Integer        @Common.Label: 'Entitled Breakfast';
+        ENTITLED_LUNCH             : Integer        @Common.Label: 'Entitled Lunch';
+        ENTITLED_DINNER            : Integer        @Common.Label: 'Entitled Dinner';
+        DAILY_ALLOWANCE            : Integer        @Common.Label: 'Daily Allowance';
+        CURRENCY_CODE              : String         @Common.Label: 'Currency Code';
+        CURRENCY_RATE              : Decimal(6, 2)  @Common.Label: 'Currency Rate';
+        TYPE_OF_PROFESSIONAL_BODY  : String(3)      @Common.Label: 'Type of Professional Body';
+        TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
+        ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -317,6 +331,8 @@ entity ZCLAIM_TYPE : managed {
                                on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
         ZCOST_CENTER     : Association to ZCOST_CENTER
                                on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZGL_ACCOUNT      : Association to ZGL_ACCOUNT
+                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
 
 }
 
@@ -330,57 +346,57 @@ entity ZNUM_RANGE : managed {
 }
 
 entity ZCLAIM_HEADER : managed {
-    key CLAIM_ID                       : String @mandatory;
-        EMP_ID                         : String;
-        PURPOSE                        : String;
-        TRIP_START_DATE                : Date;
-        TRIP_END_DATE                  : Date;
-        EVENT_START_DATE               : Date;
-        EVENT_END_DATE                 : Date;
-        SUBMISSION_TYPE                : String;
-        COMMENT                        : String;
-        ALTERNATE_COST_CENTER          : String;
-        COST_CENTER                    : String;
-        REQUEST_ID                     : String;
-        ATTACHMENT_EMAIL_APPROVER      : String;
-        STATUS_ID                      : String;
-        CLAIM_TYPE_ID                  : String;
-        TOTAL_CLAIM_AMOUNT             : Decimal(16, 2);
-        PREAPPROVED_AMOUNT             : Decimal(16, 2);
-        CASH_ADVANCE_AMOUNT            : Decimal(16, 2);
-        FINAL_AMOUNT_TO_RECEIVE        : Decimal(16, 2);
-        LAST_MODIFIED_DATE             : Date;
-        SUBMITTED_DATE                 : Date;
-        LAST_APPROVED_DATE             : Date;
-        LAST_APPROVED_TIME             : Time;      
-        REJECT_REASON_ID               : String(3);
-        REJECT_REASON_DATE             : Date;
-        REJECT_REASON_TIME             : Time;
-        PAYMENT_DATE                   : Date;
-        LOCATION                       : String;
-        SPOUSE_OFFICE_ADDRESS          : String;
-        HOUSE_COMPLETION_DATE          : Date;
-        MOVE_IN_DATE                   : Date;
-        HOUSING_LOAN_SCHEME            : String(2);
-        LENDER_NAME                    : String(2);
-        SPECIFY_DETAILS                : String;
-        NEW_HOUSE_ADDRESS              : String;
-        DIST_OLD_HOUSE_TO_OFFICE_KM    : Decimal;
-        DIST_OLD_HOUSE_TO_NEW_HOUSE_KM : Decimal;
-        PROJECT_CODE                   : String;
-        COURSE_CODE                    : String;
-        APPROVER1                      : String(6);
-        APPROVER2                      : String(6);
-        APPROVER3                      : String(6);
-        APPROVER4                      : String(6);
-        APPROVER5                      : String(6);
-        SESSION_NUMBER                 : String(15);
-        MODE_OF_TRANSFER               : String(2);
-        TRAVEL_ALONE_FAMILY            : String(1);
-        TRAVEL_FAMILY_NOW_LATER        : String(2);
-        LAST_PUSH_BACK_DATE            : Date;
-        LAST_PUSH_BACK_TIME            : Time;    
-        PUSH_BACK_REASON_ID            : String(3);              
+    key CLAIM_ID                       : String         @mandatory  @Common.Label: 'Claim ID';
+        EMP_ID                         : String         @Common.Label: 'Employee ID';
+        PURPOSE                        : String         @Common.Label: 'Purpose';
+        TRIP_START_DATE                : Date           @Common.Label: 'Trip Start Date';
+        TRIP_END_DATE                  : Date           @Common.Label: 'Trip End Date';
+        EVENT_START_DATE               : Date           @Common.Label: 'Event Start Date';
+        EVENT_END_DATE                 : Date           @Common.Label: 'Event End Date';
+        SUBMISSION_TYPE                : String         @Common.Label: 'Submission Type';
+        COMMENT                        : String         @Common.Label: 'Comment';
+        ALTERNATE_COST_CENTER          : String         @Common.Label: 'Alternate Cost Center';
+        COST_CENTER                    : String         @Common.Label: 'Cost Center';
+        REQUEST_ID                     : String         @Common.Label: 'Request ID';
+        ATTACHMENT_EMAIL_APPROVER      : String         @Common.Label: 'Attachment Email Approver';
+        STATUS_ID                      : String         @Common.Label: 'Status ID';
+        CLAIM_TYPE_ID                  : String         @Common.Label: 'Claim Type ID';
+        TOTAL_CLAIM_AMOUNT             : Decimal(16, 2) @Common.Label: 'Total Claim Amount';
+        PREAPPROVED_AMOUNT             : Decimal(16, 2) @Common.Label: 'Pre-Approved Amount';
+        CASH_ADVANCE_AMOUNT            : Decimal(16, 2) @Common.Label: 'Cash Advance Amount';
+        FINAL_AMOUNT_TO_RECEIVE        : Decimal(16, 2) @Common.Label: 'Final Amount to Recevie';
+        LAST_MODIFIED_DATE             : Date           @Common.Label: 'Last Modified Date';
+        SUBMITTED_DATE                 : Date           @Common.Label: 'Submitted Date';
+        LAST_APPROVED_DATE             : Date           @Common.Label: 'Last Approved Date';
+        LAST_APPROVED_TIME             : Time           @Common.Label: 'Last Approved Time';
+        REJECT_REASON_ID               : String(3)      @Common.Label: 'Reject Reason ID';
+        REJECT_REASON_DATE             : Date           @Common.Label: 'Reject Reason Date';
+        REJECT_REASON_TIME             : Time           @Common.Label: 'Reject Reason Time';
+        PAYMENT_DATE                   : Date           @Common.Label: 'Payment Date';
+        LOCATION                       : String         @Common.Label: 'Location';
+        SPOUSE_OFFICE_ADDRESS          : String         @Common.Label: 'Spouse Office Address';
+        HOUSE_COMPLETION_DATE          : Date           @Common.Label: 'House Completion Date';
+        MOVE_IN_DATE                   : Date           @Common.Label: 'Move In Date';
+        HOUSING_LOAN_SCHEME            : String(2)      @Common.Label: 'Housing Loan Scheme';
+        LENDER_NAME                    : String(2)      @Common.Label: 'Lender Name';
+        SPECIFY_DETAILS                : String         @Common.Label: 'Specify Details';
+        NEW_HOUSE_ADDRESS              : String         @Common.Label: 'New House Address';
+        DIST_OLD_HOUSE_TO_OFFICE_KM    : Decimal        @Common.Label: 'Distance Old House to Office (KM)';
+        DIST_OLD_HOUSE_TO_NEW_HOUSE_KM : Decimal        @Common.Label: 'Distance Old House to New House (KM)';
+        PROJECT_CODE                   : String         @Common.Label: 'Project Code';
+        COURSE_CODE                    : String         @Common.Label: 'Course Code';
+        APPROVER1                      : String(6)      @Common.Label: 'Approver 1';
+        APPROVER2                      : String(6)      @Common.Label: 'Approver 2';
+        APPROVER3                      : String(6)      @Common.Label: 'Approver 3';
+        APPROVER4                      : String(6)      @Common.Label: 'Approver 4';
+        APPROVER5                      : String(6)      @Common.Label: 'Approver 5';
+        SESSION_NUMBER                 : String(15)     @Common.Label: 'Session Number';
+        MODE_OF_TRANSFER               : String(2)      @Common.Label: 'Mode of Transfer';
+        TRAVEL_ALONE_FAMILY            : String(1)      @Common.Label: 'Travel (Alone/With Family) ';
+        TRAVEL_FAMILY_NOW_LATER        : String(2)      @Common.Label: 'With Family Now or Later?';
+        LAST_PUSH_BACK_DATE            : Date           @Common.Label: 'Last Push Back Date';
+        LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
+        PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -422,110 +438,110 @@ entity ZCLAIM_HEADER : managed {
 }
 
 entity ZCLAIM_ITEM : managed {
-    key CLAIM_ID                   : String @mandatory;
-    key CLAIM_SUB_ID               : String @mandatory;
-        EMP_ID                     : String;
-        CLAIM_TYPE_ID              : String;
-        CLAIM_TYPE_ITEM_ID         : String;
-        PERCENTAGE_COMPENSATION    : Decimal(5, 2);
-        ACCOUNT_NO                 : String(255);
-        AMOUNT                     : Decimal(16, 2);
-        ATTACHMENT_FILE_1          : String;
-        ATTACHMENT_FILE_2          : String;
-        BILL_NO                    : String;
-        BILL_DATE                  : Date;
-        CLAIM_CATEGORY             : String;
-        COUNTRY                    : String(3);
-        DISCLAIMER                 : Boolean;
-        START_DATE                 : Date;
-        END_DATE                   : Date;
-        START_TIME                 : Time;
-        END_TIME                   : Time;
-        FLIGHT_CLASS               : String;
-        FROM_LOCATION              : String; //free text
-        FROM_LOCATION_OFFICE       : String(10); //office distance
-        KM                         : Decimal(6, 2);
-        LOCATION                   : String;
-        LOCATION_TYPE              : String(6);
-        ROUND_TRIP                 : Boolean;
-        LODGING_CATEGORY           : String(2);
-        LODGING_ADDRESS            : String;
-        MARRIAGE_CATEGORY          : String(2);
-        AREA                       : String(6);
-        NO_OF_FAMILY_MEMBER        : Integer;
-        PARKING                    : Decimal;
-        PHONE_NO                   : String;
-        RATE_PER_KM                : String(10);
-        RECEIPT_DATE               : Date;
-        RECEIPT_NUMBER             : String;
-        REMARK                     : String;
-        ROOM_TYPE                  : String(2);
-        REGION                     : String(2);
-        FROM_STATE_ID              : String(4); //office distance
-        TO_STATE_ID                : String(4); //office distance
-        TO_LOCATION                : String; //free text
-        TO_LOCATION_OFFICE         : String(10); //office distance
-        TOLL                       : Decimal(16, 2);
-        TOTAL_EXP_AMOUNT           : Decimal(16, 2);
-        VEHICLE_TYPE               : String(2);
-        VEHICLE_FARE               : Boolean;
-        TRIP_START_DATE            : Date;
-        TRIP_START_TIME            : Time;
-        TRIP_END_DATE              : Date;
-        TRIP_END_TIME              : Time;
-        EVENT_START_DATE           : Date;
-        EVENT_END_DATE             : Date;
-        TRAVEL_DURATION_DAY        : Decimal(3, 1);
-        TRAVEL_DURATION_HOUR       : Decimal(4, 1);
-        PROVIDED_BREAKFAST         : String;
-        PROVIDED_LUNCH             : String;
-        PROVIDED_DINNER            : String;
-        ENTITLED_BREAKFAST         : String;
-        ENTITLED_LUNCH             : String;
-        ENTITLED_DINNER            : String;
-        ANGGOTA_ID                 : String;
-        ANGGOTA_NAME               : String;
-        DEPENDENT_NAME             : String;
-        TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        DISCLAIMER_GALAKAN         : Boolean;
-        VEHICLE_OWNERSHIP_ID       : String(2);
-        MODE_OF_TRANSFER           : String(2);
-        TRANSFER_DATE              : Date;
-        NO_OF_DAYS                 : Integer;
-        FAMILY_COUNT               : Integer;
-        FUNERAL_TRANSPORTATION     : String(2);
-        COST_CENTER                : String;
-        GL_ACCOUNT                 : String(6);
-        MATERIAL_CODE              : String;
-        COURSE_TITLE               : String;
-        PURPOSE                    : String;
-        MOBILE_CATEGORY_PURPOSE_ID : String(2);
-        STUDY_LEVELS_ID            : String(2);
-        ACTUAL_AMOUNT              : Decimal(16, 2);
-        FARE_TYPE_ID               : String(2);
-        VEHICLE_CLASS_ID           : String(2);
-        NEED_FOREIGN_CURRENCY      : Boolean;
-        CURRENCY_CODE              : String;
-        CURRENCY_RATE              : Decimal(16, 4);
-        CURRENCY_AMOUNT            : Decimal(16, 2);
-        REQUEST_APPROVAL_AMOUNT    : Decimal(16, 2);
-        DEPARTURE_TIME             : Timestamp;
-        ARRIVAL_TIME               : Timestamp;
-        DEPENDENT                  : String;
-        POLICY_NUMBER              : String;
-        INSURANCE_PROVIDER_ID      : String(3);
-        INSURANCE_PROVIDER_NAME    : String;
-        INSURANCE_PACKAGE_ID       : String(2);
-        INSURANCE_PURCHASE_DATE    : Date;
-        INSURANCE_CERT_START_DATE  : Date;
-        INSURANCE_CERT_END_DATE    : Date;
-        TRAVEL_DAYS_ID             : String(2);
-        METER_CUBE_ENTITLED        : Decimal(6, 2);
-        METER_CUBE_ACTUAL          : Decimal(6, 2);
-        DAILY_ALLOWANCE            : Integer;
-        TIPS                       : Integer;
-        EXCLUDE_TIPS               : Boolean;
-        TOTAL_TRAVELLER            : Integer;        
+    key CLAIM_ID                   : String         @mandatory  @Common.Label: 'Claim ID';
+    key CLAIM_SUB_ID               : String         @mandatory  @Common.Label: 'Claim Sub ID';
+        EMP_ID                     : String         @Common.Label: 'Employee ID';
+        CLAIM_TYPE_ID              : String         @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_ITEM_ID         : String         @Common.Label: 'Claim Type Item ID';
+        PERCENTAGE_COMPENSATION    : Decimal(5, 2)  @Common.Label: '% Compensation';
+        ACCOUNT_NO                 : String(255)    @Common.Label: 'Account No';
+        AMOUNT                     : Decimal(16, 2) @Common.Label: 'Amount';
+        ATTACHMENT_FILE_1          : String         @Common.Label: 'Attachment 1';
+        ATTACHMENT_FILE_2          : String         @Common.Label: 'Attachment 2';
+        BILL_NO                    : String         @Common.Label: 'Bill No';
+        BILL_DATE                  : Date           @Common.Label: 'Bill Date';
+        CLAIM_CATEGORY             : String         @Common.Label: 'Claim Category';
+        COUNTRY                    : String(3)      @Common.Label: 'Country';
+        DISCLAIMER                 : Boolean        @Common.Label: 'Disclaimer: - installment, entertainment subs, games, roaming, storage, any other personal usage';
+        START_DATE                 : Date           @Common.Label: 'Start Date';
+        END_DATE                   : Date           @Common.Label: 'End Date';
+        START_TIME                 : Time           @Common.Label: 'Start Time';
+        END_TIME                   : Time           @Common.Label: 'End Time';
+        FLIGHT_CLASS               : String         @Common.Label: 'Flight Class';
+        FROM_LOCATION              : String         @Common.Label: 'From Location'; //free text
+        FROM_LOCATION_OFFICE       : String(10)     @Common.Label: 'From Location Office'; //office distance
+        KM                         : Decimal(6, 2)  @Common.Label: 'Kilometer';
+        LOCATION                   : String         @Common.Label: 'Location';
+        LOCATION_TYPE              : String(6)      @Common.Label: 'Location Type';
+        ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
+        LODGING_CATEGORY           : String(2)      @Common.Label: 'Lodging Category';
+        LODGING_ADDRESS            : String         @Common.Label: 'Lodging Address';
+        MARRIAGE_CATEGORY          : String(2)      @Common.Label: 'Marriage Category';
+        AREA                       : String(6)      @Common.Label: 'Area';
+        NO_OF_FAMILY_MEMBER        : Integer        @Common.Label: 'Number of Family Member';
+        PARKING                    : Decimal        @Common.Label: 'Parking';
+        PHONE_NO                   : String         @Common.Label: 'Phone No';
+        RATE_PER_KM                : String(10)     @Common.Label: 'Rate per Kilometer';
+        RECEIPT_DATE               : Date           @Common.Label: 'Receipt Date';
+        RECEIPT_NUMBER             : String         @Common.Label: 'Receipt Number';
+        REMARK                     : String         @Common.Label: 'Remark';
+        ROOM_TYPE                  : String(2)      @Common.Label: 'Room Type';
+        REGION                     : String(2)      @Common.Label: 'Semenanjung Or Sabah Sarawak';
+        FROM_STATE_ID              : String(4)      @Common.Label: 'From State ID'; //office distance
+        TO_STATE_ID                : String(4)      @Common.Label: 'To State ID'; //office distance
+        TO_LOCATION                : String         @Common.Label: 'To Location'; //free text
+        TO_LOCATION_OFFICE         : String(10)     @Common.Label: 'To Location Office'; //office distance
+        TOLL                       : Decimal(16, 2) @Common.Label: 'Toll';
+        TOTAL_EXP_AMOUNT           : Decimal(16, 2) @Common.Label: 'Total Expenses Amount';
+        VEHICLE_TYPE               : String(2)      @Common.Label: 'Vehicle Type';
+        VEHICLE_FARE               : Boolean        @Common.Label: 'Vehicle (Tambang)';
+        TRIP_START_DATE            : Date           @Common.Label: 'Trip Start Date';
+        TRIP_START_TIME            : Time           @Common.Label: 'Trip Start Time';
+        TRIP_END_DATE              : Date           @Common.Label: 'Trip End Date';
+        TRIP_END_TIME              : Time           @Common.Label: 'Trip End Time';
+        EVENT_START_DATE           : Date           @Common.Label: 'Event Start Date';
+        EVENT_END_DATE             : Date           @Common.Label: 'Event End Date';
+        TRAVEL_DURATION_DAY        : Decimal(3, 1)  @Common.Label: 'Travel Duration (Days)';
+        TRAVEL_DURATION_HOUR       : Decimal(4, 1)  @Common.Label: 'Travel Duration (Hour)';
+        PROVIDED_BREAKFAST         : String         @Common.Label: 'Provided Breakfast';
+        PROVIDED_LUNCH             : String         @Common.Label: 'Provided Lunch';
+        PROVIDED_DINNER            : String         @Common.Label: 'Provided Dinner';
+        ENTITLED_BREAKFAST         : String         @Common.Label: 'Entitled Breakfast';
+        ENTITLED_LUNCH             : String         @Common.Label: 'Entitled Lunch';
+        ENTITLED_DINNER            : String         @Common.Label: 'Entitled Dinner';
+        ANGGOTA_ID                 : String         @Common.Label: 'Anggota ID';
+        ANGGOTA_NAME               : String         @Common.Label: 'Anggota Name';
+        DEPENDENT_NAME             : String         @Common.Label: 'Depedent Name';
+        TYPE_OF_PROFESSIONAL_BODY  : String(3)      @Common.Label: 'Type of Professional Body';
+        DISCLAIMER_GALAKAN         : Boolean        @Common.Label: 'Disclaimer: Dengan kelulusan ini, saya megesahkan tuntutan elaun galakan sijil profesional ini adalah berkaitan dengan bidang tugas anggota.';
+        VEHICLE_OWNERSHIP_ID       : String(2)      @Common.Label: 'Vehicle Ownership ID (Sendiri/Pejabat)';
+        MODE_OF_TRANSFER           : String(2)      @Common.Label: 'Mode of Transfer';
+        TRANSFER_DATE              : Date           @Common.Label: 'Tarikh Pindah';
+        NO_OF_DAYS                 : Integer        @Common.Label: 'Number of Days';
+        FAMILY_COUNT               : Integer        @Common.Label: 'Number of Family Member (Per Head)';
+        FUNERAL_TRANSPORTATION     : String(2)      @Common.Label: 'Kemudahan Membawa Jenazah';
+        COST_CENTER                : String         @Common.Label: 'Cost Center';
+        GL_ACCOUNT                 : String(6)      @Common.Label: 'GL Account';
+        MATERIAL_CODE              : String         @Common.Label: 'Material Code';
+        COURSE_TITLE               : String         @Common.Label: 'Course Title';
+        PURPOSE                    : String         @Common.Label: 'Purpose';
+        MOBILE_CATEGORY_PURPOSE_ID : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
+        STUDY_LEVELS_ID            : String(2)      @Common.Label: 'Level of Studies';
+        ACTUAL_AMOUNT              : Decimal(16, 2) @Common.Label: 'Actual Amount';
+        FARE_TYPE_ID               : String(2)      @Common.Label: 'Type of Fare';
+        VEHICLE_CLASS_ID           : String(2)      @Common.Label: 'Vehicle Class';
+        NEED_FOREIGN_CURRENCY      : Boolean        @Common.Label: 'Need Foreign Currency?';
+        CURRENCY_CODE              : String         @Common.Label: 'Currency Code';
+        CURRENCY_RATE              : Decimal(16, 4) @Common.Label: 'Currency Rate';
+        CURRENCY_AMOUNT            : Decimal(16, 2) @Common.Label: 'Currency Amount';
+        REQUEST_APPROVAL_AMOUNT    : Decimal(16, 2) @Common.Label: 'Request Approved Amount';
+        DEPARTURE_TIME             : Timestamp      @Common.Label: 'Departure Time';
+        ARRIVAL_TIME               : Timestamp      @Common.Label: 'Arrival Time';
+        DEPENDENT                  : String         @Common.Label: 'Dependent';
+        POLICY_NUMBER              : String         @Common.Label: 'Policy Number';
+        INSURANCE_PROVIDER_ID      : String(3)      @Common.Label: 'ID Pembekal Insuran';
+        INSURANCE_PROVIDER_NAME    : String         @Common.Label: 'Name Pembekal Insuran';
+        INSURANCE_PACKAGE_ID       : String(2)      @Common.Label: 'Insurance Package';
+        INSURANCE_PURCHASE_DATE    : Date           @Common.Label: 'Date of Purchase of Insurance';
+        INSURANCE_CERT_START_DATE  : Date           @Common.Label: 'Insurance Period of Certificate Start Date';
+        INSURANCE_CERT_END_DATE    : Date           @Common.Label: 'Insurance Period of Certificate End Date';
+        TRAVEL_DAYS_ID             : String(2)      @Common.Label: 'Number of Days Category (Travel Insurance)';
+        METER_CUBE_ENTITLED        : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
+        METER_CUBE_ACTUAL          : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
+        DAILY_ALLOWANCE            : Integer        @Common.Label: 'Daily Allowance';
+        TIPS                       : Integer        @Common.Label: 'Tips';
+        EXCLUDE_TIPS               : Boolean        @Common.Label: 'Exclude Tips';
+        TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -609,13 +625,13 @@ entity ZLODGING_CAT : managed {
 }
 
 entity ZCOST_CENTER : managed {
-    key COST_CENTER_ID   : String;
+    key COST_CENTER_ID   : String     @Common.Label: 'Cost Center';
         COST_CENTER_DESC : String;
-        EXTERNAL_OBJ_ID  : String;
-        DEPARTMENT       : String;
-        START_DATE       : Date;
-        END_DATE         : Date;
-        STATUS           : String(10);
+        EXTERNAL_OBJ_ID  : String     @Common.Label: 'External Object ID';
+        DEPARTMENT       : String     @Common.Label: 'Department';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String(10) @Common.Label: 'Status';
 }
 
 entity ZRISK : managed {
@@ -720,15 +736,15 @@ entity ZFLIGHT_CLASS : managed {
 }
 
 entity ZCOUNTRY : managed {
-    key COUNTRY_ID            : String(3)  @mandatory  @Common.Label: 'Country ID';
-        COUNTRY_DESC          : String     @Common.Label: 'Country Description';
-        START_DATE            : Date       @Common.Label: 'Start Date';
-        END_DATE              : Date       @Common.Label: 'End Date';
-        STATUS                : String(10) @Common.Label: 'Status';
-        LODGING_CATEGORY      : String(2)  @Common.Label: 'Lodging Category';
-        ZLODGING_CAT          : Association to ZLODGING_CAT
-                                    on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
-                                    
+    key COUNTRY_ID       : String(3)  @mandatory  @Common.Label: 'Country ID';
+        COUNTRY_DESC     : String     @Common.Label: 'Country Description';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String(10) @Common.Label: 'Status';
+        LODGING_CATEGORY : String(2)  @Common.Label: 'Lodging Category';
+        ZLODGING_CAT     : Association to ZLODGING_CAT
+                               on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY
+
 }
 
 entity ZAREA : managed {
@@ -1350,7 +1366,7 @@ entity ZELIGIBILITY_RULE : managed {
         ZCOST_CENTER              : Association to one ZCOST_CENTER
                                         on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
         ZLODGING_CAT              : Association to ZLODGING_CAT
-                                        on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
+                                        on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

@@ -254,10 +254,10 @@ module.exports = (srv) => {
                     consumed = Number(existing[0].CONSUMED);
 
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
-                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
+                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
-                    original_budget = original_budget === 0? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
+                    var new_return = return_value + Number(existing[0].RETURN);
+                    original_budget = original_budget === 0 ? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
@@ -896,7 +896,7 @@ module.exports = (srv) => {
      */
     srv.on('getApprovedCashAdvanceAmount', async (req) => {
         const { sRequestId } = req.data;
-        if ( !sRequestId ) return 0.00;
+        if (!sRequestId) return 0.00;
 
         try {
             const aRequestItems = await SELECT
@@ -913,7 +913,7 @@ module.exports = (srv) => {
             if (aRequestItems.length > 0) {
                 var dResult = 0.00;
 
-                for ( var iIndex = 0; iIndex < aRequestItems.length; iIndex++ ) {
+                for (var iIndex = 0; iIndex < aRequestItems.length; iIndex++) {
                     dResult += parseFloat(aRequestItems[iIndex].EST_AMOUNT);
                 }
                 return dResult;
@@ -1838,14 +1838,14 @@ module.exports = (srv) => {
         const { sRegion, fKilometer } = req.data;
 
         if (oEmp) {
-            if(req.data.sMaritalCategory){
+            if (req.data.sMaritalCategory) {
                 var sMarriageCategory = req.data.sMaritalCategory;
-                if(req.data.sMaritalCategory == Constant.MarriageCategory.SINGLE){
+                if (req.data.sMaritalCategory == Constant.MarriageCategory.SINGLE) {
                     var sMaritalStatus = Constant.MaritalStatus.SINGLE;
-                }else{
+                } else {
                     var sMaritalStatus = oEmp.MARITAL;
                 }
-            }else{
+            } else {
                 var sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
                 var sMaritalStatus = oEmp.MARITAL;
             }
@@ -1898,15 +1898,15 @@ module.exports = (srv) => {
 
         try {
             if (oEmp) {
-                if((req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE_DESC || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER_DESC) ||
-                    (req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER)){
+                if ((req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE_DESC || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER_DESC) ||
+                    (req.data.sTravelAloneFamily == Constant.TravelAloneOrWithFamily.ALONE || req.data.sTravelFamilyNowLater == Constant.TravelWithFamilyNowOrLater.LATER)) {
                     var sMarriageCategory = Constant.MarriageCategory.SINGLE;
                     var sEmpMarital = Constant.MaritalStatus.SINGLE
-                }else{
+                } else {
                     var sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
                     var sEmpMarital = oEmp.MARITAL;
                 }
-                
+
                 if (!sMarriageCategory) {
                     req.error(404, `No marriage category available for employee.`);
                 }
@@ -1946,13 +1946,13 @@ module.exports = (srv) => {
                 if (!oEligibilityRule) {
                     return 0;
                 }
-                
+
                 var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
 
                 return {
-                    fAmount         : oEligibilityRule.ELIGIBLE_AMOUNT,
-                    fPercentage     : oEligibilityRule.SUBSIDISED_RATE,
-                    fFinalAmount    : fFinalAmount
+                    fAmount: oEligibilityRule.ELIGIBLE_AMOUNT,
+                    fPercentage: oEligibilityRule.SUBSIDISED_RATE,
+                    fFinalAmount: fFinalAmount
                 }
             }
 
@@ -1960,7 +1960,7 @@ module.exports = (srv) => {
             req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
-    
+
     /**
      * Validate PEA total amount by calculating:
      * - existing PEA header total
@@ -1999,13 +1999,13 @@ module.exports = (srv) => {
 
     srv.on('checkElaunTukarEligible', async (req) => {
         const tx = cds.tx(req);
-        
-        const bIsClaimSide = req.data.IS_CLAIM === true; 
+
+        const bIsClaimSide = req.data.IS_CLAIM === true;
 
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, 'Employee not found'); 
+            return req.error(404, 'Employee not found');
         }
 
         // ---------------------------------------------------------
@@ -2020,7 +2020,7 @@ module.exports = (srv) => {
 
         const oConstantRec = await tx.run(
             SELECT.one.from(Constant.Entities.ZCONSTANTS)
-                .columns(Constant.EntitiesFields.VALUE) 
+                .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER })
         );
 
@@ -2032,7 +2032,7 @@ module.exports = (srv) => {
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
         if (dCurrentDate <= dEligibleDate) {
-            return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+            return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
         const sEligibleDateQueryFormat = dEligibleDate.toISOString().split('T')[0];
@@ -2041,22 +2041,22 @@ module.exports = (srv) => {
         // 2. Check Historical Data (Filtered by Eligible Date)
         // ---------------------------------------------------------
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
-        const sClaimType = Constant.ClaimType.ELAUN_TUKAR; 
+        const sClaimType = Constant.ClaimType.ELAUN_TUKAR;
         const aBlockingStatuses = [Constant.Status.DRAFT, Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED];
-        const sEmployeeId = oEmp.EEID; 
+        const sEmployeeId = oEmp.EEID;
 
         const [aExistingClaimsRaw, aExistingRequestsRaw] = await Promise.all([
             tx.run(SELECT.from(ZCLAIM_HEADER).where({
-                EMP_ID: sEmployeeId, 
+                EMP_ID: sEmployeeId,
                 CLAIM_TYPE_ID: sClaimType,
                 STATUS_ID: { 'in': aBlockingStatuses },
-                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat } 
+                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat }
             })),
             tx.run(SELECT.from(ZREQUEST_HEADER).where({
-                EMP_ID: sEmployeeId,            
-                CLAIM_TYPE_ID: sClaimType,              
+                EMP_ID: sEmployeeId,
+                CLAIM_TYPE_ID: sClaimType,
                 STATUS: { 'in': aBlockingStatuses },
-                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat } 
+                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat }
             }))
         ]);
 
@@ -2068,23 +2068,23 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 3. Logic Branch: CLAIM SIDE vs REQUEST SIDE
         // ---------------------------------------------------------
-        
+
         if (bIsClaimSide) {
             // ==========================================
             // IF TRIGGERED FROM CLAIM UI
             // ==========================================
-            
+
             // Check Claims First
             for (const claim of aExistingClaims) {
-                const sStatus = claim.STATUS_ID; 
-                if (sStatus === Constant.Status.DRAFT) return Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = claim.STATUS_ID;
+                if (sStatus === Constant.Status.DRAFT) return Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
@@ -2093,34 +2093,34 @@ module.exports = (srv) => {
             // ==========================================
             // IF TRIGGERED FROM REQUEST UI
             // ==========================================
-            
+
             // Check Requests First
             for (const request of aExistingRequests) {
-                const sStatus = request.STATUS; 
-                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = request.STATUS;
+                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
                         console.log("here_req", request)
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
-            
+
             // Check Claims Second
             for (const claim of aExistingClaims) {
-                const sStatus = claim.STATUS_ID; 
-                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = claim.STATUS_ID;
+                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
@@ -2128,13 +2128,13 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 4. Passed all checks - Return Final Status
         // ---------------------------------------------------------
-        return sFinalStatus; 
+        return sFinalStatus;
     });
 
-    srv.on('getMarriageCategoryBasedOnStatus', async (req) =>{
+    srv.on('getMarriageCategoryBasedOnStatus', async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-        if(oEmp){
+        if (oEmp) {
             const sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
             const sMarriageStatus = oEmp.MARITAL;
 
@@ -2142,28 +2142,28 @@ module.exports = (srv) => {
                 req.error(404, `No marriage category available for employee.`);
             }
 
-            switch(sMarriageCategory){
+            switch (sMarriageCategory) {
                 case Constant.MarriageCategory.MARRIED_NO_CHILDREN:
-                    if(sMarriageStatus == Constant.MaritalStatus.WIDOWED ||sMarriageStatus == Constant.MaritalStatus.SEPARATED || sMarriageStatus == Constant.MaritalStatus.DIVORCED){
+                    if (sMarriageStatus == Constant.MaritalStatus.WIDOWED || sMarriageStatus == Constant.MaritalStatus.SEPARATED || sMarriageStatus == Constant.MaritalStatus.DIVORCED) {
                         return Constant.MarriageCategory.SINGLE;
                     }
                     return sMarriageCategory;
                 case Constant.MarriageCategory.MARRIED_1_TO_3_CHILDREN:
                     break;
                 case Constant.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN:
-                    break;  
+                    break;
             }
             return sMarriageCategory;
-        }else{
+        } else {
             req.error(404, `Employee Not Found.`);
         }
     });
 
-    srv.on('getLodgingOverseaAmountAndCat', async (req) =>{      
+    srv.on('getLodgingOverseaAmountAndCat', async (req) => {
         const tx = cds.tx(req);
         const { ZCOUNTRY } = srv.entities;
         const sTodayDate = new Date().toISOString().slice(0, 10);
-        try{
+        try {
             var oLodgingCategory = await tx.run(SELECT.one
                 .from(Constant.Entities.ZCOUNTRY)
                 .columns(Constant.EntitiesFields.LODGING_CATEGORY)
@@ -2177,22 +2177,22 @@ module.exports = (srv) => {
 
             var oEligibleAmount = await tx.run(
                 SELECT.one
-                .from(Constant.Entities.ZELIGIBILITY_RULE)
-                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
-                .where({
-                    LODGING_CATEGORY: oLodgingCategory.LODGING_CATEGORY,
-                    CLAIM_TYPE_ID: req.data.sClaimType,
-                    CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
-                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                })
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        LODGING_CATEGORY: oLodgingCategory.LODGING_CATEGORY,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                    })
             )
-        return {
-            sCategory: oLodgingCategory.LODGING_CATEGORY,
-            iEligibleAmount: oEligibleAmount.ELIGIBLE_AMOUNT
-        };
-        }catch(err){
+            return {
+                sCategory: oLodgingCategory.LODGING_CATEGORY,
+                iEligibleAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+            };
+        } catch (err) {
             req.error(404, `Amount not found.`);
         }
     });
@@ -2202,7 +2202,7 @@ module.exports = (srv) => {
         * @public
         * @returns {Integer} number of records updated in header table
         */
-    srv.on('updateApproverHeader', async (req) =>{
+    srv.on('updateApproverHeader', async (req) => {
         try {
             const oPayload = req.data;
             if (!oPayload || oPayload.length === 0) {
@@ -2211,11 +2211,163 @@ module.exports = (srv) => {
             var sRecordId = oPayload.sRecordId;
             var sStatus = oPayload.sStatus;
             const tx = cds.tx(req);
-            
-            var result = await UpdateHeader.updateApproverActionToHeader( sRecordId, sStatus, tx );
+
+            var result = await UpdateHeader.updateApproverActionToHeader(sRecordId, sStatus, tx);
             return result;
         } catch (error) {
             return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });
+
+    srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
+
+        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+        isAdminCC = true;
+        if (!isAdminCC)
+            return;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp || !oEmp.CC) {
+                return req.reject(403, 'You do not have the required Admin role.');
+            }
+
+            const sUserCC = oEmp.CC;
+
+            // To this (Array format):
+            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+
+            if (req.query.SELECT.where) {
+                req.query.where([
+                    ...req.query.SELECT.where,
+                    'and',
+                    ...ccFilter // Spread the array elements here
+                ]);
+            } else {
+                req.query.where(ccFilter);
+            }
+
+            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
+
+        } catch (error) {
+            console.error("Error in CC auto-population:", error);
+            return req.reject(500, 'Internal server error while checking permisisons');
+        }
+    });
+
+    srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
+
+        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+        isAdminCC = true;
+        if (!isAdminCC)
+            return;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp || !oEmp.CC) {
+                return req.reject(403, 'You do not have the required Admin role.');
+            }
+
+            const sUserCC = oEmp.CC;
+
+            // To this (Array format):
+            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+
+            if (req.query.SELECT.where) {
+                req.query.where([
+                    ...req.query.SELECT.where,
+                    'and',
+                    ...ccFilter // Spread the array elements here
+                ]);
+            } else {
+                req.query.where(ccFilter);
+            }
+
+            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
+
+        } catch (error) {
+            console.error("Error in CC auto-population:", error);
+            return req.reject(500, 'Internal server error while checking permisisons');
+        }
+    });
+
+    srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
+
+        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+        isAdminCC = true;
+        if (!isAdminCC)
+            return;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp || !oEmp.CC) {
+                return req.reject(403, 'You do not have the required Admin role.');
+            }
+
+            const sUserCC = oEmp.CC;
+
+            // To this (Array format):
+            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+
+            if (req.query.SELECT.where) {
+                req.query.where([
+                    ...req.query.SELECT.where,
+                    'and',
+                    ...ccFilter // Spread the array elements here
+                ]);
+            } else {
+                req.query.where(ccFilter);
+            }
+
+            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
+
+        } catch (error) {
+            console.error("Error in CC auto-population:", error);
+            return req.reject(500, 'Internal server error while checking permisisons');
+        }
+    });
+
+    srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
+
+        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+        isAdminCC = true;
+        if (!isAdminCC)
+            return;
+
+        try {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (!oEmp || !oEmp.CC) {
+                return req.reject(403, 'You do not have the required Admin role.');
+            }
+
+            const sUserCC = oEmp.CC;
+
+            // To this (Array format):
+            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+
+            if (req.query.SELECT.where) {
+                req.query.where([
+                    ...req.query.SELECT.where,
+                    'and',
+                    ...ccFilter // Spread the array elements here
+                ]);
+            } else {
+                req.query.where(ccFilter);
+            }
+
+            console.log(`Auto populating filter for Admin_CC: ${sUserCC}`);
+
+        } catch (error) {
+            console.error("Error in CC auto-population:", error);
+            return req.reject(500, 'Internal server error while checking permisisons');
         }
     });
 }
