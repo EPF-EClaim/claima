@@ -116,9 +116,14 @@ module.exports = {
 
         const aItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
-            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-            [sDateField]: { between: [dDateFrom, dDateTo] }
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType
         };
+        
+        // for frequencies other than once per service, date range needed
+        if ((!!dDateFrom) && (!!dDateTo)) {
+            aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+        }
+        
         const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
             sItemTable,
@@ -158,9 +163,14 @@ module.exports = {
             [sHeaderField]: oPayload.RecordId,
             [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [sDateField]: { between: [dDateFrom, dDateTo] }
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem
         };
+
+        // for frequencies other than once per service, date range needed
+        if ((!!dDateFrom) && (!!dDateTo)) {
+            aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+        }
+
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
         return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
