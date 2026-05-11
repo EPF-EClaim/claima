@@ -144,9 +144,9 @@ module.exports = {
     };
 
     // for frequencies other than once per service, date range needed
-        if ((!!dDateFrom) && (!!dDateTo)) {
-            aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
-        }
+        // if ((!!dDateFrom) && (!!dDateTo)) {
+        //     aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+        // }
 
     const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
     const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
@@ -192,7 +192,7 @@ module.exports = {
 
     // for frequencies other than once per service, date range needed
         if ((!!dDateFrom) && (!!dDateTo)) {
-            aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+            aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
         }
         
     const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);

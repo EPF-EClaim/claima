@@ -1067,14 +1067,10 @@
                     id="input_claimdetails_input_currency_rate"
                     value="{
 						path: 'claimitem_input>/claim_item/currency_rate',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						},
+						type: 'sap.ui.model.odata.type.Decimal',
                         constraints: {
-                            minimum: 0.01
+                            scale: 4,
+                            precision: 13
                         }
 					}"     
                     visible="{=
