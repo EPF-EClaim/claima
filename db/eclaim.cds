@@ -37,7 +37,7 @@ entity ZEMP_MASTER : managed {
         UPDATED_DATE                  : Date;
         INSERTED_DATE                 : Date;
         JOB_GRADE                     : String(3);
-        DIVISION                      : String(3);
+        DIVISION                      : String(10);
         HIGHEST_EDU_LEVEL             : String(20);
         HIGHEST_EDU_COURSE            : String(30);
         UNIVERSITY_NAME               : String(30);
