@@ -165,6 +165,9 @@ sap.ui.define([
 					this._oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
+				case "budgetCons":
+					this._oRouter.navTo("BudgetCons");
+					break;
 				default:
 					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {

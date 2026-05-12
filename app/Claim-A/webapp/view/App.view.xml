@@ -99,6 +99,13 @@
                         enabled="true"
                         expanded="false"
                     />
+                    <tnt:NavigationListItem
+                        key="budgetCons"
+                        text="{i18n>nav_budgetcons}"                     
+                        icon="sap-icon://expense-report"
+                        enabled="true"
+                        expanded="false"
+                    />
 
                     <tnt:NavigationListGroup text="Configuration" expanded="false">
                         <tnt:NavigationListItem
