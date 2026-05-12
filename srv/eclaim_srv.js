@@ -2221,8 +2221,7 @@ module.exports = (srv) => {
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
 
-        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        isAdminCC = true;
+        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
 
@@ -2250,15 +2249,13 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
         }
     });
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
 
-        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        isAdminCC = true;
+        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
 
@@ -2286,15 +2283,13 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
         }
     });
 
     srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
 
-        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        isAdminCC = true;
+        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
 
@@ -2322,15 +2317,13 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
         }
     });
 
     srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
 
-        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        isAdminCC = true;
+        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
 
@@ -2358,7 +2351,6 @@ module.exports = (srv) => {
             }
 
         } catch (error) {
-            console.error("Error in CC auto-population:", error);
             return req.reject(500, 'Internal server error while checking permisisons');
         }
     });
