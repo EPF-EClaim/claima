@@ -101,6 +101,13 @@ sap.ui.define([
                                     bCanProceed = false;
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.MKN_LOAN:
+                                if(oInputModel.getProperty("/claim_item/no_of_days") > 2){
+                                    MessageBox.error(Utility.getText("msg_claimsubmission_invalid_no_of_days_in_claim_item"));
+                                    bCanProceed = false;
+
+                                }
+                                break;
                             default:
                                 break;
                         }
@@ -206,10 +213,6 @@ sap.ui.define([
                         }
                     }
                     
-                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
-                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
-                        bCanProceed = false;
-                    }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");

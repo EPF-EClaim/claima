@@ -2408,14 +2408,15 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
-			if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
-			){
-				oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+			if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+					oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
+				){
+					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				}
 			}
-
 
 			// set number of family members based on claim item
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
@@ -2541,12 +2542,14 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
 				}
 
-				if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
-				oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
-				){
-					oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+				if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
+					if(oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family") == this._oConstant.TravelAloneOrWithFamily.ALONE_DESC ||
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER_DESC	|| 
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.ALONE	|| 
+						oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.LATER
+					){
+						oPropertyModel.setProperty("/no_of_family_member/is_visible", false)
+					}
 				}
 
 				if( ((oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later") == this._oConstant.TravelWithFamilyNowOrLater.NOW_DESC) || 
@@ -2884,7 +2887,8 @@ sap.ui.define([
 				return;
 			}
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			if (!bCanProceed) {
 				return;
 			}
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
@@ -3146,7 +3150,7 @@ sap.ui.define([
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
-					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
+					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(4),
 					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
 					DEPENDENT: sDependentList,
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
@@ -3829,7 +3833,8 @@ sap.ui.define([
 				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
 			) {
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+				if (!bCanProceed) {
 					return;
 				}
 
@@ -4280,6 +4285,15 @@ sap.ui.define([
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 								if (!bCanProceed) return;
 
+								// budget checking
+								const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
+								const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
+
+								if (!oHandlingResult.bCanProceed) {
+									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
+									return;
+								}
+
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 								// else, do not send message claim submission pending
@@ -4345,8 +4359,19 @@ sap.ui.define([
 							}
 							break;
 						case 'Submit Report':
-							// budget checking
+							//eligibility checking
+							var aAllClaimItems = oInputModel.getProperty("/claim_items");
+							var aAllEligibilityGeneratedPayload = [];
+							for (var i = 0; i < aAllClaimItems.length; i++) {
+								var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
+								aAllEligibilityGeneratedPayload.push(oPayload[0]);
+							}
 
+							var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
+							var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+							if (!bCanProceed) return;
+
+							// budget checking
 							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
 
@@ -4354,36 +4379,23 @@ sap.ui.define([
 								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							else {
-								//eligibility checking
-								var aAllClaimItems = oInputModel.getProperty("/claim_items");
-								var aAllEligibilityGeneratedPayload = [];
-								for (var i = 0; i < aAllClaimItems.length; i++) {
-									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-									aAllEligibilityGeneratedPayload.push(oPayload[0]);
+							// move approver determination function before claim is saved
+							// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+							// else, do not change claim status
+							var oModelAppr = this.getView().getModel();
+							var oEmployeeViewModel = this.getView().getModel("employee_view");
+							var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+							if (bApproversDetermined) {
+								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+									var submittedDate = this._getJsonDate(new Date());
+									oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
 								}
-
-								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed) return;
-
-								// move approver determination function before claim is saved
-								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
-								// else, do not change claim status
-								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-								if (bApproversDetermined) {
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-									}
-									oMsg = Utility.getText("msg_claimsubmission_pending", []);
-								} else {
-									throw new Error(Utility.getText("msg_failed_no_approver"))
-								}
+								oMsg = Utility.getText("msg_claimsubmission_pending", []);
+							} else {
+								throw new Error(Utility.getText("msg_failed_no_approver"))
 							}
+							
 							break;
 						default:
 							throw new Error("Invalid action selected: " + oAction);
@@ -5339,7 +5351,8 @@ sap.ui.define([
 			const oInputItemModel = this.getView().getModel("claimitem_input");
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			if (!bCanProceed) {
 				return;
 			}
 
