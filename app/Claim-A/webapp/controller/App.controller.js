@@ -189,6 +189,15 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
+				case "cashadvance_summary":
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CASHADVANCE_REPORT");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
 					break;

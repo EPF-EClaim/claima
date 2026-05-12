@@ -2220,7 +2220,6 @@ module.exports = (srv) => {
     });
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
-
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
@@ -2254,7 +2253,6 @@ module.exports = (srv) => {
     });
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
-
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
@@ -2288,7 +2286,6 @@ module.exports = (srv) => {
     });
 
     srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
-
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
@@ -2322,7 +2319,6 @@ module.exports = (srv) => {
     });
 
     srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
-
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
             return;
@@ -2353,5 +2349,20 @@ module.exports = (srv) => {
         } catch (error) {
             return req.reject(500, 'Internal server error while checking permisisons');
         }
+    });
+
+    srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
+        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+
+        if (!isAdminCC) return;
+        const oEmp = await SELECT.one
+            .from('ZEMP_MASTER')
+            .where({ EMAIL: req.user.id });
+        if (!oEmp || !oEmp.CC) return;
+        
+        // Admin_CC sees their own cost center only
+        req.query.where({
+            COST_CENTER_ID: oEmp.CC
+        });
     });
 }

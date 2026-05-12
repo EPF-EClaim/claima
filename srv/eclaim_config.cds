@@ -3848,12 +3848,12 @@ annotate service.ZBUDGET with @(
     },
     odata.draft.enabled,
     UI                             : {
-        HeaderInfo  : {
+        HeaderInfo: {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Budget Data - ZBUDGET',
             TypeNamePlural: 'Budget Data - ZBUDGET',
         },
-        LineItem    : [
+        LineItem  : [
             {
                 $Type            : 'UI.DataField',
                 Value            : YEAR,
@@ -5007,6 +5007,11 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
     APPROVER4_NAME       @(Common.Label: 'Approver 4 Name');
     APPROVER5_NAME       @(Common.Label: 'Approver 5 Name');
     DAYS_APPROVED        @(Common.Label: 'DAY(S) Approved');
+    APPROVER1            @(Common.Label: 'Approver 1');
+    APPROVER2            @(Common.Label: 'Approver 2');
+    APPROVER3            @(Common.Label: 'Approver 3');
+    APPROVER4            @(Common.Label: 'Approver 4');
+    APPROVER5            @(Common.Label: 'Approver 5');
     COURSE_ID            @(
         Common.Label                   : 'Course Code',
         // This links the Code to the Description field for a "Code (Name)" display
@@ -5082,7 +5087,7 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
             Label         : 'Cost Center Selection',
-            CollectionPath: 'ZCOST_CENTER',
+            CollectionPath: 'ZCOST_CENTER_VH',
             Parameters    : [
                 {
                     $Type            : 'Common.ValueListParameterInOut',
@@ -6078,6 +6083,11 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
     APPROVER4_NAME       @(Common.Label: 'Approver 4 Name');
     APPROVER5_NAME       @(Common.Label: 'Approver 5 Name');
     DAYS_APPROVED        @(Common.Label: 'DAY(S) Approved');
+    APPROVER1            @(Common.Label: 'Approver 1');
+    APPROVER2            @(Common.Label: 'Approver 2');
+    APPROVER3            @(Common.Label: 'Approver 3');
+    APPROVER4            @(Common.Label: 'Approver 4');
+    APPROVER5            @(Common.Label: 'Approver 5');
     CLAIM_TYPE_ITEM_ID   @(
         Common.Label                   : 'Claim Type Item',
         // This links the Code to the Description field for a "Code (Name)" display
@@ -6146,7 +6156,7 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
             Label         : 'Cost Center Selection',
-            CollectionPath: 'ZCOST_CENTER',
+            CollectionPath: 'ZCOST_CENTER_VH',
             Parameters    : [
                 {
                     $Type            : 'Common.ValueListParameterInOut',
@@ -6855,6 +6865,11 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
     APPROVER4_NAME       @(Common.Label: 'Approver 4 Name');
     APPROVER5_NAME       @(Common.Label: 'Approver 5 Name');
     DAYS_APPROVED        @(Common.Label: 'DAY(S) Approved');
+    APPROVER1            @(Common.Label: 'Approver 1');
+    APPROVER2            @(Common.Label: 'Approver 2');
+    APPROVER3            @(Common.Label: 'Approver 3');
+    APPROVER4            @(Common.Label: 'Approver 4');
+    APPROVER5            @(Common.Label: 'Approver 5');
 
     CLAIM_TYPE_ITEM_ID   @(
         Common.Label                   : 'Claim Type Item',
@@ -6924,7 +6939,7 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
             Label         : 'Cost Center Selection',
-            CollectionPath: 'ZCOST_CENTER',
+            CollectionPath: 'ZCOST_CENTER_VH',
             Parameters    : [
                 {
                     $Type            : 'Common.ValueListParameterInOut',
@@ -7397,6 +7412,11 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
     APPROVER3_NAME       @(Common.Label: 'Approver 3 Name');
     APPROVER4_NAME       @(Common.Label: 'Approver 4 Name');
     APPROVER5_NAME       @(Common.Label: 'Approver 5 Name');
+    APPROVER1            @(Common.Label: 'Approver 1');
+    APPROVER2            @(Common.Label: 'Approver 2');
+    APPROVER3            @(Common.Label: 'Approver 3');
+    APPROVER4            @(Common.Label: 'Approver 4');
+    APPROVER5            @(Common.Label: 'Approver 5');
     DAYS_APPROVED        @(Common.Label: 'DAY(S) Approved');
 
     STATUS               @(
@@ -7424,7 +7444,7 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
             Label         : 'Cost Center Selection',
-            CollectionPath: 'ZCOST_CENTER',
+            CollectionPath: 'ZCOST_CENTER_VH',
             Parameters    : [
                 {
                     $Type            : 'Common.ValueListParameterInOut',
@@ -7578,4 +7598,233 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             ]
         }
     );
-}
+};
+
+annotate service.ZEMP_CASHADVANCE_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Cash Advance Report',
+            TypeNamePlural: 'Cash Advance Report',
+        },
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Personal Grade'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UNIT_SECTION,
+                ![@UI.Importance]: #High,
+                Label            : 'Unit'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LAST_APPROVED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Approved Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : OBJECTIVE_PURPOSE,
+                ![@UI.Importance]: #High,
+                Label            : 'Purpose'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Request ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Submitted Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID'
+            }
+        ]
+    }
+) {
+    REQUEST_STATUS_DESC @Common.Label: 'Pre-Approval Status Description';
+    CLAIM_STATUS_DESC   @Common.Label: 'Claim Status Description';
+    CASH_ADVANCE        @Common.Label: 'Cash Advance';
+
+    STATUS              @(
+        Common.Label                   : 'Pre-Approval Status',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Status Selection',
+            CollectionPath: 'ZSTATUS',
+            // Your lookup table
+            Parameters    : [{
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: STATUS_DESC,
+                ValueListProperty: 'STATUS_DESC' // The field name in ZSTATUS table
+            }]
+        }
+    );
+    STATUS_ID           @(
+        Common.Label                   : 'Claim Status',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Status Selection',
+            CollectionPath: 'ZSTATUS',
+            // Your lookup table
+            Parameters    : [{
+                $Type            : 'Common.ValueListParameterInOut',
+                LocalDataProperty: STATUS_DESC,
+                ValueListProperty: 'STATUS_DESC' // The field name in ZSTATUS table
+            }]
+        }
+    );
+    DEP                 @(
+        Common.Label                   : 'Department',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : DEPARTMENT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Department Selection',
+            CollectionPath: 'ZDEPARTMENT',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: DEP,
+                    ValueListProperty: 'DEPARTMENT_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: DEPARTMENT_DESC,
+                    ValueListProperty: 'DEPARTMENT_DESC'
+                }
+            ]
+        }
+    );
+    CLAIM_TYPE_ID       @(
+        Common.Label                   : 'Claim Type',
+        // This links the Code to the Description field for a "Code (Name)" display
+        Common.Text                    : CLAIM_TYPE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Options: #TextFirst, #TextLast, #TextOnly, #TextSeparate
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CLAIM_TYPE_ID,
+                    ValueListProperty: 'CLAIM_TYPE_ID'
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CLAIM_TYPE_DESC,
+                    ValueListProperty: 'CLAIM_TYPE_DESC'
+                }
+            ]
+        }
+    );
+    NAME                @(
+        Common.Label                   : 'Employee Name',
+        Common.ValueListWithFixedValues: true,
+        // This creates the dropdown
+        Common.ValueList               : {
+            Label         : 'Employee Selection',
+            CollectionPath: 'ZEMP_MASTER',
+            // Your lookup table
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: EEID,
+                    ValueListProperty: 'EEID' // The field name in ZSTATUS table
+                },
+                {
+                    // This pulls the description into the dropdown list
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: NAME,
+                    ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+};

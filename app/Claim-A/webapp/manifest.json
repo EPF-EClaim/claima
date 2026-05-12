@@ -667,7 +667,12 @@
                     "pattern": "ZEMP_CLAIM_REPORT_DETAILS",
                     "name": "ZEMP_CLAIM_REPORT_DETAILS",
                     "target": "ZEMP_CLAIM_REPORT_DETAILS"
-                }             
+                },
+                {
+                    "pattern": "ZEMP_CASHADVANCE_REPORT",
+                    "name": "ZEMP_CASHADVANCE_REPORT",
+                    "target": "ZEMP_CASHADVANCE_REPORT"
+                }                              
             ],
             "targets": {
                 "TargetMain": {
@@ -4708,7 +4713,54 @@
                             }
                         }
                     }
-                },                           
+                },  
+                "ZEMP_CASHADVANCE_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_CASHADVANCE_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CASHADVANCE_REPORT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },                                                                    
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",
