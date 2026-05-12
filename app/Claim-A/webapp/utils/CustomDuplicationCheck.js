@@ -118,6 +118,14 @@ sap.ui.define([
             const oModel = oController.getOwnerComponent().getModel();
             const aFilters = [];
 
+            //Header status filter (exclude invalid claims)
+            const aHeaderFilters = [
+                new Filter("ZCLAIM_HEADER/STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.CANCELLED),
+                new Filter("ZCLAIM_HEADER/STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.REJECTED),
+                new Filter("ZCLAIM_HEADER/STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.DRAFT),
+                new Filter("ZCLAIM_HEADER/STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.SEND_BACK)
+            ];
+
             // Receipt duplicate
             if (oItem.receipt_number && oItem.receipt_date) {
                 aFilters.push(new Filter({
@@ -127,7 +135,8 @@ sap.ui.define([
                         new Filter("RECEIPT_DATE", FilterOperator.BT, sStartDate, sEndDate),
                         new Filter("RECEIPT_NUMBER", FilterOperator.EQ, oItem.receipt_number),
                         new Filter("RECEIPT_DATE", FilterOperator.EQ, oItem.receipt_date),
-                        new Filter("CLAIM_SUB_ID", FilterOperator.NE, oItem.claim_sub_id)
+                        new Filter("CLAIM_SUB_ID", FilterOperator.NE, oItem.claim_sub_id),
+                        ...aHeaderFilters
                     ]
                 }));
             }
@@ -141,7 +150,8 @@ sap.ui.define([
                         new Filter("BILL_DATE", FilterOperator.BT, sStartDate, sEndDate),
                         new Filter("BILL_NO", FilterOperator.EQ, oItem.bill_no),
                         new Filter("BILL_DATE", FilterOperator.EQ, oItem.bill_date),
-                        new Filter("CLAIM_SUB_ID", FilterOperator.NE, oItem.claim_sub_id)
+                        new Filter("CLAIM_SUB_ID", FilterOperator.NE, oItem.claim_sub_id),
+                        ...aHeaderFilters
                     ]
                 }));
             }
@@ -265,7 +275,6 @@ sap.ui.define([
             const aContexts = await oBinding.requestContexts(0, 1);
 
             if (aContexts.length === 0) return null;
-
             return aContexts[0].getProperty("COURSE_CODE");
         }
     };

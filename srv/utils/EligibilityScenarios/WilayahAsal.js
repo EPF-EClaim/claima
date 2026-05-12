@@ -116,7 +116,7 @@ module.exports = {
 
         // for frequencies other than once per service, date range needed
         if ((!!dDateFrom) && (!!dDateTo)) {
-            aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+            aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
         }
         
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
