@@ -166,7 +166,6 @@ sap.ui.define([
                             })
                             this._fnRolesLoaded();
 
-                            sap.m.MessageToast.show('Email: ' + email);
                         } else {
                             sap.m.MessageToast.show('Email is empty or not provided for this user.');
                         }
