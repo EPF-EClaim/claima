@@ -214,7 +214,9 @@ sap.ui.define([
 
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							if (oField.result) {
+								sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							}
 							break;
 						
 						case Constants.EntitiesFields.TRAVEL_DAYS_ID:
@@ -222,14 +224,18 @@ sap.ui.define([
 							break;
 
 						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
-							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
+							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.ROOM_TYPE_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_room_type", [sEmpId]);
 							break;
 					
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
 							break;
 					}
-					if (!aErrorMessages.includes(sErrorMsg)) {
+					if (!aErrorMessages.includes(sErrorMsg) && sErrorMsg) {
 						aErrorMessages.push(sErrorMsg);
 					}
 
