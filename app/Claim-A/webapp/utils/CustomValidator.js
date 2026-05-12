@@ -213,10 +213,6 @@ sap.ui.define([
                         }
                     }
                     
-                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
-                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
-                        bCanProceed = false;
-                    }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
