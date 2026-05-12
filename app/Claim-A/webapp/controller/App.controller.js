@@ -827,7 +827,9 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
+			if(oInputModel.getProperty("/claimtype/type") == this._oConstant.ClaimType.ELAUN_TUKAR){
+				oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
+			}
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
