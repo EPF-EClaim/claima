@@ -101,6 +101,13 @@ sap.ui.define([
                                     bCanProceed = false;
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.MKN_LOAN:
+                                if(oInputModel.getProperty("/claim_item/no_of_days") > 2){
+                                    MessageBox.error(Utility.getText("msg_claimsubmission_invalid_no_of_days_in_claim_item"));
+                                    bCanProceed = false;
+
+                                }
+                                break;
                             default:
                                 break;
                         }

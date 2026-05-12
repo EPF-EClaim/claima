@@ -3842,15 +3842,12 @@ annotate service.ZBUDGET with @(
         MATERIAL_GROUP
     ],
     Capabilities                   : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
+        Deletable : false,
+        Updatable : false,
+        Insertable: false
     },
     odata.draft.enabled,
-
     UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/BudgetControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/BudgetControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Budget Data - ZBUDGET',
