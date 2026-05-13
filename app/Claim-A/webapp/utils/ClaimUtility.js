@@ -788,7 +788,7 @@ sap.ui.define([
 			const sClaimTypeItem = oClaimModel.getProperty("/claim_item/claim_type_item_id");
 
 			const oResult = await this.fetchAndApplyEntitlement();
-			if(!!oResult || oResult.amount == 0){
+			if(!oResult || oResult.amount == 0){
 				return;
 			}
 
@@ -802,15 +802,18 @@ sap.ui.define([
 					if(oClaimModel.getProperty("/claim_item/currency_rate") && oClaimModel.getProperty("/claim_item/currency_amount")){
 						var nAmountMYR = (oClaimModel.getProperty("/claim_item/currency_rate") * oClaimModel.getProperty("/claim_item/currency_amount"));
 						oClaimModel.setProperty("/claim_item/amount", nAmountMYR);
+					}else{
+						oClaimModel.setProperty("/claim_item/amount", 0);
 					}
 
 					oClaimModel.setProperty("/claim_item/tips", oResult.tips_amount);
-
 					break;
+
 				case Constants.ClaimTypeItem.MAKAN_L:
 					oClaimModel.setProperty("/claim_item/daily_allowance", oResult.daily_allowance);
 					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
 					break;
+
 				case Constants.ClaimTypeItem.TAMBANG:
 					oClaimModel.setProperty("/claim_item/currency_code", oResult.currency_code);
 					oClaimModel.setProperty("/claim_item/currency_amount", oResult.amount);
@@ -818,16 +821,15 @@ sap.ui.define([
 					if(oClaimModel.getProperty("/claim_item/currency_rate") && oClaimModel.getProperty("/claim_item/currency_amount")){
 						var nAmountMYR = (oClaimModel.getProperty("/claim_item/currency_rate") * oClaimModel.getProperty("/claim_item/currency_amount"));
 						oClaimModel.setProperty("/claim_item/amount", nAmountMYR);
+					}else{
+						oClaimModel.setProperty("/claim_item/amount", 0);
 					}
-
 					break;
+
 				default:
 					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
 					break;
 			}
-
-
-			//oResult. amount daily_allowance currency_code tips_amount
 		},
 
 		onCalculateEntitlement: async function(){
@@ -842,8 +844,9 @@ sap.ui.define([
 			
 			if(!dStartDate || !dEndDate) return;
 
-			const iNoOfDays = await DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oHeader, oItem);
-
+			var iNoOfDays = await DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oHeader, oItem);
+			// -1 due to not using it to calculate the hotel type dates, date diff +1 for non night calculation, so -1 for accurate date 
+			iNoOfDays = iNoOfDays - 1;
 			oClaimModel.setProperty("/claim_item/travel_duration_day", iNoOfDays);
 
 			if(oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_O || oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_L){
@@ -859,8 +862,10 @@ sap.ui.define([
 
 			const iDiffMs = dFullEndDate.getTime() - dFullStartDate.getTime(); 
 			const iTotalHours = iDiffMs / (1000 * 60 * 60);
+			iNoOfDays = iTotalHours / 24; 
 			const iRemainingHours = iTotalHours % 24;
 			
+			oClaimModel.setProperty("/claim_item/travel_duration_day", Math.floor(iNoOfDays));
 			oClaimModel.setProperty("/claim_item/travel_duration_hour", Math.floor(iRemainingHours));
 		},
 		

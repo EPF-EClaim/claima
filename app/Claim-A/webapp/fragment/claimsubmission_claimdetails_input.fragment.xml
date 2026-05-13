@@ -1468,8 +1468,7 @@
                                 <Input
                                     id="input_provided_breakfast"
                                     value="{ path: 'claim>/claim_item/provided_breakfast', type: 'Integer' }"
-                                    
-                                    change="onChange_ClaimDetails_ProvidedMeals"
+                                    change="_onCalculate"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -1482,8 +1481,7 @@
                                 <Input
                                     id="input_provided_lunch"
                                     value="{ path: 'claim>/claim_item/provided_lunch', type: 'Integer' }"
-                                    
-                                    change="onChange_ClaimDetails_ProvidedMeals"
+                                    change="_onCalculate"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -1496,8 +1494,7 @@
                                 <Input
                                     id="input_provided_dinner"
                                     value="{ path: 'claim>/claim_item/provided_dinner', type: 'Integer' }"
-                                    
-                                    change="onChange_ClaimDetails_ProvidedMeals"
+                                    change="_onCalculate"
                                 />
                             </form:fields>
                         </form:FormElement>
@@ -1566,7 +1563,7 @@
                                 <CheckBox
                                     id="input_exclude_tips"
                                     selected="{claim>/claim_item/exclude_tips}"
-                                    select="onSelect_ExcludeTips"
+                                    select="_onCalculate"
                                     
                                 />
                             </form:fields>

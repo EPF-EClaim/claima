@@ -2657,7 +2657,7 @@ sap.ui.define([
 			this._setClaimDetailSelectionMaster();
 		},
 
-		_setClaimDetailSelectionMaster: function () {
+		// _setClaimDetailSelectionMaster: function () {
 			//// Type of Professional Body
 			//this._setClaimDetai:SelectionField("select_claimdetails_input_type_of_professional_body", "ZPROFESIONAL_BODY");
 			//// Funeral Transportation
@@ -2691,96 +2691,96 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			//this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 
-			var oFilter = this._getDependentFilters();
+		// 	var oFilter = this._getDependentFilters();
 
-			var oSelect = this.byId("select_claimdetails_input_dependent_name");
-			var oSelectMulti = this.byId("combo_claimdetails_input_dependent");
+		// 	var oSelect = this.byId("select_claimdetails_input_dependent_name");
+		// 	var oSelectMulti = this.byId("combo_claimdetails_input_dependent");
 			
-			var oBindingMulti = oSelectMulti.getBinding("items");
-			var oBinding = oSelect.getBinding("items");
+		// 	var oBindingMulti = oSelectMulti.getBinding("items");
+		// 	var oBinding = oSelect.getBinding("items");
 
-			oBinding.filter(oFilter);
-			oBindingMulti.filter(oFilter);
+		// 	oBinding.filter(oFilter);
+		// 	oBindingMulti.filter(oFilter);
 
-		},
+		// },
 
-		_getDependentFilters: function () {
-			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
-			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+		// _getDependentFilters: function () {
+		// 	var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
+		// 	const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+		// 	const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		// 	const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 
-			var oEmpFilter = new Filter(
-				this._oConstant.EntitiesFields.EMP_ID,
-				FilterOperator.EQ,
-				sClaimantEmpId
-			);
+		// 	var oEmpFilter = new Filter(
+		// 		this._oConstant.EntitiesFields.EMP_ID,
+		// 		FilterOperator.EQ,
+		// 		sClaimantEmpId
+		// 	);
 
-			switch (sClaimTypeItem) {
-				case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
-					var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
+		// 	switch (sClaimTypeItem) {
+		// 		case this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+		// 			var oPeduFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
 
-					return new Filter({
-						filters: [
-							oEmpFilter,
-							oPeduFilter
-						],
-						and: true
-					})
+		// 			return new Filter({
+		// 				filters: [
+		// 					oEmpFilter,
+		// 					oPeduFilter
+		// 				],
+		// 				and: true
+		// 			})
 
-				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
-					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
-					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
-					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
+		// 		case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+		// 			var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
+		// 			var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
+		// 			var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
 
-					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+		// 			d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+		// 			d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+		// 			d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
 
-					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
+		// 			var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
 
-					var oChildBelow18 = new Filter({
-						filters: [
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
-						],
-						and: true
-					})
+		// 			var oChildBelow18 = new Filter({
+		// 				filters: [
+		// 					new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+		// 					new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+		// 				],
+		// 				and: true
+		// 			})
 
-					var oChildStudying = new Filter({
-						filters: [
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
-							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
-						],
-						and: true
-					})
+		// 			var oChildStudying = new Filter({
+		// 				filters: [
+		// 					new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+		// 					new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+		// 					new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
+		// 				],
+		// 				and: true
+		// 			})
 
-					var oDependentRuleFilter = new Filter({
-						filters: [
-							oSpouseFilter,
-							oChildBelow18,
-							oChildStudying
-						],
-						and: false
-					})
+		// 			var oDependentRuleFilter = new Filter({
+		// 				filters: [
+		// 					oSpouseFilter,
+		// 					oChildBelow18,
+		// 					oChildStudying
+		// 				],
+		// 				and: false
+		// 			})
 
-					return new Filter({
-						filters: [
-							oEmpFilter,
-							oDependentRuleFilter
-						],
-						and: true
-					})
+		// 			return new Filter({
+		// 				filters: [
+		// 					oEmpFilter,
+		// 					oDependentRuleFilter
+		// 				],
+		// 				and: true
+		// 			})
 
-				default:
-					return new Filter({
-						filters: [
-							oEmpFilter
-						]
-					})
-			}
-		},
+		// 		default:
+		// 			return new Filter({
+		// 				filters: [
+		// 					oEmpFilter
+		// 				]
+		// 			})
+		// 	}
+		// },
 
 		/**
 		* Set values that will be retrieved for selection dropdown based on claim header
@@ -2792,57 +2792,57 @@ sap.ui.define([
 		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
 		* @param {string} sFieldDesc - specific name of description field of db table
 		*/
-		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
+		// _setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 
-			var oControl = this.byId(sId);
-			if (!oControl || !oControl.getVisible()) return;
-			var oClaimItemModel = this.getView().getModel("claimitem_input");
-			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+		// 	var oControl = this.byId(sId);
+		// 	if (!oControl || !oControl.getVisible()) return;
+		// 	var oClaimItemModel = this.getView().getModel("claimitem_input");
+		// 	var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
 
-			if (!sField) {
-				sField = sTable.slice(1);
-			}
-			if (!sFieldDesc) {
-				sFieldDesc = sField + "_DESC";
-			}
-			var sItemText = "{employee>" + sFieldDesc + "}";
+		// 	if (!sField) {
+		// 		sField = sTable.slice(1);
+		// 	}
+		// 	if (!sFieldDesc) {
+		// 		sFieldDesc = sField + "_DESC";
+		// 	}
+		// 	var sItemText = "{employee>" + sFieldDesc + "}";
 
-			var aFilters = [
-				new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-				new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-			];
-			if (sTable === this._oConstant.ViewName.ZREGION) {
-				const isOverseas = Object.values(this._oConstant.ClaimTypeItemOverseas)
-					.includes(sClaimTypeItemId);
+		// 	var aFilters = [
+		// 		new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+		// 		new Filter(this._oConstant.EntitiesFields.START_DATE, FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+		// 		new Filter(this._oConstant.EntitiesFields.END_DATE, FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+		// 	];
+		// 	if (sTable === this._oConstant.ViewName.ZREGION) {
+		// 		const isOverseas = Object.values(this._oConstant.ClaimTypeItemOverseas)
+		// 			.includes(sClaimTypeItemId);
 
-				aFilters.push(
-					new Filter(
-						this._oConstant.EntitiesFields.REGION_ID,
-						isOverseas ? FilterOperator.EQ : FilterOperator.NE,
-						this._oConstant.Region.OVERSEA
-					)
-				);
-			}
-			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
-				aFilters.push(
-					new Filter(
-						this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,
-						FilterOperator.NE,
-						this._oConstant.FlightClass.BUSINESS
-					)
-				);
-			}
-			oControl.bindAggregation("items", {
-				path: "employee>/" + sTable,
-				filters: aFilters,
-				sorter: [new Sorter(sField + "_ID")],
-				template: new Item({
-					key: "{employee>" + sField + "_ID}",
-					text: sItemText
-				})
-			});
-		},
+		// 		aFilters.push(
+		// 			new Filter(
+		// 				this._oConstant.EntitiesFields.REGION_ID,
+		// 				isOverseas ? FilterOperator.EQ : FilterOperator.NE,
+		// 				this._oConstant.Region.OVERSEA
+		// 			)
+		// 		);
+		// 	}
+		// 	if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
+		// 		aFilters.push(
+		// 			new Filter(
+		// 				this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,
+		// 				FilterOperator.NE,
+		// 				this._oConstant.FlightClass.BUSINESS
+		// 			)
+		// 		);
+		// 	}
+		// 	oControl.bindAggregation("items", {
+		// 		path: "employee>/" + sTable,
+		// 		filters: aFilters,
+		// 		sorter: [new Sorter(sField + "_ID")],
+		// 		template: new Item({
+		// 			key: "{employee>" + sField + "_ID}",
+		// 			text: sItemText
+		// 		})
+		// 	});
+		// },
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
 			switch (oAction) {
@@ -3720,100 +3720,100 @@ sap.ui.define([
 				}
 			}
 		},
-		_calculatePerDiem: async function () {
-			// check date/time values to be used for calculation
-			//// Start Date/Start Time/End Date/End Time
-			//backend this function
-			if (this.byId("datepicker_claimdetails_input_startdate").getVisible()) {
-				var startDate = "datepicker_claimdetails_input_startdate";
-				var startTime = "timepicker_claimdetails_input_starttime";
-				var endDate = "datepicker_claimdetails_input_enddate";
-				var endTime = "timepicker_claimdetails_input_endtime";
+		// _calculatePerDiem: async function () { completed but double check
+		// 	// check date/time values to be used for calculation
+		// 	//// Start Date/Start Time/End Date/End Time
+		// 	//backend this function
+		// 	if (this.byId("datepicker_claimdetails_input_startdate").getVisible()) {
+		// 		var startDate = "datepicker_claimdetails_input_startdate";
+		// 		var startTime = "timepicker_claimdetails_input_starttime";
+		// 		var endDate = "datepicker_claimdetails_input_enddate";
+		// 		var endTime = "timepicker_claimdetails_input_endtime";
 
-				//set date and time path value
-				var sStartDateValue = "/claim_item/start_date";
-				var sStartTimeValue = "/claim_item/start_time";
-				var sEndDateValue = "/claim_item/end_date";
-				var sEndTimeValue = "/claim_item/end_time";
-			}
-			else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) { // ?? not used at all
-				startDate = "datepicker_claimdetails_input_trip_start_date";
-				startTime = "timepicker_claimdetails_input_trip_starttime";
-				endDate = "datepicker_claimdetails_input_trip_end_date";
-				endTime = "timepicker_claimdetails_input_trip_endtime";
+		// 		//set date and time path value
+		// 		var sStartDateValue = "/claim_item/start_date";
+		// 		var sStartTimeValue = "/claim_item/start_time";
+		// 		var sEndDateValue = "/claim_item/end_date";
+		// 		var sEndTimeValue = "/claim_item/end_time";
+		// 	}
+		// 	else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) { // ?? not used at all
+		// 		startDate = "datepicker_claimdetails_input_trip_start_date";
+		// 		startTime = "timepicker_claimdetails_input_trip_starttime";
+		// 		endDate = "datepicker_claimdetails_input_trip_end_date";
+		// 		endTime = "timepicker_claimdetails_input_trip_endtime";
 
-				sStartDateValue = "/claim_item/trip_start_date";
-				sStartTimeValue = "/claim_item/trip_start_time";
-				sEndDateValue = "/claim_item/trip_end_date";
-				sEndTimeValue = "/claim_item/trip_end_time";
-			}
-			else {
-				return;
-			}
-			// check if required fields have values
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
-			if (
-				(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) ||
-				(this.byId(startTime).getVisible() && !oClaimItemInputModel.getProperty(sStartTimeValue)) ||
-				(this.byId(endDate).getVisible() && !oClaimItemInputModel.getProperty(sEndDateValue)) ||
-				(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue))
-			) {??
-				return;
-			}
+		// 		sStartDateValue = "/claim_item/trip_start_date";
+		// 		sStartTimeValue = "/claim_item/trip_start_time";
+		// 		sEndDateValue = "/claim_item/trip_end_date";
+		// 		sEndTimeValue = "/claim_item/trip_end_time";
+		// 	}
+		// 	else {
+		// 		return;
+		// 	}
+		// 	// check if required fields have values
+		// 	var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		// 	var oClaimItemInputModel = this.getView().getModel("claimitem_input");
+		// 	if (
+		// 		(this.byId(startDate).getVisible() && !oClaimItemInputModel.getProperty(sStartDateValue)) ||
+		// 		(this.byId(startTime).getVisible() && !oClaimItemInputModel.getProperty(sStartTimeValue)) ||
+		// 		(this.byId(endDate).getVisible() && !oClaimItemInputModel.getProperty(sEndDateValue)) ||
+		// 		(this.byId(endTime).getVisible() && !oClaimItemInputModel.getProperty(sEndTimeValue))
+		// 	) {??
+		// 		return;
+		// 	}
 
-			// calculate travel duration (days/hours)
-			var startDateValue = oClaimItemInputModel.getProperty(sStartDateValue);
-			var endDateValue = oClaimItemInputModel.getProperty(sEndDateValue);
-			var startTimeValue = this.byId(startTime).getDateValue();
-			var endTimeValue = this.byId(endTime).getDateValue();
-			var startDateUnix = new Date(startDateValue).valueOf();
-			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf();
+		// 	// calculate travel duration (days/hours)
+		// 	var startDateValue = oClaimItemInputModel.getProperty(sStartDateValue);
+		// 	var endDateValue = oClaimItemInputModel.getProperty(sEndDateValue);
+		// 	var startTimeValue = this.byId(startTime).getDateValue();
+		// 	var endTimeValue = this.byId(endTime).getDateValue();
+		// 	var startDateUnix = new Date(startDateValue).valueOf();
+		// 	startDateUnix = startDateUnix + new Date(startTimeValue).valueOf();
+		// 	var endDateUnix = new Date(endDateValue).valueOf();
+		// 	endDateUnix = endDateUnix + new Date(endTimeValue).valueOf();
 
-			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				var nTravelDays = Math.floor((endDateUnix - startDateUnix) / 86400000); // round down days
-				oClaimItemInputModel.setProperty("/claim_item/travel_duration_day", nTravelDays);
+		// 	if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
+		// 		var nTravelDays = Math.floor((endDateUnix - startDateUnix) / 86400000); // round down days
+		// 		oClaimItemInputModel.setProperty("/claim_item/travel_duration_day", nTravelDays);
 
-				//set initial value for meal entitlement based on traveldays
-				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
-					//entitled meal = travel days
-					var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-					if (nEntBfast >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
-					}
-				}
-				if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
+		// 		//set initial value for meal entitlement based on traveldays
+		// 		if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+		// 			oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
+		// 			//entitled meal = travel days
+		// 			var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
+		// 			if (nEntBfast >= 0) {
+		// 				oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+		// 			}
+		// 		}
+		// 		if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
+		// 			oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
 
-					var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-					if (!nEntLunch >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
-					}
-				}
-				if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
+		// 			var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
+		// 			if (!nEntLunch >= 0) {
+		// 				oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+		// 			}
+		// 		}
+		// 		if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
+		// 			oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
 
-					var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-					if (!nEntDinner >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
-					}
+		// 			var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
+		// 			if (!nEntDinner >= 0) {
+		// 				oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+		// 			}
 
-				}
-			}
-			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
-				var remainingHours = nTravelHours % 24;
-				remainingHours = Math.max(0, remainingHours);
-				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
-			}
+		// 		}
+		// 	}
+		// 	if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
+		// 		var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
+		// 		var remainingHours = nTravelHours % 24;
+		// 		remainingHours = Math.max(0, remainingHours);
+		// 		oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
+		// 	}
 
-			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
-		},
+		// 	this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
+		// },
 
-		onChange_ClaimDetails_ProvidedMeals: async function () {
+		onChange_ClaimDetails_ProvidedMeals: async function () { //???
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//check if there is any input, if yes then recalculate entitled meals 
@@ -3837,23 +3837,23 @@ sap.ui.define([
 		* On selecting location type, reset kilometer value if KWSP Office is selected
 		* @public
 		*/
-		onSelect_ClaimDetails_LocationType: async function () {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
+		// onSelect_ClaimDetails_LocationType: async function () {
+		// 	var oInputModel = this.getView().getModel("claimitem_input");
+		// 	var oPropertyModel = this.getView().getModel("claimitem_property");
 
-			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
-				oInputModel.setProperty("/claim_item/km", null);
-				oPropertyModel.setProperty("/to_location/is_visible", false);
-				oPropertyModel.setProperty("/from_location/is_visible", false);
-				await this.onChange_ClaimDetails_Kilometer();
-			}
-			//mine here
-			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.OTHER) {
-				oPropertyModel.setProperty("/to_location/is_visible", true);
-				oPropertyModel.setProperty("/from_location/is_visible", true);
-				await this.onChange_ClaimDetails_Kilometer();
-			}
-		},
+		// 	if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+		// 		oInputModel.setProperty("/claim_item/km", null);
+		// 		oPropertyModel.setProperty("/to_location/is_visible", false);
+		// 		oPropertyModel.setProperty("/from_location/is_visible", false);
+		// 		await this.onChange_ClaimDetails_Kilometer();
+		// 	}
+		// 	//mine here
+		// 	if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.OTHER) {
+		// 		oPropertyModel.setProperty("/to_location/is_visible", true);
+		// 		oPropertyModel.setProperty("/from_location/is_visible", true);
+		// 		await this.onChange_ClaimDetails_Kilometer();
+		// 	}
+		// },
 
 		/**
 		* On selecting From State, filter for values in From Location (Office)
