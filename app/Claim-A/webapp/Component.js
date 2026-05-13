@@ -36,7 +36,7 @@ sap.ui.define([
             countdown: 840000,
             resetCountdown: 840000,
 
-            init() {
+             init() {
                 AppComponent.prototype.init.apply(this, arguments);
 
                 this._oReqModel = this.getModel("request");
@@ -54,6 +54,7 @@ sap.ui.define([
                 this.setModel(models.createUserIdModel(), "userId");
                 this.setModel(models.createImageModel(), "imageModel");
                 this.setModel(models.createRoleModel(), "roleModel");
+                this.setModel(models.createConstantModel(), "constant");
 
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
@@ -66,118 +67,245 @@ sap.ui.define([
                 if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
 
                 PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-                this._loadCurrentUser();
-
-                const oModel = this.getModel();
-                const oUserTypeContext = oModel.bindContext("/getUserType()");
-                oUserTypeContext.requestObject().then(oData => {
-                    var oSessionModel = this.getModel("session");
-                    const sName = oData.name || "";
-                    const sPosition = oData.position;
-                    const sInitials = sName.substring(0, 2).toUpperCase();
-                    oSessionModel.setProperty("/userId", oData.userId || "UNKNOWN");
-                    oSessionModel.setProperty("/email", oData.id);
-                    oSessionModel.setProperty("/initials", sInitials);
-                    oSessionModel.setProperty("/userName", sName);
-                    oSessionModel.setProperty("/position", sPosition);
-                    oSessionModel.setProperty("/grade", oData.grade || "UNKNOWN");
-                    oSessionModel.setProperty("/department", oData.department || "UNKNOWN");
-                    oSessionModel.setProperty("/origin", oData.origin);
-                    oSessionModel.setProperty("/costCenters", oData.costcenters || "UNKNOWN");
-                }).catch(err => {
-                    console.error("getUserType failed:", err);
+                
+                this._oRolesLoadedPromise = new Promise((resolve) => {
+                    this._fnRolesLoaded = resolve;
                 });
-                var jQueryScript = document.createElement('script');
-                jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
-                document.head.appendChild(jQueryScript);
 
-                jQueryScript = document.createElement('script');
-                jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
-                document.head.appendChild(jQueryScript);
-
-                this.setModel(models.createConstantModel(), "constant");
-
+                this._loadExternalLibraries();
+                //this._loadCurrentUser();
+                this._initializeUserSession();
                 this.setInactivityTimeout(600000);
                 this._initActivityTracking();
                 this.startInactivityTimer();
 
                 this.getRouter().attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
                 this.getRouter().attachRouteMatched(this._onRouteMatched, this);
-                this._oRolesLoadedPromise = new Promise((resolve) => {
-                    this._fnRolesLoaded = resolve;
+            },
+
+            _initializeUserSession: async function () {
+                const oModel = this.getModel();
+                const oUserTypeContext = oModel.bindContext("/getUserType(...)");
+
+                try {
+                    // the backend response
+                    await oUserTypeContext.execute();
+
+                    const oUserData = oUserTypeContext.getBoundContext().getObject();
+                    const oSessionModel = this.getModel("session");
+                    const oRoleModel = this.getModel("roleModel");
+
+                    const oUserRoles = oUserData.roles;
+                    const sEmail = oUserData.id;
+                    const sName = oUserData.name || "";
+                    const sInitials = sName.substring(0, 2).toUpperCase();
+
+                    // populate Session Model
+                    oSessionModel.setProperty("/userId", oUserData.userId || "UNKNOWN");
+                    oSessionModel.setProperty("/email", sEmail);
+                    oSessionModel.setProperty("/initials", sInitials);
+                    oSessionModel.setProperty("/userName", sName);
+                    oSessionModel.setProperty("/position", oUserData.position);
+                    oSessionModel.setProperty("/grade", oUserData.grade || "UNKNOWN");
+                    oSessionModel.setProperty("/department", oUserData.department || "UNKNOWN");
+                    oSessionModel.setProperty("/origin", oUserData.origin);
+                    oSessionModel.setProperty("/costCenters", oUserData.costcenters || "UNKNOWN");
+
+                    // update Request Model
+                    this._oReqModel.setProperty("/user", {
+                        emp_id: oUserData.userId,
+                        name: oUserData.name,
+                        cost_center: oUserData.costcenters
+                    });
+
+                    oRoleModel.setProperty("/isClaimant", oUserRoles.isClaimant);
+                    oRoleModel.setProperty("/isApprover", oUserRoles.isApprover);
+                    oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);
+                    oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
+                    oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
+
+                    if (oUserRoles.isDTDAdmin) {
+                        oSessionModel.setProperty("/userType", "DTD Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                        oRoleModel.setProperty("/DTDAdmin_role", true);
+                    } else if (oUserRoles.isAdminSystem) {
+                        oSessionModel.setProperty("/userType", "JKEW Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                    } else if (oUserRoles.isAdminCC) {
+                        oSessionModel.setProperty("/userType", "GA Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                    } else if (oUserRoles.isApprover) {
+                        oSessionModel.setProperty("/userType", "Approver");
+                    } else {
+                        oSessionModel.setProperty("/userType", "Claimant");
+                    }
+
+                    this._fnRolesLoaded();
+                    sap.m.MessageToast.show('Email: ' + sEmail);
+
+                } catch (oError) {
+                    console.error("User Session Initialization Failed:", oError);
+                    this._fnRolesLoaded(); 
+                }
+            },
+
+            _loadExternalLibraries: function () {
+                const aLibs = [
+                    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js'
+                ];
+                aLibs.forEach(src => {
+                    const script = document.createElement('script');
+                    script.setAttribute('src', src);
+                    document.head.appendChild(script);
                 });
             },
 
-            _loadCurrentUser: function () {
-                $.ajax({
-                    type: "GET",
-                    url: "/user-api/currentUser",
-                    success: async function (resultData) {
-                        // Extract email safely with fallbacks (covers common IdP shapes)
-                        var email =
-                            resultData.email ||
-                            (Array.isArray(resultData.emails) && resultData.emails[0] && resultData.emails[0].value) ||
-                            resultData.userPrincipalName ||
-                            null;
+            // init() {
+            //     AppComponent.prototype.init.apply(this, arguments);
 
-                        if (email && typeof email === 'string' && email.trim() !== '') {
-                            // (Optional) set a model if your view needs it
-                            var oUserModel = new JSONModel({ email: email });
-                            this.setModel(oUserModel, 'user');
+            //     this._oReqModel = this.getModel("request");
 
-                            const oEmpData = await this._getEmpIdDetail(email);
-                            this._oReqModel.setProperty("/user", {
-                                emp_id: oEmpData.eeid,
-                                name: oEmpData.name,
-                                cost_center: oEmpData.cc
-                            });
+            //     // Initialize the utility 
+            //     Utility.init(this);
+            //     // Initialize Custom Validator
+            //     CustomValidator.init(this);
+            //     // Initialize Request Utility
+            //     RequestUtility.init(this);
 
-                            var oRoleModel = this.getModel("roleModel");
-                            var oSessionModel = this.getModel("session");
+            //     // set the device model
+            //     this.setModel(models.createDeviceModel(), "device");
+            //     this.setModel(models.createSessionModel(), "session");
+            //     this.setModel(models.createUserIdModel(), "userId");
+            //     this.setModel(models.createImageModel(), "imageModel");
+            //     this.setModel(models.createRoleModel(), "roleModel");
 
-                            resultData.scopes.forEach(function (scope) {
-                                if (scope.includes("Claimant")) {
-                                    oRoleModel.setProperty("/isClaimant", true);
-                                }
-                                if (scope.includes("Approver")) {
-                                    oRoleModel.setProperty("/isApprover", true);
-                                }
-                                if (scope.includes("DTD_Admin")) {
-                                    oRoleModel.setProperty("/isDTDAdmin", true);
-                                    oSessionModel.setProperty("/userType", "DTD Admin");
+            //     const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
+            //     fmt.setDatePattern("medium", "dd MMM yyyy");
+            //     fmt.setDatePattern("short", "dd MMM yyyy");
 
-                                    oRoleModel.setProperty("/Admin_role", true);
-                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
-                                    oRoleModel.setProperty("/DTDAdmin_role", true);
-                                }
-                                if (scope.includes("Admin_System")) {
-                                    oRoleModel.setProperty("/isAdminSystem", true);
-                                    oSessionModel.setProperty("/userType", "JKEW Admin"); 
+            //     // enable routing
+            //     this.getRouter().initialize();
 
-                                    oRoleModel.setProperty("/Admin_role", true);
-                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
-                                }
-                                if (scope.includes("Admin_CC")) {
-                                    oRoleModel.setProperty("/isAdminCC", true);
-                                    oSessionModel.setProperty("/userType", "GA Admin"); 
+            //     const sHash = HashChanger.getInstance().getHash();
+            //     if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
+
+            //     PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
+            //     this._loadCurrentUser();
+
+            //     const oModel = this.getModel();
+            //     const oUserTypeContext = oModel.bindContext("/getUserType()");
+            //     oUserTypeContext.requestObject().then(oData => {
+            //         var oSessionModel = this.getModel("session");
+            //         const sName = oData.name || "";
+            //         const sPosition = oData.position;
+            //         const sInitials = sName.substring(0, 2).toUpperCase();
+            //         oSessionModel.setProperty("/userId", oData.userId || "UNKNOWN");
+            //         oSessionModel.setProperty("/email", oData.id);
+            //         oSessionModel.setProperty("/initials", sInitials);
+            //         oSessionModel.setProperty("/userName", sName);
+            //         oSessionModel.setProperty("/position", sPosition);
+            //         oSessionModel.setProperty("/grade", oData.grade || "UNKNOWN");
+            //         oSessionModel.setProperty("/department", oData.department || "UNKNOWN");
+            //         oSessionModel.setProperty("/origin", oData.origin);
+            //         oSessionModel.setProperty("/costCenters", oData.costcenters || "UNKNOWN");
+            //     }).catch(err => {
+            //         console.error("getUserType failed:", err);
+            //     });
+            //     var jQueryScript = document.createElement('script');
+            //     jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
+            //     document.head.appendChild(jQueryScript);
+
+            //     jQueryScript = document.createElement('script');
+            //     jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
+            //     document.head.appendChild(jQueryScript);
+
+            //     this.setModel(models.createConstantModel(), "constant");
+
+            //     this.setInactivityTimeout(600000);
+            //     this._initActivityTracking();
+            //     this.startInactivityTimer();
+
+            //     this.getRouter().attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
+            //     this.getRouter().attachRouteMatched(this._onRouteMatched, this);
+            //     this._oRolesLoadedPromise = new Promise((resolve) => {
+            //         this._fnRolesLoaded = resolve;
+            //     });
+            // },
+
+            // _loadCurrentUser: function () {
+            //     $.ajax({
+            //         type: "GET",
+            //         url: "/user-api/currentUser",
+            //         success: async function (resultData) {
+            //             // Extract email safely with fallbacks (covers common IdP shapes)
+            //             var email =
+            //                 resultData.email ||
+            //                 (Array.isArray(resultData.emails) && resultData.emails[0] && resultData.emails[0].value) ||
+            //                 resultData.userPrincipalName ||
+            //                 null;
+
+            //             if (email && typeof email === 'string' && email.trim() !== '') {
+            //                 // (Optional) set a model if your view needs it
+            //                 var oUserModel = new JSONModel({ email: email });
+            //                 this.setModel(oUserModel, 'user');
+
+            //                 const oEmpData = await this._getEmpIdDetail(email);
+            //                 this._oReqModel.setProperty("/user", {
+            //                     emp_id: oEmpData.eeid,
+            //                     name: oEmpData.name,
+            //                     cost_center: oEmpData.cc
+            //                 });
+
+            //                 var oRoleModel = this.getModel("roleModel");
+            //                 var oSessionModel = this.getModel("session");
+
+            //                 resultData.scopes.forEach(function (scope) {
+            //                     if (scope.includes("Claimant")) {
+            //                         oRoleModel.setProperty("/isClaimant", true);
+            //                     }
+            //                     if (scope.includes("Approver")) {
+            //                         oRoleModel.setProperty("/isApprover", true);
+            //                     }
+            //                     if (scope.includes("DTD_Admin")) {
+            //                         oRoleModel.setProperty("/isDTDAdmin", true);
+            //                         oSessionModel.setProperty("/userType", "DTD Admin");
+
+            //                         oRoleModel.setProperty("/Admin_role", true);
+            //                         oRoleModel.setProperty("/DTD_JKEW_role", true);
+            //                         oRoleModel.setProperty("/DTDAdmin_role", true);
+            //                     }
+            //                     if (scope.includes("Admin_System")) {
+            //                         oRoleModel.setProperty("/isAdminSystem", true);
+            //                         oSessionModel.setProperty("/userType", "JKEW Admin"); 
+
+            //                         oRoleModel.setProperty("/Admin_role", true);
+            //                         oRoleModel.setProperty("/DTD_JKEW_role", true);
+            //                     }
+            //                     if (scope.includes("Admin_CC")) {
+            //                         oRoleModel.setProperty("/isAdminCC", true);
+            //                         oSessionModel.setProperty("/userType", "GA Admin"); 
                                     
-                                    oRoleModel.setProperty("/Admin_role", true);
-                                }
-                            })
-                            this._fnRolesLoaded();
+            //                         oRoleModel.setProperty("/Admin_role", true);
+            //                     }
+            //                 })
+            //                 this._fnRolesLoaded();
 
-                        } else {
-                            sap.m.MessageToast.show('Email is empty or not provided for this user.');
-                        }
-                    }.bind(this),
-                    error: function (xhr) {
-                        // If you’re still getting 404 here, your approuter may not expose /user-api
-                        console.error('currentUser failed:', xhr.status, xhr.responseText);
-                        sap.m.MessageToast.show('Failed to load user info (currentUser).');
-                        this._fnRolesLoaded();
-                    }.bind(this)
-                });
-            },
+            //                 sap.m.MessageToast.show('Email: ' + email);
+            //             } else {
+            //                 sap.m.MessageToast.show('Email is empty or not provided for this user.');
+            //             }
+            //         }.bind(this),
+            //         error: function (xhr) {
+            //             // If you’re still getting 404 here, your approuter may not expose /user-api
+            //             console.error('currentUser failed:', xhr.status, xhr.responseText);
+            //             sap.m.MessageToast.show('Failed to load user info (currentUser).');
+            //             this._fnRolesLoaded();
+            //         }.bind(this)
+            //     });
+            // },
 
             _initActivityTracking: function () {
                 this._fnResetActivity = () => {
