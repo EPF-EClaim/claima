@@ -201,6 +201,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZINSURANCE_PROVIDER           as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
+     type UserRoles {
+        isClaimant     : Boolean;
+        isApprover     : Boolean;
+        isDTDAdmin     : Boolean;
+        isAdminSystem  : Boolean;
+        isAdminCC      : Boolean;
+    }
+
     type UserInfo {
         id          : String;
         userType    : String;
@@ -212,6 +220,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         grade       : String;
         department  : String;
         user        : String;
+        roles       : UserRoles;
     }
 
     function getUserType()                                                                     returns UserInfo;
