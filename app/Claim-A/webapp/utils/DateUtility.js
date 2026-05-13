@@ -701,13 +701,10 @@ sap.ui.define([
                                 }
 
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                //if (!!new Date(oHeader["trip_end_date"]).getTime()) {
-                                if(!!oHeader){
-                                    _dMinDate = new Date(sFieldValue); 
-                                }else{
+                                if (!!new Date(oHeader["trip_end_date"]).getTime()) {
                                     _dMaxDate = new Date(oHeader["trip_end_date"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                        _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
+                                    _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
                                 }
                             } else {
                                 _dMaxDate = new Date();
@@ -734,10 +731,7 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                //if (!!new Date(oHeader["trip_start_date"]).getTime()) {
-                                if(!!oHeader){
-                                    _dMaxDate = new Date(sFieldValue); 
-                                }else{
+                                if (!!new Date(oHeader["trip_start_date"]).getTime()) {
                                     _dMaxDate = new Date(oHeader["trip_start_date"]);
                                     _dMaxDate.setDate(_dMaxDate.getDate() + oHeader["req_no_of_days"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
