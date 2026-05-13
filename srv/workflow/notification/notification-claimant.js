@@ -10,38 +10,37 @@ const {
     sendEmailViaSAPIS
 } = require("./notification-helper");
 
-async function sendEmailToClaimant(oTx, aApproversContext, sId, oDescriptor, sAction) {
+async function sendEmailToClaimant(sId, oDescriptor, sAction) {
 
     // Retrieve Header context
     const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
     if(!oHeaderContext){
-        return null;
+        return false;
     }
     
     // Retrieve Claimant Context
-    const oClaimantContext = await retrieveEmployeeDetails(oTx, oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
+    const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
     if(!oClaimantContext) {
-        return null;
+        return false;
     }
     let oEmailPayload = null;
     
     try{    
-        for(const oApproverContext of aApproversContext){
-            oEmailPayload = generateEmailPayload(
-                oApproverContext.APPROVER_NAME,
-                oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
-                oClaimantContext[Constant.EntitiesFields.NAME],
-                oHeaderContext[oDescriptor.entityTypeDescField],
-                sId,
-                oClaimantContext[Constant.EntitiesFields.NAME],
-                sAction,
-                "reuben.lai@my.ey.com"
-            )
-            return sendEmailViaSAPIS(oEmailPayload);
-        }
+        oEmailPayload = generateEmailPayload(
+            oClaimantContext.NAME,
+            oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+            oClaimantContext[Constant.EntitiesFields.NAME],
+            oHeaderContext[oDescriptor.entityTypeDescField],
+            sId,
+            oClaimantContext[Constant.EntitiesFields.NAME],
+            sAction,
+            "reuben.lai@my.ey.com"
+        )
+        sendEmailViaSAPIS(oEmailPayload);
+        return true;
     }
     catch(oError){
-        return null;
+        return false;
     }    
 }
 

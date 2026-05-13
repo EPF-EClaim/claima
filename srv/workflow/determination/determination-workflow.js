@@ -473,9 +473,6 @@ async function determineWorkflow(oTx, sId) {
     //1. Retrieve Header details
     const oHeader = await fetchHeaderForWorkflow(oTx, sId, oDescriptor);
 
-    //2. Retrieve Item details
-    // const aItems = await fetchItemsForWorkflow(oTx, sId, oDescriptor);
-
     //3. Build workflow context
     // Put all rules into the workflow context
     // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date |
@@ -517,13 +514,13 @@ async function determineWorkflow(oTx, sId) {
     // aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
     // console.log("Workflow by Submission Type + Claim Type + Role: ", aWorkflowContext);
 
-    // //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
+    //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
     // if(!aWorkflowContext.length) {
     //     aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
     //     console.log("Workflow by Submission Type + Claim Type + Department: ", aWorkflowContext);
     // }
 
-    // //4.3 Retrieve Workflow with priority for Claim Type
+    //4.3 Retrieve Workflow with priority for Claim Type
     // if(!aWorkflowContext.length){
     //     aWorkflowContext = await retrieveWorkflowByClaimType(oTx, sId, oDescriptor);
     //     console.log("Workflow by Submission Type + Claim Type: ", aWorkflowContext);

@@ -23,5 +23,6 @@ function generateEmailPayload(sApproverName, sSubmissionDate, sClaimmantName, sC
 
 module.exports = {
     generateEmailPayload,
-    sendEmailViaSAPIS
+    sendEmailViaSAPIS,
+    resolveNotificationTarget
 }

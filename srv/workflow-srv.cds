@@ -21,6 +21,11 @@ service workflow {
     };
     action processApproval(
         request : ApproverActionRequest
-    );
+    ) returns{
+        Success             : Boolean;
+        DocumentID          : String;
+        Area                : String;
+        Message             : String;
+    };
 
 }

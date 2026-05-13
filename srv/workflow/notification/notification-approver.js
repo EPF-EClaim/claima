@@ -10,7 +10,7 @@ const {
     sendEmailViaSAPIS
 } = require("./notification-helper");
 
-async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction) {
+async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction, sLevel = 1) {
 
     // Retrieve Header context
     const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
@@ -21,27 +21,43 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction)
     // Retrieve Claimant Context
     const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
     if(!oClaimantContext) {
-        return null;
+        return false;
     }
     let oEmailPayload = null;
     
     try{    
         for(const oApproverContext of aApproversContext){
-            oEmailPayload = generateEmailPayload(
-                oApproverContext.APPROVER_NAME,
-                oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
-                oClaimantContext[Constant.EntitiesFields.NAME],
-                oHeaderContext[oDescriptor.entityTypeDescField],
-                sId,
-                oApproverContext.APPROVER_NAME,
-                sAction,
-                "reuben.lai@my.ey.com"
-            )
-            return sendEmailViaSAPIS(oEmailPayload);
+            if(oApproverContext.LEVEL = sLevel) {
+                oEmailPayload = generateEmailPayload(
+                    oApproverContext.APPROVER_NAME,
+                    oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+                    oClaimantContext[Constant.EntitiesFields.NAME],
+                    oHeaderContext[oDescriptor.entityTypeDescField],
+                    sId,
+                    oApproverContext.APPROVER_NAME,
+                    sAction,
+                    "reuben.lai@my.ey.com"
+                )
+                sendEmailViaSAPIS(oEmailPayload);
+                if(oApproverContext.SUB_NAME) {
+                    oEmailPayload = generateEmailPayload(
+                        oApproverContext.SUB_NAME,
+                        oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+                        oClaimantContext[Constant.EntitiesFields.NAME],
+                        oHeaderContext[oDescriptor.entityTypeDescField],
+                        sId,
+                        oApproverContext.SUB_NAME,
+                        sAction,
+                        "reuben.lai@my.ey.com"
+                    )
+                    sendEmailViaSAPIS(oEmailPayload);
+                }
+            }
         }
+        return true;
     }
     catch(oError){
-        return null;
+        return false;
     }
     
 }

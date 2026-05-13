@@ -19,7 +19,8 @@ const {
     resolveDocDescriptor,
     retrieveBudgetContext,
     generateReturnMessage,
-    performBudgetChecking
+    performBudgetChecking,
+    getApproverContextByLevel
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -30,26 +31,10 @@ const {
 const {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
-    checkFinalLevelApproverStatus
+    determineLastApproverLevel,
+    resolveActionDescriptor
 } = require('./workflow/action/action-helper');
 const { message } = require('@sap/cds/lib/log/cds-error');
-
-const actionValues = {
-    [Constant.ApproverActions.APPROVE]      : Constant.Status.APPROVED,
-    [Constant.ApproverActions.REJECT]       : Constant.Status.REJECTED,
-    [Constant.ApproverActions.PUSHBACK]     : Constant.Status.PUSH_BACK
-}
-const budgetActionValues = {
-    [Constant.ApproverActions.APPROVE]      : Constant.ApproverActions.APPROVE,
-    [Constant.ApproverActions.REJECT]       : Constant.ApproverActions.REJECT,
-    [Constant.ApproverActions.PUSHBACK]     : Constant.ApproverActions.REJECT
-}
-
-
-const aApproverTableByPrefix = {
-    [Constant.WorkflowType.CLAIM]   : Constant.Entities.ZAPPROVER_DETAILS_CLAIMS,
-    [Constant.WorkflowType.REQUEST] : Constant.Entities.ZAPPROVER_DETAILS_PREAPPROVAL
-}
 
 // Require END
     
@@ -107,10 +92,10 @@ module.exports = (srv) => {
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
         let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-            sStatus = await sendEmailToClaimant(aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_APPROVE);
+            sStatus = await sendEmailToClaimant(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_APPROVE);
         }
         else {
-            sStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalProcessAction.ACTION_NOTIFY);
+            sStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY);
         }
         if(!sStatus) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification')
@@ -131,30 +116,32 @@ module.exports = (srv) => {
         const oDescriptor = resolveDocDescriptor(sId);
 
         const oTx = cds.tx(req)
-        const sActionValue = actionValues[sAction]
-        if(!aHandler) {
+        // const sActionValue = actionValues[sAction]
+        const oActionDescriptor = resolveActionDescriptor(sAction);
+        if(!oActionDescriptor) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Unsupported workflow action: ${sAction}`);
         }
-        const sBudgetActionValue = budgetActionValues[sAction];
 
-        // Verify if Approver is correct approver
+        // Verify if Approver is correct approver        
         const bStatus = await verifyCorrectApproverForAction(sId, sUserId, oDescriptor);
         if(!bStatus) {
             //Return error message
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Invalid Approver ${sUserId} for Document ${sId}`);
         }
 
+        // Check if approver is last level approver
+        const oLastLevelApproverStatus = await determineLastApproverLevel(sId, oDescriptor);
+
         // Once Approver is validated, perform action
-        bStatus = await updateApproverDetailsTable(oTx, sId, sUserId, sActionValue, sComments, sRejectionReason, oDescriptor);
+        bStatus = await updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, sComments, sRejectionReason, oDescriptor);
         if(!bStatus) {
             //Return error message
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Error Encountered during action: ${sAction} for Document ${sId}`);
         }
 
-        // Check if approver is final level approver or if action is REJECT/PUSH BACK. If yes, perform budget checking
-        const bFinalLevelApprover = await checkFinalLevelApproverStatus(sId, oDescriptor);
-        if(sActionValue == Constant.Status.REJECTED || sActionValue == Constant.Status.PUSH_BACK || bFinalLevelApprover) {
-            const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, sBudgetActionValue);
+        // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
+        if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
+            const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
             const aReturn = await performBudgetChecking(oTx, aBudgetContext);
             const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
             if(oReturn) {
@@ -164,12 +151,26 @@ module.exports = (srv) => {
         }
 
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the timestamp and Reject Reason if necessary
-        const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, sActionValue, oTx);
+        const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);
 
         // Notify claimant/next level approver
         // If action is REJECT/PUSH BACK, notify claimant
         // If action is APPROVE, notify next level approver
         // If action is APPROVE and there are no next level approver, notify claimant
+        if(sAction === Constant.ApproverActions.REJECT || sAction === Constant.ApproverActions.PUSHBACK ||
+            (
+                sAction === Constant.ApproverActions.APPROVE && oLastLevelApproverStatus.ISLASTLEVEL
+            )
+        ) {
+            bStatus = await sendEmailToClaimant(sId, oDescriptor, oActionDescriptor.emailAction);
+        }
+        else {
+            const aApproversContext = getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
+            bStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
+        }
+        if(!bStatus) {
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Email Notification')
+        }
 
     })
 }

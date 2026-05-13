@@ -253,7 +253,8 @@ const Constant = {
         "EST_AMOUNT": "EST_AMOUNT",
         "GL_ACCOUNT": "GL_ACCOUNT",
         "MATERIAL_CODE": "MATERIAL_CODE",
-        "PROJECT_CODE": "PROJECT_CODE"
+        "PROJECT_CODE": "PROJECT_CODE",
+        "COMMENT" : "COMMENT"
     },
     Wildcard: {
         "All": "*",
@@ -428,9 +429,11 @@ const Constant = {
         LESSTHANOREQUAL     : "LT",
         LESSTHANOREQUAL     : "LE"
     },
-    ApprovalProcessAction: {
+    ApprovalEmailAction: {
         "ACTION_NOTIFY" : "NOTIFY",
-        "ACTION_APPROVE": "APPROVE"
+        "ACTION_APPROVE": "APPROVE",
+        "ACTION_REJECT": "REJECT",
+        "ACTION_PUSHBACK": "SEND BACK"
     },
     WorkflowArea: {
         "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",

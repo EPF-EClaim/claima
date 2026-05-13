@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
+const { constants } = require('@sap/xssec');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -28,6 +29,8 @@ const aEntityTableByPrefix = {
         entityAmount        : Constant.EntitiesFields.EST_AMOUNT
     }
 }
+
+
 function resolveDocDescriptor(sId) {
     const sPrefix = sId.slice(0,3);
 
@@ -265,6 +268,47 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         // req.error(400, `Budget checking failed: ${err.message}`);
     }
 }
+async function getApproverContextByLevel(sId, oDescriptor, sLevel){
+    let aApproversContext = [];
+    const aApproversDetails = await cds.run(
+        SELECT
+            .from(oDescriptor.entityApprovers)
+            .where({
+                [oDescriptor.approverIdField]   : sId,
+                [Constant.EntitiesFields.LEVEL] : sLevel
+            })
+            .columns(
+                Constant.EntitiesFields.APPROVER_ID,
+                Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID
+            )
+    )
+    if(!aApproversDetails.length) {
+        return null;
+    }
+    for(const oApproverDetails of aApproversDetails) {
+        let oEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.APPROVER_ID]);
+        let oSubEmployeeDetails = null;
+        if(!oEmployeeDetails) {
+            return null;
+        }
+        if(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]){
+            oSubEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]);
+            if(!oSubEmployeeDetails) {
+                return null;
+            }
+        }
+        aApproversContext.push({
+            APPROVER_EEID   : oApprover.EEID,
+            APPROVER_NAME   : oApprover.NAME,
+            APPROVER_EMAIL  : oApprover.EMAIL,
+            LEVEL           : Number(oApprover.LEVEL),
+            SUB_EEID        : oSubEmployeeDetails.EEID,
+            SUB_NAME        : oSubEmployeeDetails.NAME,
+            SUB_EMAIL       : oSubEmployeeDetails.EMAIL
+        })
+    }
+    return aApproversContext;
+}
 module.exports = { 
     resolveDocDescriptor,
     retrieveHeaderDetails,
@@ -272,5 +316,6 @@ module.exports = {
     retrieveBudgetContext,
     retrieveItems,
     generateReturnMessage,
-    performBudgetChecking
+    performBudgetChecking,
+    getApproverContextByLevel
 };
