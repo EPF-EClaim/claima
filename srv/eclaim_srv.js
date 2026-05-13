@@ -985,7 +985,7 @@ module.exports = (srv) => {
         } catch (err) {
             req.error(400, "Failed to retrieve entitlement information");
         }
-
+        console.log(entitlement);
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {

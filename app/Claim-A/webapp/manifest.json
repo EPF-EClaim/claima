@@ -4193,23 +4193,8 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "YEAR,INTERNAL_ORDER,COMMITMENT_ITEM,FUND_CENTER,MATERIAL_GROUP,ORIGINAL_BUDGET,VIREMENT_IN,VIREMENT_OUT,SUPPLEMENT,RETURN,CURRENT_BUDGET,COMMITMENT,ACTUAL,CONSUMED,BUDGET_BALANCE,PROJECT_CODE,BUDGET_OWNER_ID,WBS_CODE,CURRENCY"
-                                        },
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "YEAR,INTERNAL_ORDER,COMMITMENT_ITEM,FUND_CENTER,MATERIAL_GROUP,ORIGINAL_BUDGET,VIREMENT_IN,VIREMENT_OUT,SUPPLEMENT,RETURN,CURRENT_BUDGET,COMMITMENT,ACTUAL,CONSUMED,BUDGET_BALANCE,PROJECT_CODE,BUDGET_OWNER_ID,WBS_CODE,CURRENCY"
-                                        },
+                                        "enableMassEdit": false,
                                         "disableCopyToClipboard": true
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        }
                                     }
                                 }
                             },
@@ -4530,7 +4515,7 @@
                             }
                         }
                     }
-                },
+                },                
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",

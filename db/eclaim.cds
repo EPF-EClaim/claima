@@ -36,6 +36,20 @@ entity ZEMP_MASTER : managed {
         EFFECTIVE_DATE                : Date;
         UPDATED_DATE                  : Date;
         INSERTED_DATE                 : Date;
+        JOB_GRADE                     : String(3);
+        DIVISION                      : String(10);
+        HIGHEST_EDU_LEVEL             : String(20);
+        HIGHEST_EDU_COURSE            : String(30);
+        UNIVERSITY_NAME               : String(30);
+        HIRE_DATE                     : Date;
+        RETIREMENT_DATE               : Date;
+        CONTRACT_END_DATE             : Date;
+        AGE                           : String(5);
+        YEARS_IN_EPF                  : String(5);
+        SECTION_REGION                : String(10);
+        UNIT_BRANCH                   : String(10);
+        SUB_UNIT_BRANCH               : String(10);
+        BUSINESS_PHONE                : String(15);
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER
@@ -97,7 +111,7 @@ entity ZREQUEST_HEADER : managed {
         LAST_APPROVED_DATE            : Date;
         LAST_APPROVED_TIME            : Time;
         TRAVEL_ALONE_FAMILY           : String(2);
-        TRAVEL_FAMILY_NOW_LATER       : String(2);     
+        TRAVEL_FAMILY_NOW_LATER       : String(2);
         REJECT_REASON_ID              : String(3);
         REJECT_REASON_DATE            : Date;
         REJECT_REASON_TIME            : Time;
@@ -111,8 +125,8 @@ entity ZREQUEST_HEADER : managed {
         TRANSFER_MODE_ID              : String(2);
         PROJECT_CODE                  : String;
         LAST_PUSH_BACK_DATE           : Date;
-        LAST_PUSH_BACK_TIME           : Time;      
-        PUSH_BACK_REASON_ID           : String(3);             
+        LAST_PUSH_BACK_TIME           : Time;
+        PUSH_BACK_REASON_ID           : String(3);
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -217,8 +231,8 @@ entity ZREQUEST_ITEM : managed {
         CURRENCY_CODE              : String;
         CURRENCY_RATE              : Decimal(16, 4);
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        TOTAL_TRAVELLER            : Integer;     
-        ROUND_TRIP                 : Boolean;   
+        TOTAL_TRAVELLER            : Integer;
+        ROUND_TRIP                 : Boolean;
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -352,7 +366,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_MODIFIED_DATE             : Date;
         SUBMITTED_DATE                 : Date;
         LAST_APPROVED_DATE             : Date;
-        LAST_APPROVED_TIME             : Time;      
+        LAST_APPROVED_TIME             : Time;
         REJECT_REASON_ID               : String(3);
         REJECT_REASON_DATE             : Date;
         REJECT_REASON_TIME             : Time;
@@ -379,8 +393,8 @@ entity ZCLAIM_HEADER : managed {
         TRAVEL_ALONE_FAMILY            : String(1);
         TRAVEL_FAMILY_NOW_LATER        : String(2);
         LAST_PUSH_BACK_DATE            : Date;
-        LAST_PUSH_BACK_TIME            : Time;    
-        PUSH_BACK_REASON_ID            : String(3);              
+        LAST_PUSH_BACK_TIME            : Time;
+        PUSH_BACK_REASON_ID            : String(3);
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -525,7 +539,7 @@ entity ZCLAIM_ITEM : managed {
         DAILY_ALLOWANCE            : Integer;
         TIPS                       : Integer;
         EXCLUDE_TIPS               : Boolean;
-        TOTAL_TRAVELLER            : Integer;        
+        TOTAL_TRAVELLER            : Integer;
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -720,15 +734,15 @@ entity ZFLIGHT_CLASS : managed {
 }
 
 entity ZCOUNTRY : managed {
-    key COUNTRY_ID            : String(3)  @mandatory  @Common.Label: 'Country ID';
-        COUNTRY_DESC          : String     @Common.Label: 'Country Description';
-        START_DATE            : Date       @Common.Label: 'Start Date';
-        END_DATE              : Date       @Common.Label: 'End Date';
-        STATUS                : String(10) @Common.Label: 'Status';
-        LODGING_CATEGORY      : String(2)  @Common.Label: 'Lodging Category';
-        ZLODGING_CAT          : Association to ZLODGING_CAT
-                                    on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
-                                    
+    key COUNTRY_ID       : String(3)  @mandatory  @Common.Label: 'Country ID';
+        COUNTRY_DESC     : String     @Common.Label: 'Country Description';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String(10) @Common.Label: 'Status';
+        LODGING_CATEGORY : String(2)  @Common.Label: 'Lodging Category';
+        ZLODGING_CAT     : Association to ZLODGING_CAT
+                               on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY
+
 }
 
 entity ZAREA : managed {
@@ -1350,7 +1364,7 @@ entity ZELIGIBILITY_RULE : managed {
         ZCOST_CENTER              : Association to one ZCOST_CENTER
                                         on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
         ZLODGING_CAT              : Association to ZLODGING_CAT
-                                        on  ZLODGING_CAT.LODGING_CATEGORY_ID   = LODGING_CATEGORY
+                                        on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
