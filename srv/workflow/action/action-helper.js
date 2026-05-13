@@ -3,19 +3,19 @@ const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
 
 const aApproverActions = {
-    [Constant.ApproverActions.APPROVE]  : {
+    [Constant.Status.APPROVED]  : {
         actionValue         : Constant.Status.APPROVED,
         budgetActionValue   : Constant.ApproverActions.APPROVE,
         approverActionValue : Constant.ApproverActions.APPROVE,
         emailAction         : Constant.ApprovalEmailAction.ACTION_APPROVE
     },
-    [Constant.ApproverActions.REJECT]   : {
+    [Constant.Status.REJECTED]   : {
         actionValue         : Constant.Status.REJECTED,
         budgetActionValue   : Constant.ApproverActions.REJECT,
         approverActionValue : Constant.ApproverActions.REJECT,
         emailAction         : Constant.ApprovalEmailAction.ACTION_REJECT
     },
-    [Constant.ApproverActions.PUSHBACK] : {
+    [Constant.Status.PUSH_BACK] : {
         actionValue         : Constant.Status.PUSH_BACK,
         budgetActionValue   : Constant.ApproverActions.REJECT,
         approverActionValue : Constant.ApproverActions.PUSHBACK,

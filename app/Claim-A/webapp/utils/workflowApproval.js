@@ -67,6 +67,32 @@ sap.ui.define([
             oAction.execute();
 
 		},
+        onProcessApproval: async function(oModel, oRequestData) {
+            let oResponse = null;
+            const oAction = oModel.bindContexnt("/processApproval(...)");
+            oAction.setParameter("request", {
+                Id              : oRequestData.Id,
+                UserId          : oRequestData.UserId,
+                Action          : oRequestData.Action,
+                Comments        : oRequestData.Comments,
+                RejectionReason : oRequestData.RejectReason
+            })
+
+            try {
+                await oAction.execute();
+                const oContext = oAction.getBoundContext();
+                oResponse = await oContext.requestObject();
+            } catch (oError) {
+                MessageBox.error(oError.message);
+                return false;
+            } finally {
+                BusyIndicator.hide();
+            }
+            
+            console.log(oResponse);
+            return oResponse
+        },
+
         onApproverDetermination: async function (oModel, sId){
 			// claim header
 
@@ -89,7 +115,7 @@ sap.ui.define([
             }
             
             console.log(oResponse);
-            return oResponse.Success
+            return oResponse
 
             // Variable declaration for use of the entire function block
             
