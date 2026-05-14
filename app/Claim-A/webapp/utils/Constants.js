@@ -683,6 +683,23 @@ sap.ui.define([
             "MAHKAMAH": "MAHKAMAH",
             "PKN_PANAS": "PKN_PANAS",
             "FLIGHT_WIL": "FLIGHT_WIL"
+        },
+        "NumberOfDaysCalculationException": {
+            "BAGAI" : "BAGAI",
+            "HOTEL_L" : "HOTEL_L",
+            "HOTEL_O" : "HOTEL_O",
+            "LODGING_L" : "LODGING_L",
+            "LODG_O" : "LODG_O",
+            "LOD_TUKAR" : "LOD_TUKAR",
+            "MKN_LOAN" : "MKN_LOAN",
+            "MKN_TUKAR" : "MKN_TUKAR",
+            "LAPOR_THN" : "LAPOR_THN",
+            "MAKAN_L" : "MAKAN_L",
+            "MAKAN_O" : "MAKAN_O",
+            "PARKING" : "PARKING",
+            "SEWA" : "SEWA",
+            "TAMBANG" : "TAMBANG",
+            "TELEFON" : "TELEFON"
         }
         
     }

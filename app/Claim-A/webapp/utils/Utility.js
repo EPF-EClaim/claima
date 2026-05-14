@@ -463,9 +463,9 @@ sap.ui.define([
                     break;
 
                  case Constants.SubmissionTypePrefix.CLAIM:
-                    const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
-                    const sTravelAloneFamily = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_alone_family");
-                    const sTravelFamilyNowLater = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/travel_family_now_later");
+                    const oItem = this._oView.getModel("claim").getProperty("/claim_item");
+                    const sTravelAloneFamily = this._oView.getModel("claim").getProperty("/claim_header/travel_alone_family");
+                    const sTravelFamilyNowLater = this._oView.getModel("claim").getProperty("/claim_header/travel_family_now_later");
 
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;
@@ -559,10 +559,10 @@ sap.ui.define([
                     sClaimTypeItem = oReqItem.claim_type_item_id;
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:  
-                    const oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    const oItem = this._oView.getModel("claim")?.getProperty("/claim_item");
 
                     sCountry = oItem.country;
-                    sClaimType = this._oView.getModel("claimsubmission_input").getProperty("/claim_header/claim_type_id");
+                    sClaimType = this._oView.getModel("claim").getProperty("/claim_header/claim_type_id");
                     sClaimTypeItem = oItem.claim_type_item_id;
                     break;
                 

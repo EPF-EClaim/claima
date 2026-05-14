@@ -305,8 +305,8 @@ sap.ui.define([
 		fetchRatePerKm: async function () {
 
 			let oResult = { id: null, value: null };
-			const oInputModel = this._oView.getModel("claimitem_input");
-			const oClaimItem = oInputModel.getProperty("/claim_item");
+			const oClaimModel = this._oView.getModel("claim");
+			const oClaimItem = oClaimModel.getProperty("/claim_item");
 
 			if (!oClaimItem || !oClaimItem.vehicle_type) return;
 
@@ -570,42 +570,41 @@ sap.ui.define([
 		 * @public
 		 */
 		calculateMatawangAmount: async function () {
-			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
-			const oInputModel = this._oView.getModel("claimitem_input");
+			const oClaimModel = this._oView.getModel("claim");
 			const oCalculateMataWangAmountContext = this._oView.getModel().bindContext("/calculateMatawangAmount(...)");
 			oCalculateMataWangAmountContext.setParameter(
 				"claimItems",
-				JSON.stringify(oSubmissionModel.getProperty("/claim_items") || [])
+				JSON.stringify(oClaimModel.getProperty("/claim_items") || [])
 			);
 			return await oCalculateMataWangAmountContext.execute()
 				.then(() => oCalculateMataWangAmountContext.requestObject())
 				.then((oResult) => {
 
-					const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
+					const aClaimItems = oClaimModel.getProperty("/claim_items") || [];
 					const iMatawangIndex = aClaimItems.findIndex(
 						oItem => oItem.claim_type_item_id === Constants.ClaimTypeItem.MATAWANG
 					);
 
 					if (iMatawangIndex > -1) {
-						oSubmissionModel.setProperty(
+						oClaimModel.setProperty(
 							`/claim_items/${iMatawangIndex}/percentage_compensation`,
 							oResult.percentage
 						);
-						oSubmissionModel.setProperty(
+						oClaimModel.setProperty(
 							`/claim_items/${iMatawangIndex}/amount`,
 							oResult.amount
 						);
 					}
 
 					else if (
-						oInputModel.getProperty("/claim_item/claim_type_item_id") ===
+						oClaimModel.getProperty("/claim_item/claim_type_item_id") ===
 						Constants.ClaimTypeItem.MATAWANG
 					) {
-						oInputModel.setProperty(
+						oClaimModel.setProperty(
 							"/claim_item/percentage_compensation",
 							oResult.percentage
 						);
-						oInputModel.setProperty(
+						oClaimModel.setProperty(
 							"/claim_item/amount",
 							oResult.amount
 						);
@@ -677,24 +676,24 @@ sap.ui.define([
 		 * @returns Updates claim item fields upon completion
 		 */
 		fetchPemberianPindahAmount: function () {
-			var oInputModel = this._oView.getModel("claimitem_input");
-			var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+			var oClaimModel = this._oView.getModel("claim");
 			const oContext = this._oView.getModel().bindContext("/getUserEligibleAmountPemPindah(...)");
 
-			oContext.setParameter("sRegion", oInputModel.getProperty("/claim_item/region"));
-			oContext.setParameter("sClaimType", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-			oContext.setParameter("sClaimTypeItem", oInputModel.getProperty("/claim_item/claim_type_item_id"));
-			oContext.setParameter("sTravelAloneFamily", oClaimSubmissionModel.getProperty("/claim_header/travel_alone_family"));
-			oContext.setParameter("sTravelFamilyNowLater", oClaimSubmissionModel.getProperty("/claim_header/travel_family_now_later"));
+			oContext.setParameter("sRegion", oClaimModel.getProperty("/claim_item/region"));
+			oContext.setParameter("sClaimType", oClaimModel.getProperty("/claim_header/claim_type_id"));
+			oContext.setParameter("sClaimTypeItem", oClaimModel.getProperty("/claim_item/claim_type_item_id"));
+			oContext.setParameter("sTravelAloneFamily", oClaimModel.getProperty("/claim_header/travel_alone_family"));
+			oContext.setParameter("sTravelFamilyNowLater", oClaimModel.getProperty("/claim_header/travel_family_now_later"));
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
-					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.PEM_PINDAH){
-						oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
-						oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+					if(oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.PEM_PINDAH){
+						oClaimModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
+						oClaimModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
+						oClaimModel.setProperty("/claim_item/percentage_compensation", oResult.fPercentage);
 					}else{
-						oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
+						oClaimModel.setProperty("/claim_item/amount", oResult.fAmount);
 					}
 					
 				});
@@ -707,14 +706,18 @@ sap.ui.define([
 			const oItem = oClaimModel.getProperty("/claim_item");
 
 			const sClaimTypeItem = oClaimModel.getProperty("/claim_item/claim_type_item_id");
-			
 
 			switch(sClaimTypeItem){
 				case Constants.ClaimTypeItem.MATAWANG:
 				case Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+					oClaimModel.setProperty("/claim_item/amount", parseFloat(oClaimModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oClaimModel.getProperty("/claim_item/percentage_compensation")) / 100));
+
+					break;
 				case Constants.ClaimTypeItem.PEM_PINDAH:
-					const oEmpDefaultAmt = await this.getEmpDefaultAmount();
-					oClaimModel.setProperty("/claim_item/percentage_compensation", oEmpDefaultAmt.iSubsidisedRate)
+					if(!oClaimModel.getProperty("/claim_item/region")){
+						return;
+					}
+					await this.fetchPemberianPindahAmount();
 					break;
 
 				case Constants.ClaimTypeItem.LAUT:
@@ -726,18 +729,43 @@ sap.ui.define([
 				case Constants.ClaimTypeItem.LODG_O:
 				case Constants.ClaimTypeItem.LOD_TUKAR:
 				case Constants.ClaimTypeItem.LODGING_L:
+					//date calc
+					if(!!oClaimModel.getProperty("claim_item/start_date") || !!oClaimModel.getProperty("claim_item/end_date")){ return }
+					oClaimModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oClaimModel.getProperty("/claim_header"), oClaimModel.getProperty("/claim_item")));
+
 					await this.fetchUserAmountLodging();
 					break;
 
 				case Constants.ClaimTypeItem.MAKAN_L:
 				case Constants.ClaimTypeItem.MAKAN_O:
+					//no date calc needed here as entitlement will calculate the days
 					await this.onCalculateEntitlement();
 					await this.onCalculatePerDiem();
 					break;
 				case Constants.ClaimTypeItem.TAMBANG:
+					// date calc
+					if(!!oClaimModel.getProperty("claim_item/start_date") || !!oClaimModel.getProperty("claim_item/end_date")){ return }
+					oClaimModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oClaimModel.getProperty("/claim_header"), oClaimModel.getProperty("/claim_item")));
+
 					await this.onCalculatePerDiem();
 					break;
 
+				case Constants.ClaimTypeItem.BAGAI:
+				case Constants.ClaimTypeItem.HOTEL_L:
+				case Constants.ClaimTypeItem.HOTEL_O:
+				case Constants.ClaimTypeItem.MKN_LOAN:
+				case Constants.ClaimTypeItem.MKN_TUKAR:
+				case Constants.ClaimTypeItem.LAPOR_THN:
+				case Constants.ClaimTypeItem.PARKING:
+				case Constants.ClaimTypeItem.SEWA:
+				case Constants.ClaimTypeItem.TELEFON:
+					if(!!oClaimModel.getProperty("claim_item/start_date") || !!oClaimModel.getProperty("claim_item/end_date")){ return }
+					oClaimModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oClaimModel.getProperty("/claim_header"), oClaimModel.getProperty("/claim_item")));
+
+					break;
+				case Constants.ClaimTypeItem.DARAT:
+					
+					break;
 			}
 			
 		},
@@ -750,18 +778,26 @@ sap.ui.define([
 			switch (sClaimTypeItem) {
 						case Constants.ClaimTypeItem.DARAT:
 						//populate entitled amount 
+						
 						case Constants.ClaimTypeItem.LAUT:
 							if (oClaimModel.getProperty("/view") === Constants.AccessMode.CREATE) { 
 								await this.fetchMeterCubeEntitlement();
 							}
 							break;
+
 						case Constants.ClaimTypeItem.E_PENGAKUT:
 							const iEligibleAmount = await this.fetchUserAmountElaunPengangkutan();
 							// populate item values
 							if (iEligibleAmount === null) return;
-							else oInputModel.setProperty("/claim_item/amount", iEligibleAmount);
+							else oClaimModel.setProperty("/claim_item/amount", iEligibleAmount);
 							break;
 
+						case Constants.ClaimTypeItem.MATAWANG:
+						case Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE:
+							const oEmpDefaultAmt = await this.getEmpDefaultAmount();
+							oClaimModel.setProperty("/claim_item/percentage_compensation", oEmpDefaultAmt.iSubsidisedRate)
+							break;
+						
 						// remove business class option for FLIGHT_L
 						// case Constants.ClaimTypeItem.FLIGHT_L:
 						// 	this._removeBusinessClass();
@@ -830,6 +866,29 @@ sap.ui.define([
 					oClaimModel.setProperty("/claim_item/amount", oResult.amount);
 					break;
 			}
+
+		},
+
+		onCalculateProvidedMealsDeduction: async function(){
+			const oClaimModel = this._oOwnerComponent.getModel("claim");
+			const iProvidedBreakfast = oClaimModel.getProperty("/claim_item/provided_breakfast") ? Number(oClaimModel.getProperty("/claim_item/provided_breakfast")) : 0;
+			const iProvidedLunch = oClaimModel.getProperty("/claim_item/provided_lunch") ? Number(oClaimModel.getProperty("/claim_item/provided_lunch")) : 0;
+			const iProvidedDinner = oClaimModel.getProperty("/claim_item/provided_dinner") ? Number(oClaimModel.getProperty("/claim_item/provided_dinner")) : 0;
+
+			if(iProvidedBreakfast > 0){
+				const iEntitledBreakfast = Number(oClaimModel.getProperty("/claim_item/entitled_breakfast")) - iProvidedBreakfast;
+				oClaimModel.setProperty("/claim_item/entitled_breakfast", iEntitledBreakfast.toString());
+			}
+
+			if(iProvidedLunch > 0){
+				const iEntitledLunch = Number(oClaimModel.getProperty("/claim_item/entitled_lunch")) - iProvidedLunch;
+				oClaimModel.setProperty("/claim_item/entitled_lunch", iEntitledLunch.toString());
+			}
+
+			if(iProvidedDinner > 0){
+				const iEntitledDinner = Number(oClaimModel.getProperty("/claim_item/entitled_dinner")) - iProvidedDinner;
+				oClaimModel.setProperty("/claim_item/entitled_dinner", iEntitledDinner.toString());
+			}
 		},
 
 		onCalculateEntitlement: async function(){
@@ -845,8 +904,7 @@ sap.ui.define([
 			if(!dStartDate || !dEndDate) return;
 
 			var iNoOfDays = await DateUtility.calculateNumberOfDays(Constants.SubmissionTypePrefix.CLAIM, oHeader, oItem);
-			// -1 due to not using it to calculate the hotel type dates, date diff +1 for non night calculation, so -1 for accurate date 
-			iNoOfDays = iNoOfDays - 1;
+			iNoOfDays = iNoOfDays;
 			oClaimModel.setProperty("/claim_item/travel_duration_day", iNoOfDays);
 
 			if(oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_O || oClaimModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.MAKAN_L){
@@ -854,6 +912,8 @@ sap.ui.define([
 				oClaimModel.setProperty("/claim_item/entitled_lunch", iNoOfDays);
 				oClaimModel.setProperty("/claim_item/entitled_dinner", iNoOfDays);
 			}
+
+			await this.onCalculateProvidedMealsDeduction();
 
 			if(!dStartTime || !dEndTime) return;
 
@@ -863,12 +923,24 @@ sap.ui.define([
 			const iDiffMs = dFullEndDate.getTime() - dFullStartDate.getTime(); 
 			const iTotalHours = iDiffMs / (1000 * 60 * 60);
 			iNoOfDays = iTotalHours / 24; 
+			iNoOfDays = iNoOfDays + 1;
 			const iRemainingHours = iTotalHours % 24;
 			
 			oClaimModel.setProperty("/claim_item/travel_duration_day", Math.floor(iNoOfDays));
 			oClaimModel.setProperty("/claim_item/travel_duration_hour", Math.floor(iRemainingHours));
 		},
-		
+
+		onCalculateDaratAmount: async function(){
+			if (!!oClaimModel.getProperty("/claim_item/region")) {
+				var oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.CLAIM);
+				if (!oResult) return;
+				oClaimModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+			}
+
+			if(!!oClaimModel.getProperty("/claim_item/km")){
+				
+			}
+		}
 
 
 	}

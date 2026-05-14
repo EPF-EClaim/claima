@@ -604,8 +604,7 @@
                                     id="select_region"
                                     forceSelection="false"
                                     selectedKey="{claim>/claim_item/region}"
-                                    change="onSelect_ClaimDetails_Region"
-                                    liveChange="onSelect_ClaimDetails_Region"
+                                    change="_onCalculate"
                                     
                                     required="true"
                                     items="{
@@ -1192,7 +1191,11 @@
                                     editable="{= !${claim>/claim_item/need_foreign_currency} &amp;&amp;
                                                 ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;
                                                 ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PEM_PINDAH} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/DARAT} &amp;&amp;
                                                 ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
+                                                ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/POST_EDUCATION_ASSISTANCE} &amp;&amp;
                                                 !${claim>/view_only} &amp;&amp;
                                                 !Object.values(${constant>/ClaimTypeItemLodging}).includes(${claim>/claim_item/claim_type_item_id}) &amp;&amp;
                                                 ${claim>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
