@@ -63,6 +63,7 @@ module.exports = (srv) => {
         }),
 
         srv.on('getUserType', async (req) => {
+            const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
@@ -95,7 +96,7 @@ module.exports = (srv) => {
             }
 
             return {
-                id: oEmp.email,
+                id:  oEmp.EMAIL ||oEmp.email || "UNKNOWN",
                 userType: oEmp.USER_TYPE || "UNKNOWN",
                 costcenters: oEmp.CC || "UNKNOWN",
                 userId: oEmp.EEID || "UNKNOWN",
