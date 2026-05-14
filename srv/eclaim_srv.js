@@ -63,17 +63,11 @@ module.exports = (srv) => {
         }),
 
         srv.on('getUserType', async (req) => {
-            const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-            const emailFromToken =
-                req.user?.attr?.email ||
-                req.user?.attr?.mail ||
-                req.user?.attr?.user_name ||
-                req.user?.attr?.login_name ||
-                req.user?.id ||
-                "";
+            const tx = cds.tx(req);
+            const { ZDEPARTMENT } = srv.entities;
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
             let sOrigin = null;
-
             try {
                 const authHeader = req.http?.req?.headers?.authorization ?? '';
                 const token = authHeader.split(' ')[1];
@@ -87,40 +81,93 @@ module.exports = (srv) => {
                 console.log("Token parsing failed:", e.message);
             }
 
-            const email = String(emailFromToken).trim().toLowerCase();
-            const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-            //no record maintained in ZEMP_MASTER table
-            if (!result) {
-                return {
-                    id: email,
-                    userType: "UNKNOWN",
-                    costcenters: "UNKNOWN",
-                    userId: "UNKNOWN",
-                    name: "UNKNOWN",
-                    position: "UNKNOWN",
-                    origin: sOrigin,
-                    grade: "UNKNOWN",
-                    department: "UNKNOWN"
-                };
-            }
+            const oRoles = {
+                isClaimant: req.user.is('Claimant'),
+                isApprover: req.user.is('Approver'),
+                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+            };
 
-            let dept = null;
-            if (result.DEP) {
-                dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+            let sDeptDesc = "UNKNOWN";
+            if (oEmp.DEP) {
+                const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
+                sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
             }
 
             return {
-                id: email,
-                userType: result?.USER_TYPE || "UNKNOWN",
-                costcenters: result?.CC || "UNKNOWN",
-                userId: result?.EEID || "UNKNOWN",
-                name: result?.NAME || "UNKNOWN",
-                position: result?.POSITION_NAME || "UNKNOWN",
+                id:  oEmp.EMAIL ||oEmp.email || "UNKNOWN",
+                userType: oEmp.USER_TYPE || "UNKNOWN",
+                costcenters: oEmp.CC || "UNKNOWN",
+                userId: oEmp.EEID || "UNKNOWN",
+                name: oEmp.NAME || "UNKNOWN",
+                position: oEmp.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
-                grade: result?.GRADE || "UNKNOWN",
-                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+                grade: oEmp.GRADE || "UNKNOWN",
+                department: sDeptDesc,
+                roles: oRoles
             };
         });
+
+        // srv.on('getUserType', async (req) => {
+        //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
+        //     const emailFromToken =
+        //         req.user?.attr?.email ||
+        //         req.user?.attr?.mail ||
+        //         req.user?.attr?.user_name ||
+        //         req.user?.attr?.login_name ||
+        //         req.user?.id ||
+        //         "";
+
+        //     let sOrigin = null;
+
+        //     try {
+        //         const authHeader = req.http?.req?.headers?.authorization ?? '';
+        //         const token = authHeader.split(' ')[1];
+        //         if (token) {
+        //             const oToken = JSON.parse(
+        //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+        //             );
+        //             sOrigin = oToken.origin;
+        //         }
+        //     } catch (e) {
+        //         console.log("Token parsing failed:", e.message);
+        //     }
+
+        //     const email = String(emailFromToken).trim().toLowerCase();
+        //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+        //     //no record maintained in ZEMP_MASTER table
+        //     if (!result) {
+        //         return {
+        //             id: email,
+        //             userType: "UNKNOWN",
+        //             costcenters: "UNKNOWN",
+        //             userId: "UNKNOWN",
+        //             name: "UNKNOWN",
+        //             position: "UNKNOWN",
+        //             origin: sOrigin,
+        //             grade: "UNKNOWN",
+        //             department: "UNKNOWN"
+        //         };
+        //     }
+
+        //     let dept = null;
+        //     if (result.DEP) {
+        //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+        //     }
+
+        //     return {
+        //         id: email,
+        //         userType: result?.USER_TYPE || "UNKNOWN",
+        //         costcenters: result?.CC || "UNKNOWN",
+        //         userId: result?.EEID || "UNKNOWN",
+        //         name: result?.NAME || "UNKNOWN",
+        //         position: result?.POSITION_NAME || "UNKNOWN",
+        //         origin: sOrigin,
+        //         grade: result?.GRADE || "UNKNOWN",
+        //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+        //     };
+        // });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW

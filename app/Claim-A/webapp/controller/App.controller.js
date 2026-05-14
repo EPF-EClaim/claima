@@ -135,7 +135,6 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					// this._oRouter.navTo("RequestFormStatus");
 					this._oRouter.navTo("RequestFormStatus");
 					break;
 				case "mysubstitution":
