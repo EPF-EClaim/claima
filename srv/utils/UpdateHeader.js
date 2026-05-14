@@ -86,7 +86,8 @@ module.exports = {
         oToUpdateFields = {
             [sDateField]: dDate,
             [sTimeField]: tTime,
-            [Constant.EntitiesFields.STATUS]: sStatus
+            [Constant.EntitiesFields.STATUS]: sStatus,   // ZREQUEST_HEADER.STATUS
+            [Constant.EntitiesFields.STATUS_ID]: sStatus // ZCLAIM_HEADER.STATUS_ID
         };
 
         // Reject and Push back has reason ID fields
@@ -98,6 +99,10 @@ module.exports = {
         var oWhereConditions = {
             [sIdField]: sRecordId
         };
+
+        console.log("To Update Fields: ", oToUpdateFields);
+        console.log("Where Conditions: ", oWhereConditions);
+        console.log("Header Table: ", sHeaderTable);    
 
         return sResult = await this.updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
     },

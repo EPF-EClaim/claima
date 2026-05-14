@@ -26,6 +26,8 @@ const aApproverActions = {
 }
 
 function resolveActionDescriptor(sAction) {
+    console.log("Resolving action descriptor for action: ", sAction);
+    console.log("Approver Actions: ", aApproverActions);
     return aApproverActions[sAction];
 }
 

@@ -260,7 +260,8 @@ const Constant = {
         "INTERNAL_ORDER": "INTERNAL_ORDER",
         "COMMITMENT_ITEM": "COMMITMENT_ITEM",
         "MATERIAL_GROUP": "MATERIAL_GROUP",
-        "BUDGET_OWNER_ID": "BUDGET_OWNER_ID"
+        "BUDGET_OWNER_ID": "BUDGET_OWNER_ID",
+        "STATUS_ID": "STATUS_ID"
     },
     Wildcard: {
         "All": "*",

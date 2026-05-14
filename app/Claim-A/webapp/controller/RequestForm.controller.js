@@ -2511,11 +2511,12 @@ sap.ui.define([
 					const oPayload = {
 						Id				: sReqId,
 						UserId			: sUserId,
-						Action			: this._oConstant.ClaimStatus.APPROVED,
+						ApproverAction	: Constants.ClaimStatus.APPROVED,
 						Comments		: sComment,
 						RejectionReason : ""
 					}
 					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+					console.log("Payload for approval:", oPayload);
 					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
 
 					// if(!oResponse.Success){
@@ -2586,7 +2587,7 @@ sap.ui.define([
 				const oPayload = {
 						Id				: sReqId,
 						UserId			: sUserId,
-						Action			: Constants.ClaimStatus.SEND_BACK,
+						ApproverAction	: Constants.ClaimStatus.SEND_BACK,
 						Comments		: sComment,
 						RejectionReason : ""
 					}
@@ -2666,7 +2667,7 @@ sap.ui.define([
 				const oPayload = {
 						Id				: sReqId,
 						UserId			: this._oSessionModel.getProperty("/userId"),
-						Action			: Constants.ClaimStatus.REJECTED,
+						ApproverAction	: Constants.ClaimStatus.REJECTED,
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
