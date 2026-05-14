@@ -46,7 +46,7 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem>
+                    <ColumnListItem visible="{vm>/isApprover}">
                         <cells>
                             <!-- Subsitute Column -->
                             <Text text="{SUBSTITUTE_ID}" />
