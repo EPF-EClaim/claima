@@ -8,13 +8,20 @@ const {
     retrieveWorkflowByClaimTypeAndRole
 } = require('./determination-helper');
 
-async function fetchHeaderForWorkflow(oTx, sId, oDescriptor) {
+async function fetchHeaderForWorkflow(sId, oDescriptor) {
     
-    const oHeader =  await oTx.run(
+    const oHeader =  await cds.run(
         SELECT
+            .one
             .from(oDescriptor.entityHeader)
-            .columns(   oDescriptor.idField,
-                        oDescriptor.typeField
+            .columns(   
+                oDescriptor.idField,
+                oDescriptor.typeField,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+                Constant.EntitiesFields.PREAPPROVED_AMOUNT,
+                Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT,
+                Constant.EntitiesFields.TRIP_START_DATE
             )
             .where( { [oDescriptor.idField]:sId })
     );
@@ -235,10 +242,10 @@ async function normalizeWorkflowRequestType(oTx, sId, oDescriptor) {
     return null;
 }
 
-async function determineRiskLevel(oTx, sId, oDescriptor) {
+async function determineRiskLevel(sId, oDescriptor) {
     
     const oItemsTable = oDescriptor.entityItem;
-    const sOverallRiskLevel = await oTx.run(
+    const sOverallRiskLevel = await cds.run(
         SELECT
             .one
             .from(oItemsTable)
@@ -471,12 +478,12 @@ async function determineWorkflow(oTx, sId) {
         return null;
     }
     //1. Retrieve Header details
-    const oHeader = await fetchHeaderForWorkflow(oTx, sId, oDescriptor);
+    const oHeader = await fetchHeaderForWorkflow(sId, oDescriptor);
 
     //3. Build workflow context
     // Put all rules into the workflow context
     // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date |
-    sRiskLevel = await determineRiskLevel(oTx, sId, oDescriptor);
+    sRiskLevel = await determineRiskLevel(sId, oDescriptor);
 
     // get threshold amount, total claim amount, preapproved amount for claim
     if(oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
@@ -491,7 +498,8 @@ async function determineWorkflow(oTx, sId) {
         sAgingMiliseconds = dToday.getTime() - dEarliestReceiptDate.getTime();
         sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
     }
-    let sCostCenterContext = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL
+    let sCostCenterContext = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL;
+    console.log("oHeader: ", oHeader);
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
@@ -507,7 +515,7 @@ async function determineWorkflow(oTx, sId) {
         tripStartDate   : sTripStartDate
     }
 
-    //console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
+    console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
 
     //4. Retrieve Workflow rules based on header/item details
     //4.1 Retrieve workflow with priority for Claim type with Role (To be added into ZWORKFLOW_TABLE by Sean)

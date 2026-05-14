@@ -417,12 +417,12 @@ sap.ui.define([
 									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 									// else, do not change claim status
 									// update status to PENDING APPROVAL
-									var oModel = this.getView().getModel();
-									var oEmployeeViewModel = this.getView().getModel("employee_view");
+									// var oModel = this.getView().getModel();
+									// var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 									const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
-									bApproversDetermined = await workflowApproval.onApproverDetermination(oWorkflowModel, sCurrentReqId);
-									if (bApproversDetermined) {
+									const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, sCurrentReqId);
+									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
@@ -2508,19 +2508,32 @@ sap.ui.define([
 				try {
 
 					// 1. Approve + get payloads from util
-					const { payloads } = await ApproverUtility.approveMultiLevel(
-						oModelMain,
-						sReqId,
-						sUserId,
-						sComment,
-						oModelView,
-						this
-					);
+					const oPayload = {
+						Id				: sReqId,
+						UserId			: sUserId,
+						Action			: this._oConstant.ClaimStatus.APPROVED,
+						Comments		: sComment,
+						RejectionReason : ""
+					}
+					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+
+					// if(!oResponse.Success){
+					// 	MessageBox.error(oResponse.Message);
+					// }
+					// const { payloads } = await ApproverUtility.approveMultiLevel(
+					// 	oModelMain,
+					// 	sReqId,
+					// 	sUserId,
+					// 	sComment,
+					// 	oModelView,
+					// 	this
+					// );
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
-					for (const aPayloadEmail of payloads) {
-						await workflowApproval.onSendEmailApprover(oModelMain, aPayloadEmail);
-					}
+					// for (const aPayloadEmail of payloads) {
+					// 	await workflowApproval.onSendEmailApprover(oModelMain, aPayloadEmail);
+					// }
 
 					// 3. Close dialog
 					this._approveDialog && this._approveDialog.close();
@@ -2570,16 +2583,29 @@ sap.ui.define([
 
 
 				// 1) Update approval rows + header, build dataset & email payloads
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						sReqId,       // id
-						sUserId,      // approver user id
-						Constants.ClaimStatus.SEND_BACK,
-						sReason,
-						sComment,
-						oModelView
-					);
+				const oPayload = {
+						Id				: sReqId,
+						UserId			: sUserId,
+						Action			: Constants.ClaimStatus.SEND_BACK,
+						Comments		: sComment,
+						RejectionReason : ""
+					}
+					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+
+					// if(!oResponse.Success){
+					// 	MessageBox.error(oResponse.Message);
+					// }
+				// const { payloads, dataset, submissionType } =
+				// 	await ApproverUtility.rejectOrSendBackMultiLevel(
+				// 		oModelMain,
+				// 		sReqId,       // id
+				// 		sUserId,      // approver user id
+				// 		Constants.ClaimStatus.SEND_BACK,
+				// 		sReason,
+				// 		sComment,
+				// 		oModelView
+				// 	);
 
 				// 2) Budget release (if your finance process requires release on push back)
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
@@ -2590,18 +2616,18 @@ sap.ui.define([
 					"release"
 				);
 				*/
-				const sSubmissionType2 = sReqId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				} catch (oError) {
+				// const sSubmissionType2 = sReqId.substring(0, 3);
+				// try {
+				// 	const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				// } catch (oError) {
 
-				}
+				// }
 
 				// 3) Send notifications
-				const oMailModel = this._oDataModel;
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oMailModel, p);
-				}
+				// const oMailModel = this._oDataModel;
+				// for (const p of payloads) {
+				// 	await workflowApproval.onSendEmailApprover(oMailModel, p);
+				// }
 
 				// 4) Close dialog
 				if (this._sendBackDialog) {
@@ -2637,33 +2663,46 @@ sap.ui.define([
 				const reqModel = this.getView().getModel("request");
 				const sReqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
+				const oPayload = {
+						Id				: sReqId,
+						UserId			: this._oSessionModel.getProperty("/userId"),
+						Action			: Constants.ClaimStatus.REJECTED,
+						Comments		: sComment,
+						RejectionReason : sReason
+					}
+					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
 
+					// if(!oResponse.Success){
+					// 	MessageBox.error(oResponse.Message);
+					// }
+				
 
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						sReqId,
-						this._oSessionModel.getProperty("/userId"),
-						Constants.ClaimStatus.REJECTED,
-						sReason,
-						sComment,
-						oModelView
-					);
+				// const { payloads, dataset, submissionType } =
+				// 	await ApproverUtility.rejectOrSendBackMultiLevel(
+				// 		oModelMain,
+				// 		sReqId,
+				// 		this._oSessionModel.getProperty("/userId"),
+				// 		Constants.ClaimStatus.REJECTED,
+				// 		sReason,
+				// 		sComment,
+				// 		oModelView
+				// 	);
 
 				// Budget release if applicable
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
 				*/
-				const sSubmissionType2 = sReqId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				} catch (oError) {
+				// const sSubmissionType2 = sReqId.substring(0, 3);
+				// try {
+				// 	const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				// } catch (oError) {
 
-				}
+				// }
 
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, p);
-				}
+				// for (const p of payloads) {
+				// 	await workflowApproval.onSendEmailApprover(oModelMain, p);
+				// }
 
 				this._rejectDialog && this._rejectDialog.close();
 

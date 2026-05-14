@@ -69,13 +69,13 @@ sap.ui.define([
 		},
         onProcessApproval: async function(oModel, oRequestData) {
             let oResponse = null;
-            const oAction = oModel.bindContexnt("/processApproval(...)");
+            const oAction = oModel.bindContext("/processApproval(...)");
             oAction.setParameter("request", {
                 Id              : oRequestData.Id,
                 UserId          : oRequestData.UserId,
-                Action          : oRequestData.Action,
+                ApproverAction  : oRequestData.ApproverAction,
                 Comments        : oRequestData.Comments,
-                RejectionReason : oRequestData.RejectReason
+                RejectionReason : oRequestData.RejectionReason
             })
 
             try {

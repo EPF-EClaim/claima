@@ -254,7 +254,13 @@ const Constant = {
         "GL_ACCOUNT": "GL_ACCOUNT",
         "MATERIAL_CODE": "MATERIAL_CODE",
         "PROJECT_CODE": "PROJECT_CODE",
-        "COMMENT" : "COMMENT"
+        "COMMENT" : "COMMENT",
+        "FUND_CENTER": "FUND_CENTER",
+        "YEAR": "YEAR",
+        "INTERNAL_ORDER": "INTERNAL_ORDER",
+        "COMMITMENT_ITEM": "COMMITMENT_ITEM",
+        "MATERIAL_GROUP": "MATERIAL_GROUP",
+        "BUDGET_OWNER_ID": "BUDGET_OWNER_ID"
     },
     Wildcard: {
         "All": "*",
@@ -268,7 +274,7 @@ const Constant = {
         "CEO_FI": "CEO_FI", 
         "HOD": "HOD",
         "HOD_JKEW": "HOD_JKEW",
-        "BUDGET": "BUDGET",
+        "BUDGET": "Budget",
         "CASH_FI": "CASH_FI",
         "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
         "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",

@@ -3,7 +3,6 @@ const { SELECT } = require('@sap/cds/lib/ql/cds-ql')
 const { Constant } = require("../../utils/constant");
 const {
     determineWorkflowStepContext,
-    retrieveRoleRank,
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,
@@ -14,8 +13,10 @@ const {
 const {
     resolveDocDescriptor,
     retrieveHeaderDetails,
-    retrieveEmployeeDetails
-} = require("../../workflow/workflow-helper")
+    retrieveEmployeeDetails,
+    retrieveRoleRank
+} = require("../../workflow/workflow-helper");
+const oauthConfiguration = require('@sap/approuter/lib/passport/oauth-configuration');
 
 
 async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor) {
@@ -37,10 +38,10 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     const sSystemDate = new Date();
     const sSystemYear = new Date(sSystemDate).getFullYear();
     
-    const aRoleRanks = await retrieveRoleRank(oTx);
+    const aRoleRanks = await retrieveRoleRank();
     
     const oHeader = await retrieveHeaderDetails(sId, oDescriptor)
-    const sFinalCC = oHeader[Constant.EntitiesFields.COST_CENTER] ?? oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? null;
+    const sFinalCC = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeader[Constant.EntitiesFields.COST_CENTER] ?? null;
     
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
     //console.log(oClaimantDetails);
@@ -83,24 +84,27 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 oCurrOutcome = null;
             }        
             console.log("Approver Search: ", oWorkflowApprStep)
+            console.log("oCurrOutcome: ", oCurrOutcome)
             if(oCurrOutcome == null){
                 // Block to check for Special Approver within ZCONSTANTS table and budget approver
                 switch(oWorkflowApprStep){
                     case Constant.Role.BUDGET:  
                         if(sFinalCC){
-                            oBudgetDetails = await retrieveBudgetDetails(oTx, sFinalCC, sSystemYear);
+                            console.log("FinalCC: ", sFinalCC);
+                            console.log("System Year: ", sSystemYear);
+                            oBudgetDetails = await retrieveBudgetDetails(sFinalCC, sSystemYear);
+                            console.log("Budget Details: ", oBudgetDetails);
                             if(!oBudgetDetails){
-                                MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                 return false;
-                            }else{
-                                oApproverDetails = await retrieveEmployeeDetails(oTx, oId.VALUE);
-                                oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                                if(oPopulatedEmployee){
-                                    aApproversDetails.push(oPopulatedEmployee);
-                                }
                             }
+                            oApproverDetails = await retrieveEmployeeDetails(oBudgetDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
+                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            if(oPopulatedEmployee){
+                                aApproversDetails.push(oPopulatedEmployee);
+                            }
+                            
+                            console.log("Budget Approver: ", oPopulatedEmployee);
                         }else{
-                            MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
                             return false;
                         }
                         break;
@@ -125,10 +129,12 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                                     }else{
                                         return [];
                                     }
+                                    console.log("Constant Approver: ", oPopulatedEmployee)
                                 }else{
                                     return [];
                                 }
                             }
+
                         }
                         break;
                     default:
@@ -136,13 +142,13 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             }
             else{
                 if(oClaimantDetails[Constant.EntitiesFields.RANK] < oCurrOutcome[Constant.EntitiesFields.RANK]){
-                    iApproverRank = oCurrOutcome[Constant.EntitiesFields.RANK];
+                    iApproverRank = Number(oCurrOutcome[Constant.EntitiesFields.RANK]);
                 }
                 else{
-                    iApproverRank = oClaimantDetails[Constant.EntitiesFields.RANK] + 1;
+                    iApproverRank = Number(oClaimantDetails[Constant.EntitiesFields.RANK]) + 1;
                 }
                 // Retrieve Approver based on iApproverRank
-                oApproverDetails = await retrieveApprover(oTx, oClaimantDetails[Constant.EntitiesFields.EEID], iApproverRank);
+                oApproverDetails = await retrieveApprover(oClaimantDetails[Constant.EntitiesFields.EEID], iApproverRank);
                 if(oApproverDetails){
                         oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
                     if(oPopulatedEmployee){
@@ -151,7 +157,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 }else{
                     return [];
                 }
-                
+                console.log("Standard Approver: ", oPopulatedEmployee)
             } 
             // Check if approver is found. If approver not found, do not store approver rank and current outcome
             if(oApproverDetails){
@@ -195,7 +201,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             SUB_EMAIL       : sSubstitute_email
         });
     }
-
+    console.log("Full Approvers: ", aFullApproversDetails);
     return aFullApproversDetails;
 }
 
@@ -239,7 +245,6 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
     if(!aApproversContext) {
         return null;
     }    
-    
     return aApproversContext;
 }
 

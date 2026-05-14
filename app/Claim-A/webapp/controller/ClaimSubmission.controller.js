@@ -34,8 +34,7 @@ sap.ui.define([
 	"claima/utils/CustomDuplicationCheck",
 	"claima/model/models",
 	"claima/utils/Constants",
-	"claima/utils/Common",
-	"sap/m/MessageBox/Action"
+	"claima/utils/Common"
 ], function (
 	Fragment,
 	Item,
@@ -2004,16 +2003,18 @@ sap.ui.define([
 					const oPayload = {
 						Id				: sClaimId,
 						UserId			: sUserId,
-						Action			: this._oConstant.ClaimStatus.APPROVED,
+						ApproverAction	: this._oConstant.ClaimStatus.APPROVED,
 						Comments		: sComment,
 						RejectionReason : ""
 					}
+					
+					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+					console.log("Payload Send Back: ", oPayload);
+					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
 
-					const oResponse = workflowApproval.onProcessApproval(oModel, oPayload)
-
-					if(!oResponse.Success){
-						MessageBox.error(oResponse.Message);
-					}
+					// if(!oResponse.Success){
+					// 	MessageBox.error(oResponse.Message);
+					// }
 
 					// const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
 					// 	oModel,
@@ -2077,7 +2078,7 @@ sap.ui.define([
 			try {
 				BusyIndicator.show(0);
 
-				const oModel = this.getOwnerComponent().getModel();
+				// const oModel = this.getOwnerComponent().getModel();
 				// const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const sUserId = this._oSessionModel.getProperty("/userId");
 
@@ -2089,16 +2090,17 @@ sap.ui.define([
 				const oPayload = {
 						Id				: sClaimId,
 						UserId			: sUserId,
-						Action			: this._oConstant.ClaimStatus.REJECTED,
+						ApproverAction	: this._oConstant.ClaimStatus.REJECTED,
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
+				const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+				console.log("Payload Send Back: ", oPayload); 
+				await workflowApproval.onProcessApproval(oWorkflowModel, oPayload);
 
-				const oResponse = workflowApproval.onProcessApproval(oModel, oPayload)
-
-				if(!oResponse.Success){
-					MessageBox.error(oResponse.Message);
-				}
+				// if(!oResponse.Success){
+				// 	MessageBox.error(oResponse.Message);
+				// }
 				
 				// const {
 				// 	payloads: aPayloads,
@@ -2181,16 +2183,17 @@ sap.ui.define([
 				const oPayload = {
 						Id				: sClaimId,
 						UserId			: sUserId,
-						Action			: this._oConstant.ClaimStatus.SEND_BACK,
+						ApproverAction	: this._oConstant.ClaimStatus.SEND_BACK,
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
+				const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
+				console.log("Payload Send Back: ", oPayload);
+				await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
 
-				const oResponse = workflowApproval.onProcessApproval(oModel, oPayload)
-
-				if(!oResponse.Success){
-					MessageBox.error(oResponse.Message);
-				}
+				// if(!oResponse.Success){
+				// 	MessageBox.error(oResponse.Message);
+				// }
 
 				// const {
 				// 	payloads: aPayloads,

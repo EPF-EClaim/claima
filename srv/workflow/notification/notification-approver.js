@@ -10,22 +10,23 @@ const {
     sendEmailViaSAPIS
 } = require("./notification-helper");
 
-async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction, sLevel = 1) {
-
-    // Retrieve Header context
-    const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
-    if(!oHeaderContext){
-        return null;
-    }
-    console.log(oHeaderContext);
-    // Retrieve Claimant Context
-    const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
-    if(!oClaimantContext) {
-        return false;
-    }
-    let oEmailPayload = null;
-    
-    try{    
+async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction, sLevel = 1) {    
+    try{ 
+        // Retrieve Header context
+        const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
+        if(!oHeaderContext){
+            console.log(`No header context found for document ${sId}`);
+            return false;
+        }
+        console.log(oHeaderContext);
+        // Retrieve Claimant Context
+        const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
+        if(!oClaimantContext) {
+            console.log(`No claimant context found for employee ${oHeaderContext[Constant.EntitiesFields.EMP_ID]}`);
+            return false;
+        }
+        let oEmailPayload = null;
+       
         for(const oApproverContext of aApproversContext){
             if(oApproverContext.LEVEL = sLevel) {
                 oEmailPayload = generateEmailPayload(
@@ -57,6 +58,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         return true;
     }
     catch(oError){
+        console.log("Email sending failed with error: ", oError);
         return false;
     }
     

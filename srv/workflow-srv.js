@@ -105,72 +105,83 @@ module.exports = (srv) => {
         
     }),
     srv.on('processApproval', async req => {
+        console.log("Request Payload: ", req.data);
         const { 
-            Id              : sId = null, 
-            UserId          : sUserId = null, 
-            Action          : sAction = null, 
-            Comments        : sComments = null, 
-            RejectionReason : sRejectionReason = null 
+            Id              : sId, 
+            UserId          : sUserId,
+            ApproverAction  : sAction, 
+            Comments        : sComments, 
+            RejectionReason : sRejectionReason 
         } = req.data.request
 
         const oDescriptor = resolveDocDescriptor(sId);
+        let bStatus = true;
 
         const oTx = cds.tx(req)
         // const sActionValue = actionValues[sAction]
         const oActionDescriptor = resolveActionDescriptor(sAction);
         if(!oActionDescriptor) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Unsupported workflow action: ${sAction}`);
+            throw new Error(`Unsupported workflow action: ${sAction}`);
         }
-
+        console.log("ActionDescriptor: ", oActionDescriptor);
         // Verify if Approver is correct approver        
-        const bStatus = await verifyCorrectApproverForAction(sId, sUserId, oDescriptor);
+        bStatus = await verifyCorrectApproverForAction(sId, sUserId, oDescriptor);
         if(!bStatus) {
             //Return error message
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Invalid Approver ${sUserId} for Document ${sId}`);
+            throw new Error(`Invalid Approver ${sUserId} for Document ${sId}`);
         }
-
+        console.log("Approver Validation: ", bStatus);
         // Check if approver is last level approver
-        const oLastLevelApproverStatus = await determineLastApproverLevel(sId, oDescriptor);
+        const oLastLevelApproverStatus = await determineLastApproverLevel(sId, sUserId, oDescriptor);
 
+        console.log("Final Approver Context: ", oLastLevelApproverStatus);
         // Once Approver is validated, perform action
+        console.log("Rejection Reason: ", sRejectionReason);
         bStatus = await updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, sComments, sRejectionReason, oDescriptor);
         if(!bStatus) {
             //Return error message
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_ACTION, `Error Encountered during action: ${sAction} for Document ${sId}`);
+            throw new Error(`Error Encountered during action: ${sAction} for Document ${sId}`);
         }
+        console.log("Approver Action Completed: ", bStatus);
 
         // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
         if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
             const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
+            console.log("aBudgetContext: ", aBudgetContext);
             const aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            console.log("aReturn: ", aReturn);
             const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
             if(oReturn) {
                 bStatus = false;
-                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
+                throw new Error('Error encountered during Budget Checking')
             }
+            console.log("Budget Checking Status: ", bStatus);
         }
 
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the timestamp and Reject Reason if necessary
         const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);
+        console.log("Header table update: ", sStatus);
 
         // Notify claimant/next level approver
         // If action is REJECT/PUSH BACK, notify claimant
         // If action is APPROVE, notify next level approver
         // If action is APPROVE and there are no next level approver, notify claimant
-        if(sAction === Constant.ApproverActions.REJECT || sAction === Constant.ApproverActions.PUSHBACK ||
+        if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
             (
-                sAction === Constant.ApproverActions.APPROVE && oLastLevelApproverStatus.ISLASTLEVEL
+                sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL
             )
         ) {
             bStatus = await sendEmailToClaimant(sId, oDescriptor, oActionDescriptor.emailAction);
         }
         else {
-            const aApproversContext = getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
+            const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
+            console.log("Approver context for next level approver: ", aApproversContext);
             bStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
         }
         if(!bStatus) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Email Notification')
+            throw new Error('Error encountered during Email Notification');
         }
-
+        console.log("Approver Action Status: ", bStatus);
+        return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Approver Process Completed');
     })
 }

@@ -21,23 +21,6 @@ async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescript
             )
     )
 }
-async function retrieveRoleRank(oTx, sRole) {
-
-    const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
-
-    let sQuery = SELECT
-        .from(sRoleHierarchyTable)
-        .columns(
-                Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.RANK
-        );
-    if(sRole) {
-        sQuery = sQuery.where({
-            [Constant.EntitiesFields.ROLE]  : sRole
-        });
-    }
-    return await cds.run(sQuery)
-}
 
 
 async function retrieveFromConstantTable(oTx, sId){
@@ -53,14 +36,14 @@ async function retrieveFromConstantTable(oTx, sId){
             )
     )
 }
-async function retrieveApprover(oTx, sEEID, iApproverRank, idepth = 0) {
+async function retrieveApprover(sEEID, iApproverRank, idepth = 0) {
     // Safety: stop infinite recursion
     if (idepth > 20) {
         return null;
     }
 
     // Fetch employee
-    const oEmp = await retrieveEmployeeDetails(oTx, sEEID);
+    const oEmp = await retrieveEmployeeDetails(sEEID);
     if (!oEmp) return null;
 
     // If employee has no superior → stop
@@ -69,7 +52,7 @@ async function retrieveApprover(oTx, sEEID, iApproverRank, idepth = 0) {
     }
 
     // Fetch direct superior
-    const oDirectSuperior = await retrieveEmployeeDetails(oTx, oEmp[Constant.EntitiesFields.DIRECT_SUPERIOR]);
+    const oDirectSuperior = await retrieveEmployeeDetails(oEmp[Constant.EntitiesFields.DIRECT_SUPERIOR]);
     if (!oDirectSuperior) return null;
 
     // CEO check
@@ -82,24 +65,26 @@ async function retrieveApprover(oTx, sEEID, iApproverRank, idepth = 0) {
     }
 
     // Otherwise recurse deeper up the chain
-    return await retrieveApprover(oTx, oDirectSuperior[Constant.EntitiesFields.EEID], iApproverRank, idepth + 1);
+    return await retrieveApprover(oDirectSuperior[Constant.EntitiesFields.EEID], iApproverRank, idepth + 1);
 }
-async function retrieveBudgetDetails(oTx, sCostCenter, sYear) {
-    let oData = null;
+async function retrieveBudgetDetails(sCostCenter, sYear) {
     let oBudgetContext = null;
 
     // Main table path
     const sBudgetTablePath = cds.entities['eclaim_srv.ZBUDGET'];
+    const sCostCenterSafe = String(sCostCenter);
+    const sYearSafe = String(sYear);
     let sEEID = "";
 
     // Fetch data
+    console.log("Start Budget check");
     oBudgetContext = await cds.run(
         SELECT
             .one
             .from(sBudgetTablePath)
             .where({
-                [Constant.EntitiesFields.FUND_CENTER]   : sCostCenter,
-                [Constant.EntitiesFields.YEAR]          : sYear
+                [Constant.EntitiesFields.FUND_CENTER]   : sCostCenterSafe,
+                [Constant.EntitiesFields.YEAR]          : sYearSafe
             })
             .columns(
                 Constant.EntitiesFields.YEAR,
@@ -113,7 +98,7 @@ async function retrieveBudgetDetails(oTx, sCostCenter, sYear) {
     if(!oBudgetContext){
         return null;
     }
-    const oBudgetOwnerContext = await this.retrieveEmployeeDetails(oTx, '', oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
     if (oBudgetOwnerContext){
         sEEID = oBudgetOwnerContext[Constant.EntitiesFields.EEID];
     }
@@ -352,7 +337,6 @@ async function normalizeWorkflowRequestType(sId, oDescriptor) {
 }
 module.exports = { 
     determineWorkflowStepContext,
-    retrieveRoleRank,
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,

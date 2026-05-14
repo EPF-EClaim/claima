@@ -3,7 +3,7 @@ using { ECLAIM } from '../db/eclaim';
 type ApproverActionRequest {
     Id              : String;
     UserId          : String;
-    Action          : String;
+    ApproverAction  : String;
     Comments        : String;
     RejectionReason : String;
 }

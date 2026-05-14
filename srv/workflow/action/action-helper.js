@@ -1,6 +1,8 @@
 const cds = require('@sap/cds');
 const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
+const { constants } = require('@sap/xssec');
+const { fn } = cds;
 
 const aApproverActions = {
     [Constant.Status.APPROVED]  : {
@@ -35,32 +37,27 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
         if(!aApproversDetails.length) {
             return false;
         }
+        console.log("Approvers Retrieved");
         // Set PENDING APPROVAL Status to the Approver action for the provided User ID
         let iUpdatedRows = await oTx.run(
             UPDATE(oDescriptor.entityApprovers)
                 .set({
-                    [Constant.EntitiesFields.STATUS]            : oActionDescriptor.approverActionValue,
+                    [Constant.EntitiesFields.STATUS]            : oActionDescriptor.actionValue,
                     [Constant.EntitiesFields.COMMENT]           : sComments,
-                    [Constant.EntitiesFields.REJECT_REASON_ID]  : sRejectionReason
+                    [Constant.EntitiesFields.REJECT_REASON_ID]  : sRejectionReason,
+                    [Constant.EntitiesFields.PROCESS_TIMESTAMP] : cds.context.timestamp
                 })
                 .where({
-                    and: [{
-                        or: [{
-                            [Constant.EntitiesFields.APPROVER_ID] : sUserId
-                        },
-                        {
-                            [Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID] : sUserId
-                        }
-                    ]},
-                    {
-                        [Constant.EntitiesFields.STATUS]    : Constant.Status.PENDING_APPROVAL,
-                        [oDescriptor.approverIdField]       : sId 
-                    }]
-                })
+                        [Constant.EntitiesFields.APPROVER_ID]   : sUserId,
+                        [Constant.EntitiesFields.STATUS]        : Constant.Status.PENDING_APPROVAL,
+                        [oDescriptor.approverIdField]           : sId 
+                    })
         )
         if(iUpdatedRows === 0) {
+            console.log("Failed to update approver action");
             return false;
-        }
+        }   
+        console.log("Updated approver action");
 
         // Clear all other PENDING STATUS statuses
         iUpdatedRows = await oTx.run(
@@ -69,53 +66,54 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
                     [Constant.EntitiesFields.STATUS]            : ""
                 })
                 .where({
-                    and: [{
-                        not: {
-                            or: [
-                                { [Constant.EntitiesFields.APPROVER_ID]             : sUserId },
-                                { [Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]  : sUserId }
-                            ]
-                        }
-                    },
-                    {   
-                        [Constant.EntitiesFields.STATUS] : Constant.Status.PENDING_APPROVAL,
-                        [oDescriptor.approverIdField]       : sId
-                     }
-                ]}
-                )
+                    [Constant.EntitiesFields.APPROVER_ID]       : sUserId,
+                    [Constant.EntitiesFields.STATUS]            : Constant.Status.PENDING_APPROVAL,
+                    [oDescriptor.approverIdField]               : sId
+                })
         )
         if(iUpdatedRows === 0) {
-            return false;
+            // return false;
+            console.log("No other approvers found with status PENDING APPROVAL");
         }
         // If action = APPROVE, check for next level to set status to PENDING APPROVAL
         if(oActionDescriptor.approverActionValue === Constant.ApproverActions.APPROVE) {
             const oLastLevelApproverStatus = isLastApproverLevel(aApproversDetails, sUserId)
-            if(!oLastLevelApproverStatus.STATUS) {
-                return false
+            console.log("LastLevelApproverContext: ", oLastLevelApproverStatus);
+            // If last level, return true - Approver action ends. No need to update next level
+            if(oLastLevelApproverStatus.ISLASTLEVEL) {
+                console.log("Approver is at last level, no next level approver to update");
+                return true;
             }
+            // If not last level, update next level to PENDING APPROVAL status
             const oNextApproverDetails = aApproversDetails.find(oRow=> 
                 oRow[Constant.EntitiesFields.LEVEL] === oLastLevelApproverStatus.NEXTLEVEL
             );
+            // If not last level, but cannot find next level, something went wrong.
             if(!oNextApproverDetails){
+                console.log("Next level approver details not found, something went wrong"); 
                 return false;
             }
+            console.log("Next level approver: ", oNextApproverDetails);
             iUpdatedRows = await oTx.run(
                 UPDATE(oDescriptor.entityApprovers)
                     .set({
                         [Constant.EntitiesFields.STATUS]    : Constant.Status.PENDING_APPROVAL
                     })
                     .where({
-                        [Constant.EntitiesFields.LEVEL]     : sNextLevel,
+                        [Constant.EntitiesFields.LEVEL]     : oNextApproverDetails[Constant.EntitiesFields.LEVEL],
                         [oDescriptor.approverIdField]       : sId
                     })
             );
             if(iUpdatedRows === 0) {
+                console.log("Failed to update next level approver to PENDING APPROVAL");
                 return false;
             }
+            console.log("Updated next level approver to PENDING APPROVAL");
         }
         return true;
     }
     catch(oError) {
+        console.log("Error found: ", oError);
         return false;
     }
 }
@@ -128,19 +126,14 @@ async function verifyCorrectApproverForAction(sId, sUserId, oDescriptor) {
             .one
             .from(oDescriptor.entityApprovers)
             .where({
-                and: [{
-                    or: [
-                        { [Constant.EntitiesFields.APPROVER_ID]             : sUserId },
-                        { [Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]  : sUserId }
-                ]},
-                    { 
-                        [Constant.EntitiesFields.STATUS]    : Constant.Status.PENDING_APPROVAL,
-                        [oDescriptor.approverIdField]       : sId
-                    }
-                ]
+                [Constant.EntitiesFields.APPROVER_ID]   : sUserId,
+                [Constant.EntitiesFields.STATUS]        : Constant.Status.PENDING_APPROVAL,
+                [oDescriptor.approverIdField]           : sId
             })
     );
+    console.log(oApproverLine);
     if(!oApproverLine) {
+        console.log("Approver is not authorized to perform action or no pending approval found for approver");
         return false;
     }
     return true;
@@ -184,7 +177,7 @@ function isLastApproverLevel(aApproversDetails, sUserId) {
         };
     }
     const sNextLevel = sCurrentLevel + 1;
-    const oNextApproverDetails = oApproverDetails.find(oRow=> 
+    const oNextApproverDetails = aApproversDetails.find(oRow=> 
         oRow[Constant.EntitiesFields.LEVEL] === sNextLevel
     );
     if(!oNextApproverDetails){
@@ -192,24 +185,30 @@ function isLastApproverLevel(aApproversDetails, sUserId) {
             ISLASTLEVEL : true,
             CURRENTLEVEL: sCurrentLevel,
             NEXTLEVEL   : sNextLevel,
-            SUCCESS     : false
+            SUCCESS     : true
         };
     }
     return {
         ISLASTLEVEL : false,
         CURRENTLEVEL: sCurrentLevel,
-        SUCCESS     : false
+        NEXTLEVEL   : sNextLevel,
+        SUCCESS     : true
     };
 }
 
 async function getApproversDetails(sId, oDescriptor) {
-    return await cds.run(
+    const aApproversDetails = await cds.run(
         SELECT
             .from(oDescriptor.entityApprovers)
             .where({
                 [oDescriptor.approverIdField] : sId    
             })
         );
+    if(!aApproversDetails.length) {
+        return []
+    }
+    return aApproversDetails;
+
 }
 module.exports = {
     updateApproverDetailsTable,

@@ -92,9 +92,38 @@ async function retrieveEmployeeDetails(sId, sEmail){
     if(!oEmployeeContext) {
         return null;
     }
-    return oEmployeeContext;
+    const aRoleRankContext = await retrieveRoleRank(oEmployeeContext[Constant.EntitiesFields.ROLE])
+    if(!aRoleRankContext.length){
+        return null;
+    }
+    const oRoleRankContext = aRoleRankContext[0];
+    return {
+        [Constant.EntitiesFields.EEID]              : oEmployeeContext[Constant.EntitiesFields.EEID],
+        [Constant.EntitiesFields.NAME]              : oEmployeeContext[Constant.EntitiesFields.NAME],
+        [Constant.EntitiesFields.DEP]               : oEmployeeContext[Constant.EntitiesFields.DEP],
+        [Constant.EntitiesFields.EMAIL]             : oEmployeeContext[Constant.EntitiesFields.EMAIL],
+        [Constant.EntitiesFields.DIRECT_SUPERIOR]   : oEmployeeContext[Constant.EntitiesFields.DIRECT_SUPERIOR],
+        [Constant.EntitiesFields.ROLE]              : oEmployeeContext[Constant.EntitiesFields.ROLE],
+        [Constant.EntitiesFields.RANK]              : oRoleRankContext[Constant.EntitiesFields.RANK]
+    };
 }
+async function retrieveRoleRank(sRole) {
 
+    const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
+
+    let sQuery = SELECT
+        .from(sRoleHierarchyTable)
+        .columns(
+                Constant.EntitiesFields.ROLE,
+                Constant.EntitiesFields.RANK
+        );
+    if(sRole) {
+        sQuery = sQuery.where({
+            [Constant.EntitiesFields.ROLE]  : sRole
+        });
+    }
+    return await cds.run(sQuery)
+}
 async function retrieveItems(sId, oDescriptor) {
     
     const aItems = await cds.run(
@@ -105,7 +134,8 @@ async function retrieveItems(sId, oDescriptor) {
                         //Constant.EntitiesFields.COST_CENTER,
                         //Constant.EntitiesFields.ALTERNATE_COST_CENTER,
                         Constant.EntitiesFields.GL_ACCOUNT,
-                        oDescriptor.entityAmount
+                        oDescriptor.entityAmount,
+                        Constant.EntitiesFields.MATERIAL_CODE
             )
             .where( { [oDescriptor.idField]:sId })
     );
@@ -255,15 +285,15 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         }
 
         if (error) {
-            await oTx.rollback();
+            // await oTx.rollback();
             return errorResults;
         }
 
-        await oTx.commit();
+        // await oTx.commit();
         return successResults;
 
     } catch (err) {
-        await oTx.rollback();
+        // await oTx.rollback();
         return err;
         // req.error(400, `Budget checking failed: ${err.message}`);
     }
@@ -288,23 +318,28 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     for(const oApproverDetails of aApproversDetails) {
         let oEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.APPROVER_ID]);
         let oSubEmployeeDetails = null;
+        let sSubEEID = "";
+        let sSubName = "";
+        let sSubEmail = "";
         if(!oEmployeeDetails) {
             return null;
         }
+        console.log("Employee Details: ", oEmployeeDetails);
         if(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]){
             oSubEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]);
-            if(!oSubEmployeeDetails) {
-                return null;
-            }
+            sSubEEID = oSubEmployeeDetails ?? null;
+            sSubName = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.NAME] : null;
+            sSubEmail = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.EMAIL] : null;
+            console.log("Substitute Employee Details: ", oSubEmployeeDetails);  
         }
         aApproversContext.push({
-            APPROVER_EEID   : oApprover.EEID,
-            APPROVER_NAME   : oApprover.NAME,
-            APPROVER_EMAIL  : oApprover.EMAIL,
-            LEVEL           : Number(oApprover.LEVEL),
-            SUB_EEID        : oSubEmployeeDetails.EEID,
-            SUB_NAME        : oSubEmployeeDetails.NAME,
-            SUB_EMAIL       : oSubEmployeeDetails.EMAIL
+            APPROVER_EEID   : oEmployeeDetails[Constant.EntitiesFields.EEID],
+            APPROVER_NAME   : oEmployeeDetails[Constant.EntitiesFields.NAME],
+            APPROVER_EMAIL  : oEmployeeDetails[Constant.EntitiesFields.EMAIL],
+            LEVEL           : Number(oApproverDetails.LEVEL),
+            SUB_EEID        : sSubEEID,
+            SUB_NAME        : sSubName,
+            SUB_EMAIL       : sSubEmail
         })
     }
     return aApproversContext;
@@ -317,5 +352,6 @@ module.exports = {
     retrieveItems,
     generateReturnMessage,
     performBudgetChecking,
-    getApproverContextByLevel
+    getApproverContextByLevel,
+    retrieveRoleRank
 };
