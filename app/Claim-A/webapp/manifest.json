@@ -647,7 +647,32 @@
                     "pattern": "ZTRAIN_COURSE_PART",
                     "name": "ZTRAIN_COURSE_PART",
                     "target": "ZTRAIN_COURSE_PART"
-                }
+                },
+                {
+                    "pattern": "ZEMP_REQUEST_REPORT_SUMMARY",
+                    "name": "ZEMP_REQUEST_REPORT_SUMMARY",
+                    "target": "ZEMP_REQUEST_REPORT_SUMMARY"
+                },
+                {
+                    "pattern": "ZEMP_REQUEST_REPORT_DETAILS",
+                    "name": "ZEMP_REQUEST_REPORT_DETAILS",
+                    "target": "ZEMP_REQUEST_REPORT_DETAILS"
+                },
+                {
+                    "pattern": "ZEMP_CLAIM_REPORT_SUMMARY",
+                    "name": "ZEMP_CLAIM_REPORT_SUMMARY",
+                    "target": "ZEMP_CLAIM_REPORT_SUMMARY"
+                },
+                {
+                    "pattern": "ZEMP_CLAIM_REPORT_DETAILS",
+                    "name": "ZEMP_CLAIM_REPORT_DETAILS",
+                    "target": "ZEMP_CLAIM_REPORT_DETAILS"
+                },
+                {
+                    "pattern": "ZEMP_CASHADVANCE_REPORT",
+                    "name": "ZEMP_CASHADVANCE_REPORT",
+                    "target": "ZEMP_CASHADVANCE_REPORT"
+                }                              
             ],
             "targets": {
                 "TargetMain": {
@@ -4500,7 +4525,242 @@
                             }
                         }
                     }
-                },                
+                },
+                "ZEMP_REQUEST_REPORT_SUMMARY": {
+                    "type": "Component",
+                    "id": "ZEMP_REQUEST_REPORT_SUMMARY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_REQUEST_REPORT_SUMMARY",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_REQUEST_REPORT_DETAILS": {
+                    "type": "Component",
+                    "id": "ZEMP_REQUEST_REPORT_DETAILS",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_REQUEST_REPORT_DETAILS",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_CLAIM_REPORT_SUMMARY": {
+                    "type": "Component",
+                    "id": "ZEMP_CLAIM_REPORT_SUMMARY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CLAIM_REPORT_SUMMARY",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_CLAIM_REPORT_DETAILS": {
+                    "type": "Component",
+                    "id": "ZEMP_CLAIM_REPORT_DETAILS",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CLAIM_REPORT_DETAILS",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },  
+                "ZEMP_CASHADVANCE_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_CASHADVANCE_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CASHADVANCE_REPORT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },                                                                    
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",
