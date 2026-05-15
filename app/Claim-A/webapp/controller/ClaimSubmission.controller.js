@@ -777,6 +777,7 @@ sap.ui.define([
 				mode_of_transfer: o.TRANSFER_MODE_DESC,
 				travel_alone_family: o.TRAVEL_TYPE_DESC,
 				travel_family_now_later: o.FAMILY_TIMING_DESC,
+				mode_of_transfer_id: o.MODE_OF_TRANSFER,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -1141,6 +1142,7 @@ sap.ui.define([
 					"mode_of_transfer": null,
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
+					"mode_of_transfer_id": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -1812,6 +1814,16 @@ sap.ui.define([
 		 */
 		onEditHeaderPress: async function () {
 			Common.init(this.getOwnerComponent(), this.getView());
+			///For Elaun Pertukaran - Need the Req No of Days based on Mode of Transfer when Edit button is pressed
+			
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (oInputModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR) {
+				var iMaxDays = await Utility.getModeofTransferMaxDays(oInputModel.getProperty("/claim_header/mode_of_transfer_id"));
+				if (!!iMaxDays) {
+					oInputModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
+				}
+			}
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 

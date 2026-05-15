@@ -431,6 +431,13 @@ sap.ui.define([
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_trip_start_date_in_past"));
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+                                if (!!sFieldValue){
+                                    _dMinDate = new Date(sFieldValue);
+                                    _dMinDate.setDate(_dMinDate.getDate() - oHeader["req_no_of_days"]);
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_trip_start_date_exceed_mode_of_transfer"));
+                            
+                                } else
                                 if (!!oHeader["trip_end_date"]) {
                                     _dMinDate = new Date(oHeader["trip_end_date"]);
                                     _dMinDate.setDate(_dMinDate.getDate() - oHeader["req_no_of_days"]);
@@ -467,6 +474,12 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_end_date_in_past"));
                                 }
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
+
+                                if (!!sFieldValue){
+                                    _dMinDate = new Date(sFieldValue);
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("req_d_w_check_date"));
+                                } else
                                 if (!!new Date(oHeader["trip_start_date"]).getTime()) {
                                     _dMinDate = new Date(oHeader["trip_start_date"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
@@ -701,18 +714,22 @@ sap.ui.define([
                                 }
 
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                if (!!new Date(oHeader["trip_end_date"]).getTime()) {
-                                    _dMaxDate = new Date(oHeader["trip_end_date"]);
+                                if (!!sFieldValue) {
+                                    _dMaxDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
+                                        _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
+                                } else {
+                                    if (!!new Date(oHeader["trip_end_date"]).getTime()) {
+                                        _dMaxDate = new Date(oHeader["trip_end_date"]);
+                                        _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                            _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
+                                    }
                                 }
                             } else {
                                 _dMaxDate = new Date();
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_trip_start_date_in_future"));
                             }
-
-
                             break;
                     }
                     break;
@@ -731,14 +748,20 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                if (!!new Date(oHeader["trip_start_date"]).getTime()) {
-                                    _dMaxDate = new Date(oHeader["trip_start_date"]);
+                                if (!!sFieldValue) {
+                                    _dMaxDate = new Date(sFieldValue);
                                     _dMaxDate.setDate(_dMaxDate.getDate() + oHeader["req_no_of_days"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                        _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
-                                }
+                                    _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
+                                } else
+                                    if (!!new Date(oHeader["trip_start_date"]).getTime()) {
+                                        _dMaxDate = new Date(oHeader["trip_start_date"]);
+                                        //_dMaxDate.setDate(_dMaxDate.getDate() + oHeader["req_no_of_days"]);
+                                        _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                            _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
+                                    }
                             } else if (sType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-                                    _dMaxDate = null;                            
+                                _dMaxDate = null;
                             } else {
                                 _dMaxDate = new Date();
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
