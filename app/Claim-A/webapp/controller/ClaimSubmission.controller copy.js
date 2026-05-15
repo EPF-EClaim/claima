@@ -3399,7 +3399,7 @@ sap.ui.define([
 		 * run related methods on setting start/end date
 		 * @public
 		 */
-		onChange_ClaimDetails_StartEndDate: async function () {
+		onChange_ClaimDetails_StartEndDate: async function () {// check if this is working for all date type 
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
@@ -3468,7 +3468,7 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
+		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {//??
 			// reset claim detail amounts
 			this._resetPerDiem();
 
@@ -3499,7 +3499,7 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_FlightTimeRange: async function () {
+		onChange_ClaimDetails_FlightTimeRange: async function () {//??
 			this._resetPerDiem();
 
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3531,7 +3531,7 @@ sap.ui.define([
 			}
 		},
 
-		_resetPerDiem: function () {
+		_resetPerDiem: function () {//possible not needed
 			// reset claim detail amounts
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
 				this.byId("input_claimdetails_input_travel_duration_day").setValue("");
