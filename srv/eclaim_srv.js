@@ -275,6 +275,20 @@ module.exports = (srv) => {
                     .limit(1);
 
                 if (!existing.length) {
+
+                    original_budget = Number(row.ORIGINAL_BUDGET) || 0;
+                    virement_in = Number(row.VIREMENT_IN) || 0;
+                    virement_out = Number(row.VIREMENT_OUT) || 0;
+                    supplement = Number(row.SUPPLEMENT) || 0;
+                    return_value = Number(row.RETURN) || 0;
+                    consumed = Number(row.CONSUMED) || 0;
+
+                    var currentBudget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var budgetBalance = currentBudget + consumed;
+
+                    row.CURRENT_BUDGET = currentBudget.toFixed(2);
+                    row.BUDGET_BALANCE = budgetBalance.toFixed(2);
+
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
 
                     results.push({
@@ -303,13 +317,13 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN);
-                    original_budget = original_budget === 0 ? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
+                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
                     // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
-                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
+                    var total_budget = newOriginalBudget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
@@ -317,6 +331,7 @@ module.exports = (srv) => {
                     updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
                     updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
                     updatePayload.RETURN = new_return.toFixed(2);
+                    updatePayload.ORIGINAL_BUDGET = newOriginalBudget.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
