@@ -141,17 +141,62 @@ sap.ui.define([
 					this._oRouter.navTo("ManageSub");
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
-				case "analytics":
+				// case "analytics":
+				// 	if (bDTDAdmin || bAdminSystem || bAdminCC) {
+				// 		HashChanger.getInstance().replaceHash("");
+				// 		this._oRouter.navTo("Analytics");
+				// 	} else {
+				// 		var message = Utility.getText("msg_unauthorized_role");
+				// 		MessageBox.error(message);
+				// 	}
+				// 	break;
+				// End 	 Aiman Salim 10/02/2026 - Added for analytics
+				// Start Aiman Salim 03/03/2026 - Added for MyClaim
+				case "req_summary":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
-						this._oRouter.navTo("Analytics");
+						this._oRouter.navTo("ZEMP_REQUEST_REPORT_SUMMARY");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					break;
-				// End 	 Aiman Salim 10/02/2026 - Added for analytics
-				// Start Aiman Salim 03/03/2026 - Added for MyClaim
+				case "req_details":
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_REQUEST_REPORT_DETAILS");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
+				case "clm_summary":
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CLAIM_REPORT_SUMMARY");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
+				case "clm_details":
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CLAIM_REPORT_DETAILS");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
+				case "cashadvance_summary":
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CASHADVANCE_REPORT");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
 					break;
@@ -814,7 +859,7 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
-			if(oInputModel.getProperty("/claimtype/type") == this._oConstant.ClaimType.ELAUN_TUKAR){
+			if (oInputModel.getProperty("/claimtype/type") == this._oConstant.ClaimType.ELAUN_TUKAR) {
 				oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			}
 			oInputModel.setProperty("/is_new", true);
@@ -921,12 +966,12 @@ sap.ui.define([
 				}.bind(this)
 			);
 		},
-		onTravelAloneFamilySelect: function(oEvent){
+		onTravelAloneFamilySelect: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			oInputModel.setProperty("/claim_header/travel_alone_family", oEvent.getSource().getSelectedItem().getKey());
 			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oEvent.getSource().getSelectedItem().getText());
 		},
-		onSelectTravelFamilyNowLater: function(oEvent){
+		onSelectTravelFamilyNowLater: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			oInputModel.setProperty("/claim_header/travel_family_now_later", oEvent.getSource().getSelectedItem().getKey());
 			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oEvent.getSource().getSelectedItem().getText());
@@ -1637,9 +1682,9 @@ sap.ui.define([
 			switch (sSelect) {
 				case "req_reqtype":
 					Fragment.byId("request", "req_claimtype").setSelectedKey("");
-                    Fragment.byId("request", "req_acc").setEditMode("Editable");
-                    oDialogModel.setProperty("/altcostcenter", null);
-                    oDialogModel.setProperty("/altcostcenter_desc", null);
+					Fragment.byId("request", "req_acc").setEditMode("Editable");
+					oDialogModel.setProperty("/altcostcenter", null);
+					oDialogModel.setProperty("/altcostcenter_desc", null);
 				case "req_claim_type":
 					Fragment.byId("request", "req_transfermode").setSelectedKey("");
 				case "req_transfermode":
