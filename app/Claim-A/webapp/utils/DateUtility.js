@@ -297,6 +297,9 @@ sap.ui.define([
                                 _dMinDate = new Date(oHeader.tripstartdate);
                                 _dMinDate.setDate(_dMinDate.getDate());
                             }
+                              else {
+                                _dMinDate = null;
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -325,6 +328,7 @@ sap.ui.define([
                                 _dMinDate = new Date(oHeader.tripstartdate);
                                 _dMinDate.setDate(_dMinDate.getDate());
                             }
+                           
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -421,6 +425,9 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_start_date_exceed_mode_of_transfer"));
                                 }
                             }
+                            else {
+                                _dMinDate = null;
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -449,6 +456,13 @@ sap.ui.define([
                                     _dMinDate = new Date(oHeader["tripstartdate"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("req_d_w_check_date"));
+                                }
+                            }
+                            else {
+                                if (sFieldValue) {
+                                    _dMinDate = new Date(sFieldValue);
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_trip_end_date_in_past"));
                                 }
                             }
                             break;
@@ -492,6 +506,31 @@ sap.ui.define([
                     }
                     break;
 
+                case Constants.EntitiesFields.EVENT_START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sFieldValue) {
+                                _dMinDate = new Date(sFieldValue);
+                            }
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.EVENT_END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sFieldValue) {
+                                _dMinDate = new Date(sFieldValue);
+                            } 
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
+                            break;
+                    }
+                    break;
             }
             if (_dMinDate !== null) {
                 _dMinDate = new Date(_dMinDate);
@@ -563,6 +602,13 @@ sap.ui.define([
                                 _dMaxDate = new Date(oHeader.tripenddate);
                                 _dMaxDate.setDate(_dMaxDate.getDate());
                             }
+                               else {
+                                if (sFieldValue){
+                                    _dMaxDate = new Date(sFieldValue);
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_trip_start_date_in_past"));
+                                }
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -607,6 +653,9 @@ sap.ui.define([
                             if (sType === Constants.ClaimType.ELAUN_TUKAR) {
                                 _dMaxDate = new Date(oHeader.tripenddate);
                                 _dMaxDate.setDate(_dMaxDate.getDate());
+                            }
+                               else {
+                                _dMaxDate = null;
                             }
                             break;
 
@@ -686,6 +735,13 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
                                 }
                             }
+                               else {
+                                if (sFieldValue){
+                                    _dMaxDate = new Date(sFieldValue);
+                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_trip_start_date_in_past"));
+                                }
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -727,6 +783,9 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
                                 }
                             }
+                            else{
+                                _dMaxDate = null;
+                            }
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -755,6 +814,37 @@ sap.ui.define([
                             }
                             break;
 
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
+                            break;
+                    }
+                    break;
+
+                    case Constants.EntitiesFields.EVENT_START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sFieldValue) {
+                                _dMaxDate = new Date(sFieldValue);
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("req_d_w_check_date"));
+                            }
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.EVENT_END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            if (sFieldValue) {
+                                _dMaxDate = new Date(sFieldValue);
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("req_d_w_check_date"));
+                            } 
+
+                            break;
                         case Constants.SubmissionTypePrefix.CLAIM:
                             
                             break;

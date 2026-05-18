@@ -41,30 +41,166 @@
                         <form:formElements>
                             <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripstartdate}" required="true" editable="{reqHeaderEditableModel>/startTrip}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><DatePicker value="{request>/req_header/tripenddate}" required="true" editable="{reqHeaderEditableModel>/endTrip}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventstartdate}" 
-                                                                                                            required="{reqHeaderEditableModel>/startEventRequired}"
-                                                                                                            editable="{reqHeaderEditableModel>/startEvent}"    
-                            /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><DatePicker value="{request>/req_header/eventenddate}" 
-                                                                                                        required="{reqHeaderEditableModel>/endEventRequired}" 
-                                                                                                        editable="{reqHeaderEditableModel>/endEvent}"                  
-                            /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_location}"><form:fields><Input value="{request>/req_header/location}" editable="{reqHeaderEditableModel>/location}" placeholder="{i18n>placeholder_reqinput_location}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_cc}"><form:fields><Text text="{request>/req_header/costcenter}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_acc}"><form:fields>                              
-                                <mdc:Field
-                                    id="req_alt_cost_center"
-                                    value="{request>/req_header/altcostcenter}"
-                                    additionalValue="{request>/req_header/altcostcenterdesc}"
-                                    editMode="{= ${reqHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
-                                    display="ValueDescription"
-                                    valueHelp="valuehelp_req_altcc"
-                                />
+                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                                <form:fields>
+                                    <DatePicker 
+                                        value="{request>/req_header/tripstartdate}" 
+                                        required="true" 
+                                        editable="{reqHeaderEditableModel>/startTrip}"
+                                        minDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripenddate'
+                                            ],
+                                            formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                        maxDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/TRIP_START_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripenddate'
+                                            ],
+                                            formatter: '.DateUtility.determineMaxDate'
+                                        }"
+                                        />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                                <form:fields>
+                                    <DatePicker 
+                                        value="{request>/req_header/tripenddate}" 
+                                        required="true" 
+                                        editable="{reqHeaderEditableModel>/endTrip}"
+                                        minDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripstartdate'
+                                            ],
+                                            formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                        maxDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/TRIP_END_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripstartdate'
+                                            ],
+                                            formatter: '.DateUtility.determineMaxDate'
+                                        }"
+                                        />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
+                                <form:fields>
+                                    <DatePicker 
+                                        value="{request>/req_header/eventstartdate}" 
+                                        required="{reqHeaderEditableModel>/startEventRequired}" 
+                                        editable="{reqHeaderEditableModel>/startEvent}" 
+                                        minDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/EVENT_START_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripstartdate'
+                                            ],
+                                            formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                        maxDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/EVENT_START_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/eventenddate'
+                                            ],
+                                            formatter: '.DateUtility.determineMaxDate'
+                                        }"
+                                        />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
+                                <form:fields>
+                                    <DatePicker 
+                                        value="{request>/req_header/eventenddate}" 
+                                        required="{reqHeaderEditableModel>/endEventRequired}" 
+                                        editable="{reqHeaderEditableModel>/endEvent}" 
+                                        minDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/EVENT_END_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/eventstartdate'
+                                            ],
+                                            formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                        maxDate="{
+                                            parts: [
+                                                'constant>/EntitiesFields/EVENT_END_DATE',
+                                                'constant>/SubmissionTypePrefix/REQUEST',
+                                                'request>/req_header/claimtype',
+                                                { value: 'null' },
+                                                'request>/',
+                                                { value: 'null' },
+                                                'request>/req_header/tripenddate'
+                                            ],
+                                            formatter: '.DateUtility.determineMaxDate'
+                                        }"
+                                    />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_location}">
+                                <form:fields>
+                                    <Input value="{request>/req_header/location}" editable="{reqHeaderEditableModel>/location}" placeholder="{i18n>placeholder_reqinput_location}"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_grptype}">
+                                <form:fields>
+                                    <Text text="{request>/req_header/grptype}" />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_transport}">
+                                <form:fields>
+                                    <Text text="{request>/req_header/transport}" />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_status}">
+                                <form:fields>
+                                    <Text text="{request>/req_header/reqstatus}" />
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_cc}">
+                                <form:fields>
+                                    <Text text="{request>/req_header/costcenter}"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_acc}">
+                                <form:fields>
+                                    <mdc:Field id="req_alt_cost_center" value="{request>/req_header/altcostcenter}" additionalValue="{request>/req_header/altcostcenterdesc}" editMode="{= ${reqHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }" display="ValueDescription" valueHelp="valuehelp_req_altcc" />
                             </form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_caa}">
                                 <form:fields><Text text="{
