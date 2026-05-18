@@ -86,7 +86,7 @@ module.exports = {
         oToUpdateFields = {
             [sDateField]: dDate,
             [sTimeField]: tTime,
-            [Constant.EntitiesFields.STATUS]: sStatus,   // ZREQUEST_HEADER.STATUS
+            // [Constant.EntitiesFields.STATUS]: sStatus,   // ZREQUEST_HEADER.STATUS
             [Constant.EntitiesFields.STATUS_ID]: sStatus // ZCLAIM_HEADER.STATUS_ID
         };
 

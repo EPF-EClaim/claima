@@ -2589,7 +2589,7 @@ sap.ui.define([
 						UserId			: sUserId,
 						ApproverAction	: Constants.ClaimStatus.SEND_BACK,
 						Comments		: sComment,
-						RejectionReason : ""
+						RejectionReason : sReason
 					}
 					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)

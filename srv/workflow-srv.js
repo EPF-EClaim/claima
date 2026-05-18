@@ -20,7 +20,8 @@ const {
     retrieveBudgetContext,
     generateReturnMessage,
     performBudgetChecking,
-    getApproverContextByLevel
+    getApproverContextByLevel,
+    retrieveRejectReasonDesc
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -44,42 +45,31 @@ module.exports = (srv) => {
         const oTx = cds.tx(req)
         const { id : sId } = req.data
         let bStatus = true;
+        let sStatus = '';
         let aReturn = [];
         const oDescriptor = resolveDocDescriptor(sId);
         let aBudgetContext = [];
         if (!oDescriptor) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`);
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`, false);
         }
 
         //1. Determine workflow
         const oWorkflowContext = await determineWorkflow(oTx, sId);
         if(!oWorkflowContext) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched', false);
         }
         console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
         //2. Determine approvers and substitutes
         const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
         if(!aApproversContext.length) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'No approvers determined')
-        }
-        //3. Perform budget checking for auto approve
-        if(aApproversContext[0].LEVEL == 0) {
-            aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
-            aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            if(oReturn) {
-                bStatus = false;
-                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking')
-            }
-            //   If successful, update Header table with approved status and timestamp
-            sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'No approvers determined', false);
         }
 
-        //4. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
+        //3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
         const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
         if(!aApproversContextNew.length) {
             bStatus = false;
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization', false);
         }
         console.log('[workflow-srv] aApproversContextNew:', aApproversContextNew)
         const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
@@ -87,21 +77,33 @@ module.exports = (srv) => {
         console.log(sDelete);
         console.log(sInsert);
 
+        //4. Perform budget checking for auto approve
+        if(aApproversContext[0].LEVEL == 0) {
+            aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
+            aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            if(oReturn) {
+                bStatus = false;
+                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
+            }
+            //   If successful, update Header table with approved status and timestamp
+            sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+        }
+
         //5. Notify claimant/approver
         //If workflow is AUTO, send email to claimant to inform claimant that claim has been auto approved
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
-        let sStatus = '';
         if(aApproversContextNew[0].LEVEL == 0) {
-            sStatus = await sendEmailToClaimant(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_APPROVE);
+            sStatus = await sendEmailToClaimant(sId, aApproversContextNew[0].APPROVER_ID, oDescriptor, Constant.ApprovalEmailAction.ACTION_APPROVE);
         }
         else {
             sStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY);
         }
         if(!sStatus) {
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification')
+            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification', false);
         }
         console.log('[workflow-srv] sStatus:', sStatus)
-        return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started');
+        return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started', aApproversContextNew[0].LEVEL === 0 ? true : false);
         
     }),
     srv.on('processApproval', async req => {
@@ -166,12 +168,21 @@ module.exports = (srv) => {
         // If action is REJECT/PUSH BACK, notify claimant
         // If action is APPROVE, notify next level approver
         // If action is APPROVE and there are no next level approver, notify claimant
+        // Retrieve Reject reason description if rejection reason is provided
+        let sRejectionReasonDesc = null;
+        if(sRejectionReason) {
+            sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
+            console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
+        }
+        else{
+            throw new Error('Rejection reason is required for rejection or push back action');
+        }
         if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
             (
                 sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL
             )
         ) {
-            bStatus = await sendEmailToClaimant(sId, oDescriptor, oActionDescriptor.emailAction);
+            bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }
         else {
             const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)

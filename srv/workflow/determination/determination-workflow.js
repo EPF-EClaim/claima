@@ -363,6 +363,8 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateThresholdAmount oWorkflowContext.THRESHOLD_VALUE: ", oWorkflowContext.THRESHOLD_VALUE);
+    console.log("evaluateThresholdAmount oDocumentRulesContext.maxThresholdAmt: ",  oDocumentRulesContext.maxThresholdAmt);
     if(!oWorkflowContext.THRESHOLD_VALUE){
         return true;
     }
@@ -382,6 +384,8 @@ function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateRiskLevel oWorkflowContext.RISK_LEVEL: ", oWorkflowContext.RISK_LEVEL);
+    console.log("evaluateRiskLevel oDocumentRulesContext.riskLevel: ",  oDocumentRulesContext.riskLevel);
     if(!oWorkflowContext.RISK_LEVEL) {
         return true;
     }
@@ -389,6 +393,8 @@ function evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateReceiptDate oWorkflowContext.RECEIPT_AGE: ", oWorkflowContext.RECEIPT_AGE);
+    console.log("evaluateReceiptDate oDocumentRulesContext.agingDays: ",  oDocumentRulesContext.agingDays);
     if(!oWorkflowContext.RECEIPT_AGE){
         return true;
     }
@@ -405,6 +411,8 @@ function evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateCostCenter oWorkflowContext.EMPLOYEE_COST_CENTER: ", oWorkflowContext.EMPLOYEE_COST_CENTER);
+    console.log("evaluateCostCenter oDocumentRulesContext.costCenter: ",  oDocumentRulesContext.costCenter);
     if(!oWorkflowContext.EMPLOYEE_COST_CENTER){
         return true;
     }
@@ -412,6 +420,8 @@ function evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateCashAdvance oWorkflowContext.CASH_ADVANCE: ", oWorkflowContext.CASH_ADVANCE);
+    console.log("evaluateCashAdvance oDocumentRulesContext.isCashAdvance: ",  oDocumentRulesContext.isCashAdvance);
     switch(oWorkflowContext.CASH_ADVANCE) {
         case true:
             return (oDocumentRulesContext.isCashAdvance);
@@ -425,6 +435,8 @@ function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateTripStartDate oWorkflowContext.TRIP_START_DATE: ", oWorkflowContext.TRIP_START_DATE);
+    console.log("evaluateTripStartDate oDocumentRulesContext.tripStartDate: ",  oDocumentRulesContext.tripStartDate);
     if(!oWorkflowContext.TRIP_START_DATE){
         return true;
     }

@@ -4425,7 +4425,10 @@ sap.ui.define([
 								const oWorkflowModel = this.getView().getModel("workflow");
 								const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 								if (oResponse.Success) {
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									// If auto approve, status will be automatically updated to APPROVED in ZCLAIM_HEADER
+									if(!oResponse.AutoApproved) {	
+										oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									}
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 										var submittedDate = this._getJsonDate(new Date());
 										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));

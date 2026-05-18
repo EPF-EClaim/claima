@@ -18,6 +18,7 @@ service workflow {
         DocumentID          : String;
         Area                : String;
         Message             : String;
+        AutoApproved        : Boolean;
     };
     action processApproval(
         request : ApproverActionRequest

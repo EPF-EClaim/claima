@@ -7,17 +7,19 @@ async function sendEmailViaSAPIS(oEmailPayload) {
     return await oISService.post("/http/SendEmailNotification_eClaim", oEmailPayload);
 }   
 
-function generateEmailPayload(sApproverName, sSubmissionDate, sClaimmantName, sClaimType, sClaimId, sRecipientName, sAction, sReceiverEmail) {
+function generateEmailPayload(sApproverName, sSubmissionDate, sClaimmantName, sClaimType, sClaimId, sRecipientName, sAction, sReceiverEmail, sComments = null, sRejectionReason = null) {
 
     return {
-        ApproverName    : sApproverName,
-        SubmissionDate  : sSubmissionDate,
-        ClaimantName    : sClaimmantName,
-        ClaimType       : sClaimType,
-        ClaimID         : sClaimId,
-        RecipientName   : sRecipientName,
-        Action          : sAction,
-        ReceiverEmail   : sReceiverEmail
+        ApproverName        : sApproverName,
+        SubmissionDate      : sSubmissionDate,
+        ClaimantName        : sClaimmantName,
+        ClaimType           : sClaimType,
+        ClaimID             : sClaimId,
+        RecipientName       : sRecipientName,
+        Action              : sAction,
+        ReceiverEmail       : sReceiverEmail,
+        RejectReason        : sRejectionReason,
+        ApproverComments    : sComments
     };
 }
 

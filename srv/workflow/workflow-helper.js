@@ -175,13 +175,30 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     }
     return aBudgetContexts
 }
-function generateReturnMessage(bStatus, sId, sArea, sMessage){
+function generateReturnMessage(bStatus, sId, sArea, sMessage, sAutoApproved) {
     return {
         Success         : bStatus,
         DocumentID      : sId,
         Area            : sArea,
-        Message         : sMessage
+        Message         : sMessage,
+        AutoApproved    : sAutoApproved
     };
+}
+async function retrieveRejectReasonDesc(sRejectReasonId) {
+    const sRejectReasonTable = cds.entities['eclaim_srv.ZREJECT_REASON'];
+    const oRejectReasonContext = await cds.run(
+        SELECT
+            .one
+            .from(sRejectReasonTable)
+            .where({
+                [Constant.EntitiesFields.REASON_ID] : sRejectReasonId
+            })
+            .columns(
+                Constant.EntitiesFields.REASON_ID,
+                Constant.EntitiesFields.REASON_DESC
+            )
+    )
+    return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
 async function performBudgetChecking(oTx, aBudgetContext) {
     const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
@@ -353,5 +370,6 @@ module.exports = {
     generateReturnMessage,
     performBudgetChecking,
     getApproverContextByLevel,
-    retrieveRoleRank
+    retrieveRoleRank,
+    retrieveRejectReasonDesc
 };
