@@ -679,13 +679,8 @@ sap.ui.define([
 				material_code: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
-				round_trip 				: oReqItem.ROUND_TRIP || null
+				round_trip 				: oReqItem.ROUND_TRIP || false
 			});
-
-			/// RoundTrip edit
-			if (this._oReqModel.getProperty("/req_item/round_trip")){
-				this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer")*2)
-			}
 
 			const sState = this._oReqModel.getProperty("/view");
 			if (sState != this._oConstant.PARMode.APPROVER) {
@@ -2297,6 +2292,12 @@ sap.ui.define([
 						case Constants.ClaimTypeItem.FLIGHT_L:
 							this._removeBusinessClass();
 
+						case Constants.ClaimTypeItem.KILOMETER:
+							/// RoundTrip edit
+							if (this._oReqModel.getProperty("/req_item/round_trip")) {
+								this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer") * 2);
+							}
+							break;
 						default:
 							break;
 					}
@@ -2703,25 +2704,6 @@ sap.ui.define([
 			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.NO_OF_TRAVELERS) {
 				this._onChangeTravelers(oEvent);
 			}
-			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.KILOMETER) {
-				var oModel = this.getView().getModel("request");
-				var bIsRoundTrip = oModel.getProperty("/req_item/round_trip");
-				var fKM = parseFloat(oModel.getProperty("/req_item/kilometer")) || 0;
-
-				if (bIsRoundTrip && fKM > 0) {
-					try {
-						var fRoundTripKM = await Utility.calculateRoundTripKM(
-							this.getView().getModel(),
-							fKM
-						);
-						oModel.setProperty("/req_item/roundtrip_km", fRoundTripKM);
-					} catch (e) {
-						MessageBox.error(
-							Utility.getText("msg_claimdetails_roundtrip_fail")
-						);
-					}
-				}
-			}
 			RequestUtility.populateAllocatedAmount();
 		},
 
@@ -2781,12 +2763,6 @@ sap.ui.define([
 				this._oReqModel.getProperty("/req_item/to_state"),
 				this._oReqModel.getProperty("/req_item/to_location_office")
 			));
-
-			if (this._oReqModel.getProperty("/req_item/round_trip")) {
-				this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer")* 2);
-			} else {
-				this._oReqModel.setProperty("/req_item/roundtrip_km", null);
-			}
 			RequestUtility.populateAllocatedAmount();
 		},
 
@@ -2909,21 +2885,7 @@ sap.ui.define([
 			}
 		},
 		onSelectRoundTrip: async function (oEvent) {
-			const oResult = await Utility.handleRoundTrip(
-				Constants.SubmissionTypePrefix.REQUEST,
-				oEvent
-			);
-
-			if (oResult?.error) {
-				MessageBox.error(oResult.error);
-				return;
-			}
-
-			if (oResult?.km !== undefined) {
-				this.getView().getModel("request").setProperty("/req_item/roundtrip_km", oResult.km);
-			}
-			// PAR-specific recalculation
-			RequestUtility.populateAllocatedAmount();
+			this.onInputAllocatedAmount(oEvent);
 		}
 	});
 });

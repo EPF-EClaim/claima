@@ -982,7 +982,7 @@
                 <Label text="{i18n>label_claimdetails_input_roundtrip}" />
                 <CheckBox
                     id="checkbox_claimdetails_input_roundtrip"
-                    visible="false"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }"
                     wrapping="true"
                     selected="{claimitem_input>/claim_item/round_trip}"
                     select="onSelectRoundTrip"
