@@ -480,15 +480,28 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        const systemYearFull = String(new Date().getFullYear());
+        //const current = Number(row.CURRENT || 0);
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        let nextYearToSave;
+
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            nextYearToSave = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+            nextYearToSave = currentYearInDb;
+        }
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set({ CURRENT: String(current + 1), CURRENT_YEAR: nextYearToSave })
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -544,15 +557,27 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        //const current = Number(row.CURRENT || 0);
+        const systemYearFull = String(new Date().getFullYear());
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        let nextYearToSave;
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            nextYearToSave = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+            nextYearToSave = currentYearInDb;
+        }
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.CLAIM_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set({ CURRENT: String(current + 1), CURRENT_YEAR: nextYearToSave})
                 .where({ RANGE_ID: String(range_id) })
         );
 

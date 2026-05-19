@@ -294,6 +294,12 @@ annotate service.ZNUM_RANGE with @(
                 Value            : CURRENT,
                 ![@UI.Importance]: #High,
                 Label            : 'Current'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_YEAR,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Year'
             }
         ]
     }
