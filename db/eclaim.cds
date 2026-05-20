@@ -343,7 +343,6 @@ entity ZNUM_RANGE : managed {
         ![FROM]    : String  @Common.Label: 'FROM';
         TO         : String  @Common.Label: 'TO';
         CURRENT    : String  @Common.Label: 'CURRENT';
-        CURRENT_YEAR : String @Common.Label: 'CURRENT YEAR';
 }
 
 entity ZCLAIM_HEADER : managed {
