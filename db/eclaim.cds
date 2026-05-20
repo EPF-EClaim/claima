@@ -76,6 +76,8 @@ entity ZEMP_MASTER : managed {
                                             and ZOFFICE_LOCATION.STATE_ID    = STATE;
         ZBRANCH                       : Association to ZBRANCH
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
+        ZPROMO_DIVISION               : Association to ZPROMO_DIVISION
+                                            on ZPROMO_DIVISION.DIVISION = DIVISION;
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -1103,10 +1105,14 @@ entity ZWORKFLOW_RULE : managed {
         TRIP_START_DATE       : String(2)     @Common.Label: 'Trip Start Date';
         ROLE                  : String(15)    @Common.Label: 'Role';
         DEPARTMENT_ID         : String(10)    @Common.Label: 'Department ID';
+        DIVISION              : String(10)    @Common.Label: 'Division';
+        LOCATION_TYPE         : String(10)    @Common.Label: 'Location Type';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZDEPARTMENT           : Association to ZDEPARTMENT
                                     on ZDEPARTMENT.DEPARTMENT_ID = DEPARTMENT_ID;
+        ZPROMO_DIVISION       : Association to ZPROMO_DIVISION
+                                    on ZPROMO_DIVISION.DIVISION = DIVISION;
 }
 
 entity ZCURRENCY : managed {
@@ -1467,4 +1473,12 @@ entity ZCLM_TYPE_EXCEPTION_LIST : managed {
     key START_DATE      : Date           @mandatory  @Common.Label: 'Start Date';
     key END_DATE        : Date           @mandatory  @Common.Label: 'End Date';
         ELIGIBLE_AMOUNT : Decimal(20, 2) @Common.Label: 'Eligible Amount';
+}
+
+entity ZPROMO_DIVISION : managed {
+    key DIVISION      : String(10)  @mandatory  @Common.Label: 'Promotion To Division ID';
+    key START_DATE    : Date        @mandatory  @Common.Label: 'Start Date';
+        END_DATE      : Date        @Common.Label: 'End Date';
+        DIVISION_DESC : String(150) @Common.Label: 'Promotion To Division Description';
+        STATUS        : String(10)  @Common.Label: 'Status';
 }
