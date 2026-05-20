@@ -37,7 +37,7 @@ entity ZEMP_MASTER : managed {
         UPDATED_DATE                  : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
         JOB_GRADE                     : String(3)     @Common.Label: 'Job Grade';
-        DIVISION                      : String(10)     @Common.Label: 'Division';
+        DIVISION                      : String(10)    @Common.Label: 'Division';
         HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
         HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
         UNIVERSITY_NAME               : String(30)    @Common.Label: 'University Name';
@@ -337,12 +337,13 @@ entity ZCLAIM_TYPE : managed {
 }
 
 entity ZNUM_RANGE : managed {
-    key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
-        PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
-        RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
-        ![FROM]    : String  @Common.Label: 'FROM';
-        TO         : String  @Common.Label: 'TO';
-        CURRENT    : String  @Common.Label: 'CURRENT';
+    key RANGE_ID     : String  @mandatory  @Common.Label: 'RANGE_ID';
+        PREFIX       : String  @mandatory  @Common.Label: 'PREFIX';
+        RANGE_DESC   : String  @Common.Label: 'RANGE_DESC';
+        ![FROM]      : String  @Common.Label: 'FROM';
+        TO           : String  @Common.Label: 'TO';
+        CURRENT      : String  @Common.Label: 'CURRENT';
+        CURRENT_YEAR : String  @Common.Label: 'CURRENT YEAR';
 }
 
 entity ZCLAIM_HEADER : managed {
