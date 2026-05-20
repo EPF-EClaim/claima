@@ -545,6 +545,7 @@ entity ZCLAIM_ITEM : managed {
         TIPS                       : Integer        @Common.Label: 'Tips';
         EXCLUDE_TIPS               : Boolean        @Common.Label: 'Exclude Tips';
         TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
+        DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -617,6 +618,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZCURRENCY                  : Association to ZCURRENCY
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
+        ZEMP_DEPENDENT_TYPE        : Association to ZEMP_DEPENDENT_TYPE
+                                         on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
 }
 
 entity ZLODGING_CAT : managed {
