@@ -2338,10 +2338,10 @@ sap.ui.define([
 			//for tambang excluding flight
 			// this._filterFareType();
 			
-			//set disclaimer field as false if they are visible for validation ???
-			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
-				oInputModel.setProperty("/claim_item/disclaimer", false);
-			}
+			//set disclaimer field as false if they are visible for validation ??? not needed
+			// if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
+			// 	oInputModel.setProperty("/claim_item/disclaimer", false);
+			// }
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			// const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
@@ -2516,19 +2516,19 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
 				// set app visibility controls
-				 await this.getFieldVisibility_ClaimTypeItem();
+				//  await this.getFieldVisibility_ClaimTypeItem();
 
 				//FUT issue #58
-				if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
-					oInputModel.setProperty("/claim_item/disclaimer", true)
-				}
+				// if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
+				// 	oInputModel.setProperty("/claim_item/disclaimer", true)
+				// }
 				//changes here
-				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
-				}
-
+				// if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
+				// 	oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
+				// } else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
+				// 	oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
+				// }
+				//multi select depenenr below 21/05
 				var sDependent = oInputModel.getProperty("/claim_item/dependent");
 				if (sDependent) {
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
@@ -2558,6 +2558,8 @@ sap.ui.define([
 				// 	}
 				// }xml
 
+				//i believe this has been catered for
+				//left off here
 				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){//KIV
 				Utility.init(this.getOwnerComponent(), this.getView());
 				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
