@@ -1,0 +1,13 @@
+{
+    "role": {
+        "name": "ECLAIM_EXTERNAL_ACCESS",
+        "object_privileges": [
+            {
+                "name":"ECLAIM_ZEMP_MASTER",
+                "type":"TABLE",
+                "privileges":[ "SELECT" ],
+                "privileges_with_grant_option":["SELECT"]
+            }                          
+        ]
+    }
+}  
