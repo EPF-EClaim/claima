@@ -387,7 +387,8 @@ sap.ui.define([
 						"course_desc": null,
 						"session_number": null,
 						"start_date": null,
-						"end_date": null
+						"end_date": null,
+						"course_session_key": null,
 					},
 					"descr": {
 						"type": null,
@@ -758,29 +759,38 @@ sap.ui.define([
 				// set course code description
 				oInputModel.setProperty("/claimtype/course_code/course_desc", oCourseCode.getBindingContext("employee_view").getObject("COURSE_DESC"));
 
-				// set Session Number selection based on selected course code
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
-					var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
-					var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
-					var aFilterSelectSessionNumber = [
-						// ensure status is active
-						new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-						new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-					];
-					oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
+				// Get the combined key value
+				var sSelectedKey = oCourseCode.getKey();
+				if (sSelectedKey) {
+					// Split the string by the pipe character
+					var aKeyParts = sSelectedKey.split("|");
+					oInputModel.setProperty("/claimtype/course_code/course_id", aKeyParts[0]);
+					oInputModel.setProperty("/claimtype/course_code/session_number", aKeyParts[1]);
 				}
+
+				// // set Session Number selection based on selected course code
+				// if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
+				// 	var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
+				// 	var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
+				// 	var aFilterSelectSessionNumber = [
+				// 		// ensure status is active
+				// 		new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
+				// 		new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+				// 		new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+				// 		new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+				// 	];
+				// 	oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
+				// }
 			}
 			else {
 				// reset claim item values
 				oInputModel.setProperty("/claimtype/course_code/course_desc", null);
 			}
-			// reset session number
-			if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
-				oInputModel.setProperty("/claimtype/course_code/session_number", null);
-				this.onSelect_ClaimProcess_SessionNumber();
-			}
+			// // reset session number
+			// if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
+			// 	oInputModel.setProperty("/claimtype/course_code/session_number", null);
+			// 	this.onSelect_ClaimProcess_SessionNumber();
+			// }
 		},
 
 		/**

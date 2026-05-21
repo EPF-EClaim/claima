@@ -80,11 +80,11 @@
                     <Select
                         id="select_claimprocess_course_code"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/course_code/course_id}"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code/course_session_key}"
                         items="{
                             path: 'employee_view>/ZCLM_COURSE_VIEW',
                             sorter: [
-                                { path: 'COURSE_ID' },
+                                { path: 'COURSE_SESSION_KEY' },
                                 { path: 'COURSE_DESC' }
                             ]
                         }"
@@ -94,10 +94,10 @@
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >
-                        <core:Item key="{employee_view>COURSE_ID}" text="{employee_view>COURSE_ID} - {employee_view>COURSE_DESC}" />
+                        <core:Item key="{employee_view>COURSE_SESSION_KEY}" text="{employee_view>COURSE_SESSION_KEY} - {employee_view>COURSE_DESC}" />
                     </Select>
 
-                    <!-- Select Session Number -->
+                    <!-- Select Session Number
                     <Label text="{i18n>label_claimprocess_session_number}" />
                     <Select
                         id="select_claimprocess_session_number"
@@ -117,7 +117,7 @@
                         liveChange="onSelect_ClaimProcess_SessionNumber"
                     >
                         <core:Item key="{employee>SESSION_NUMBER}" text="{employee>SESSION_NUMBER}" />
-                    </Select>
+                    </Select> -->
 
                     <!-- Select Request Form (Pre-Approval) -->
                     <Label text="{i18n>label_claimprocess_requestform}" />
