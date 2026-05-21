@@ -2,6 +2,7 @@ namespace ECLAIM;
 
 using {managed} from '@sap/cds/common';
 
+@sql.name: 'ECLAIM_ZEMP_MASTER'
 entity ZEMP_MASTER : managed {
     key EEID                          : String        @mandatory;
         NAME                          : String        @Common.Label: 'Employee Name';
