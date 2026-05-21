@@ -263,7 +263,9 @@ const Constant = {
         "BUDGET_OWNER_ID": "BUDGET_OWNER_ID",
         "STATUS_ID": "STATUS_ID",
         "REASON_ID": "REASON_ID",
-        "REASON_DESC": "REASON_DESC"
+        "REASON_DESC": "REASON_DESC",
+        "DIVISION": "DIVISION",
+        "LOCATION_TYPE": "LOCATION_TYPE"
     },
     Wildcard: {
         "All": "*",
@@ -452,6 +454,10 @@ const Constant = {
         "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
         "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
         "BUDGET_CHECKING"           : "BUDGET_CHECKING"
+    },
+    LocationType: {
+        HQ: "HQ",
+        BRANCH: "BRANCH"
     }
 
 };

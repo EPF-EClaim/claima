@@ -2,11 +2,14 @@ const cds = require('@sap/cds')
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql')
 const { Constant } = require("../../utils/constant");
 const {
-    resolveDocDescriptor
+    resolveDocDescriptor,
+    retrieveEmployeeDetails
 } = require("../../workflow/workflow-helper")
 const {
-    retrieveWorkflowByClaimTypeAndRole
+    retrieveWorkflowByClaimTypeAndRole,
+    retrieveWorkflowByDefault
 } = require('./determination-helper');
+const { constants } = require('@sap/xssec');
 
 async function fetchHeaderForWorkflow(sId, oDescriptor) {
     
@@ -21,7 +24,8 @@ async function fetchHeaderForWorkflow(sId, oDescriptor) {
                 Constant.EntitiesFields.ALTERNATE_COST_CENTER,
                 Constant.EntitiesFields.PREAPPROVED_AMOUNT,
                 Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT,
-                Constant.EntitiesFields.TRIP_START_DATE
+                Constant.EntitiesFields.TRIP_START_DATE,
+                Constant.EntitiesFields.CLAIM_TYPE_ID
             )
             .where( { [oDescriptor.idField]:sId })
     );
@@ -45,114 +49,6 @@ async function fetchItemsForWorkflow(oTx, sId, oDescriptor) {
     return aItems;
 }
 
-async function retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor) {
-    
-    const oToday = new Date()
-
-    const sDepartment = await retrieveDepartment(oTx, sId, oDescriptor);
-
-    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
-    const oWorkflowRequestType = await normalizeWorkflowRequestType(oTx,sId,oDescriptor);
-    console.log('[workflow-determination/retrieveWorkflowByClaimType] oWorkflowRequestType:', oWorkflowRequestType)
-
-    if(oWorkflowRequestType){
-        // Retrieve workflow rules by workflow type/workflow request type/claim type id
-        const aWorkflowContext = await oTx.run(
-            SELECT
-                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
-                .where({
-                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
-                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
-                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
-                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
-                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
-                    [Constant.EntitiesFields.DEPARTMENT_ID]     : sDepartment
-                })
-                .columns(
-                    Constant.EntitiesFields.RISK_LEVEL,
-                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
-                    Constant.EntitiesFields.THRESHOLD_VALUE,
-                    Constant.EntitiesFields.RECEIPT_DAY,    
-                    Constant.EntitiesFields.RECEIPT_AGE,
-                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
-                    Constant.EntitiesFields.CASH_ADVANCE,
-                    Constant.EntitiesFields.TRIP_START_DATE,
-                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
-                )
-        )
-        //console.log('[workflow-determination/retrieveWorkflowByClaimType] aWorkflowContext:', aWorkflowContext)
-        if(!aWorkflowContext) {
-            return null;
-        }
-    
-    return aWorkflowContext
-    }
-}
-
-async function retrieveDepartment(oTx, sId, oDescriptor) {
-    let oDepartment = null;
-    const oDoc = await oTx.run(
-        SELECT
-            .from(oDescriptor.entityHeader)
-            .where( { [oDescriptor.idField]:sId })
-            .columns(
-                Constant.EntitiesFields.EMP_ID
-            )
-    )
-    if(oDoc) {
-        oDepartment = await oTx.run(
-            SELECT
-                .from(cds.entities['eclaim_srv.ZEMP_MASTER'])
-                .where({    [Constant.EntitiesFields.EEID]  : oDoc[Constant.EntitiesFields.EMP_ID]  })
-                .columns(   Constant.EntitiesFields.DEP )
-        );
-    }
-
-    return oDepartment[Constant.EntitiesFields.DEP];
-    
-}
-
-async function retrieveWorkflowByClaimType(oTx, sId, oDescriptor) {
-    
-    const dToday = new Date()
-
-    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
-    const oWorkflowRequestType = await normalizeWorkflowRequestType(oTx,sId,oDescriptor);
-    console.log('[workflow-determination/retrieveWorkflowByClaimType] oWorkflowRequestType:', oWorkflowRequestType)
-
-    if(oWorkflowRequestType){
-        // Retrieve workflow rules by workflow type/workflow request type/claim type id
-        const aWorkflowContext = await oTx.run(
-            SELECT
-                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
-                .where({
-                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
-                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
-                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
-                    [Constant.EntitiesFields.START_DATE]        : { '<=' : dToday},
-                    [Constant.EntitiesFields.END_DATE]          : { '>=' : dToday}
-                })
-                .columns(
-                    Constant.EntitiesFields.RISK_LEVEL,
-                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
-                    Constant.EntitiesFields.THRESHOLD_VALUE,
-                    Constant.EntitiesFields.RECEIPT_DAY,    
-                    Constant.EntitiesFields.RECEIPT_AGE,
-                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
-                    Constant.EntitiesFields.CASH_ADVANCE,
-                    Constant.EntitiesFields.TRIP_START_DATE,
-                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
-                )
-        )
-        //console.log('[workflow-determination/retrieveWorkflowByClaimType] aWorkflowContext:', aWorkflowContext)
-        if(!aWorkflowContext) {
-            return null;
-        }
-    
-    return aWorkflowContext
-    }
-}
-
 async function retrieveWorkflow(oTx, sId, oDescriptor) {
     
     const oToday = new Date()
@@ -162,31 +58,21 @@ async function retrieveWorkflow(oTx, sId, oDescriptor) {
     const oWorkflowRequestType = await normalizeWorkflowRequestType(oTx,sId,oDescriptor);
     console.log('[workflow-determination/retrieveWorkflow] oWorkflowRequestType:', oWorkflowRequestType)
 
+    // We need to retrieve workflow rules based on priority:
+    // 1. Workflow Type + Request Type + Claim Type + Role + Division
+    // 2. Workflow Type + Request Type + Claim Type + Role 
+    // 3. Workflow Type + Request Type + Claim Type + Division
+    // 4. Workflow Type + Request Type + Claim Type
+    // 5. Workflow Type + Request Type
+    // If workflow rules exist for higher priority, then the lower priority ones will be ignored. For example, if there are workflow rules maintained for Workflow Type + Request Type + Claim Type + Role, then the rules with Workflow Type + Request Type + Claim Type will not be considered even if they exist.
     if(oWorkflowRequestType){
+        // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role / division
+        let aWorkflowContext = [];
+
         // Retrieve workflow rules by workflow type/workflow request type
-        const aWorkflowContext = await oTx.run(
-            SELECT
-                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
-                .where({
-                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
-                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
-                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
-                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday}
-                })
-                .columns(
-                    Constant.EntitiesFields.RISK_LEVEL,
-                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
-                    Constant.EntitiesFields.THRESHOLD_VALUE,
-                    Constant.EntitiesFields.RECEIPT_DAY,    
-                    Constant.EntitiesFields.RECEIPT_AGE,
-                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
-                    Constant.EntitiesFields.CASH_ADVANCE,
-                    Constant.EntitiesFields.TRIP_START_DATE,
-                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE
-                )
-        )
-        //console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext:', aWorkflowContext)
-        if(!aWorkflowContext) {
+        aWorkflowContext = await retrieveWorkflowByDefault(sId, oDescriptor);
+        console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by default:', aWorkflowContext)
+        if(!aWorkflowContext.length) {
             return null;
         }
     
@@ -350,9 +236,8 @@ async function determineCashAdvance(oTx, sId, oDescriptor) {
 }
 
 function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
-    const sValue = evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext)
-    console.log('[workflow-determination/validateWorkflowRule] sValue:', sValue)
     return (
+        evaluateClaimType(oDocumentRulesContext, oWorkflowContext) &&
         evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) &&
         evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) &&
         evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) &&
@@ -360,6 +245,15 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
         evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext)
     )
+}
+
+function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateClaimType oWorkflowContext.claimTypeId: ",  oWorkflowContext.CLAIM_TYPE_ID);
+    console.log("evaluateClaimType oDocumentRulesContext.claimTypeId: ",  oDocumentRulesContext.claimTypeId);
+    if(oWorkflowContext.CLAIM_TYPE_ID === "NULL"){
+        return true;
+    }
+    return oDocumentRulesContext.claimTypeId === oWorkflowContext.CLAIM_TYPE_ID;
 }
 
 function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
@@ -494,7 +388,9 @@ async function determineWorkflow(oTx, sId) {
 
     //3. Build workflow context
     // Put all rules into the workflow context
-    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date |
+    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role
+    // Location type has two values, 'HQ' and 'Branch'
+    // If CC is fully numeric, it is considered as 'HQ', otherwise 'Branch'
     sRiskLevel = await determineRiskLevel(sId, oDescriptor);
 
     // get threshold amount, total claim amount, preapproved amount for claim
@@ -511,11 +407,20 @@ async function determineWorkflow(oTx, sId) {
         sAgingDays = Math.floor(sAgingMiliseconds / sMilisecondsPerDay);
     }
     let sCostCenterContext = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ? Constant.Operator.NOTEQUAL : Constant.Operator.EQUAL;
-    console.log("oHeader: ", oHeader);
+    // Retrieve Location Type based on Cost Center
+    let sLocationType = "";
+    if(oHeader[Constant.EntitiesFields.COST_CENTER]) {
+        sLocationType = isNaN(oHeader[Constant.EntitiesFields.COST_CENTER]) ? Constant.LocationType.BRANCH : Constant.LocationType.HQ;
+    }
+
+    // Retrieve claimant role for workflow determination
+    const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID]);
+    const sClaimantRole = oClaimantDetails ? oClaimantDetails[Constant.EntitiesFields.ROLE] : null;
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
     const oDocumentRulesContext = {
+        claimTypeId     : oHeader[Constant.EntitiesFields.CLAIM_TYPE_ID] || null, 
         riskLevel       : sRiskLevel,
         maxThresholdAmt : Number(sMaxThresholdAmt) || 0,
         totalClaimAmt   : Number(sTotalClaimAmt) || 0,
@@ -524,30 +429,15 @@ async function determineWorkflow(oTx, sId) {
         agingDays       : Number(sAgingDays),
         costCenter      : sCostCenterContext,
         isCashAdvance   : bIsCashAdvance,
-        tripStartDate   : sTripStartDate
+        tripStartDate   : sTripStartDate,
+        locationType    : sLocationType,
+        claimantRole    : sClaimantRole
     }
 
     console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
 
     //4. Retrieve Workflow rules based on header/item details
-    //4.1 Retrieve workflow with priority for Claim type with Role (To be added into ZWORKFLOW_TABLE by Sean)
-    // aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
-    // console.log("Workflow by Submission Type + Claim Type + Role: ", aWorkflowContext);
-
-    //4.2 Retrieve Workflow with priority for Claim Type with Department (To be added into ZWORKFLOW_TABLE by Sean)
-    // if(!aWorkflowContext.length) {
-    //     aWorkflowContext = await retrieveWorkflowByClaimTypeAndDepartment(oTx, sId, oDescriptor);
-    //     console.log("Workflow by Submission Type + Claim Type + Department: ", aWorkflowContext);
-    // }
-
-    //4.3 Retrieve Workflow with priority for Claim Type
-    // if(!aWorkflowContext.length){
-    //     aWorkflowContext = await retrieveWorkflowByClaimType(oTx, sId, oDescriptor);
-    //     console.log("Workflow by Submission Type + Claim Type: ", aWorkflowContext);
-    // }
-    //console.log('[workflow-determination/determineWorkflow] aWorkflowContext:', aWorkflowContext)
-
-    //4.4 Retrieve Workflow as normal based on Submission Type/Request Type
+    //4.1 Retrieve Workflow as normal based on Submission Type/Request Type
     if(!aWorkflowContext.length){
         aWorkflowContext = await retrieveWorkflow(oTx, sId, oDescriptor);
         console.log("Workflow by Submission Type: ", aWorkflowContext);
@@ -563,7 +453,7 @@ async function determineWorkflow(oTx, sId) {
         for (const oWorkflowContext of aWorkflowContext) {
             // run the rule validator
             // validator will return true if all rules were successful
-            let bIsValidatedRule = await validateWorkflowRule(oDocumentRulesContext, oWorkflowContext);
+            let bIsValidatedRule = validateWorkflowRule(oDocumentRulesContext, oWorkflowContext);
             if(bIsValidatedRule) {
                 oDeterminedWorkflowContext = oWorkflowContext;
                 console.log('[workflow-determination/determineWorkflow] oWorkflowContext:', oWorkflowContext)

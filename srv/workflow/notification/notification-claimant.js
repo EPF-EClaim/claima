@@ -12,6 +12,9 @@ const {
 
 async function sendEmailToClaimant(sId, sApproverId, oDescriptor, sAction, sComments = null, sRejectionReason = null) {
     try{  
+        // Initialize variables
+        // For email to claimant, submitted date should take current date as the action has already been performed, and this email is to notify the claimant of the action taken
+        let sSubmittedDate = new Date().toISOString().split('T')[0];
 
         let sApproverName = "";
     // Retrieve Header context
@@ -50,7 +53,7 @@ async function sendEmailToClaimant(sId, sApproverId, oDescriptor, sAction, sComm
         console.log("Generating email payload for claimant notification...");
         oEmailPayload = generateEmailPayload(
             sApproverName,
-            oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+            sSubmittedDate,
             oClaimantContext[Constant.EntitiesFields.NAME],
             oHeaderContext[oDescriptor.entityTypeDescField],
             sId,
