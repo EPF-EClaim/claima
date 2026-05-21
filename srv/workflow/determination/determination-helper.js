@@ -5,6 +5,21 @@ const {
     retrieveEmployeeDetails
 } = require("../../workflow/workflow-helper");
 
+const WORKFLOW_RULE_COLUMNS = [
+    Constant.EntitiesFields.CLAIM_TYPE_ID,
+    Constant.EntitiesFields.RISK_LEVEL,
+    Constant.EntitiesFields.THRESHOLD_AMOUNT,
+    Constant.EntitiesFields.THRESHOLD_VALUE,
+    Constant.EntitiesFields.RECEIPT_DAY,
+    Constant.EntitiesFields.RECEIPT_AGE,
+    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
+    Constant.EntitiesFields.CASH_ADVANCE,
+    Constant.EntitiesFields.TRIP_START_DATE,
+    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE,
+    Constant.EntitiesFields.ROLE,
+    Constant.EntitiesFields.DIVISION,
+    Constant.EntitiesFields.LOCATION_TYPE
+];
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return cds.run(
         SELECT
@@ -245,8 +260,12 @@ async function insertRecords(sTableName, aRecordDetails, oTx) {
     )
     return sResult;
 }
-async function retrieveWorkflowByDefault(sId, oDescriptor) {
+
+async function retrieveWorkflowByClaimTypeRoleAndDivision(sId, oDescriptor, sEmpId) {
+    
     const oToday = new Date()
+
+    const oEmp = await retrieveEmployeeDetails(sEmpId);
 
     // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
     const oWorkflowRequestType = await normalizeWorkflowRequestType(sId,oDescriptor);
@@ -261,30 +280,53 @@ async function retrieveWorkflowByDefault(sId, oDescriptor) {
                 .where({
                     [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
                     [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
                     [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
-                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday}
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
+                    [Constant.EntitiesFields.ROLE]              : oEmp[Constant.EntitiesFields.ROLE],   
+                    [Constant.EntitiesFields.DIVISION]          : oEmp[Constant.EntitiesFields.DIVISION]
                 })
-                .columns(
-                    Constant.EntitiesFields.CLAIM_TYPE_ID,
-                    Constant.EntitiesFields.RISK_LEVEL,
-                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
-                    Constant.EntitiesFields.THRESHOLD_VALUE,
-                    Constant.EntitiesFields.RECEIPT_DAY,    
-                    Constant.EntitiesFields.RECEIPT_AGE,
-                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
-                    Constant.EntitiesFields.CASH_ADVANCE,
-                    Constant.EntitiesFields.TRIP_START_DATE,
-                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE,
-                    Constant.EntitiesFields.ROLE,
-                    Constant.EntitiesFields.DIVISION,
-                    Constant.EntitiesFields.LOCATION_TYPE
-                )
+                .columns(...WORKFLOW_RULE_COLUMNS)
         )
         if(!aWorkflowContext) {
             return null;
         }
     
     return aWorkflowContext
+    
+}
+async function retrieveWorkflowByClaimTypeAndDivision(sId, oDescriptor, sEmpId) {
+    
+    const oToday = new Date()
+
+    const oEmp = await retrieveEmployeeDetails(sEmpId);
+
+    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
+    const oWorkflowRequestType = await normalizeWorkflowRequestType(sId,oDescriptor);
+
+    if(!oWorkflowRequestType){
+        return null
+    }
+        // Retrieve workflow rules by workflow type/workflow request type/claim type id
+        const aWorkflowContext = await cds.run(
+            SELECT
+                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
+                .where({
+                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
+                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
+                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
+                    [Constant.EntitiesFields.DIVISION]          : oEmp[Constant.EntitiesFields.DIVISION]
+                })
+                .columns(...WORKFLOW_RULE_COLUMNS)
+        )
+        if(!aWorkflowContext) {
+            return null;
+        }
+    
+    return aWorkflowContext
+    
 }
 async function retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId) {
     
@@ -310,21 +352,7 @@ async function retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId) {
                     [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday},
                     [Constant.EntitiesFields.ROLE]              : oEmp[Constant.EntitiesFields.ROLE]
                 })
-                .columns(
-                    Constant.EntitiesFields.CLAIM_TYPE_ID,
-                    Constant.EntitiesFields.RISK_LEVEL,
-                    Constant.EntitiesFields.THRESHOLD_AMOUNT,
-                    Constant.EntitiesFields.THRESHOLD_VALUE,
-                    Constant.EntitiesFields.RECEIPT_DAY,    
-                    Constant.EntitiesFields.RECEIPT_AGE,
-                    Constant.EntitiesFields.EMPLOYEE_COST_CENTER,
-                    Constant.EntitiesFields.CASH_ADVANCE,
-                    Constant.EntitiesFields.TRIP_START_DATE,
-                    Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE,
-                    Constant.EntitiesFields.ROLE,
-                    Constant.EntitiesFields.DIVISION,
-                    Constant.EntitiesFields.LOCATION_TYPE
-                )
+                .columns(...WORKFLOW_RULE_COLUMNS)
         )
         if(!aWorkflowContext) {
             return null;
@@ -332,6 +360,61 @@ async function retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId) {
     
     return aWorkflowContext
     
+}
+async function retrieveWorkflowByClaimType(sId, oDescriptor) {
+    const oToday = new Date()
+
+    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
+    const oWorkflowRequestType = await normalizeWorkflowRequestType(sId,oDescriptor);
+
+    if(!oWorkflowRequestType){
+        return null
+    }
+        // Retrieve workflow rules by workflow type/workflow request type/claim type id
+        const aWorkflowContext = await cds.run(
+            SELECT
+                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
+                .where({
+                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
+                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]     : oWorkflowRequestType.claimTypeId,
+                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday}
+                })
+                .columns(...WORKFLOW_RULE_COLUMNS)
+        )
+        if(!aWorkflowContext) {
+            return null;
+        }
+    
+    return aWorkflowContext
+}
+async function retrieveWorkflowByDefault(sId, oDescriptor) {
+    const oToday = new Date()
+
+    // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
+    const oWorkflowRequestType = await normalizeWorkflowRequestType(sId,oDescriptor);
+
+    if(!oWorkflowRequestType){
+        return null
+    }
+        // Retrieve workflow rules by workflow type/workflow request type/claim type id
+        const aWorkflowContext = await cds.run(
+            SELECT
+                .from(cds.entities['eclaim_srv.ZWORKFLOW_RULE'])
+                .where({
+                    [Constant.EntitiesFields.WORKFLOW_TYPE]     : oDescriptor.entityPrefix,
+                    [Constant.EntitiesFields.REQUEST_TYPE_ID]   : oWorkflowRequestType.workflowRequestType,
+                    [Constant.EntitiesFields.START_DATE]        : { '<=' : oToday},
+                    [Constant.EntitiesFields.END_DATE]          : { '>=' : oToday}
+                })
+                .columns(...WORKFLOW_RULE_COLUMNS)
+        )
+        if(!aWorkflowContext) {
+            return null;
+        }
+    
+    return aWorkflowContext
 }
 async function normalizeWorkflowRequestType(sId, oDescriptor) {
     if(oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
@@ -393,5 +476,8 @@ module.exports = {
     insertRecords,
     retrieveWorkflowByClaimTypeAndRole,
     normalizeWorkflowRequestType,
-    retrieveWorkflowByDefault
+    retrieveWorkflowByDefault,
+    retrieveWorkflowByClaimTypeRoleAndDivision,
+    retrieveWorkflowByClaimTypeAndDivision,
+    retrieveWorkflowByClaimType
 };

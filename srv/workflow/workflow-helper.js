@@ -87,6 +87,7 @@ async function retrieveEmployeeDetails(sId, sEmail){
                 Constant.EntitiesFields.EMAIL,
                 Constant.EntitiesFields.DIRECT_SUPERIOR,
                 Constant.EntitiesFields.ROLE,
+                Constant.EntitiesFields.DIVISION
             )
     )
     if(!oEmployeeContext) {

@@ -160,7 +160,7 @@ module.exports = (srv) => {
             console.log("Budget Checking Status: ", bStatus);
         }
 
-        // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the timestamp and Reject Reason if necessary
+        // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
         const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);
         console.log("Header table update: ", sStatus);
 

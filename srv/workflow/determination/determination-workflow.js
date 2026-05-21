@@ -6,10 +6,14 @@ const {
     retrieveEmployeeDetails
 } = require("../../workflow/workflow-helper")
 const {
+    retrieveWorkflowByClaimTypeRoleAndDivision,
+    retrieveWorkflowByClaimTypeAndDivision,
     retrieveWorkflowByClaimTypeAndRole,
+    retrieveWorkflowByClaimType,
     retrieveWorkflowByDefault
 } = require('./determination-helper');
 const { constants } = require('@sap/xssec');
+const { identityServicesCache } = require('@sap-cloud-sdk/connectivity/dist/internal');
 
 async function fetchHeaderForWorkflow(sId, oDescriptor) {
     
@@ -49,7 +53,7 @@ async function fetchItemsForWorkflow(oTx, sId, oDescriptor) {
     return aItems;
 }
 
-async function retrieveWorkflow(oTx, sId, oDescriptor) {
+async function retrieveWorkflow(oTx, sId, oDescriptor, sEmpId) {
     
     const oToday = new Date()
 
@@ -59,19 +63,37 @@ async function retrieveWorkflow(oTx, sId, oDescriptor) {
     console.log('[workflow-determination/retrieveWorkflow] oWorkflowRequestType:', oWorkflowRequestType)
 
     // We need to retrieve workflow rules based on priority:
-    // 1. Workflow Type + Request Type + Claim Type + Role + Division
-    // 2. Workflow Type + Request Type + Claim Type + Role 
-    // 3. Workflow Type + Request Type + Claim Type + Division
-    // 4. Workflow Type + Request Type + Claim Type
-    // 5. Workflow Type + Request Type
+    // 1. Workflow Type + Request Type + Claim Type + Role + Division   (Phase 2)
+    // 2. Workflow Type + Request Type + Claim Type + Role              (Phase 2)
+    // 3. Workflow Type + Request Type + Claim Type + Division          (Phase 2)
+    // 4. Workflow Type + Request Type + Claim Type                     (Phase 2)
+    // 5. Workflow Type + Request Type                                  (Phase 1)
     // If workflow rules exist for higher priority, then the lower priority ones will be ignored. For example, if there are workflow rules maintained for Workflow Type + Request Type + Claim Type + Role, then the rules with Workflow Type + Request Type + Claim Type will not be considered even if they exist.
     if(oWorkflowRequestType){
-        // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role / division
         let aWorkflowContext = [];
-
-        // Retrieve workflow rules by workflow type/workflow request type
-        aWorkflowContext = await retrieveWorkflowByDefault(sId, oDescriptor);
-        console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by default:', aWorkflowContext)
+        // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role / division
+        aWorkflowContext = await retrieveWorkflowByClaimTypeRoleAndDivision(sId, oDescriptor, sEmpId);
+        console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type, role and division:', aWorkflowContext)
+        if(!aWorkflowContext.length) {
+            // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role
+            aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId);
+            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type and role:', aWorkflowContext)
+        }
+        if(!aWorkflowContext.length) {
+            // Retrieve workflow rules by workflow type/workflow request type/ claim type/ division
+            aWorkflowContext = await retrieveWorkflowByClaimTypeAndDivision(sId, oDescriptor, sEmpId);
+            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type and division:', aWorkflowContext)
+        }
+        if(!aWorkflowContext.length) {
+            // Retrieve workflow rules by workflow type/workflow request type/ claim type
+            aWorkflowContext = await retrieveWorkflowByClaimType(sId, oDescriptor);
+            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type:', aWorkflowContext)
+        }
+        if(!aWorkflowContext.length) {
+             // Retrieve workflow rules by workflow type/workflow request type
+            aWorkflowContext = await retrieveWorkflowByDefault(sId, oDescriptor);
+            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by default:', aWorkflowContext)
+        }
         if(!aWorkflowContext.length) {
             return null;
         }
@@ -237,23 +259,14 @@ async function determineCashAdvance(oTx, sId, oDescriptor) {
 
 function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
     return (
-        evaluateClaimType(oDocumentRulesContext, oWorkflowContext) &&
         evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) &&
         evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) &&
         evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) &&
         evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) &&
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
-        evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext)
+        evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateLocationType(oDocumentRulesContext, oWorkflowContext)
     )
-}
-
-function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateClaimType oWorkflowContext.claimTypeId: ",  oWorkflowContext.CLAIM_TYPE_ID);
-    console.log("evaluateClaimType oDocumentRulesContext.claimTypeId: ",  oDocumentRulesContext.claimTypeId);
-    if(oWorkflowContext.CLAIM_TYPE_ID === "NULL"){
-        return true;
-    }
-    return oDocumentRulesContext.claimTypeId === oWorkflowContext.CLAIM_TYPE_ID;
 }
 
 function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
@@ -354,6 +367,14 @@ function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
             );
     }
 }
+function evaluateLocationType(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateLocationType oWorkflowContext.LOCATION_TYPE: ", oWorkflowContext.LOCATION_TYPE);
+    console.log("evaluateLocationType oDocumentRulesContext.locationType: ",  oDocumentRulesContext.locationType);
+    if(!oWorkflowContext.LOCATION_TYPE){
+        return true;
+    }
+    return oDocumentRulesContext.locationType === oWorkflowContext.LOCATION_TYPE;
+}
 
 function normalizeDate(dDate) {
     if(!dDate) {
@@ -415,6 +436,9 @@ async function determineWorkflow(oTx, sId) {
 
     // Retrieve claimant role for workflow determination
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID]);
+    if(!oClaimantDetails) {
+        return null;
+    }
     const sClaimantRole = oClaimantDetails ? oClaimantDetails[Constant.EntitiesFields.ROLE] : null;
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
@@ -439,7 +463,7 @@ async function determineWorkflow(oTx, sId) {
     //4. Retrieve Workflow rules based on header/item details
     //4.1 Retrieve Workflow as normal based on Submission Type/Request Type
     if(!aWorkflowContext.length){
-        aWorkflowContext = await retrieveWorkflow(oTx, sId, oDescriptor);
+        aWorkflowContext = await retrieveWorkflow(oTx, sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
         console.log("Workflow by Submission Type: ", aWorkflowContext);
     }
 
