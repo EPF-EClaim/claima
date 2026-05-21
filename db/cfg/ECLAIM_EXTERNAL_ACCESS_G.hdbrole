@@ -9,6 +9,14 @@
                 "privileges_with_grant_option": [
                     "SELECT"
                 ]
+            },
+            {
+                "name": "ECLAIM_ZDEPARTMENT",
+                "type": "TABLE",
+                "privileges": ["SELECT"],
+                "privileges_with_grant_option": [
+                    "SELECT"
+                ]
             }
         ]
     }
