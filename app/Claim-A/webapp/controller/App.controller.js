@@ -721,6 +721,8 @@ sap.ui.define([
 					var aKeyParts = sSelectedKey.split("|");
 					oInputModel.setProperty("/claimtype/course_code/course_id", aKeyParts[0]);
 					oInputModel.setProperty("/claimtype/course_code/session_number", aKeyParts[1]);
+					oInputModel.setProperty("/claimtype/course_code/start_date", aKeyParts[2]);
+					oInputModel.setProperty("/claimtype/course_code/end_date", aKeyParts[3]);
 				}
 
 				// // set Session Number selection based on selected course code
