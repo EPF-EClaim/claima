@@ -2073,8 +2073,8 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 1. Current Checking (Position & Date Logic)
         // ---------------------------------------------------------
-        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
-        const sPositionStartDate = oEmp.POSITION_START_DATE;
+        const sPositionEvent = oEmp.ELAUN_TUKAR_REASON;
+        const sPositionStartDate = oEmp.ELAUN_TUKAR_START_DATE;
 
         if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
@@ -2085,7 +2085,6 @@ module.exports = (srv) => {
                 .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER })
         );
-
         const iDays = parseInt(oConstantRec?.VALUE || '0', 10);
         const dEligibleDate = new Date(sPositionStartDate);
         dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
@@ -2093,7 +2092,7 @@ module.exports = (srv) => {
         const dCurrentDate = new Date();
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
-        if (dCurrentDate <= dEligibleDate) {
+        if (dCurrentDate >= dEligibleDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
@@ -2166,8 +2165,7 @@ module.exports = (srv) => {
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        console.log("here_req", request)
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
                     }
                 }
             }

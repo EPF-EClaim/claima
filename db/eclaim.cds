@@ -51,6 +51,8 @@ entity ZEMP_MASTER : managed {
         UNIT_BRANCH                   : String(10)    @Common.Label: 'Unit Branch';
         SUB_UNIT_BRANCH               : String(10)    @Common.Label: 'Sub Unit Branch';
         BUSINESS_PHONE                : String(15)    @Common.Label: 'Business Phone';
+        ELAUN_TUKAR_REASON            : String(4);        
+        ELAUN_TUKAR_START_DATE        : Date;
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER
