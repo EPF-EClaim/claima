@@ -1177,16 +1177,24 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZCLM_COURSE_VIEW               as
         projection on ECLAIM.ZTRAIN_COURSE_PART {
-            key COURSE_ID,
-            key PARTICIPANT_ID,
+            key COURSE_ID || '|' || SESSION_NUMBER || '|' || cast(
+                    START_DATE as String
+                ) || '|' || cast(
+                    END_DATE as String
+                ) as COURSE_SESSION_KEY : String,
+                COURSE_ID,
+                PARTICIPANT_ID,
                 COURSE_DESC,
                 COURSE_SESSION_STAT,
-                ATTENDENCE_STATUS
+                ATTENDENCE_STATUS,
         }
         group by
             COURSE_ID,
             PARTICIPANT_ID,
             COURSE_DESC,
             COURSE_SESSION_STAT,
-            ATTENDENCE_STATUS
+            ATTENDENCE_STATUS,
+            SESSION_NUMBER,
+            START_DATE,
+            END_DATE
 }

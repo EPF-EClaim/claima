@@ -345,7 +345,9 @@
                     id="input_claimdetails_input_receipt_number"
                     value="{claimitem_input>/claim_item/receipt_number}"
                     visible="false"
-                    required="true"
+                    required="{= 
+                            (${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER})
+                            || (parseFloat(${claimitem_input>/claim_item/toll}) &gt; 0.00 &amp;&amp; ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})}"
                 />
 
                 <!-- Receipt Date -->
@@ -371,7 +373,7 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
-                    required="true"
+                    required= "true"
                     change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
