@@ -339,7 +339,7 @@ sap.ui.define([
 		setFiltersExistingStateLocation: function (sSubmissionType) {
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.CLAIM:
-                    var oItem = this._oView.getModel("claimitem_input")?.getProperty("/claim_item");
+                    var oItem = this._oOwnerComponent.getModel("claim")?.getProperty("/claim_item");
 
                     // set filters
                     var sFromState = oItem.from_state_id;
@@ -463,9 +463,9 @@ sap.ui.define([
                     break;
 
                  case Constants.SubmissionTypePrefix.CLAIM:
-                    const oItem = this._oView.getModel("claim").getProperty("/claim_item");
-                    const sTravelAloneFamily = this._oView.getModel("claim").getProperty("/claim_header/travel_alone_family");
-                    const sTravelFamilyNowLater = this._oView.getModel("claim").getProperty("/claim_header/travel_family_now_later");
+                    const oItem = this._oOwnerComponent.getModel("claim").getProperty("/claim_item");
+                    const sTravelAloneFamily = this._oOwnerComponent.getModel("claim").getProperty("/claim_header/travel_alone_family");
+                    const sTravelFamilyNowLater = this._oOwnerComponent.getModel("claim").getProperty("/claim_header/travel_family_now_later");
 
                     sRegion     = oItem.region; 
                     fKilometer  = oItem.km;

@@ -714,6 +714,7 @@ sap.ui.define([
 
 					break;
 				case Constants.ClaimTypeItem.PEM_PINDAH:
+				case Constants.ClaimTypeItem.PINDAH:
 					if(!oClaimModel.getProperty("/claim_item/region")){
 						return;
 					}
@@ -764,7 +765,7 @@ sap.ui.define([
 
 					break;
 				case Constants.ClaimTypeItem.DARAT:
-					
+					await this.onCalculateDaratAmount();
 					break;
 			}
 			
@@ -931,6 +932,7 @@ sap.ui.define([
 		},
 
 		onCalculateDaratAmount: async function(){
+			const oClaimModel = this._oOwnerComponent.getModel("claim");
 			if (!!oClaimModel.getProperty("/claim_item/region")) {
 				var oResult = await Utility.determineDaratAmount(Constants.SubmissionTypePrefix.CLAIM);
 				if (!oResult) return;

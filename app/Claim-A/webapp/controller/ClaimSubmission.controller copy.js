@@ -2559,17 +2559,16 @@ sap.ui.define([
 				// }xml
 
 				//i believe this has been catered for
-				//left off here
-				if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){//KIV
-				Utility.init(this.getOwnerComponent(), this.getView());
-				var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (oResult) {
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
-					if (!oInputModel.getProperty("/claim_item/km")){
-						return;
-					}
-				}
-			}
+				// if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
+				// 	Utility.init(this.getOwnerComponent(), this.getView());
+				// 	var oResult = await Utility.determineDaratAmount(this._oConstant.SubmissionTypePrefix.CLAIM);
+				// 	if (oResult) {
+				// 		oInputModel.setProperty("/claim_item/descr/rate_per_km", oResult.fRate);
+				// 		if (!oInputModel.getProperty("/claim_item/km")){
+				// 			return;
+				// 		}
+				// 	}
+				// }
 
 			}
 			// this._setClaimDetailSelection(oClaimSubmissionModel);
@@ -2584,21 +2583,22 @@ sap.ui.define([
 			}
 
 			//For Matawang
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) {
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MATAWANG) { //?? on edit recalc matawang? might need to rework logic
 				await ClaimUtility.calculateMatawangAmount();
 			}
 
 			// set filters for state and location (office) if existing claim item uses KWSP Office
-			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {//?? edit function load
 				Utility.init(this.getOwnerComponent(), this.getView());
 				Utility.setFiltersExistingStateLocation(this._oConstant.SubmissionTypePrefix.CLAIM);
 			}
 
 			//for tambang excluding flight
-				this._filterFareType();
+				this._filterFareType();// should be catered for but need to check the edit function
 
 			// if claim type item is lodging, retrieve eligible amount
 			// if claim type item is lodging, retrieve eligible amount
+			//check when edit function is available
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
 				oInputModel.setProperty("/claim_item/eligible_amount", 0);
 			}else{
@@ -2613,7 +2613,7 @@ sap.ui.define([
 			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
 				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
 				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
-			) {
+			) {// not sure what the fuck is this for
 				// filter items by claim header submission type + cash repayment
 				var oFilterSubsmissionType = new Filter({
 					filters: [
@@ -2628,35 +2628,35 @@ sap.ui.define([
 			}
 
 			// set dropdown for claim items
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
-				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
-					oFilterSubsmissionType,
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				],
-				sorter: [
-					new Sorter('CLAIM_TYPE_ITEM_DESC'),
-					new Sorter('CLAIM_TYPE_ITEM_ID')
-				],
-				parameters: {
-					$expand: {
-						"ZSUBMISSION_TYPE": {
-							$select: "SUBMISSION_TYPE_DESC"
-						}
-					},
-					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
-				},
-				template: new Item({
-					key: "{employee>CLAIM_TYPE_ITEM_ID}",
-					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
-				})
-			});
+			// this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
+			// 	path: "employee>/ZCLAIM_TYPE_ITEM",
+			// 	filters: [
+			// 		new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
+			// 		oFilterSubsmissionType,
+			// 		// ensure status is active
+			// 		new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+			// 		new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+			// 		new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+			// 	],
+			// 	sorter: [
+			// 		new Sorter('CLAIM_TYPE_ITEM_DESC'),
+			// 		new Sorter('CLAIM_TYPE_ITEM_ID')
+			// 	],
+			// 	parameters: {
+			// 		$expand: {
+			// 			"ZSUBMISSION_TYPE": {
+			// 				$select: "SUBMISSION_TYPE_DESC"
+			// 			}
+			// 		},
+			// 		$select: "SUBMISSION_TYPE,MATERIAL_CODE"
+			// 	},
+			// 	template: new Item({
+			// 		key: "{employee>CLAIM_TYPE_ITEM_ID}",
+			// 		text: "{employee>CLAIM_TYPE_ITEM_DESC}"
+			// 	})
+			// });
 			// claim detail selection values
-			this._setClaimDetailSelectionMaster();
+			//this._setClaimDetailSelectionMaster();// not needed anymore
 		},
 
 		// _setClaimDetailSelectionMaster: function () {
@@ -3342,23 +3342,23 @@ sap.ui.define([
 		 * 'amount' is auto-populated while 'actual amount' comes from user input
 		 * @public
 		 */
-		onChange_ClaimDetails_ActualAmount: function () {// done i think? double check 
-			// verify if property exists and 'amount' field is visible
-			var oPropertyModel = this.getView().getModel("claimitem_property");
-			var oInputModel = this.getView().getModel("claimitem_input");
-			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				// set 'amount' property to % of actual amount based on percentage compensation
-				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
-					ClaimUtility.fetchPemberianPindahAmount();
-				} else {
-					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
-				}
-			}
+		// onChange_ClaimDetails_ActualAmount: function () {// done i think? double check 
+		// 	// verify if property exists and 'amount' field is visible
+		// 	var oPropertyModel = this.getView().getModel("claimitem_property");
+		// 	var oInputModel = this.getView().getModel("claimitem_input");
+		// 	if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+		// 		// set 'amount' property to % of actual amount based on percentage compensation
+		// 		if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+		// 			ClaimUtility.fetchPemberianPindahAmount();
+		// 		} else {
+		// 			oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+		// 		}
+		// 	}
 
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount();
-			}
-		},
+		// 	if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
+		// 		ClaimUtility.fetchPengangkutanLautAmount();
+		// 	}
+		// },
 
 		// onChange_PengangkutanLautInputs: async function () {redundant and done
 		// 	const oInputModel = this.getView().getModel("claimitem_input");
@@ -3428,7 +3428,7 @@ sap.ui.define([
 		 * run related methods on setting receipt date
 		 * @public
 		 */
-		onChange_ClaimDetails_ReceiptDate: async function () {
+		onChange_ClaimDetails_ReceiptDate: async function () {//?? for what
 			// Fetch Rate for KM
 			await this._calculateRatePerKm(true);
 		},
@@ -3437,7 +3437,7 @@ sap.ui.define([
 		 * On setting insurance cert start/end date, call private method to calculate number of days
 		 * @public
 		 */
-		onChange_ClaimDetails_InsuranceCertDate: function () {
+		onChange_ClaimDetails_InsuranceCertDate: function () {// not sure if insurance is in yet but this is just date calc
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
@@ -3451,6 +3451,8 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
+
+		//come back here again
 		onChange_ClaimDetails_NumberOfDays: async function (oEvent) {// could be fixed for mkn loan
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3557,7 +3559,7 @@ sap.ui.define([
 		 * rate per KM values will be populated based on output values returned
 		 * @public
 		 */
-		onSelect_ClaimDetails_VehicleType: async function (oEvent) {
+		onSelect_ClaimDetails_VehicleType: async function (oEvent) {// ??
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (!oInputModel) return;
 
@@ -3577,7 +3579,7 @@ sap.ui.define([
 		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
 		 * @public
 		 */
-		onChange_ClaimDetails_Kilometer: async function () {
+		onChange_ClaimDetails_Kilometer: async function () {// ?? possibly not needed as there is a new calculation method
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
@@ -3589,7 +3591,7 @@ sap.ui.define([
 		 * On changing toll field, method checks if km and rate per km fields exist to calculate amount
 		 * @public
 		 */
-		onChange_ClaimDetails_Toll: function () {
+		onChange_ClaimDetails_Toll: function () {// ?? only populate km? if only populate then not needed anymore
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// calculate amount if km and rate per km exists 
 			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
@@ -3605,6 +3607,8 @@ sap.ui.define([
 		 * @private
 		 */
 		_calculateRatePerKm: async function (bRecalculateRate) {//?? calc rate per km but got darat function? darat rate per km should be seperated?
+			//could have been completed but double check
+			// come back here
 			const oInputModel = this.getView().getModel("claimitem_input");
 			const oPropertyModel = this.getView().getModel("claimitem_property");
 
@@ -3655,7 +3659,7 @@ sap.ui.define([
 				console.error("Failed to calculate Rate Per KM", oError);
 			}
 		},
-		_onChangeTravelers: function (oEvent) {
+		_onChangeTravelers: function (oEvent) {// not implemented yet
 			if(!oEvent){return}
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oInput = oEvent.getSource();
@@ -3680,7 +3684,7 @@ sap.ui.define([
 				oInput.setValueStateText("Number of travelers must be at least 1.");
 			}
 		},
-		onSelect_ClaimDetails_Region: async function () {
+		onSelect_ClaimDetails_Region: async function () {// could have been implemented from new method, double check
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH || 
 				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PINDAH) {
@@ -3702,7 +3706,7 @@ sap.ui.define([
 			await this._calculateRatePerKm(false);
 		},
 
-		onSelect_ClaimDetails_MarriageCategory: async function (){
+		onSelect_ClaimDetails_MarriageCategory: async function (){// should have been catered in the new function
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DARAT){
 				if(oInputModel.getProperty("/claim_item/region") == null){
@@ -3859,7 +3863,7 @@ sap.ui.define([
 		* On selecting From State, filter for values in From Location (Office)
 		* @public
 		*/
-		onSelect_ClaimDetails_FromState: function (oEvent) {
+		onSelect_ClaimDetails_FromState: function (oEvent) {// location types (other/KWSP) not implemented yet
 			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3890,7 +3894,7 @@ sap.ui.define([
 		* On selecting From Location (Office), filter for values in 'To State'
 		* @public
 		*/
-		onSelect_ClaimDetails_FromLocationOffice: function (oEvent) {
+		onSelect_ClaimDetails_FromLocationOffice: function (oEvent) {// location types (other/KWSP) not implemented yet
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3923,7 +3927,7 @@ sap.ui.define([
 		* On selecting 'To State', filter for values in To Location (Office)
 		* @public
 		*/
-		onSelect_ClaimDetails_ToState: function (oEvent) {
+		onSelect_ClaimDetails_ToState: function (oEvent) {// location types (other/KWSP) not implemented yet
 			var oSelect = this.byId("select_claimdetails_input_to_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3958,7 +3962,7 @@ sap.ui.define([
 		* On selecting To Location (Office), call function to determine office distance
 		* @public
 		*/
-		onSelect_ClaimDetails_ToLocationOffice: async function (oEvent) {
+		onSelect_ClaimDetails_ToLocationOffice: async function (oEvent) {// location types (other/KWSP) not implemented yet
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (!oInputModel) return;
 
@@ -5385,6 +5389,8 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.base.Event} oEvent - Checkbox event
 		 */
+
+		//left off here
 		onNeedForeignCurrencySelected: function (oEvent) {
 			var bIsSelected = oEvent.getParameter("selected");
 			var oCurrencyRate = this.byId("input_claimdetails_input_currency_rate");
