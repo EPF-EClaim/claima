@@ -1646,6 +1646,12 @@ sap.ui.define([
 					break;
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
+					const oEditButtonModel = this.getView().getModel("editButtonModel");
+					if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					this._pendingAction = oAction;
 
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3059,6 +3065,12 @@ sap.ui.define([
 		},
 
 		_saveClaimItem: async function () {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
