@@ -678,7 +678,8 @@ sap.ui.define([
 				gl_account: oReqItem.GL_ACCOUNT || "",
 				material_code: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0
+				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
+				round_trip 				: oReqItem.ROUND_TRIP || false
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1266,7 +1267,8 @@ sap.ui.define([
 					CURRENCY_RATE:			      parseFloat(oReqItem.currency_rate || null),
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
-					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null
+					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
+					ROUND_TRIP:					  !!oReqItem.round_trip 
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2290,6 +2292,12 @@ sap.ui.define([
 						case Constants.ClaimTypeItem.FLIGHT_L:
 							this._removeBusinessClass();
 
+						case Constants.ClaimTypeItem.KILOMETER:
+							/// RoundTrip edit
+							if (this._oReqModel.getProperty("/req_item/round_trip")) {
+								this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer") * 2);
+							}
+							break;
 						default:
 							break;
 					}
@@ -2692,7 +2700,7 @@ sap.ui.define([
 		 * method to populate allocated amount if applicable
 		 * @public
 		 */
-		onInputAllocatedAmount: function (oEvent) {
+		onInputAllocatedAmount: async function (oEvent) {
 			if (oEvent.getParameters().id.split("--").pop() === Constants.RequestFormFields.NO_OF_TRAVELERS) {
 				this._onChangeTravelers(oEvent);
 			}
@@ -2875,7 +2883,9 @@ sap.ui.define([
 				oInput.setValueState("Error");
 				oInput.setValueStateText("Number of travelers must be at least 1.");
 			}
+		},
+		onSelectRoundTrip: async function (oEvent) {
+			this.onInputAllocatedAmount(oEvent);
 		}
-
 	});
 });
