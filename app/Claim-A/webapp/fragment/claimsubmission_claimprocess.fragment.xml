@@ -75,7 +75,7 @@
                         editable="false"
                     />
 
-                    <!-- Select Course Code -->
+                    <!-- Select Course Title -->
                     <Label text="{i18n>label_claimprocess_coursecode}" />
                     <Select
                         id="select_claimprocess_course_code"
