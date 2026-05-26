@@ -542,6 +542,12 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
 			await this._showItemCreate(false);
 			this._loadSelections();
@@ -586,6 +592,13 @@ sap.ui.define([
 		},
 
 		onOpenItemEdit(oEvent) {
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 

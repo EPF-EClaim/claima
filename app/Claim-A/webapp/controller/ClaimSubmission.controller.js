@@ -1369,7 +1369,13 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
-
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// Destroy previous detail fragment to avoid stale bindings
 			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
 				const oFrag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
@@ -1492,8 +1498,13 @@ sap.ui.define([
 
 		},
 
-
 		onEdit_ClaimSummary: function (oItem) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
@@ -1624,6 +1635,12 @@ sap.ui.define([
 			switch (oAction) {
 				//// Save Draft
 				case this._oConstant.Claim_Action.DRAFT:
+					const oEditButtonModelDraft = this.getView().getModel("editButtonModel");
+					if (oEditButtonModelDraft && oEditButtonModelDraft.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_savedraft"),
