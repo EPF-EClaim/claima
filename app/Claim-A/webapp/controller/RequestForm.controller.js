@@ -372,6 +372,12 @@ sap.ui.define([
 		},
 
 		async onSubmitRequest() {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqData = this._oReqModel.getData();
 			const aReqItemRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
@@ -536,6 +542,12 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
 			await this._showItemCreate(false);
 			this._loadSelections();
@@ -580,6 +592,13 @@ sap.ui.define([
 		},
 
 		onOpenItemEdit(oEvent) {
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 
@@ -1127,6 +1146,12 @@ sap.ui.define([
 
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqHeader = oData.req_header;
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
