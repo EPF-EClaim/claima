@@ -1382,7 +1382,7 @@ entity ZELIGIBILITY_RULE : managed {
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
     key CLAIM_ID               : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);
@@ -1403,7 +1403,7 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
     key PREAPPROVAL_ID         : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);
