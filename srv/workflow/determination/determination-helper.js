@@ -175,7 +175,7 @@ function normalizeApproversByGroup(aApproversDetails, oClaimantDetails) {
     }
     return aResult;
 }
-async function retrieveSubstitute(oTx, sApproverEEID, dDate = new Date()) {
+async function retrieveSubstitute(sApproverEEID, dDate = new Date()) {
 
 // Main table path
 const sSubstitutionRulesTablePath = Constant.Entities.ZEMP_SUBSTITUTION_RULE;

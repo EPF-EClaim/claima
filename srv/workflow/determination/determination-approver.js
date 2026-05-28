@@ -178,10 +178,10 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     for (const oApprover of aUniqueApproversDetails){
         // If LEVEL = 0, Approver is Auto
         if(oApprover.LEVEL > 0){
-            sSubstitute = await retrieveSubstitute(oTx, oApprover.EEID);
+            sSubstitute = await retrieveSubstitute(oApprover.EEID);
             //console.log(sSubstitute);
             if(sSubstitute){
-                oSubstituteDetails = await retrieveEmployeeDetails(oModel, sSubstitute);
+                oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
                 if(oSubstituteDetails){
                     sSubstitute_eeid = oSubstituteDetails.EEID;
                     sSubstitute_name = oSubstituteDetails.NAME;
