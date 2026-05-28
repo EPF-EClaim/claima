@@ -289,7 +289,9 @@ sap.ui.define([
             "REQUEST_TYPE": "REQUEST_TYPE",
             "WITH_FAMILY": "2",
             "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
-            "TRANSFER_DATE": "TRANSFER_DATE"
+            "TRANSFER_DATE": "TRANSFER_DATE",
+            "EVENT_START_DATE": "EVENT_START_DATE",
+            "EVENT_END_DATE": "EVENT_END_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
