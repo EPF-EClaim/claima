@@ -17,20 +17,44 @@ const { identityServicesCache } = require('@sap-cloud-sdk/connectivity/dist/inte
 
 async function fetchHeaderForWorkflow(sId, oDescriptor) {
     
+    const aCommonFields = [
+        oDescriptor.idField,
+        oDescriptor.typeField,
+        Constant.EntitiesFields.COST_CENTER,
+        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+        Constant.EntitiesFields.TRIP_START_DATE,
+        Constant.EntitiesFields.CLAIM_TYPE_ID
+    ];
+
+    // header tables are ZCLAIM_HEADER and ZREQUEST_HEADER
+    // if document is a claims, PREAPPROVED_AMOUNT and TOTAL_CLAIM_AMOUNT fields are required for workflow determination, otherwise for request document, these two fields do not exist and will not be retrieved
+    let oMapping = {
+        CLM : {
+            fields: [
+                'PREAPPROVED_AMOUNT as PREAPPROVED_AMOUNT',
+                'TOTAL_CLAIM_AMOUNT as TOTAL_CLAIM_AMOUNT'
+            ]
+        },
+        REQ : {
+            fields: [
+                'PREAPPROVAL_AMOUNT as PREAPPROVED_AMOUNT',
+                'TOTAL_AMOUNT as TOTAL_CLAIM_AMOUNT'
+            ]
+        }
+    }
+    console.log('[workflow-determination/fetchHeaderForWorkflow] oMapping:', oMapping)
+    console.log('[workflow-determination/fetchHeaderForWorkflow] oDescriptor.entityPrefix:', oDescriptor.entityPrefix)
+    const oConfig = oMapping[oDescriptor.entityPrefix];
+    console.log('[workflow-determination/fetchHeaderForWorkflow] oConfig:', oConfig)
+
     const oHeader =  await cds.run(
         SELECT
             .one
             .from(oDescriptor.entityHeader)
-            .columns(   
-                oDescriptor.idField,
-                oDescriptor.typeField,
-                Constant.EntitiesFields.COST_CENTER,
-                Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                Constant.EntitiesFields.PREAPPROVED_AMOUNT,
-                Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT,
-                Constant.EntitiesFields.TRIP_START_DATE,
-                Constant.EntitiesFields.CLAIM_TYPE_ID
-            )
+            .columns([   
+                ...aCommonFields,
+                ...oConfig.fields
+            ])
             .where( { [oDescriptor.idField]:sId })
     );
     //console.log('[workflow-determination/fetchHeaderForWorkflow] oHeader:', oHeader)
@@ -477,6 +501,7 @@ async function determineWorkflow(oTx, sId) {
         for (const oWorkflowContext of aWorkflowContext) {
             // run the rule validator
             // validator will return true if all rules were successful
+            console.log("Validating workflow rules for workflow context: ", oWorkflowContext.OUTCOME_WORKFLOW_CODE);
             let bIsValidatedRule = validateWorkflowRule(oDocumentRulesContext, oWorkflowContext);
             if(bIsValidatedRule) {
                 oDeterminedWorkflowContext = oWorkflowContext;

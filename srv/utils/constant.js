@@ -437,7 +437,7 @@ const Constant = {
         EQUAL               : "EQ",
         GREATERTHAN         : "GT",
         GREATERTHANOREQUAL  : "GE",
-        LESSTHANOREQUAL     : "LT",
+        LESSTHAN            : "LT",
         LESSTHANOREQUAL     : "LE"
     },
     ApprovalEmailAction: {

@@ -11,15 +11,23 @@ const {
 } = require("./notification-helper");
 
 async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction, sLevel = 1) {    
-    try{ 
+    console.log(`Preparing to send email to approver(s) for document ${sId} at level ${sLevel} with action ${sAction}`);
+    let oResponse = null;
+    try{
+
+        // Initialize variables
+        // For submitted date should take current date as the action has already been performed, and this email is to notify the claimant of the action taken
+        let sSubmittedDate = new Date().toISOString().split('T')[0];
+
         // Retrieve Header context
+        console.log
         const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
         if(!oHeaderContext){
             console.log(`No header context found for document ${sId}`);
             return false;
         }
-        console.log(oHeaderContext);
         // Retrieve Claimant Context
+        console.log("Retrieving claimant context for employee: ", oHeaderContext[Constant.EntitiesFields.EMP_ID]);
         const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
         if(!oClaimantContext) {
             console.log(`No claimant context found for employee ${oHeaderContext[Constant.EntitiesFields.EMP_ID]}`);
@@ -27,11 +35,12 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         }
         let oEmailPayload = null;
        
+        console.log(`Looping through approvers context to send email for document ${sId} at level ${sLevel} with action ${sAction}`);
         for(const oApproverContext of aApproversContext){
             if(oApproverContext.LEVEL = sLevel) {
                 oEmailPayload = generateEmailPayload(
                     oApproverContext.APPROVER_NAME,
-                    oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+                    sSubmittedDate,
                     oClaimantContext[Constant.EntitiesFields.NAME],
                     oHeaderContext[oDescriptor.entityTypeDescField],
                     sId,
@@ -39,11 +48,13 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                     sAction,
                     "reuben.lai@my.ey.com"
                 )
-                sendEmailViaSAPIS(oEmailPayload);
+                console.log("Generated email payload: ", oEmailPayload);
+                oResponse = await sendEmailViaSAPIS(oEmailPayload);
+                console.log(oResponse);
                 if(oApproverContext.SUB_NAME) {
                     oEmailPayload = generateEmailPayload(
                         oApproverContext.SUB_NAME,
-                        oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE],
+                        sSubmittedDate,
                         oClaimantContext[Constant.EntitiesFields.NAME],
                         oHeaderContext[oDescriptor.entityTypeDescField],
                         sId,
@@ -51,7 +62,9 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                         sAction,
                         "reuben.lai@my.ey.com"
                     )
-                    sendEmailViaSAPIS(oEmailPayload);
+                    console.log("Generated email payload: ", oEmailPayload);
+                    oResponse = await sendEmailViaSAPIS(oEmailPayload);
+                    console.log(oResponse);
                 }
             }
         }
