@@ -598,8 +598,8 @@ sap.ui.define([
             oOwnerDetailModel.setProperty("/owner_name_label", this.getText("owner_name", [ownerType]));
             oOwnerDetailModel.setProperty("/owner_name", oHeader.NAME);
             oOwnerDetailModel.setProperty("/owner_grade", oHeader.GRADE);
-            oOwnerDetailModel.setProperty("/owner_department", oHeader.DEP);
-            oOwnerDetailModel.setProperty("/owner_position", oHeader.POS);
+            oOwnerDetailModel.setProperty("/owner_department", oHeader.DEP + " - " + oHeader.DEPARTMENT_DESC);
+            oOwnerDetailModel.setProperty("/owner_position", oHeader.POSITION_NAME);
         }
 
     };
