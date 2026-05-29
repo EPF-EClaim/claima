@@ -482,26 +482,26 @@ module.exports = (srv) => {
         const prefix = row.PREFIX || "";
         const currentYearInDb = row.CURRENT_YEAR;
         const systemYearFull = String(new Date().getFullYear());
-        //const current = Number(row.CURRENT || 0);
         const yy = systemYearFull.slice(-2);
 
         let current;
-        let nextYearToSave;
+        var oUpdateVariables = {};
 
         if (currentYearInDb !== systemYearFull) {
             current = 1;
-            nextYearToSave = systemYearFull;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
         } else {
             current = Number(row.CURRENT || 0);
-            nextYearToSave = currentYearInDb;
         }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1), CURRENT_YEAR: nextYearToSave })
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -558,26 +558,27 @@ module.exports = (srv) => {
 
         const prefix = row.PREFIX || "";
         const currentYearInDb = row.CURRENT_YEAR;
-        //const current = Number(row.CURRENT || 0);
         const systemYearFull = String(new Date().getFullYear());
         const yy = systemYearFull.slice(-2);
 
         let current;
-        let nextYearToSave;
+        var oUpdateVariables = {};
+
         if (currentYearInDb !== systemYearFull) {
             current = 1;
-            nextYearToSave = systemYearFull;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
         } else {
             current = Number(row.CURRENT || 0);
-            nextYearToSave = currentYearInDb;
         }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.CLAIM_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1), CURRENT_YEAR: nextYearToSave})
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
