@@ -192,6 +192,20 @@ sap.ui.define([
                     case Constants.ClaimTypeItem.KILOMETER:
                         // calculate kilometer amount 
                         fCalculatedAllocatedAmount = this._calculateKilometer(oReqItem);
+
+                        const bIsRoundTrip = oReqModel.getProperty("/req_item/round_trip");
+                        const fKM = parseFloat(oReqModel.getProperty("/req_item/kilometer")) || 0;
+
+                        if (bIsRoundTrip && fKM > 0) {
+                            try {
+                                const fRoundTripKM = await Utility.calculateRoundTripKM(this._oOwnerComponent.getModel(),fKM);
+                                oReqModel.setProperty("/req_item/roundtrip_km", fRoundTripKM);
+                            } catch (e) {
+                                MessageBox.error(
+                                    Utility.getText("msg_claimdetails_roundtrip_fail")
+                                );
+                            }
+                        }
                         break;
 
                 }
@@ -258,6 +272,11 @@ sap.ui.define([
             var fTollAmt    = parseFloat(oReqItem.toll_amt).toFixed(2) || 0;
 
             if (!fKilometer || !fRatePerKm) return;
+
+            
+            if (oReqItem.round_trip) {
+                fKilometer = fKilometer * 2;
+            }
 
             var fTotalAmount = parseFloat(fKilometer) * parseFloat(fRatePerKm);
 

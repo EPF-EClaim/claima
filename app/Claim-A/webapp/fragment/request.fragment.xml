@@ -303,7 +303,32 @@
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"
-				/>
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/EVENT_START_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{ value: 'null' },
+							'reqDialog>/',
+							{ value: 'null' },
+							'reqDialog>/tripstartdate'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/EVENT_START_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{ value: 'null' },
+							'reqDialog>/',
+							{ value: 'null' },
+							'reqDialog>/eventenddate'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+					/>
+
 				<Label
 					text="{i18n>req_eventenddate} {i18n>icon_info}"
 					tooltip="{i18n>valuehelp_reqinput_eventdate}"
@@ -318,7 +343,31 @@
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"
-				/>
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/EVENT_END_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{ value: 'null' },
+							'reqDialog>/',
+							{ value: 'null' },
+							'reqDialog>/eventstartdate'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/EVENT_END_DATE',
+							'constant>/SubmissionTypePrefix/REQUEST',
+							'reqDialog>/claimtype',
+							{ value: 'null' },
+							'reqDialog>/',
+							{ value: 'null' },
+							'reqDialog>/tripenddate'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+					/>
 				<Label text="{i18n>req_grptype}" />
 				<Select
 					id="req_grptype"
