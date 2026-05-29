@@ -680,7 +680,8 @@ sap.ui.define([
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
             "PKN_PANAS": "PKN_PANAS",
-            "FLIGHT_WIL": "FLIGHT_WIL"
+            "FLIGHT_WIL": "FLIGHT_WIL",
+            "ISTIADAT": "ISTIADAT"
         }
         
     }
