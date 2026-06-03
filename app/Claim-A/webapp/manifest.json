@@ -4431,11 +4431,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE"
+                                            "visibleFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE, DEPARTMENT_ID"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE"
+                                            "creationFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE, DEPARTMENT_ID"
                                         },
                                         "disableCopyToClipboard": true
                                     },

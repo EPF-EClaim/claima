@@ -591,6 +591,57 @@ sap.ui.define([
             } finally {
                 BusyIndicator.hide();
             }
+        },
+        handleRoundTrip: async function (sSubmissionType, oEvent) {
+            let oItemModel, oHeaderModel;
+            const bIsSelected = oEvent.getParameter("selected");
+            const oODataModel = this._oOwnerComponent.getModel();
+
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    oItemModel = this._oOwnerComponent.getModel("request");
+                    oHeaderModel = this._oOwnerComponent.getModel("request");
+                    var fKM = oItemModel.getProperty("/req_item/kilometer");
+                    var sOriginalKMPath = "/req_item/_originalKM";
+                    break;
+
+                case Constants.SubmissionTypePrefix.CLAIM:
+                    oItemModel = this._oView.getModel("claimitem_input");
+                    oHeaderModel = this._oView.getModel("claimsubmission_input");
+
+                    var fKM = oItemModel.getProperty("/claim_item/km");
+                    var sOriginalKMPath = "/claim_item/_originalKM";
+                    break;
+            }
+            if (bIsSelected && oItemModel.getProperty(sOriginalKMPath) === undefined) {
+                oItemModel.setProperty(sOriginalKMPath, fKM);
+            }
+            const fOriginalKM = oItemModel.getProperty(sOriginalKMPath);
+            if (bIsSelected && fOriginalKM) {
+                const fFinalKM = await this.calculateRoundTripKM(oODataModel, fOriginalKM);
+                return { km: fFinalKM };
+            }
+            if (!bIsSelected && fOriginalKM !== undefined) {
+                oItemModel.setProperty(sOriginalKMPath, undefined);
+                return { km: fOriginalKM };
+            }
+            return {};
+        },
+
+        /**
+         * Calculate the KM based on tickbox RoundTrip.
+         *
+         * Calls backend calculation function using KM field and multiple by 2.
+         *
+         * @public
+         * @returns final amount KM after multiply by 2
+         */
+        calculateRoundTripKM: async function (oModel, fKM) {
+            const oAction = oModel.bindContext("/calculateRoundTripKM(...)");
+            oAction.setParameter("fKM", fKM);
+            await oAction.execute();
+            const oResult = oAction.getBoundContext().getObject();
+            return oResult.fFinalAmount;
         }
 
     };

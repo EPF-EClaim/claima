@@ -37,7 +37,7 @@ entity ZEMP_MASTER : managed {
         UPDATED_DATE                  : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
         JOB_GRADE                     : String(3)     @Common.Label: 'Job Grade';
-        DIVISION                      : String(10)     @Common.Label: 'Division';
+        DIVISION                      : String(10)    @Common.Label: 'Division';
         HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
         HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
         UNIVERSITY_NAME               : String(30)    @Common.Label: 'University Name';
@@ -76,6 +76,8 @@ entity ZEMP_MASTER : managed {
                                             and ZOFFICE_LOCATION.STATE_ID    = STATE;
         ZBRANCH                       : Association to ZBRANCH
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
+        ZDIVISION                     : Association to ZDIVISION
+                                            on ZDIVISION.DIVISION = DIVISION;
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -337,12 +339,13 @@ entity ZCLAIM_TYPE : managed {
 }
 
 entity ZNUM_RANGE : managed {
-    key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
-        PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
-        RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
-        ![FROM]    : String  @Common.Label: 'FROM';
-        TO         : String  @Common.Label: 'TO';
-        CURRENT    : String  @Common.Label: 'CURRENT';
+    key RANGE_ID     : String  @mandatory  @Common.Label: 'RANGE_ID';
+        PREFIX       : String  @mandatory  @Common.Label: 'PREFIX';
+        RANGE_DESC   : String  @Common.Label: 'RANGE_DESC';
+        ![FROM]      : String  @Common.Label: 'FROM';
+        TO           : String  @Common.Label: 'TO';
+        CURRENT      : String  @Common.Label: 'CURRENT';
+        CURRENT_YEAR : String  @Common.Label: 'CURRENT YEAR';
 }
 
 entity ZCLAIM_HEADER : managed {
@@ -542,6 +545,7 @@ entity ZCLAIM_ITEM : managed {
         TIPS                       : Integer        @Common.Label: 'Tips';
         EXCLUDE_TIPS               : Boolean        @Common.Label: 'Exclude Tips';
         TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
+        DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -614,6 +618,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZCURRENCY                  : Association to ZCURRENCY
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
+        ZEMP_DEPENDENT_TYPE        : Association to ZEMP_DEPENDENT_TYPE
+                                         on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
 }
 
 entity ZLODGING_CAT : managed {
@@ -1102,10 +1108,14 @@ entity ZWORKFLOW_RULE : managed {
         TRIP_START_DATE       : String(2)     @Common.Label: 'Trip Start Date';
         ROLE                  : String(15)    @Common.Label: 'Role';
         DEPARTMENT_ID         : String(10)    @Common.Label: 'Department ID';
+        DIVISION              : String(10)    @Common.Label: 'Division';
+        LOCATION_TYPE         : String(10)    @Common.Label: 'Location Type';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZDEPARTMENT           : Association to ZDEPARTMENT
                                     on ZDEPARTMENT.DEPARTMENT_ID = DEPARTMENT_ID;
+        ZDIVISION             : Association to ZDIVISION
+                                    on ZDIVISION.DIVISION = DIVISION;
 }
 
 entity ZCURRENCY : managed {
@@ -1372,7 +1382,7 @@ entity ZELIGIBILITY_RULE : managed {
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
     key CLAIM_ID               : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);
@@ -1393,7 +1403,7 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
     key PREAPPROVAL_ID         : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);
@@ -1466,4 +1476,12 @@ entity ZCLM_TYPE_EXCEPTION_LIST : managed {
     key START_DATE      : Date           @mandatory  @Common.Label: 'Start Date';
     key END_DATE        : Date           @mandatory  @Common.Label: 'End Date';
         ELIGIBLE_AMOUNT : Decimal(20, 2) @Common.Label: 'Eligible Amount';
+}
+
+entity ZDIVISION : managed {
+    key DIVISION      : String(10)  @mandatory  @Common.Label: 'Promotion To Division ID';
+    key START_DATE    : Date        @mandatory  @Common.Label: 'Start Date';
+        END_DATE      : Date        @Common.Label: 'End Date';
+        DIVISION_DESC : String(150) @Common.Label: 'Promotion To Division Description';
+        STATUS        : String(10)  @Common.Label: 'Status';
 }
