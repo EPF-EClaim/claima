@@ -672,7 +672,12 @@
                     "pattern": "ZEMP_CASHADVANCE_REPORT",
                     "name": "ZEMP_CASHADVANCE_REPORT",
                     "target": "ZEMP_CASHADVANCE_REPORT"
-                }                              
+                },
+                {
+                    "pattern": "ZEMP_CC_BUDGET_REPORT",
+                    "name": "ZEMP_CC_BUDGET_REPORT",
+                    "target": "ZEMP_CC_BUDGET_REPORT"
+                }
             ],
             "targets": {
                 "TargetMain": {
@@ -4713,7 +4718,7 @@
                             }
                         }
                     }
-                },  
+                },
                 "ZEMP_CASHADVANCE_REPORT": {
                     "type": "Component",
                     "id": "ZEMP_CASHADVANCE_REPORT",
@@ -4760,7 +4765,56 @@
                             }
                         }
                     }
-                },                                                                    
+                },
+                "ZEMP_CC_BUDGET_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_CC_BUDGET_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "model": "employee_view",
+                        "settings": {
+                            "contextPath": "/ZEMP_CC_BUDGET_REPORT",
+                            "initialLoad": "Enabled",
+                            "variantManagement": "Page",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "None",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "filterBar": {
+                                "advancedMode": true,
+                                "liveMode": true
+                            },
+                            "hideFilterBar": true,
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_CC_BUDGET_DETAIL": {
+                    "type": "Component",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CC_BUDGET_DETAIL"
+                        }
+                    },
+                    "id": "ZEMP_CC_BUDGET_DETAIL"
+                },
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",
@@ -4877,15 +4931,6 @@
                                         },
                                         "disableCopyToClipboard": true,
                                         "enableMassEdit": false
-                                    },
-                                    "actions": {
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
                                     }
                                 }
                             },

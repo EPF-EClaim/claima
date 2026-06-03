@@ -99,17 +99,7 @@
                         enabled="true"
                         expanded="false"
                     /> -->
-
-                    <tnt:NavigationListItem
-                        key="budgetCons"
-                        text="{i18n>nav_budgetcons}"                     
-                        icon="sap-icon://expense-report"
-                        enabled="true"
-                        expanded="false"
-                    />
-
-                    <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false" 
-                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }">
+                    <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false">
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"
                             text="Claim Report"
@@ -148,6 +138,13 @@
                             text="Cash Advance"
                             enabled="true"
                             key="cashadvance_summary"
+                        >
+                        </tnt:NavigationListItem>
+                         <tnt:NavigationListItem
+                            icon="sap-icon://expense-report"
+                            text="{i18n>nav_budgetcons}"
+                            enabled="true"
+                            key="cc_budgetreport"
                         >
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>                        

@@ -552,7 +552,7 @@ sap.ui.define([
                 var oRoleModel = this.getModel("roleModel");
                 var oRouter = this.getRouter();
 
-                this._oRolesLoadedPromise.then(function () {
+               /*  this._oRolesLoadedPromise.then(function () {
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
                                   oRoleModel.getProperty("/isAdminCC");
@@ -563,7 +563,7 @@ sap.ui.define([
                     } else {
                         oRouter.navTo(sRoute, {}, true);
                     }
-                }.bind(this));
+                }.bind(this)); */
             }
 
         });

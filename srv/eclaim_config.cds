@@ -7828,3 +7828,143 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
         }
     );
 };
+
+
+annotate service.ZEMP_CC_BUDGET_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+
+    
+    Capabilities: {
+        Searchable: true
+    },
+
+    UI          : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Cost Center Budget Report',
+            TypeNamePlural: 'Cost Center Budget Report',
+        },
+        
+        LineItem  : [
+            {
+                $Type  : 'UI.DataFieldForNavigation',
+                Target : '_Detail'
+            },
+
+            {
+                $Type            : 'UI.DataField',
+                Value            : YEAR,
+                ![@UI.Importance]: #High,
+                Label            : 'Effective Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FUND_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT_ITEM,
+                ![@UI.Importance]: #High,
+                Label            : 'GL Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Code Material'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Budget Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ADJUST_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Adjustment Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Commitment Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount Paid(Actual)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONSUMED,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount Used(Consumed)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BUDGET_BALANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Balance'
+            }
+        ]
+    }
+);
+
+
+/* annotate service.ZEMP_CC_BUDGET_REPORT with {
+    YEAR @Consumption.filter: {
+        selectionType: #SINGLE,
+        mandatory: true
+    };
+}; */
+
+annotate service.ZEMP_CC_BUDGET_DETAIL with @(
+    UI: {
+        HeaderInfo: {
+            $Type: 'UI.HeaderInfoType',
+            TypeName: 'Budget Detail',
+            TypeNamePlural: 'Budget Details',
+            Title: { Value: CLAIM_ID }
+        },
+
+        LineItem: [
+            { $Type: 'UI.DataField', Value: EMP_ID },
+            { $Type: 'UI.DataField', Value: NAME },
+            { $Type: 'UI.DataField', Value: CLAIM_ID },
+            { $Type: 'UI.DataField', Value: CLAIM_TYPE_ID },
+            { $Type: 'UI.DataField', Value: CLAIM_TYPE_ITEM_ID },
+            { $Type: 'UI.DataField', Value: AMOUNT },
+            { $Type: 'UI.DataField', Value: STATUS_ID }
+        ]
+    }
+);
+
+
+
+
+/* annotate service.ZEMP_CC_BUDGET_REPORT with {
+    FUND_CENTER @Common.ValueList: {
+        $Type: 'Common.ValueListType',
+        CollectionPath: 'ZEMP_CC_BUDGET_REPORT',
+        Parameters: [
+            {
+                $Type: 'Common.ValueListParameterInOut',
+                LocalDataProperty: FUND_CENTER,
+                ValueListProperty: 'FUND_CENTER'
+            }
+        ]
+    };
+    
+}; */
+
