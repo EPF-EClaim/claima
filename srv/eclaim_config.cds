@@ -7906,12 +7906,11 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
     Capabilities: {
         Deletable : false,
         Updatable : false,
-        Insertable: false,
+        Insertable: false
     },
-
-    
-    Capabilities: {
-        Searchable: true
+    Capabilities.FilterRestrictions : {
+        Filterable : true,
+        RequiredProperties : [] // Ensures the framework doesn't think a blank field is blocking the submit
     },
 
     UI          : {
@@ -7921,13 +7920,15 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
             TypeName      : 'Cost Center Budget Report',
             TypeNamePlural: 'Cost Center Budget Report',
         },
+
+        
+        SelectionFields: [
+                YEAR,
+                FUND_CENTER
+            ],
+
         
         LineItem  : [
-            {
-                $Type  : 'UI.DataFieldForNavigation',
-                Target : '_Detail'
-            },
-
             {
                 $Type            : 'UI.DataField',
                 Value            : YEAR,
@@ -7993,12 +7994,26 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
 );
 
 
-/* annotate service.ZEMP_CC_BUDGET_REPORT with {
+/*  annotate service.ZEMP_CC_BUDGET_REPORT with {
     YEAR @Consumption.filter: {
         selectionType: #SINGLE,
         mandatory: true
-    };
-}; */
+    }; */
+// Make YEAR mandatory in the filter bar using the correct annotation
+/* annotate service.ZEMP_CC_BUDGET_REPORT with {
+    YEAR @(
+        Common.FieldControl: #Mandatory,
+        UI.SelectionField  : { Position: 10 }
+    );
+};  */
+
+annotate service.ZEMP_CC_BUDGET_REPORT with {
+    YEAR @(
+        Common.Label       : 'Year',
+        Common.FieldControl: #Optional, // Explicitly exposes control states to the UI
+        UI.HiddenFilter    : false
+    );
+};
 
 annotate service.ZEMP_CC_BUDGET_DETAIL with @(
     UI: {

@@ -51,7 +51,7 @@
           }
         }
       ]
-    }
+    
   },
   "server": {
     "index": true,

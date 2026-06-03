@@ -4774,7 +4774,7 @@
                         "model": "employee_view",
                         "settings": {
                             "contextPath": "/ZEMP_CC_BUDGET_REPORT",
-                            "initialLoad": "Enabled",
+                            "initialLoad": "Disabled",
                             "variantManagement": "Page",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -4789,16 +4789,9 @@
                                             "filter": true,
                                             "sort": true
                                         },
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true
-                                        },
                                         "disableCopyToClipboard": true
                                     }
                                 }
-                            },
-                            "filterBar": {
-                                "advancedMode": true,
-                                "liveMode": true
                             },
                             "hideFilterBar": true,
                             "navigation": {}
