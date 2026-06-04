@@ -1115,9 +1115,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 COMMITMENT,
                 ACTUAL,
                 CONSUMED,
-                BUDGET_BALANCE,
-                _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on  $projection.FUND_CENTER     = _Detail.FUND_CENTER
+                BUDGET_BALANCE,   
+                _Detail : Association [1] to ZEMP_CC_BUDGET_DETAIL
+                    on  $projection.FUND_CENTER     = _Detail.FUND_CENTER
+                    and $projection.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
+                    and $projection.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
+
 
         };
     

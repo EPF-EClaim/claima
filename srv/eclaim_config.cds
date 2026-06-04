@@ -7922,11 +7922,11 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         },
 
         
-        SelectionFields: [
+/*         SelectionFields: [
                 YEAR,
                 FUND_CENTER
             ],
-
+ */
         
         LineItem  : [
             {

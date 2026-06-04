@@ -251,6 +251,17 @@ sap.ui.define([
 			oPageContainer.to(this.byId("analyticsPage"));
 		},
 
+		
+		isFclEnabled: function () {
+			return false;
+		},
+
+		
+		calculateLayout: function () {
+			return {
+				layout: "OneColumn"
+			};
+		},
 		onMenuButtonPress: function () {
 			var toolPage = this.byId("toolPage");
 			toolPage.setSideExpanded(!toolPage.getSideExpanded());

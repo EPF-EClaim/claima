@@ -4774,7 +4774,7 @@
                         "model": "employee_view",
                         "settings": {
                             "contextPath": "/ZEMP_CC_BUDGET_REPORT",
-                            "initialLoad": "Disabled",
+                            "initialLoad": "Enabled",
                             "variantManagement": "Page",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -4786,15 +4786,22 @@
                                         "selectionMode": "None",
                                         "personalization": {
                                             "column": true,
-                                            "filter": true,
+                                            "filter": false,
                                             "sort": true
                                         },
                                         "disableCopyToClipboard": true
                                     }
                                 }
                             },
+                            "fclEnabled": false,
                             "hideFilterBar": true,
-                            "navigation": {}
+                            "navigation": {
+                                "ZEMP_CC_BUDGET_REPORT": {
+                                        "detail": {
+                                            "route": "ZEMP_CC_BUDGET_DETAIL"
+                                        }
+                                    }
+                                }
                         }
                     }
                 },

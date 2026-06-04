@@ -204,3 +204,9 @@ annotate eclaim_srv.ZEMP_MASTER with {
 
 
 
+annotate eclaim_srv.ZEMP_CC_BUDGET_REPORT with @(
+    UI.SelectionFields : [
+        YEAR,
+    ]
+);
+
