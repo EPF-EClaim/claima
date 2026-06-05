@@ -1,10 +1,26 @@
 <mvc:View
-	controllerName=""
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m"
-	xmlns:c="sap.ui.core"
-	displayBlock="true"
-	height="100%"
-	busyIndicatorDelay="0"
->
+    controllerName="claima.controller.BudgetDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Table id="detailTable" items="{/ZEMP_CC_BUDGET_DETAIL}">
+        <columns>
+            <Column><Text text="Emp ID"/></Column>
+            <Column><Text text="Name"/></Column>
+            <Column><Text text="Claim ID"/></Column>
+            <Column><Text text="Amount"/></Column>
+        </columns>
+
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <Text text="{EMP_ID}" />
+                    <Text text="{NAME}" />
+                    <Text text="{CLAIM_ID}" />
+                    <Text text="{AMOUNT}" />
+                </cells>
+            </ColumnListItem>
+        </items>
+    </Table>
+
 </mvc:View>
