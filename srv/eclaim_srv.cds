@@ -390,7 +390,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         amount     : Decimal(15, 2);
     }
 
-    function calculateMatawangAmount(claimItems: LargeString)                                  returns matawangAmount;
+    action calculateMatawangAmount(claimItems: LargeString)                                  returns matawangAmount;
 
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
