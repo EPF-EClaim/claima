@@ -11,24 +11,9 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 			 * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
 			 * @memberOf claima.ext.controller.Common
 			 */
-			
 			onInit: function () {
-				const oExtensionAPI = this.getExtensionAPI();
 
-				oExtensionAPI.attachTableInitialized((oEvent) => {
-
-					const oTable = oEvent.getParameter("table");
-
-					if (oTable && !oTable._rowPressAttached) {
-
-						oTable.attachItemPress(this.onItemPress.bind(this));
-						oTable._rowPressAttached = true;
-
-						console.log("✅ FE table event attached");
-					}
-				});
 			},
-
 
 			editFlow: {
 				onBeforeCreate(mParameters) {
@@ -45,20 +30,6 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 					return Promise.resolve();
 				}
 			}
-		},
-		onItemPress: function (oEvent) {
-			const oItem = oEvent.getParameter("listItem");
-			const oData = oItem.getBindingContext().getObject();
-
-			const fundCenter = oData.FUND_CENTER;
-			const glCode = oData.COMMITMENT_ITEM;
-			const material = oData.MATERIAL_GROUP;
-
-			this.getExtensionAPI().routing.navigateToRoute("ZEMP_CC_BUDGET_DETAIL", {
-				fundCenter,
-				glCode,
-				material
-			});
 		}
 	});
 });

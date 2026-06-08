@@ -1,0 +1,27 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:macros="sap.fe.macros"
+    xmlns:table="sap.fe.macros.table"
+    xmlns:f="sap.f"
+    xmlns:layout="sap.ui.layout"
+    controllerName="claima.controller.BudgetReport"
+    height="100%"
+>
+    <Page title="{i18n>nav_promotion_appl}">
+        <content>
+            <macros:Table
+                id="ZEMP_CC_BUDGET_REPORT"
+                contextPath="/ZEMP_CC_BUDGET_REPORT"
+                metaPath="@com.sap.vocabularies.UI.v1.LineItem"
+                readOnly="true"
+                enableExport="false"
+                disableCopyToClipboard="true"
+                initialLoad="true"
+                personalization="false"
+                header="{i18n>budget_report_text}"
+                headerVisible="true"
+            />
+        </content>
+    </Page>
+</mvc:View>
