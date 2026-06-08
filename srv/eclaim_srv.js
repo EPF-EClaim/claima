@@ -480,15 +480,28 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        const systemYearFull = String(new Date().getFullYear());
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        var oUpdateVariables = {};
+
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+        }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -544,15 +557,28 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        const systemYearFull = String(new Date().getFullYear());
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        var oUpdateVariables = {};
+
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+        }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.CLAIM_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
