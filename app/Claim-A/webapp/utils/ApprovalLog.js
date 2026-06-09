@@ -52,6 +52,12 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
                 
+				for(var i = 0; i < a.length; i++){
+					if(a[i].LEVEL == 99){
+						a[i].LEVEL = "Verifier"
+					}
+				}
+
 				oApprovalLogModel.setProperty("/approval", a);
 
 				return a;
