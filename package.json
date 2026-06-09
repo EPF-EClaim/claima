@@ -44,8 +44,8 @@
                 "target": "src/ECLAIM_EXTERNAL_ACCESS.hdbrole"
               },
               {
-                "src": "cfg/ECLAIM_EXTERNAL_ACCESS_G.hdbrole",
-                "target": "src/ECLAIM_EXTERNAL_ACCESS_G.hdbrole"
+                "src": "cfg/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole",
+                "target": "src/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole"
               }
             ]
           }

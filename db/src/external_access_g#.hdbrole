@@ -1,0 +1,32 @@
+{
+  "role": {
+    "name": "external_access_g#",
+    "schema_privileges": [
+      {
+        "privileges": [ "SELECT" ]
+      }
+    ],
+    "object_privileges": [
+      {
+        "name": "ECLAIM_ZEMP_MASTER", 
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZDEPARTMENT",
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZDIVISION",
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZOFFICE_LOCATION",
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      }      
+    ]
+  }
+}
