@@ -3922,7 +3922,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (!oBinding || !oInputModel) return;
+			if (!oBinding || !oInputModel) return;			
 
 			// set description value
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -3953,6 +3953,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (!oBinding || !oInputModel) return;
 
 			// set description value
@@ -3975,6 +3976,7 @@ sap.ui.define([
 
 			// reset current value of To State
 			oInputModel.setProperty("/claim_item/to_state_id", null)
+			oPropertyModel.setProperty("/to_state_id/is_required", true)
 			this.onSelect_ClaimDetails_ToState();
 		},
 

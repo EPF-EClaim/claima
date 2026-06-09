@@ -851,6 +851,7 @@
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
 					change="onSelect_ClaimDetails_FromState"
 					liveChange="onSelect_ClaimDetails_FromState"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                 >
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
@@ -875,6 +876,7 @@
                     change="onSelect_ClaimDetails_FromLocationOffice"
                     liveChange="onSelect_ClaimDetails_FromLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/from_state_id} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
@@ -899,6 +901,7 @@
                             sorter: { path: 'TO_STATE_ID', descending: false }}"
 					change="onSelect_ClaimDetails_ToState"
 					liveChange="onSelect_ClaimDetails_ToState"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/from_location_office}}"
                 >
                     <items>
@@ -924,6 +927,7 @@
                     change="onSelect_ClaimDetails_ToLocationOffice"
                     liveChange="onSelect_ClaimDetails_ToLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/to_state_id}}"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
