@@ -5502,13 +5502,12 @@ sap.ui.define([
 		},
 
 		onSelect_ClaimDetails_FuneralTransport: async function(oEvent){
-			var sFuneralTransportID = oEvent.getParameter("selectedItem").getKey();
+			const sFuneralTransportID = oEvent.getParameter("selectedItem").getKey();
 			const oInputModel = this.getView().getModel("claimitem_input");
 			
 			if(oInputModel.getProperty("/claim_item/funeral_transportation") == this._oConstant.TransportPassing.DALAM_STESEN ||
 				oInputModel.getProperty("/claim_item/funeral_transportation") == this._oConstant.TransportPassing.LUAR_STESEN){
 				const iEligibleAmount = await ClaimUtility.getFuneralTransportEligibleAmount(sFuneralTransportID, oInputModel.getProperty("/claim_item/claim_type_item_id"), oInputModel.getProperty("/claim_item/claim_type_id"));
-				console.log(iEligibleAmount)
 				if(!iEligibleAmount) return;
 				oInputModel.setProperty("/claim_item/amount", iEligibleAmount);
 			}else{
