@@ -8,7 +8,6 @@ const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScen
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
-const UpdateDependent = require('./utils/UpdateDependent');
 
 module.exports = (srv) => {
 
@@ -97,7 +96,7 @@ module.exports = (srv) => {
             }
 
             return {
-                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
+                id:  oEmp.EMAIL ||oEmp.email || "UNKNOWN",
                 userType: oEmp.USER_TYPE || "UNKNOWN",
                 costcenters: oEmp.CC || "UNKNOWN",
                 userId: oEmp.EEID || "UNKNOWN",
@@ -110,65 +109,65 @@ module.exports = (srv) => {
             };
         });
 
-    // srv.on('getUserType', async (req) => {
-    //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-    //     const emailFromToken =
-    //         req.user?.attr?.email ||
-    //         req.user?.attr?.mail ||
-    //         req.user?.attr?.user_name ||
-    //         req.user?.attr?.login_name ||
-    //         req.user?.id ||
-    //         "";
+        // srv.on('getUserType', async (req) => {
+        //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
+        //     const emailFromToken =
+        //         req.user?.attr?.email ||
+        //         req.user?.attr?.mail ||
+        //         req.user?.attr?.user_name ||
+        //         req.user?.attr?.login_name ||
+        //         req.user?.id ||
+        //         "";
 
-    //     let sOrigin = null;
+        //     let sOrigin = null;
 
-    //     try {
-    //         const authHeader = req.http?.req?.headers?.authorization ?? '';
-    //         const token = authHeader.split(' ')[1];
-    //         if (token) {
-    //             const oToken = JSON.parse(
-    //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-    //             );
-    //             sOrigin = oToken.origin;
-    //         }
-    //     } catch (e) {
-    //         console.log("Token parsing failed:", e.message);
-    //     }
+        //     try {
+        //         const authHeader = req.http?.req?.headers?.authorization ?? '';
+        //         const token = authHeader.split(' ')[1];
+        //         if (token) {
+        //             const oToken = JSON.parse(
+        //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+        //             );
+        //             sOrigin = oToken.origin;
+        //         }
+        //     } catch (e) {
+        //         console.log("Token parsing failed:", e.message);
+        //     }
 
-    //     const email = String(emailFromToken).trim().toLowerCase();
-    //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-    //     //no record maintained in ZEMP_MASTER table
-    //     if (!result) {
-    //         return {
-    //             id: email,
-    //             userType: "UNKNOWN",
-    //             costcenters: "UNKNOWN",
-    //             userId: "UNKNOWN",
-    //             name: "UNKNOWN",
-    //             position: "UNKNOWN",
-    //             origin: sOrigin,
-    //             grade: "UNKNOWN",
-    //             department: "UNKNOWN"
-    //         };
-    //     }
+        //     const email = String(emailFromToken).trim().toLowerCase();
+        //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+        //     //no record maintained in ZEMP_MASTER table
+        //     if (!result) {
+        //         return {
+        //             id: email,
+        //             userType: "UNKNOWN",
+        //             costcenters: "UNKNOWN",
+        //             userId: "UNKNOWN",
+        //             name: "UNKNOWN",
+        //             position: "UNKNOWN",
+        //             origin: sOrigin,
+        //             grade: "UNKNOWN",
+        //             department: "UNKNOWN"
+        //         };
+        //     }
 
-    //     let dept = null;
-    //     if (result.DEP) {
-    //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
-    //     }
+        //     let dept = null;
+        //     if (result.DEP) {
+        //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+        //     }
 
-    //     return {
-    //         id: email,
-    //         userType: result?.USER_TYPE || "UNKNOWN",
-    //         costcenters: result?.CC || "UNKNOWN",
-    //         userId: result?.EEID || "UNKNOWN",
-    //         name: result?.NAME || "UNKNOWN",
-    //         position: result?.POSITION_NAME || "UNKNOWN",
-    //         origin: sOrigin,
-    //         grade: result?.GRADE || "UNKNOWN",
-    //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
-    //     };
-    // });
+        //     return {
+        //         id: email,
+        //         userType: result?.USER_TYPE || "UNKNOWN",
+        //         costcenters: result?.CC || "UNKNOWN",
+        //         userId: result?.EEID || "UNKNOWN",
+        //         name: result?.NAME || "UNKNOWN",
+        //         position: result?.POSITION_NAME || "UNKNOWN",
+        //         origin: sOrigin,
+        //         grade: result?.GRADE || "UNKNOWN",
+        //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+        //     };
+        // });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -2308,28 +2307,6 @@ module.exports = (srv) => {
         };
     });
 
-    /**
-        * Update Dependent tables with Remaining Entitlement Amout for each dependent
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('updatePEDUEntitleAmount', async (req) => {
-        try {
-            const oPayload = req.data;
-            if (!oPayload || oPayload.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            var sRecordId = oPayload.sRecordId;
-            var sStatus = oPayload.sStatus;
-            const tx = cds.tx(req);
-
-            var result = await UpdateDependent.updateRemainingEntitlementAmount(sRecordId, sStatus, tx);
-            return result;
-        } catch (error) {
-            return req.reject(400, `Fail processing records: ${error.message}`);
-        }
-    });    
-
     srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
         if (!isAdminCC)
@@ -2470,7 +2447,7 @@ module.exports = (srv) => {
             .from('ZEMP_MASTER')
             .where({ EMAIL: req.user.id });
         if (!oEmp || !oEmp.CC) return;
-
+        
         // Admin_CC sees their own cost center only
         req.query.where({
             COST_CENTER_ID: oEmp.CC
@@ -2521,5 +2498,5 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(400, `Fail updating records: ${error.message}`);
         }
-    });
+    });    
 }
