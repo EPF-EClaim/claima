@@ -8,6 +8,7 @@ const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScen
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
+const UpdateDependent = require('./utils/UpdateDependent');
 
 module.exports = (srv) => {
 
@@ -2291,12 +2292,12 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
-    /**
-    * Update Header tables with approver actions
-    * @public
-    * @returns {Integer} number of records updated in header table
-    */
-    srv.on('calculateRoundTripKM', async (req) => {
+        /**
+        * Update Header tables with approver actions
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('calculateRoundTripKM', async (req) =>{
         const { fKM } = req.data;
         if (!fKM) {
             return { fFinalAmount: 0.00 };
@@ -2306,6 +2307,28 @@ module.exports = (srv) => {
             fFinalAmount: fResult
         };
     });
+
+    /**
+        * Update Dependent tables with Remaining Entitlement Amout for each dependent
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updatePEDUEntitleAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateDependent.updateRemainingEntitlementAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });    
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
@@ -2499,5 +2522,4 @@ module.exports = (srv) => {
             req.error(400, `Fail updating records: ${error.message}`);
         }
     });
-
 }
