@@ -96,7 +96,7 @@ module.exports = (srv) => {
             }
 
             return {
-                id:  oEmp.EMAIL ||oEmp.email || "UNKNOWN",
+                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
                 userType: oEmp.USER_TYPE || "UNKNOWN",
                 costcenters: oEmp.CC || "UNKNOWN",
                 userId: oEmp.EEID || "UNKNOWN",
@@ -109,65 +109,65 @@ module.exports = (srv) => {
             };
         });
 
-        // srv.on('getUserType', async (req) => {
-        //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-        //     const emailFromToken =
-        //         req.user?.attr?.email ||
-        //         req.user?.attr?.mail ||
-        //         req.user?.attr?.user_name ||
-        //         req.user?.attr?.login_name ||
-        //         req.user?.id ||
-        //         "";
+    // srv.on('getUserType', async (req) => {
+    //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
+    //     const emailFromToken =
+    //         req.user?.attr?.email ||
+    //         req.user?.attr?.mail ||
+    //         req.user?.attr?.user_name ||
+    //         req.user?.attr?.login_name ||
+    //         req.user?.id ||
+    //         "";
 
-        //     let sOrigin = null;
+    //     let sOrigin = null;
 
-        //     try {
-        //         const authHeader = req.http?.req?.headers?.authorization ?? '';
-        //         const token = authHeader.split(' ')[1];
-        //         if (token) {
-        //             const oToken = JSON.parse(
-        //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-        //             );
-        //             sOrigin = oToken.origin;
-        //         }
-        //     } catch (e) {
-        //         console.log("Token parsing failed:", e.message);
-        //     }
+    //     try {
+    //         const authHeader = req.http?.req?.headers?.authorization ?? '';
+    //         const token = authHeader.split(' ')[1];
+    //         if (token) {
+    //             const oToken = JSON.parse(
+    //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+    //             );
+    //             sOrigin = oToken.origin;
+    //         }
+    //     } catch (e) {
+    //         console.log("Token parsing failed:", e.message);
+    //     }
 
-        //     const email = String(emailFromToken).trim().toLowerCase();
-        //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        //     //no record maintained in ZEMP_MASTER table
-        //     if (!result) {
-        //         return {
-        //             id: email,
-        //             userType: "UNKNOWN",
-        //             costcenters: "UNKNOWN",
-        //             userId: "UNKNOWN",
-        //             name: "UNKNOWN",
-        //             position: "UNKNOWN",
-        //             origin: sOrigin,
-        //             grade: "UNKNOWN",
-        //             department: "UNKNOWN"
-        //         };
-        //     }
+    //     const email = String(emailFromToken).trim().toLowerCase();
+    //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+    //     //no record maintained in ZEMP_MASTER table
+    //     if (!result) {
+    //         return {
+    //             id: email,
+    //             userType: "UNKNOWN",
+    //             costcenters: "UNKNOWN",
+    //             userId: "UNKNOWN",
+    //             name: "UNKNOWN",
+    //             position: "UNKNOWN",
+    //             origin: sOrigin,
+    //             grade: "UNKNOWN",
+    //             department: "UNKNOWN"
+    //         };
+    //     }
 
-        //     let dept = null;
-        //     if (result.DEP) {
-        //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
-        //     }
+    //     let dept = null;
+    //     if (result.DEP) {
+    //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+    //     }
 
-        //     return {
-        //         id: email,
-        //         userType: result?.USER_TYPE || "UNKNOWN",
-        //         costcenters: result?.CC || "UNKNOWN",
-        //         userId: result?.EEID || "UNKNOWN",
-        //         name: result?.NAME || "UNKNOWN",
-        //         position: result?.POSITION_NAME || "UNKNOWN",
-        //         origin: sOrigin,
-        //         grade: result?.GRADE || "UNKNOWN",
-        //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
-        //     };
-        // });
+    //     return {
+    //         id: email,
+    //         userType: result?.USER_TYPE || "UNKNOWN",
+    //         costcenters: result?.CC || "UNKNOWN",
+    //         userId: result?.EEID || "UNKNOWN",
+    //         name: result?.NAME || "UNKNOWN",
+    //         position: result?.POSITION_NAME || "UNKNOWN",
+    //         origin: sOrigin,
+    //         grade: result?.GRADE || "UNKNOWN",
+    //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+    //     };
+    // });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -2291,12 +2291,12 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
-        /**
-        * Update Header tables with approver actions
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('calculateRoundTripKM', async (req) =>{
+    /**
+    * Update Header tables with approver actions
+    * @public
+    * @returns {Integer} number of records updated in header table
+    */
+    srv.on('calculateRoundTripKM', async (req) => {
         const { fKM } = req.data;
         if (!fKM) {
             return { fFinalAmount: 0.00 };
@@ -2447,10 +2447,57 @@ module.exports = (srv) => {
             .from('ZEMP_MASTER')
             .where({ EMAIL: req.user.id });
         if (!oEmp || !oEmp.CC) return;
-        
+
         // Admin_CC sees their own cost center only
         req.query.where({
             COST_CENTER_ID: oEmp.CC
         });
     });
+
+    srv.on('batchUpdatePaymentStatus', async (req) => {
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+        try {
+            const { payment } = req.data;
+            if (!payment || payment.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            const aRequestUpdates = [];
+            for (var i = 0; i < payment.length; i++) {
+                var oPayment = payment[i];
+                if (!oPayment.ID) continue;
+                var sPrefix = oPayment.ID.substring(0, 3);
+                if (sPrefix === Constant.WorkflowType.CLAIM) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS_ID: oPayment.STATUS_ID
+                            })
+                            .where({ CLAIM_ID: oPayment.ID })
+                    );
+                } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+                    aRequestUpdates.push(
+                        UPDATE(ZREQUEST_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS: oPayment.STATUS_ID
+                            })
+                            .where({ REQUEST_ID: oPayment.ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+            if (aRequestUpdates.length > 0) {
+                await Promise.all(aRequestUpdates.map(function (q) { return tx.run(q); }));
+            }
+            return 'Records updated successfully';
+        } catch (error) {
+            req.error(400, `Fail updating records: ${error.message}`);
+        }
+    });
+
 }
