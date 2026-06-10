@@ -712,6 +712,20 @@ sap.ui.define([
 			await oAction.execute();
 			const oResult = oAction.getBoundContext().getObject();
 			return oResult.fFinalAmount;
+		},
+		getFuneralTransportEligibleAmount: async function(sTransportPassingID, sClaimTypeItem, sClaimType){
+			const oContext = this._oView.getModel().bindContext("/getJenazahEligibleAmount(...)");
+
+			oContext.setParameter("sTransportPassingID",sTransportPassingID);
+			oContext.setParameter("sClaimType",sClaimType);
+			oContext.setParameter("sClaimTypeItem",sClaimTypeItem);
+
+			await oContext.execute();
+
+   		 	// Read return value
+			const oResult = await oContext.requestObject();
+
+    		return oResult.iAmount;
 		}
 	}
 });

@@ -496,6 +496,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
 
+    type JenazahEligibleAmount {
+        iAmount : Decimal(16,2);
+    }
+
+    function getJenazahEligibleAmount(
+            sTransportPassingID: String,
+            sClaimType: String,
+            sClaimTypeItem: String)
+        returns JenazahEligibleAmount;
+
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                                  returns Boolean;
 
     type LodgingOverseaAmountAndCat {
