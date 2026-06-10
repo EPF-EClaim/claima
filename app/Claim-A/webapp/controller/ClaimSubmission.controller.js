@@ -5512,7 +5512,7 @@ sap.ui.define([
 				if(!iEligibleAmount) return;
 				oInputModel.setProperty("/claim_item/amount", iEligibleAmount);
 			}else{
-				oInputModel.setProperty("/claim_item/amount", "")
+				oInputModel.setProperty("/claim_item/amount", 0)
 			}
 
 		}
