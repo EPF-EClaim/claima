@@ -93,7 +93,8 @@ sap.ui.define([
             "TELEFON_B": "TELEFON_B",
             "ELEKTRIK": "ELEKTRIK",
             "BIL_AIR": "BIL_AIR",
-            "IPAD":"I-PAD"
+            "IPAD":"I-PAD",
+            "JENAZAH":"JENAZAH"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -682,6 +683,11 @@ sap.ui.define([
             "PKN_PANAS": "PKN_PANAS",
             "FLIGHT_WIL": "FLIGHT_WIL",
             "ISTIADAT": "ISTIADAT"
+        },
+        "TransportPassing": {
+            "DALAM_STESEN": "1",
+            "LUAR_STESEN": "2",
+            "FLIGHT": "3"
         }
         
     }

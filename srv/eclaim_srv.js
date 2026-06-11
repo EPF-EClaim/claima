@@ -2454,6 +2454,33 @@ module.exports = (srv) => {
         });
     });
 
+    srv.on("getJenazahEligibleAmount", async(req) => {
+        const tx = cds.tx(req);
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+        try {
+            var oEligibleAmount = await tx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        TRANSPORT_PASSING_ID: req.data.sTransportPassingID,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                    })
+            )
+            return {
+                iAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+            };
+        } catch (err) {
+            req.error(404, `Amount not found.`);
+        }
+    });
+
+    
+
     srv.on('batchUpdatePaymentStatus', async (req) => {
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
         try {
