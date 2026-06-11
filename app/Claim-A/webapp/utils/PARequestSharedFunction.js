@@ -140,6 +140,7 @@ sap.ui.define([
 						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1,
 						DEPARTURE_TIME: formatSafeDateTime(oItem.DEPARTURE_TIME),
                 		ARRIVAL_TIME:   formatSafeDateTime(oItem.ARRIVAL_TIME),
+						ROUND_TRIP:		oItem.ROUND_TRIP,
 						DEPENDENT: 		JSON.parse(oItem.DEPENDENT) || []
 					};
 				});

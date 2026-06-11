@@ -49,6 +49,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
         STATUS             : String;
     }
 
+    type paymentdata {
+        ID           : String;
+        PAYMENT_DATE : Date;
+        STATUS_ID    : String;
+    }
+
     action   batchCreateEmployee(employees: many ZEMP_MASTER)                                            returns Response;
 
     action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)                                       returns Response;
@@ -56,6 +62,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                                       returns Response;
 
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
+
+    action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
 
 
     entity ZREQUEST_TYPE @(restrict: [
@@ -1480,6 +1488,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
 
+    type JenazahEligibleAmount {
+        iAmount : Decimal(16,2);
+    }
+
+    function getJenazahEligibleAmount(
+            sTransportPassingID: String,
+            sClaimType: String,
+            sClaimTypeItem: String)
+        returns JenazahEligibleAmount;
+
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                                  returns Boolean;
 
     type LodgingOverseaAmountAndCat {
@@ -1491,6 +1509,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                                       returns Response;
+    type Roundtripamount {
+        fFinalAmount: Decimal(15,2);
+    }
+    function calculateRoundTripKM (fKM: Decimal(15, 2))                                              returns Roundtripamount;
 
     entity ZEMP_APPROVER_REQUEST_DETAILS as
         projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {

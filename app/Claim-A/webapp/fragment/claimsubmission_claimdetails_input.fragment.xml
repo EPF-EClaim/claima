@@ -161,6 +161,7 @@
                     change="onSelect_ClaimDetails_FuneralTransport"
                     liveChange="onSelect_ClaimDetails_FuneralTransport"
                     visible="false"
+                    required="true"
 				>
 				</Select>
 
@@ -957,6 +958,39 @@
 					visible="{claimitem_property>/km/is_visible}"
 				/>
 
+                 <!-- Round Trip Kilometer -->
+                <Label text="{i18n>label_claimdetails_input_rtkm}" 
+                  visible="{= ${claimitem_input>/claim_item/round_trip} === true }"
+                  labelFor="input_claimdetails_input_rtkm"/>
+                  
+                <Input
+                    id="input_claimdetails_input_rtkm"
+                    value="{
+						path: 'claimitem_input>/claim_item/rtkm',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 6,
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
+					}"
+					enabled="false" 
+					visible="{= ${claimitem_input>/claim_item/round_trip} === true }"
+                    change="onChange_ClaimDetails_Kilometer"
+				/>
+
+                 <!-- Round Trip -->
+                <Label text="{i18n>label_claimdetails_input_roundtrip}" />
+                <CheckBox
+                    id="checkbox_claimdetails_input_roundtrip"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER} }"
+                    wrapping="true"
+                    selected="{claimitem_input>/claim_item/round_trip}"
+                    select="onSelectRoundTrip"
+                />
+
                 <!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
@@ -987,7 +1021,7 @@
 					required="true"
 					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_TUKAR} &amp;&amp;
-                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PINDAH} &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MATAWANG} &amp;&amp;
                         !${claimsubmission_input>/view_only} &amp;&amp;
 						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
@@ -995,7 +1029,10 @@
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
 						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
-                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
+                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
+                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/DALAM_STESEN} &amp;&amp;
+                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} &amp;&amp;
+                        !!${claimitem_input>/claim_item/funeral_transportation}
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>

@@ -79,7 +79,7 @@ entity ZEMP_MASTER : managed {
                                             and ZOFFICE_LOCATION.STATE_ID    = STATE;
         ZBRANCH                       : Association to ZBRANCH
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
-        ZDIVISION               : Association to ZDIVISION
+        ZDIVISION                     : Association to ZDIVISION
                                             on ZDIVISION.DIVISION = DIVISION;
 }
 
@@ -132,6 +132,7 @@ entity ZREQUEST_HEADER : managed {
         LAST_PUSH_BACK_DATE           : Date           @Common.Label: 'Last Push Back Date';
         LAST_PUSH_BACK_TIME           : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID           : String(3)      @Common.Label: 'Push Back Reason ID';
+        PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -1385,7 +1386,7 @@ entity ZELIGIBILITY_RULE : managed {
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
     key CLAIM_ID               : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);
@@ -1406,7 +1407,7 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
     key PREAPPROVAL_ID         : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-        APPROVER_ID            : String;
+    key APPROVER_ID            : String  @mandatory;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
         REJECT_REASON_ID       : String(3);

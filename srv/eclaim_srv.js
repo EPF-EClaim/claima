@@ -495,15 +495,28 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        const systemYearFull = String(new Date().getFullYear());
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        var oUpdateVariables = {};
+
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+        }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -559,15 +572,28 @@ module.exports = (srv) => {
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
 
         const prefix = row.PREFIX || "";
-        const current = Number(row.CURRENT || 0);
-        const yy = String(new Date().getFullYear()).slice(-2);
+        const currentYearInDb = row.CURRENT_YEAR;
+        const systemYearFull = String(new Date().getFullYear());
+        const yy = systemYearFull.slice(-2);
+
+        let current;
+        var oUpdateVariables = {};
+
+        if (currentYearInDb !== systemYearFull) {
+            current = 1;
+            oUpdateVariables.CURRENT_YEAR = systemYearFull;
+        } else {
+            current = Number(row.CURRENT || 0);
+        }
+
+        oUpdateVariables.CURRENT = String(current + 1);
 
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.CLAIM_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) })
+                .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -2278,6 +2304,21 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+        /**
+        * Update Header tables with approver actions
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('calculateRoundTripKM', async (req) =>{
+        const { fKM } = req.data;
+        if (!fKM) {
+            return { fFinalAmount: 0.00 };
+        }
+        const fResult = Math.round(fKM * 2 * 100) / 100;
+        return {
+            fFinalAmount: fResult
+        };
+    });
 
     srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
         const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
@@ -2425,4 +2466,77 @@ module.exports = (srv) => {
             COST_CENTER_ID: oEmp.CC
         });
     });
+
+    srv.on("getJenazahEligibleAmount", async(req) => {
+        const tx = cds.tx(req);
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+        try {
+            var oEligibleAmount = await tx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        TRANSPORT_PASSING_ID: req.data.sTransportPassingID,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                    })
+            )
+            return {
+                iAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+            };
+        } catch (err) {
+            req.error(404, `Amount not found.`);
+        }
+    });
+
+    
+
+    srv.on('batchUpdatePaymentStatus', async (req) => {
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+        try {
+            const { aPayment } = req.data;
+            if (!aPayment || aPayment.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            const aRequestUpdates = [];
+            for (var i = 0; i < aPayment.length; i++) {
+                var oPayment = aPayment[i];
+                if (!oPayment.ID) continue;
+                var sPrefix = oPayment.ID.substring(0, 3);
+                if (sPrefix === Constant.WorkflowType.CLAIM) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS_ID: oPayment.STATUS_ID
+                            })
+                            .where({ CLAIM_ID: oPayment.ID })
+                    );
+                } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+                    aRequestUpdates.push(
+                        UPDATE(ZREQUEST_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS: oPayment.STATUS_ID
+                            })
+                            .where({ REQUEST_ID: oPayment.ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+            if (aRequestUpdates.length > 0) {
+                await Promise.all(aRequestUpdates.map(function (q) { return tx.run(q); }));
+            }
+            return 'Records updated successfully';
+        } catch (error) {
+            req.error(400, `Fail updating records: ${error.message}`);
+        }
+    });    
 }
