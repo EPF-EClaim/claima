@@ -2457,15 +2457,15 @@ module.exports = (srv) => {
     srv.on('batchUpdatePaymentStatus', async (req) => {
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
         try {
-            const { payment } = req.data;
-            if (!payment || payment.length === 0) {
+            const { aPayment } = req.data;
+            if (!aPayment || aPayment.length === 0) {
                 throw new Error('No Data Sent');
             }
             const tx = cds.tx(req);
             const aClaimUpdates = [];
             const aRequestUpdates = [];
-            for (var i = 0; i < payment.length; i++) {
-                var oPayment = payment[i];
+            for (var i = 0; i < aPayment.length; i++) {
+                var oPayment = aPayment[i];
                 if (!oPayment.ID) continue;
                 var sPrefix = oPayment.ID.substring(0, 3);
                 if (sPrefix === Constant.WorkflowType.CLAIM) {

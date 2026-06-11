@@ -63,7 +63,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
 
-    action   batchUpdatePaymentStatus(payment: many paymentdata)                                         returns Response;
+    action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
 
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
