@@ -672,6 +672,16 @@
                     "pattern": "ZEMP_CASHADVANCE_REPORT",
                     "name": "ZEMP_CASHADVANCE_REPORT",
                     "target": "ZEMP_CASHADVANCE_REPORT"
+                },
+                 {
+                    "pattern": "ZEMP_CC_BUDGET_REPORT",
+                    "name": "ZEMP_CC_BUDGET_REPORT",
+                    "target": "ZEMP_CC_BUDGET_REPORT"
+                },
+                {
+                    "pattern": "ZEMP_CC_BUDGET_DETAIL/{fundCenter}/{glCode}/{material}",
+                    "name": "ZEMP_CC_BUDGET_DETAIL",
+                    "target": "ZEMP_CC_BUDGET_DETAIL"
                 }                              
             ],
             "targets": {
@@ -4760,7 +4770,44 @@
                             }
                         }
                     }
-                },                                                                    
+                }, 
+                 "ZEMP_CC_BUDGET_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_CC_BUDGET_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "model": "employee_view",
+                        "settings": {
+                            "contextPath": "/ZEMP_CC_BUDGET_REPORT",
+                            "initialLoad": "Disabled",
+                            "variantManagement": "Page",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "enableExport": true,
+                                        "selectionMode": "None",
+                                        "sort": true
+                                    }
+                                }
+                            },
+                            "fclEnabled": false,
+                            "hideFilterBar": true,
+                            "navigation": {
+                                "ZEMP_CC_BUDGET_REPORT": {
+                                        "detail": {
+                                            "route": "ZEMP_CC_BUDGET_DETAIL"
+                                        }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_CC_BUDGET_DETAIL": {
+                    "type": "View",
+                    "id": "ZEMP_CC_BUDGET_DETAIL",
+                    "name": "claima.view.BudgetDetail"
+                },                                                                   
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",

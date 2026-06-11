@@ -106,7 +106,7 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 			// const oCtx = oModel.bindContext("/FeatureControl");
 
-			const bDTDAdmin = this._oRoleModel.getProperty("/isDTDAdmin"),
+			const bDTDAdmin = true,//this._oRoleModel.getProperty("/isDTDAdmin"),
 				bAdminSystem = this._oRoleModel.getProperty("/isAdminSystem"),
 				bAdminCC = this._oRoleModel.getProperty("/isAdminCC"),
 				bClaimant = this._oRoleModel.getProperty("/isClaimant"),
@@ -153,13 +153,13 @@ sap.ui.define([
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "req_summary":
-					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+					//if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("ZEMP_REQUEST_REPORT_SUMMARY");
-					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
-					}
+					//} else {
+					//	var message = Utility.getText("msg_unauthorized_role");
+					//	MessageBox.error(message);
+					//}
 					break;
 				case "req_details":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
@@ -196,6 +196,10 @@ sap.ui.define([
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
+					break;
+				case "cc_budgetreport":
+					HashChanger.getInstance().replaceHash("");
+					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					break;
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")

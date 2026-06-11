@@ -1098,6 +1098,68 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 createdBy
         };
 
+     entity ZEMP_CC_BUDGET_REPORT         as
+        projection on ECLAIM.ZBUDGET {
+            key YEAR,
+            key INTERNAL_ORDER,
+            key FUND_CENTER,
+            key COMMITMENT_ITEM,
+            key MATERIAL_GROUP,
+                CURRENT_BUDGET,
+                VIREMENT_IN,
+                VIREMENT_OUT,
+                SUPPLEMENT,
+                RETURN,
+                ( coalesce(VIREMENT_IN,0) + coalesce(VIREMENT_OUT,0) + coalesce(SUPPLEMENT,0) + coalesce(RETURN,0)) as ADJUST_AMOUNT : Decimal(16, 2),
+                COMMITMENT,
+                ACTUAL,
+                CONSUMED,
+                BUDGET_BALANCE,
+                _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
+                                         on  $projection.FUND_CENTER     = _Detail.FUND_CENTER
+
+        };
+    
+    entity ZEMP_CC_BUDGET_DETAIL         as
+        select from ECLAIM.ZCLAIM_HEADER as HEADER
+        inner join ECLAIM.ZCLAIM_ITEM as ITEM
+            on HEADER.CLAIM_ID = ITEM.CLAIM_ID
+        left join ECLAIM.ZEMP_MASTER as EMP
+            on HEADER.EMP_ID = EMP.EEID
+        {
+            key HEADER.CLAIM_ID,
+            key ITEM.CLAIM_SUB_ID,
+                HEADER.EMP_ID,
+                EMP.NAME,
+                EMP.GRADE,
+                EMP.DEP,
+                EMP.POS,
+
+                /* Cost Center logic */
+                case
+                    when HEADER.ALTERNATE_COST_CENTER is not null
+                         and HEADER.ALTERNATE_COST_CENTER <> ''
+                         then HEADER.ALTERNATE_COST_CENTER
+                    else HEADER.COST_CENTER
+                end                as FUND_CENTER : String(10),
+
+                /* Match with budget */
+                ITEM.GL_ACCOUNT       as COMMITMENT_ITEM,
+                ITEM.MATERIAL_CODE as MATERIAL_GROUP,
+
+                /* Claim info */
+                HEADER.SUBMITTED_DATE,
+                HEADER.PAYMENT_DATE,
+                HEADER.STATUS_ID,
+                HEADER.PURPOSE,
+                HEADER.TRIP_START_DATE,
+                HEADER.TRIP_END_DATE,
+
+                ITEM.CLAIM_TYPE_ID,
+                ITEM.CLAIM_TYPE_ITEM_ID,
+                ITEM.AMOUNT
+        };
+
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
             key COURSE_ID,
