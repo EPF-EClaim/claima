@@ -2453,4 +2453,50 @@ module.exports = (srv) => {
             COST_CENTER_ID: oEmp.CC
         });
     });
+
+    srv.on('batchUpdatePaymentStatus', async (req) => {
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+        try {
+            const { aPayment } = req.data;
+            if (!aPayment || aPayment.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            const aRequestUpdates = [];
+            for (var i = 0; i < aPayment.length; i++) {
+                var oPayment = aPayment[i];
+                if (!oPayment.ID) continue;
+                var sPrefix = oPayment.ID.substring(0, 3);
+                if (sPrefix === Constant.WorkflowType.CLAIM) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS_ID: oPayment.STATUS_ID
+                            })
+                            .where({ CLAIM_ID: oPayment.ID })
+                    );
+                } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+                    aRequestUpdates.push(
+                        UPDATE(ZREQUEST_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS: oPayment.STATUS_ID
+                            })
+                            .where({ REQUEST_ID: oPayment.ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+            if (aRequestUpdates.length > 0) {
+                await Promise.all(aRequestUpdates.map(function (q) { return tx.run(q); }));
+            }
+            return 'Records updated successfully';
+        } catch (error) {
+            req.error(400, `Fail updating records: ${error.message}`);
+        }
+    });    
 }

@@ -129,6 +129,7 @@ entity ZREQUEST_HEADER : managed {
         LAST_PUSH_BACK_DATE           : Date           @Common.Label: 'Last Push Back Date';
         LAST_PUSH_BACK_TIME           : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID           : String(3)      @Common.Label: 'Push Back Reason ID';
+        PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
