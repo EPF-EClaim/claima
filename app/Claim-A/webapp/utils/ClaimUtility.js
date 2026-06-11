@@ -719,13 +719,17 @@ sap.ui.define([
 			oContext.setParameter("sTransportPassingID",sTransportPassingID);
 			oContext.setParameter("sClaimType",sClaimType);
 			oContext.setParameter("sClaimTypeItem",sClaimTypeItem);
+			try{
+				await oContext.execute();
+				// Read return value
+				const oResult = await oContext.requestObject();
+				return oResult.iAmount;
+			}
+			catch(oError){
+				return 0;
+			}
 
-			await oContext.execute();
-
-   		 	// Read return value
-			const oResult = await oContext.requestObject();
-
-    		return oResult.iAmount;
+   		 	
 		}
 	}
 });
