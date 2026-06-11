@@ -642,6 +642,15 @@ sap.ui.define([
             await oAction.execute();
             const oResult = oAction.getBoundContext().getObject();
             return oResult.fFinalAmount;
+        },
+
+        mapOwnerDetail: function (oOwnerDetailModel, oHeader, ownerType) {
+            oOwnerDetailModel.setProperty("/owner_detail_title", this.getText("owner_detail_title", [ownerType]));
+            oOwnerDetailModel.setProperty("/owner_name_label", this.getText("owner_name", [ownerType]));
+            oOwnerDetailModel.setProperty("/owner_name", oHeader.NAME);
+            oOwnerDetailModel.setProperty("/owner_grade", oHeader.GRADE);
+            oOwnerDetailModel.setProperty("/owner_department", oHeader.DEP + " - " + oHeader.DEPARTMENT_DESC);
+            oOwnerDetailModel.setProperty("/owner_position", oHeader.POSITION_NAME);
         }
 
     };

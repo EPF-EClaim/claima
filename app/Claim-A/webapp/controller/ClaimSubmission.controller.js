@@ -90,6 +90,7 @@ sap.ui.define([
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
 			this._oDeleteAttachmentDialog = null;
+			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
 
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -283,10 +284,10 @@ sap.ui.define([
 
 			// display initial fragments
 			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 0);
+				oPage.insertContent(oVBox, 1);
 			});
 			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
+				oPage.insertContent(oVBox, 2);
 			});
 		},
 
@@ -381,6 +382,7 @@ sap.ui.define([
 								oClaimSubmissionModel.setProperty("/is_approver", true);
 							}
 						}
+						this._setOwnerDetail(true);
 					}
 					//// change screen details if approver
 					if (oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -390,7 +392,6 @@ sap.ui.define([
 							this._oConstant,
 							this._oConstant.ClaimFooterMode.APPROVER
 						);
-
 
 					}
 				}
@@ -485,6 +486,7 @@ sap.ui.define([
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+				Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
@@ -954,12 +956,29 @@ sap.ui.define([
 			if (bCheckPage) {
 				// display approval log
 				await this._getFormFragment("approval_log", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 2);
+					oPage.insertContent(oVBox, 3);
 				});
 			}
 			else {
 				// remove approval log
 				var oApprovalLogFragment = await this._getFormFragment("approval_log");
+				if (oApprovalLogFragment) {
+					oPage.removeContent(oApprovalLogFragment);
+				}
+			}
+		},
+
+		_setOwnerDetail: async function (bCheckPage) {
+			var oPage = this.byId("page_claimsubmission");
+			if (bCheckPage) {
+				// display approval log
+				await this._getFormFragment("claimant_detail", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+			}
+			else {
+				// remove approval log
+				var oApprovalLogFragment = await this._getFormFragment("claimant_detail");
 				if (oApprovalLogFragment) {
 					oPage.removeContent(oApprovalLogFragment);
 				}
@@ -1373,7 +1392,13 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
-
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// Destroy previous detail fragment to avoid stale bindings
 			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
 				const oFrag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
@@ -1389,7 +1414,7 @@ sap.ui.define([
 				oPage.removeContent(oClaimItemFragment);
 			}
 			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
+				oPage.insertContent(oVBox, 2);
 			});
 			// set new claim submission model;
 			if (Number.isInteger(indexNumber)) {
@@ -1496,8 +1521,13 @@ sap.ui.define([
 
 		},
 
-
 		onEdit_ClaimSummary: function (oItem) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
@@ -1628,6 +1658,12 @@ sap.ui.define([
 			switch (oAction) {
 				//// Save Draft
 				case this._oConstant.Claim_Action.DRAFT:
+					const oEditButtonModelDraft = this.getView().getModel("editButtonModel");
+					if (oEditButtonModelDraft && oEditButtonModelDraft.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_savedraft"),
@@ -1650,6 +1686,12 @@ sap.ui.define([
 					break;
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
+					const oEditButtonModel = this.getView().getModel("editButtonModel");
+					if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					this._pendingAction = oAction;
 
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3076,6 +3118,12 @@ sap.ui.define([
 		},
 
 		_saveClaimItem: async function () {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3906,7 +3954,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (!oBinding || !oInputModel) return;
+			if (!oBinding || !oInputModel) return;			
 
 			// set description value
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -3937,6 +3985,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (!oBinding || !oInputModel) return;
 
 			// set description value
@@ -3959,6 +4008,7 @@ sap.ui.define([
 
 			// reset current value of To State
 			oInputModel.setProperty("/claim_item/to_state_id", null)
+			oPropertyModel.setProperty("/to_state_id/is_required", true)
 			this.onSelect_ClaimDetails_ToState();
 		},
 
@@ -4137,7 +4187,7 @@ sap.ui.define([
 				oPage.removeContent(oClaimItemFragment);
 
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 1);
+					oPage.insertContent(oVBox, 2);
 				});
 				let sFooterMode;
 
