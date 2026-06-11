@@ -12,7 +12,7 @@ xmlns:table2="sap.ui.mdc.table"
     <VBox 
         id="req_approval_log" 
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+        class="roundedBox sapUiSmallMargin"
         rowGap="1rem">
         <VBox rowGap="1rem">
             <OverflowToolbar

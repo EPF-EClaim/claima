@@ -688,6 +688,10 @@ sap.ui.define([
             "DALAM_STESEN": "1",
             "LUAR_STESEN": "2",
             "FLIGHT": "3"
+        },
+        "SubmissionOwnerType": {
+            "REQUESTOR": "Requestor",
+            "CLAIMANT": "Claimant"
         }
         
     }
