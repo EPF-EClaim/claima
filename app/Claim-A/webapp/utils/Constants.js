@@ -93,7 +93,8 @@ sap.ui.define([
             "TELEFON_B": "TELEFON_B",
             "ELEKTRIK": "ELEKTRIK",
             "BIL_AIR": "BIL_AIR",
-            "IPAD":"I-PAD"
+            "IPAD":"I-PAD",
+            "JENAZAH":"JENAZAH"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -289,7 +290,9 @@ sap.ui.define([
             "REQUEST_TYPE": "REQUEST_TYPE",
             "WITH_FAMILY": "2",
             "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
-            "TRANSFER_DATE": "TRANSFER_DATE"
+            "TRANSFER_DATE": "TRANSFER_DATE",
+            "EVENT_START_DATE": "EVENT_START_DATE",
+            "EVENT_END_DATE": "EVENT_END_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -547,7 +550,8 @@ sap.ui.define([
             "NumberOfTraveller": "i_no_of_traveler"
         },
         "RequestFormFields": {
-            "NO_OF_TRAVELERS": "input_no_of_traveler"
+            "NO_OF_TRAVELERS": "input_no_of_traveler",
+            "KILOMETER": "input_kilometer"
         },
         "ElaunTukarStatus": {
             "ALLOWED_CREATION": "01",
@@ -677,7 +681,13 @@ sap.ui.define([
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
             "PKN_PANAS": "PKN_PANAS",
-            "FLIGHT_WIL": "FLIGHT_WIL"
+            "FLIGHT_WIL": "FLIGHT_WIL",
+            "ISTIADAT": "ISTIADAT"
+        },
+        "TransportPassing": {
+            "DALAM_STESEN": "1",
+            "LUAR_STESEN": "2",
+            "FLIGHT": "3"
         }
         
     }

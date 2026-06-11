@@ -696,7 +696,40 @@ sap.ui.define([
 					}
 					
 				});
+		},
+		/**
+		 * Calculate the KM based on tickbox RoundTrip.
+		 *
+		 * Calls backend calculation function using KM field and multiple by 2.
+		 *
+		 * @public
+		 * @returns final amount KM after multiply by 2
+		 */
+
+		calculateRoundTripKM: async function (oModel, fKM) {
+			const oAction = oModel.bindContext("/calculateRoundTripKM(...)");
+			oAction.setParameter("fKM", fKM);
+			await oAction.execute();
+			const oResult = oAction.getBoundContext().getObject();
+			return oResult.fFinalAmount;
+		},
+		getFuneralTransportEligibleAmount: async function(sTransportPassingID, sClaimTypeItem, sClaimType){
+			const oContext = this._oView.getModel().bindContext("/getJenazahEligibleAmount(...)");
+
+			oContext.setParameter("sTransportPassingID",sTransportPassingID);
+			oContext.setParameter("sClaimType",sClaimType);
+			oContext.setParameter("sClaimTypeItem",sClaimTypeItem);
+			try{
+				await oContext.execute();
+				// Read return value
+				const oResult = await oContext.requestObject();
+				return oResult.iAmount;
+			}
+			catch(oError){
+				return 0;
+			}
+
+   		 	
 		}
-		
 	}
 });
