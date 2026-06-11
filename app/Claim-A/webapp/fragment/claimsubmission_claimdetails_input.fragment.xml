@@ -108,7 +108,9 @@
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
 					}"
-					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
+					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT} &amp;&amp;
+                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
+                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                     editable="{= !${claimsubmission_input>/view_only}}"
 					required="true"
 				>
@@ -123,8 +125,22 @@
                 <MultiComboBox 
 					id="combo_claimdetails_input_dependent"
                     selectedKeys="{claimitem_input>/claim_item/dependent}"
+                    selectionChange="onDependentSelectionChange"
                     required="{= ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
-                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL} ||
+                                    (
+                                        ${claimitem_input>/claim_item/claim_type_id} === ${constant>/ClaimType/ELAUN_TUKAR} &amp;&amp;
+                                        ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
+                                        (
+                                            ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY} ||
+                                            ${claimsubmission_input>/claim_header/travel_alone_family} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY_DESC}
+                                        ) &amp;&amp;
+                                        (
+                                            ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/TravelWithFamilyNowOrLater/NOW} ||
+                                            ${claimsubmission_input>/claim_header/travel_family_now_later} === ${constant>/TravelWithFamilyNowOrLater/NOW_DESC}
+                                        )
+                                    )
+                             }"
                     items="{path: 'employee>/ZEMP_DEPENDENT',
                             sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                     <core:Item key="{employee>DEPENDENT_NO}" 

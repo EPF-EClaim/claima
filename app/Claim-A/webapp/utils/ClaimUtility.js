@@ -491,7 +491,13 @@ sap.ui.define([
 		 * @returns Updates entitled meter cube field upon completion
 		 */
 		fetchMeterCubeEntitlement: function (oInputModel) {
+			if (!oInputModel) {
+				oInputModel = this._oView.getModel("claimitem_input");
+			}
+			var aSelectedDependents = oInputModel.getProperty("/claim_item/dependents") || [];
 			const oContext = this._oView.getModel().bindContext("/getMeterCubeEntitlement(...)");
+
+			oContext.setParameter("selectedDependents", aSelectedDependents);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())
@@ -515,11 +521,16 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function () {
-			var oInputModel = this._oView.getModel("claimitem_input");
+		fetchPengangkutanLautAmount: function (oInputModel) {
+			if (!oInputModel) {
+				oInputModel = this._oView.getModel("claimitem_input");
+			}
+			
+			var aSelectedDependents = oInputModel.getProperty("/claim_item/dependent") || [];
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
+			oContext.setParameter("selectedDependents", aSelectedDependents);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject())

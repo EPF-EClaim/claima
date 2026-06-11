@@ -389,15 +389,18 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   exclude_tips: Boolean,
                                   dependent: Integer)                                                    returns perdiem;
 
-    function getMeterCubeEntitlement()                                                                   returns Decimal(15, 2);
+    action getMeterCubeEntitlement(
+        selectedDependents : array of String
+    )                                                                                                    returns Decimal(15, 2);
 
     type meterCubeAmount {
         entitled : Decimal(15, 2);
         amount   : Decimal(15, 2);
     }
 
-    function calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
-                                             actualAmount: Decimal(15, 2))                               returns meterCubeAmount;
+    action calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
+                                             actualAmount: Decimal(15, 2),
+                                             selectedDependents : array of String)                       returns meterCubeAmount;
 
     type matawangAmount {
         percentage : Decimal(15, 2);

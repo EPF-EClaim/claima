@@ -139,13 +139,25 @@
 
                                 <!-- Dependent (Multi) -->
                                 <form:FormElement label="{i18n>req_i_dependent}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL} ||
+                                                        (
+                                                            ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
+                                                        (
+                                                            ${request>/req_header/transferalonefamily} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY} ||
+                                                            ${request>/req_header/transferalonefamily} === ${constant>/TravelAloneOrWithFamily/WITH_FAMILY_DESC}
+                                                        ) &amp;&amp;
+                                                        (
+                                                            ${request>/req_header/transferfamilynowlater} === ${constant>/TravelWithFamilyNowOrLater/NOW} ||
+                                                            ${request>/req_header/transferfamilynowlater} === ${constant>/TravelWithFamilyNowOrLater/NOW_DESC}
+                                                        )
+                                                    )
+                                                    }"
                                             id="i_dependent_multi"  >
                                     <form:fields>
                                         <MultiComboBox 
                                             width="100%"
                                             selectedKeys="{request>/req_item/dependent}"
-                                            visible="{= ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                                            selectionFinish=".onDependentSelectionChange"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}" >
                                             <core:Item key="{request>DEPENDENT_NO}" 
