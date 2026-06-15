@@ -142,7 +142,7 @@ sap.ui.define([
                         oSessionModel.setProperty("/userType", "Claimant");
                     }
 
-                    this._fnRolesLoaded();
+                    this._fnRolesLoaded(); 
                     sap.m.MessageToast.show('Email: ' + sEmail);
 
                     if (this.getModel()) {
@@ -288,7 +288,7 @@ sap.ui.define([
             //                     if (scope.includes("DTD_Admin")) {
             //                         oRoleModel.setProperty("/isDTDAdmin", true);
             //                         oSessionModel.setProperty("/userType", "DTD Admin");
-
+                                    
             //                         oRoleModel.setProperty("/Admin_role", true);
             //                         oRoleModel.setProperty("/DTD_JKEW_role", true);
             //                         oRoleModel.setProperty("/DTDAdmin_role", true);
@@ -346,10 +346,10 @@ sap.ui.define([
             },
 
             /**
-            * Returns the validator
-            * @public
-            * @return {Validator} returns the validator
-            */
+             * Returns the validator
+             * @public
+             * @return {Validator} returns the validator
+             */
             getValidator: function () {
                 if (!this._oValidator) {
                     this._oValidator = new Validator();
@@ -401,7 +401,7 @@ sap.ui.define([
 
             _showSessionWarning: function () {
                 //countdown another 5 mins if no response to the prompt message
-                //direct force user to logout            
+                //direct force user to logout
                 this.stopInactivityTimer();
                 this._promptExpireHandle = setTimeout(() => {
                     this._doLogout();
