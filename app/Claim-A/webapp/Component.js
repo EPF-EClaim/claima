@@ -288,7 +288,7 @@ sap.ui.define([
             //                     if (scope.includes("DTD_Admin")) {
             //                         oRoleModel.setProperty("/isDTDAdmin", true);
             //                         oSessionModel.setProperty("/userType", "DTD Admin");
-                                    
+
             //                         oRoleModel.setProperty("/Admin_role", true);
             //                         oRoleModel.setProperty("/DTD_JKEW_role", true);
             //                         oRoleModel.setProperty("/DTDAdmin_role", true);
@@ -303,7 +303,7 @@ sap.ui.define([
             //                     if (scope.includes("Admin_CC")) {
             //                         oRoleModel.setProperty("/isAdminCC", true);
             //                         oSessionModel.setProperty("/userType", "GA Admin"); 
-
+                                    
             //                         oRoleModel.setProperty("/Admin_role", true);
             //                     }
             //                 })
