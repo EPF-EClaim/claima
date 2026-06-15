@@ -1035,9 +1035,8 @@
 						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
                         !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/DALAM_STESEN} &amp;&amp;
-                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} &amp;&amp;
-                        !!${claimitem_input>/claim_item/funeral_transportation}
-					}"
+                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} 			
+                        }"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
                 
