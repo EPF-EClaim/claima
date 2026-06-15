@@ -11,21 +11,21 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
-    "claima/utils/RequestUtility"
+	"claima/utils/RequestUtility"
 ],
     (AppComponent,
-        models,
-        HashChanger,
-        Utility,
-        JSONModel,
-        PARequestSharedFunction,
-        Filter,
-        FilterOperator,
-        MessageToast,
-        MessageBox,
-        Validator,
-        CustomValidator,
-        RequestUtility) => {
+	models,
+	HashChanger,
+	Utility,
+	JSONModel,
+	PARequestSharedFunction,
+	Filter,
+	FilterOperator,
+	MessageToast,
+    MessageBox,
+	Validator,
+	CustomValidator,
+	RequestUtility) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -36,7 +36,7 @@ sap.ui.define([
             countdown: 840000,
             resetCountdown: 840000,
 
-            init() {
+             init() {
                 AppComponent.prototype.init.apply(this, arguments);
 
                 this._oReqModel = this.getModel("request");
@@ -59,7 +59,7 @@ sap.ui.define([
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
                 fmt.setDatePattern("short", "dd MMM yyyy");
-                
+
                 // enable routing
                 // this.getRouter().initialize();
 
@@ -67,7 +67,7 @@ sap.ui.define([
                 // if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
 
                 PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-
+                
                 this._oRolesLoadedPromise = new Promise((resolve) => {
                     this._fnRolesLoaded = resolve;
                 });
