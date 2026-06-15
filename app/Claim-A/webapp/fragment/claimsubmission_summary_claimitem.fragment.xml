@@ -7,7 +7,7 @@
 >
     <VBox
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginBottom"
         rowGap="1rem">
         <!-- Claim Item Toolbar -->
         <OverflowToolbar

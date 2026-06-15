@@ -678,6 +678,10 @@ sap.ui.define([
             "MAHKAMAH": "MAHKAMAH",
             "PKN_PANAS": "PKN_PANAS",
             "FLIGHT_WIL": "FLIGHT_WIL"
+        },
+        "SubmissionOwnerType": {
+            "REQUESTOR": "Requestor",
+            "CLAIMANT": "Claimant"
         }
         
     }
