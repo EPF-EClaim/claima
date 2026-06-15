@@ -11,21 +11,21 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
-	"claima/utils/RequestUtility"
+    "claima/utils/RequestUtility"
 ],
     (AppComponent,
-	models,
-	HashChanger,
-	Utility,
-	JSONModel,
-	PARequestSharedFunction,
-	Filter,
-	FilterOperator,
-	MessageToast,
-    MessageBox,
-	Validator,
-	CustomValidator,
-	RequestUtility) => {
+        models,
+        HashChanger,
+        Utility,
+        JSONModel,
+        PARequestSharedFunction,
+        Filter,
+        FilterOperator,
+        MessageToast,
+        MessageBox,
+        Validator,
+        CustomValidator,
+        RequestUtility) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -36,7 +36,7 @@ sap.ui.define([
             countdown: 840000,
             resetCountdown: 840000,
 
-             init() {
+            init() {
                 AppComponent.prototype.init.apply(this, arguments);
 
                 this._oReqModel = this.getModel("request");
@@ -59,15 +59,15 @@ sap.ui.define([
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
                 fmt.setDatePattern("short", "dd MMM yyyy");
-
+                
                 // enable routing
-                this.getRouter().initialize();
+                // this.getRouter().initialize();
 
-                const sHash = HashChanger.getInstance().getHash();
-                if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
+                // const sHash = HashChanger.getInstance().getHash();
+                // if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
 
                 PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-                
+
                 this._oRolesLoadedPromise = new Promise((resolve) => {
                     this._fnRolesLoaded = resolve;
                 });
@@ -145,9 +145,25 @@ sap.ui.define([
                     this._fnRolesLoaded();
                     sap.m.MessageToast.show('Email: ' + sEmail);
 
+                    if (this.getModel()) {
+                        this.getModel().refresh();
+                    }
+
+                    var sBrowserHash = window.location.hash || "";
+                    if (sBrowserHash.indexOf("?") > -1) {
+                        sBrowserHash = sBrowserHash.split("?")[0];
+                    }
+                    if (sBrowserHash.endsWith("/")) {
+                        sBrowserHash = sBrowserHash.slice(0, -1);
+                    }
+
+                    if (!sBrowserHash || sBrowserHash === "" || sBrowserHash === "#" || sBrowserHash === "#/") {
+                        this.getRouter().navTo("Dashboard", {}, true);
+                    }
+
                 } catch (oError) {
                     console.error("User Session Initialization Failed:", oError);
-                    this._fnRolesLoaded(); 
+                    this._fnRolesLoaded();
                 }
             },
 
@@ -287,7 +303,7 @@ sap.ui.define([
             //                     if (scope.includes("Admin_CC")) {
             //                         oRoleModel.setProperty("/isAdminCC", true);
             //                         oSessionModel.setProperty("/userType", "GA Admin"); 
-                                    
+
             //                         oRoleModel.setProperty("/Admin_role", true);
             //                     }
             //                 })
@@ -330,10 +346,10 @@ sap.ui.define([
             },
 
             /**
-             * Returns the validator
-             * @public
-             * @return {Validator} returns the validator
-             */
+            * Returns the validator
+            * @public
+            * @return {Validator} returns the validator
+            */
             getValidator: function () {
                 if (!this._oValidator) {
                     this._oValidator = new Validator();
@@ -385,7 +401,7 @@ sap.ui.define([
 
             _showSessionWarning: function () {
                 //countdown another 5 mins if no response to the prompt message
-                //direct force user to logout
+                //direct force user to logout            
                 this.stopInactivityTimer();
                 this._promptExpireHandle = setTimeout(() => {
                     this._doLogout();
