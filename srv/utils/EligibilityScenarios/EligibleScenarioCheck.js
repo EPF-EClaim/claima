@@ -15,6 +15,12 @@ const Istiadat = require("./Istiadat");
 const Mahkamah = require("./Mahkamah");
 const BegBimbit = require("./BegBimbit");
 const WilayahAsal = require("./WilayahAsal");
+const Galakan = require("./Galakan");
+const AktivitiS = require("./AktivitiS");
+const SewaPetak = require("./SewaPetak");
+const KeahlianKelab = require("./KeahlianKelab");
+const Medical = require("./Medical");
+const PEDU = require("./PEDU");
 
 module.exports = {
   /**
@@ -88,6 +94,42 @@ module.exports = {
       );
       if (iFieldIndex !== -1) {
         aEligibilityCondition[Constant.EntitiesFields.LODGING_CATEGORY] = aPayload[0].CheckFields[iFieldIndex].value;
+      }
+    };
+
+    // Claim Type Item that requires Funeral Transportation filtering
+    if (
+      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.JENAZAH
+    ) {
+      const iFieldIndex = aPayload[0].CheckFields.findIndex(
+        field => field.fieldName === Constant.EntitiesFields.FUNERAL_TRANSPORTATION
+      );
+      if (iFieldIndex !== -1) {
+        aEligibilityCondition[Constant.EntitiesFields.TRANSPORT_PASSING_ID] = aPayload[0].CheckFields[iFieldIndex].value;
+      }
+    };
+
+    // Claim Type Item that requires Dependent Type filtering
+    if (
+      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.KEMATIAN
+    ) {
+      const iFieldIndex = aPayload[0].CheckFields.findIndex(
+        field => field.fieldName === Constant.EntitiesFields.DEPENDENT_TYPE
+      );
+      if (iFieldIndex !== -1) {
+        aEligibilityCondition[Constant.EntitiesFields.DEPENDENT_TYPE_ID] = aPayload[0].CheckFields[iFieldIndex].value;
+      }
+    };
+
+    // Claim Type Item that requires Insurance Package filtering
+    if (
+      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TRAVEL_INSURANCE
+    ) {
+      const iFieldIndex = aPayload[0].CheckFields.findIndex(
+        field => field.fieldName === Constant.EntitiesFields.INSURANCE_PACKAGE_ID
+      );
+      if (iFieldIndex !== -1) {
+        aEligibilityCondition[Constant.EntitiesFields.INSURANCE_PACKAGE_ID] = aPayload[0].CheckFields[iFieldIndex].value;
       }
     };
 
@@ -191,7 +233,7 @@ module.exports = {
             tx
           );
           break;
-        
+
         case Constant.ClaimType.MAHKAMAH:
           oReturnPayload = await Mahkamah.onEligibleCheck(
             aPayload[i],
@@ -210,6 +252,53 @@ module.exports = {
 
         case Constant.ClaimType.WILAYAH_ASAL:
           oReturnPayload = await WilayahAsal.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+
+        case Constant.ClaimType.GALAKAN:
+          oReturnPayload = await Galakan.onEligibleCheck(
+            aPayload[i],
+            aEmpData[0]
+          );
+          break;
+
+        case Constant.ClaimType.AKTIVITI_S:
+          oReturnPayload = await AktivitiS.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility
+          );
+          break;
+
+        case Constant.ClaimType.SEWAPETAK:
+          oReturnPayload = await SewaPetak.onEligibleCheck(
+            aPayload[i],
+            aEmpData[0],
+            aFilteredEligibility,
+          );
+          break;
+
+        case Constant.ClaimType.KEAHLIANKELAB:
+          oReturnPayload = await KeahlianKelab.onEligibleCheck(
+            aPayload[i],
+            aEmpData[0],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+
+        case Constant.ClaimType.MEDICAL:
+          oReturnPayload = await Medical.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility,
+            tx
+          );
+          break;
+
+        case Constant.ClaimType.PEDU:
+          oReturnPayload = await PEDU.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
             tx

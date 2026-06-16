@@ -53,7 +53,8 @@ sap.ui.define([
 						"no_of_hours": "TRAVEL_HOURS",
 						"no_of_traveler": "TOTAL_TRAVELLER",
 						"trip_start_date": "RECEIPT_DATE",
-						"lodging_cat": "LODGING_CATEGORY"
+						"lodging_cat": "LODGING_CATEGORY",
+						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID"
 					};
 					break;
 
@@ -67,7 +68,7 @@ sap.ui.define([
 					var sRecordSubId = oItemData?.claim_sub_id;
 					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem = oItemData.claim_type_item_id;
-					var sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount" 
+					var sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount"
 					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 
 					var oMapping = {
@@ -81,9 +82,16 @@ sap.ui.define([
 						"mobile_category_purpose_id": "MOBILE_PHONE_BILL",
 						[receipt_date]: "RECEIPT_DATE",
 						"no_of_hours": "TRAVEL_HOURS",
-						"region" : "REGION_ID",
+						"region": "REGION_ID",
 						"number_of_travellers": "TOTAL_TRAVELLER",
-						"lodging_category": "LODGING_CATEGORY"
+						"lodging_category": "LODGING_CATEGORY",
+						"funeral_transportation": "FUNERAL_TRANSPORTATION",
+						"dependent_type": "DEPENDENT_TYPE",
+						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
+						"country": "COUNTRY",
+						"insurance_package_id": "INSURANCE_PACKAGE_ID",
+						"dependent": "DEPENDENT",
+						"phone_no": "PHONE_NO"
 					};
 					break;
 
@@ -152,7 +160,8 @@ sap.ui.define([
 						"ROOM_TYPE_ID": "i_room_type",
 						"FLIGHT_CLASS_ID": "i_flight_class",
 						"MARRIAGE_CATEGORY": "i_marriage_cat",
-						"TRANSPORT_CLASS": "i_vehicle_class"
+						"TRANSPORT_CLASS": "i_vehicle_class",
+						"VEHICLE_OWNERSHIP_ID": "i_vehicle_ownership"
 					};
 					break;
 
@@ -165,7 +174,9 @@ sap.ui.define([
 						"FLIGHT_CLASS_ID": "select_claimdetails_input_flight_class",
 						"ROOM_TYPE_ID": "select_claimdetails_input_room_type",
 						"MOBILE_PHONE_BILL": "select_claimdetails_input_mobile_category_purpose_id",
-						"RECEIPT_DATE": "datepicker_claimdetails_input_receipt_date"
+						"RECEIPT_DATE": "datepicker_claimdetails_input_receipt_date",
+						"VEHICLE_OWNERSHIP_ID": "select_claimdetails_input_vehicle_ownership_id",
+						"COUNTRY": "select_claimdetails_input_country"
 					};
 					break;
 
@@ -196,7 +207,7 @@ sap.ui.define([
 			var oFloatFormat = NumberFormat.getFloatInstance({
 				minFractionDigits: 2,
 				maxFractionDigits: 2,
-				groupingEnabled: true 
+				groupingEnabled: true
 			});
 
 			aPayload.forEach((oSinglePayload) => {
@@ -216,7 +227,7 @@ sap.ui.define([
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
 							sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
 							break;
-						
+
 						case Constants.EntitiesFields.TRAVEL_DAYS_ID:
 							sErrorMsg = Utility.getText("eligibility_validation_travel_days", [oField.result, sClaimTypeItem, sEmpId]);
 							break;
@@ -224,7 +235,19 @@ sap.ui.define([
 						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
 							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
 							break;
-					
+
+						case Constants.EntitiesFields.VEHICLE_OWNERSHIP_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_vehicle_ownership", [oField.value, sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.COUNTRY:
+							sErrorMsg = Utility.getText("eligibility_validation_country", [oField.value, sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.PHONE_NO:
+							sErrorMsg = Utility.getText("eligibility_validation_phone_no", [oField.value, sEmpId]);
+							break;
+
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
 							break;
@@ -280,17 +303,17 @@ sap.ui.define([
 		},
 
 		checkElaunTukarEligibility: async function (oDataModel, bIsClaim) {
-            const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+			const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
 			oFunction.setParameter("IS_CLAIM", bIsClaim);
 
-            try {
-                await oFunction.execute();
-                const oContext  = oFunction.getBoundContext();
-                return oContext.getObject().value; 
+			try {
+				await oFunction.execute();
+				const oContext  = oFunction.getBoundContext();
+				return oContext.getObject().value;
 
-            } catch (oError) {
-                return false;
-            }
+			} catch (oError) {
+				return false;
+			}
 		}
 
 	};
