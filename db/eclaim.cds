@@ -51,8 +51,13 @@ entity ZEMP_MASTER : managed {
         UNIT_BRANCH                   : String(10)    @Common.Label: 'Unit Branch';
         SUB_UNIT_BRANCH               : String(10)    @Common.Label: 'Sub Unit Branch';
         BUSINESS_PHONE                : String(15)    @Common.Label: 'Business Phone';
-        ELAUN_TUKAR_REASON            : String(4);        
-        ELAUN_TUKAR_START_DATE        : Date;
+        ELAUN_TUKAR_REASON            : String(4)     @Common.Label: 'Elaun Tukar Reason';
+        ELAUN_TUKAR_START_DATE        : Date          @Common.Label: 'Elaun Tukar Start Date';
+        ECLAIM_ROLE                   : String(10)    @Common.Label: 'eClaim Role';
+        GRADE_ENTRY_DATE              : Date          @Common.Label: 'Grade Entry Date';
+        CONTRACT_START_DATE           : Date          @Common.Label: 'Contract Start Date';
+        CONTRACT_GRADE                : String(3)     @Common.Label: 'Grade During Contract';        
+        STATE_OF_ORIGIN               : String(4)     @Common.Label: 'State of Origin';        
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER
@@ -81,6 +86,8 @@ entity ZEMP_MASTER : managed {
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
         ZDIVISION                     : Association to ZDIVISION
                                             on ZDIVISION.DIVISION = DIVISION;
+        ZSTATE_ORIGIN                 : Association to ZSTATE
+                                            on ZSTATE_ORIGIN.STATE_ID  = STATE_OF_ORIGIN;                                             
 }
 
 entity ZREQUEST_HEADER : managed {

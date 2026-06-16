@@ -74,7 +74,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.JOB_GROUP                
+                ZEMP_MASTER.JOB_GROUP  
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
@@ -137,7 +137,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.JOB_GROUP          
+                ZEMP_MASTER.JOB_GROUP 
         };
 
 
@@ -299,7 +299,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.NAME,
                 ZEMP_MASTER.POS,
-                ZEMP_MASTER.POSITION_NAME,
+                ZEMP_MASTER.POSITION_NAME,                
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
@@ -1192,7 +1192,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             TO_STATE_ID,
             ZTOSTATE.STATE_DESC,
             STATUS;
-
 
     entity ZCLM_COURSE_VIEW               as
         projection on ECLAIM.ZTRAIN_COURSE_PART {
