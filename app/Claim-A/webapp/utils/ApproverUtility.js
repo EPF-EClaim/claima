@@ -350,6 +350,33 @@ sap.ui.define([
             BusyIndicator.hide();
         }
 
+        const oBindingHeader = oModel.bindList(
+            sHeaderSet,
+            null,
+            null,
+            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            { $$ownRequest: true }
+        );
+
+        const aCtxHeader = await oBindingHeader.requestContexts(0, Infinity);
+        const aHeaderRows = aCtxHeader.map(oCtx => oCtx.getObject());
+
+        if (aHeaderRows && aHeaderRows.length > 0 && sActionStatus === Constants.ClaimStatus.REJECTED) {
+            const sClaimTypeId = aHeaderRows[0].CLAIM_TYPE_ID;
+            if (sClaimTypeId === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+                const oAction = oModel.bindContext("/updatePEDUEntitleAmount(...)");
+                oAction.setParameter("sRecordId", sId,);
+                oAction.setParameter("sStatus", sActionStatus);
+                try {
+                    await oAction.execute();
+                } catch (oError) {
+                    MessageBox.error(oError.message);
+                } finally {
+                    BusyIndicator.hide();
+                }
+            }
+        };        
+
         const oBindingBudget = oModelView.bindList(
             sBudgetViewTbl,
             null,

@@ -1204,5 +1204,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 BUDGET_BALANCE,
                 _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
                                          on FUND_CENTER = _Detail.FUND_CENTER
-        }        
+        };
+
+    action   updatePEDUEntitleAmount(sRecordId: String,
+                                     sStatus: String)                                                    returns Response;        
+    
 };
