@@ -62,6 +62,7 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: async function () {
+			//changes in 16/6
 			this.isFclEnabled = function () {
 				return false;
 			};
@@ -208,7 +209,7 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
-				//changes 12/6
+				//changes 16/6
 				case "cc_budgetreport":
 					HashChanger.getInstance().replaceHash("");
 					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");

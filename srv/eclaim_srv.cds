@@ -1203,6 +1203,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CONSUMED,
                 BUDGET_BALANCE,
                 _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on FUND_CENTER = _Detail.FUND_CENTER
+                                         on $self.FUND_CENTER = _Detail.FUND_CENTER and
+                                            $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
+                                            $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
+
         }        
 };

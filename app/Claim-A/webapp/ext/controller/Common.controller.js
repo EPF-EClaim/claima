@@ -16,10 +16,22 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 				console.log("COMMON EXTENSION LOADED");
 
 				// wait for FE table to render
+
+				this._navToken = (this._navToken || 0) + 1;
+				const currentToken = this._navToken;
+				const targetHash = window.location.hash;
+
 				setTimeout(() => {
+					if (currentToken !== this._navToken) {
+						console.log("⏭️ Skip stale detail filter timer");
+						return;
+					}
+
+					if (!targetHash.includes("ZEMP_CC_BUDGET_DETAIL")) {
+						return;
+					}
 
 					const oView = this.base.getView();
-
 					console.log("Searching for MDC table...");
 
 					// find sap.ui.mdc.Table
