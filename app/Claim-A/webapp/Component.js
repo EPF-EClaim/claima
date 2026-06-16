@@ -547,6 +547,7 @@ sap.ui.define([
                 }
             },
 
+            //changes 12/6
             _onBeforeRouteMatched: function (oEvent) {
                 // var sRoute = oEvent.getParameter("name");
                 // var oRoleModel = this.getModel("roleModel");

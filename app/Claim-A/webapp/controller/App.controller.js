@@ -62,6 +62,17 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: async function () {
+			this.isFclEnabled = function () {
+				return false;
+			};
+			this.updateUIStateForView = function () {
+				// no-op
+			};
+			this.calculateLayout = function () {
+					// return default layout (no FCL)
+					return "OneColumn";
+				};
+
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
@@ -197,6 +208,7 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
+				//changes 12/6
 				case "cc_budgetreport":
 					HashChanger.getInstance().replaceHash("");
 					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
