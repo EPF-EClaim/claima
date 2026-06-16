@@ -49,6 +49,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
         STATUS             : String;
     }
 
+    type paymentdata {
+        ID           : String;
+        PAYMENT_DATE : Date;
+        STATUS_ID    : String;
+    }
+
     action   batchCreateEmployee(employees: many ZEMP_MASTER)                                            returns Response;
 
     action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)                                       returns Response;
@@ -56,6 +62,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                                       returns Response;
 
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
+
+    action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
 
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
@@ -495,6 +503,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               currentAmount: Decimal(15, 2),
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
+
+    type JenazahEligibleAmount {
+        iAmount : Decimal(16,2);
+    }
+
+    function getJenazahEligibleAmount(
+            sTransportPassingID: String,
+            sClaimType: String,
+            sClaimTypeItem: String)
+        returns JenazahEligibleAmount;
 
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                                  returns Boolean;
 
