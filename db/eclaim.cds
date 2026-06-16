@@ -56,6 +56,7 @@ entity ZEMP_MASTER : managed {
         GRADE_ENTRY_DATE              : Date          @Common.Label: 'Grade Entry Date';
         CONTRACT_START_DATE           : Date          @Common.Label: 'Contract Start Date';
         CONTRACT_GRADE                : String(3)     @Common.Label: 'Grade During Contract';        
+        STATE_OF_ORIGIN               : String(4)     @Common.Label: 'State of Origin';        
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER
@@ -84,6 +85,8 @@ entity ZEMP_MASTER : managed {
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
         ZDIVISION                     : Association to ZDIVISION
                                             on ZDIVISION.DIVISION = DIVISION;
+        ZSTATE_ORIGIN                 : Association to ZSTATE
+                                            on ZSTATE_ORIGIN.STATE_ID  = STATE_OF_ORIGIN;                                             
 }
 
 entity ZREQUEST_HEADER : managed {
