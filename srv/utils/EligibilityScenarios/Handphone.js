@@ -13,17 +13,33 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
-    var oRule, oDateRange;
+    var oRule, oDateRange, oFreqResult;
     var iAllowedFreq = 0;
     var iItemFreq = 0;
+
     try {
       if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
         oRule = aRules[0];
       } else if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
         oRule = await this._SequenceCheck(oPayload, oEmp, aRules, tx);
 
+        //If no rule found for claimant, throw error
+        if (!oRule) {
+          throw new Error("No Eligibility Rules Found");
+        };
+
         oDateRange = await this._getDateRange(oPayload, tx);
-        iItemFreq = oDateRange.iItemFreq;
+
+        //check if phone number redundant before checking amount eligibility
+        var bPhoneRedundant = await this._checkPhoneRedundancy(oPayload, oDateRange.oDatetoFrom.dDateFrom, oDateRange.oDatetoFrom.dDateTo, tx);
+        if (bPhoneRedundant) {
+          return oPayload;
+        }
+
+        // Check if employee's job grade has a custom frequency defined in ZCONSTANTS
+        oFreqResult = await this._getCustomFrequencyException(oEmp.JOB_GROUP, oDateRange.iItemFreq, tx);
+        iItemFreq = oFreqResult.freqValue;
+        isExceptionGrade = oFreqResult.isExceptionGrade;
 
         var iHistoricalData = await this._getHistoricalData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
@@ -37,10 +53,44 @@ module.exports = {
       throw new Error(`${error.message}`);
     };
     this._validateClaimItem(
-      oRule, oPayload, iAllowedFreq, iItemFreq);
+      oRule, oPayload, iAllowedFreq, iItemFreq, oFreqResult?.isExceptionGrade, oCurrentRecordItemData?.fTotalAmount);
 
     return oPayload;
   },
+
+  _getCustomFrequencyException: async function (sEmpGrade, iDefaultFreq, tx) {
+    if (!sEmpGrade) return iDefaultFreq;
+    const aConfigs = await tx.run(
+      SELECT.from(Constant.Entities.ZCONSTANTS).where({
+        ID: { in: [Constant.ConstantId.EXCEPTION_HP_FREQUENCY_JOB_GRADE, Constant.ConstantId.EXCEPTION_HP_FREQUENCY] }
+      })
+    );
+    const sExcGradesRaw = aConfigs.find(c => c.ID === Constant.ConstantId.EXCEPTION_HP_FREQUENCY_JOB_GRADE)?.VALUE || "";
+    const sExcFreqValue = aConfigs.find(c => c.ID === Constant.ConstantId.EXCEPTION_HP_FREQUENCY)?.VALUE;
+    let aTargetGrades = [];
+    try {
+      aTargetGrades = JSON.parse(sExcGradesRaw);
+      if (Array.isArray(aTargetGrades)) {
+        aTargetGrades = aTargetGrades.map(g => String(g).trim());
+      } else {
+        aTargetGrades = [String(aTargetGrades).trim()];
+      }
+    } catch (e) {
+      const sCleanedGrades = sExcGradesRaw.replace(/[\[\]]/g, '');
+      aTargetGrades = sCleanedGrades.split(",").map(g => g.trim());
+    }
+    if (aTargetGrades.includes(String(sEmpGrade).trim()) && sExcFreqValue !== undefined) {
+      return {
+        freqValue: parseInt(sExcFreqValue, 10),
+        isExceptionGrade: true
+      };
+    }
+    return {
+      freqValue: iDefaultFreq,
+      isExceptionGrade: false
+    };
+  },
+
   /**
    * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
    * @public
@@ -140,16 +190,12 @@ module.exports = {
     const aItemcondition = {
       [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem
+      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+      [sDateField]: { between: [dDateFrom, dDateTo] }
     };
 
-    // for frequencies other than once per service, date range needed
-        // if ((!!dDateFrom) && (!!dDateTo)) {
-        //     aItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
-        // }
-
     const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
-    const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
+    const iHistoricalData = await GetHistoricalData.getHistoricalItemData(sHeaderTable,
       sItemTable,
       sItemcondition,
       tx);
@@ -191,10 +237,10 @@ module.exports = {
     };
 
     // for frequencies other than once per service, date range needed
-        if ((!!dDateFrom) && (!!dDateTo)) {
-            aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
-        }
-        
+    if ((!!dDateFrom) && (!!dDateTo)) {
+      aCurrentItemcondition[sDateField] = { between: [dDateFrom, dDateTo] }
+    }
+
     const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
     return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
@@ -240,8 +286,10 @@ module.exports = {
    * @param {Object} oPayload - original payload from user input
    * @param {Integer} iExistingFreq - Date frequency count
    * @param {Integer} iAllowedFreq - Rules Frequency Count
+   * @param {Boolean} isExceptionGrade - Flag to indicate if the claim is for an exception grade
+   * @param {Number} fTotalAmount - Total amount of the claim
    */
-  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
+  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, isExceptionGrade, fTotalAmount) {
     var iIndex;
 
     switch (oPayload.ClaimTypeItem) {
@@ -273,9 +321,17 @@ module.exports = {
           if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
             oPayload.CheckFields[iIndex].result = true;
           } else {
+
+            let dTargetValueToCompare = parseFloat(oPayload.CheckFields[iIndex].value) || 0;
+
+            if (isExceptionGrade && fTotalAmount) {
+              dTargetValueToCompare += parseFloat(fTotalAmount);
+            }
+
             oPayload.CheckFields[iIndex].result =
               ComparisonOperators.LesserEquals(
-                oPayload.CheckFields[iIndex].value,
+                //oPayload.CheckFields[iIndex].value,
+                dTargetValueToCompare, // Use the adjusted cumulative amount if the scenario matched
                 parseFloat(oRule.ELIGIBLE_AMOUNT),
               );
           }
@@ -283,4 +339,39 @@ module.exports = {
         break;
     }
   },
+
+  _checkPhoneRedundancy: async function (oPayload, dDateFrom, dDateTo, tx) {
+    var iIndex;
+    const sItemTable = Constant.Entities.ZCLAIM_ITEM;
+    const sDateField = Constant.EntitiesFields.RECEIPT_DATE;
+    const sHeaderField = Constant.EntitiesFields.CLAIMID;
+    const sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+
+    iIndex = oPayload.CheckFields.findIndex(
+      (field) => field.fieldName == Constant.EntitiesFields.PHONE_NO,
+    );
+
+    // Check if same phone number already used in the same claim
+    const aConditions = {
+      [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+      [sHeaderField]: oPayload.RecordId,
+      [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
+      PHONE_NO: oPayload.CheckFields[iIndex].value,
+      [sDateField]: { between: [dDateFrom, dDateTo] }
+    };
+    const sWhereClause = BuildSelectWhereConditions.buildWhereCondition(aConditions);
+
+    const aExistingClaims = await tx.run(
+      SELECT.from(sItemTable).where(`${sWhereClause}`)
+    );
+
+    if (aExistingClaims && aExistingClaims.length > 0) {
+      oPayload.CheckFields[iIndex].result = false;
+      return true;
+    }
+    else {
+      oPayload.CheckFields[iIndex].result = true;
+      return false;
+    }
+  }
 };
