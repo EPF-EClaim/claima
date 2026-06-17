@@ -20,7 +20,7 @@ const AktivitiS = require("./AktivitiS");
 const SewaPetak = require("./SewaPetak");
 const KeahlianKelab = require("./KeahlianKelab");
 const Medical = require("./Medical");
-const PEDU = require("./PEDU");
+const PostEducation = require("./PostEducation");
 
 module.exports = {
   /**
@@ -310,9 +310,8 @@ module.exports = {
           break;
 
         case Constant.ClaimType.PEDU:
-          oReturnPayload = await PEDU.onEligibleCheck(
+          oReturnPayload = await PostEducation.onEligibleCheck(
             aPayload[i],
-            aFilteredEligibility,
             tx
           );
           break;
