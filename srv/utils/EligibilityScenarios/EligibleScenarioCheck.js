@@ -133,6 +133,18 @@ module.exports = {
       }
     };
 
+    // Claim Type Item that requires Vehicle Ownership filtering
+    if (
+      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.SEWAPETAK
+    ) {
+      const iFieldIndex = aPayload[0].CheckFields.findIndex(
+        field => field.fieldName === Constant.EntitiesFields.VEHICLE_OWNERSHIP_ID
+      );
+      if (iFieldIndex !== -1) {
+        aEligibilityCondition[Constant.EntitiesFields.VEHICLE_OWNERSHIP_ID] = aPayload[0].CheckFields[iFieldIndex].value;
+      }
+    };    
+
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
