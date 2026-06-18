@@ -476,7 +476,12 @@
                                     key="ZWORKFLOW_STEP"
                                     text="{i18n>workflowstep}"
                                     visible="{roleModel>/DTDAdmin_role}"
-                                />                                 
+                                />  
+                                <tnt:NavigationListItem
+                                    key="ZSUBSTITUTION_RULES_CONFIG"
+                                    text="{i18n>substitutionrules}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />                                                               
                             </tnt:items>
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>

@@ -4699,3 +4699,163 @@ annotate service.ZTRAIN_COURSE_PART with @(
         ]
     }
 );
+annotate service.ZEMP_APPROVER_VH with @(
+                                         // THIS CORES THE FILTER BAR: Only fields inside this list are generated as top inputs!
+                                       UI.SelectionFields: [
+    EEID,
+    NAME,
+    EMAIL
+]) {
+    @UI.hidden: true
+    ROLE;
+    @UI.hidden: true
+    DEP;
+};
+
+annotate service.ZEMP_SUBSTITUTE_VH with @(
+                                           // THIS CORES THE FILTER BAR: Only fields inside this list are generated as top inputs!
+                                         UI.SelectionFields: [
+    EEID,
+    NAME,
+    EMAIL
+]) {
+    @UI.hidden: true
+    ROLE;
+    @UI.hidden: true
+    DEP;
+    @UI.hidden: true
+    SELECTED_APPROVER;
+};
+
+annotate service.ZSUBSTITUTION_RULES_CONFIG with {
+    @Core.Computed SUBSTITUTE_RULE_ID;
+    VALID_FROM @(
+        Common.Label      : 'Valid From',
+        // This enforces it on the CAP backend engine
+        Validation.Minimum: $now,
+        // This tells the UI5 OData V4 model to pass the minimum constraint directly to the date control
+        Common.Constraints: {Minimum: $now}
+    );
+    VALID_TO   @(
+        Common.Label      : 'Valid To',
+        Validation.Minimum: $now,
+        Common.Constraints: {Minimum: $now}
+    );
+}
+
+annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [
+        SUBSTITUTE_RULE_ID,
+        USER_ID,
+        SUBSTITUTE_ID,
+        VALID_FROM,
+        VALID_TO
+    ],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : false,
+        Insertable: true
+    },
+    odata.draft.enabled,
+    UI                             : {
+        //CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        //DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Substitution Rules - ZSUBSTITUTION_RULES',
+            TypeNamePlural: 'Substitution Rules - ZSUBSTITUTION_RULES',
+        },
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_RULE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitution Rule ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitute ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALID_FROM,
+                ![@UI.Importance]: #High,
+                Label            : 'Valid From'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALID_TO,
+                ![@UI.Importance]: #High,
+                Label            : 'Valid To'
+            }
+        ]
+    }
+) {
+    USER_ID       @(
+        Common.Label                   : 'Approver ID',
+        // 1. Change to false to enable standard Value Help Dialog triggers
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'User Selection',
+            CollectionPath: 'ZEMP_APPROVER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: USER_ID, // Use the actual property of your main entity
+                    ValueListProperty: 'EEID' // The key field in ZEMP_MASTER
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'EMAIL'
+                }
+            ]
+        },
+        Common.SideEffects             : {
+            $Type           : 'Common.SideEffectsType',
+            SourceProperties: [USER_ID],
+            TargetProperties: [SUBSTITUTE_ID]
+        }
+    );
+    SUBSTITUTE_ID @(
+        Common.Label                   : 'Substitute ID',
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'Substitute Selection',
+            CollectionPath: 'ZEMP_SUBSTITUTE_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterIn',
+                    LocalDataProperty: USER_ID,
+                    ValueListProperty: 'SELECTED_APPROVER'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: SUBSTITUTE_ID,
+                    ValueListProperty: 'EEID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'EMAIL'
+                }
+            ]
+        }
+    );
+};

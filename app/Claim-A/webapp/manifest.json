@@ -647,6 +647,11 @@
                     "pattern": "ZTRAIN_COURSE_PART",
                     "name": "ZTRAIN_COURSE_PART",
                     "target": "ZTRAIN_COURSE_PART"
+                },
+                {
+                    "pattern": "ZSUBSTITUTION_RULES_CONFIG",
+                    "name": "ZSUBSTITUTION_RULES_CONFIG",
+                    "target": "ZSUBSTITUTION_RULES_CONFIG"
                 }
             ],
             "targets": {
@@ -4500,7 +4505,72 @@
                             }
                         }
                     }
-                },                
+                },
+                "ZSUBSTITUTION_RULES_CONFIG": {
+                    "type": "Component",
+                    "id": "ZSUBSTITUTION_RULES_CONFIG",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZSUBSTITUTION_RULES_CONFIG",
+                            "entitySet": "ZSUBSTITUTION_RULES_CONFIG",
+                            "variantManagement": "None",
+                            "showFooter": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",

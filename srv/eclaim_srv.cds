@@ -274,6 +274,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZSUBSTITUTION_RULES           as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
+    entity ZSUBSTITUTION_RULES_CONFIG    as
+        projection on ECLAIM.ZSUBSTITUTION_RULES {
+                @Core.Computed
+            key SUBSTITUTE_RULE_ID,
+                *
+        }
+        where
+            VALID_TO >= cast(
+                $now as Date
+            );
+
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
     type PreApproveClaims {
@@ -493,4 +504,24 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                             returns Response;
+
+    entity ZEMP_APPROVER_VH              as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP
+        };
+
+    entity ZEMP_SUBSTITUTE_VH              as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP,
+            // Virtual field allows frontend to pass selected context without breaking OData metadata rules
+            virtual null as SELECTED_APPROVER : String            
+        };                                 
 };

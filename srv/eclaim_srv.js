@@ -268,9 +268,9 @@ module.exports = (srv) => {
                     consumed = Number(existing[0].CONSUMED);
 
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
-                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT); 
+                    var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var new_return = return_value + Number(existing[0].RETURN);
                     var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
@@ -1921,7 +1921,7 @@ module.exports = (srv) => {
                     var sMarriageCategory = await GetDependentData.getMarriageCategory(oEmp.EEID);
                     var sEmpMarital = oEmp.MARITAL;
                 }
-                
+
                 if (!sMarriageCategory) {
                     req.error(404, `No marriage category available for employee.`);
                 }
@@ -1961,7 +1961,7 @@ module.exports = (srv) => {
                 if (!oEligibilityRule) {
                     return 0;
                 }
-                
+
                 var fFinalAmount = (parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT) * parseFloat(oEligibilityRule.SUBSIDISED_RATE)) / 100;
 
                 return {
@@ -1975,7 +1975,7 @@ module.exports = (srv) => {
             req.error(500, 'An error occurred while checking Eligibility Rule table.');
         }
     });
-    
+
     /**
      * Validate PEA total amount by calculating:
      * - existing PEA header total
@@ -2014,13 +2014,13 @@ module.exports = (srv) => {
 
     srv.on('checkElaunTukarEligible', async (req) => {
         const tx = cds.tx(req);
-        
-        const bIsClaimSide = req.data.IS_CLAIM === true; 
+
+        const bIsClaimSide = req.data.IS_CLAIM === true;
 
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, 'Employee not found'); 
+            return req.error(404, 'Employee not found');
         }
 
         // ---------------------------------------------------------
@@ -2035,7 +2035,7 @@ module.exports = (srv) => {
 
         const oConstantRec = await tx.run(
             SELECT.one.from(Constant.Entities.ZCONSTANTS)
-                .columns(Constant.EntitiesFields.VALUE) 
+                .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER })
         );
 
@@ -2047,7 +2047,7 @@ module.exports = (srv) => {
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
         if (dCurrentDate <= dEligibleDate) {
-            return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+            return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
         const sEligibleDateQueryFormat = dEligibleDate.toISOString().split('T')[0];
@@ -2056,22 +2056,22 @@ module.exports = (srv) => {
         // 2. Check Historical Data (Filtered by Eligible Date)
         // ---------------------------------------------------------
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
-        const sClaimType = Constant.ClaimType.ELAUN_TUKAR; 
+        const sClaimType = Constant.ClaimType.ELAUN_TUKAR;
         const aBlockingStatuses = [Constant.Status.DRAFT, Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED];
-        const sEmployeeId = oEmp.EEID; 
+        const sEmployeeId = oEmp.EEID;
 
         const [aExistingClaimsRaw, aExistingRequestsRaw] = await Promise.all([
             tx.run(SELECT.from(ZCLAIM_HEADER).where({
-                EMP_ID: sEmployeeId, 
+                EMP_ID: sEmployeeId,
                 CLAIM_TYPE_ID: sClaimType,
                 STATUS_ID: { 'in': aBlockingStatuses },
-                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat } 
+                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat }
             })),
             tx.run(SELECT.from(ZREQUEST_HEADER).where({
-                EMP_ID: sEmployeeId,            
-                CLAIM_TYPE_ID: sClaimType,              
+                EMP_ID: sEmployeeId,
+                CLAIM_TYPE_ID: sClaimType,
                 STATUS: { 'in': aBlockingStatuses },
-                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat } 
+                TRIP_START_DATE: { '>=': sEligibleDateQueryFormat }
             }))
         ]);
 
@@ -2083,23 +2083,23 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 3. Logic Branch: CLAIM SIDE vs REQUEST SIDE
         // ---------------------------------------------------------
-        
+
         if (bIsClaimSide) {
             // ==========================================
             // IF TRIGGERED FROM CLAIM UI
             // ==========================================
-            
+
             // Check Claims First
             for (const claim of aExistingClaims) {
-                const sStatus = claim.STATUS_ID; 
-                if (sStatus === Constant.Status.DRAFT) return Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = claim.STATUS_ID;
+                if (sStatus === Constant.Status.DRAFT) return Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
@@ -2108,34 +2108,34 @@ module.exports = (srv) => {
             // ==========================================
             // IF TRIGGERED FROM REQUEST UI
             // ==========================================
-            
+
             // Check Requests First
             for (const request of aExistingRequests) {
-                const sStatus = request.STATUS; 
-                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = request.STATUS;
+                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (request.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
                         console.log("here_req", request)
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
-            
+
             // Check Claims Second
             for (const claim of aExistingClaims) {
-                const sStatus = claim.STATUS_ID; 
-                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING; 
-                
+                const sStatus = claim.STATUS_ID;
+                if (sStatus === Constant.Status.DRAFT) sFinalStatus = Constant.ElaunTukarStatus.ON_GOING;
+
                 if (sStatus === Constant.Status.APPROVED || sStatus === Constant.Status.PENDING_APPROVAL) {
-                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY && 
+                    if (claim.TRAVEL_ALONE_FAMILY === Constant.TravelAloneOrWithFamily.WITH_FAMILY &&
                         claim.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
-                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY; 
+                        sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
@@ -2143,7 +2143,7 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 4. Passed all checks - Return Final Status
         // ---------------------------------------------------------
-        return sFinalStatus; 
+        return sFinalStatus;
     });
 
     srv.on('getMarriageCategoryBasedOnStatus', async (req) =>{
@@ -2166,7 +2166,7 @@ module.exports = (srv) => {
                 case Constant.MarriageCategory.MARRIED_1_TO_3_CHILDREN:
                     break;
                 case Constant.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN:
-                    break;  
+                    break;
             }
             return sMarriageCategory;
         }else{
@@ -2192,21 +2192,21 @@ module.exports = (srv) => {
 
             var oEligibleAmount = await tx.run(
                 SELECT.one
-                .from(Constant.Entities.ZELIGIBILITY_RULE)
-                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
-                .where({
-                    LODGING_CATEGORY: oLodgingCategory.LODGING_CATEGORY,
-                    CLAIM_TYPE_ID: req.data.sClaimType,
-                    CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
-                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
-                    START_DATE: { '<=': sTodayDate },
-                    END_DATE: { '>=': sTodayDate },
-                })
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        LODGING_CATEGORY: oLodgingCategory.LODGING_CATEGORY,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                    })
             )
-        return {
-            sCategory: oLodgingCategory.LODGING_CATEGORY,
-            iEligibleAmount: oEligibleAmount.ELIGIBLE_AMOUNT
-        };
+            return {
+                sCategory: oLodgingCategory.LODGING_CATEGORY,
+                iEligibleAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+            };
         }catch(err){
             req.error(404, `Amount not found.`);
         }
@@ -2231,6 +2231,236 @@ module.exports = (srv) => {
             return result;
         } catch (error) {
             return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });
+
+     const { ZEMP_MASTER } = cds.entities;
+
+    srv.before('READ', 'ZSUBSTITUTION_RULES_CONFIG', async (req) => {
+        const oEmp = await SELECT.one
+            .from(ZEMP_MASTER)
+            .where({ EMAIL: req.user.id });
+        if (!oEmp || !oEmp.DEP) return;
+        // Construct the subquery explicitly using the entity object
+        const subquery = SELECT('EEID').from(ZEMP_MASTER).where({ DEP: oEmp.DEP });
+        req.query.where({
+            USER_ID: { in: subquery }
+        });
+    });
+
+    srv.before('READ', 'ZEMP_APPROVER_VH', async (req) => {
+        const oEmp = await SELECT.one
+            .from('ZEMP_MASTER')
+            .where({ EMAIL: req.user.id });
+
+        if (!oEmp || !oEmp.DEP) return;
+
+        // Admin can sees their own department only
+        req.query.where({
+            DEP: oEmp.DEP
+        });
+    });
+
+    function getFilterValue(where, fieldName) {
+        if (!where || !Array.isArray(where)) return null;
+        for (let i = 0; i < where.length; i++) {
+            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
+                if ((where[i + 1] === '=' || where[i + 1] === 'eq') && where[i + 2]) {
+                    return where[i + 2].val !== undefined ? where[i + 2].val : where[i + 2];
+                }
+            }
+            if (Array.isArray(where[i])) {
+                const val = getFilterValue(where[i], fieldName);
+                if (val) return val;
+            }
+        }
+        return null;
+    }
+    // Function to recursively strip out the virtual 'SELECTED_APPROVER' parameter
+    // so the database doesn't look for a non-existent database column.
+    function removeFilterField(where, fieldName) {
+        if (!where || !Array.isArray(where)) return;
+        for (let i = where.length - 1; i >= 0; i--) {
+            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
+                // Remove the field ref, the operator (=), and the value
+                where.splice(i, 3);
+                // Clean up trailing 'and' / 'or' operators left over around it
+                if (where[i] === 'and' || where[i] === 'or') where.splice(i, 1);
+                else if (i > 0 && (where[i - 1] === 'and' || where[i - 1] === 'or')) where.splice(i - 1, 1);
+            } else if (Array.isArray(where[i])) {
+                removeFilterField(where[i], fieldName);
+            }
+        }
+    }
+
+    srv.before('READ', 'ZEMP_SUBSTITUTE_VH', async (req) => {
+        const oWhereClause = req.query && req.query.SELECT && req.query.SELECT.where;
+        let sSelectedApproverID = getFilterValue(oWhereClause, 'SELECTED_APPROVER') || getFilterValue(oWhereClause, 'USER_ID');
+        if (!sSelectedApproverID && req._ && req._.req && req._.req.query && req._.req.query.$filter) {
+            const sRawFilter = req._.req.query.$filter;
+            const oMatch = sRawFilter.match(/(?:SELECTED_APPROVER|USER_ID)\s+(?:eq|=)\s+['"]([^'"]+)['"]/);
+            if (oMatch) sSelectedApproverID = oMatch[1];
+        }
+        removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
+        removeFilterField(req.query.SELECT.where, 'USER_ID');
+        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
+            const oCurrentUser = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+            // If we can find their department, apply it as a filter constraint
+            if (oCurrentUser && oCurrentUser.DEP) {
+                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
+                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                    req.query.SELECT.where = [
+                        '(', ...req.query.SELECT.where, ')',
+                        'and',
+                        ...oDeptFilter
+                    ];
+                } else {
+                    req.query.SELECT.where = oDeptFilter;
+                }
+            }
+            return;
+        }
+        const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
+        if (oApproverData) {
+            const oTargetFilters = [
+                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
+                'and',
+                { ref: ['ROLE'] }, '=', { val: oApproverData.ROLE },
+                'and',
+                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
+            ];
+            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                req.query.SELECT.where = [
+                    '(', ...req.query.SELECT.where, ')',
+                    'and',
+                    ...oTargetFilters
+                ];
+            } else {
+                req.query.SELECT.where = oTargetFilters;
+            }
+        }
+    });
+
+    const { ZNUM_RANGE, ZSUBSTITUTION_RULES_CONFIG } = srv.entities;
+
+    //need to create for draft table, else ID will not be capture and will throw error
+    srv.before('NEW', 'ZSUBSTITUTION_RULES_CONFIG.drafts', async (req) => {
+        if (!req.data.SUBSTITUTE_RULE_ID) {
+            const tx = cds.tx(req)
+            try {
+                const oNumRange = await tx.run(
+                    SELECT.one.from(ZNUM_RANGE).where({ RANGE_ID: Constant.NumberRange.SUBSTITUTION_RULE })
+                );
+                if (!oNumRange) {
+                    return req.error(500, `Configuration error: Range ID '${Constant.NumberRange.SUBSTITUTION_RULE}' not found in ZNUM_RANGE table.`);
+                }
+
+                const sPrefix = oNumRange.PREFIX || "SUB";
+                const iCurrent = Number(oNumRange.CURRENT || 0);
+
+                const sGeneratedID = `${sPrefix}${String(iCurrent).padStart(7, "0")}`;
+
+                req.data.SUBSTITUTE_RULE_ID = sGeneratedID;
+
+                const sNextNumberStr = String(iCurrent + 1);
+
+                await tx.run(
+                    UPDATE(ZNUM_RANGE)
+                        .set({ CURRENT: sNextNumberStr })
+                        .where({ RANGE_ID: Constant.NumberRange.SUBSTITUTION_RULE })
+                );
+            } catch (err) {
+                console.error("Number Range Assignment Error:", err);
+                return req.error(500, "Failed to automatically generate a unique Substitution Rule ID sequence.");
+            }
+        }
+    });
+
+    srv.before('CREATE', 'ZSUBSTITUTION_RULES_CONFIG.drafts', async (req) => {
+        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO, DraftAdministrativeData_DraftUUID } = req.data;
+        const tx = cds.tx(req)
+
+        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
+
+        const oToday = new Date();
+        // Generates a dynamic YYYY-MM-DD string based on today's real-time date
+        const sTodayIso = `${oToday.getFullYear()}-${String(oToday.getMonth() + 1).padStart(2, '0')}-${String(oToday.getDate()).padStart(2, '0')}`;
+        // 1. Block VALID_FROM if it is before today
+        if (VALID_FROM < sTodayIso) {
+            return req.error({
+                code: 'PAST_START_DATE',
+                message: 'The Valid From date cannot be in the past. Please choose today or a future date.',
+                target: 'VALID_FROM',
+                status: 400
+            });
+        }
+        // 2. Block VALID_TO if it is before today
+        if (VALID_TO < sTodayIso) {
+            return req.error({
+                code: 'PAST_END_DATE',
+                message: 'The Valid To date cannot be in the past. Please choose today or a future date.',
+                target: 'VALID_TO',
+                status: 400
+            });
+        }
+
+        if (new Date(VALID_TO) < new Date(VALID_FROM)) {
+            return req.error({
+                code: 'INVALID_DATE_RANGE',
+                message: 'The Valid To Date cannot be earlier than the Valid From Date.',
+                target: 'VALID_TO',
+                status: 400
+            });
+        }
+
+        // Fetch employee master data profiles in parallel
+        const [oApprover, oSubstitute] = await Promise.all([
+            SELECT.one.from('ZEMP_MASTER').where({ EEID: USER_ID }),
+            SELECT.one.from('ZEMP_MASTER').where({ EEID: SUBSTITUTE_ID })
+        ]);
+
+        if (!oApprover || !oSubstitute) return;
+        // Validate matching Department (DEP) and Role (ROLE)
+        if (oApprover.DEP !== oSubstitute.DEP || oApprover.ROLE !== oSubstitute.ROLE) {
+            return req.error({
+                code: 'INVALID_SUBSTITUTE_COMBINATION',
+                message: `The substitute must belong to the same department (${oApprover.DEP}) and hold the same role (${oApprover.ROLE}) as the approver.`,
+                target: 'SUBSTITUTE_ID', // Turns the Substitute ID field border red
+                status: 400
+            });
+        }
+
+        const [oActiveOverlap, oDraftOverlap] = await Promise.all([
+            // A. Check finalized records in the active table
+            tx.run(
+                SELECT.one.from('ZSUBSTITUTION_RULES').where({
+                    USER_ID: USER_ID,
+                    VALID_FROM: { '<=': VALID_TO },
+                    VALID_TO: { '>=': VALID_FROM }
+                })
+            ),
+            // B. Check other users' drafts, but EXCLUDE our current editing session GUID
+            tx.run(
+                SELECT.one.from(ZSUBSTITUTION_RULES_CONFIG.drafts).where({
+                    USER_ID: USER_ID,
+                    DraftAdministrativeData_DraftUUID: { '!=': DraftAdministrativeData_DraftUUID }, // Don't match against our record
+                    VALID_FROM: { '<=': VALID_TO },
+                    VALID_TO: { '>=': VALID_FROM }
+                })
+            )
+        ]);
+
+        // If an overlap is stop the transaction
+        if (oActiveOverlap || oDraftOverlap) {
+            const oExisting = oActiveOverlap || oDraftOverlap;
+            return req.error({
+                code: 'SUBSTITUTE_OVERLAP',
+                message: `This approver already has an assigned substitute within this timeframe (${oExisting.VALID_FROM} to ${oExisting.VALID_TO}).`,
+                target: 'VALID_FROM',
+                status: 400
+            });
         }
     });
 }
