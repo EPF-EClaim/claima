@@ -2886,6 +2886,20 @@ sap.ui.define([
 		},
 		onSelectRoundTrip: async function (oEvent) {
 			this.onInputAllocatedAmount(oEvent);
-		}
+		},
+
+		 /**
+        * Event handler triggered when the user finishes selecting dependents 
+        * and closes the MultiComboBox dropdown.
+        */
+        onDependentSelectionChange: async function (oEvent) {
+        
+		const oMultiComboBox = oEvent.getSource();
+		const aSelectedItems = oMultiComboBox.getSelectedItems() || [];
+        const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
+
+        await RequestUtility._getEntitledMeterCube(aSelectedKeys);
+        }
+
 	});
 });
