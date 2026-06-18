@@ -4700,7 +4700,6 @@ annotate service.ZTRAIN_COURSE_PART with @(
     }
 );
 annotate service.ZEMP_APPROVER_VH with @(
-                                         // THIS CORES THE FILTER BAR: Only fields inside this list are generated as top inputs!
                                        UI.SelectionFields: [
     EEID,
     NAME,
@@ -4713,7 +4712,6 @@ annotate service.ZEMP_APPROVER_VH with @(
 };
 
 annotate service.ZEMP_SUBSTITUTE_VH with @(
-                                           // THIS CORES THE FILTER BAR: Only fields inside this list are generated as top inputs!
                                          UI.SelectionFields: [
     EEID,
     NAME,
@@ -4730,16 +4728,10 @@ annotate service.ZEMP_SUBSTITUTE_VH with @(
 annotate service.ZSUBSTITUTION_RULES_CONFIG with {
     @Core.Computed SUBSTITUTE_RULE_ID;
     VALID_FROM @(
-        Common.Label      : 'Valid From',
-        // This enforces it on the CAP backend engine
-        Validation.Minimum: $now,
-        // This tells the UI5 OData V4 model to pass the minimum constraint directly to the date control
-        Common.Constraints: {Minimum: $now}
+        Common.Label      : 'Valid From'
     );
     VALID_TO   @(
-        Common.Label      : 'Valid To',
-        Validation.Minimum: $now,
-        Common.Constraints: {Minimum: $now}
+        Common.Label      : 'Valid To'
     );
 }
 
