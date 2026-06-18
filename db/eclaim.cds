@@ -36,6 +36,8 @@ entity ZEMP_MASTER : managed {
         EFFECTIVE_DATE                : Date;
         UPDATED_DATE                  : Date;
         INSERTED_DATE                 : Date;
+        ELAUN_TUKAR_REASON            : String(4);        
+        ELAUN_TUKAR_START_DATE        : Date;
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER

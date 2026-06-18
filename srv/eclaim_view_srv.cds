@@ -67,7 +67,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_ALONE_FAMILY,
                 ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
                 TRAVEL_FAMILY_NOW_LATER,
-                ZFAMILY_TIMING.FAMILY_TIMING_DESC
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.POS,
+                ZEMP_MASTER.POSITION_NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.JOB_GROUP                
         };
 
     entity ZEMP_REQUEST_EE_VIEW           as
@@ -113,7 +120,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_ALONE_FAMILY,
                 ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
                 TRAVEL_FAMILY_NOW_LATER,
-                ZFAMILY_TIMING.FAMILY_TIMING_DESC
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.POS,
+                ZEMP_MASTER.POSITION_NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.JOB_GROUP          
         };
 
 
@@ -261,8 +275,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRIP_END_DATE,
                 TRIP_START_DATE,
                 ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.NAME,
                 ZEMP_MASTER.POS,
+                ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
@@ -312,8 +328,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRIP_END_DATE,
                 TRIP_START_DATE,
                 ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.NAME,
                 ZEMP_MASTER.POS,
+                ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
@@ -462,7 +480,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-                TOTAL_TRAVELLER
+                TOTAL_TRAVELLER,
+                ZCLAIM_HEADER.STATUS_ID,
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
         };
 
     entity ZEMP_REQUEST_STATUS            as
