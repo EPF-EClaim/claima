@@ -1,0 +1,32 @@
+{
+  "role": {
+    "name": "external_access",
+    "schema_privileges": [
+      {
+        "privileges": [ "SELECT" ]
+      }
+    ],
+    "object_privileges": [
+      {
+        "name": "ECLAIM_ZEMP_MASTER",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZDEPARTMENT",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZDIVISION",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZOFFICE_LOCATION",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      }                   
+    ]
+  }
+}

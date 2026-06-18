@@ -31,12 +31,34 @@
   },
   "private": true,
   "cds": {
-    "server": {
-      "index": true,
-      "body_parser": {
-        "limit": "10mb"
-      }
-    },
+    "build": {
+      "target": "gen",
+      "tasks": [
+        {
+          "for": "hana",
+          "src": "db",
+          "options": {
+            "deploy": [
+              {
+                "src": "cfg/ECLAIM_EXTERNAL_ACCESS.hdbrole",
+                "target": "src/ECLAIM_EXTERNAL_ACCESS.hdbrole"
+              },
+              {
+                "src": "cfg/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole",
+                "target": "src/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole"
+              }
+            ]
+          }
+        }
+      ]
+  },
+  "server": {
+    "index": true,
+    "body_parser": {
+      "limit": "10mb"
+    }
+  },
+ 
     "log": {
       "levels": {
         "auth": "debug"

@@ -49,6 +49,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
         STATUS             : String;
     }
 
+    type paymentdata {
+        ID           : String;
+        PAYMENT_DATE : Date;
+        STATUS_ID    : String;
+    }
+
     action   batchCreateEmployee(employees: many ZEMP_MASTER)                                            returns Response;
 
     action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)                                       returns Response;
@@ -56,6 +62,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                                       returns Response;
 
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
+
+    action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
 
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
@@ -496,6 +504,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               isNew: Boolean,
                               oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
 
+    type JenazahEligibleAmount {
+        iAmount : Decimal(16,2);
+    }
+
+    function getJenazahEligibleAmount(
+            sTransportPassingID: String,
+            sClaimType: String,
+            sClaimTypeItem: String)
+        returns JenazahEligibleAmount;
+
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                                  returns Boolean;
 
     type LodgingOverseaAmountAndCat {
@@ -507,6 +525,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                                       returns Response;
+    type Roundtripamount {
+        fFinalAmount: Decimal(15,2);
+    }
+    function calculateRoundTripKM (fKM: Decimal(15, 2))                                              returns Roundtripamount;
 
     entity ZEMP_APPROVER_REQUEST_DETAILS as
         projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {
@@ -1108,4 +1130,79 @@ service eclaim_srv @(requires: 'authenticated-user') {
             COST_CENTER_ID,
             COST_CENTER_DESC
         };
+
+    entity ZEMP_CC_BUDGET_DETAIL         as
+        select from ECLAIM.ZCLAIM_HEADER as HEADER
+        inner join ECLAIM.ZCLAIM_ITEM as ITEM
+            on HEADER.CLAIM_ID = ITEM.CLAIM_ID
+        left join ECLAIM.ZEMP_MASTER as EMP
+            on HEADER.EMP_ID = EMP.EEID
+        {
+            key HEADER.CLAIM_ID,
+            key ITEM.CLAIM_SUB_ID,
+                HEADER.EMP_ID,
+                EMP.NAME,
+                EMP.GRADE,
+                EMP.DEP,
+                EMP.POS,
+
+                /* Cost Center logic */
+                case
+                    when HEADER.ALTERNATE_COST_CENTER is not null
+                         and HEADER.ALTERNATE_COST_CENTER <> ''
+                         then HEADER.ALTERNATE_COST_CENTER
+                    else HEADER.COST_CENTER
+                end                as FUND_CENTER : String,
+
+                /* Match with budget */
+                ITEM.GL_ACCOUNT    as COMMITMENT_ITEM,
+                ITEM.MATERIAL_CODE as MATERIAL_GROUP,
+
+                /* Claim info */
+                HEADER.SUBMITTED_DATE,
+                HEADER.PAYMENT_DATE,
+                HEADER.STATUS_ID,
+                HEADER.PURPOSE,
+                HEADER.TRIP_START_DATE,
+                HEADER.TRIP_END_DATE,
+
+                ITEM.CLAIM_TYPE_ID,
+                ITEM.CLAIM_TYPE_ITEM_ID,
+                ITEM.AMOUNT
+        };
+
+    entity ZEMP_CC_BUDGET_REPORT         as
+        projection on ECLAIM.ZBUDGET {
+
+            key YEAR,
+            key INTERNAL_ORDER,
+            key FUND_CENTER,
+            key COMMITMENT_ITEM,
+            key MATERIAL_GROUP,
+
+                CURRENT_BUDGET,
+                VIREMENT_IN,
+                VIREMENT_OUT,
+                SUPPLEMENT,
+                RETURN,
+
+                (
+                    coalesce(
+                        VIREMENT_IN, 0
+                    )+coalesce(
+                        VIREMENT_OUT, 0
+                    )+coalesce(
+                        SUPPLEMENT, 0
+                    )+coalesce(
+                        RETURN, 0
+                    )
+                ) as ADJUST_AMOUNT : Decimal(16, 2),
+
+                COMMITMENT,
+                ACTUAL,
+                CONSUMED,
+                BUDGET_BALANCE,
+                _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
+                                         on FUND_CENTER = _Detail.FUND_CENTER
+        }        
 };

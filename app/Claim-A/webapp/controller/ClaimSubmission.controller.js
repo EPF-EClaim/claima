@@ -315,6 +315,8 @@ sap.ui.define([
 		_afterLoadFragments: async function () {
 			// ReInit claimutility because of model undefined upon refresh on claim submission view
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+			// ReInit utility because of model undefined upon refresh on claim submission view
+			Utility.init(this.getOwnerComponent(), this.getView());
 			// enable view attachment at claim summary
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
@@ -777,6 +779,7 @@ sap.ui.define([
 				mode_of_transfer: o.TRANSFER_MODE_DESC,
 				travel_alone_family: o.TRAVEL_TYPE_DESC,
 				travel_family_now_later: o.FAMILY_TIMING_DESC,
+				mode_of_transfer_id: o.MODE_OF_TRANSFER,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -1141,6 +1144,7 @@ sap.ui.define([
 					"mode_of_transfer": null,
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
+					"mode_of_transfer_id": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -1812,6 +1816,16 @@ sap.ui.define([
 		 */
 		onEditHeaderPress: async function () {
 			Common.init(this.getOwnerComponent(), this.getView());
+			///For Elaun Pertukaran - Need the Req No of Days based on Mode of Transfer when Edit button is pressed
+			
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (oInputModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR) {
+				var iMaxDays = await Utility.getModeofTransferMaxDays(oInputModel.getProperty("/claim_header/mode_of_transfer_id"));
+				if (!!iMaxDays) {
+					oInputModel.setProperty("/claim_header/req_no_of_days", iMaxDays);
+				}
+			}
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
 
@@ -2660,6 +2674,10 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 				}
 			}
+			//if round trip set to yes
+			if (oInputModel.getProperty("/claim_item/round_trip")) {
+				await this.onChange_ClaimDetails_Kilometer();
+			}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2919,7 +2937,6 @@ sap.ui.define([
 					break;
 			}
 		},
-
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -3633,9 +3650,20 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_Kilometer: async function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oInputModel = this.getView().getModel("claimitem_input");
 
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
 				await this._calculateRatePerKm(false);
+			}
+
+			//Added for Round Trip
+			if (oInputModel.getProperty("/claim_item/round_trip")) {
+				var fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
+				if (fKm > 0) {
+					oInputModel.setProperty("/claim_item/rtkm", fKm * 2);
+				} else {
+					oInputModel.setProperty("/claim_item/rtkm", null);
+				}
 			}
 		},
 
@@ -3683,10 +3711,14 @@ sap.ui.define([
 					oPropertyModel.getProperty("/km/is_visible") &&
 					oPropertyModel.getProperty("/rate_per_km/is_visible")
 				) {
-					const fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
+					let fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
 					const fRate = parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km")) || 0;
 					const fToll = parseFloat(oInputModel.getProperty("/claim_item/toll")) || 0;
-
+					
+					if (oInputModel.getProperty("/claim_item/round_trip"))
+					{
+						fKm = fKm * 2;
+					}
 					let fAmount = fKm * fRate;
 
 					if (oPropertyModel.getProperty("/toll/is_visible") && fToll > 0) {
@@ -5497,5 +5529,42 @@ sap.ui.define([
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return true;
 		},
+		/**
+		 * Handles checkbox toggle for RoundTrip function. Multiply by 2 if active.
+		 *
+		 * @param {sap.ui.base.Event} oEvent - Checkbox event
+		 */
+		onSelectRoundTrip: async function (oEvent) {
+			const oResult = await Utility.handleRoundTrip(
+				Constants.SubmissionTypePrefix.CLAIM,
+				oEvent
+			);
+
+			if (oResult?.error) {
+				MessageBox.error(oResult.error);
+				return;
+			}
+
+			if (oResult?.km !== undefined) {
+				this.getView().getModel("claimitem_input").setProperty("/claim_item/rtkm", oResult.km);
+			}
+			// claim-specific recalculation
+			this._calculateRatePerKm(false);
+		},
+
+		onSelect_ClaimDetails_FuneralTransport: async function(oEvent){
+			const sFuneralTransportID = oEvent.getParameter("selectedItem").getKey();
+			const oInputModel = this.getView().getModel("claimitem_input");
+			
+			if(oInputModel.getProperty("/claim_item/funeral_transportation") == this._oConstant.TransportPassing.DALAM_STESEN ||
+				oInputModel.getProperty("/claim_item/funeral_transportation") == this._oConstant.TransportPassing.LUAR_STESEN){
+				const iEligibleAmount = await ClaimUtility.getFuneralTransportEligibleAmount(sFuneralTransportID, oInputModel.getProperty("/claim_item/claim_type_item_id"), oInputModel.getProperty("/claim_item/claim_type_id"));
+				if(!iEligibleAmount) return;
+				oInputModel.setProperty("/claim_item/amount", iEligibleAmount);
+			}else{
+				oInputModel.setProperty("/claim_item/amount", 0)
+			}
+
+		}
 	});
 });
