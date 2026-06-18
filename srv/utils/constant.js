@@ -285,7 +285,9 @@ const Constant = {
         "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
         "MED_REVIEWER": "MED_REVIEWER",
         "MED_APPROVER": "MED_APPROVER",
-        "AUTO": "AUTO"
+        "AUTO": "AUTO",
+        "ELAUN_PINDAH_VERIFIER" : "ELAUN_PINDAH_VERIFIER",
+        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER"
     }, 
     Status: {
         DRAFT : "STAT01", 

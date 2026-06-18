@@ -361,7 +361,7 @@ sap.ui.define([
 					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
 					// approver view

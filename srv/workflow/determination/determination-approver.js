@@ -137,6 +137,54 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
 
                         }
                         break;
+                        case Constant.Role.ELAUN_PINDAH_VERIFIER:
+                        // Possible multiple approvers retrieved from ZCONSTANTS table
+                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
+                        console.log("aConstantValues", aConstantValues)
+                        if(aConstantValues.length){
+                            for(const oId of aConstantValues){
+                                if(oId.VALUE){
+                                    oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
+                                    console.log("oApproverDetails", oApproverDetails)
+                                    oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                                    console.log("oPopulatedEmployee", oPopulatedEmployee)
+                                    if(oPopulatedEmployee){
+                                        aApproversDetails.push(oPopulatedEmployee);
+                                    }else{
+                                        return [];
+                                    }
+                                    console.log("Constant Approver: ", oPopulatedEmployee)
+                                }else{
+                                    return [];
+                                }
+                            }
+
+                        }
+                        break;
+                        case Constant.Role.WILAYAH_ASAL_VERIFIER:
+                        // Possible multiple approvers retrieved from ZCONSTANTS table
+                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
+                        console.log("aConstantValues", aConstantValues)
+                        if(aConstantValues.length){
+                            for(const oId of aConstantValues){
+                                if(oId.VALUE){
+                                    oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
+                                    console.log("oApproverDetails", oApproverDetails)
+                                    oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                                    console.log("oPopulatedEmployee", oPopulatedEmployee)
+                                    if(oPopulatedEmployee){
+                                        aApproversDetails.push(oPopulatedEmployee);
+                                    }else{
+                                        return [];
+                                    }
+                                    console.log("Constant Approver: ", oPopulatedEmployee)
+                                }else{
+                                    return [];
+                                }
+                            }
+
+                        }
+                        break;
                     default:
                 }
             }

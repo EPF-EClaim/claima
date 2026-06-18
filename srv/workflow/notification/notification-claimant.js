@@ -59,7 +59,7 @@ async function sendEmailToClaimant(sId, sApproverId, oDescriptor, sAction, sComm
             sId,
             oClaimantContext[Constant.EntitiesFields.NAME],
             sAction,
-            "reuben.lai@my.ey.com",
+            oClaimantContext[Constant.EntitiesFields.EMAIL],
             sComments,
             sRejectionReason
         )

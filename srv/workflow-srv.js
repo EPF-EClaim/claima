@@ -170,7 +170,7 @@ module.exports = (srv) => {
         // If action is APPROVE and there are no next level approver, notify claimant
         // Retrieve Reject reason description if rejection reason is provided
         let sRejectionReasonDesc = null;
-        if(sRejectionReason) {
+        if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK){
             sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
             console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
         }

@@ -46,9 +46,9 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                     sId,
                     oApproverContext.APPROVER_NAME,
                     sAction,
-                    "reuben.lai@my.ey.com"
+                    oApproverContext.APPROVER_EMAIL
                 )
-                console.log("Generated email payload: ", oEmailPayload);
+                console.log("Generated email payload approver: ", oEmailPayload);
                 oResponse = await sendEmailViaSAPIS(oEmailPayload);
                 console.log(oResponse);
                 if(oApproverContext.SUB_NAME) {
@@ -60,12 +60,13 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                         sId,
                         oApproverContext.SUB_NAME,
                         sAction,
-                        "reuben.lai@my.ey.com"
+                        oApproverContext.SUB_EMAIL
                     )
-                    console.log("Generated email payload: ", oEmailPayload);
+                    console.log("Generated email payload sub: ", oEmailPayload);
                     oResponse = await sendEmailViaSAPIS(oEmailPayload);
                     console.log(oResponse);
                 }
+                return true;
             }
         }
         return true;
