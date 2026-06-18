@@ -206,8 +206,13 @@ sap.ui.define([
 					}
 					break;
 				case "cc_budgetreport":
+					if (bAdminCC) {
 					HashChanger.getInstance().replaceHash("");
 					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
 					break;
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
