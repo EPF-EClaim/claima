@@ -415,7 +415,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         amount     : Decimal(15, 2);
     }
 
-    function calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
+    action calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
 
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
@@ -1206,6 +1206,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CONSUMED,
                 BUDGET_BALANCE,
                 _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on FUND_CENTER = _Detail.FUND_CENTER
+                                         on $self.FUND_CENTER = _Detail.FUND_CENTER and
+                                            $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
+                                            $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
+
         }        
 };
