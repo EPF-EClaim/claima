@@ -62,20 +62,21 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: async function () {
-			this.isFclEnabled = function () {
-				return false;
-			};
-			this.updateUIStateForView = function () {
-			};
-			this.calculateLayout = function () {
-					return "OneColumn";
-			};
+			
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
 			this._oReqModel = this.getOwnerComponent().getModel('request');
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
+			this.isFclEnabled = function () {
+				return false;
+			};
+			this.updateUIStateForView = function () {
+			};
+			this.calculateLayout = function () {
+				 return "OneColumn";
+			};
 
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
@@ -161,13 +162,13 @@ sap.ui.define([
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "req_summary":
-					if (bDTDAdmin || bAdminSystem || bAdminCC) {
+					//if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("ZEMP_REQUEST_REPORT_SUMMARY");
-					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
-					}
+					//} else {
+					//	var message = Utility.getText("msg_unauthorized_role");
+					//	MessageBox.error(message);
+					//}
 					break;
 				case "req_details":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
