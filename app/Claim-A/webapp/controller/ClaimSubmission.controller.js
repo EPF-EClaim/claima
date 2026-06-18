@@ -1432,7 +1432,7 @@ sap.ui.define([
 				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
 				oInputModel.setProperty("/claim_item/gl_account", glAccount);
 				//// get cost center
-				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || null;
+				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center") || null;
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
 				//// get descriptions
 				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
