@@ -101,6 +101,7 @@
                     /> -->
 
                     <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false" 
+                     visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"

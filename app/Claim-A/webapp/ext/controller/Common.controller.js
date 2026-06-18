@@ -1,150 +1,25 @@
-sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
+sap.ui.define([
+	'sap/ui/core/mvc/ControllerExtension',
 	'sap/m/MessageBox',
-], function (ControllerExtension, MessageBox, OverflowToolbar) {
+	'sap/m/MessageToast'
+], function (ControllerExtension, MessageBox, MessageToast) {
 	'use strict';
-
 	return ControllerExtension.extend('claima.ext.controller.Common', {
-		// this section allows to extend lifecycle hooks or hooks provided by Fiori elements
+		_navToken: 0,
+		_reportTimer: null,
+		_detailTimer: null,
+		_searchTimer: null,
 		override: {
 			/**
-			 * Called when a controller is instantiated and its View controls (if available) are already created.
-			 * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
-			 * @memberOf claima.ext.controller.Common
-			 */
+				  * Called when a controller is instantiated and its View controls (if available) are already created.
+				  * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
+				  * @memberOf claima.ext.controller.Common
+				  */
 			onInit: function () {
 
-				console.log("COMMON EXTENSION LOADED");
-
-				// wait for FE table to render
-
-				this._navToken = (this._navToken || 0) + 1;
-				const currentToken = this._navToken;
-				const targetHash = window.location.hash;
-
-				setTimeout(() => {
-					if (currentToken !== this._navToken) {
-						console.log("⏭️ Skip stale detail filter timer");
-						return;
-					}
-
-					if (!targetHash.includes("ZEMP_CC_BUDGET_DETAIL")) {
-						return;
-					}
-
-					const oView = this.base.getView();
-					console.log("Searching for MDC table...");
-
-					// find sap.ui.mdc.Table
-					const aTables = oView.findAggregatedObjects(true, function (oControl) {
-						return oControl.isA("sap.ui.mdc.Table");
-					});
-
-					if (!aTables.length) {
-						console.log("No MDC table found");
-						return;
-					}
-
-					const oMdcTable = aTables[0];
-					console.log("MDC table found");
-
-					let oInnerTable = null;
-
-					// try standard method
-					if (oMdcTable.getTable) {
-						oInnerTable = oMdcTable.getTable();
-					}
-
-					// fallback method
-					if (!oInnerTable && oMdcTable._oTable) {
-						oInnerTable = oMdcTable._oTable;
-					}
-
-					if (!oInnerTable) {
-						console.log("Inner table not available");
-						return;
-					}
-
-					console.log("Inner table ready");
-
-
-					// FINAL FIX — use selection instead of click
-					if (oInnerTable.setMode) {
-						oInnerTable.setMode("SingleSelectMaster");
-					}
-
-					if (oInnerTable.attachSelectionChange) {
-						oInnerTable.attachSelectionChange(this.onRowPress, this);
-						console.log("SelectionChange attached");
-					} else {
-						console.log("SelectionChange not supported");
-					}
-
-				}, 1500);
-
-
-				// DETAIL PAGE AUTO FILTER + LOAD (FINAL FIXED)
-				// DETAIL PAGE AUTO FILTER + LOAD (CLEAN WORKING VERSION)
-				setTimeout(() => {
-
-					const oView = this.base.getView();
-					const sHash = window.location.hash;
-
-					// only run on detail page
-					if (!sHash.includes("ZEMP_CC_BUDGET_DETAIL")) {
-						return;
-					}
-
-					console.log("Inside DETAIL page");
-
-					const oFilterBar = oView.byId("fe::FilterBar::ZEMP_CC_BUDGET_DETAIL");
-
-					if (!oFilterBar) {
-						console.log("FilterBar not found");
-						return;
-					}
-
-					console.log("FilterBar found");
-
-					// extract values from URL
-					const fundMatch = sHash.match(/FUND_CENTER=([^,)\s]+)/);
-					const commitMatch = sHash.match(/COMMITMENT_ITEM=([^,)\s]+)/);
-					const matMatch = sHash.match(/MATERIAL_GROUP=([^,)\s]+)/);
-
-					if (!fundMatch || !commitMatch || !matMatch) {
-						console.log(" Missing parameters");
-						return;
-					}
-
-					const oConditions = {
-						FUND_CENTER: [{
-							operator: "EQ",
-							values: [fundMatch[1]]
-						}],
-						COMMITMENT_ITEM: [{
-							operator: "EQ",
-							values: [commitMatch[1]]
-						}],
-						MATERIAL_GROUP: [{
-							operator: "EQ",
-							values: [matMatch[1]]
-						}]
-					};
-
-					// apply filter conditions
-					// ✅ CLEAR old filters before applying new
-					oFilterBar.setFilterConditions({});
-					oFilterBar.setFilterConditions(oConditions);
-					console.log("Filters applied");
-
-					// IMPORTANT: give FE enough time then trigger search
-					setTimeout(() => {
-						oFilterBar.fireSearch();
-						console.log("Search fired FINAL ");
-					}, 800);
-
-				}, 3000);
-
-
+				// Attach a router listener that runs evry time the page view changes
+				const oRouter = this.base.getAppComponent().getRouter();
+				oRouter.attachRouteMatched(this._onRouteMatched, this);
 			},
 
 			editFlow: {
@@ -154,54 +29,110 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 					const END_DATE = aData.find(item => item.END_DATE)?.END_DATE;
 					const dStart = new Date(START_DATE);
 					const dEnd = new Date(END_DATE);
-
 					if (START_DATE && END_DATE && dEnd < dStart) {
-						sap.m.MessageToast.show("End date cannot be earlier than start date");
+						MessageToast.show("End date cannot be earlier than start date");
 						return Promise.reject();
 					}
 					return Promise.resolve();
 				}
-			},
-
+			}
 		},
 
+		/**
+		 * Triggers dynamically every time the user navigates back .
+		 */
+		_onRouteMatched: function (oEvent) {
+			const sRouteName = oEvent.getParameter("name");
+
+			this._navToken = (this._navToken || 0) + 1;
+			const currentToken = this._navToken;
+
+			// clear timeouts
+			if (this._reportTimer) { clearTimeout(this._reportTimer); }
+			if (this._detailTimer) { clearTimeout(this._detailTimer); }
+			if (this._searchTimer) { clearTimeout(this._searchTimer); }
+
+			//budget report
+			if (sRouteName === "ZEMP_CC_BUDGET_REPORT") {
+				this._reportTimer = setTimeout(() => {
+					if (currentToken !== this._navToken) return;
+
+					const oView = this.base.getView();
+					const aTables = oView.findAggregatedObjects(true, function (oControl) {
+						return oControl.isA("sap.ui.mdc.Table");
+					});
+					if (!aTables.length) return;
+					const oMdcTable = aTables[0];
+
+					let oInnerTable = oMdcTable.getTable ? oMdcTable.getTable() : null;
+					if (!oInnerTable && oMdcTable._oTable) { oInnerTable = oMdcTable._oTable; }
+					if (!oInnerTable) return;
+
+					if (oInnerTable.setMode) { oInnerTable.setMode("SingleSelectMaster"); }
+					if (oInnerTable.detachSelectionChange) { oInnerTable.detachSelectionChange(this.onRowPress, this); }
+					if (oInnerTable.attachSelectionChange) {
+						oInnerTable.attachSelectionChange(this.onRowPress, this);
+					}
+				}, 1000);
+			}
+
+			//route to budget detail
+			if (sRouteName === "ZEMP_CC_BUDGET_DETAIL") {
+				this._detailTimer = setTimeout(() => {
+					if (currentToken !== this._navToken) return;
+
+					const oView = this.base.getView();
+					const oFilterBar = oView.byId("fe::FilterBar::ZEMP_CC_BUDGET_DETAIL");
+					if (!oFilterBar) return;
+
+					const oArgs = oEvent.getParameter("arguments");
+					if (!oArgs || !oArgs.FUND_CENTER) return;
+					const oConditions = {
+						FUND_CENTER: [{ operator: "EQ", values: [decodeURIComponent(oArgs.FUND_CENTER)] }],
+						COMMITMENT_ITEM: [{ operator: "EQ", values: [decodeURIComponent(oArgs.COMMITMENT_ITEM)] }],
+						MATERIAL_GROUP: [{ operator: "EQ", values: [decodeURIComponent(oArgs.MATERIAL_GROUP)] }]
+					};
+
+					// Clean previous filtering 
+					oFilterBar.setFilterConditions({});
+					oFilterBar.setFilterConditions(oConditions);
+
+					this._searchTimer = setTimeout(() => {
+						if (currentToken !== this._navToken) return;
+						oFilterBar.fireSearch();
+						console.log("Filtered detail page with current keys:", oConditions);
+					}, 500);
+				}, 1000);
+			}
+		},
 
 		onRowPress: function (oEvent) {
+			const bSelected = oEvent.getParameter("selected");
+			// Only navigate on selection, not deselection
+			if (bSelected === false) {
+				return;
+			}
 
 			const oItem = oEvent.getParameter("listItem");
-
-			if (!oItem) {
-				console.log("No listItem");
-				return;
-			}
+			if (!oItem) return;
 
 			const oContext = oItem.getBindingContext();
-
-			if (!oContext) {
-				console.log("No binding context");
-				return;
-			}
+			if (!oContext) return;
 
 			const oData = oContext.getObject();
-
-			// dEBUG ALL DATA
-			console.log("FULL ROW DATA:", oData);
-
-			// check specific fields
-			console.log("FUND_CENTER:", oData.FUND_CENTER);
-			console.log("COMMITMENT_ITEM:", oData.COMMITMENT_ITEM);
-			console.log("MATERIAL_GROUP:", oData.MATERIAL_GROUP);
-
-
 			const oRouter = this.base.getAppComponent().getRouter();
 
+			const oTable = oEvent.getSource();
+			if (oTable && oTable.removeSelections) {
+				oTable.removeSelections(true); // Ensure the clicked item is selected
+			}
 			oRouter.navTo("ZEMP_CC_BUDGET_DETAIL", {
-				FUND_CENTER: oData.FUND_CENTER,
-				COMMITMENT_ITEM: oData.COMMITMENT_ITEM,
-				MATERIAL_GROUP: oData.MATERIAL_GROUP
+				FUND_CENTER: encodeURIComponent(oData.FUND_CENTER),
+				COMMITMENT_ITEM: encodeURIComponent(oData.COMMITMENT_ITEM),
+				MATERIAL_GROUP: encodeURIComponent(oData.MATERIAL_GROUP || "DEFAULT")
 			});
+		},
 
-		}
 
 	});
 });
