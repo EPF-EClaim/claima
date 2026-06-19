@@ -166,21 +166,19 @@ module.exports = {
                     }
                 }
 
-                if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
-                    iIndex = null;
-                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.TO_STATE_ID);
-                    if (iIndex == -1) return;
-                    if (oEmp.STATE_OF_ORIGIN &&
-                        oPayload.CheckFields[iIndex].value) {
-                        if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
-                            oPayload.CheckFields[iIndex].result = true;
-                        }
-                        else {
-                            oPayload.CheckFields[iIndex].result = false;
-                        }
-                    } else {
+                iIndex = null;
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.TO_STATE_ID);
+                if (iIndex == -1) return;
+                if (oEmp.STATE_OF_ORIGIN &&
+                    oPayload.CheckFields[iIndex].value) {
+                    if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    }
+                    else {
                         oPayload.CheckFields[iIndex].result = false;
                     }
+                } else {
+                    oPayload.CheckFields[iIndex].result = false;
                 }
 
                 break;
