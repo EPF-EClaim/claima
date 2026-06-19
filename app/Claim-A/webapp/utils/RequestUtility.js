@@ -475,27 +475,31 @@ sap.ui.define([
          * @private
 		 * @returns Updates entitled meter cube field upon completion
 		 */
-		_getEntitledMeterCube: async function () {
-            const oReqModel     = this._oOwnerComponent.getModel("request");
-            const oDataModel    = this._oOwnerComponent.getModel();
+        _getEntitledMeterCube: async function (aSelectedKeys) {
+            const oReqModel = this._oOwnerComponent.getModel("request");
+            const oDataModel = this._oOwnerComponent.getModel();
 
-			const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...)");
+            let aSelectedDependents = aSelectedKeys || oReqModel.getProperty("/req_item/dependent") || [];
+
+            aSelectedDependents = aSelectedDependents.map(d => String(d).trim());
+
+            const oFunction = oDataModel.bindContext("/getMeterCubeEntitlement(...)");
+            oFunction.setParameter("selectedDependents", aSelectedDependents);
 
             try {
                 await oFunction.execute();
-                const oContext  = oFunction.getBoundContext();
-                
-                const oResult   = oContext.getObject();
-                const oData     = oResult.value || oResult;
+                const oContext = oFunction.getBoundContext();
+
+                const oResult = oContext.getObject();
+                const oData = oResult && oResult.hasOwnProperty("value") ? oResult.value : oResult;
 
                 oReqModel.setProperty("/req_item/cube_eligible", Number(oData).toFixed(2));
-                
+                oReqModel.setProperty("/req_item/dependent", aSelectedDependents);
 
             } catch (oError) {
                 oReqModel.setProperty("/req_item/cube_eligible", 0);
             }
-		},
-
+        },
         
         /**
 		 * Retrieve and apply Pemberian Pindah claim amount from backend service.

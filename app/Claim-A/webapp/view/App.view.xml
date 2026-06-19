@@ -101,7 +101,8 @@
                     /> -->
 
                     <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false" 
-                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }">
+                     visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
+                    >
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"
                             text="Claim Report"
@@ -140,6 +141,13 @@
                             text="Cash Advance"
                             enabled="true"
                             key="cashadvance_summary"
+                        >
+                        </tnt:NavigationListItem>
+                        <tnt:NavigationListItem
+                            icon="sap-icon://expense-report"
+                            text="{i18n>nav_budgetreport}"
+                            enabled="true"
+                            key="cc_budgetreport"
                         >
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>                        

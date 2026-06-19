@@ -397,22 +397,25 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   exclude_tips: Boolean,
                                   dependent: Integer)                                                    returns perdiem;
 
-    function getMeterCubeEntitlement()                                                                   returns Decimal(15, 2);
+    action getMeterCubeEntitlement(
+        selectedDependents : array of String
+    )                                                                                                    returns Decimal(15, 2);
 
     type meterCubeAmount {
         entitled : Decimal(15, 2);
         amount   : Decimal(15, 2);
     }
 
-    function calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
-                                             actualAmount: Decimal(15, 2))                               returns meterCubeAmount;
+    action calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
+                                             actualAmount: Decimal(15, 2),
+                                             selectedDependents : array of String)                       returns meterCubeAmount;
 
     type matawangAmount {
         percentage : Decimal(15, 2);
         amount     : Decimal(15, 2);
     }
 
-    function calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
+    action calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
 
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
@@ -1203,6 +1206,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CONSUMED,
                 BUDGET_BALANCE,
                 _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on FUND_CENTER = _Detail.FUND_CENTER
+                                         on $self.FUND_CENTER = _Detail.FUND_CENTER and
+                                            $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
+                                            $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
+
         }        
 };
