@@ -65,7 +65,8 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					return true;
+					const oData = aContexts[0].getObject();
+					return oData.STATUS_ID;
 				} else {
 					return false;
 				}
