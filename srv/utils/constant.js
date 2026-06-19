@@ -227,7 +227,8 @@ const Constant = {
         "COUNTRY": "COUNTRY",
         "INSURANCE_PACKAGE_ID": "INSURANCE_PACKAGE_ID",
         "DEPENDENT": "DEPENDENT",
-        "PHONE_NO": "PHONE_NO"
+        "PHONE_NO": "PHONE_NO",
+        "TO_STATE_ID": "TO_STATE_ID"
     },
     Wildcard: {
         "All": "*",
