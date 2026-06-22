@@ -94,6 +94,7 @@ sap.ui.define([
 			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRequestFragments = Object.create(null);
+			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._sDeleteTarget = null; //doc 1 or doc 2
 			this._oDeleteAttachmentDialog = null;
 
@@ -420,8 +421,7 @@ sap.ui.define([
 									// var oModel = this.getView().getModel();
 									// var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
-									const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, sCurrentReqId);
+									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
@@ -2523,9 +2523,8 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : ""
 					}
-					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 					console.log("Payload for approval:", oPayload);
-					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 					// if(!oResponse.Success){
 					// 	MessageBox.error(oResponse.Message);
@@ -2599,8 +2598,7 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
-					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 					// if(!oResponse.Success){
 					// 	MessageBox.error(oResponse.Message);
@@ -2679,8 +2677,7 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
-					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 					// if(!oResponse.Success){
 					// 	MessageBox.error(oResponse.Message);

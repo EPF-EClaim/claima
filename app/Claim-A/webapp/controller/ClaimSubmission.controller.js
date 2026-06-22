@@ -86,6 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
+
+			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._oDeclarationDialog = null;
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
@@ -2022,9 +2024,8 @@ sap.ui.define([
 						RejectionReason : ""
 					}
 					
-					const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 					console.log("Payload Send Back: ", oPayload);
-					await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 					// if(!oResponse.Success){
 					// 	MessageBox.error(oResponse.Message);
@@ -2108,9 +2109,8 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 				console.log("Payload Send Back: ", oPayload); 
-				await workflowApproval.onProcessApproval(oWorkflowModel, oPayload);
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
 				// if(!oResponse.Success){
 				// 	MessageBox.error(oResponse.Message);
@@ -2201,9 +2201,8 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 				console.log("Payload Send Back: ", oPayload);
-				await workflowApproval.onProcessApproval(oWorkflowModel, oPayload)
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				// if(!oResponse.Success){
 				// 	MessageBox.error(oResponse.Message);
@@ -4367,8 +4366,7 @@ sap.ui.define([
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-								const oWorkflowModel = this.getOwnerComponent().getModel("workflow");
-								const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 								if (oResponse.Success) {
 									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
 								} else {
