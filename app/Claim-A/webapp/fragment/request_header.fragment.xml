@@ -102,7 +102,20 @@
                             <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_payment_date}" visible="{= !!${request>/req_header/paymentdate}}"><form:fields><Text text="{request>/req_header/paymentdate}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_payment_date}" visible="{= !!${request>/req_header/paymentdate}}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/paymentdate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
                             <form:FormElement label="{i18n>req_cc}"><form:fields><Text text="{request>/req_header/costcenter}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_acc}"><form:fields><Text id="req_alt_cost_center" text="{request>/req_header/altcostcenter} - {request>/req_header/altcostcenterdesc}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_caa}">
