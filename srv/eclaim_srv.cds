@@ -1214,5 +1214,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                             $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
                                             $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
 
-        }        
+        };
+
+    action   updatePEDUEntitleAmount(sRecordId: String,
+                                     sStatus: String)                                                    returns Response;         
 };
