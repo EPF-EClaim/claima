@@ -94,6 +94,7 @@ sap.ui.define([
 			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRequestFragments = Object.create(null);
+			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._sDeleteTarget = null; //doc 1 or doc 2
 			this._oDeleteAttachmentDialog = null;
 
@@ -417,11 +418,9 @@ sap.ui.define([
 									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 									// else, do not change claim status
 									// update status to PENDING APPROVAL
-									var oModel = this.getView().getModel();
-									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
-									if (bApproversDetermined) {
+									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
+									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
@@ -2515,24 +2514,20 @@ sap.ui.define([
 				try {
 
 					// 1. Approve + get payloads from util
-					const { payloads } = await ApproverUtility.approveMultiLevel(
-						oModelMain,
-						sReqId,
-						sUserId,
-						sComment,
-						oModelView,
-						this
-					);
-
-					// 2. Send emails (1 or 2 depending on next approver / sub approver)
-					for (const aPayloadEmail of payloads) {
-						await workflowApproval.onSendEmailApprover(oModelMain, aPayloadEmail);
+					const oPayload = {
+						Id				: sReqId,
+						UserId			: sUserId,
+						ApproverAction	: Constants.ClaimStatus.APPROVED,
+						Comments		: sComment,
+						RejectionReason : ""
 					}
+					console.log("Payload for approval:", oPayload);
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-					// 3. Close dialog
+					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
-					// 4. Navigate back after small delay
+					// 3. Navigate back after small delay
 					setTimeout(() => {
 						this._oRouter.navTo("Dashboard", {}, true);
 					}, 400);
@@ -2577,45 +2572,21 @@ sap.ui.define([
 
 
 				// 1) Update approval rows + header, build dataset & email payloads
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						sReqId,       // id
-						sUserId,      // approver user id
-						Constants.ClaimStatus.SEND_BACK,
-						sReason,
-						sComment,
-						oModelView
-					);
+				const oPayload = {
+						Id				: sReqId,
+						UserId			: sUserId,
+						ApproverAction	: Constants.ClaimStatus.SEND_BACK,
+						Comments		: sComment,
+						RejectionReason : sReason
+					}
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-				// 2) Budget release (if your finance process requires release on push back)
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(
-					oModelMain,
-					dataset,          // budget rows from the view
-					submissionType,   // "REQ"
-					"release"
-				);
-				*/
-				const sSubmissionType2 = sReqId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				} catch (oError) {
-
-				}
-
-				// 3) Send notifications
-				const oMailModel = this._oDataModel;
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oMailModel, p);
-				}
-
-				// 4) Close dialog
+				// 3) Close dialog
 				if (this._sendBackDialog) {
 					this._sendBackDialog.close();
 				}
 
-				// 5) Navigate back
+				// 4) Navigate back
 				setTimeout(() => {
 					this._oRouter.navTo("Dashboard", {}, true);
 				}, 400);
@@ -2644,33 +2615,14 @@ sap.ui.define([
 				const reqModel = this.getView().getModel("request");
 				const sReqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
-
-
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						sReqId,
-						this._oSessionModel.getProperty("/userId"),
-						Constants.ClaimStatus.REJECTED,
-						sReason,
-						sComment,
-						oModelView
-					);
-
-				// Budget release if applicable
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
-				*/
-				const sSubmissionType2 = sReqId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				} catch (oError) {
-
-				}
-
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, p);
-				}
+				const oPayload = {
+						Id				: sReqId,
+						UserId			: this._oSessionModel.getProperty("/userId"),
+						ApproverAction	: Constants.ClaimStatus.REJECTED,
+						Comments		: sComment,
+						RejectionReason : sReason
+					}
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				this._rejectDialog && this._rejectDialog.close();
 

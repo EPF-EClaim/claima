@@ -86,6 +86,8 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
+
+			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._oDeclarationDialog = null;
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
@@ -363,7 +365,7 @@ sap.ui.define([
 					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
 					// approver view
@@ -2012,23 +2014,19 @@ sap.ui.define([
 					BusyIndicator.show(0);
 
 					const oModel = this.getOwnerComponent().getModel();
-					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+					// const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
-					const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
-						oModel,
-						sClaimId,
-						sUserId,
-						sComment,
-						oEmployeeViewModel,
-						this
-					);
-
-					if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
-						for (const oPayloadEmail of aPayloadEmail) {
-							await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
-						}
+					const oPayload = {
+						Id				: sClaimId,
+						UserId			: sUserId,
+						ApproverAction	: this._oConstant.ClaimStatus.APPROVED,
+						Comments		: sComment,
+						RejectionReason : ""
 					}
-					MessageToast.show(sMessageKey);
+					
+					console.log("Payload Send Back: ", oPayload);
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
 					}
@@ -2076,47 +2074,24 @@ sap.ui.define([
 			try {
 				BusyIndicator.show(0);
 
-				const oModelMain = this.getOwnerComponent().getModel();
-				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+				// const oModel = this.getOwnerComponent().getModel();
+				// const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const sUserId = this._oSessionModel.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const sRejectStatus = this._oConstant.ClaimStatus.REJECTED; // REJECT
+				// const sRejectStatus = this._oConstant.ClaimStatus.REJECTED; // REJECT
 
-				const {
-					payloads: aPayloads,
-					dataset: aDataset,
-					submissionType: sSubmissionType,
-					sMessageKey
-				} = await ApproverUtility.rejectOrSendBackMultiLevel(
-					oModelMain,
-					sClaimId,
-					sUserId,
-					sRejectStatus,
-					sReason,
-					sComment,
-					oEmployeeViewModel,
-					this
-				);
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(
-					oModelMain,
-					aDataset,
-					sSubmissionType,
-					this._oConstant.ApprovalProcessAction.RELEASE_IND
-				);
-				*/
-				const sSubmissionType2 = sClaimId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
-				} catch (oError) {
-
-				}
-				for (const oPayload of aPayloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
-				}
+				const oPayload = {
+						Id				: sClaimId,
+						UserId			: sUserId,
+						ApproverAction	: this._oConstant.ClaimStatus.REJECTED,
+						Comments		: sComment,
+						RejectionReason : sReason
+					}
+				console.log("Payload Send Back: ", oPayload); 
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
 				MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
@@ -2154,8 +2129,8 @@ sap.ui.define([
 			try {
 				BusyIndicator.show(0);
 
-				const oModelMain = this.getOwnerComponent().getModel();
-				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+				const oModel = this.getOwnerComponent().getModel();
+				// const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const sUserId = this._oSessionModel.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
@@ -2163,43 +2138,16 @@ sap.ui.define([
 
 				const sSendBackStatus = this._oConstant.ClaimStatus.SEND_BACK;
 
-				const {
-					payloads: aPayloads,
-					dataset: aDataset,
-					submissionType: sSubmissionType,
-					sMessageKey
-				} = await ApproverUtility.rejectOrSendBackMultiLevel(
-					oModelMain,
-					sClaimId,
-					sUserId,
-					sSendBackStatus,
-					sReason,
-					sComment,
-					oEmployeeViewModel,
-					this
-				);
+				const oPayload = {
+						Id				: sClaimId,
+						UserId			: sUserId,
+						ApproverAction	: this._oConstant.ClaimStatus.SEND_BACK,
+						Comments		: sComment,
+						RejectionReason : sReason
+					}
+				console.log("Payload Send Back: ", oPayload);
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(
-					oModelMain,
-					aDataset,
-					sSubmissionType,
-					this._oConstant.ApprovalProcessAction.RELEASE_IND
-				);
-				*/
-
-
-				const sSubmissionType2 = sClaimId.substring(0, 3);
-				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
-				} catch (oError) {
-
-				}
-
-
-				for (const oPayload of aPayloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
-				}
 				MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
@@ -4325,13 +4273,13 @@ sap.ui.define([
 								if (!bCanProceed) return;
 
 								// move approver determination function before claim is saved
-								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
 								// else, do not send message claim submission pending
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-								if (bApproversDetermined) {
+								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
+								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+								if (oResponse.Success) {
 									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
 								} else {
 									throw new Error(Utility.getText("msg_failed_no_approver"))
@@ -4414,11 +4362,15 @@ sap.ui.define([
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 								// else, do not change claim status
-								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-								if (bApproversDetermined) {
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								// var oModelAppr = this.getView().getModel(); 
+								// var oEmployeeViewModel = this.getView().getModel("employee_view");
+								const oWorkflowModel = this.getView().getModel("workflow");
+								const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+								if (oResponse.Success) {
+									// If auto approve, status will be automatically updated to APPROVED in ZCLAIM_HEADER
+									if(!oResponse.AutoApproved) {	
+										oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									}
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 										var submittedDate = this._getJsonDate(new Date());
 										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));

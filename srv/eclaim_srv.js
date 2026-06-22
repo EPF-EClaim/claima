@@ -468,6 +468,8 @@ module.exports = (srv) => {
         }
     });
 
+    
+
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
         const range_id = Constant.NumberRange.REQUEST;
@@ -2560,4 +2562,77 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });     
+
+     srv.on("getJenazahEligibleAmount", async(req) => {
+        const tx = cds.tx(req);
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+        try {
+            var oEligibleAmount = await tx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                    .where({
+                        TRANSPORT_PASSING_ID: req.data.sTransportPassingID,
+                        CLAIM_TYPE_ID: req.data.sClaimType,
+                        CLAIM_TYPE_ITEM_ID: req.data.sClaimTypeItem,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate },
+                    })
+            )
+            return {
+                iAmount: oEligibleAmount.ELIGIBLE_AMOUNT
+            };
+        } catch (err) {
+            req.error(404, `Amount not found.`);
+        }
+    });
+
+    
+
+    srv.on('batchUpdatePaymentStatus', async (req) => {
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+        try {
+            const { aPayment } = req.data;
+            if (!aPayment || aPayment.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            const aRequestUpdates = [];
+            for (var i = 0; i < aPayment.length; i++) {
+                var oPayment = aPayment[i];
+                if (!oPayment.ID) continue;
+                var sPrefix = oPayment.ID.substring(0, 3);
+                if (sPrefix === Constant.WorkflowType.CLAIM) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS_ID: oPayment.STATUS_ID
+                            })
+                            .where({ CLAIM_ID: oPayment.ID })
+                    );
+                } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+                    aRequestUpdates.push(
+                        UPDATE(ZREQUEST_HEADER)
+                            .set({
+                                PAYMENT_DATE: oPayment.PAYMENT_DATE,
+                                STATUS: oPayment.STATUS_ID
+                            })
+                            .where({ REQUEST_ID: oPayment.ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+            if (aRequestUpdates.length > 0) {
+                await Promise.all(aRequestUpdates.map(function (q) { return tx.run(q); }));
+            }
+            return 'Records updated successfully';
+        } catch (error) {
+            req.error(400, `Fail updating records: ${error.message}`);
+        }
+    });    
 }
