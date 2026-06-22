@@ -42,14 +42,80 @@
                         <form:formElements>
                             <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><Text text="{request>/req_header/tripstartdate}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}"><form:fields><Text text="{request>/req_header/tripenddate}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><Text text="{request>/req_header/eventstartdate}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}"><form:fields><Text text="{request>/req_header/eventenddate}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/tripstartdate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/tripenddate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/eventstartdate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/eventenddate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
                             <form:FormElement label="{i18n>req_location}"><form:fields><Text text="{request>/req_header/location}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_payment_date}" visible="{= !!${request>/req_header/paymentdate}}">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/paymentdate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
                             <form:FormElement label="{i18n>req_cc}"><form:fields><Text text="{request>/req_header/costcenter}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_acc}"><form:fields><Text id="req_alt_cost_center" text="{request>/req_header/altcostcenter} - {request>/req_header/altcostcenterdesc}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_caa}">
