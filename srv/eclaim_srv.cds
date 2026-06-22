@@ -1117,7 +1117,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.UNIT_SECTION,
                 createdBy
-        };
+        } where ZREQUEST_HEADER.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
