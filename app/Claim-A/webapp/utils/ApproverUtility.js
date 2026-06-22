@@ -289,7 +289,7 @@ sap.ui.define([
             sDetailsSet,
             null,
             null,
-            [new sap.ui.model.Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            [new Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
             { $$ownRequest: true, $$updateGroupId: sUpdateGroupId }
         );
 
@@ -354,7 +354,7 @@ sap.ui.define([
             sHeaderSet,
             null,
             null,
-            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            [new Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
             { $$ownRequest: true }
         );
 
@@ -381,7 +381,7 @@ sap.ui.define([
             sBudgetViewTbl,
             null,
             null,
-            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            [new Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
             { $$ownRequest: true }
         );
 
@@ -418,7 +418,7 @@ sap.ui.define([
             sApproverViewTbl,
             null,
             null,
-            [new sap.ui.model.Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            [new Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
             { $$ownRequest: true }
         );
 
