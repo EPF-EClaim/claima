@@ -8,6 +8,7 @@ const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScen
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
+const UpdateDependent = require('./utils/UpdateDependent');
 
 module.exports = (srv) => {
 
@@ -1710,7 +1711,7 @@ module.exports = (srv) => {
      * @param {object} entities - CAP service entities containing database models
      * @returns {number} Total entitled meter cube value (rounded to 2 decimal places)
      */
-    async function computeMeterCubeEntitlement(tx, oEmp, entities) {
+    async function computeMeterCubeEntitlement(tx, oEmp, entities, aSelectedDependentNos = []) {
         const { ZEMP_MASTER, ZEMP_DEPENDENT, ZMETER_CUBE } = entities;
 
         let total = 0;
@@ -1728,9 +1729,17 @@ module.exports = (srv) => {
             total += getCube(Constant.MeterCubeId.MARRIED);
         }
 
-        const dependents = await tx.run(
+        let dependents = await tx.run(
             SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: oEmp.EEID })
         );
+
+        if (aSelectedDependentNos && aSelectedDependentNos.length > 0) {
+            const aStringifiedKeys = aSelectedDependentNos.map(String);
+            dependents = dependents.filter(d => aStringifiedKeys.includes(String(d.DEPENDENT_NO))
+            );
+        } else {
+            dependents = [];
+        }
 
         const year = new Date().getFullYear();
 
@@ -1802,12 +1811,14 @@ module.exports = (srv) => {
     srv.on('getMeterCubeEntitlement', async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const {selectedDependents} = req.data;
 
         if (oEmp) {
             return await computeMeterCubeEntitlement(
                 tx,
                 oEmp,
-                srv.entities
+                srv.entities,
+                selectedDependents
             );
         }
 
@@ -1829,12 +1840,13 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const nActualMC = Number(req.data.actualMeterCube);
         const nActualAmount = Number(req.data.actualAmount);
+        const {selectedDependents} = req.data;
 
         if (isNaN(nActualMC) || isNaN(nActualAmount)) {
             return { entitled: 0, amount: 0 };
         }
 
-        const nEntitledMC = await computeMeterCubeEntitlement(tx, oEmp, srv.entities);
+        const nEntitledMC = await computeMeterCubeEntitlement(tx, oEmp, srv.entities, selectedDependents);
 
         const nFinalAmount =
             (nActualMC > nEntitledMC && nEntitledMC > 0)
@@ -2539,4 +2551,26 @@ module.exports = (srv) => {
             req.error(400, `Fail updating records: ${error.message}`);
         }
     });    
+
+    /**
+        * Update Dependent tables with Used Entitlement Amout for each dependent
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updatePEDUEntitleAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateDependent.updateUsedEntitlementAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });     
 }

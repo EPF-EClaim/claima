@@ -74,7 +74,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.JOB_GROUP  
+                ZEMP_MASTER.JOB_GROUP,
+                PAYMENT_DATE  
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
@@ -501,7 +502,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-                TOTAL_TRAVELLER
+                TOTAL_TRAVELLER              
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -1214,5 +1215,16 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ATTENDENCE_STATUS,
             SESSION_NUMBER,
             START_DATE,
-            END_DATE
+            END_DATE;
+
+    entity ZEMP_ACCESS               as
+        projection on ECLAIM.ZEMP_MASTER {
+            key EEID,
+                NAME, 
+                POS,
+                JOB_GROUP,
+                GRADE,
+                GA_ROLE,
+                ECLAIM_ROLE
+        }
 }

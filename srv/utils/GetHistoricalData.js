@@ -160,4 +160,42 @@ module.exports = {
             SELECT.one.from(Constant.Entities.ZCLAIM_TYPE_ITEM).where(`${sClaimTypeItem}`)
         );
     },
+
+    getHistoricalItemData: async function (sHeaderTable, sItemTable, sItemcondition, tx) {
+        try {
+            let sHeaderField = ""; 
+            let sStatusField = ""; 
+            let aStatus = [Constant.Status.APPROVED, Constant.Status.PENDING_APPROVAL];
+
+            if (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) { 
+                sHeaderField = Constant.EntitiesFields.CLAIMID; 
+                sStatusField = Constant.EntitiesFields.CLAIM_STATUS; 
+            } else { 
+                sHeaderField = Constant.EntitiesFields.REQUESTID; 
+                sStatusField = Constant.EntitiesFields.STATUS; }
+
+            let aHeaderCondition = { [sStatusField]: { in: aStatus } }; 
+
+            const sHeaderCondition = BuildSelectWhereConditions.buildWhereCondition(aHeaderCondition);
+
+            const aValidHeaders = await tx.run(SELECT.from(sHeaderTable).columns(sHeaderField).where(sHeaderCondition));
+
+            const aValidHeaderIds = aValidHeaders.map(h => h[sHeaderField]);
+
+            if (aValidHeaderIds.length === 0) { 
+                return 0; 
+            }
+            const sItemHeaderForeignKey = (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) ? "CLAIM_ID" : "REQUEST_ID";
+
+            const aItemCountData = await tx.run(SELECT`count(*)`.from(sItemTable).where(sItemcondition).and({ [sItemHeaderForeignKey]: { in: aValidHeaderIds } }));
+
+            if (aItemCountData && aItemCountData[0]) { 
+                return aItemCountData[0].count || Object.values(aItemCountData[0])[0] || 0; 
+            }
+            return 0;
+
+        } catch (error) { 
+            return 0; 
+        }
+    }
 };

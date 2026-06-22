@@ -68,6 +68,14 @@ sap.ui.define([
 			this._oReqModel = this.getOwnerComponent().getModel('request');
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
+			this.isFclEnabled = function () {
+				return false;
+			};
+			this.updateUIStateForView = function () {
+			};
+			this.calculateLayout = function () {
+				 return "OneColumn";
+			};
 
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
@@ -192,6 +200,15 @@ sap.ui.define([
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("ZEMP_CASHADVANCE_REPORT");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
+				case "cc_budgetreport":
+					if (bAdminCC) {
+					HashChanger.getInstance().replaceHash("");
+					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);

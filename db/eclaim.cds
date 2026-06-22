@@ -56,8 +56,9 @@ entity ZEMP_MASTER : managed {
         ECLAIM_ROLE                   : String(10)    @Common.Label: 'eClaim Role';
         GRADE_ENTRY_DATE              : Date          @Common.Label: 'Grade Entry Date';
         CONTRACT_START_DATE           : Date          @Common.Label: 'Contract Start Date';
-        CONTRACT_GRADE                : String(3)     @Common.Label: 'Grade During Contract';        
-        STATE_OF_ORIGIN               : String(4)     @Common.Label: 'State of Origin';        
+        CONTRACT_GRADE                : String(3)     @Common.Label: 'Grade During Contract';
+        STATE_OF_ORIGIN               : String(4)     @Common.Label: 'State of Origin';
+        GA_ROLE                       : String(10)    @Common.Label: 'GA Role';
         ZREQUEST_HEADER               : Association to one ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER                  : Association to ZCOST_CENTER

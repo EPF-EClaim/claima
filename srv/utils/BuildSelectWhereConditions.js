@@ -49,6 +49,9 @@ module.exports = {
                 sLine = sField + " " + [Constant.ComparisonOperators.NotEquals] + " " + `'${sValue[Constant.ComparisonOperators.NotEquals]}'`;
 
             }
+            else if (sValue && sValue[Constant.ComparisonOperators.Like] !== undefined) {
+                sLine = sField + " " + [Constant.ComparisonOperators.Like] + " " + `'${sValue[Constant.ComparisonOperators.Like]}'`;
+            }
             else {
                 sLine = sField + " " + [Constant.ComparisonOperators.Equals] + " " + `'${sValue}'`;
             }

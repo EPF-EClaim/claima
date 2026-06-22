@@ -265,6 +265,23 @@
                     text="{claimsubmission_input>/claim_header/descr/status_id}"
                 />
 
+                <!-- Payment Date -->
+                <Label text="{i18n>label_claimsummary_claimheader_paymentdate}" />
+                <Text 
+                    id="text_claimsummary_claimheader_paymentdate"
+                    text="{
+                        path: 'claimsubmission_input>/claim_header/payment_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
+                    visible="{= !!${claimsubmission_input>/claim_header/payment_date}}"
+                />
+
                 <!-- Total Claim (MYR) -->
                 <Label text="{i18n>label_claimsummary_claimheader_amttotal}" />
                 <Text

@@ -86,7 +86,13 @@ const Constant = {
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
         "BEG_BIMBIT": "BEG_BIMBIT",
-        "WILAYAH_ASAL": "WILAYAH_ASAL"
+        "WILAYAH_ASAL": "WILAYAH_ASAL",
+        "AKTIVITI_S": "AKTIVITI_S",
+        "GALAKAN": "GALAKAN",
+        "SEWAPETAK": "SEWAPETAK",
+        "KEAHLIANKELAB": "S_K.KELAB",
+        "MEDICAL": "MEDICAL",
+        "PEDU" : "PEDU"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -148,7 +154,13 @@ const Constant = {
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
         "BEG_BIMBIT": "BEG_BIMBIT",
-        "FLIGHT_WIL": "FLIGHT_WIL"
+        "FLIGHT_WIL": "FLIGHT_WIL", 
+        "JENAZAH": "JENAZAH",
+        "GALAKAN": "GALAKAN",
+        "KEMATIAN": "KEMATIAN",
+        "SEWAPETAK": "SEWAPETAK",
+        "KEAHLIANKELAB": "S_K.KELAB",
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -206,7 +218,16 @@ const Constant = {
         "REJECT_REASON_TIME": "REJECT_REASON_TIME",
         "PROCESS_TIMESTAMP": "PROCESS_TIMESTAMP",
         "REJECT_REASON_ID": "REJECT_REASON_ID",
-        "PUSH_BACK_REASON_ID": "PUSH_BACK_REASON_ID"
+        "PUSH_BACK_REASON_ID": "PUSH_BACK_REASON_ID",
+        "FUNERAL_TRANSPORTATION": "FUNERAL_TRANSPORTATION",
+        "TRANSPORT_PASSING_ID": "TRANSPORT_PASSING_ID",
+        "DEPENDENT_TYPE": "DEPENDENT_TYPE",
+        "DEPENDENT_TYPE_ID": "DEPENDENT_TYPE_ID",
+        "VEHICLE_OWNERSHIP_ID": "VEHICLE_OWNERSHIP_ID",
+        "COUNTRY": "COUNTRY",
+        "INSURANCE_PACKAGE_ID": "INSURANCE_PACKAGE_ID",
+        "DEPENDENT": "DEPENDENT",
+        "PHONE_NO": "PHONE_NO"
     },
     Wildcard: {
         "All": "*",
@@ -252,7 +273,8 @@ const Constant = {
         "LesserEquals": "<=",
         "GreaterEquals": ">=",
         "Equals": "=",
-        "NotEquals": "!="
+        "NotEquals": "!=",
+        "Like": "like"
     },
     WhereCondition: {
         "AND": "AND",
@@ -331,7 +353,12 @@ const Constant = {
         PROMOTION_WITHOUT_PROBATION: "Z802"
     },
     ConstantId: {
-        ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER"
+        ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER",
+        EXCEPTION_COUNTRY_TRAVEL_INSURANCE: "EXCEPTION_COUNTRY_TRAVEL_INSURANCE",
+        EXCEPTION_HP_FREQUENCY_JOB_GRADE: "EXCEPTION_HP_FREQUENCY_JOB_GRADE",
+        EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
+        DEFAULT_EDU_ELIGIBLE_YEAR: "DEFAULT_EDU_ELIGIBLE_YEAR",
+        DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT"
     },
     ElaunTukarStatus: {
         ALLOWED_CREATION: "01",
@@ -355,6 +382,10 @@ const Constant = {
         MARRIED_NO_CHILDREN: "02",
         MARRIED_1_TO_3_CHILDREN: "03",
         MARRIED_4_OR_MORE_CHILDREN: "04"
+    },
+    VehicleOwnership : {
+        OWN: "01",
+        OFFICE_VEHICLE: "02"
     }
 
 };

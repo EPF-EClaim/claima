@@ -3410,6 +3410,15 @@ sap.ui.define([
 			this._oDeleteAttachmentDialog.close();
 		},
 
+		onDependentSelectionChange: async function (oEvent) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
+				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+			}
+		},
+
 		/**
 		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
 		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
@@ -3430,7 +3439,7 @@ sap.ui.define([
 			}
 
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.LAUT) {
-				ClaimUtility.fetchPengangkutanLautAmount();
+				ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 			}
 		},
 
@@ -4472,7 +4481,18 @@ sap.ui.define([
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-								}
+									}
+									//Call CAP action to update the used entitlement for PEDU claim
+									if (oInputModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
+										const oAction = oModel.bindContext("/updatePEDUEntitleAmount(...)");
+										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										try {
+											await oAction.execute();
+										} catch (oError) {
+											MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
+										}
+								}										
 								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							} else {
 								throw new Error(Utility.getText("msg_failed_no_approver"))
