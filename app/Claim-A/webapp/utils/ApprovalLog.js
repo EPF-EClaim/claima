@@ -2,7 +2,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-], function (Filter, FilterOperator, Sorter) {
+	"claima/utils/Constants",
+], function (Filter, FilterOperator, Sorter, Constants) {
     "use strict";
 
     return {
@@ -23,7 +24,7 @@ sap.ui.define([
 		* Get List from Backend
 		* ======================================================= */
 
-		async getApproverList(oApprovalLogModel, oViewModel, sId) {
+		async getApproverList(oApprovalLogModel, oViewModel, sId, sClaimTypeID) {
 
             let submission_type = sId.substring(0,3);
             let oListBinding;
@@ -51,7 +52,12 @@ sap.ui.define([
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
-                
+				if(submission_type == Constants.WorkflowType.CLAIM){
+					if(sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH || sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL){
+						a[0].LEVEL = Constants.SpecialApprover.VERIFIER
+					}
+				}
+
 				oApprovalLogModel.setProperty("/approval", a);
 
 				return a;
