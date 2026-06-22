@@ -4818,7 +4818,13 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
-                Label            : 'Unit'
+                Label            : 'Branch'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -5323,7 +5329,13 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
-                Label            : 'Unit'
+                Label            : 'Branch'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6392,7 +6404,13 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
-                Label            : 'Unit'
+                Label            : 'Branch'
+            },
+              {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7203,7 +7221,13 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
-                Label            : 'Unit'
+                Label            : 'Branch'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7726,7 +7750,13 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
-                Label            : 'Unit'
+                Label            : 'Branch'
+            },
+               {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7781,6 +7811,12 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
                 Value            : CASH_ADVANCE,
                 ![@UI.Importance]: #High,
                 Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PAYMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Payment Date'
             },
             {
                 $Type            : 'UI.DataField',
