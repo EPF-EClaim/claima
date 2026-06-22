@@ -8,6 +8,7 @@ const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScen
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
+const UpdateDependent = require('./utils/UpdateDependent');
 
 module.exports = (srv) => {
 
@@ -2539,6 +2540,28 @@ module.exports = (srv) => {
             req.error(400, `Fail updating records: ${error.message}`);
         }
     });    
+
+    /**
+        * Update Dependent tables with Used Entitlement Amout for each dependent
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updatePEDUEntitleAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateDependent.updateUsedEntitlementAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });     
 
      srv.on("getJenazahEligibleAmount", async(req) => {
         const tx = cds.tx(req);
