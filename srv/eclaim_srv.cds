@@ -1902,7 +1902,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 LAST_PUSH_BACK_DATE,
                 createdBy, 
                  // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                
         };
 
     entity ZEMP_CLAIM_REPORT_DETAILS     as
@@ -2076,7 +2077,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
                  // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                  
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                 
         };
 
     entity ZEMP_CASHADVANCE_REPORT       as
@@ -2100,7 +2102,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.DEP,
                 ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.UNIT_SECTION,
-                createdBy
+                createdBy,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+                CASH_ADVANCE_DATE           as PAYMENT_DATE
         };
 
     entity ZEMP_COURSE_VALUE_HELP        as

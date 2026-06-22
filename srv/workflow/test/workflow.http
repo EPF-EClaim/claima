@@ -1,0 +1,20 @@
+
+### Start workflow
+# POST http://localhost:4004/odata/v4/workflow/startWorkflow
+# Content-Type: application/json
+
+# {
+#   "id": "REQ26000000011"
+# }
+
+POST http://localhost:4004/odata/v4/workflow/processApproval
+Content-Type: application/json
+
+{
+  "request": {
+    "Id"              : "REQ26000000011",
+    "Action"          : "REJECT",
+    "Comments"        : "String",
+    "RejectionReason" : "String"
+  }
+}
