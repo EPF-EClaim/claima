@@ -7905,3 +7905,233 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
         }
     );
 };
+
+annotate service.ZEMP_CC_BUDGET_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false
+    },
+
+    
+    Capabilities: {
+        Searchable: true
+    },
+
+    UI          : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Cost Center Budget Report',
+            TypeNamePlural: 'Cost Center Budget Report',
+        },
+        
+        LineItem  : [
+             
+            {
+                $Type            : 'UI.DataField',
+                Value            : YEAR,
+                ![@UI.Importance]: #High,
+                Label            : 'Effective Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FUND_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT_ITEM,
+                ![@UI.Importance]: #High,
+                Label            : 'GL Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Code Material'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Budget Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ADJUST_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Adjustment Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Commitment Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount Paid(Actual)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONSUMED,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount Used(Consumed)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BUDGET_BALANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Balance'
+            }
+        ]
+    }
+){
+    
+    ADJUST_AMOUNT @Common.Label : 'Adjustment Amount';
+    COMMITMENT @Common.Label : 'Commitment Amount';
+    YEAR @Common.Label: 'Effective Date';
+    ACTUAL @Common.Label: 'Amount Paid(Actual)';
+    BUDGET_BALANCE @Common.Label: 'Current Balance';
+    CONSUMED @Common.Label: 'Amount Used(Consumed)';
+
+    FUND_CENTER         @(
+        Common.Label                   : 'Cost Center',
+        Common.Text                    : COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: COST_CENTER_DESC,
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
+
+    COMMITMENT_ITEM         @(
+        Common.Label                   : 'GL Code',
+        Common.Text                    : GL_ACCOUNT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'GL Code Selection',
+            CollectionPath: 'ZGL_ACCOUNT',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: COMMITMENT_ITEM,
+                    ValueListProperty: 'GL_ACCOUNT_ID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: GL_ACCOUNT_DESC,
+                    ValueListProperty: 'GL_ACCOUNT_DESC'
+                }
+            ]
+        }
+    );
+
+    MATERIAL_GROUP         @(
+        Common.Label                   : 'Code Material',
+        Common.Text                    : MATERIAL_CODE_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Code Material Selection',
+            CollectionPath: 'ZMATERIAL_GROUP',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: MATERIAL_GROUP,
+                    ValueListProperty: 'MATERIAL_CODE_ID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: MATERIAL_CODE_DESC,
+                    ValueListProperty: 'MATERIAL_CODE_DESC'
+                }
+            ]
+        }
+    );
+
+
+};
+
+annotate service.ZEMP_CC_BUDGET_DETAIL with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI: {
+        HeaderInfo: {
+            $Type: 'UI.HeaderInfoType',
+            TypeName: 'Budget Detail',
+            TypeNamePlural: 'Budget Details',
+            Title: { Value: CLAIM_ID }
+        },
+
+        LineItem: [
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID  '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID  '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID  '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount  '
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Status ID  '
+            }
+            
+        ]
+    }
+);
+

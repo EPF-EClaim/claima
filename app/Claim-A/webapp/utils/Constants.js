@@ -292,7 +292,10 @@ sap.ui.define([
             "TRAVEL_WITH_FAMILY_NOW": "Travel with Family Now",
             "TRANSFER_DATE": "TRANSFER_DATE",
             "EVENT_START_DATE": "EVENT_START_DATE",
-            "EVENT_END_DATE": "EVENT_END_DATE"
+            "EVENT_END_DATE": "EVENT_END_DATE",
+            "VEHICLE_OWNERSHIP_ID": "VEHICLE_OWNERSHIP_ID",
+            "COUNTRY": "COUNTRY",
+            "PHONE_NO": "PHONE_NO"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -682,7 +685,8 @@ sap.ui.define([
             "MAHKAMAH": "MAHKAMAH",
             "PKN_PANAS": "PKN_PANAS",
             "FLIGHT_WIL": "FLIGHT_WIL",
-            "ISTIADAT": "ISTIADAT"
+            "ISTIADAT": "ISTIADAT",
+            "GALAKAN": "GALAKAN"
         },
         "TransportPassing": {
             "DALAM_STESEN": "1",
