@@ -2027,25 +2027,6 @@ sap.ui.define([
 					console.log("Payload Send Back: ", oPayload);
 					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-					// if(!oResponse.Success){
-					// 	MessageBox.error(oResponse.Message);
-					// }
-
-					// const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
-					// 	oModel,
-					// 	sClaimId,
-					// 	sUserId,
-					// 	sComment,
-					// 	oEmployeeViewModel,
-					// 	this
-					// );
-
-					// if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
-					// 	for (const oPayloadEmail of aPayloadEmail) {
-					// 		await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
-					// 	}
-					// }
-					// MessageToast.show(sMessageKey);
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
 					}
@@ -2112,43 +2093,6 @@ sap.ui.define([
 				console.log("Payload Send Back: ", oPayload); 
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
-				// if(!oResponse.Success){
-				// 	MessageBox.error(oResponse.Message);
-				// }
-				
-				// const {
-				// 	payloads: aPayloads,
-				// 	dataset: aDataset,
-				// 	submissionType: sSubmissionType,
-				// 	sMessageKey
-				// } = await ApproverUtility.rejectOrSendBackMultiLevel(
-				// 	oModelMain,
-				// 	sClaimId,
-				// 	sUserId,
-				// 	sRejectStatus,
-				// 	sReason,
-				// 	sComment,
-				// 	oEmployeeViewModel,
-				// 	this
-				// );
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(
-					oModelMain,
-					aDataset,
-					sSubmissionType,
-					this._oConstant.ApprovalProcessAction.RELEASE_IND
-				);
-				*/
-				// const sSubmissionType2 = sClaimId.substring(0, 3);
-				// try {
-				// 	const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
-				// } catch (oError) {
-
-				// }
-				// for (const oPayload of aPayloads) {
-				// 	await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
-				// }
-
 				MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
@@ -2204,47 +2148,6 @@ sap.ui.define([
 				console.log("Payload Send Back: ", oPayload);
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-				// if(!oResponse.Success){
-				// 	MessageBox.error(oResponse.Message);
-				// }
-
-				// const {
-				// 	payloads: aPayloads,
-				// 	dataset: aDataset,
-				// 	submissionType: sSubmissionType,
-				// 	sMessageKey
-				// } = await ApproverUtility.rejectOrSendBackMultiLevel(
-				// 	oModelMain,
-				// 	sClaimId,
-				// 	sUserId,
-				// 	sSendBackStatus,
-				// 	sReason,
-				// 	sComment,
-				// 	oEmployeeViewModel,
-				// 	this
-				// );
-
-				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
-				await budgetCheck.budgetProcessing(
-					oModelMain,
-					aDataset,
-					sSubmissionType,
-					this._oConstant.ApprovalProcessAction.RELEASE_IND
-				);
-				*/
-
-
-				// const sSubmissionType2 = sClaimId.substring(0, 3);
-				// try {
-				// 	const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
-				// } catch (oError) {
-
-				// }
-
-
-				// for (const oPayload of aPayloads) {
-				// 	await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
-				// }
 				MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
