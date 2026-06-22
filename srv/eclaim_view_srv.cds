@@ -502,7 +502,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-                TOTAL_TRAVELLER              
+                TOTAL_TRAVELLER,
+                ZCLAIM_HEADER.STATUS_ID,
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
         };
 
     entity ZEMP_REQUEST_STATUS            as

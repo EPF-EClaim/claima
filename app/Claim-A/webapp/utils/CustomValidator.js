@@ -251,9 +251,12 @@ sap.ui.define([
                             // course code pre-check
                             var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
                             var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
-                            if (bCourseAlreadyApproved) {
+                            var sActiveStatus = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                            if (sActiveStatus === Constants.ClaimStatus.APPROVED) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
+                                bCanProceed = false;
+                            } else if (sActiveStatus === Constants.ClaimStatus.PENDING_APPROVAL) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_pending"));
                                 bCanProceed = false;
                             }
                         }
