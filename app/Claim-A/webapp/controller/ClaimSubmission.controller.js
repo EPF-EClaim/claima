@@ -4393,10 +4393,9 @@ sap.ui.define([
 						default:
 							throw new Error("Invalid action selected: " + oAction);
 					}
-					await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
+					await oModel.submitBatch("$auto");
 
 					MessageToast.show(oMsg);
-					this._onNavBack();
 					//// change status based on oAction
 					switch (oAction) {
 						case 'Delete Report':
