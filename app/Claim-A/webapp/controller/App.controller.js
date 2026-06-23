@@ -270,17 +270,6 @@ sap.ui.define([
 			var toolPage = this.byId("toolPage");
 			toolPage.setSideExpanded(!toolPage.getSideExpanded());
 		},
-		onHomeIconPressed: function(){
-			if(window.location.hostname.includes("50e03b38") || window.location.hostname.includes("port4004")){
-				window.location.href = Constants.SuccessFactorCompanyCode.EPFSFUAT;
-			}else{
-				window.location.href = Constants.SuccessFactorCompanyCode.EPFSFPRD;
-			}
-			
-			
-			
-			
-		},
 		onSideNavButtonPress: function () {
 			var oToolPage = this.byId("toolPage");
 			var bSideExpanded = oToolPage.getSideExpanded();
