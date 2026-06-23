@@ -920,7 +920,7 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!--Special To State -->
+                                <!--Special To State for Wilayah Asal -->
                                 <form:FormElement label="{i18n>req_i_to_state}"
                                             visible="false"
                                             id="i_special_to_state" >

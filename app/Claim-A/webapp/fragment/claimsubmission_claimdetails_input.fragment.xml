@@ -922,7 +922,7 @@
                     </items>
                 </Select>
 
-                <!-- Special To State -->
+                <!-- Special To State for Wilayah Asal-->
                 <Label text="{i18n>label_claimdetails_input_state_to}" 
                 required="{claimitem_property>/to_state_id/is_required}" />
                 <Select
