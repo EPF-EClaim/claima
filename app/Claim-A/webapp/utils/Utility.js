@@ -531,7 +531,7 @@ sap.ui.define([
 
         getMarriageCategoryBasedOnStatus:async function(){
             const oDataModel = this._oOwnerComponent.getModel();
-            const oFunction = oDataModel.bindContext("/getMarriageCategoryBasedOnStatus(...)");
+            const oFunction = oDataModel.bindContext("/getMarriageCategoryBasedOnStatus(...)"); 
 
             try {                
                 await oFunction.execute();
@@ -540,7 +540,7 @@ sap.ui.define([
                 return oResult.value;
                 
             } catch (oError) {
-                MessageBox.error(this.getText("error_marriage_category_not_found", []));
+                MessageBox.error(this.getText("error_marriage_category_not_found", [])); 
                 return null; 
             }
         },

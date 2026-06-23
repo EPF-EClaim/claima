@@ -696,6 +696,9 @@ sap.ui.define([
         "SubmissionOwnerType": {
             "REQUESTOR": "Requestor",
             "CLAIMANT": "Claimant"
+        },
+        "SpecialApprover" : {
+            "VERIFIER" : "Verifier"
         }
         
     }
