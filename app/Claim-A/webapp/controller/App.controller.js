@@ -268,6 +268,7 @@ sap.ui.define([
 			var toolPage = this.byId("toolPage");
 			toolPage.setSideExpanded(!toolPage.getSideExpanded());
 		},
+		
 		onSideNavButtonPress: function () {
 			var oToolPage = this.byId("toolPage");
 			var bSideExpanded = oToolPage.getSideExpanded();

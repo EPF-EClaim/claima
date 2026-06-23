@@ -696,5 +696,6 @@ sap.ui.define([
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
         }
+        
     }
 });
