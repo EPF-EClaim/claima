@@ -352,8 +352,7 @@ sap.ui.define([
 				}
 
 				// show approval log fragment for non-draft
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
 					this._setApprovalLog(true);
 					Utility.updateFooterState(
 						this.getView(),
@@ -4184,11 +4183,13 @@ sap.ui.define([
 					return;
 				}
 
-				// run validator before proceeding 
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
-				if (!bCanProceed) {
-					return;
+				if (oAction !== 'Delete Report') {
+					// run validator before proceeding 
+					CustomValidator.init(this.getOwnerComponent(), this.getView());
+					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+					if (!bCanProceed) {
+						return;
+					}
 				}
 
 				// Total Claim Amount Validation checking
