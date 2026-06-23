@@ -47,8 +47,8 @@ sap.ui.define([
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({
 				filters: [
-					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
-					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+					new Filter("STATUS_ID", FilterOperator.NE, Constant.ClaimStatus.CANCELLED),
+					new Filter("STATUS_ID", FilterOperator.NE, Constant.ClaimStatus.REJECTED)
 				],
 				and: false
 			});
