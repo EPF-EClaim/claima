@@ -500,7 +500,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-                TOTAL_TRAVELLER
+                TOTAL_TRAVELLER,
+                ZCLAIM_HEADER.STATUS_ID,
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -1100,7 +1102,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
                     ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as AMOUNT,
                     ZREQUEST_HEADER.CASH_ADVANCE       as TOTAL_AMOUNT,
-                    modifiedAt
+                    modifiedAt,
+                    SUBSTITUTE_APPROVER_ID,
+                    ZEMP_MASTER_SUBS.NAME             as SUBSTITUTE_NAME
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
@@ -1117,7 +1121,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZCLAIM_HEADER.SUBMITTED_DATE          as REQUEST_DATE,
                     ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
                     ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT      as TOTAL_AMOUNT,
-                    modifiedAt
+                    modifiedAt,
+                    SUBSTITUTE_APPROVER_ID,
+                    ZEMP_MASTER_SUBS.NAME             as SUBSTITUTE_NAME
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
