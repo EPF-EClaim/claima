@@ -4442,6 +4442,7 @@ sap.ui.define([
 								throw new Error(Utility.getText("msg_failed_no_approver"))
 							}
 							break;
+							
 						default:
 							throw new Error("Invalid action selected: " + oAction);
 					}
