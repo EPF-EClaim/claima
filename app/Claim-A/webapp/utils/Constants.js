@@ -699,7 +699,11 @@ sap.ui.define([
         },
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
+        },
+        "SuccessFactorCompanyCode": {
+            "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
+            "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         }
-        
+
     }
 });
