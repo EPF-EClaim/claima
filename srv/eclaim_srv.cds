@@ -493,4 +493,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                             returns Response;
+
+    type CentraLinkObject {
+        sCentraLink : Boolean;
+    }
+
+    function getCentraLink()                                                                   returns CentraLinkObject;
 };
