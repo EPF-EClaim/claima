@@ -210,7 +210,7 @@ sap.ui.define([
 		},
 
 		onHomeIconPressed: async function(){
-			if(window.location.hostname.includes("50e03b38") || !window.location.hostname.includes("port4004")){
+			if(window.location.hostname.includes("50e03b38") || window.location.hostname.includes("port4004")){
 				window.location.href = Constants.SuccessFactorCompanyCode.EPFSFUAT;
 			}else{
 				var sLink = await Utility.getCentraLink();
