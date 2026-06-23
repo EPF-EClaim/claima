@@ -172,10 +172,10 @@ module.exports = (srv) => {
         let sRejectionReasonDesc = null;
         if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK){
             sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
+            if(!sRejectionReasonDesc) {
+                throw new Error('Rejection reason is required for rejection or push back action');
+            }
             console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
-        }
-        else{
-            throw new Error('Rejection reason is required for rejection or push back action');
         }
         if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
             (
