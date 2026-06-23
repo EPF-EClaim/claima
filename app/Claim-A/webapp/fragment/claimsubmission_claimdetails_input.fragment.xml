@@ -922,6 +922,25 @@
                     </items>
                 </Select>
 
+                <!-- Special To State for Wilayah Asal-->
+                <Label text="{i18n>label_claimdetails_input_state_to}" 
+                required="{claimitem_property>/to_state_id/is_required}" />
+                <Select
+                    id="select_claimdetails_input_special_to_state_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/to_state_id}"
+                    required="{claimitem_property>/to_state_id/is_required}"
+                    visible="false"
+                    items="{path: 'employee>/ZSTATE',
+                            sorter: { path: 'STATE_ID', descending: false }}"
+                    editable="true"
+                >
+                    <items>
+                        <core:Item key="{employee>STATE_ID}" 
+                        		   text="{employee>STATE_DESC}" />
+                    </items>
+                </Select>
+
                 <!-- To Location -->
                 <Label text="{i18n>label_claimdetails_input_location_to}" />
                 <Input
