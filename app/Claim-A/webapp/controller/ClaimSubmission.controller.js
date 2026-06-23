@@ -4289,6 +4289,11 @@ sap.ui.define([
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 								if (oResponse.Success) {
+									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+										var submittedDate = this._getJsonDate(new Date());
+										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
+									}
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								} else {
 									throw new Error(Utility.getText("msg_failed_no_approver"))
@@ -4375,6 +4380,11 @@ sap.ui.define([
 							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 							if (oResponse.Success) {
+								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+									var submittedDate = this._getJsonDate(new Date());
+									oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
+								}
 								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							} else {
 								throw new Error(Utility.getText("msg_failed_no_approver"))
