@@ -1121,7 +1121,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 createdBy,
                 ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
                 CASH_ADVANCE_DATE           as PAYMENT_DATE
-        };
+        } where ZREQUEST_HEADER.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
