@@ -261,7 +261,9 @@ sap.ui.define([
                                     MessageBox.error(Utility.getText("error_msg_course_already_pending"));
                                     bCanProceed = false;
                                     break;
-                                default:
+                                case Constants.ClaimStatus.DRAFT:
+                                case Constants.ClaimStatus.PUSH_BACK:
+                                case Constants.ClaimStatus.CANCELLED:
                                     MessageBox.error(Utility.getText("error_msg_active_course_claim"));
                                     bCanProceed = false;
                                     break;
