@@ -4272,6 +4272,15 @@ sap.ui.define([
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 								if (!bCanProceed) return;
 
+								// budget checking
+								const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
+								const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
+
+								if (!oHandlingResult.bCanProceed) {
+									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
+									return;
+								}
+
 								// move approver determination function before claim is saved
 								// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
 								// else, do not send message claim submission pending
@@ -4280,7 +4289,7 @@ sap.ui.define([
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 								if (oResponse.Success) {
-									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
+									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								} else {
 									throw new Error(Utility.getText("msg_failed_no_approver"))
 								}
@@ -4337,8 +4346,19 @@ sap.ui.define([
 							}
 							break;
 						case 'Submit Report':
-							// budget checking
+							//eligibility checking
+							var aAllClaimItems = oInputModel.getProperty("/claim_items");
+							var aAllEligibilityGeneratedPayload = [];
+							for (var i = 0; i < aAllClaimItems.length; i++) {
+								var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
+								aAllEligibilityGeneratedPayload.push(oPayload[0]);
+							}
 
+							var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
+							var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+							if (!bCanProceed) return;
+
+							// budget checking
 							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
 
@@ -4346,59 +4366,27 @@ sap.ui.define([
 								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							else {
-								//eligibility checking
-								var aAllClaimItems = oInputModel.getProperty("/claim_items");
-								var aAllEligibilityGeneratedPayload = [];
-								for (var i = 0; i < aAllClaimItems.length; i++) {
-									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-									aAllEligibilityGeneratedPayload.push(oPayload[0]);
-								}
 
-								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed) return;
-
-								// move approver determination function before claim is saved
-								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
-								// else, do not change claim status
-								// var oModelAppr = this.getView().getModel(); 
-								// var oEmployeeViewModel = this.getView().getModel("employee_view");
-								const oWorkflowModel = this.getView().getModel("workflow");
-								const oResponse = await workflowApproval.onApproverDetermination(oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
-								if (oResponse.Success) {
-									// If auto approve, status will be automatically updated to APPROVED in ZCLAIM_HEADER
-									if(!oResponse.AutoApproved) {	
-										oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									}
-									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-									}
-									//Call CAP action to update the used entitlement for PEDU claim
-									if (oInputModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
-										const oAction = oModel.bindContext("/updatePEDUEntitleAmount(...)");
-										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										try {
-											await oAction.execute();
-										} catch (oError) {
-											MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
-										}
-									}										
-									oMsg = Utility.getText("msg_claimsubmission_pending", []);
-								} else {
-									throw new Error(Utility.getText("msg_failed_no_approver"))
-								}
+							// move approver determination function before claim is saved
+							// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
+							// else, do not send message claim submission pending
+							// instead, jump to catch statement with error no approver found
+							var oModelAppr = this.getView().getModel();
+							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
+							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+							if (oResponse.Success) {
+								oMsg = Utility.getText("msg_claimsubmission_pending", []);
+							} else {
+								throw new Error(Utility.getText("msg_failed_no_approver"))
 							}
 							break;
 						default:
 							throw new Error("Invalid action selected: " + oAction);
 					}
-
-					await oModel.submitBatch("$auto");
+					await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
 					MessageToast.show(oMsg);
+					this._onNavBack();
 					//// change status based on oAction
 					switch (oAction) {
 						case 'Delete Report':
