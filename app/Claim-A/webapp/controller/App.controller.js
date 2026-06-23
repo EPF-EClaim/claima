@@ -269,6 +269,9 @@ sap.ui.define([
 			toolPage.setSideExpanded(!toolPage.getSideExpanded());
 		},
 
+		onHomeIconPressed: function(){
+			window.location.href = "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT";
+		},
 		onSideNavButtonPress: function () {
 			var oToolPage = this.byId("toolPage");
 			var bSideExpanded = oToolPage.getSideExpanded();
