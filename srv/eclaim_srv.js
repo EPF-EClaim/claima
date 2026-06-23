@@ -2231,4 +2231,17 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+
+    srv.on('getCentraLink', async (req) => {
+        const tx = cds.tx(req);
+        var oCentraLink = await tx.run(SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .where({
+                ID: Constant.ConstantId.PROD_CENTRA_LINK
+            })
+        )
+        return {
+            sCentraLink: oCentraLink.VALUE
+        };
+    });
 }
