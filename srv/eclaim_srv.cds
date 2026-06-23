@@ -2202,4 +2202,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updatePEDUEntitleAmount(sRecordId: String,
                                      sStatus: String)                                                    returns Response;         
+
+    type CentraLinkObject {
+        sCentraLink : Boolean;
+    }
+
+    function getCentraLink()                                                                   returns CentraLinkObject;
 };
