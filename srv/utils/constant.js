@@ -277,7 +277,11 @@ const Constant = {
         "REASON_ID": "REASON_ID",
         "REASON_DESC": "REASON_DESC",
         "DIVISION": "DIVISION",
-        "LOCATION_TYPE": "LOCATION_TYPE"
+        "LOCATION_TYPE": "LOCATION_TYPE",
+        "DEPENDENT_TYPE" : "DEPENDENT_TYPE",
+        "DEPENDENT_TYPE_ID" : "DEPENDENT_TYPE_ID",
+        "INSURANCE_PACKAGE_ID" : "INSURANCE_PACKAGE_ID",
+        "VEHICLE_OWNERSHIP_ID" : "VEHICLE_OWNERSHIP_ID",
     },
     Wildcard: {
         "All": "*",
