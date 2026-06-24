@@ -339,7 +339,7 @@ sap.ui.define([
 
         // Set header reject/pushback date and time 
         const oAction = oModel.bindContext("/updateApproverHeader(...)");
-        oAction.setParameter("sRecordId", sId,);
+        oAction.setParameter("sRecordId", sId);
         oAction.setParameter("sStatus", sActionStatus);
 
         try {
@@ -365,7 +365,7 @@ sap.ui.define([
             const sClaimTypeId = aHeaderRows[0].CLAIM_TYPE_ID;
             if (sClaimTypeId === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
                 const oAction = oModel.bindContext("/updatePEDUEntitleAmount(...)");
-                oAction.setParameter("sRecordId", sId,);
+                oAction.setParameter("sRecordId", sId);
                 oAction.setParameter("sStatus", sActionStatus);
                 try {
                     await oAction.execute();
