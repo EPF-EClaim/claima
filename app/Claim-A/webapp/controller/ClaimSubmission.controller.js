@@ -2749,6 +2749,24 @@ sap.ui.define([
 						and: true
 					})
 
+				case this._oConstant.ClaimTypeItem.LAUT: 
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.CHILD),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.ADDITIONAL_SPOUSE)
+						],
+						and: false
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
 				default:
 					return new Filter({
 						filters: [
@@ -4943,6 +4961,7 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
+				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
@@ -5079,6 +5098,7 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
+				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",

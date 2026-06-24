@@ -266,6 +266,7 @@ module.exports = {
           oReturnPayload = await WilayahAsal.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
+            aEmpData[0],
             tx
           );
           break;
