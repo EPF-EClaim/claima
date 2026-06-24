@@ -251,8 +251,12 @@ sap.ui.define([
 							break;
 
 						case Constants.EntitiesFields.TO_STATE_ID:
-							sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
-							break;							
+							if (oField.result === Constants.Default.NA) {
+								sErrorMsg = Utility.getText("eligibility_validation_to_state_not_found", [sEmpId]);
+							} else {
+								sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
+							}
+							break;					
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
