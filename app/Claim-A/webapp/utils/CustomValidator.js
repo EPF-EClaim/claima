@@ -258,7 +258,7 @@ sap.ui.define([
                             } else if (sActiveStatus === Constants.ClaimStatus.PENDING_APPROVAL) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_pending"));
                                 bCanProceed = false;
-                            } else if (sActiveStatus !== Constants.ClaimStatus.CANCELLED && sActiveStatus !== Constants.ClaimStatus.REJECTED) {
+                            } else if (!!sActiveStatus && sActiveStatus !== Constants.ClaimStatus.CANCELLED && sActiveStatus !== Constants.ClaimStatus.REJECTED) {
                                 MessageBox.error(Utility.getText("error_msg_active_course_claim"));
                                 bCanProceed = false;
                             }
