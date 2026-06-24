@@ -54,7 +54,8 @@ sap.ui.define([
 						"no_of_traveler": "TOTAL_TRAVELLER",
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
-						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID"
+						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
+						"to_state": "TO_STATE_ID"
 					};
 					break;
 
