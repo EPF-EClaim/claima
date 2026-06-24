@@ -105,14 +105,14 @@ sap.ui.define([
 					var sInternalCode	= oHeader.project_code || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 					var sCommitmentItem	= await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
 
-					var aReturn = aItemRows
+					var aPayload = aItemRows
 					.filter(row => row.claim_type_item_id !== oController._oConstant.ClaimTypeItem.CASH_REPAY) 
-					.map(async row => {
+					.map(row => {
 						return {
 							"YEAR": sYear,
 							"INTERNAL_ORDER": sInternalCode,
 							"FUND_CENTER": sFundCenter,
-							"MATERIAL_GROUP": await this._getMaterialCode(oController._oModel, oHeader.claim_type_id, row.claim_type_item_id),
+							"MATERIAL_GROUP": row.material_code,
 							"COMMITMENT_ITEM": sCommitmentItem,
 							"AMOUNT": parseFloat(row.amount),
 							"CLAIM_TYPE_ITEM": row.descr.claim_type_item_id, // to display description 
@@ -121,7 +121,6 @@ sap.ui.define([
 						};
 					});
 
-					var aPayload = await Promise.all(aReturn);
 					var oAction	= oController._oModel.bindContext("/budgetchecking(...)");
 					break;
 			
