@@ -2749,6 +2749,24 @@ sap.ui.define([
 						and: true
 					})
 
+				case this._oConstant.ClaimTypeItem.LAUT: 
+					var oDependentRuleFilter = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.CHILD),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.ADDITIONAL_SPOUSE)
+						],
+						and: false
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							oDependentRuleFilter
+						],
+						and: true
+					})
+
 				default:
 					return new Filter({
 						filters: [
