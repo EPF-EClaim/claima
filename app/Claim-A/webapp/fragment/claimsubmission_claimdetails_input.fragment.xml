@@ -576,6 +576,7 @@
 					change="onSelect_ClaimDetails_InsuranceProvider"
 					liveChange="onSelect_ClaimDetails_InsuranceProvider"
 					visible="{claimitem_property>/insurance_provider_id/is_visible}"
+                    required="true"
 				>
 				</Select>
 
@@ -599,6 +600,7 @@
 					change="onSelect_ClaimDetails_InsurancePackage"
 					liveChange="onSelect_ClaimDetails_InsurancePackage"
 					visible="{claimitem_property>/insurance_package_id/is_visible}"
+                    required="true"
 				>
 				</Select>
 
@@ -609,6 +611,7 @@
 					value="{claimitem_input>/claim_item/insurance_purchase_date}"
 					visible="{claimitem_property>/insurance_purchase_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
+                    required="true"
 				>
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
@@ -621,6 +624,7 @@
 					id="datepicker_claimdetails_input_insurance_cert_start_date"
 					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
 					visible="{claimitem_property>/insurance_cert_start_date/is_visible}"
+                    required="true"
 					maxDate="{
 						parts: [
 							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
@@ -647,6 +651,7 @@
 					id="datepicker_claimdetails_input_insurance_cert_end_date"
 					value="{claimitem_input>/claim_item/insurance_cert_end_date}"
 					visible="{claimitem_property>/insurance_cert_end_date/is_visible}"
+                    required="true"
 					minDate="{
 						parts: [
 							'constant>/EntitiesFields/INSURANCE_CERT_END_DATE',
