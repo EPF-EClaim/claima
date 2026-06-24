@@ -78,7 +78,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PAYMENT_DATE  
         };
 
-    entity ZEMP_REQUEST_EE_VIEW           as
+    entity ZEMP_REQUEST_EE_VIEW as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -234,7 +234,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_EE_VIEW             as
+    entity ZEMP_CLAIM_EE_VIEW as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -482,7 +482,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DAILY_ALLOWANCE,
                 TIPS,
                 EXCLUDE_TIPS,
-                TOTAL_TRAVELLER              
+                TOTAL_TRAVELLER,
+                ZCLAIM_HEADER.STATUS_ID,
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -519,7 +521,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY      as
+    entity ZEMP_CLAIM_REPORT_SUMMARY as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -566,7 +568,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_DETAILS      as
+    entity ZEMP_CLAIM_REPORT_DETAILS as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -730,7 +732,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
         };
 
-    entity ZEMP_REQUEST_REPORT_SUMMARY    as
+    entity ZEMP_REQUEST_REPORT_SUMMARY as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -776,7 +778,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_REPORT_DETAILS    as
+    entity ZEMP_REQUEST_REPORT_DETAILS as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -1013,7 +1015,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_APPROVER_DETAILS          as
+entity ZEMP_APPROVER_DETAILS           as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
@@ -1026,7 +1028,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
                     ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as AMOUNT,
                     ZREQUEST_HEADER.CASH_ADVANCE       as TOTAL_AMOUNT,
-                    modifiedAt
+                    modifiedAt,
+                    SUBSTITUTE_APPROVER_ID,
+                    ZEMP_MASTER_SUBS.NAME             as SUBSTITUTE_NAME
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
@@ -1043,7 +1047,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZCLAIM_HEADER.SUBMITTED_DATE          as REQUEST_DATE,
                     ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
                     ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT      as TOTAL_AMOUNT,
-                    modifiedAt
+                    modifiedAt,
+                    SUBSTITUTE_APPROVER_ID,
+                    ZEMP_MASTER_SUBS.NAME             as SUBSTITUTE_NAME
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
@@ -1052,8 +1058,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         message : String;
     };
 
-    entity ZROLEHIERARCHY                 as projection on ECLAIM.ZROLEHIERARCHY;
-    entity ZCONSTANTS                     as projection on ECLAIM.ZCONSTANTS;
+    entity ZROLEHIERARCHY as
+        projection on ECLAIM.ZROLEHIERARCHY {
+            key ROLE,
+                RANK
+        };
+
+    entity ZCONSTANTS as
+        projection on ECLAIM.ZCONSTANTS {
+            key ID,
+                VALUE
+        };
 
     entity ZCLM_APPR_REQ_STAT_VIEW        as
         projection on ECLAIM.ZCLM_APPR_REQ_STAT {
