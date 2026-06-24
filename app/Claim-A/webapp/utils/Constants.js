@@ -703,6 +703,11 @@ sap.ui.define([
         "SuccessFactorCompanyCode": {
             "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
             "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
+        },
+        "RelationshipType": {
+            "SPOUSE": "01",
+            "CHILD": "02",
+            "ADDITIONAL_SPOUSE": "07"
         }
 
     }
