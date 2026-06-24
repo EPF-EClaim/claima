@@ -282,6 +282,7 @@ const Constant = {
         "DEPENDENT_TYPE_ID" : "DEPENDENT_TYPE_ID",
         "INSURANCE_PACKAGE_ID" : "INSURANCE_PACKAGE_ID",
         "VEHICLE_OWNERSHIP_ID" : "VEHICLE_OWNERSHIP_ID",
+        "COUNTRY" : "COUNTRY"
     },
     Wildcard: {
         "All": "*",
