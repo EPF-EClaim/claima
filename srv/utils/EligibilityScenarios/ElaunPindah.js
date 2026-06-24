@@ -33,7 +33,7 @@ module.exports = {
         }
 
         if (!oRule) {
-            throw new Error("No Eligibility Rules Found");
+            throw new Error("You are not eligible for this claim.");
         };
 
         var oDateRange = await this._getDateRange(oPayload, tx);
