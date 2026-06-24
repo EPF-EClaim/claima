@@ -695,6 +695,11 @@ sap.ui.define([
         },
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
+        },
+        "RelationshipType": {
+            "SPOUSE": "01",
+            "CHILD": "02",
+            "ADDITIONAL_SPOUSE": "07"
         }
         
     }

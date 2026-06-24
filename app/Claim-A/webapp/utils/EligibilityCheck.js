@@ -54,7 +54,8 @@ sap.ui.define([
 						"no_of_traveler": "TOTAL_TRAVELLER",
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
-						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID"
+						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
+						"to_state": "TO_STATE_ID"
 					};
 					break;
 
@@ -91,7 +92,8 @@ sap.ui.define([
 						"country": "COUNTRY",
 						"insurance_package_id": "INSURANCE_PACKAGE_ID",
 						"dependent": "DEPENDENT",
-						"phone_no": "PHONE_NO"
+						"phone_no": "PHONE_NO",
+						"to_state_id": "TO_STATE_ID"
 					};
 					break;
 
@@ -247,6 +249,10 @@ sap.ui.define([
 						case Constants.EntitiesFields.PHONE_NO:
 							sErrorMsg = Utility.getText("eligibility_validation_phone_no", [oField.value, sEmpId]);
 							break;
+
+						case Constants.EntitiesFields.TO_STATE_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
+							break;							
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);

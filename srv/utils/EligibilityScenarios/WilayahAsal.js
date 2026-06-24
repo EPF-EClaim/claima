@@ -11,12 +11,12 @@ module.exports = {
          * @param {Object} tx - CDS Transaction
          * @returns {Object} oPayload - return original payload but with result field filled
          */
-    onEligibleCheck: async function (oPayload, aRules, tx) {
+    onEligibleCheck: async function (oPayload, aRules, oEmp, tx) {
         var oRule = aRules[0];
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
         var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp);
         return oPayload;
     },
     /**
@@ -118,7 +118,7 @@ module.exports = {
         if ((!!dDateFrom) && (!!dDateTo)) {
             aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
         }
-        
+
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
         return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
@@ -134,7 +134,7 @@ module.exports = {
     * @param {Integer} iExistingFreq - Date frequency count
     * @param {Integer} iAllowedFreq - Rules Frequency Count
     */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -165,6 +165,22 @@ module.exports = {
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }
+
+                iIndex = null;
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.TO_STATE_ID);
+                if (iIndex == -1) return;
+                if (oEmp.STATE_OF_ORIGIN &&
+                    oPayload.CheckFields[iIndex].value) {
+                    if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    }
+                    else {
+                        oPayload.CheckFields[iIndex].result = false;
+                    }
+                } else {
+                    oPayload.CheckFields[iIndex].result = false;
+                }
+
                 break;
         }
     }
