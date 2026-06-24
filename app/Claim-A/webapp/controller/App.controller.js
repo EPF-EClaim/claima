@@ -377,6 +377,7 @@ sap.ui.define([
 					"category": null,
 					"cost_center": null,
 					"marriage_category": null,
+					//added
 					"project_claim": false,
 					"requestform": {
 						"request_id": null,
