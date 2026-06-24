@@ -920,6 +920,28 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!--Special To State for Wilayah Asal -->
+                                <form:FormElement label="{i18n>req_i_to_state}"
+                                            visible="false"
+                                            id="i_special_to_state" >
+                                    <form:fields>
+                                        <Select 
+                                            id="item_special_to_state"
+                                            selectedKey="{request>/req_item/to_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            editable="true"
+                                            enabled="{= ${request>/view} !== 'view'}"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- To Location -->
                                 <form:FormElement label="{i18n>req_i_to_location}"
                                             visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}}"

@@ -694,7 +694,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCOST_CENTER.COST_CENTER_DESC,
                 ALTERNATE_COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
-                TOTAL_AMOUNT,
+                PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
                 TRIP_START_DATE,
@@ -754,7 +754,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCOST_CENTER.COST_CENTER_DESC,
                 ALTERNATE_COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
-                TOTAL_AMOUNT,
+                PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
                 TRIP_START_DATE,
@@ -918,7 +918,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 LAST_PUSH_BACK_DATE,
                 createdBy, 
                  // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                
         };
 
     entity ZEMP_CLAIM_REPORT_DETAILS     as
@@ -1092,7 +1093,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
                  // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                  
+                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                 
         };
 
     entity ZEMP_CASHADVANCE_REPORT       as
@@ -1116,8 +1118,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.DEP,
                 ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
                 ZEMP_MASTER.UNIT_SECTION,
-                createdBy
-        };
+                createdBy,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+                CASH_ADVANCE_DATE           as PAYMENT_DATE
+        } where ZREQUEST_HEADER.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
@@ -1210,5 +1214,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                             $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
                                             $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
 
-        }        
+        };
+
+    action   updatePEDUEntitleAmount(sRecordId: String,
+                                     sStatus: String)                                                    returns Response;         
 };
