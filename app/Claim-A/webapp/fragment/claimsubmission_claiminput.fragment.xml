@@ -430,6 +430,28 @@
                                 !${claimsubmission_input>/req_emailapprove})
                         }"
                     />
+
+                    <!-- Project Code -->
+                    <Label text="{i18n>label_claimprocess_projectcode}" />
+                    <Select
+                        id="select_claimprocess_project_code"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/project_code/project_code_io}"
+                        items="{
+                            path: 'employee>/ZPROJECT_HDR',
+                            sorter: [
+                                { path: 'PROJECT_CODE_IO' },
+                                { path: 'PROJECT_DESC' }
+                                ]
+                            }"
+                            visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
+                            change="onSelect_ClaimProcess_ProjectCode"
+                        >
+                            <core:Item
+                                key="{employee>PROJECT_CODE_IO}"
+                                text="{employee>PROJECT_CODE_IO} - {employee>PROJECT_DESC}"
+                            />
+                        </Select>
                     
                     <!-- Attachment Email Approval -->
                     <Label text="{i18n>label_claiminput_attachment}" />

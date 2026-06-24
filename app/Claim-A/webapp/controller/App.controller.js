@@ -377,6 +377,7 @@ sap.ui.define([
 					"category": null,
 					"cost_center": null,
 					"marriage_category": null,
+					"project_claim": false,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -405,6 +406,10 @@ sap.ui.define([
 						"session_number": null,
 						"start_date": null,
 						"end_date": null
+					},
+					"project_code": {
+						"project_code_io": null,
+						"project_desc": null
 					},
 					"descr": {
 						"type": null,
@@ -617,6 +622,13 @@ sap.ui.define([
 				// get cost center from claim type
 				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+				
+				// get PROJECT_CLAIM from selected claim type
+        		oInputModel.setProperty("/claimtype/project_claim", oClaimType.getBindingContext("employee").getObject("PROJECT_CLAIM"));
+				console.log(
+				"project_claim:",
+				oInputModel.getProperty("/claimtype/project_claim")
+			);
 
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
@@ -645,6 +657,9 @@ sap.ui.define([
 			} else {
 				// reset claim type description
 				oInputModel.setProperty("/claimtype/descr/type", null);
+				// reset PROJECT_CLAIM
+        		oInputModel.setProperty("/claimtype/project_claim", false);
+
 			}
 			// reset claim item
 			if (oInputModel.getProperty("/claimtype/item") !== null) {
@@ -656,6 +671,12 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/course_code/course_id", null);
 				this.onSelect_ClaimProcess_CourseCode();
 			}
+			// reset project code
+			if (oInputModel.getProperty("/claimtype/project_code/project_code_io") !== null) {
+				oInputModel.setProperty("/claimtype/project_code/project_code_io", null);
+				oInputModel.setProperty("/claimtype/project_code/project_desc", null);
+			}
+
 		},
 
 		onSelect_ClaimProcess_ClaimItem: async function (oEvent) {
@@ -818,6 +839,56 @@ sap.ui.define([
 			}
 		},
 
+		onSelect_ClaimProcess_ProjectCode: function (oEvent) {
+    var oInputModel = this.getView().getModel("claimsubmission_input");
+    var oProjectCode = oEvent ? oEvent.getParameters().selectedItem : null;
+
+    console.log("PROJECT CODE EVENT TRIGGERED");
+
+    if (oProjectCode) {
+        console.log("Selected Project Key:", oProjectCode.getKey());
+
+        oInputModel.setProperty(
+            "/claimtype/project_code/project_code_io",
+            oProjectCode.getKey()
+        );
+
+        oInputModel.setProperty(
+            "/claimtype/project_code/project_desc",
+            oProjectCode.getBindingContext("employee").getObject("PROJECT_DESC")
+        );
+
+        console.log(
+            "Stored project_code_io:",
+            oInputModel.getProperty("/claimtype/project_code/project_code_io")
+        );
+
+        console.log(
+            "Stored project_desc:",
+            oInputModel.getProperty("/claimtype/project_code/project_desc")
+        );
+    }
+    else {
+        oInputModel.setProperty("/claimtype/project_code/project_code_io", null);
+        oInputModel.setProperty("/claimtype/project_code/project_desc", null);
+    }
+},
+
+		// onSelect_ClaimProcess_ProjectCode: function (oEvent) {
+		// 	var oInputModel = this.getView().getModel("claimsubmission_input");
+		// 	var oProjectCode = oEvent ? oEvent.getParameters().selectedItem : null;
+
+		// 	if (oProjectCode) {
+		// 		oInputModel.setProperty("/claimtype/project_code/project_code_io",oProjectCode.getKey());
+
+		// 		oInputModel.setProperty("/claimtype/project_code/project_desc",oProjectCode.getBindingContext("employee").getObject("PROJECT_DESC"));
+		// 	}
+		// 	else {
+		// 		oInputModel.setProperty("/claimtype/project_code/project_code_io", null);
+		// 		oInputModel.setProperty("/claimtype/project_code/project_desc", null);
+		// 	}
+		// },
+
 		onPreApproval_ClaimProcess: function () {
 			this.oDialog_ClaimProcess.close();
 
@@ -943,6 +1014,29 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
 			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
 			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
+
+			//// project code values
+			console.log(
+				"PROJECT CODE BEFORE COPY:",
+				oInputModel.getProperty("/claimtype/project_code/project_code_io")
+			);
+			if (
+				oInputModel.getProperty("/claimtype/project_code/project_code_io")
+			) {
+				oInputModel.setProperty(
+					"/claim_header/project_code",
+					oInputModel.getProperty("/claimtype/project_code/project_code_io")
+				);
+
+				oInputModel.setProperty(
+					"/claim_header/descr/project_code",
+					oInputModel.getProperty("/claimtype/project_code/project_desc")
+				);
+			}
+			else {
+				oInputModel.setProperty("/claim_header/project_code", null);
+				oInputModel.setProperty("/claim_header/descr/project_code", null);
+			}
 		},
 
 		_getJsonDate: function (date) {

@@ -37,7 +37,7 @@
                                 { path: 'CLAIM_TYPE_ID' }
                             ],
                             parameters: {
-                                $select: 'COST_CENTER,COST_CENTER_DESC'
+                                $select: 'COST_CENTER,COST_CENTER_DESC,PROJECT_CLAIM'
                             }
                         }"
                         selectionChange="onSelect_ClaimProcess_ClaimType"
