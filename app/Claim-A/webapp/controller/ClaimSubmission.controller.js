@@ -566,7 +566,7 @@ sap.ui.define([
 					entitled_breakfast: it.ENTITLED_BREAKFAST,
 					entitled_lunch: it.ENTITLED_LUNCH,
 					entitled_dinner: it.ENTITLED_DINNER,
-					dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : it.DEPENDENT !== "null" ? this._oConstant.DependentType.DEPENDENT : null,
+					dependent_type: it.DEPENDENT_TYPE_ID,
 					anggota_id: it.ANGGOTA_ID,
 					anggota_name: it.ANGGOTA_NAME,
 					dependent_name: it.DEPENDENT_NAME,
@@ -5531,6 +5531,12 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", 0)
 			}
 
+		},
+
+		onSelect_ClaimDetails_DependentOrAnggota: async function(oEvent) {
+			const oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.setProperty("/claim_item/anggota_id", null);
+			oInputModel.setProperty("/claim_item/dependent", null);
 		}
 	});
 });

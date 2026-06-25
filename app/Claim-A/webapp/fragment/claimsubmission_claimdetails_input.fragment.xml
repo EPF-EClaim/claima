@@ -78,6 +78,7 @@
 						sorter: { path: 'DEPENDENT_TYPE_DESC', descending: false }
 					}"
                     visible="false"
+                    change="onSelect_ClaimDetails_DependentOrAnggota"
 				>
                     <items>
 					    <core:Item key="{employee>DEPENDENT_TYPE_ID}" 
