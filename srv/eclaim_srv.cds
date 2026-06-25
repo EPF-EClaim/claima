@@ -1223,5 +1223,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
         sCentraLink : Boolean;
     }
 
-    function getCentraLink()                                                                   returns CentraLinkObject;
+    function getCentraLink()                                                                            returns CentraLinkObject;
+
+    function checkGalakanEligible()                                                                     returns Boolean;
+
+    function getCeramahEntitlement(fDuration: Decimal(5,2))                                             returns Decimal(10,2);
 };
