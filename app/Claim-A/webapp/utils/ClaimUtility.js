@@ -42,7 +42,7 @@ sap.ui.define([
 		* @param {string} sParticipantId - participant ID to check from database
 		* @returns {boolean} if records found, return true; else return false
 		*/
-		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
+		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId, sClaimId) {
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({
@@ -50,15 +50,22 @@ sap.ui.define([
 					new Filter("STATUS_ID", FilterOperator.NE, Constant.ClaimStatus.CANCELLED),
 					new Filter("STATUS_ID", FilterOperator.NE, Constant.ClaimStatus.REJECTED)
 				],
-				and: false
+				and: true
 			});
-			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, [
+
+			const aFilters = [
 				// check if claim exists with following 
 				new Filter("COURSE_CODE", FilterOperator.EQ, sCourseCode),
 				new Filter("SESSION_NUMBER", FilterOperator.EQ, sSessionNumber),
 				new Filter("EMP_ID", FilterOperator.EQ, sParticipantId),
 				oFilterRoleId
-			]);
+			];
+
+			if (sClaimId) {
+				aFilters.push(new Filter("CLAIM_ID", FilterOperator.NE, sClaimId));
+			};
+
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, aFilters);
 
 			try {
 				BusyIndicator.show(0);
