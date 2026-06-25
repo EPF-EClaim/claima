@@ -18,7 +18,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         operationEnabled : Boolean;
     }
 
-     type budgetdata {
+      type budgetdata {
         YEAR            : String(4);
         INTERNAL_ORDER  : String;
         FUND_CENTER     : String;

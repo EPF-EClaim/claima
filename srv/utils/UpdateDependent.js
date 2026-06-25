@@ -27,7 +27,8 @@ module.exports = {
         const aSubmittedItems = await tx.run(
             SELECT.from(sItemTable).where({ [sHeaderField]: sRecordId }));
 
-        if (!aSubmittedItems || aSubmittedItems.length === 0) return;
+        console.log(aSubmittedItems[0].CLAIM_TYPE_ID);
+        if (!aSubmittedItems || aSubmittedItems.length === 0 || aSubmittedItems[0].CLAIM_TYPE_ID !== Constant.ClaimType.PEDU) return;
 
         const sEmpId = aSubmittedItems[0].EMP_ID;
 
@@ -36,6 +37,7 @@ module.exports = {
         aSubmittedItems.forEach(item => {
             if (item.DEPENDENT) {
                 const sCleanDepId = String(item.DEPENDENT).replace(/[^0-9]/g, '');
+                console.log(`Processing Dependent ID: ${sCleanDepId}, Amount: ${item.AMOUNT}`);
                 const iAmount = parseFloat(item.AMOUNT || 0);
                 if (sCleanDepId) {
                     oDependentTotals[sCleanDepId] = (oDependentTotals[sCleanDepId] || 0) + iAmount;

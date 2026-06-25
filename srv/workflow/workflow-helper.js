@@ -154,7 +154,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     console.log("SubmittedDate: ", oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]);
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
-    const sFinalCostCenter = oHeaderContext[Constant.EntitiesFields.COST_CENTER] ?? oHeaderContext[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? null;
+    const sFinalCostCenter = oHeaderContext[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeaderContext[Constant.EntitiesFields.COST_CENTER] ?? null;
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] ?? Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
     if(!aItemsContext.length) {
