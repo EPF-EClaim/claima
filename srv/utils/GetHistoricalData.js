@@ -187,13 +187,9 @@ module.exports = {
             }
             const sItemHeaderForeignKey = (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) ? "CLAIM_ID" : "REQUEST_ID";
 
-            const aItemCountData = await tx.run(SELECT`count(*)`.from(sItemTable).where(sItemcondition).and({ [sItemHeaderForeignKey]: { in: aValidHeaderIds } }));
-
-            if (aItemCountData && aItemCountData[0]) { 
-                return aItemCountData[0].count || Object.values(aItemCountData[0])[0] || 0; 
-            }
-            return 0;
-
+            const aItemCountData = await tx.run(SELECT.from(sItemTable).where(sItemcondition).and({ [sItemHeaderForeignKey]: { in: aValidHeaderIds } }));            
+            
+            return aItemCountData;
         } catch (error) { 
             return 0; 
         }

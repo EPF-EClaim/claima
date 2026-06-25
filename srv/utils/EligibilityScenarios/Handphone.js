@@ -16,6 +16,7 @@ module.exports = {
     var oRule, oDateRange, oFreqResult;
     var iAllowedFreq = 0;
     var iItemFreq = 0;
+    var fHistoricalTotalAmount = 0;
 
     try {
       if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.REQUEST) {
@@ -46,14 +47,20 @@ module.exports = {
 
         var oCurrentRecordItemData = await this._getCurrentRecordItemData(
           oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        
+        if(iHistoricalData.length > 0){
+          for(var i = 0; i < iHistoricalData.length; i++){
+            fHistoricalTotalAmount = parseFloat(iHistoricalData[i].AMOUNT) + fHistoricalTotalAmount;
+          }
+        }
 
-        iAllowedFreq = iHistoricalData + oCurrentRecordItemData.iItemCount;
+        iAllowedFreq = iHistoricalData.length + oCurrentRecordItemData.iItemCount;
       }
     } catch (error) {
       throw new Error(`${error.message}`);
     };
     this._validateClaimItem(
-      oRule, oPayload, iAllowedFreq, iItemFreq, oFreqResult?.isExceptionGrade, oCurrentRecordItemData?.fTotalAmount);
+      oRule, oPayload, iAllowedFreq, iItemFreq, oFreqResult?.isExceptionGrade, oCurrentRecordItemData?.fTotalAmount, fHistoricalTotalAmount);
 
     return oPayload;
   },
@@ -289,7 +296,7 @@ module.exports = {
    * @param {Boolean} isExceptionGrade - Flag to indicate if the claim is for an exception grade
    * @param {Number} fTotalAmount - Total amount of the claim
    */
-  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, isExceptionGrade, fTotalAmount) {
+  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, isExceptionGrade, fTotalAmount, fHistoricalTotalAmount) {
     var iIndex;
 
     switch (oPayload.ClaimTypeItem) {
@@ -324,8 +331,8 @@ module.exports = {
 
             let dTargetValueToCompare = parseFloat(oPayload.CheckFields[iIndex].value) || 0;
 
-            if (isExceptionGrade && fTotalAmount) {
-              dTargetValueToCompare += parseFloat(fTotalAmount);
+            if (isExceptionGrade) { 
+              dTargetValueToCompare = parseFloat(fTotalAmount) + parseFloat(fHistoricalTotalAmount) + parseFloat(dTargetValueToCompare);
             }
 
             oPayload.CheckFields[iIndex].result =
