@@ -177,6 +177,8 @@ module.exports = {
                     else {
                         oPayload.CheckFields[iIndex].result = false;
                     }
+                } else if (oEmp.STATE_OF_ORIGIN === null) {
+                    oPayload.CheckFields[iIndex].result = Constant.Wildcard.NA;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;
                 }

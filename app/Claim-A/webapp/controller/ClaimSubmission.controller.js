@@ -4293,7 +4293,7 @@ sap.ui.define([
 								// budget checking
 								const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 								const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-
+								console.log(oHandlingResult);
 								if (!oHandlingResult.bCanProceed) {
 									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 									return;
@@ -4307,6 +4307,20 @@ sap.ui.define([
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 								if (oResponse.Success) {
+									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
+									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+										const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
+										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										try {
+											await oAction.execute();
+										} catch (oError) {
+											MessageBox.error(oError.message);
+										} finally {
+											BusyIndicator.hide();
+										}
+									}
+
 									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 										var submittedDate = this._getJsonDate(new Date());
@@ -4384,7 +4398,7 @@ sap.ui.define([
 							// budget checking
 							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-
+							console.log(oHandlingResult);
 							if (!oHandlingResult.bCanProceed) {
 								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
@@ -4398,6 +4412,20 @@ sap.ui.define([
 							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
 							if (oResponse.Success) {
+								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+									const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
+									oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									try {
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
+									}
+								}
+
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 									var submittedDate = this._getJsonDate(new Date());
