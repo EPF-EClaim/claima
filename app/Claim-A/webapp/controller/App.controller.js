@@ -857,6 +857,15 @@ sap.ui.define([
 				oInputModel.setProperty("/req_emailapprove", false);
 			}
 
+			// check Galakan Eligibile
+			if (oInputModel.getProperty("/claimtype/type") === this._oConstant.ClaimType.GALAKAN) {
+				var oResult = await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.GALAKAN, false);
+				if (!oResult?.isEligible) {
+					MessageBox.error(Utility.getText("msg_claim_galakan_not_eligible"));
+					return;
+				}
+			}
+
 			//check if the same Request ID has been submitted for claim submission
 			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
 				var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
@@ -1381,6 +1390,15 @@ sap.ui.define([
 					return;
 				}
 
+				// check Galakan Eligibile
+				if (oDialogModel.getProperty("/claimtype") === this._oConstant.ClaimType.GALAKAN) {
+					var oResult = await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.GALAKAN, false);
+					if (!oResult?.isEligible) {
+						MessageBox.error(Utility.getText("msg_claim_galakan_not_eligible"));
+						return;
+					}
+				}
+
 				if (oDialogData.doc1) {
 					const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
 					const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
@@ -1592,7 +1610,7 @@ sap.ui.define([
 			];
 
 			if (sReqType === this._oConstant.RequestType.REIMBURSEMENT) {
-				this._bEligibleForElaunTukar = await EligibilityCheck.checkElaunTukarEligibility(this._oDataModel, false);
+				this._bEligibleForElaunTukar = await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.ELAUN_TUKAR, false);
 				switch (this._bEligibleForElaunTukar) {
 					case this._oConstant.ElaunTukarStatus.NOT_ALLOWED:
 						aFilters.push(new Filter(this._oConstant.EntitiesFields.CLAIM_TYPE_ID, FilterOperator.NE, this._oConstant.ClaimType.ELAUN_TUKAR));

@@ -78,6 +78,7 @@
 						sorter: { path: 'DEPENDENT_TYPE_DESC', descending: false }
 					}"
                     visible="false"
+                    change="onSelect_ClaimDetails_DependentOrAnggota"
 				>
                     <items>
 					    <core:Item key="{employee>DEPENDENT_TYPE_ID}" 
@@ -556,6 +557,17 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
                     required="true"
 				/>
+
+                <!-- Course Duration -->
+				<Label text="{i18n>label_claimdetails_input_courseduration}" />
+                <Text
+                    id="text_claimdetails_input_course_duration" 
+                    text="{
+                        path: 'claimitem_input>/claim_item/course_duration',
+                        formatter: '.formatDuration'
+                    }"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimType/CERAMAH} }"
+                />
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
                 <Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItemMakan/MAKAN_O} ? ${i18n>label_claimdetails_input_location} : ${i18n>label_claimdetails_input_region} }"/>
@@ -1076,7 +1088,8 @@
 						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
                         !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/DALAM_STESEN} &amp;&amp;
-                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} 			
+                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/CERAMAH}		
                         }"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>

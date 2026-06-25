@@ -747,8 +747,21 @@ sap.ui.define([
 			catch(oError){
 				return 0;
 			}
+		},
 
-   		 	
+		getCeramahEligibleAmount: async function(fDurationMinute){
+			var fDurationHour = parseFloat(fDurationMinute) / 60;
+			const oContext = this._oView.getModel().bindContext("/getCeramahEntitlement(...)");
+			oContext.setParameter("fDuration", fDurationHour);
+
+			try{
+				await oContext.execute();
+				const oResult = await oContext.requestObject();
+				return oResult.iAmount;
+			}
+			catch(oError){
+				return 0;
+			}
 		}
 	}
 });

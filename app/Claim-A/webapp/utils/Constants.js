@@ -25,7 +25,8 @@ sap.ui.define([
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE",
             "GALAKAN": "GALAKAN",
-            "WILAYAH_ASAL": "WILAYAH_ASAL"
+            "WILAYAH_ASAL": "WILAYAH_ASAL",
+            "CERAMAH": "CERAMAH"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",

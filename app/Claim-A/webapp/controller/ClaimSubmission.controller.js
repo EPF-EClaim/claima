@@ -568,7 +568,7 @@ sap.ui.define([
 					entitled_breakfast: it.ENTITLED_BREAKFAST,
 					entitled_lunch: it.ENTITLED_LUNCH,
 					entitled_dinner: it.ENTITLED_DINNER,
-					dependent_type: it.ANGGOTA_ID ? this._oConstant.DependentType.ANGGOTA : it.DEPENDENT !== "null" ? this._oConstant.DependentType.DEPENDENT : null,
+					dependent_type: it.DEPENDENT_TYPE_ID,
 					anggota_id: it.ANGGOTA_ID,
 					anggota_name: it.ANGGOTA_NAME,
 					dependent_name: it.DEPENDENT_NAME,
@@ -1698,7 +1698,7 @@ sap.ui.define([
 
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR &&
-						await EligibilityCheck.checkElaunTukarEligibility(this._oModel, true) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
+						await EligibilityCheck.checkClaimTypeEligibility(this._oModel, this._oConstant.ClaimType.ELAUN_TUKAR, true) === this._oConstant.ElaunTukarStatus.NOT_ALLOWED) {
 						MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
 						return;
 					}
@@ -3205,7 +3205,8 @@ sap.ui.define([
 					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
-					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
+					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type")
 				});
 
 				// to save the attachment inside SF
@@ -3519,7 +3520,35 @@ sap.ui.define([
 			}
 		},
 
+		formatDuration: function(iTotalMinutes) {
+			if (!iTotalMinutes || iTotalMinutes <= 0) {
+				return "0 hours 0 minutes";
+			}
+
+			var hours = Math.floor(iTotalMinutes / 60);
+			var minutes = iTotalMinutes % 60;
+
+			return hours + " hours " + minutes + " minutes";
+		},
+
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			// check for missing value
+			var startTimeValue = this.byId(starttime).getDateValue();
+			var endTimeValue = this.byId(endtime).getDateValue();
+			if (!startTimeValue || !endTimeValue) {
+				return;
+			}
+
+			// get course duration
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CERAMAH) {
+				var durationMs = endTimeValue - startTimeValue;
+				var iCourseDurationMinutes = Math.floor(durationMs / (1000 * 60));
+				oInputModel.setProperty("/claim_item/course_duration", iCourseDurationMinutes);
+				oInputModel.setProperty("/claim_item/amount", await ClaimUtility.getCeramahEligibleAmount(iCourseDurationMinutes));
+			}
+			
 			// reset claim detail amounts
 			this._resetPerDiem();
 
@@ -3529,11 +3558,7 @@ sap.ui.define([
 			if (!startDateValue || !endDateValue) {
 				return;
 			}
-			var startTimeValue = this.byId(starttime).getDateValue();
-			var endTimeValue = this.byId(endtime).getDateValue();
-			if (!startTimeValue || !endTimeValue) {
-				return;
-			}
+			
 			// check if end datetime earlier than start datetime
 			var startDateUnix = new Date(startDateValue).valueOf();
 			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
@@ -5587,6 +5612,13 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", 0)
 			}
 
+		},
+
+		onSelect_ClaimDetails_DependentOrAnggota: async function(oEvent) {
+			const oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.setProperty("/claim_item/anggota_id", null);
+			oInputModel.setProperty("/claim_item/anggota_name", null);
+			oInputModel.setProperty("/claim_item/dependent", null);
 		}
 	});
 });
