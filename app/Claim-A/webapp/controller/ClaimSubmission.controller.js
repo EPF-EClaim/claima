@@ -3406,7 +3406,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
-			oInputModel.refresh(true);
+			//oInputModel.refresh(true);
 
 			// Calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
@@ -5014,7 +5014,6 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
-				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
@@ -5152,7 +5151,6 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
-				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
