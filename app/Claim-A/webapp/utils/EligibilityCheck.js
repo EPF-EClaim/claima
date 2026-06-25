@@ -312,9 +312,27 @@ sap.ui.define([
 			});
 		},
 
-		checkElaunTukarEligibility: async function (oDataModel, bIsClaim) {
-			const oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
-			oFunction.setParameter("IS_CLAIM", bIsClaim);
+		/**
+		 * Check the Specific Claim Type Eligibility prior to any claim or PAR creation or submission.
+		 * @param {Object} oDataModel 
+		 * @param {String} sClaimType 
+		 * @param {Boolean} bIsClaim 
+		 * @returns Boolean
+		 */
+		checkClaimTypeEligibility: async function (oDataModel, sClaimType, bIsClaim) {
+			let oFunction;
+			switch (sClaimType) {
+				case Constants.ClaimType.ELAUN_TUKAR:
+					oFunction = oDataModel.bindContext("/checkElaunTukarEligible(...)");
+					oFunction.setParameter("IS_CLAIM", bIsClaim);
+					break;
+				case Constants.ClaimType.GALAKAN:
+					oFunction = oDataModel.bindContext("/checkGalakanEligible(...)");
+					oFunction.setParameter("IS_CLAIM", bIsClaim);
+					break;
+				default:
+					return false;
+			}
 
 			try {
 				await oFunction.execute();

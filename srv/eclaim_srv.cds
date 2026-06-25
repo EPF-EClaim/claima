@@ -1223,5 +1223,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         sCentraLink : Boolean;
     }
 
-    function getCentraLink()                                                                   returns CentraLinkObject;
+    function getCentraLink()                                                                            returns CentraLinkObject;
+
+    function checkGalakanEligible()                                                                     returns Boolean;
 };

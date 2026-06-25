@@ -2635,4 +2635,23 @@ module.exports = (srv) => {
             req.error(400, `Fail updating records: ${error.message}`);
         }
     });    
+
+    srv.on("checkGalakanEligible", async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (oEmp) {
+            // Implementation for checking Galakan eligibility
+            if (oEmp.CONFIRMATION_DATE) {
+                if (new Date() >= new Date(oEmp.CONFIRMATION_DATE)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            req.error(404, `Employee Not Found.`);
+        }
+    });
 }
