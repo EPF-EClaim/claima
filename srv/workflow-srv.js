@@ -35,6 +35,9 @@ const {
     determineLastApproverLevel,
     resolveActionDescriptor
 } = require('./workflow/action/action-helper');
+const {
+    updateUsedEntitlementAmount
+} = require('./utils/UpdateDependent');
 const { message } = require('@sap/cds/lib/log/cds-error');
 
 // Require END
@@ -159,6 +162,9 @@ module.exports = (srv) => {
             }
             console.log("Budget Checking Status: ", bStatus);
         }
+
+        // update PEDU entitlement usage if action is reject
+        await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);
 
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
         const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);

@@ -17,15 +17,15 @@ module.exports = {
         var oRule;
 
         //Filter rules based on claimant's employee type
-        aFilteredRules = aRules.filter(function (rule) {
+        aRules = aRules.filter(function (rule) {
             return (rule.EMPLOYEE_TYPE == oEmp.EMPLOYEE_TYPE);
         });
 
-        oRule = aFilteredRules[0];
+        oRule = aRules[0];
 
         //If no rule found for claimant's employee type, throw error
         if (!oRule) {
-            throw new Error("No Eligibility Rules Found");
+            throw new Error("You are not eligible for this claim.");
         };
 
         var oDateRange = await this._getDateRange(oPayload, tx);

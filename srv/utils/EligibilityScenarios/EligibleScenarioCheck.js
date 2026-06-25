@@ -152,7 +152,7 @@ module.exports = {
         `${sEligibilityCondition}`
       )
     );
-    console.log(aEligibilityRules);
+    
     let oReturnPayload = [];
     // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {
