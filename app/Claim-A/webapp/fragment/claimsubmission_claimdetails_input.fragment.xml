@@ -109,8 +109,9 @@
 						sorter: { path: 'LEGAL_NAME', descending: false }
 					}"
 					visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT} &amp;&amp;
-                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
-                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LAUT} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/PEDU}}"
                     editable="{= !${claimsubmission_input>/view_only}}"
 					required="true"
 				>
