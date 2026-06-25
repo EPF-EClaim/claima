@@ -458,7 +458,7 @@
 					selectedKey="{reqDialog>/projectcode}"
 					required="true"
 					forceSelection="false"
-					visible="false"
+					visible="{= !!${reqDialog>/project_claim} }"
 					items="{
 						path: 'employee>/ZPROJECT_HDR',
 						sorter: {

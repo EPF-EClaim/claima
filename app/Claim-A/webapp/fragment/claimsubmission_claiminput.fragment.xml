@@ -438,18 +438,17 @@
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/project_code/project_code_io}"
                         items="{
-                            path: 'employee>/ZPROJECT_HDR',
-                            sorter: [
-                                { path: 'PROJECT_CODE_IO' },
-                                { path: 'PROJECT_DESC' }
-                                ]
+                            path: 'employee>/ZBUDGET',
+                            parameters:{
+                                $expand: 'ZPROJECT_HDR'
+                                }
                             }"
                             visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
                             change="onSelect_ClaimProcess_ProjectCode"
                         >
                             <core:Item
-                                key="{employee>PROJECT_CODE_IO}"
-                                text="{employee>PROJECT_CODE_IO} - {employee>PROJECT_DESC}"
+                                key="{employee>PROJECT_CODE}"
+                                text="{employee>PROJECT_CODE} - {employee>ZPROJECT_HDR/PROJECT_DESC}"
                             />
                         </Select>
                     

@@ -627,6 +627,24 @@ sap.ui.define([
 				console.log("project_claim:",oInputModel.getProperty("/claimtype/project_claim")
 			);
 
+			oInputModel.setProperty("/claimtype/project_claim", true)
+
+				if(oInputModel.getProperty("/claimtype/project_claim") === true){
+					// set project code dropdown
+					var oSelectProjectCode = this.byId("select_claimprocess_project_code");
+				
+					var oBindingSelectProjectCode = oSelectProjectCode.getBinding("items");
+						
+					var aFilterSelectProjectCode = [
+						new Filter("YEAR", FilterOperator.EQ, "2026"),
+						new Filter("PROJECT_CODE", FilterOperator.NE, "-")
+
+					];
+					oBindingSelectProjectCode.filter(aFilterSelectProjectCode);
+						
+					
+				}
+
 				// set claim items based on selected claim type
 				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
 				var oBindingSelectClaimItems = oSelectClaimItems.getBinding("items");
@@ -838,35 +856,16 @@ sap.ui.define([
 
 		onSelect_ClaimProcess_ProjectCode: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oProjectCode = oEvent ? oEvent.getParameters().selectedItem : null;
+			var oSelectedProject = oEvent ? oEvent.getParameters().selectedItem : null;
 
 			console.log("PROJECT CODE EVENT TRIGGERED");
 
-			if (oProjectCode) {
-				console.log("Selected Project Key:", oProjectCode.getKey());
-
-				oInputModel.setProperty(
-					"/claimtype/project_code/project_code_io",
-					oProjectCode.getKey()
-				);
-
-				oInputModel.setProperty(
-					"/claimtype/project_code/project_desc",
-					oProjectCode.getBindingContext("employee").getObject("PROJECT_DESC")
-				);
-
-				console.log(
-					"Stored project_code_io:",
-					oInputModel.getProperty("/claimtype/project_code/project_code_io")
-				);
-
-				console.log(
-					"Stored project_desc:",
-					oInputModel.getProperty("/claimtype/project_code/project_desc")
-				);
-			}
-			else {
-				oInputModel.setProperty("/claimtype/project_code/project_code_io", null);
+			if (oSelectedProject) {
+				var oContextObj = oSelectedProject.getBindingContext("employee").getObject();
+				var sProjectDesc = oContextObj.ZPROJECT_HDR ? oContextObj.ZPROJECT_HDR.PROJECT_DESC : "";
+	
+				oInputModel.setProperty("/claimtype/project_code/project_desc", sProjectDesc);
+			} else{
 				oInputModel.setProperty("/claimtype/project_code/project_desc", null);
 			}
 		},
