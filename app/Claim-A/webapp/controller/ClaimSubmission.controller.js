@@ -2748,29 +2748,6 @@ sap.ui.define([
 						],
 						and: true
 					})
-				
-				case this._oConstant.ClaimTypeItem.LAUT:
-
-					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
-					var oAdditionalSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.ADDITIONAL_SPOUSE);
-					var oChildFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD);
-
-					var oDependentRuleFilter = new Filter({
-						filters: [
-							oSpouseFilter,
-							oAdditionalSpouseFilter,
-							oChildFilter
-						],
-						and: false
-					})
-
-					return new Filter({
-						filters: [
-							oEmpFilter,
-							oDependentRuleFilter
-						],
-						and: true
-					})
 
 				case this._oConstant.ClaimTypeItem.LAUT: 
 					var oDependentRuleFilter = new Filter({
