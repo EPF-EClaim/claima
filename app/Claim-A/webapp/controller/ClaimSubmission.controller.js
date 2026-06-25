@@ -5014,6 +5014,7 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
@@ -5151,6 +5152,7 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_special_to_state_id",
 				"select_claimdetails_input_depedent_or_anggota",
 				"select_claimdetails_input_type_of_professional_body",
