@@ -3156,7 +3156,8 @@ sap.ui.define([
 					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
-					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
+					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type")
 				});
 
 				// to save the attachment inside SF
@@ -5536,6 +5537,7 @@ sap.ui.define([
 		onSelect_ClaimDetails_DependentOrAnggota: async function(oEvent) {
 			const oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.setProperty("/claim_item/anggota_id", null);
+			oInputModel.setProperty("/claim_item/anggota_name", null);
 			oInputModel.setProperty("/claim_item/dependent", null);
 		}
 	});
