@@ -558,6 +558,7 @@ entity ZCLAIM_ITEM : managed {
         EXCLUDE_TIPS               : Boolean        @Common.Label: 'Exclude Tips';
         TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
         DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
+        INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -632,6 +633,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
         ZEMP_DEPENDENT_TYPE        : Association to ZEMP_DEPENDENT_TYPE
                                          on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
+        ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
+                                         on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
 }
 
 entity ZLODGING_CAT : managed {
@@ -1343,6 +1346,8 @@ entity ZELIGIBILITY_RULE : managed {
         SUBMISSION_TYPE           : String         @Common.Label: 'Submission Type';
         COST_CENTER               : String(4)      @Common.Label: 'Cost_Center';
         LODGING_CATEGORY          : String(2)      @Common.Label: 'Lodging Category';
+        DURATION                  : Integer        @Common.Label: 'Duration';
+        CONDITION                 : String(2)      @Common.Label: 'Condition';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
