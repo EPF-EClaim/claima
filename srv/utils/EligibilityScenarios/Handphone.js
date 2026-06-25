@@ -25,7 +25,7 @@ module.exports = {
 
         //If no rule found for claimant, throw error
         if (!oRule) {
-          throw new Error("No Eligibility Rules Found");
+          throw new Error("You are not eligible for this claim.");
         };
 
         oDateRange = await this._getDateRange(oPayload, tx);
