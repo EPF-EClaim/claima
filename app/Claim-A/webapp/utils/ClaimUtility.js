@@ -716,6 +716,20 @@ sap.ui.define([
 					
 				});
 		},
+		
+		fetchAutoClaimStatus: async function(sClaimID){
+			const oContext = this._oView.getModel().bindContext("/checkClaimHeaderStatusForAutoApproval(...)");
+			oContext.setParameter("sClaimID", sClaimID);
+
+			try{
+				await oContext.execute();
+				const oResult = oContext.getBoundContext().getObject();
+				
+				return oResult.sStatus;
+			}catch(oError){
+				return null;
+			}
+		},
 		/**
 		 * Calculate the KM based on tickbox RoundTrip.
 		 *

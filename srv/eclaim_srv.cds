@@ -2212,4 +2212,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function checkGalakanEligible()                                                                     returns Boolean;
 
     function getCeramahEntitlement(fDuration: Decimal(5,2))                                             returns Decimal(10,2);
+
+    type ClaimStatusAuto{
+        sStatus : String;
+    }
+
+    function checkClaimHeaderStatusForAutoApproval(sClaimID: String) returns ClaimStatusAuto;
 };

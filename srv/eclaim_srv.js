@@ -2331,6 +2331,24 @@ module.exports = (srv) => {
             sCentraLink: oCentraLink.VALUE
         };
     });
+
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+        const tx = cds.tx(req);
+        try {
+            var oStatus = await tx.run(SELECT.one
+                                    .from(Constant.Entities.ZCLAIM_HEADER)
+                                    .where({
+                                        CLAIM_ID: req.data.sClaimID
+                                    })
+            )
+
+            return { sStatus: oStatus.STATUS_ID}
+        }catch(oError){
+            throw new Error(oError)
+        }
+        
+    });
+
         /**
         * Update Header tables with approver actions
         * @public
