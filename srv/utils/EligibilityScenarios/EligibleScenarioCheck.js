@@ -15,7 +15,6 @@ const Istiadat = require("./Istiadat");
 const Mahkamah = require("./Mahkamah");
 const BegBimbit = require("./BegBimbit");
 const WilayahAsal = require("./WilayahAsal");
-const Galakan = require("./Galakan");
 const AktivitiS = require("./AktivitiS");
 const SewaPetak = require("./SewaPetak");
 const KeahlianKelab = require("./KeahlianKelab");
@@ -268,13 +267,6 @@ module.exports = {
             aFilteredEligibility,
             aEmpData[0],
             tx
-          );
-          break;
-
-        case Constant.ClaimType.GALAKAN:
-          oReturnPayload = await Galakan.onEligibleCheck(
-            aPayload[i],
-            aEmpData[0]
           );
           break;
 

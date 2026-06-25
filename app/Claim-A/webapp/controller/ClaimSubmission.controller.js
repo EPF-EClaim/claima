@@ -3471,7 +3471,35 @@ sap.ui.define([
 			}
 		},
 
+		formatDuration: function(iTotalMinutes) {
+			if (!iTotalMinutes || iTotalMinutes <= 0) {
+				return "0 hours 0 minutes";
+			}
+
+			var hours = Math.floor(iTotalMinutes / 60);
+			var minutes = iTotalMinutes % 60;
+
+			return hours + " hours " + minutes + " minutes";
+		},
+
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			// check for missing value
+			var startTimeValue = this.byId(starttime).getDateValue();
+			var endTimeValue = this.byId(endtime).getDateValue();
+			if (!startTimeValue || !endTimeValue) {
+				return;
+			}
+
+			// get course duration
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CERAMAH) {
+				var durationMs = endTimeValue - startTimeValue;
+				var iCourseDurationMinutes = Math.floor(durationMs / (1000 * 60));
+				oInputModel.setProperty("/claim_item/course_duration", iCourseDurationMinutes);
+				oInputModel.setProperty("/claim_item/amount", await ClaimUtility.getCeramahEligibleAmount(iCourseDurationMinutes));
+			}
+			
 			// reset claim detail amounts
 			this._resetPerDiem();
 
@@ -3481,11 +3509,7 @@ sap.ui.define([
 			if (!startDateValue || !endDateValue) {
 				return;
 			}
-			var startTimeValue = this.byId(starttime).getDateValue();
-			var endTimeValue = this.byId(endtime).getDateValue();
-			if (!startTimeValue || !endTimeValue) {
-				return;
-			}
+			
 			// check if end datetime earlier than start datetime
 			var startDateUnix = new Date(startDateValue).valueOf();
 			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
