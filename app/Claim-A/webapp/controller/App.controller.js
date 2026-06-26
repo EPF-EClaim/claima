@@ -860,7 +860,7 @@ sap.ui.define([
 			// check Galakan Eligibile
 			if (oInputModel.getProperty("/claimtype/type") === this._oConstant.ClaimType.GALAKAN) {
 				var oResult = await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.GALAKAN, false);
-				if (!oResult?.isEligible) {
+				if (!oResult) {
 					MessageBox.error(Utility.getText("msg_claim_galakan_not_eligible"));
 					return;
 				}
@@ -1393,7 +1393,7 @@ sap.ui.define([
 				// check Galakan Eligibile
 				if (oDialogModel.getProperty("/claimtype") === this._oConstant.ClaimType.GALAKAN) {
 					var oResult = await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.GALAKAN, false);
-					if (!oResult?.isEligible) {
+					if (!oResult) {
 						MessageBox.error(Utility.getText("msg_claim_galakan_not_eligible"));
 						return;
 					}

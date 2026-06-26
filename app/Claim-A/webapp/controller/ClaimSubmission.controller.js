@@ -3455,7 +3455,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
-			oInputModel.refresh(true);
+			//oInputModel.refresh(true);
 
 			// Calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
