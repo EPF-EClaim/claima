@@ -499,4 +499,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     function getCentraLink()                                                                   returns CentraLinkObject;
+
+    type ClaimStatusAuto{
+        sStatus : String;
+    }
+
+    function checkClaimHeaderStatusForAutoApproval(sClaimID: String) returns ClaimStatusAuto;
 };
