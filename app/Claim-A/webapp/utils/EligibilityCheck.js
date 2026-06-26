@@ -328,7 +328,6 @@ sap.ui.define([
 					break;
 				case Constants.ClaimType.GALAKAN:
 					oFunction = oDataModel.bindContext("/checkGalakanEligible(...)");
-					oFunction.setParameter("IS_CLAIM", bIsClaim);
 					break;
 				default:
 					return false;
