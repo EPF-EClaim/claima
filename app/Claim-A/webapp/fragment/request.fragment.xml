@@ -72,6 +72,9 @@
 						sorter: {
 							path: 'CLAIM_TYPE_ID',
 							descending: false
+						},
+						parameters:{
+							$select: 'CLAIM_TYPE_ID,CLAIM_TYPE_DESC,PROJECT_CLAIM'
 						}
 					}"
 				>
@@ -427,6 +430,32 @@
 					visible="false"
 					valueHelp="valuehelp_requestinput_altcc"
 				/>
+				<!-- Project Code -->
+				<Label
+					text="Project Code"
+					visible="{= ${reqDialog>/project_claim} === true }"
+				/>
+
+				<Select
+					id="req_projectcode"
+					selectedKey="{reqDialog>/project_code}"
+					forceSelection="false"
+					visible="{= ${reqDialog>/project_claim} === true }"
+					items="{
+						path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
+						sorter: [
+							{ path: 'PROJECT_CODE' }
+						]
+					}"
+					change=".onSelect_Request_ProjectCode"
+				>
+					<items>
+						<core:Item
+							key="{employee_view>PROJECT_CODE}"
+							text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
+						/>
+					</items>
+				</Select>
 				<Label text="{i18n>req_attach1}" />
 				<unified:FileUploader
 					id="req_attachment_1"
@@ -453,27 +482,6 @@
 					visible="false"
 				/>
 				<Label text="{i18n>req_project}" />
-				<Select
-					id="req_project"
-					selectedKey="{reqDialog>/projectcode}"
-					required="true"
-					forceSelection="false"
-					visible="false"
-					items="{
-						path: 'employee>/ZPROJECT_HDR',
-						sorter: {
-							path: 'PROJECT_CODE_IO',
-							descending: false
-						}
-					}"
-				>
-					<items>
-						<core:Item
-							key="{employee>PROJECT_CODE_IO}"
-							text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}"
-						/>
-					</items>
-				</Select>
 			</f:content>
 			<f:dependents>
 				<mdc:ValueHelp

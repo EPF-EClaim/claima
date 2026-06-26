@@ -346,7 +346,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_ALONE_FAMILY,
                 ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
                 TRAVEL_FAMILY_NOW_LATER,
-                ZFAMILY_TIMING.FAMILY_TIMING_DESC
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC,
+                PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -1156,5 +1158,16 @@ entity ZEMP_APPROVER_DETAILS           as
                 GRADE,
                 GA_ROLE,
                 ECLAIM_ROLE
+        };
+
+    entity ZPROJECT_DROPDOWN_VH as
+        select from ECLAIM.ZBUDGET {
+            key YEAR,
+            key PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
+                ZPROJECT_HDR.STATUS       as STATUS
         }
+            where PROJECT_CODE is not null
+            and PROJECT_CODE <> ''
+            and PROJECT_CODE <> '-';
 }

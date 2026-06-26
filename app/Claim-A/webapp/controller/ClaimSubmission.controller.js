@@ -770,7 +770,7 @@ sap.ui.define([
 				last_push_back_date: null,
 				course_code: o.COURSE_CODE,
 				session_number: o.SESSION_NUMBER,
-				project_code: null,
+				project_code: o.PROJECT_CODE,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
 				reject_reason_id: null,
@@ -792,7 +792,7 @@ sap.ui.define([
 					housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
 					lender_name: o.LENDER_DESC,
 					course_code: o.COURSE_CODE_DESC,
-					project_code: null,
+					project_code: o.PROJECT_DESC,
 					attachment_email_approver: null,
 					mode_of_transfer: o.TRANSFER_MODE_DESC,
 					travel_alone_family: o.TRAVEL_TYPE_DESC,
@@ -1289,6 +1289,7 @@ sap.ui.define([
 					"exclude_tips": null,
 					"tips": null,
 					"number_of_travellers": null,
+					"internal_order": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1408,6 +1409,48 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
+				console.log(
+					"Project Code from Claim Header:",
+					oClaimSubmissionModel.getProperty("/claim_header/project_code")
+				);
+				
+				var sProjectCode =
+					oClaimSubmissionModel.getProperty("/claim_header/project_code");
+
+				const oBudgetModel = this.getOwnerComponent().getModel();
+
+				var oListBinding = oBudgetModel.bindList(
+					"/ZBUDGET",
+					null,
+					null,
+					[
+						new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode)
+					]
+				);
+
+				var aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					var oBudgetData = aContexts[0].getObject();
+
+					console.log("Budget Row:", oBudgetData);
+					console.log("WBS_CODE:", oBudgetData.WBS_CODE);
+					
+					oInputModel.setProperty(
+						"/claim_item/internal_order",
+						oBudgetData.WBS_CODE
+					);
+
+					console.log(
+						"Internal Order saved to model:",
+						oInputModel.getProperty("/claim_item/internal_order")
+					);
+
+
+				}
+
+
+
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
 				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
@@ -3156,7 +3199,8 @@ sap.ui.define([
 					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
-					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers")
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
+					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order")
 				});
 
 				// to save the attachment inside SF
@@ -4214,6 +4258,11 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
 					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 				}
+
+				console.log(
+					"Internal Order before save:",
+					oInputModel.getProperty("/claim_item/internal_order")
+				);
 
 				// set body for update
 				var oBody = new JSONModel({

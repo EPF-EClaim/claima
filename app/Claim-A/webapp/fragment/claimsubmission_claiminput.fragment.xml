@@ -430,7 +430,27 @@
                                 !${claimsubmission_input>/req_emailapprove})
                         }"
                     />
-                    
+
+                    <!-- Project Code -->
+                    <Label text="{i18n>label_claiminput_project_code}" />
+                    <Select
+                        id="select_claimprocess_project_code"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/project_code/project_id}"
+                        visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
+                        items="{
+                            path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
+                            sorter: [
+                                { path: 'PROJECT_CODE' }
+                            ]
+                        }"
+                        change="onSelect_ClaimProcess_ProjectCode"
+                    >
+                        <core:Item
+                            key="{employee_view>PROJECT_CODE}"
+                            text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}" />
+                    </Select>
+
                     <!-- Attachment Email Approval -->
                     <Label text="{i18n>label_claiminput_attachment}" />
                     <u:FileUploader
