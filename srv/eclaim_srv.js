@@ -2231,4 +2231,35 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+
+    srv.on('getCentraLink', async (req) => {
+        const tx = cds.tx(req);
+        var oCentraLink = await tx.run(SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .where({
+                ID: Constant.ConstantId.PROD_CENTRA_LINK
+            })
+        )
+        return {
+            sCentraLink: oCentraLink.VALUE
+        };
+    });
+
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+        const tx = cds.tx(req);
+        try {
+            var oStatus = await tx.run(SELECT.one
+                                    .from(Constant.Entities.ZCLAIM_HEADER)
+                                    .where({
+                                        CLAIM_ID: req.data.sClaimID
+                                    })
+            )
+
+            return { sStatus: oStatus.STATUS_ID}
+        }catch(oError){
+            throw new Error(oError)
+        }
+        
+    });
+
 }
