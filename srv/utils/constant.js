@@ -98,7 +98,8 @@ const Constant = {
         "SEWAPETAK": "SEWAPETAK",
         "KEAHLIANKELAB": "S_K.KELAB",
         "MEDICAL": "MEDICAL",
-        "PEDU" : "PEDU"
+        "PEDU" : "PEDU",
+        "CERAMAH" : "CERAMAH"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -293,7 +294,9 @@ const Constant = {
         "VEHICLE_OWNERSHIP_ID" : "VEHICLE_OWNERSHIP_ID",
         "COUNTRY" : "COUNTRY",
         "TO_STATE_ID" : "TO_STATE_ID",
-        "STATE_OF_ORIGIN" : "STATE_OF_ORIGIN"
+        "STATE_OF_ORIGIN" : "STATE_OF_ORIGIN",
+        "CONDITION" : "CONDITION",
+        "DURATION" : "DURATION"
     },
     Wildcard: {
         "All": "*",
