@@ -210,8 +210,13 @@ sap.ui.define([
                 new Filter("START_DATE", FilterOperator.LE, oItem.end_date),
                 new Filter("END_DATE", FilterOperator.GE, oItem.start_date),
                 new Filter("CLAIM_SUB_ID", FilterOperator.NE, oItem.claim_sub_id),
-                new Filter("STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.CANCELLED),
-                new Filter("STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.REJECTED)
+                new Filter({
+                    filters: [
+                        new Filter("STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.CANCELLED),
+                        new Filter("STATUS_ID", FilterOperator.NE, Constants.ClaimStatus.REJECTED)
+                    ],
+                    and: true
+                })
             ];
 
             const oBinding = oEmpViewModel.bindList("/ZEMP_CLAIM_ITEM_VIEW", null, null, aFilters, {
