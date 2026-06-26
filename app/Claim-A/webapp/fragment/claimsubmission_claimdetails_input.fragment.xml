@@ -1579,7 +1579,9 @@
                     required="{= ${claimitem_input>/claim_item/attachment_file_1} === null &amp;&amp;
 
                                     ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
-                                    ${claimitem_input>/claim_item/location_type} !== ${constant>/LocationType/KWSP}
+                                    (${claimitem_input>/claim_item/location_type} !== ${constant>/LocationType/KWSP} 
+                                        || (parseFloat(${claimitem_input>/claim_item/toll}) &gt; 0.00 &amp;&amp; ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                                    )
                     }"
 				>
 				</u:FileUploader>
