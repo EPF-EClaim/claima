@@ -138,13 +138,19 @@ module.exports = {
             const iUtilizedAmount = parseFloat(oDependentData.POST_EDU_ASSISTANT_ENTITLE_AMOUNT || 0);
             iMaxLimitAllowed = iDefaultEntitlementAmount - iUtilizedAmount;
         }
-
+        
         const iTotalClaimAmount = parseFloat(oCurrentRecordItemData.fTotalAmount || 0) + parseFloat(oPayload.CheckFields[iIndex].value);
 
-        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-            iTotalClaimAmount,
-            iMaxLimitAllowed
-        );
+        console.log(`Max Limit Allowed: ${iMaxLimitAllowed}`);
+        if (iMaxLimitAllowed === 0) {
+            oPayload.CheckFields[iIndex].result = { result: Constant.PeduResult.EXCEEDED, params: iDefaultEntitlementAmount };
+        } else {
+            oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEqualsReturnSpecial(
+                iTotalClaimAmount,
+                iMaxLimitAllowed,
+                oCurrentRecordItemData.fTotalAmount
+            );
+        }
     },
 
     //get all line item of the same claim (for this dependent) - need to check the total amount of the claim with remaining eligible amount
