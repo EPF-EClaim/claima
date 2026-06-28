@@ -141,14 +141,14 @@ module.exports = {
         
         const iTotalClaimAmount = parseFloat(oCurrentRecordItemData.fTotalAmount || 0) + parseFloat(oPayload.CheckFields[iIndex].value);
 
-        console.log(`Max Limit Allowed: ${iMaxLimitAllowed}`);
         if (iMaxLimitAllowed === 0) {
-            oPayload.CheckFields[iIndex].result = { result: Constant.PeduResult.EXCEEDED, params: iDefaultEntitlementAmount };
+            oPayload.CheckFields[iIndex].result = { limit: iMaxLimitAllowed, defaultLimit: iDefaultEntitlementAmount };
         } else {
             oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEqualsReturnSpecial(
                 iTotalClaimAmount,
                 iMaxLimitAllowed,
-                oCurrentRecordItemData.fTotalAmount
+                oCurrentRecordItemData.fTotalAmount,
+                iDefaultEntitlementAmount
             );
         }
     },

@@ -46,12 +46,13 @@ export function LesserEquals(sVal1, sVal2) {
          * @param {Integer/String} sVal1 - Value Input to be checked;
          * @param {Integer/String} sVal2 - Value Input to be checked against;
          * @param {Integer/String} sVal3 - Current Record Item Total Amount;
+         * @param {Integer/String} sVal4 - Default Entitlement Amount;
          * @returns {String} Comparison Output
          */
-export function LesserEqualsReturnSpecial(sVal1, sVal2, sVal3) {
+export function LesserEqualsReturnSpecial(sVal1, sVal2, sVal3, sVal4) {
     if (parseFloat(sVal1) <= parseFloat(sVal2)) {
         return true;
     } else {
-        return sVal2 - sVal3;
+        return { limit: sVal2 - sVal3, defaultLimit: sVal4 };
     }
 }
