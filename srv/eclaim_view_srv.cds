@@ -220,7 +220,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
                 TOTAL_TRAVELLER,
                 FARE_TYPE_ID,
-                ROUND_TRIP
+                ROUND_TRIP,
+                INTERNAL_ORDER
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -486,7 +487,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EXCLUDE_TIPS,
                 TOTAL_TRAVELLER,
                 ZCLAIM_HEADER.STATUS_ID,
-                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC,
+                INTERNAL_ORDER
         };
 
     entity ZEMP_REQUEST_STATUS            as

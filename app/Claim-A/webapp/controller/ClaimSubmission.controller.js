@@ -617,6 +617,7 @@ sap.ui.define([
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
 					number_of_travellers: it.TOTAL_TRAVELLER,
+					internal_order: it.INTERNAL_ORDER,
 					descr: {},
 				}));
 
@@ -1414,42 +1415,15 @@ sap.ui.define([
 					oClaimSubmissionModel.getProperty("/claim_header/project_code")
 				);
 				
-				var sProjectCode =
-					oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
 
-				const oBudgetModel = this.getOwnerComponent().getModel();
+				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 
-				var oListBinding = oBudgetModel.bindList(
-					"/ZBUDGET",
-					null,
-					null,
-					[
-						new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode)
-					]
+				console.log(
+					"Internal Order saved to model:",
+					oInputModel.getProperty("/claim_item/internal_order")
 				);
-
-				var aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					var oBudgetData = aContexts[0].getObject();
-
-					console.log("Budget Row:", oBudgetData);
-					console.log("WBS_CODE:", oBudgetData.WBS_CODE);
-					
-					oInputModel.setProperty(
-						"/claim_item/internal_order",
-						oBudgetData.WBS_CODE
-					);
-
-					console.log(
-						"Internal Order saved to model:",
-						oInputModel.getProperty("/claim_item/internal_order")
-					);
-
-
-				}
-
-
 
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
@@ -3085,6 +3059,8 @@ sap.ui.define([
 
 		_saveClaimItem: async function () {
 			// get input model
+			console.log("=== ENTER _saveClaimItem ===");
+
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
@@ -3094,6 +3070,20 @@ sap.ui.define([
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
 				var oListBinding = null;
+
+				// Ensure Internal Order is populated before save
+				if (!oInputModel.getProperty("/claim_item/internal_order")) {
+					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+
+					var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
+
+					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
+				}
+
+				console.log(
+					"Internal Order before save:",
+					oInputModel.getProperty("/claim_item/internal_order")
+				);
 
 				// set body for update
 				var oBody = new JSONModel({
@@ -4699,7 +4689,8 @@ sap.ui.define([
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
-						TOTAL_TRAVELLER: claim_item.number_of_travellers
+						TOTAL_TRAVELLER: claim_item.number_of_travellers,
+						INTERNAL_ORDER: claim_item.internal_order
 					});
 
 					if (i >= itemCountDb) {
@@ -5612,6 +5603,44 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/anggota_id", null);
 			oInputModel.setProperty("/claim_item/anggota_name", null);
 			oInputModel.setProperty("/claim_item/dependent", null);
+		},
+
+		_getInternalOrderByProjectCode: async function (sProjectCode) {
+			if (!sProjectCode) {
+				console.warn("No Project Code provided for Internal Order lookup");
+				return null;
+			}
+
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList(
+				"/ZBUDGET",
+				null,
+				null,
+				[
+					new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode)
+				]
+			);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oBudgetData = aContexts[0].getObject();
+
+					console.log("Budget Row for Internal Order:", oBudgetData);
+					console.log("WBS_CODE found:", oBudgetData.WBS_CODE);
+
+					return oBudgetData.WBS_CODE || null;
+				}
+
+				console.warn("No budget row found for Project Code:", sProjectCode);
+				return null;
+
+			} catch (oError) {
+				console.error("Error fetching Internal Order from ZBUDGET:", oError);
+				return null;
+			}
 		}
 	});
 });
