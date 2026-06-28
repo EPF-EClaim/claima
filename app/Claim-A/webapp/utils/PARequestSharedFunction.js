@@ -89,7 +89,10 @@ sap.ui.define([
 					transferalonefamily: oData.TRAVEL_ALONE_FAMILY || "",
 					transferalonefamilydesc: 	oData.TRAVEL_TYPE_DESC || "",
 					transferfamilynowlater: 	oData.TRAVEL_FAMILY_NOW_LATER || "",
-					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || ""
+					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || "",
+					projectcode:    oData.PROJECT_CODE || "",
+					projectdesc:    oData.PROJECT_DESC || ""
+
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);

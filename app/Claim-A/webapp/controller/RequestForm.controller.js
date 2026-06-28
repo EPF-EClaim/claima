@@ -678,7 +678,8 @@ sap.ui.define([
 				material_code: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
-				round_trip 				: oReqItem.ROUND_TRIP || false
+				round_trip 				: oReqItem.ROUND_TRIP || false,
+				internal_order: oReqItem.INTERNAL_ORDER || null
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1196,6 +1197,18 @@ sap.ui.define([
 					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
 
+				// Get Internal Order from ZBUDGET using Request Header Project Code
+				if (!oReqItem.internal_order) {
+					const sProjectCode = oReqHeader.projectcode;
+
+					const sInternalOrder = await this._getRequestInternalOrderByProjectCode(sProjectCode);
+
+					oReqItem.internal_order = sInternalOrder;
+
+					console.log("Request Project Code:", sProjectCode);
+					console.log("Request Internal Order saved to req_item:", oReqItem.internal_order);
+				}
+
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
 					var dtDeparture_date = new Date(oReqItem.departure_time).toISOString() || null;
 					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
@@ -1267,7 +1280,8 @@ sap.ui.define([
 					TYPE_OF_PROFESSIONAL_BODY:    oReqItem.type_of_professional_body || null,
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
 					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
-					ROUND_TRIP:					  !!oReqItem.round_trip 
+					ROUND_TRIP:					  !!oReqItem.round_trip,
+					INTERNAL_ORDER: 			  oReqItem.internal_order || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2851,7 +2865,46 @@ sap.ui.define([
         const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
 
         await RequestUtility._getEntitledMeterCube(aSelectedKeys);
-        }
+        },
+
+		_getRequestInternalOrderByProjectCode: async function (sProjectCode) {
+			if (!sProjectCode) {
+				console.warn("No Project Code found for Request Internal Order lookup");
+				return null;
+			}
+
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList(
+				"/ZBUDGET",
+				null,
+				null,
+				[
+					new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode),
+					new Filter("YEAR", FilterOperator.EQ, new Date().getFullYear().toString())
+				]
+			);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oBudgetData = aContexts[0].getObject();
+
+					console.log("Request Budget Row:", oBudgetData);
+					console.log("Request WBS_CODE:", oBudgetData.WBS_CODE);
+
+					return oBudgetData.WBS_CODE;
+				}
+
+				console.warn("No ZBUDGET found for Request Project Code:", sProjectCode);
+				return null;
+
+			} catch (oError) {
+				console.error("Error fetching Request Internal Order:", oError);
+				return null;
+			}
+		}
 
 	});
 });
