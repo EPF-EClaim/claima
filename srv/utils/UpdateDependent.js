@@ -71,7 +71,7 @@ module.exports = {
                 if (!sFinalClaimDate) {
                     sFinalClaimDate = todayStr;
                 }
-            } else if (sStatus === Constant.Status.REJECTED || sStatus === Constant.Status.CANCELLED) {
+            } else if (sStatus === Constant.Status.REJECTED || sStatus === Constant.Status.PUSH_BACK) {
 
                 iNewBalance = iCurrentUtilizedAmount - iTotalFormAmount;
 

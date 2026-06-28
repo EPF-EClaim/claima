@@ -2635,4 +2635,67 @@ module.exports = (srv) => {
             req.error(400, `Fail updating records: ${error.message}`);
         }
     });    
+
+    srv.on("checkGalakanEligible", async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (oEmp) {
+            // Implementation for checking Galakan eligibility
+            if (oEmp.CONFIRMATION_DATE) {
+                if (new Date() >= new Date(oEmp.CONFIRMATION_DATE)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            req.error(404, `Employee Not Found.`);
+        }
+    });
+
+    srv.on("getCeramahEntitlement", async (req) => {
+        const tx = cds.tx(req);
+        const fDuration = req.data.fDuration;
+        const { ZELIGIBILITY_RULE } = srv.entities;
+        const sTodayDate = new Date().toISOString().slice(0, 10);
+
+        try {
+            var aRules = await tx.run(
+                SELECT
+                    .from(ZELIGIBILITY_RULE)
+                    .columns(
+                        Constant.EntitiesFields.ELIGIBLE_AMOUNT,
+                        Constant.EntitiesFields.CONDITION,
+                        Constant.EntitiesFields.DURATION
+                    )
+                    .where({
+                        CLAIM_TYPE_ID: Constant.ClaimType.CERAMAH,
+                        CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.CERAMAH,
+                        STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                        START_DATE: { '<=': sTodayDate },
+                        END_DATE: { '>=': sTodayDate }
+                    })
+            );
+            const oMatchedRule = aRules.find(oRule => {
+                const sCondition = oRule.CONDITION;
+                const iDuration = parseInt(oRule.DURATION);
+
+                if (sCondition === Constant.Operator.GREATERTHANOREQUAL) {
+                    return fDuration >= iDuration;
+                } else if (sCondition === Constant.Operator.LESSTHAN) {
+                    return fDuration < iDuration;
+                }
+                return false;
+            });
+
+            return {
+                iAmount: oMatchedRule ? oMatchedRule.ELIGIBLE_AMOUNT : 0
+            };
+
+        } catch (err) {
+            req.error(404, `Amount not found.`);
+        }
+    });
 }
