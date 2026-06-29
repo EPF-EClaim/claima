@@ -41,6 +41,7 @@
                             }
                         }"
                         selectionChange="onSelect_ClaimProcess_ClaimType"
+                        
                     >
                         <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
                     </ComboBox>

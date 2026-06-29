@@ -25,7 +25,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
 	"claima/utils/RequestUtility",
-	"claima/utils/ClaimUtility"
+	"claima/utils/ClaimUtility",
+	"claima/utils/Constants",
 ], function (
 	Popover,
 	Button,
@@ -53,7 +54,8 @@ sap.ui.define([
 	EligibilityCheck,
 	CustomValidator,
 	RequestUtility,
-	ClaimUtility
+	ClaimUtility,
+	Constants
 ) {
 	"use strict";
 
@@ -205,6 +207,15 @@ sap.ui.define([
 		onMenuButtonPress: function () {
 			var toolPage = this.byId("toolPage");
 			toolPage.setSideExpanded(!toolPage.getSideExpanded());
+		},
+
+		onHomeIconPressed: async function(){
+			if(window.location.hostname.includes("50e03b38") || window.location.hostname.includes("port4004")){
+				window.location.href = Constants.SuccessFactorCompanyCode.EPFSFUAT;
+			}else{
+				var sLink = await Utility.getCentraLink();
+				window.location.href = sLink;
+			}
 		},
 
 		onSideNavButtonPress: function () {

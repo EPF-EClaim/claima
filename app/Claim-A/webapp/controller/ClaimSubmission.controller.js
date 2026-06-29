@@ -4195,11 +4195,13 @@ sap.ui.define([
 					return;
 				}
 
-				// run validator before proceeding 
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
-				if (!bCanProceed) {
-					return;
+				if (oAction !== 'Delete Report') {
+					// run validator before proceeding 
+					CustomValidator.init(this.getOwnerComponent(), this.getView());
+					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+					if (!bCanProceed) {
+						return;
+					}
 				}
 
 				// Total Claim Amount Validation checking
@@ -4436,10 +4438,13 @@ sap.ui.define([
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 							if (bApproversDetermined) {
-								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-									var submittedDate = this._getJsonDate(new Date());
-									oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
+								const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
+								if(sStatus != this._oConstant.ClaimStatus.APPROVED){
+									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+										var submittedDate = this._getJsonDate(new Date());
+										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
+									}
 								}
 								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							} else {
@@ -4463,11 +4468,14 @@ sap.ui.define([
 							this.onBack_ClaimSubmission();
 							break;
 						case 'Submit Report':
-							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
-								var submittedDate = this._getJsonDate(new Date());
-								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+							const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
+							if(sStatus != this._oConstant.ClaimStatus.APPROVED){
+								oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
+								if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+									var submittedDate = this._getJsonDate(new Date());
+									oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+								}
 							}
 
 							this.onBack_ClaimSubmission();
