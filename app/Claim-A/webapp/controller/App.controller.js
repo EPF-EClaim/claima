@@ -857,14 +857,12 @@ sap.ui.define([
 					.getBindingContext("employee_view")
 					.getObject();
 
-				
 				oInputModel.setProperty("/claim_header/project_code",oProjectData.PROJECT_CODE);
 				oInputModel.setProperty("/claim_header/descr/project_code",oProjectData.PROJECT_DESC);
 
 			} else {
 
 				oInputModel.setProperty("/claim_header/project_code",null);
-
 				oInputModel.setProperty("/claim_header/descr/project_code",null);
 			}
 		},
@@ -1021,7 +1019,9 @@ sap.ui.define([
 
 				oInputModel.setProperty("/claim_header/project_code", sProjectCode || null);
 				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
+
 			} else {
+				
 				oInputModel.setProperty("/claim_header/project_code", null);
 				oInputModel.setProperty("/claim_header/descr/project_code", null);
 			}
