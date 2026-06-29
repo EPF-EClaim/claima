@@ -75,7 +75,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
-                PAYMENT_DATE  
+                PAYMENT_DATE,
+                PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
         };
 
     entity ZEMP_REQUEST_EE_VIEW as

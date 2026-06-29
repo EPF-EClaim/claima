@@ -1410,20 +1410,11 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-				console.log(
-					"Project Code from Claim Header:",
-					oClaimSubmissionModel.getProperty("/claim_header/project_code")
-				);
 				
 				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
 				var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
 
 				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-
-				console.log(
-					"Internal Order saved to model:",
-					oInputModel.getProperty("/claim_item/internal_order")
-				);
 
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
@@ -3059,8 +3050,6 @@ sap.ui.define([
 
 		_saveClaimItem: async function () {
 			// get input model
-			console.log("=== ENTER _saveClaimItem ===");
-
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
@@ -3074,16 +3063,10 @@ sap.ui.define([
 				// Ensure Internal Order is populated before save
 				if (!oInputModel.getProperty("/claim_item/internal_order")) {
 					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-
 					var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
 
 					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 				}
-
-				console.log(
-					"Internal Order before save:",
-					oInputModel.getProperty("/claim_item/internal_order")
-				);
 
 				// set body for update
 				var oBody = new JSONModel({
@@ -5607,7 +5590,6 @@ sap.ui.define([
 
 		_getInternalOrderByProjectCode: async function (sProjectCode) {
 			if (!sProjectCode) {
-				console.warn("No Project Code provided for Internal Order lookup");
 				return null;
 			}
 
@@ -5628,17 +5610,12 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oBudgetData = aContexts[0].getObject();
 
-					console.log("Budget Row for Internal Order:", oBudgetData);
-					console.log("WBS_CODE found:", oBudgetData.WBS_CODE);
-
 					return oBudgetData.WBS_CODE || null;
 				}
 
-				console.warn("No budget row found for Project Code:", sProjectCode);
 				return null;
 
 			} catch (oError) {
-				console.error("Error fetching Internal Order from ZBUDGET:", oError);
 				return null;
 			}
 		}

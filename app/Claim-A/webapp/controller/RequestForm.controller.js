@@ -679,7 +679,7 @@ sap.ui.define([
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 				: oReqItem.ROUND_TRIP || false,
-				internal_order: oReqItem.INTERNAL_ORDER || null
+				internal_order			: oReqItem.INTERNAL_ORDER || null
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1200,13 +1200,9 @@ sap.ui.define([
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {
 					const sProjectCode = oReqHeader.projectcode;
-
 					const sInternalOrder = await this._getRequestInternalOrderByProjectCode(sProjectCode);
 
 					oReqItem.internal_order = sInternalOrder;
-
-					console.log("Request Project Code:", sProjectCode);
-					console.log("Request Internal Order saved to req_item:", oReqItem.internal_order);
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
@@ -2869,7 +2865,6 @@ sap.ui.define([
 
 		_getRequestInternalOrderByProjectCode: async function (sProjectCode) {
 			if (!sProjectCode) {
-				console.warn("No Project Code found for Request Internal Order lookup");
 				return null;
 			}
 
@@ -2891,17 +2886,11 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oBudgetData = aContexts[0].getObject();
 
-					console.log("Request Budget Row:", oBudgetData);
-					console.log("Request WBS_CODE:", oBudgetData.WBS_CODE);
-
 					return oBudgetData.WBS_CODE;
 				}
-
-				console.warn("No ZBUDGET found for Request Project Code:", sProjectCode);
 				return null;
 
 			} catch (oError) {
-				console.error("Error fetching Request Internal Order:", oError);
 				return null;
 			}
 		}

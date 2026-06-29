@@ -436,7 +436,8 @@
                     <Select
                         id="select_claimprocess_project_code"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/project_code/project_id}"
+                        selectedKey="{claimsubmission_input>/claim_header/project_code}"
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id} }"
                         visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
                         items="{
                             path: 'employee_view>/ZPROJECT_DROPDOWN_VH',

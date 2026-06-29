@@ -378,10 +378,6 @@ sap.ui.define([
 					"cost_center": null,
 					"marriage_category": null,	
 					"project_claim": false,
-						"project_code": {
-							"project_id": null,
-							"project_desc": null
-						},
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -620,9 +616,6 @@ sap.ui.define([
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
 				 var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
-				 console.log("PROJECT_CLAIM:", oClaimTypeData.PROJECT_CLAIM);
-				 console.log("FULL CLAIM TYPE:", oClaimTypeData);
-
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
 				// get cost center from claim type
@@ -637,8 +630,8 @@ sap.ui.define([
 
 				// if claim type is not project claim, reset project code value
 				if (!bProjectClaim) {
-					oInputModel.setProperty("/claimtype/project_code/project_id", null);
-					oInputModel.setProperty("/claimtype/project_code/project_desc", null);
+					oInputModel.setProperty("/claimtype/requestform/project_code", null);
+					oInputModel.setProperty("/claimtype/requestform/project_desc", null);
 				}
 
 				// set claim items based on selected claim type
@@ -671,8 +664,8 @@ sap.ui.define([
 				
 				// reset project claim flag
 				oInputModel.setProperty("/claimtype/project_claim", false);
-				oInputModel.setProperty("/claimtype/project_code/project_id", null);
-				oInputModel.setProperty("/claimtype/project_code/project_desc", null)
+				oInputModel.setProperty("/claimtype/requestform/project_code", null);
+				oInputModel.setProperty("/claimtype/requestform/project_desc", null)
 			}
 			// reset claim item
 			if (oInputModel.getProperty("/claimtype/item") !== null) {
@@ -754,8 +747,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
 				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
-				console.log("Request Form Project Code:",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
-				console.log("Request Form Project Desc:",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
 				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
 				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
@@ -779,8 +770,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
  				oInputModel.setProperty("/claimtype/requestform/project_code", null);
 				oInputModel.setProperty("/claimtype/requestform/project_desc", null);
-				oInputModel.setProperty("/claimtype/project_code/project_id", null);
-				oInputModel.setProperty("/claimtype/project_code/project_desc", null);
 
 			}
 		},
@@ -868,66 +857,39 @@ sap.ui.define([
 					.getBindingContext("employee_view")
 					.getObject();
 
-				// Store selected project code under claimtype
-				oInputModel.setProperty(
-					"/claimtype/project_code/project_id",
-					oProjectData.PROJECT_CODE
-				);
+				
+				oInputModel.setProperty("/claim_header/project_code",oProjectData.PROJECT_CODE);
+				oInputModel.setProperty("/claim_header/descr/project_code",oProjectData.PROJECT_DESC);
 
-        // Store selected project description under claimtype
-        oInputModel.setProperty(
-            "/claimtype/project_code/project_desc",
-            oProjectData.PROJECT_DESC
-        );
+			} else {
 
-        // IMPORTANT: Also map to claim header because save uses claim_header/project_code
-        oInputModel.setProperty(
-            "/claim_header/project_code",
-            oProjectData.PROJECT_CODE
-        );
+				oInputModel.setProperty("/claim_header/project_code",null);
 
-        // Store description for display/summary
-        oInputModel.setProperty(
-            "/claim_header/descr/project_code",
-            oProjectData.PROJECT_DESC
-        );
+				oInputModel.setProperty("/claim_header/descr/project_code",null);
+			}
+		},
 
-        console.log("Selected Project Code:", oInputModel.getProperty("/claim_header/project_code"));
-        console.log("Selected Project Desc:", oInputModel.getProperty("/claim_header/descr/project_code"));
-
-    } else {
-        // Reset project code values
-        oInputModel.setProperty("/claimtype/project_code/project_id", null);
-        oInputModel.setProperty("/claimtype/project_code/project_desc", null);
-
-        // Reset claim header values too
-        oInputModel.setProperty("/claim_header/project_code", null);
-        oInputModel.setProperty("/claim_header/descr/project_code", null);
-    }
-},
 		_filterProjectCodeDropdown: function () {
 
-    var oSelectProjectCode = this.byId("select_claimprocess_project_code");
+			var oSelectProjectCode = this.byId("select_claimprocess_project_code");
 
-    if (!oSelectProjectCode) {
-        console.warn("Project Code dropdown not found");
-        return;
-    }
+			if (!oSelectProjectCode) {
+				return;
+			}
 
-    var oBinding = oSelectProjectCode.getBinding("items");
+			var oBinding = oSelectProjectCode.getBinding("items");
 
-    if (!oBinding) {
-        console.warn("Project Code binding not ready");
-        return;
-    }
+			if (!oBinding) {
+				return;
+			}
 
-    var sCurrentYear = new Date().getFullYear().toString();
+			var sCurrentYear = new Date().getFullYear().toString();
 
-    oBinding.filter([
-        new Filter("YEAR", FilterOperator.EQ, sCurrentYear),
-        new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-    ]);
-},
+			oBinding.filter([
+				new Filter("YEAR", FilterOperator.EQ, sCurrentYear),
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			]);
+		},
 
 		onPreApproval_ClaimProcess: function () {
 			this.oDialog_ClaimProcess.close();
@@ -1053,12 +1015,15 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", null);
 				oInputModel.setProperty("/claim_header/descr/course_code", null);
 			}
+			
 			//// project code values
-			if (oInputModel.getProperty("/claimtype/project_claim") === true &&
-				oInputModel.getProperty("/claimtype/project_code/project_id")
-			) {
-				oInputModel.setProperty("/claim_header/project_code", oInputModel.getProperty("/claimtype/project_code/project_id"));
-				oInputModel.setProperty("/claim_header/descr/project_code", oInputModel.getProperty("/claimtype/project_code/project_desc"));
+			if (oInputModel.getProperty("/claimtype/project_claim") === true) {
+
+				const sProjectCode = oInputModel.getProperty("/claimtype/requestform/project_code");
+				const sProjectDesc = oInputModel.getProperty("/claimtype/requestform/project_desc");
+
+				oInputModel.setProperty("/claim_header/project_code", sProjectCode || null);
+				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
 			} else {
 				oInputModel.setProperty("/claim_header/project_code", null);
 				oInputModel.setProperty("/claim_header/descr/project_code", null);
@@ -1540,9 +1505,6 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				let sGrpType = oInputData.grptype ? String(oInputData.grptype).trim() : null;
-
-				console.log("oInputData", oInputData);
-				console.log("Project Code before create:", oInputData.project_code);
 				if (sGrpType && sGrpType.length > 4) {
 					sGrpType = sGrpType.substring(0, 4);
 				}
@@ -1570,7 +1532,8 @@ sap.ui.define([
 					CASH_ADVANCE: parseFloat(0),
 					TRANSFER_MODE_ID: oInputData.transfermode || null,
 					TRAVEL_ALONE_FAMILY: oInputData.transferalonefamily || null,
-					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null
+					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null,
+					PROJECT_CODE: oInputData.project_code || null
 				});
 
 				await oContext.created();
@@ -2077,21 +2040,12 @@ sap.ui.define([
 				return;
 			}
 
-			var oClaimTypeData =
-				oSelectedItem.getBindingContext("employee").getObject();
+			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
 
-			var oReqModel =
-				this._oDialogFragment.getModel("reqDialog");
+			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 
-			oReqModel.setProperty(
-				"/project_claim",
-				oClaimTypeData.PROJECT_CLAIM === true
-			);
+			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM === true);
 
-			console.log(
-				"Request project_claim:",
-				oReqModel.getProperty("/project_claim")
-			);
 		}
 	});
 });
