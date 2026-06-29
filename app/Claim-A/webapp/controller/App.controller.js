@@ -2031,7 +2031,7 @@ sap.ui.define([
 			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 
-			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM === true);
+			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
 
 		}
 	});
