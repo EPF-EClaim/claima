@@ -961,10 +961,7 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claimtype/type") == this._oConstant.ClaimType.ELAUN_TUKAR) {
 				oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			}
-			console.log(
-				"Claim Input project_claim:",
-				oInputModel.getProperty("/claimtype/project_claim")
-			);
+
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -1042,7 +1039,6 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
 			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
 			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
-			//this._filterProjectCodeDropdown();
 		},
 
 		_getJsonDate: function (date) {
@@ -1650,12 +1646,6 @@ sap.ui.define([
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
 			RequestUtility.onSelectClaimType(oEvent, this._bEligibleForElaunTukar);
-			console.log(
-				oEvent.getSource()
-					.getSelectedItem()
-					.getBindingContext("employee")
-					.getObject()
-			);
 
 			this._handleProjectCodeVisibility(oEvent);
 
@@ -2041,7 +2031,6 @@ sap.ui.define([
 			}
 
 			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
-
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM === true);

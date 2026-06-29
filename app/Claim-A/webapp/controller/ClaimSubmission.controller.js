@@ -4257,11 +4257,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 				}
 
-				console.log(
-					"Internal Order before save:",
-					oInputModel.getProperty("/claim_item/internal_order")
-				);
-
 				// set body for update
 				var oBody = new JSONModel({
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
