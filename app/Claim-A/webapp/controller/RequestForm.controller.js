@@ -1200,7 +1200,10 @@ sap.ui.define([
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {
 					const sProjectCode = oReqHeader.projectcode;
-					const sInternalOrder = await this._getRequestInternalOrderByProjectCode(sProjectCode);
+					const sInternalOrder = await Utility.getInternalOrderByProjectCode(
+						this._oDataModel,
+						sProjectCode
+					);
 
 					oReqItem.internal_order = sInternalOrder;
 				}
@@ -2861,39 +2864,7 @@ sap.ui.define([
         const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
 
         await RequestUtility._getEntitledMeterCube(aSelectedKeys);
-        },
-
-		_getRequestInternalOrderByProjectCode: async function (sProjectCode) {
-			if (!sProjectCode) {
-				return null;
-			}
-
-			const oModel = this.getOwnerComponent().getModel();
-
-			const oListBinding = oModel.bindList(
-				"/ZBUDGET",
-				null,
-				null,
-				[
-					new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode),
-					new Filter("YEAR", FilterOperator.EQ, new Date().getFullYear().toString())
-				]
-			);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oBudgetData = aContexts[0].getObject();
-
-					return oBudgetData.WBS_CODE;
-				}
-				return null;
-
-			} catch (oError) {
-				return null;
-			}
-		}
+        }
 
 	});
 });

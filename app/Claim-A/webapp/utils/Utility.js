@@ -642,6 +642,27 @@ sap.ui.define([
             await oAction.execute();
             const oResult = oAction.getBoundContext().getObject();
             return oResult.fFinalAmount;
+        },
+
+        getInternalOrderByProjectCode: async function (oModel, sProjectCode) {
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const oFunction = oModel.bindContext("/getInternalOrderByProjectCode(...)");
+            oFunction.setParameter("sProjectCode", sProjectCode);
+
+            try {
+                await oFunction.execute();
+
+                const oContext = oFunction.getBoundContext();
+                const oResult = oContext.getObject();
+
+                return oResult?.value || oResult || null;
+
+            } catch (oError) {
+                return null;
+            }
         }
 
     };

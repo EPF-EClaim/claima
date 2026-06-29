@@ -622,9 +622,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 				// set project claim flag from selected claim type
-				var bProjectClaim =
-					oClaimTypeData.PROJECT_CLAIM === true ||
-					oClaimTypeData.PROJECT_CLAIM === "true" ;
+				var bProjectClaim = oClaimTypeData.PROJECT_CLAIM;
 
 				oInputModel.setProperty("/claimtype/project_claim", bProjectClaim);
 
@@ -1012,7 +1010,7 @@ sap.ui.define([
 			}
 			
 			//// project code values
-			if (oInputModel.getProperty("/claimtype/project_claim") === true) {
+			if (oInputModel.getProperty("/claimtype/project_claim")) {
 
 				const sProjectCode = oInputModel.getProperty("/claimtype/requestform/project_code");
 				const sProjectDesc = oInputModel.getProperty("/claimtype/requestform/project_desc");

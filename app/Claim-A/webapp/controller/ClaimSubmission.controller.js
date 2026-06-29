@@ -1410,10 +1410,13 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-				
-				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-				var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
 
+				//get internal order by project code
+				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				var sInternalOrder = await Utility.getInternalOrderByProjectCode(
+					this.getOwnerComponent().getModel(),
+					sProjectCode
+				);
 				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 
 				//// get GL account
@@ -3063,7 +3066,7 @@ sap.ui.define([
 				// Ensure Internal Order is populated before save
 				if (!oInputModel.getProperty("/claim_item/internal_order")) {
 					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-					var sInternalOrder = await this._getInternalOrderByProjectCode(sProjectCode);
+					var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
 
 					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 				}
@@ -5581,38 +5584,6 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/anggota_id", null);
 			oInputModel.setProperty("/claim_item/anggota_name", null);
 			oInputModel.setProperty("/claim_item/dependent", null);
-		},
-
-		_getInternalOrderByProjectCode: async function (sProjectCode) {
-			if (!sProjectCode) {
-				return null;
-			}
-
-			const oModel = this.getOwnerComponent().getModel();
-
-			const oListBinding = oModel.bindList(
-				"/ZBUDGET",
-				null,
-				null,
-				[
-					new Filter("PROJECT_CODE", FilterOperator.EQ, sProjectCode)
-				]
-			);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oBudgetData = aContexts[0].getObject();
-
-					return oBudgetData.WBS_CODE || null;
-				}
-
-				return null;
-
-			} catch (oError) {
-				return null;
-			}
 		}
 	});
 });
