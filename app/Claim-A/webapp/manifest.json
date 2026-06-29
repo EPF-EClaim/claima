@@ -4821,10 +4821,11 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "GridTable",
+                                        "type": "ResponsiveTable",
                                         "enableExport": true,
-                                        "selectionMode": "None",
+                                        "selectionMode": "SingleSelectMaster",
                                         "sort": true
+
                                     }
                                 }
                             },
