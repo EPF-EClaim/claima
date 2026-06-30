@@ -215,6 +215,7 @@ sap.ui.define([
 			aPayload.forEach((oSinglePayload) => {
 				const aCheckFields = oSinglePayload.CheckFields || [];
 				const sEmpId = oSinglePayload.EmpId;
+				const sClaimType = oSinglePayload.ClaimType;
 				const sClaimTypeItem = Constants.ClaimTypeItemDesc[oSinglePayload.ClaimTypeItem] || oSinglePayload.ClaimTypeItem;
 
 				aCheckFields.forEach((oField) => {
@@ -227,7 +228,11 @@ sap.ui.define([
 
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+								sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
+							} else {
+								sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							}
 							break;
 
 						case Constants.EntitiesFields.TRAVEL_DAYS_ID:

@@ -702,6 +702,10 @@ sap.ui.define([
             "SPOUSE": "01",
             "CHILD": "02",
             "ADDITIONAL_SPOUSE": "07"
+        },
+        "PeduResult": {
+            "EXCEEDED": "EXCEEDED",
+            "NOT_EXCEEDED": "NOT_EXCEEDED"
         }
         
     }
