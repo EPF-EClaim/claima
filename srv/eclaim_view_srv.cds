@@ -15,6 +15,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         GLAccount            : String;
         MaterialCode         : String;
         CashAdvanceAmount    : Decimal(15, 2);
+        InternalOrder        : String;
     }
 
 

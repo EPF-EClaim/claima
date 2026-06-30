@@ -29,7 +29,8 @@ module.exports = (srv) => {
             RECEIPT_DATE:            oItem.ReceiptDate,
             COST_CENTER:             oItem.CostCenter,
             GL_ACCOUNT:              oItem.GLAccount,
-            MATERIAL_CODE:           oItem.MaterialCode
+            MATERIAL_CODE:           oItem.MaterialCode,
+            INTERNAL_ORDER:          oItem.InternalOrder
         }));
       const oResponse = await ISservice.send({
         method: 'POST',
