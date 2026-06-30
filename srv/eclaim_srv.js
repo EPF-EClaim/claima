@@ -97,7 +97,7 @@ module.exports = (srv) => {
             }
 
             return {
-                id:  oEmp.EMAIL ||oEmp.email || "UNKNOWN",
+                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
                 userType: oEmp.USER_TYPE || "UNKNOWN",
                 costcenters: oEmp.CC || "UNKNOWN",
                 userId: oEmp.EEID || "UNKNOWN",
@@ -110,65 +110,65 @@ module.exports = (srv) => {
             };
         });
 
-        // srv.on('getUserType', async (req) => {
-        //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-        //     const emailFromToken =
-        //         req.user?.attr?.email ||
-        //         req.user?.attr?.mail ||
-        //         req.user?.attr?.user_name ||
-        //         req.user?.attr?.login_name ||
-        //         req.user?.id ||
-        //         "";
+    // srv.on('getUserType', async (req) => {
+    //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
+    //     const emailFromToken =
+    //         req.user?.attr?.email ||
+    //         req.user?.attr?.mail ||
+    //         req.user?.attr?.user_name ||
+    //         req.user?.attr?.login_name ||
+    //         req.user?.id ||
+    //         "";
 
-        //     let sOrigin = null;
+    //     let sOrigin = null;
 
-        //     try {
-        //         const authHeader = req.http?.req?.headers?.authorization ?? '';
-        //         const token = authHeader.split(' ')[1];
-        //         if (token) {
-        //             const oToken = JSON.parse(
-        //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-        //             );
-        //             sOrigin = oToken.origin;
-        //         }
-        //     } catch (e) {
-        //         console.log("Token parsing failed:", e.message);
-        //     }
+    //     try {
+    //         const authHeader = req.http?.req?.headers?.authorization ?? '';
+    //         const token = authHeader.split(' ')[1];
+    //         if (token) {
+    //             const oToken = JSON.parse(
+    //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+    //             );
+    //             sOrigin = oToken.origin;
+    //         }
+    //     } catch (e) {
+    //         console.log("Token parsing failed:", e.message);
+    //     }
 
-        //     const email = String(emailFromToken).trim().toLowerCase();
-        //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        //     //no record maintained in ZEMP_MASTER table
-        //     if (!result) {
-        //         return {
-        //             id: email,
-        //             userType: "UNKNOWN",
-        //             costcenters: "UNKNOWN",
-        //             userId: "UNKNOWN",
-        //             name: "UNKNOWN",
-        //             position: "UNKNOWN",
-        //             origin: sOrigin,
-        //             grade: "UNKNOWN",
-        //             department: "UNKNOWN"
-        //         };
-        //     }
+    //     const email = String(emailFromToken).trim().toLowerCase();
+    //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+    //     //no record maintained in ZEMP_MASTER table
+    //     if (!result) {
+    //         return {
+    //             id: email,
+    //             userType: "UNKNOWN",
+    //             costcenters: "UNKNOWN",
+    //             userId: "UNKNOWN",
+    //             name: "UNKNOWN",
+    //             position: "UNKNOWN",
+    //             origin: sOrigin,
+    //             grade: "UNKNOWN",
+    //             department: "UNKNOWN"
+    //         };
+    //     }
 
-        //     let dept = null;
-        //     if (result.DEP) {
-        //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
-        //     }
+    //     let dept = null;
+    //     if (result.DEP) {
+    //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+    //     }
 
-        //     return {
-        //         id: email,
-        //         userType: result?.USER_TYPE || "UNKNOWN",
-        //         costcenters: result?.CC || "UNKNOWN",
-        //         userId: result?.EEID || "UNKNOWN",
-        //         name: result?.NAME || "UNKNOWN",
-        //         position: result?.POSITION_NAME || "UNKNOWN",
-        //         origin: sOrigin,
-        //         grade: result?.GRADE || "UNKNOWN",
-        //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
-        //     };
-        // });
+    //     return {
+    //         id: email,
+    //         userType: result?.USER_TYPE || "UNKNOWN",
+    //         costcenters: result?.CC || "UNKNOWN",
+    //         userId: result?.EEID || "UNKNOWN",
+    //         name: result?.NAME || "UNKNOWN",
+    //         position: result?.POSITION_NAME || "UNKNOWN",
+    //         origin: sOrigin,
+    //         grade: result?.GRADE || "UNKNOWN",
+    //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+    //     };
+    // });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -468,7 +468,7 @@ module.exports = (srv) => {
         }
     });
 
-    
+
 
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
@@ -1798,7 +1798,7 @@ module.exports = (srv) => {
     srv.on('getMeterCubeEntitlement', async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-        const {selectedDependents} = req.data;
+        const { selectedDependents } = req.data;
 
         if (oEmp) {
             return await computeMeterCubeEntitlement(
@@ -1827,7 +1827,7 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
         const nActualMC = Number(req.data.actualMeterCube);
         const nActualAmount = Number(req.data.actualAmount);
-        const {selectedDependents} = req.data;
+        const { selectedDependents } = req.data;
 
         if (isNaN(nActualMC) || isNaN(nActualAmount)) {
             return { entitled: 0, amount: 0 };
@@ -2305,12 +2305,12 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
-        /**
-        * Update Header tables with approver actions
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('calculateRoundTripKM', async (req) =>{
+    /**
+    * Update Header tables with approver actions
+    * @public
+    * @returns {Integer} number of records updated in header table
+    */
+    srv.on('calculateRoundTripKM', async (req) => {
         const { fKM } = req.data;
         if (!fKM) {
             return { fFinalAmount: 0.00 };
@@ -2461,14 +2461,14 @@ module.exports = (srv) => {
             .from('ZEMP_MASTER')
             .where({ EMAIL: req.user.id });
         if (!oEmp || !oEmp.CC) return;
-        
+
         // Admin_CC sees their own cost center only
         req.query.where({
             COST_CENTER_ID: oEmp.CC
         });
     });
 
-    srv.on("getJenazahEligibleAmount", async(req) => {
+    srv.on("getJenazahEligibleAmount", async (req) => {
         const tx = cds.tx(req);
         const sTodayDate = new Date().toISOString().slice(0, 10);
         try {
@@ -2493,7 +2493,7 @@ module.exports = (srv) => {
         }
     });
 
-    
+
 
     srv.on('batchUpdatePaymentStatus', async (req) => {
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
@@ -2539,7 +2539,7 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(400, `Fail updating records: ${error.message}`);
         }
-    });    
+    });
 
     /**
         * Update Dependent tables with Used Entitlement Amout for each dependent
@@ -2561,9 +2561,9 @@ module.exports = (srv) => {
         } catch (error) {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
-    });     
+    });
 
-     srv.on("getJenazahEligibleAmount", async(req) => {
+    srv.on("getJenazahEligibleAmount", async (req) => {
         const tx = cds.tx(req);
         const sTodayDate = new Date().toISOString().slice(0, 10);
         try {
@@ -2588,7 +2588,7 @@ module.exports = (srv) => {
         }
     });
 
-    
+
 
     srv.on('batchUpdatePaymentStatus', async (req) => {
         const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
@@ -2634,7 +2634,7 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(400, `Fail updating records: ${error.message}`);
         }
-    });    
+    });
 
     srv.on("checkGalakanEligible", async (req) => {
         const tx = cds.tx(req);
@@ -2696,6 +2696,34 @@ module.exports = (srv) => {
 
         } catch (err) {
             req.error(404, `Amount not found.`);
+        }
+    });
+
+    srv.on("getBantuanKebajikanKematianAmount", async (req) => {
+        const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (oEmp) {
+            const sTodayDate = new Date().toISOString().slice(0, 10);
+            try {
+                var oEligibleAmount = await tx.run(
+                    SELECT.one
+                        .from(Constant.Entities.ZELIGIBILITY_RULE)
+                        .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                        .where({
+                            CLAIM_TYPE_ID: Constant.ClaimType.AKTIVITI_S,
+                            CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.KEMATIAN,
+                            STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                            START_DATE: { '<=': sTodayDate },
+                            END_DATE: { '>=': sTodayDate },
+                            DEPENDENT_TYPE_ID: req.data.sDependentType
+                        })
+                )
+                return oEligibleAmount.ELIGIBLE_AMOUNT;
+            } catch (err) {
+                req.error(404, `Amount not found.`);
+            }
+        } else {
+            req.error(404, `Employee Not Found.`);
         }
     });
 }

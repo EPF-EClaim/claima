@@ -5563,6 +5563,11 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/anggota_id", null);
 			oInputModel.setProperty("/claim_item/anggota_name", null);
 			oInputModel.setProperty("/claim_item/dependent", null);
+
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.KEMATIAN) {
+				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
+				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
+			}
 		}
 	});
 });
