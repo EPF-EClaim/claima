@@ -502,6 +502,10 @@ const Constant = {
     VehicleOwnership : {
         OWN: "01",
         OFFICE_VEHICLE: "02"
+    },
+    PeduResult: {
+        EXCEEDED: "EXCEEDED",
+        NOT_EXCEEDED: "NOT_EXCEEDED"
     }
 
 };

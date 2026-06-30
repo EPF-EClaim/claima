@@ -2218,4 +2218,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     function checkClaimHeaderStatusForAutoApproval(sClaimID: String) returns ClaimStatusAuto;
+
+    action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
+
+    function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
 };

@@ -94,7 +94,8 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="{= !${claimsubmission_input>/view_only} ? 'Editable' : 'ReadOnly'}"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA}}"
+                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/JENAZAH} }"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
@@ -1089,7 +1090,8 @@
                         !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
                         ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/DALAM_STESEN} &amp;&amp;
                         ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} &amp;&amp;
-                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/CERAMAH}		
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/CERAMAH} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KEMATIAN}	
                         }"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>

@@ -187,6 +187,7 @@
                                     display="ValueDescription" 
                                     valueHelp="valuehelp_req_altcc" />
                             </form:fields></form:FormElement>
+                            <form:FormElement label="Project Code"><form:fields><Text text="{request>/req_header/projectcode} - {request>/req_header/projectdesc}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_caa}">
                                 <form:fields><Text text="{
                                         path: 'request>/req_header/cashadvamt',

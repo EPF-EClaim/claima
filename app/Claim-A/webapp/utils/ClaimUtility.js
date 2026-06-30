@@ -229,22 +229,22 @@ sap.ui.define([
 		 */
 		fetchAndApplyEntitlement: function (oClaimItemInputModel, oSubmissionModel) {
 			var nDay, nDependent;
-			
+
 			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2 ? 2 : oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member") ? oClaimItemInputModel.getProperty("/claim_item/no_of_family_member") : 1;
-			} else if(oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR){
-				if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC || 
-				   oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW){
+			} else if (oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_TUKAR) {
+				if (oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC ||
+					oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW) {
 					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
-					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") :oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
-				}else{
+					nDependent = oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") ? oClaimItemInputModel.getProperty("/claim_item/number_of_travellers") : oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+				} else {
 					nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days");
 					nDependent = 1;
 
 				}
 			}
-			else{
+			else {
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 1;
 			}
@@ -451,13 +451,13 @@ sap.ui.define([
 			// calculate approved amount
 			switch (sClaimTypeItem) {
 				case Constant.ClaimTypeItem.LOD_TUKAR:
-					if(oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC ||
-					   oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW){
+					if (oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW_DESC ||
+						oSubmissionModel.getProperty("/claim_header/travel_family_now_later") == Constant.TravelWithFamilyNowOrLater.NOW) {
 						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * iNoOfFamilyMembers;
-					}else{
+					} else {
 						var dResult = parseFloat(dEligibleAmount) * iNoOfDays * 1;
 					}
-					
+
 					break;
 				default:
 					var dResult = parseFloat(dEligibleAmount) * iNoOfDays;
@@ -465,7 +465,7 @@ sap.ui.define([
 			}
 			return !isNaN(dResult) ? dResult : 0.00;
 		},
-		
+
 		/**
 		 * Bind to existing claim header with claim ID, if not found return null value
 		 * @public
@@ -533,7 +533,7 @@ sap.ui.define([
 			if (!oInputModel) {
 				oInputModel = this._oView.getModel("claimitem_input");
 			}
-			
+
 			var aSelectedDependents = oInputModel.getProperty("/claim_item/dependent") || [];
 			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
@@ -575,7 +575,7 @@ sap.ui.define([
 			Constant.ClaimType.KURSUS_LUAR_NEGARA,
 			Constant.ClaimType.LUAR_NEGARA,
 			Constant.ClaimType.ELAUN_TUKAR
-			].includes(sClaimTypeId)&&
+			].includes(sClaimTypeId) &&
 				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
 				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
 			}
@@ -661,7 +661,7 @@ sap.ui.define([
 			await fnSaveClaimItem();
 			oInputModel.setProperty("/claim_item", oPreviousClaimItem);
 			oInputModel.setProperty("/is_new", bPreviousIsNew);
-		}, 
+		},
 
 		/**
 		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
@@ -674,14 +674,14 @@ sap.ui.define([
 		getSpouseChildNo: async function () {
 			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
 			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
-			
- 			await oContext.execute();
 
-   		 	// Read return value
+			await oContext.execute();
+
+			// Read return value
 			const oResult = await oContext.requestObject();
 
-    		return oResult?.value ?? 0;
-		}, 
+			return oResult?.value ?? 0;
+		},
 
 		/**
 		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
@@ -707,13 +707,13 @@ sap.ui.define([
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((oResult) => {
-					if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.PEM_PINDAH){
+					if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.PEM_PINDAH) {
 						oInputModel.setProperty("/claim_item/actual_amount", oResult.fAmount);
 						oInputModel.setProperty("/claim_item/amount", oResult.fFinalAmount);
-					}else{
+					} else {
 						oInputModel.setProperty("/claim_item/amount", oResult.fAmount);
 					}
-					
+
 				});
 		},
 		
@@ -746,34 +746,47 @@ sap.ui.define([
 			const oResult = oAction.getBoundContext().getObject();
 			return oResult.fFinalAmount;
 		},
-		getFuneralTransportEligibleAmount: async function(sTransportPassingID, sClaimTypeItem, sClaimType){
+		getFuneralTransportEligibleAmount: async function (sTransportPassingID, sClaimTypeItem, sClaimType) {
 			const oContext = this._oView.getModel().bindContext("/getJenazahEligibleAmount(...)");
 
-			oContext.setParameter("sTransportPassingID",sTransportPassingID);
-			oContext.setParameter("sClaimType",sClaimType);
-			oContext.setParameter("sClaimTypeItem",sClaimTypeItem);
-			try{
+			oContext.setParameter("sTransportPassingID", sTransportPassingID);
+			oContext.setParameter("sClaimType", sClaimType);
+			oContext.setParameter("sClaimTypeItem", sClaimTypeItem);
+			try {
 				await oContext.execute();
 				// Read return value
 				const oResult = await oContext.requestObject();
 				return oResult.iAmount;
 			}
-			catch(oError){
+			catch (oError) {
 				return 0;
 			}
 		},
 
-		getCeramahEligibleAmount: async function(fDurationMinute){
+		getCeramahEligibleAmount: async function (fDurationMinute) {
 			var fDurationHour = parseFloat(fDurationMinute) / 60;
 			const oContext = this._oView.getModel().bindContext("/getCeramahEntitlement(...)");
 			oContext.setParameter("fDuration", fDurationHour);
 
-			try{
+			try {
 				await oContext.execute();
 				const oResult = await oContext.requestObject();
 				return oResult.iAmount;
 			}
-			catch(oError){
+			catch (oError) {
+				return 0;
+			}
+		},
+
+		getBantuanKematianEligibleAmount: async function (sDependentType) {
+			const oContext = this._oView.getModel().bindContext("/getBantuanKebajikanKematianAmount(...)");
+			oContext.setParameter("sDependentType", sDependentType);
+			try {
+				await oContext.execute();
+				const oResult = await oContext.requestObject();
+				return oResult.value;
+			}
+			catch (oError) {
 				return 0;
 			}
 		}

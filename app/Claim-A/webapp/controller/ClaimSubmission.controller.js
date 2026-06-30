@@ -619,6 +619,7 @@ sap.ui.define([
 					tips: it.TIPS,
 					exclude_tips: it.EXCLUDE_TIPS,
 					number_of_travellers: it.TOTAL_TRAVELLER,
+					internal_order: it.INTERNAL_ORDER,
 					descr: {},
 				}));
 
@@ -772,7 +773,7 @@ sap.ui.define([
 				last_push_back_date: null,
 				course_code: o.COURSE_CODE,
 				session_number: o.SESSION_NUMBER,
-				project_code: null,
+				project_code: o.PROJECT_CODE,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
 				reject_reason_id: null,
@@ -794,7 +795,7 @@ sap.ui.define([
 					housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
 					lender_name: o.LENDER_DESC,
 					course_code: o.COURSE_CODE_DESC,
-					project_code: null,
+					project_code: o.PROJECT_DESC,
 					attachment_email_approver: null,
 					mode_of_transfer: o.TRANSFER_MODE_DESC,
 					travel_alone_family: o.TRAVEL_TYPE_DESC,
@@ -1308,6 +1309,7 @@ sap.ui.define([
 					"exclude_tips": null,
 					"tips": null,
 					"number_of_travellers": null,
+					"internal_order": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1433,6 +1435,12 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
+
+				//get internal order by project code
+				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				var sInternalOrder = await Utility.getInternalOrderByProjectCode(this.getOwnerComponent().getModel(),sProjectCode);
+				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
+
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
 				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
@@ -3101,6 +3109,14 @@ sap.ui.define([
 				var oModel = this.getOwnerComponent().getModel();
 				var oListBinding = null;
 
+				// Ensure Internal Order is populated before save
+				if (!oInputModel.getProperty("/claim_item/internal_order")) {
+					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+					var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
+
+					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
+				}
+
 				// set body for update
 				var oBody = new JSONModel({
 					CLAIM_ID: oInputModel.getProperty("/claim_item/claim_id"),
@@ -3206,7 +3222,8 @@ sap.ui.define([
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
-					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type")
+					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
+					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order")
 				});
 
 				// to save the attachment inside SF
@@ -4711,7 +4728,8 @@ sap.ui.define([
 						DAILY_ALLOWANCE: this._nonNan(parseInt(claim_item.daily_allowance)),
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
-						TOTAL_TRAVELLER: claim_item.number_of_travellers
+						TOTAL_TRAVELLER: claim_item.number_of_travellers,
+						INTERNAL_ORDER: claim_item.internal_order
 					});
 
 					if (i >= itemCountDb) {
@@ -5625,6 +5643,11 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/anggota_id", null);
 			oInputModel.setProperty("/claim_item/anggota_name", null);
 			oInputModel.setProperty("/claim_item/dependent", null);
+
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.KEMATIAN) {
+				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
+				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
+			}
 		}
 	});
 });

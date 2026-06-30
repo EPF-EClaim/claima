@@ -95,7 +95,8 @@ sap.ui.define([
             "ELEKTRIK": "ELEKTRIK",
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
-            "JENAZAH":"JENAZAH"
+            "JENAZAH":"JENAZAH",
+            "KEMATIAN": "KEMATIAN"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -710,6 +711,10 @@ sap.ui.define([
             "SPOUSE": "01",
             "CHILD": "02",
             "ADDITIONAL_SPOUSE": "07"
+        },
+        "PeduResult": {
+            "EXCEEDED": "EXCEEDED",
+            "NOT_EXCEEDED": "NOT_EXCEEDED"
         }
 
     }
