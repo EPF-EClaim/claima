@@ -1130,6 +1130,7 @@ entity ZWORKFLOW_RULE : managed {
         DEPARTMENT_ID         : String(10)    @Common.Label: 'Department ID';
         DIVISION              : String(10)    @Common.Label: 'Division';
         LOCATION_TYPE         : String(10)    @Common.Label: 'Location Type';
+        PROJECT_CLAIM         : Boolean       @Common.Label: 'Project Claim';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZDEPARTMENT           : Association to ZDEPARTMENT
