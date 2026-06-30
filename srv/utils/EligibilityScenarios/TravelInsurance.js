@@ -36,7 +36,6 @@ module.exports = {
                     iIndex = oPayload.CheckFields.findIndex(
                         field => field.fieldName === Constant.EntitiesFields.COUNTRY
                     );
-                    console.log('oCountryNotAllowed:', oCountryNotAllowed);
                     if (iIndex !== -1) {
                         if (!oRule) {
                             oPayload.CheckFields[iIndex].result = false;
