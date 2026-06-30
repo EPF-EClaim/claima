@@ -1508,3 +1508,11 @@ entity ZDIVISION : managed {
         DIVISION_DESC : String(150) @Common.Label: 'Promotion To Division Description';
         STATUS        : String(10)  @Common.Label: 'Status';
 }
+
+entity ZLOG_TEMP : managed {
+    key TIMESTAMP     : Timestamp   @mandatory  @Common.Label: 'Timestamp';
+    key RECORD_ID     : String(14)  @mandatory  @Common.Label: 'Record ID';
+        MESSAGE_TYPE  : String(1)   @Common.Label: 'Message Type';
+        STATUS_CODE   : String(3)   @Common.Label: 'Status Code';
+        MESSAGE       : String      @Common.Label: 'Message';
+}
