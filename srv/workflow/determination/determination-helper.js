@@ -176,31 +176,28 @@ function normalizeApproversByGroup(aApproversDetails, oClaimantDetails) {
     return aResult;
 }
 async function retrieveSubstitute(sApproverEEID, dDate = new Date()) {
-
-// Main table path
-const sSubstitutionRulesTablePath = Constant.Entities.ZEMP_SUBSTITUTION_RULE;
-
-// Convert to ISO date string (YYYY-MM-DD)
-const dToday = dDate.toISOString().split("T")[0];
-
-const oSubstituteContext = await cds.run
-    SELECT
-        .one
-        .from(sSubstitutionRulesTablePath)
-        .where({
-            [Constant.EntitiesFields.USER_ID]           : sApproverEEID,
-            [Constant.EntitiesFields.VALID_FROM]        : { '<=' : dToday},
-            [Constant.EntitiesFields.VALID_TO]          : { '>=' : dToday}
-        })
-        .columns(
-            Constant.EntitiesFields.USER_ID,
-            Constant.EntitiesFields.SUBSTITUTE_ID
+    
+    // Main table path
+    const sSubstitutionRulesTablePath = Constant.Entities.ZEMP_SUBSTITUTION_RULE;
+    // Convert to ISO date string (YYYY-MM-DD)
+    const dToday = dDate.toISOString().split("T")[0];
+    const oSubstituteContext = await cds.run
+        (SELECT.one
+            .from(sSubstitutionRulesTablePath)
+            .where({
+                [Constant.EntitiesFields.USER_ID]           : sApproverEEID,
+                [Constant.EntitiesFields.VALID_FROM]        : { '<=' : dToday},
+                [Constant.EntitiesFields.VALID_TO]          : { '>=' : dToday}
+            })
+            .columns(
+                Constant.EntitiesFields.USER_ID,
+                Constant.EntitiesFields.SUBSTITUTE_ID
+            )
         );
-
-if(!oSubstituteContext) {
-    return null;
-}
-return oSubstituteContext.SUBSTITUTE_ID
+    if(!oSubstituteContext) {
+        return null;
+    }
+    return oSubstituteContext.SUBSTITUTE_ID
 }
 function setApproversContext(oDescriptor, sId, aApproversContext) {
     let aApproversContextNew = [];
