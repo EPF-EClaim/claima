@@ -247,6 +247,7 @@ entity ZREQUEST_ITEM : managed {
         TYPE_OF_PROFESSIONAL_BODY  : String(3)      @Common.Label: 'Type of Professional Body';
         TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
         ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
+        INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -306,6 +307,8 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
         ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
+        ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
+                                         on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
 }
 
 entity ZREQ_ITEM_PART : managed {

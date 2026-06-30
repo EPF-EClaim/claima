@@ -75,7 +75,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
-                PAYMENT_DATE  
+                PAYMENT_DATE,
+                PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
         };
 
     entity ZEMP_REQUEST_EE_VIEW as
@@ -220,7 +222,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC as PROFESIONAL_BODY_DESC,
                 TOTAL_TRAVELLER,
                 FARE_TYPE_ID,
-                ROUND_TRIP
+                ROUND_TRIP,
+                INTERNAL_ORDER
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -346,7 +349,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_ALONE_FAMILY,
                 ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
                 TRAVEL_FAMILY_NOW_LATER,
-                ZFAMILY_TIMING.FAMILY_TIMING_DESC
+                ZFAMILY_TIMING.FAMILY_TIMING_DESC,
+                PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -484,7 +489,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EXCLUDE_TIPS,
                 TOTAL_TRAVELLER,
                 ZCLAIM_HEADER.STATUS_ID,
-                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC
+                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC,
+                INTERNAL_ORDER
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -1156,5 +1162,16 @@ entity ZEMP_APPROVER_DETAILS           as
                 GRADE,
                 GA_ROLE,
                 ECLAIM_ROLE
+        };
+
+    entity ZPROJECT_DROPDOWN_VH as
+        select from ECLAIM.ZBUDGET {
+            key YEAR,
+            key PROJECT_CODE,
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
+                ZPROJECT_HDR.STATUS       as STATUS
         }
+            where PROJECT_CODE is not null
+            and PROJECT_CODE <> ''
+            and PROJECT_CODE <> '-';
 }

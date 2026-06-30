@@ -1229,5 +1229,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getCeramahEntitlement(fDuration: Decimal(5,2))                                             returns Decimal(10,2);
 
+    action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
+
     function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
 };
