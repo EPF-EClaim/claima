@@ -94,7 +94,8 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="{= !${claimsubmission_input>/view_only} ? 'Editable' : 'ReadOnly'}"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA}}"
+                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/JENAZAH} }"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
