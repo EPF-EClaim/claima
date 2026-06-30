@@ -1175,4 +1175,23 @@ entity ZEMP_APPROVER_DETAILS           as
             where PROJECT_CODE is not null
             and PROJECT_CODE <> ''
             and PROJECT_CODE <> '-';
+
+    entity ZPARTICIPANT_PREAPPROVED_AMOUNT as
+        select from ECLAIM.ZREQ_ITEM_PART as itemPart
+            inner join ECLAIM.ZREQUEST_HEADER as req
+                on itemPart.REQUEST_ID = req.REQUEST_ID
+            left join ECLAIM.ZCLAIM_HEADER as claim
+                on itemPart.REQUEST_ID = claim.REQUEST_ID
+        {
+            key itemPart.REQUEST_ID,
+            key itemPart.PARTICIPANTS_ID,
+            sum(itemPart.ALLOCATED_AMOUNT) as PREAPPROVED_AMOUNT : Decimal
+        }
+        where
+            req.STATUS = 'STAT05'
+            and claim.REQUEST_ID is null
+        group by
+            itemPart.REQUEST_ID,
+            itemPart.PARTICIPANTS_ID;
+
 }
