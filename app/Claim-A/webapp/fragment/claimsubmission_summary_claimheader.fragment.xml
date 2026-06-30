@@ -258,6 +258,14 @@
                     text="{claimsubmission_input>/claim_header/alternate_cost_center} - {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
                 />
 
+                <!-- Project Code -->
+                <Label text="Project Code" />
+
+                <Text
+                    id="text_claimsummary_claimheader_projectcode"
+                    text="{claimsubmission_input>/claim_header/project_code} - {claimsubmission_input>/claim_header/descr/project_code}"
+                />
+
                 <!-- Claim Status -->
                 <Label text="{i18n>label_claimsummary_claimheader_status}" />
                 <Text

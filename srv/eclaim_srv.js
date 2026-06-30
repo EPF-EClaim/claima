@@ -2698,4 +2698,32 @@ module.exports = (srv) => {
             req.error(404, `Amount not found.`);
         }
     });
+
+    srv.on('getInternalOrderByProjectCode', async (req) => {
+        const { sProjectCode } = req.data;
+
+        if (!sProjectCode) {
+            return null;
+        }
+
+        const tx = cds.tx(req);
+        const sCurrentYear = String(new Date().getFullYear());
+
+        try {
+            const oBudget = await tx.run(
+                SELECT.one
+                    .from('ZBUDGET')
+                    .columns('WBS_CODE')
+                    .where({
+                        PROJECT_CODE: sProjectCode,
+                        YEAR: sCurrentYear
+                    })
+            );
+
+            return oBudget?.WBS_CODE || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
+        }
+    });
 }
