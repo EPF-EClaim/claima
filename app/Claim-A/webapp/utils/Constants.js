@@ -95,7 +95,8 @@ sap.ui.define([
             "ELEKTRIK": "ELEKTRIK",
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
-            "JENAZAH":"JENAZAH"
+            "JENAZAH":"JENAZAH",
+            "KEMATIAN": "KEMATIAN"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
