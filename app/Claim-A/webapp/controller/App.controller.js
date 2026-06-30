@@ -617,17 +617,14 @@ sap.ui.define([
 			if (oClaimType) {
 				 var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
 				// get claim type description
-				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+				oInputModel.setProperty("/claimtype/descr/type", oClaimTypeData.CLAIM_TYPE_DESC);
 				// get cost center from claim type
-				oInputModel.setProperty("/claimtype/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER"));
-				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimType.getBindingContext("employee").getObject("COST_CENTER_DESC"));
-				// set project claim flag from selected claim type
-				var bProjectClaim = oClaimTypeData.PROJECT_CLAIM;
-
-				oInputModel.setProperty("/claimtype/project_claim", bProjectClaim);
+				oInputModel.setProperty("/claimtype/cost_center", oClaimTypeData.COST_CENTER);
+				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
+				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
 
 				// if claim type is not project claim, reset project code value
-				if (!bProjectClaim) {
+				if (!oClaimTypeData.PROJECT_CLAIM) {
 					oInputModel.setProperty("/claimtype/requestform/project_code", null);
 					oInputModel.setProperty("/claimtype/requestform/project_desc", null);
 				}
@@ -851,9 +848,7 @@ sap.ui.define([
 			var oProjectCode = oEvent ? oEvent.getParameters().selectedItem : null;
 
 			if (oProjectCode) {
-				var oProjectData = oProjectCode
-					.getBindingContext("employee_view")
-					.getObject();
+				var oProjectData = oProjectCode.getBindingContext("employee_view").getObject();
 
 				oInputModel.setProperty("/claim_header/project_code",oProjectData.PROJECT_CODE);
 				oInputModel.setProperty("/claim_header/descr/project_code",oProjectData.PROJECT_DESC);
@@ -957,7 +952,6 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claimtype/type") == this._oConstant.ClaimType.ELAUN_TUKAR) {
 				oInputModel.setProperty("/claimtype/marriage_category", await Utility.getMarriageCategoryBasedOnStatus())
 			}
-
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", this._oSessionModel.getProperty("/userId"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -1646,7 +1640,6 @@ sap.ui.define([
 			RequestUtility.onSelectClaimType(oEvent, this._bEligibleForElaunTukar);
 
 			this._handleProjectCodeVisibility(oEvent);
-
 		},
 
 		_applyReqTypeFilters: function (sUserType) {
@@ -2032,7 +2025,6 @@ sap.ui.define([
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
-
 		}
 	});
 });

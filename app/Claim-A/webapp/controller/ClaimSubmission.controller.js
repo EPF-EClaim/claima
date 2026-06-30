@@ -1413,10 +1413,7 @@ sap.ui.define([
 
 				//get internal order by project code
 				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-				var sInternalOrder = await Utility.getInternalOrderByProjectCode(
-					this.getOwnerComponent().getModel(),
-					sProjectCode
-				);
+				var sInternalOrder = await Utility.getInternalOrderByProjectCode(this.getOwnerComponent().getModel(),sProjectCode);
 				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 
 				//// get GL account
