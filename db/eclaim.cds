@@ -438,7 +438,9 @@ entity ZCLAIM_HEADER : managed {
         ZTRAIN_COURSE_PART             : Association to ZTRAIN_COURSE_PART
                                              on  ZTRAIN_COURSE_PART.PARTICIPANT_ID = EMP_ID
                                              and ZTRAIN_COURSE_PART.COURSE_ID      = COURSE_CODE
-                                             and ZTRAIN_COURSE_PART.SESSION_NUMBER = SESSION_NUMBER;
+                                             and ZTRAIN_COURSE_PART.SESSION_NUMBER = SESSION_NUMBER
+                                             and ZTRAIN_COURSE_PART.START_DATE     = TRIP_START_DATE
+                                             and ZTRAIN_COURSE_PART.END_DATE       = TRIP_END_DATE;
         ZREJECT_REASON                 : Association to ZREJECT_REASON
                                              on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON               : Association to ZREJECT_REASON
@@ -1128,6 +1130,7 @@ entity ZWORKFLOW_RULE : managed {
         DEPARTMENT_ID         : String(10)    @Common.Label: 'Department ID';
         DIVISION              : String(10)    @Common.Label: 'Division';
         LOCATION_TYPE         : String(10)    @Common.Label: 'Location Type';
+        PROJECT_CLAIM         : Boolean       @Common.Label: 'Project Claim';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZDEPARTMENT           : Association to ZDEPARTMENT
@@ -1504,4 +1507,12 @@ entity ZDIVISION : managed {
         END_DATE      : Date        @Common.Label: 'End Date';
         DIVISION_DESC : String(150) @Common.Label: 'Promotion To Division Description';
         STATUS        : String(10)  @Common.Label: 'Status';
+}
+
+entity ZLOG_TEMP : managed {
+    key TIMESTAMP     : Timestamp   @mandatory  @Common.Label: 'Timestamp';
+    key RECORD_ID     : String(14)  @mandatory  @Common.Label: 'Record ID';
+        MESSAGE_TYPE  : String(1)   @Common.Label: 'Message Type';
+        STATUS_CODE   : String(3)   @Common.Label: 'Status Code';
+        MESSAGE       : String      @Common.Label: 'Message';
 }

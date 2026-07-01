@@ -18,7 +18,7 @@ const WilayahAsal = require("./WilayahAsal");
 const AktivitiS = require("./AktivitiS");
 const SewaPetak = require("./SewaPetak");
 const KeahlianKelab = require("./KeahlianKelab");
-const Medical = require("./Medical");
+const TravelInsurance = require("./TravelInsurance");
 const PostEducation = require("./PostEducation");
 
 module.exports = {
@@ -294,8 +294,8 @@ module.exports = {
           );
           break;
 
-        case Constant.ClaimType.MEDICAL:
-          oReturnPayload = await Medical.onEligibleCheck(
+        case Constant.ClaimType.TRAVEL_INSURANCE:
+          oReturnPayload = await TravelInsurance.onEligibleCheck(
             aPayload[i],
             aFilteredEligibility,
             tx
