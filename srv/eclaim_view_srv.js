@@ -38,12 +38,30 @@ module.exports = (srv) => {
         data: { 
           ZEMP_CLAIMS_DETAILS: sData
         }
-        });
+      });
 
       return { message: "Approved claim batch sent", oResponse };
 
     } catch (e) {
-      req.error(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+        await createErrorLog(req, e);
+        req.error(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
     }
   });
+
+  async function createErrorLog(req, e){
+    try{
+      const tx = cds.tx(req);
+      await tx.run(
+        INSERT.into('ZLOG_TEMP').entries({
+            TIMESTAMP: new Date(),
+            RECORD_ID: req.data?.batch?.ClaimID,
+            MESSAGE_TYPE: "",
+            STATUS_CODE: e.status || e.code || "",
+            MESSAGE: e.message
+        })
+      );
+    }catch(oError){
+      console.error("Failed to write error log:", oError);
+    }
+  }
 };
