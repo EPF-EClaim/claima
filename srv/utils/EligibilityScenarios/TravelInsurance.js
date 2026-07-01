@@ -65,6 +65,7 @@ module.exports = {
                         oPayload.CheckFields[iIndex].result = true;
                     } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
+                        console.log(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }
