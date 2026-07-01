@@ -129,6 +129,53 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         BUDGET_OWNER_ID:    sEEID
     };
 }
+async function retrieveProjectOwnerDetails(sProjectCode, sYear){
+    let oBudgetContext = null;
+
+    // Main table path
+    const sBudgetTablePath = cds.entities['eclaim_srv.ZBUDGET'];
+    const sProjectCodeSafe = String(sProjectCode);
+    const sYearSafe = String(sYear);
+    let sEEID = "";
+
+    // Fetch data
+    console.log("Start Project Code check");
+    oBudgetContext = await cds.run(
+        SELECT
+            .one
+            .from(sBudgetTablePath)
+            .where({
+                [Constant.EntitiesFields.FUND_CENTER]   : sProjectCodeSafe,
+                [Constant.EntitiesFields.YEAR]          : sYearSafe
+            })
+            .columns(
+                Constant.EntitiesFields.YEAR,
+                Constant.EntitiesFields.INTERNAL_ORDER,
+                Constant.EntitiesFields.COMMITMENT_ITEM,
+                Constant.EntitiesFields.FUND_CENTER,
+                Constant.EntitiesFields.MATERIAL_GROUP,
+                Constant.EntitiesFields.BUDGET_OWNER_ID
+            )
+    )
+    if(!oBudgetContext){
+        return null;
+    }
+    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    if (oProjectOwnerContext){
+        sEEID = oProjectOwnerContext[Constant.EntitiesFields.EEID];
+    }
+    
+    // Return only the required fields
+    return {
+        YEAR:               oBudgetContext[Constant.EntitiesFields.YEAR],
+        INTERNAL_ORDER:     oBudgetContext[Constant.EntitiesFields.INTERNAL_ORDER],
+        COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
+        FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
+        MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_ID:    sEEID
+    };
+}
 function populateApproverDetails(oApproverDetails, iLevel) {
     if(!oApproverDetails) return null;
         return {
@@ -465,6 +512,7 @@ module.exports = {
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,
+    retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,
     retrieveSubstitute,
@@ -476,5 +524,5 @@ module.exports = {
     retrieveWorkflowByDefault,
     retrieveWorkflowByClaimTypeRoleAndDivision,
     retrieveWorkflowByClaimTypeAndDivision,
-    retrieveWorkflowByClaimType
+    retrieveWorkflowByClaimType    
 };

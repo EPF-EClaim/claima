@@ -281,6 +281,26 @@ async function determineCashAdvance(oTx, sId, oDescriptor) {
     }
 }
 
+async function determineProjectCode(oTx, sId, oDescriptor) {
+    const oProjectCode = await oTx.run(
+        SELECT.one
+            .from(oDescriptor.entityHeader)
+            .where({
+                [oDescriptor.idField]: sId
+            })
+            .columns(Constant.EntitiesFields.PROJECT_CODE)
+    );
+
+    if (!oProjectCode) {
+        return null;
+    }
+
+    const sProjectCode =
+        oProjectCode[Constant.EntitiesFields.PROJECT_CODE] || null;
+
+    return sProjectCode != null;
+}
+
 function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
     return (
         evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) &&
@@ -289,7 +309,8 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
         evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) &&
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
         evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) &&
-        evaluateLocationType(oDocumentRulesContext, oWorkflowContext)
+        evaluateLocationType(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) 
     )
 }
 
@@ -361,6 +382,21 @@ function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
         default:
             throw new Error(
                 `Unsupported CASH_ADVANCE: ${oWorkflowContext.CASH_ADVANCE}`
+            );
+    }
+}
+
+function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.PROJECT_CODE);
+    console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
+    switch(oWorkflowContext.PROJECT_CODE) {
+        case true:
+            return (oDocumentRulesContext.isProjectCode);
+        case null:
+            return (!oDocumentRulesContext.isProjectCode);
+        default:
+            throw new Error(
+                `Unsupported PROJECT_CODE: ${oWorkflowContext.PROJECT_CODE}`
             );
     }
 }
@@ -465,6 +501,7 @@ async function determineWorkflow(oTx, sId) {
     }
     const sClaimantRole = oClaimantDetails ? oClaimantDetails[Constant.EntitiesFields.ROLE] : null;
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
+    let bIsProjectCode = await determineProjectCode(oTx, sId, oDescriptor)
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
     const oDocumentRulesContext = {
@@ -479,7 +516,8 @@ async function determineWorkflow(oTx, sId) {
         isCashAdvance   : bIsCashAdvance,
         tripStartDate   : sTripStartDate,
         locationType    : sLocationType,
-        claimantRole    : sClaimantRole
+        claimantRole    : sClaimantRole,
+        isProjectCode  : bIsProjectCode
     }
 
     console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
