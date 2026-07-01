@@ -18,7 +18,8 @@ const WORKFLOW_RULE_COLUMNS = [
     Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE,
     Constant.EntitiesFields.ROLE,
     Constant.EntitiesFields.DIVISION,
-    Constant.EntitiesFields.LOCATION_TYPE
+    Constant.EntitiesFields.LOCATION_TYPE,
+    Constant.EntitiesFields.PROJECT_CLAIM
 ];
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return cds.run(
@@ -145,7 +146,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
             .one
             .from(sBudgetTablePath)
             .where({
-                [Constant.EntitiesFields.FUND_CENTER]   : sProjectCodeSafe,
+                [Constant.EntitiesFields.PROJECT_CODE]   : sProjectCodeSafe,
                 [Constant.EntitiesFields.YEAR]          : sYearSafe
             })
             .columns(

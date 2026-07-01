@@ -387,16 +387,16 @@ function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.PROJECT_CODE);
+    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.PROJECT_CLAIM);
     console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
-    switch(oWorkflowContext.PROJECT_CODE) {
+    switch(oWorkflowContext.PROJECT_CLAIM) {
         case true:
             return (oDocumentRulesContext.isProjectCode);
         case null:
             return (!oDocumentRulesContext.isProjectCode);
         default:
             throw new Error(
-                `Unsupported PROJECT_CODE: ${oWorkflowContext.PROJECT_CODE}`
+                `Unsupported PROJECT_CLAIM: ${oWorkflowContext.PROJECT_CLAIM}`
             );
     }
 }
@@ -469,7 +469,7 @@ async function determineWorkflow(oTx, sId) {
 
     //3. Build workflow context
     // Put all rules into the workflow context
-    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role
+    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role | (NEW) Project Code
     // Location type has two values, 'HQ' and 'Branch'
     // If CC is fully numeric, it is considered as 'HQ', otherwise 'Branch'
     sRiskLevel = await determineRiskLevel(sId, oDescriptor);
@@ -517,7 +517,7 @@ async function determineWorkflow(oTx, sId) {
         tripStartDate   : sTripStartDate,
         locationType    : sLocationType,
         claimantRole    : sClaimantRole,
-        isProjectCode  : bIsProjectCode
+        isProjectCode   : bIsProjectCode
     }
 
     console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)

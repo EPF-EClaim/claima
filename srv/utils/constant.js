@@ -298,7 +298,9 @@ const Constant = {
         "STATE_OF_ORIGIN" : "STATE_OF_ORIGIN",
         "CONDITION" : "CONDITION",
         "DURATION" : "DURATION",
-        "PROJECT_CODE" : "PROJECT_CODE"
+        "PROJECT_CODE" : "PROJECT_CODE",
+        "PROJECT_CLAIM" : "PROJECT_CLAIM",
+        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT"
     },
     Wildcard: {
         "All": "*",
