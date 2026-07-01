@@ -738,7 +738,33 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				//oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				var sRequestId = oRequestForm.getKey();
+				var fParticipantAmount = await this._getParticipantPreApprovedAmount(sRequestId);
+
+				console.log("Selected Request ID =", sRequestId);
+				console.log("Participant Amount =", fParticipantAmount);
+
+				// fallback to header amount if participant amount not found
+				var fPreApprovedAmount = fParticipantAmount !== null && fParticipantAmount !== undefined
+					? fParticipantAmount
+					: oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT");
+
+				// Store request form amount
+				oInputModel.setProperty(
+					"/claimtype/requestform/preapproval_amount",
+					fPreApprovedAmount
+				);
+
+				// Store claim header amount because UI displays this path
+				oInputModel.setProperty(
+					"/claim_header/preapproved_amount",
+					fPreApprovedAmount
+				);
+
+				// Store claim header amount because this is what your UI displays
+				oInputModel.setProperty("/claim_header/preapproved_amount", fPreApprovedAmount);
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount",fParticipantAmount);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
 				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
@@ -761,6 +787,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", null);
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", null);
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
+				oInputModel.setProperty("/claim_header/preapproved_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
  				oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -2025,6 +2052,47 @@ sap.ui.define([
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
+		},
+
+		_getParticipantPreApprovedAmount: async function (sRequestId) {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oEmployeeModel = this.getView().getModel("employee_view");
+			//var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
+			var sParticipantId = "010310";
+			console.log("Request ID =", sRequestId);
+			console.log("Participant ID =", sParticipantId);
+
+			if (!sRequestId || !sParticipantId) {
+				return null;
+			}
+
+			try {
+				var sFilter =
+					"REQUEST_ID eq '" + sRequestId + "' and " +
+					"PARTICIPANTS_ID eq '" + sParticipantId + "'";
+
+				var oListBinding = oEmployeeModel.bindList(
+					"/ZPARTICIPANT_PREAPPROVED_AMOUNT",
+					null,
+					null,
+					null,
+					{
+						$filter: sFilter
+					}
+				);
+
+				var aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					console.log("Returned Object =", aContexts[0].getObject());
+					return aContexts[0].getObject().PREAPPROVED_AMOUNT;
+				}
+				console.log("Contexts found =", aContexts.length);
+				return null;
+			} catch (oError) {
+				console.error("Failed to get participant pre-approved amount:", oError);
+				return null;
+			}
 		}
 	});
 });
