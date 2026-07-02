@@ -440,7 +440,7 @@
 					id="req_projectcode"
 					selectedKey="{reqDialog>/project_code}"
 					forceSelection="false"
-					visible="{= ${reqDialog>/project_claim} === true }"
+					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; ${reqDialog>/claimtype} !=== 'null' }"
 					items="{
 						path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
 						sorter: [
