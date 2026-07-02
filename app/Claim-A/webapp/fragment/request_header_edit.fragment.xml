@@ -187,7 +187,37 @@
                                     display="ValueDescription" 
                                     valueHelp="valuehelp_req_altcc" />
                             </form:fields></form:FormElement>
-                            <form:FormElement label="Project Code"><form:fields><Text text="{request>/req_header/projectcode} - {request>/req_header/projectdesc}" /></form:fields></form:FormElement>
+                            <form:FormElement
+                            label="Project Code"
+                            visible="{= !!${request>/req_header/projectcode} }">
+
+                            <form:fields>
+                                <!-- Show dropdown only when Edit mode AND Alt CC is empty -->
+                                <Select
+                                    id="select_request_project_code"
+                                    selectedKey="{request>/req_header/projectcode}"
+                                    forceSelection="false"
+                                    width="100%"
+                                    visible="{= 
+                                        ${reqHeaderEditableModel>/projectCode}
+                                        &amp;&amp; !${request>/req_header/altcostcenter}
+                                    }"
+                                    items="{
+                                        path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
+                                        sorter: [
+                                            { path: 'PROJECT_CODE' }
+                                        ]
+                                    }"
+                                    change="onSelect_Request_ProjectCode"
+                                >
+                                    <core:Item
+                                        key="{employee_view>PROJECT_CODE}"
+                                        text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
+                                    />
+                                </Select>
+                            </form:fields>
+                        </form:FormElement>
+
                             <form:FormElement label="{i18n>req_caa}">
                                 <form:fields><Text text="{
                                         path: 'request>/req_header/cashadvamt',

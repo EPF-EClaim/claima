@@ -247,6 +247,18 @@ sap.ui.define([
 
                         oEditableFields.setProperty("/location", bEdit);
                         oEditableFields.setProperty("/comment", bEdit);
+                      
+                        const sAltCC = oClaimModel.getProperty("/claim_header/alternate_cost_center");
+                        // Check if Alt CC has value
+                        const bHasAltCC = sAltCC !== null && sAltCC !== undefined && String(sAltCC).trim() !== "";
+                        // Project Code dropdown only available when Edit mode and Alt CC is blank
+                        const bProjectCodeDropdown = bEdit && !bHasAltCC;
+
+                        oEditableFields.setProperty("/projectCode", bProjectCodeDropdown);
+                        // If Project Code dropdown is available, Alt CC must be non-editable
+                        if (bProjectCodeDropdown) {
+                            oEditableFields.setProperty("/altCostCenter", false);
+                        }
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {	
@@ -288,6 +300,20 @@ sap.ui.define([
                             }
                         }
                         oEditableFields.setProperty("/comment", bEdit);
+                        
+                        const sReqAltCC = oReqModel.getProperty("/req_header/altcostcenter");
+                        // Check if Alt CC has value
+                        const bReqHasAltCC = sReqAltCC !== null && sReqAltCC !== undefined && String(sReqAltCC).trim() !== "";
+                        // Project Code dropdown only available when Edit mode and Alt CC is blank
+                        const bReqProjectCodeDropdown = bEdit && !bReqHasAltCC;
+
+                        oEditableFields.setProperty("/projectCode", bReqProjectCodeDropdown);
+
+                        // If Project Code dropdown is available, Alt CC must be non-editable
+                        if (bReqProjectCodeDropdown) {
+                            oEditableFields.setProperty("/altCostCenter", false);
+                        }
+
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {

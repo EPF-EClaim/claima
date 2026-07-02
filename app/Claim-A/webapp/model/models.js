@@ -76,6 +76,7 @@ sap.ui.define([
                     "location": false,
                     "comment": false,
                     "altCostCenter": false,
+                    "projectCode": false,
                     "saveHeader": false,
                 };
 

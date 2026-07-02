@@ -402,7 +402,7 @@
                         placeholder="{i18n>placeholder_claiminput_location}"
                     />
 
-                     <!-- Project Code -->
+                    <!-- Project Code -->
                     <Label text="{i18n>label_claiminput_project_code}" />
                     <Select
                         id="select_claimprocess_project_code"

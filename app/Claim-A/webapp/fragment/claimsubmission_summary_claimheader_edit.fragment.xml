@@ -301,14 +301,30 @@
                         valueHelp="valuehelp_claiminput_altcc"
                 />
 
+              
                 <!-- Project Code -->
-                <Label text="Project Code" />
+                <Label text="{i18n>label_claiminput_project_code}" />
 
-                <Text
-                    id="text_claimsummary_claimheader_project_code"
-                    text="{claimsubmission_input>/claim_header/project_code} - {claimsubmission_input>/claim_header/descr/project_code}"
-                    visible="{= !!${claimsubmission_input>/claim_header/project_code} }"
-                />
+                <!-- Edit Mode -->
+                <Select
+                    id="select_claimsummary_project_code"
+                    selectedKey="{claimsubmission_input>/claim_header/project_code}"
+                    forceSelection="false"
+                    visible="{= !!${claimsubmission_input>/claim_header/project_code}
+                        &amp;&amp; ${claimSubmissionHeaderEditableModel>/projectCode} }"
+                    items="{
+                        path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
+                        sorter: [
+                            { path: 'PROJECT_CODE' }
+                        ]
+                    }"
+                    change="onSelect_ClaimProcess_ProjectCode"
+                >
+                    <core:Item
+                        key="{employee_view>PROJECT_CODE}"
+                        text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
+                    />
+                </Select>
 
                 <!-- Claim Status -->
                 <Label text="{i18n>label_claimsummary_claimheader_status}" />
