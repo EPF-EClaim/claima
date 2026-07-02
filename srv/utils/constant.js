@@ -297,7 +297,10 @@ const Constant = {
         "TO_STATE_ID" : "TO_STATE_ID",
         "STATE_OF_ORIGIN" : "STATE_OF_ORIGIN",
         "CONDITION" : "CONDITION",
-        "DURATION" : "DURATION"
+        "DURATION" : "DURATION",
+        "PROJECT_CODE" : "PROJECT_CODE",
+        "PROJECT_CLAIM" : "PROJECT_CLAIM",
+        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT"
     },
     Wildcard: {
         "All": "*",
@@ -319,7 +322,8 @@ const Constant = {
         "MED_APPROVER": "MED_APPROVER",
         "AUTO": "AUTO",
         "ELAUN_PINDAH_VERIFIER" : "ELAUN_PINDAH_VERIFIER",
-        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER"
+        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER",
+        "PROJECT_OWNER" : "PROJECT_OWNER"
     }, 
     Status: {
         DRAFT : "STAT01", 

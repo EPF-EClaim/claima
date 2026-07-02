@@ -164,7 +164,8 @@ sap.ui.define([
                     ReceiptDate: oRow.RECEIPT_DATE,
                     CostCenter: oRow.ALTERNATE_COST_CENTER || oRow.COST_CENTER,
                     GLAccount: oRow.GL_ACCOUNT,
-                    MaterialCode: oRow.MATERIAL_CODE
+                    MaterialCode: oRow.MATERIAL_CODE,
+                    InternalOrder: oRow.INTERNAL_ORDER
                 }));
 
                 //Call CDS batch action ONCE
