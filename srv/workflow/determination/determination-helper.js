@@ -508,6 +508,58 @@ async function normalizeWorkflowRequestType(sId, oDescriptor) {
     }
     return null;
 }
+
+async function sendClaimBatch(sId){
+    try {
+        if(!sId){
+            return null;
+        }
+
+        const ISservice = await cds.connect.to('IS_Conn');
+        const aAllClaimItem = await cds.run(
+            SELECT
+                .from('eclaim_view_srv.ZEMP_CLAIM_DETAILS')
+                .where({
+                    [Constant.EntitiesFields.CLAIMID]   : sId
+                }).orderBy('CLAIM_SUB_ID')
+        )
+        if(!aAllClaimItem){
+            return null;
+        }
+
+        // Forward the single consolidated payload to IS
+        const sData = 
+        aAllClaimItem.map(oItem => ({
+            CLAIM_ID:                sId,
+            CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
+            EMP_ID:                  oItem.EMP_ID,
+            SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
+            FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
+            CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
+            LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
+            AMOUNT:                  oItem.AMOUNT,
+            RECEIPT_DATE:            oItem.RECEIPT_DATE,
+            COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
+            GL_ACCOUNT:              oItem.GL_ACCOUNT,
+            MATERIAL_CODE:           oItem.MATERIAL_CODE,
+            INTERNAL_ORDER:          oItem.INTERNAL_ORDER
+        }));
+
+        const oResponse = await ISservice.send({
+        method: 'POST',
+        path: "/http/ApprovedClaim",  
+        data: { 
+            ZEMP_CLAIMS_DETAILS: sData
+        }
+        });
+
+        return { message: "Approved claim batch sent", oResponse };
+
+    } catch (e) {
+        console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+    }
+}
+
 module.exports = { 
     determineWorkflowStepContext,
     retrieveFromConstantTable,
@@ -525,5 +577,6 @@ module.exports = {
     retrieveWorkflowByDefault,
     retrieveWorkflowByClaimTypeRoleAndDivision,
     retrieveWorkflowByClaimTypeAndDivision,
-    retrieveWorkflowByClaimType    
+    retrieveWorkflowByClaimType,
+    sendClaimBatch
 };
