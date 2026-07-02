@@ -9,12 +9,11 @@ const {
     determineApprovers 
 } = require("./workflow/determination/determination-approver");
 const { 
-    setApproversContext 
-} = require("./workflow/determination/determination-helper");
-const { 
+    setApproversContext,
+    sendClaimBatch,
     deleteApproverDetails,
     insertRecords
-} = require('./workflow/determination/determination-helper');
+} = require("./workflow/determination/determination-helper");
 const {
     resolveDocDescriptor,
     retrieveBudgetContext,
@@ -161,6 +160,13 @@ module.exports = (srv) => {
                 throw new Error('Error encountered during Budget Checking')
             }
             console.log("Budget Checking Status: ", bStatus);
+
+            //trigger final approval process to send batch claim to IS 
+            if(oLastLevelApproverStatus.ISLASTLEVEL){
+                console.log("Final approval Start");
+                const sendClaimBatch = await sendClaimBatch(sId);
+                console.log("Final Approval: ", sendClaimBatch);
+            }
         }
 
         // update PEDU entitlement usage if action is reject
