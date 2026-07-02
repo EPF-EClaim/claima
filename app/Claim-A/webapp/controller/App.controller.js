@@ -738,6 +738,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
+				//start of 1 july 
 				//oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
 				var sRequestId = oRequestForm.getKey();
 				var fParticipantAmount = await this._getParticipantPreApprovedAmount(sRequestId);
@@ -765,6 +766,7 @@ sap.ui.define([
 				// Store claim header amount because this is what your UI displays
 				oInputModel.setProperty("/claim_header/preapproved_amount", fPreApprovedAmount);
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount",fParticipantAmount);
+				//end of 1 july changes 
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
 				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
@@ -2054,11 +2056,12 @@ sap.ui.define([
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
 		},
 
+		//start 1 july 
 		_getParticipantPreApprovedAmount: async function (sRequestId) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oEmployeeModel = this.getView().getModel("employee_view");
-			//var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
-			var sParticipantId = "010310";
+			var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
+			//var sParticipantId = "903411";
 			console.log("Request ID =", sRequestId);
 			console.log("Participant ID =", sParticipantId);
 
@@ -2093,6 +2096,7 @@ sap.ui.define([
 				console.error("Failed to get participant pre-approved amount:", oError);
 				return null;
 			}
+			//end 1 july 
 		}
 	});
 });
