@@ -238,18 +238,18 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
     //console.log(aUniqueApproversDetails);
-    // Variable declaration for substitutes
-    let sSubstitute = null;         // Variable to store substitute user
-    let oSubstituteDetails = null;  // Variable to store substitute user details
-    let sSubstitute_eeid = "";       // Variable to store substitute EEID
-    let sSubstitute_name = "";       // Variable to store substitute name
-    let sSubstitute_email = "";      // Variable to store substitute email
     // Retrieve substitute for approvers
     for (const oApprover of aUniqueApproversDetails){
+        // Variable declaration for substitutes
+        let sSubstitute = null;         // Variable to store substitute user
+        let oSubstituteDetails = null;  // Variable to store substitute user details
+        let sSubstitute_eeid = "";       // Variable to store substitute EEID
+        let sSubstitute_name = "";       // Variable to store substitute name
+        let sSubstitute_email = "";      // Variable to store substitute email
         // If LEVEL = 0, Approver is Auto
         if(oApprover.LEVEL > 0){
             sSubstitute = await retrieveSubstitute(oApprover.EEID);
-            //console.log(sSubstitute);
+            //console.log("sSubstitute", sSubstitute);
             if(sSubstitute){
                 oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
                 if(oSubstituteDetails){
