@@ -425,22 +425,22 @@
 					id="req_acc"
 					value="{reqDialog>/altcostcenter}"
 					additionalValue="{reqDialog>/altcostcenter_desc}"
-					editMode="Editable"
+					editMode="{= ${reqDialog>/project_code} ? 'ReadOnly' : 'Editable' }"
 					display="ValueDescription"
 					visible="false"
 					valueHelp="valuehelp_requestinput_altcc"
 				/>
 				<!-- Project Code -->
 				<Label
-					text="Project Code"
-					visible="{= ${reqDialog>/project_claim} === true }"
+					text="{i18n>label_claiminput_project_code}"
+					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; !!${reqDialog>/claimtype}}"
 				/>
 
-				<Select
+				<ComboBox
 					id="req_projectcode"
 					selectedKey="{reqDialog>/project_code}"
-					forceSelection="false"
-					visible="{= ${reqDialog>/project_claim} === true }"
+					enabled="{= !${reqDialog>/altcostcenter} }"
+					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; !!${reqDialog>/claimtype}}"
 					items="{
 						path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
 						sorter: [
@@ -455,7 +455,7 @@
 							text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
 						/>
 					</items>
-				</Select>
+				</ComboBox>
 				<Label text="{i18n>req_attach1}" />
 				<unified:FileUploader
 					id="req_attachment_1"
