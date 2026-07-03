@@ -408,7 +408,7 @@
                         id="field_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="Editable"
+                        editMode="{= (!${claimsubmission_input>/req_emailapprove} || !!${claimsubmission_input>/claim_header/project_code} ) ? 'ReadOnly' : 'Editable' }"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
 
@@ -433,24 +433,25 @@
 
                     <!-- Project Code -->
                     <Label text="{i18n>label_claiminput_project_code}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_project_code"
-                        forceSelection="false"
+                        
                         selectedKey="{claimsubmission_input>/claim_header/project_code}"
                         editable="{= !${claimsubmission_input>/claimtype/requestform/request_id} }"
-                        visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
+                        visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null 
+                        &amp;&amp; ${claimsubmission_input>/claim_header/alternate_cost_center} }"
                         items="{
                             path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
                             sorter: [
                                 { path: 'PROJECT_CODE' }
                             ]
                         }"
-                        change="onSelect_ClaimProcess_ProjectCode"
+                        selectionChange="onSelect_ClaimProcess_ProjectCode"
                     >
                         <core:Item
                             key="{employee_view>PROJECT_CODE}"
                             text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Attachment Email Approval -->
                     <Label text="{i18n>label_claiminput_attachment}" />

@@ -648,6 +648,26 @@ module.exports = (srv) => {
         );
     }
 
+    async function getInternalOrderByProjectCode(tx, sProjectCode) {
+
+    if (!sProjectCode) {
+        return null;
+    }
+
+    const sCurrentYear = String(new Date().getFullYear());
+    const oBudget = await tx.run(
+        SELECT.one
+            .from('ZBUDGET')
+            .columns('WBS_CODE')
+            .where({
+                PROJECT_CODE: sProjectCode,
+                YEAR: sCurrentYear
+            })
+    );
+
+    return oBudget?.WBS_CODE || null;
+}
+
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
         const tx = cds.tx(req);
         await updateClaimHeaderTotals(req, data.CLAIM_ID, tx);
@@ -2707,32 +2727,20 @@ module.exports = (srv) => {
     });
 
     srv.on('getInternalOrderByProjectCode', async (req) => {
-        const { sProjectCode } = req.data;
 
-        if (!sProjectCode) {
-            return null;
-        }
+    try {
 
         const tx = cds.tx(req);
-        const sCurrentYear = String(new Date().getFullYear());
 
-        try {
-            const oBudget = await tx.run(
-                SELECT.one
-                    .from('ZBUDGET')
-                    .columns('WBS_CODE')
-                    .where({
-                        PROJECT_CODE: sProjectCode,
-                        YEAR: sCurrentYear
-                    })
-            );
+        return await getInternalOrderByProjectCode(
+            tx,
+            req.data.sProjectCode
+        );
 
-            return oBudget?.WBS_CODE || null;
-
-        } catch (error) {
-            req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
-        }
-    });
+    } catch (error) {
+        req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
+    }
+});
 
     srv.on("getBantuanKebajikanKematianAmount", async (req) => {
         const tx = cds.tx(req);
@@ -2761,4 +2769,46 @@ module.exports = (srv) => {
             req.error(404, `Employee Not Found.`);
         }
     });
+
+    srv.after('UPDATE', 'ZCLAIM_HEADER', async (data, req) => {
+
+        const tx = cds.tx(req);
+        const sInternalOrder =
+            await getInternalOrderByProjectCode(
+                tx,
+                data.PROJECT_CODE || req.data.PROJECT_CODE
+            );
+
+        await tx.run(
+            UPDATE('ZCLAIM_ITEM')
+                .set({
+                    INTERNAL_ORDER: sInternalOrder
+                })
+                .where({
+                    CLAIM_ID: data.CLAIM_ID || req.data.CLAIM_ID
+                })
+        );
+    });
+
+    srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
+
+        const tx = cds.tx(req);
+
+        const sInternalOrder =
+            await getInternalOrderByProjectCode(
+                tx,
+                data.PROJECT_CODE || req.data.PROJECT_CODE
+            );
+
+        await tx.run(
+            UPDATE('ZREQUEST_ITEM')
+                .set({
+                    INTERNAL_ORDER: sInternalOrder
+                })
+                .where({
+                    REQUEST_ID: data.REQUEST_ID || req.data.REQUEST_ID
+                })
+        );
+    });
+       
 }
