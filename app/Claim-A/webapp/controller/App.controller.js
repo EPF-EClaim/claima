@@ -1012,32 +1012,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/project_code", sProjectCode || null);
 				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
 
-				
-console.log("========== DEBUG ==========");
-console.log("Request ID:",
-    oInputModel.getProperty("/claim_header/request_id"));
-
-console.log("Request Form Project Code:",
-    JSON.stringify(
-        oInputModel.getProperty("/claimtype/requestform/project_code")
-    ));
-
-console.log("Header Project Code:",
-    JSON.stringify(
-        oInputModel.getProperty("/claim_header/project_code")
-    ));
-
-console.log("Request Form Alt CC:",
-    JSON.stringify(
-        oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")
-    ));
-
-console.log("Header Alt CC:",
-    JSON.stringify(
-        oInputModel.getProperty("/claim_header/alternate_cost_center")
-    ));
-console.log("===========================");
-
 			} else {
 				
 				oInputModel.setProperty("/claim_header/project_code", null);
