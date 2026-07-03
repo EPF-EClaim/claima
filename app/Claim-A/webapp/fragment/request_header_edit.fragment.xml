@@ -188,7 +188,7 @@
                                     valueHelp="valuehelp_req_altcc" />
                             </form:fields></form:FormElement>
                             <form:FormElement
-                            label="Project Code"
+                            label="{i18n>label_claiminput_project_code}"
                             visible="{= !!${request>/req_header/projectcode} }">
 
                             <form:fields>

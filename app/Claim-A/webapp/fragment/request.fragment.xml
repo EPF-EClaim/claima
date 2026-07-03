@@ -432,7 +432,7 @@
 				/>
 				<!-- Project Code -->
 				<Label
-					text="Project Code"
+					text="{i18n>label_claiminput_project_code}"
 					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; !!${reqDialog>/claimtype}}"
 				/>
 
