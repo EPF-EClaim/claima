@@ -436,10 +436,9 @@
 					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; !!${reqDialog>/claimtype}}"
 				/>
 
-				<Select
+				<ComboBox
 					id="req_projectcode"
 					selectedKey="{reqDialog>/project_code}"
-					forceSelection="false"
 					enabled="{= !${reqDialog>/altcostcenter} }"
 					visible="{= ${reqDialog>/project_claim} === true &amp;&amp; !!${reqDialog>/claimtype}}"
 					items="{
@@ -456,7 +455,7 @@
 							text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
 						/>
 					</items>
-				</Select>
+				</ComboBox>
 				<Label text="{i18n>req_attach1}" />
 				<unified:FileUploader
 					id="req_attachment_1"
