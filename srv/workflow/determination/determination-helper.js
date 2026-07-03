@@ -515,6 +515,10 @@ async function sendClaimBatch(sId){
             return null;
         }
 
+        const sPrefix = sId.slice(0,3);
+        if(sPrefix != Constant.WorkflowType.CLAIM){
+            return;
+        }
         const ISservice = await cds.connect.to('IS_Conn');
         const aAllClaimItem = await cds.run(
             SELECT
