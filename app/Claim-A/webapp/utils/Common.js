@@ -84,7 +84,9 @@ sap.ui.define([
                             oContext.setProperty("ALTERNATE_COST_CENTER",
                                 oInputModel.getProperty("/req_header/altcostcenter")
                             );
-
+                             oContext.setProperty("PROJECT_CODE",
+                                oInputModel.getProperty("/req_header/projectcode")
+                            );
                             oContext.setProperty("TRIP_START_DATE",
                                 DateUtility.getHanaDate(oInputModel.getProperty("/req_header/tripstartdate"))
                             );
@@ -152,7 +154,9 @@ sap.ui.define([
                             oContext.setProperty("ALTERNATE_COST_CENTER",
                                 oInputModel.getProperty("/claim_header/alternate_cost_center")
                             );
-
+                            oContext.setProperty("PROJECT_CODE",
+                                oInputModel.getProperty("/claim_header/project_code")
+                            );
                             oContext.setProperty("TRIP_START_DATE",
                                 DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date"))
                             );
@@ -249,14 +253,16 @@ sap.ui.define([
                         oEditableFields.setProperty("/comment", bEdit);
                       
                         const sAltCC = oClaimModel.getProperty("/claim_header/alternate_cost_center");
-                        // Check if Alt CC has value
+                        const sProjectCode = oClaimModel.getProperty("/claim_header/project_code");
                         const bHasAltCC = sAltCC !== null && sAltCC !== undefined && String(sAltCC).trim() !== "";
-                        // Project Code dropdown only available when Edit mode and Alt CC is blank
+                        const bHasProjectCode = sProjectCode !== null && sProjectCode !== undefined && String(sProjectCode).trim() !== "";
+                        // Project Code editable only when Alt CC is blank
                         const bProjectCodeDropdown = bEdit && !bHasAltCC;
 
                         oEditableFields.setProperty("/projectCode", bProjectCodeDropdown);
-                        // If Project Code dropdown is available, Alt CC must be non-editable
-                        if (bProjectCodeDropdown) {
+
+                        // Alt CC editable only when Project Code is blank
+                        if (bHasProjectCode) {
                             oEditableFields.setProperty("/altCostCenter", false);
                         }
                         oEditableFields.setProperty("/saveHeader", bEdit);
@@ -301,19 +307,19 @@ sap.ui.define([
                         }
                         oEditableFields.setProperty("/comment", bEdit);
                         
-                        const sReqAltCC = oReqModel.getProperty("/req_header/altcostcenter");
-                        // Check if Alt CC has value
-                        const bReqHasAltCC = sReqAltCC !== null && sReqAltCC !== undefined && String(sReqAltCC).trim() !== "";
-                        // Project Code dropdown only available when Edit mode and Alt CC is blank
-                        const bReqProjectCodeDropdown = bEdit && !bReqHasAltCC;
+                        const sAltCC = oReqModel.getProperty("/req_header/altcostcenter");
+                        const sProjectCode = oReqModel.getProperty("/req_header/projectcode");
+                        const bHasAltCC = sAltCC !== null && sAltCC !== undefined && String(sAltCC).trim() !== "";
+                        const bHasProjectCode = sProjectCode !== null && sProjectCode !== undefined && String(sProjectCode).trim() !== "";
+                        // Project Code editable only when Alt CC is blank
+                        const bProjectCodeDropdown = bEdit && !bHasAltCC;
 
-                        oEditableFields.setProperty("/projectCode", bReqProjectCodeDropdown);
+                        oEditableFields.setProperty("/projectCode", bProjectCodeDropdown);
 
-                        // If Project Code dropdown is available, Alt CC must be non-editable
-                        if (bReqProjectCodeDropdown) {
+                        // Alt CC editable only when Project Code is blank
+                        if (bHasProjectCode) {
                             oEditableFields.setProperty("/altCostCenter", false);
                         }
-
                         oEditableFields.setProperty("/saveHeader", bEdit);
                     }
                     else {
