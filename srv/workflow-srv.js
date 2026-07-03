@@ -160,21 +160,16 @@ module.exports = (srv) => {
                 throw new Error('Error encountered during Budget Checking')
             }
             console.log("Budget Checking Status: ", bStatus);
-
-            //trigger final approval process to send batch claim to IS 
-            if(oLastLevelApproverStatus.ISLASTLEVEL){
-                console.log("Final approval Start");
-                const sendClaimBatch = await sendClaimBatch(sId);
-                console.log("Final Approval: ", sendClaimBatch);
-            }
         }
 
         // update PEDU entitlement usage if action is reject
         await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);
 
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
-        const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);
-        console.log("Header table update: ", sStatus);
+        if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)){
+            const sStatus = await UpdateHeader.updateApproverActionToHeader(sId, oActionDescriptor.actionValue, oTx);
+            console.log("Header table update: ", sStatus);
+        }
 
         // Notify claimant/next level approver
         // If action is REJECT/PUSH BACK, notify claimant
@@ -191,9 +186,16 @@ module.exports = (srv) => {
         }
         if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
             (
+                
                 sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL
             )
         ) {
+            //trigger final approval process to send batch claim to IS 
+            if(oLastLevelApproverStatus.ISLASTLEVEL){
+                console.log("Final approval Start");
+                const oSendClaimBatch = await sendClaimBatch(sId);
+                console.log("Final Approval: ", oSendClaimBatch);
+            }
             bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }
         else {
