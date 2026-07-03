@@ -149,18 +149,18 @@ module.exports = (srv) => {
         console.log("Approver Action Completed: ", bStatus);
 
         // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
-        if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
-            const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
-            console.log("aBudgetContext: ", aBudgetContext);
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            console.log("aReturn: ", aReturn);
-            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            if(oReturn) {
-                bStatus = false;
-                throw new Error('Error encountered during Budget Checking')
-            }
-            console.log("Budget Checking Status: ", bStatus);
-        }
+        // if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
+        //     const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
+        //     console.log("aBudgetContext: ", aBudgetContext);
+        //     const aReturn = await performBudgetChecking(oTx, aBudgetContext);
+        //     console.log("aReturn: ", aReturn);
+        //     const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+        //     if(oReturn) {
+        //         bStatus = false;
+        //         throw new Error('Error encountered during Budget Checking')
+        //     }
+        //     console.log("Budget Checking Status: ", bStatus);
+        // }
 
         // update PEDU entitlement usage if action is reject
         await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);

@@ -384,14 +384,21 @@ module.exports = (srv) => {
             let successResults = [];
 
             for (var entry of budget) {
-                const condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                    FUND_CENTER: entry.FUND_CENTER,
-                    MATERIAL_GROUP: entry.MATERIAL_GROUP,
-                    COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-                };
-
+                if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
+                    var condition = {
+                        YEAR: entry.YEAR,
+                        INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                    };
+                }else{
+                    condition = {
+                        YEAR: entry.YEAR,
+                        INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                        FUND_CENTER: entry.FUND_CENTER,
+                        MATERIAL_GROUP: entry.MATERIAL_GROUP,
+                        COMMITMENT_ITEM: entry.COMMITMENT_ITEM
+                    };
+                }
+                
                 let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
                     ? await tx.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
                     : await tx.run(SELECT.one.from(ZBUDGET).where(condition));
