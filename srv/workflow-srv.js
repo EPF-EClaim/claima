@@ -81,15 +81,15 @@ module.exports = (srv) => {
 
         //4. Perform budget checking for auto approve
         if(aApproversContext[0].LEVEL == 0) {
-            aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
-            aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            if(oReturn) {
-                bStatus = false;
-                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
-            }
+            // aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
+            // aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            // const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            // if(oReturn) {
+            //     bStatus = false;
+            //     return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
+            // }
             //   If successful, update Header table with approved status and timestamp
-            sStatus = await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+            await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
         }
 
         //5. Notify claimant/approver
