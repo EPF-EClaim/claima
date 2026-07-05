@@ -50,7 +50,6 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
                     [Constant.EntitiesFields.PROCESS_TIMESTAMP] : cds.context.timestamp
                 })
                 .where({
-                        [Constant.EntitiesFields.APPROVER_ID]   : sUserId,
                         [Constant.EntitiesFields.STATUS]        : Constant.Status.PENDING_APPROVAL,
                         [oDescriptor.approverIdField]           : sId 
                     })
@@ -128,17 +127,18 @@ async function verifyCorrectApproverForAction(sId, sUserId, oDescriptor) {
             .one
             .from(oDescriptor.entityApprovers)
             .where({
-                [Constant.EntitiesFields.APPROVER_ID]   : sUserId,
                 [Constant.EntitiesFields.STATUS]        : Constant.Status.PENDING_APPROVAL,
                 [oDescriptor.approverIdField]           : sId
-            })
+            }).columns(
+                'APPROVER_ID',
+                'SUBSTITUTE_APPROVER_ID'
+            )
     );
     console.log(oApproverLine);
-    if(!oApproverLine) {
-        console.log("Approver is not authorized to perform action or no pending approval found for approver");
-        return false;
-    }
-    return true;
+    var bExists = Object.values(oApproverLine).includes(sUserId);
+    console.log("Approver ", bExists)
+    return bExists;
+    
 }
 async function determineLastApproverLevel(sId, sUserId, oDescriptor) {
     const aApproversDetails = await getApproversDetails(sId, oDescriptor);
