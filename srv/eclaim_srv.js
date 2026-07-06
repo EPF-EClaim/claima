@@ -2817,10 +2817,26 @@ module.exports = (srv) => {
     srv.after('UPDATE', 'ZCLAIM_HEADER', async (data, req) => {
 
         const tx = cds.tx(req);
+        const sClaimId =
+            data.CLAIM_ID || req.data.CLAIM_ID;
+
+        const oHeader = await tx.run(
+            SELECT.one
+                .from('ZCLAIM_HEADER')
+                .where({
+                    CLAIM_ID: sClaimId
+                })
+        );
+
+        if (!oHeader?.PROJECT_CODE) {
+            console.log("PROJECT_CODE is empty. Skip INTERNAL_ORDER update.");
+            return;
+        }
+
         const sInternalOrder =
             await getInternalOrderByProjectCode(
                 tx,
-                data.PROJECT_CODE || req.data.PROJECT_CODE
+                oHeader.PROJECT_CODE
             );
 
         await tx.run(
@@ -2829,7 +2845,7 @@ module.exports = (srv) => {
                     INTERNAL_ORDER: sInternalOrder
                 })
                 .where({
-                    CLAIM_ID: data.CLAIM_ID || req.data.CLAIM_ID
+                    CLAIM_ID: sClaimId
                 })
         );
     });
@@ -2837,11 +2853,25 @@ module.exports = (srv) => {
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
 
         const tx = cds.tx(req);
+        const sRequestId =
+            data.REQUEST_ID || req.data.REQUEST_ID;
+
+        const oHeader = await tx.run(
+            SELECT.one
+                .from('ZREQUEST_HEADER')
+                .where({
+                    REQUEST_ID: sRequestId
+                })
+        );
+
+        if (!oHeader?.PROJECT_CODE) {
+            return;
+        }
 
         const sInternalOrder =
             await getInternalOrderByProjectCode(
                 tx,
-                data.PROJECT_CODE || req.data.PROJECT_CODE
+                oHeader.PROJECT_CODE
             );
 
         await tx.run(
@@ -2850,7 +2880,7 @@ module.exports = (srv) => {
                     INTERNAL_ORDER: sInternalOrder
                 })
                 .where({
-                    REQUEST_ID: data.REQUEST_ID || req.data.REQUEST_ID
+                    REQUEST_ID: sRequestId
                 })
         );
     });

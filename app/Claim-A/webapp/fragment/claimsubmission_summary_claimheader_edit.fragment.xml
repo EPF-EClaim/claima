@@ -310,6 +310,7 @@
                     id="select_claimsummary_project_code"
                     selectedKey="{claimsubmission_input>/claim_header/project_code}"
                     forceSelection="false"
+                    enabled="{= ${claimsubmission_input>/claim_header/request_id} ? false : true }"
                     visible="{= !!${claimsubmission_input>/claim_header/project_code}
                         &amp;&amp; ${claimSubmissionHeaderEditableModel>/projectCode} }"
                     items="{

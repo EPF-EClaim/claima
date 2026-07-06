@@ -688,6 +688,27 @@ sap.ui.define([
             } catch (oError) {
                 return null;
             }
+        },
+
+        setFieldEditableState: function (sField, sAltCC, sProjectCode, bEmailApprove, sSubmissionType) {
+            switch (sField) {
+                case Constants.EntitiesFields.ALT_CC:
+                    if(sProjectCode || (!bEmailApprove && sSubmissionType == Constants.SubmissionType.PRE_APPROVE)){
+                        return 'ReadOnly';
+                    }
+                    else{
+                        return 'Editable';
+                    }
+                case Constants.EntitiesFields.PROJECT_CODE:
+                    if(sAltCC || (!bEmailApprove && sSubmissionType == Constants.SubmissionType.PRE_APPROVE)){
+                        return false;
+                    }else{
+                        return true;
+                    }
+                default:
+                    
+                    break;
+            }
         }
 
     };

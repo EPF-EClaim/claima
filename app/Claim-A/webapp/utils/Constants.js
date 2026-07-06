@@ -297,7 +297,9 @@ sap.ui.define([
             "EVENT_END_DATE": "EVENT_END_DATE",
             "VEHICLE_OWNERSHIP_ID": "VEHICLE_OWNERSHIP_ID",
             "COUNTRY": "COUNTRY",
-            "PHONE_NO": "PHONE_NO"
+            "PHONE_NO": "PHONE_NO",
+            "ALT_CC" : "ALT_CC",
+            "PROJECT_CODE" : "PROJECT_CODE"
         },
         "Operators": {
             "EQUAL": "EQ",
