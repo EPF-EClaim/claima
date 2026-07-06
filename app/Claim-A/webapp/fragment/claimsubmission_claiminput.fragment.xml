@@ -408,7 +408,16 @@
                         id="field_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="{= (!${claimsubmission_input>/req_emailapprove} || !!${claimsubmission_input>/claim_header/project_code} ) ? 'ReadOnly' : 'Editable' }"
+                        editMode="{
+                            parts: [
+                                'constant>/EntitiesFields/ALT_CC',
+                                'claimsubmission_input>/claim_header/alternate_cost_center',
+                                'claimsubmission_input>/claim_header/project_code',
+                                'claimsubmission_input>/req_emailapprove',
+                                'claimsubmission_input>/claim_header/submission_type'
+                            ],
+                            formatter: '.Utility.setFieldEditableState'
+                        }"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
 
@@ -437,7 +446,16 @@
                         id="select_claimprocess_project_code"
                         
                         selectedKey="{claimsubmission_input>/claim_header/project_code}"
-                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id} }"
+                        editable="{
+                            parts: [
+                                'constant>/EntitiesFields/PROJECT_CODE',
+                                'claimsubmission_input>/claim_header/alternate_cost_center',
+                                'claimsubmission_input>/claim_header/project_code',
+                                'claimsubmission_input>/req_emailapprove',
+                                'claimsubmission_input>/claim_header/submission_type'
+                            ],
+                            formatter: '.Utility.setFieldEditableState'
+                        }"
                         visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null 
                         &amp;&amp; ${claimsubmission_input>/claim_header/alternate_cost_center} }"
                         items="{
