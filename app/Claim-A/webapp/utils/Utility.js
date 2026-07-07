@@ -687,13 +687,16 @@ sap.ui.define([
         },
 
         formatAltCostCenter: function (sAltCC, sAltCCDesc) {
+
             if (!sAltCC) {
                 return "";
             }
 
-            return sAltCCDesc
-                ? `${sAltCC} (${sAltCCDesc})`
-                : sAltCC;
+            if (!sAltCCDesc) {
+                return sAltCC;
+            }
+
+            return `${sAltCC} (${sAltCCDesc})`;
         }
 
     };

@@ -434,9 +434,9 @@
                         value="{
                                 parts: [
                                     'claimsubmission_input>/claim_header/alternate_cost_center',
-                                    'claimsubmission_input>/claim_header/descr/alternate_cost_center'
+                                    'claimsubmission_input>/claimtype/requestform/descr/alternate_cost_center'
                                 ],
-                                formatter: 'Utility.formatAltCostCenter'
+                                formatter: '.Utility.formatAltCostCenter'
                             }"
                         editable="false"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
