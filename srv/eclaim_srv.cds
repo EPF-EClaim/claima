@@ -2128,6 +2128,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
             on HEADER.CLAIM_ID = ITEM.CLAIM_ID
         left join ECLAIM.ZEMP_MASTER as EMP
             on HEADER.EMP_ID = EMP.EEID
+        left join ECLAIM.ZSTATUS as STATUS
+            on HEADER.STATUS_ID = STATUS.STATUS_ID
+        left join ECLAIM.ZCLAIM_TYPE as CT
+            on ITEM.CLAIM_TYPE_ID = CT.CLAIM_TYPE_ID
+        left join ECLAIM.ZCLAIM_TYPE_ITEM as CTI
+            on ITEM.CLAIM_TYPE_ID = CTI.CLAIM_TYPE_ID
+            and ITEM.CLAIM_TYPE_ITEM_ID = CTI.CLAIM_TYPE_ITEM_ID
         {
             key HEADER.CLAIM_ID,
             key ITEM.CLAIM_SUB_ID,
@@ -2152,13 +2159,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
                 HEADER.PAYMENT_DATE,
-                HEADER.STATUS_ID,
+                STATUS.STATUS_DESC as STATUS_DESC,
                 HEADER.PURPOSE,
                 HEADER.TRIP_START_DATE,
                 HEADER.TRIP_END_DATE,
 
-                ITEM.CLAIM_TYPE_ID,
-                ITEM.CLAIM_TYPE_ITEM_ID,
+                CT.CLAIM_TYPE_DESC       as CLAIM_TYPE_DESC,
+                CTI.CLAIM_TYPE_ITEM_DESC as CLAIM_TYPE_ITEM_DESC,
                 ITEM.AMOUNT
         };
 

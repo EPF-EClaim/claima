@@ -300,7 +300,8 @@ const Constant = {
         "DURATION" : "DURATION",
         "PROJECT_CODE" : "PROJECT_CODE",
         "PROJECT_CLAIM" : "PROJECT_CLAIM",
-        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT"
+        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT",
+        "CASH_REPAYMENT" : "CASH_REPAYMENT"
     },
     Wildcard: {
         "All": "*",

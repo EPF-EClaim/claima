@@ -2884,5 +2884,20 @@ module.exports = (srv) => {
                 })
         );
     });
-       
+
+    srv.before('READ', 'ZEMP_CC_BUDGET_REPORT', async (req) => {
+
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            req.query.where([
+                { ref: ['FUND_CENTER'] },
+                '=',
+                { val: oEmp.CC }
+            ]);
+        }
+
+    });
 }

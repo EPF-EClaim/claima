@@ -209,7 +209,7 @@ sap.ui.define([
 					}
 					break;
 				case "cc_budgetreport":
-					if (bAdminCC) {
+					if (bAdminSystem || bAdminCC) {
 					HashChanger.getInstance().replaceHash("");
 					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					} else {

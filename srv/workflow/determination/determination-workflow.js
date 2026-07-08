@@ -193,6 +193,22 @@ async function determineRiskLevel(sId, oDescriptor) {
 
 }
 
+async function determineClaimItems(oTx, sId, oDescriptor) {
+    
+    const oItemsTable = oDescriptor.entityItem;
+    const aAllClaimItems = await oTx.run(
+        SELECT
+            .from(oItemsTable)
+            .where({
+                [oDescriptor.idField]   : sId,
+            })
+            .columns('CLAIM_TYPE_ITEM_ID')
+    )
+    return aAllClaimItems.some(
+        item => item.CLAIM_TYPE_ITEM_ID === "CASH_REPAY"
+    );
+}
+
 async function determineMaxThresholdAmt(oTx, sId, oDescriptor) {
     
     const oItemsTable = oDescriptor.entityItem;
@@ -310,7 +326,9 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
         evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) &&
         evaluateLocationType(oDocumentRulesContext, oWorkflowContext) &&
-        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) 
+        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateClaimType(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateClaimItem(oDocumentRulesContext, oWorkflowContext)
     )
 }
 
@@ -401,6 +419,16 @@ function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
     }
 }
 
+function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateClaimType oWorkflowContext.CLAIM_TYPE_ID: ", oWorkflowContext.CLAIM_TYPE_ID);
+    console.log("evaluateClaimType oDocumentRulesContext.CLAIM_TYPE_ID: ",  oDocumentRulesContext.claimTypeId);
+    if(oWorkflowContext.CLAIM_TYPE_ID == 'NULL') {
+        return true;
+    }
+    return oDocumentRulesContext.claimTypeId === oWorkflowContext.CLAIM_TYPE_ID;
+
+}
+
 function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
     console.log("evaluateTripStartDate oWorkflowContext.TRIP_START_DATE: ", oWorkflowContext.TRIP_START_DATE);
     console.log("evaluateTripStartDate oDocumentRulesContext.tripStartDate: ",  oDocumentRulesContext.tripStartDate);
@@ -436,6 +464,21 @@ function evaluateLocationType(oDocumentRulesContext, oWorkflowContext) {
     return oDocumentRulesContext.locationType === oWorkflowContext.LOCATION_TYPE;
 }
 
+function evaluateClaimItem(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateClaimItem oWorkflowContext.CLAIM_TYPE_ITEM_ID: ", oWorkflowContext.CASH_REPAYMENT);
+    console.log("evaluateClaimItem oDocumentRulesContext.isCashRepayment: ",  oDocumentRulesContext.isCashRepayment);
+    switch(oWorkflowContext.CASH_REPAYMENT) {
+        case true:
+            return (oDocumentRulesContext.isCashRepayment);
+        case null:
+            return (!oDocumentRulesContext.isCashRepayment);
+        default:
+            throw new Error(
+                `Unsupported isCashRepayment: ${oWorkflowContext.isCashRepayment}`
+            );
+    }
+}
+
 function normalizeDate(dDate) {
     if(!dDate) {
         return null;
@@ -469,7 +512,7 @@ async function determineWorkflow(oTx, sId) {
 
     //3. Build workflow context
     // Put all rules into the workflow context
-    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role | (NEW) Project Code
+    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role | (NEW) Project Code | (NEW) Claim Item
     // Location type has two values, 'HQ' and 'Branch'
     // If CC is fully numeric, it is considered as 'HQ', otherwise 'Branch'
     sRiskLevel = await determineRiskLevel(sId, oDescriptor);
@@ -502,6 +545,7 @@ async function determineWorkflow(oTx, sId) {
     const sClaimantRole = oClaimantDetails ? oClaimantDetails[Constant.EntitiesFields.ROLE] : null;
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
     let bIsProjectCode = await determineProjectCode(oTx, sId, oDescriptor)
+    let bCashRepayment = await determineClaimItems(oTx, sId, oDescriptor);
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
     const oDocumentRulesContext = {
@@ -517,7 +561,8 @@ async function determineWorkflow(oTx, sId) {
         tripStartDate   : sTripStartDate,
         locationType    : sLocationType,
         claimantRole    : sClaimantRole,
-        isProjectCode   : bIsProjectCode
+        isProjectCode   : bIsProjectCode,
+        isCashRepayment : bCashRepayment
     }
 
     console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
