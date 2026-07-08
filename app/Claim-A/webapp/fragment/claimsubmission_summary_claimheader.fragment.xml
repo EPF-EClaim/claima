@@ -264,6 +264,7 @@
                 <Text
                     id="text_claimsummary_claimheader_projectcode"
                     text="{claimsubmission_input>/claim_header/project_code} - {claimsubmission_input>/claim_header/descr/project_code}"
+                    visible="{= !!${claimsubmission_input>/claim_header/project_code} }"
                 />
 
                 <!-- Claim Status -->

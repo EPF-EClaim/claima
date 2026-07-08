@@ -408,10 +408,18 @@
                         id="field_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="Editable"
+                        editMode="{
+                            parts: [
+                                'constant>/EntitiesFields/ALT_CC',
+                                'claimsubmission_input>/claim_header/alternate_cost_center',
+                                'claimsubmission_input>/claim_header/project_code',
+                                'claimsubmission_input>/req_emailapprove',
+                                'claimsubmission_input>/claim_header/submission_type'
+                            ],
+                            formatter: '.Utility.setFieldEditableState'
+                        }"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
-
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null ||
                                 ${claimsubmission_input>/req_emailapprove})
                         }"
@@ -425,7 +433,6 @@
                         value="{claimsubmission_input>/claim_header/alternate_cost_center} ({claimsubmission_input>/claim_header/descr/alternate_cost_center})"
                         editable="false"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
-
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null &amp;&amp;
                                 !${claimsubmission_input>/req_emailapprove})
                         }"
@@ -433,11 +440,20 @@
 
                     <!-- Project Code -->
                     <Label text="{i18n>label_claiminput_project_code}" />
-                    <Select
+                    <ComboBox
                         id="select_claimprocess_project_code"
-                        forceSelection="false"
+                        
                         selectedKey="{claimsubmission_input>/claim_header/project_code}"
-                        editable="{= !${claimsubmission_input>/claimtype/requestform/request_id} }"
+                        editable="{
+                            parts: [
+                                'constant>/EntitiesFields/PROJECT_CODE',
+                                'claimsubmission_input>/claim_header/alternate_cost_center',
+                                'claimsubmission_input>/claim_header/project_code',
+                                'claimsubmission_input>/req_emailapprove',
+                                'claimsubmission_input>/claim_header/submission_type'
+                            ],
+                            formatter: '.Utility.setFieldEditableState'
+                        }"
                         visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
                         items="{
                             path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
@@ -445,12 +461,12 @@
                                 { path: 'PROJECT_CODE' }
                             ]
                         }"
-                        change="onSelect_ClaimProcess_ProjectCode"
+                        selectionChange="onSelect_ClaimProcess_ProjectCode"
                     >
                         <core:Item
                             key="{employee_view>PROJECT_CODE}"
                             text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}" />
-                    </Select>
+                    </ComboBox>
 
                     <!-- Attachment Email Approval -->
                     <Label text="{i18n>label_claiminput_attachment}" />

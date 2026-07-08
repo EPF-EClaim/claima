@@ -10,7 +10,7 @@ module.exports = {
         * @returns {Integer} result number of records updated in header tables
         */
     updateApproverActionToHeader: async function (sRecordId, sStatus, tx) {
-        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField;
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField, sStatusField;
 
         // Build Where Condition
         switch (sRecordId.substring(0, 3)) {
@@ -19,6 +19,7 @@ module.exports = {
                 sApproverIdField = Constant.ApproverDetailsTable.CLAIM_ID;
                 sIdField = Constant.EntitiesFields.CLAIMID;
                 sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS_ID;
                 break;
 
             case Constant.WorkflowType.REQUEST:
@@ -26,6 +27,7 @@ module.exports = {
                 sApproverIdField = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
                 sIdField = Constant.EntitiesFields.REQUESTID;
                 sHeaderTable = Constant.Entities.ZREQUEST_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS;
                 break;
         };
 
@@ -86,8 +88,7 @@ module.exports = {
         oToUpdateFields = {
             [sDateField]: dDate,
             [sTimeField]: tTime,
-            // [Constant.EntitiesFields.STATUS]: sStatus,   // ZREQUEST_HEADER.STATUS
-            [Constant.EntitiesFields.STATUS_ID]: sStatus // ZCLAIM_HEADER.STATUS_ID
+            [sStatusField]: sStatus // caters for both par and claim
         };
 
         // Reject and Push back has reason ID fields

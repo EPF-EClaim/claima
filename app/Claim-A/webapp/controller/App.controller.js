@@ -60,7 +60,8 @@ sap.ui.define([
 	return Controller.extend("claima.controller.App", {
 
 		DateUtility: DateUtility,
-
+		Utility : Utility,
+		
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
@@ -1809,6 +1810,11 @@ sap.ui.define([
 					Fragment.byId("request", "req_acc").setEditMode("Editable");
 					oDialogModel.setProperty("/altcostcenter", null);
 					oDialogModel.setProperty("/altcostcenter_desc", null);
+					// Reset project code related fields
+					oDialogModel.setProperty("/claimtype", null);
+					oDialogModel.setProperty("/project_claim", false);
+					oDialogModel.setProperty("/project_code", null);
+
 				case "req_claim_type":
 					Fragment.byId("request", "req_transfermode").setSelectedKey("");
 				case "req_transfermode":
@@ -2014,7 +2020,6 @@ sap.ui.define([
 		},
 
 		_handleProjectCodeVisibility: function (oEvent) {
-
 			var oSelectedItem = oEvent.getSource().getSelectedItem();
 
 			if (!oSelectedItem) {
@@ -2023,7 +2028,6 @@ sap.ui.define([
 
 			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
-
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
 		}
 	});

@@ -187,7 +187,37 @@
                                     display="ValueDescription" 
                                     valueHelp="valuehelp_req_altcc" />
                             </form:fields></form:FormElement>
-                            <form:FormElement label="Project Code"><form:fields><Text text="{request>/req_header/projectcode} - {request>/req_header/projectdesc}" /></form:fields></form:FormElement>
+                            <form:FormElement
+                            label="{i18n>label_claiminput_project_code}"
+                            visible="{= !!${request>/req_header/projectcode} }">
+
+                            <form:fields>
+                                <!-- Show dropdown only when Edit mode AND Alt CC is empty -->
+                                <Select
+                                    id="select_request_project_code"
+                                    selectedKey="{request>/req_header/projectcode}"
+                                    forceSelection="false"
+                                    width="100%"
+                                    visible="{= 
+                                        ${reqHeaderEditableModel>/projectCode}
+                                        &amp;&amp; !${request>/req_header/altcostcenter}
+                                    }"
+                                    items="{
+                                        path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
+                                        sorter: [
+                                            { path: 'PROJECT_CODE' }
+                                        ]
+                                    }"
+                                    change="onSelect_Request_ProjectCode"
+                                >
+                                    <core:Item
+                                        key="{employee_view>PROJECT_CODE}"
+                                        text="{employee_view>PROJECT_CODE} - {employee_view>PROJECT_DESC}"
+                                    />
+                                </Select>
+                            </form:fields>
+                        </form:FormElement>
+
                             <form:FormElement label="{i18n>req_caa}">
                                 <form:fields><Text text="{
                                         path: 'request>/req_header/cashadvamt',
@@ -215,9 +245,9 @@
                             <form:FormElement label="{i18n>req_attach1}"><form:fields><Link id="attachment1" press="onDocLinkPress" text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_attach2}"><form:fields><Link id="attachment2" press="onDocLinkPress" text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_claimtype}"><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_transfer_mode}"><form:fields><Text text="{request>/req_header/transfermodedesc}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_travel_alone_family}"><form:fields><Text text="{request>/req_header/transferalonefamilydesc}"/></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_travel_with_family_now_or_later}"><form:fields><Text text="{request>/req_header/transferfamilynowlaterdesc}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_transfer_mode}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"><form:fields><Text text="{request>/req_header/transfermodedesc}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_travel_alone_family}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"><form:fields><Text text="{request>/req_header/transferalonefamilydesc}"/></form:fields></form:FormElement>
+                            <form:FormElement label="{i18n>req_travel_with_family_now_or_later}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/ELAUN_TUKAR}}"><form:fields><Text text="{request>/req_header/transferfamilynowlaterdesc}"/></form:fields></form:FormElement>
                         </form:formElements>
                     </form:FormContainer>
                 </form:formContainers>
