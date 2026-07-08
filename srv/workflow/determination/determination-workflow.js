@@ -420,8 +420,8 @@ function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.CLAIM_TYPE_ID);
-    console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
+    console.log("evaluateClaimType oWorkflowContext.CLAIM_TYPE_ID: ", oWorkflowContext.CLAIM_TYPE_ID);
+    console.log("evaluateClaimType oDocumentRulesContext.CLAIM_TYPE_ID: ",  oDocumentRulesContext.claimTypeId);
     if(oWorkflowContext.CLAIM_TYPE_ID == 'NULL') {
         return true;
     }
@@ -465,8 +465,8 @@ function evaluateLocationType(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateClaimItem(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateLocationType oWorkflowContext.CLAIM_TYPE_ITEM_ID: ", oWorkflowContext.CASH_REPAYMENT);
-    console.log("evaluateLocationType oDocumentRulesContext.isCashRepayment: ",  oDocumentRulesContext.isCashRepayment);
+    console.log("evaluateClaimItem oWorkflowContext.CLAIM_TYPE_ITEM_ID: ", oWorkflowContext.CASH_REPAYMENT);
+    console.log("evaluateClaimItem oDocumentRulesContext.isCashRepayment: ",  oDocumentRulesContext.isCashRepayment);
     switch(oWorkflowContext.CASH_REPAYMENT) {
         case true:
             return (oDocumentRulesContext.isCashRepayment);
