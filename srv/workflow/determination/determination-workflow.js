@@ -310,7 +310,8 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
         evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) &&
         evaluateLocationType(oDocumentRulesContext, oWorkflowContext) &&
-        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) 
+        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateClaimType(oDocumentRulesContext, oWorkflowContext)
     )
 }
 
@@ -399,6 +400,16 @@ function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
                 `Unsupported PROJECT_CLAIM: ${oWorkflowContext.PROJECT_CLAIM}`
             );
     }
+}
+
+function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.CLAIM_TYPE_ID);
+    console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
+    if(oWorkflowContext.CLAIM_TYPE_ID == 'NULL') {
+        return true;
+    }
+    return oDocumentRulesContext.claimTypeId === oWorkflowContext.CLAIM_TYPE_ID;
+
 }
 
 function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
