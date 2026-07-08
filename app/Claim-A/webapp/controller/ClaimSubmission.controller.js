@@ -338,12 +338,11 @@ sap.ui.define([
 					null
 				);
 
-				// set view-only features
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
+
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					if (
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
-					) {
+					if (sStatusId !== this._oConstant.ClaimStatus.DRAFT && !bIsSendBack) {
 						oClaimSubmissionModel.setProperty("/view_only", true)
 					}
 				}
@@ -351,50 +350,47 @@ sap.ui.define([
 					this._setClaimItemTableToolbar(false);
 				}
 
-				// show approval log fragment for non-draft
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
+				if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 					this._setApprovalLog(true);
 					Utility.updateFooterState(
 						this.getView(),
 						oClaimSubmissionModel,
 						this._oConstant,
-						this._oConstant.ClaimFooterMode.VIEW_ONLY
+						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
 					);
 
-
-					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
 					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
-					// approver view
-					//// set approver view if current user is approver
-					let oApprovalLogFragment = await this._getFormFragment("approval_log");
-					let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
-					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-						var sUserId = this._oSessionModel.getProperty("/userId");
-						if (sUserId) {
-							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
-								oApproval.APPROVER_ID === sUserId ||
-								oApproval.SUBSTITUTE_APPROVER_ID === sUserId
-							);
-							if (iItemIndex !== -1) {
-								oClaimSubmissionModel.setProperty("/is_approver", true);
+					if (!bIsSendBack) {
+						//// set approver view if current user is approver
+						let oApprovalLogFragment = await this._getFormFragment("approval_log");
+						let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
+						if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+							var sUserId = this._oSessionModel.getProperty("/userId");
+							if (sUserId) {
+								let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+									oApproval.APPROVER_ID === sUserId ||
+									oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+								);
+								if (iItemIndex !== -1) {
+									oClaimSubmissionModel.setProperty("/is_approver", true);
+								}
 							}
+							this._setOwnerDetail(true);
 						}
-						this._setOwnerDetail(true);
-					}
-					//// change screen details if approver
-					if (oClaimSubmissionModel.getProperty("/is_approver")) {
-						Utility.updateFooterState(
-							this.getView(),
-							oClaimSubmissionModel,
-							this._oConstant,
-							this._oConstant.ClaimFooterMode.APPROVER
-						);
+						//// change screen details if approver
+						if (oClaimSubmissionModel.getProperty("/is_approver")) {
+							Utility.updateFooterState(
+								this.getView(),
+								oClaimSubmissionModel,
+								this._oConstant,
+								this._oConstant.ClaimFooterMode.APPROVER
+							);
 
+						}
 					}
 				}
 				else {
@@ -1416,6 +1412,10 @@ sap.ui.define([
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_summary_claimitem");
 			if (oClaimItemFragment) {
 				oPage.removeContent(oClaimItemFragment);
+			}
+
+			if (await this._getFormFragment("approval_log")) {
+				this._setApprovalLog(false);
 			}
 			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 2);
@@ -4183,51 +4183,61 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			await this._afterLoadFragments();
-			if (oClaimItemFragment) {
-				// disable item visibility
-				this._setAllControlsVisible(false);
-
-				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/view_only")) {
-					if (this.byId("button_claimdetails_input_return").getVisible()) {
-						this.byId("button_claimdetails_input_return").setVisible(false);
-					}
-					this._setAllControlsEditable(true);
-				}
-
-				// clear fileuploader fields
-				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
-				}
-
-				oPage.removeContent(oClaimItemFragment);
-
-				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 2);
-				});
-				let sFooterMode;
-
-				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/view_only")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-				}
-				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else {
-					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				}
-
-				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-
-				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+			if (!oClaimItemFragment) {
+				await this._afterLoadFragments();
+				return;
 			}
+
+			// disable item visibility
+			this._setAllControlsVisible(false);
+
+			// approver view changes
+			if (oClaimSubmissionModel.getProperty("/view_only")) {
+				if (this.byId("button_claimdetails_input_return").getVisible()) {
+					this.byId("button_claimdetails_input_return").setVisible(false);
+				}
+				this._setAllControlsEditable(true);
+			}
+
+			// clear fileuploader fields
+			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+				this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+			}
+
+			oPage.removeContent(oClaimItemFragment);
+
+			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
+				oPage.insertContent(oVBox, 2);
+			});
+
+			await this._afterLoadFragments();
+
+			let sFooterMode;
+
+			if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else if (oClaimSubmissionModel.getProperty("/view_only")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
+			}
+			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else {
+				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+			}
+
+			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+			this._setEnabledToolbarFooter();
+
+			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+
+			// Reload when item cancellation
+			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+
+			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+			this._setEnabledToolbarFooter();
 		},
 
 		_updateClaimSubmission: async function (oAction) {
