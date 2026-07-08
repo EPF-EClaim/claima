@@ -1144,6 +1144,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
             on HEADER.CLAIM_ID = ITEM.CLAIM_ID
         left join ECLAIM.ZEMP_MASTER as EMP
             on HEADER.EMP_ID = EMP.EEID
+        left join ECLAIM.ZSTATUS as STATUS
+            on HEADER.STATUS_ID = STATUS.STATUS_ID
         {
             key HEADER.CLAIM_ID,
             key ITEM.CLAIM_SUB_ID,
@@ -1168,7 +1170,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
                 HEADER.PAYMENT_DATE,
-                HEADER.STATUS_ID,
+                STATUS.STATUS_DESC as STATUS_DESC,
                 HEADER.PURPOSE,
                 HEADER.TRIP_START_DATE,
                 HEADER.TRIP_END_DATE,
