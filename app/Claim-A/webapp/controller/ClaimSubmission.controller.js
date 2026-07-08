@@ -4170,51 +4170,69 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			await this._afterLoadFragments();
-			if (oClaimItemFragment) {
-				// disable item visibility
-				this._setAllControlsVisible(false);
-
-				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/view_only")) {
-					if (this.byId("button_claimdetails_input_return").getVisible()) {
-						this.byId("button_claimdetails_input_return").setVisible(false);
-					}
-					this._setAllControlsEditable(true);
-				}
-
-				// clear fileuploader fields
-				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
-				}
-
-				oPage.removeContent(oClaimItemFragment);
-
-				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 1);
-				});
-				let sFooterMode;
-
-				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/view_only")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-				}
-				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else {
-					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				}
-
-				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-
-				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+			if (!oClaimItemFragment) {
+				await this._afterLoadFragments();
+				return;
 			}
+
+			// disable item visibility
+			this._setAllControlsVisible(false);
+
+			// approver view changes
+			if (oClaimSubmissionModel.getProperty("/view_only")) {
+				if (this.byId("button_claimdetails_input_return").getVisible()) {
+					this.byId("button_claimdetails_input_return").setVisible(false);
+				}
+				this._setAllControlsEditable(true);
+			}
+
+			// clear fileuploader fields
+			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+				this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+			}
+
+			oPage.removeContent(oClaimItemFragment);
+
+			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
+				oPage.insertContent(oVBox, 1);
+			});
+
+			// swap the claim item summary back in BEFORE re-running _afterLoadFragments():
+			// that call re-inserts the approval log at a fixed index, so the summary table
+			// needs to already be in its final slot or the log ends up above it instead of below
+			await this._afterLoadFragments();
+
+			let sFooterMode;
+
+			if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else if (oClaimSubmissionModel.getProperty("/view_only")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
+			}
+			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else {
+				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+			}
+
+			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+			this._setEnabledToolbarFooter();
+
+			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+
+			// Reload when item cancellation
+			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+
+			// _loadClaimById() replaces the "claimsubmission_input" model with a brand-new
+			// JSONModel instance (this.getView().setModel(...)), so the footer state we just
+			// set above was applied against the OLD model reference. Re-fetch the live model
+			// and re-apply the footer state so the submit/edit/duplicate/delete buttons don't
+			// fall back to defaults after the reload.
+			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+			this._setEnabledToolbarFooter();
 		},
 
 		_updateClaimSubmission: async function (oAction) {
