@@ -204,8 +204,6 @@ async function determineClaimItems(oTx, sId, oDescriptor) {
             })
             .columns('CLAIM_TYPE_ITEM_ID')
     )
-    console.log("Test test test is it here?");
-    console.log('[workflow-determination/determineClaimItems] aAllClaimItems:', aAllClaimItems);
     return aAllClaimItems.some(
         item => item.CLAIM_TYPE_ITEM_ID === "CASH_REPAY"
     );
