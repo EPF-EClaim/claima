@@ -1131,7 +1131,7 @@ entity ZWORKFLOW_RULE : managed {
         DIVISION              : String(10)    @Common.Label: 'Division';
         LOCATION_TYPE         : String(10)    @Common.Label: 'Location Type';
         PROJECT_CLAIM         : Boolean       @Common.Label: 'Project Claim';
-        CASH_REPLAYMENT       : Boolean       @Common.Label: 'Cash Replayment';
+        CASH_REPAYMENT        : Boolean       @Common.Label: 'Cash Repayment';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZDEPARTMENT           : Association to ZDEPARTMENT
