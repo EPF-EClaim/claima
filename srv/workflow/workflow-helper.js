@@ -123,6 +123,11 @@ async function retrieveRoleRank(sRole) {
             [Constant.EntitiesFields.ROLE]  : sRole
         });
     }
+
+    if(sRole == "") {
+        return [{ RANK: '0', ROLE: 'Normal' }]
+    }
+
     return await cds.run(sQuery)
 }
 async function retrieveItems(sId, oDescriptor) {

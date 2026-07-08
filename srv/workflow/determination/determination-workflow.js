@@ -281,6 +281,26 @@ async function determineCashAdvance(oTx, sId, oDescriptor) {
     }
 }
 
+async function determineProjectCode(oTx, sId, oDescriptor) {
+    const oProjectCode = await oTx.run(
+        SELECT.one
+            .from(oDescriptor.entityHeader)
+            .where({
+                [oDescriptor.idField]: sId
+            })
+            .columns(Constant.EntitiesFields.PROJECT_CODE)
+    );
+
+    if (!oProjectCode) {
+        return null;
+    }
+
+    const sProjectCode =
+        oProjectCode[Constant.EntitiesFields.PROJECT_CODE] || null;
+
+    return sProjectCode != null;
+}
+
 function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
     return (
         evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) &&
@@ -289,7 +309,8 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
         evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) &&
         evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) &&
         evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) &&
-        evaluateLocationType(oDocumentRulesContext, oWorkflowContext)
+        evaluateLocationType(oDocumentRulesContext, oWorkflowContext) &&
+        evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) 
     )
 }
 
@@ -365,6 +386,21 @@ function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
     }
 }
 
+function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
+    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.PROJECT_CLAIM);
+    console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
+    switch(oWorkflowContext.PROJECT_CLAIM) {
+        case true:
+            return (oDocumentRulesContext.isProjectCode);
+        case null:
+            return (!oDocumentRulesContext.isProjectCode);
+        default:
+            throw new Error(
+                `Unsupported PROJECT_CLAIM: ${oWorkflowContext.PROJECT_CLAIM}`
+            );
+    }
+}
+
 function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
     console.log("evaluateTripStartDate oWorkflowContext.TRIP_START_DATE: ", oWorkflowContext.TRIP_START_DATE);
     console.log("evaluateTripStartDate oDocumentRulesContext.tripStartDate: ",  oDocumentRulesContext.tripStartDate);
@@ -433,7 +469,7 @@ async function determineWorkflow(oTx, sId) {
 
     //3. Build workflow context
     // Put all rules into the workflow context
-    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role
+    // | Risk Level | Threshold Amount | Receipt Date | Cost Center | Cash Advance | Trip Start Date | (NEW) Location Type | (NEW) Role | (NEW) Project Code
     // Location type has two values, 'HQ' and 'Branch'
     // If CC is fully numeric, it is considered as 'HQ', otherwise 'Branch'
     sRiskLevel = await determineRiskLevel(sId, oDescriptor);
@@ -465,6 +501,7 @@ async function determineWorkflow(oTx, sId) {
     }
     const sClaimantRole = oClaimantDetails ? oClaimantDetails[Constant.EntitiesFields.ROLE] : null;
     let bIsCashAdvance = await determineCashAdvance(oTx, sId, oDescriptor);
+    let bIsProjectCode = await determineProjectCode(oTx, sId, oDescriptor)
     const sTripStartDate = oHeader[Constant.EntitiesFields.TRIP_START_DATE] ?? null;
 
     const oDocumentRulesContext = {
@@ -479,7 +516,8 @@ async function determineWorkflow(oTx, sId) {
         isCashAdvance   : bIsCashAdvance,
         tripStartDate   : sTripStartDate,
         locationType    : sLocationType,
-        claimantRole    : sClaimantRole
+        claimantRole    : sClaimantRole,
+        isProjectCode   : bIsProjectCode
     }
 
     console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)

@@ -6,6 +6,7 @@ const {
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,
+    retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,
     retrieveSubstitute
@@ -27,6 +28,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     let oApproverDetails = null;    // Variable to store approver details 
     let aApproversDetails = [];      // Variable to store multiple approvers
     let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
+    let oProjectDetails = null;     // Variable to store project owner details
     let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
     let oPopulatedEmployee = null;  // Variable to store populated Employee
     let aWorkflowApprStep = [];
@@ -42,7 +44,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     
     const oHeader = await retrieveHeaderDetails(sId, oDescriptor)
     const sFinalCC = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeader[Constant.EntitiesFields.COST_CENTER] ?? null;
-    
+    const sProjectCode = oHeader[Constant.EntitiesFields.PROJECT_CODE]
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
     //console.log(oClaimantDetails);
     
@@ -104,6 +106,26 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             }
                             
                             console.log("Budget Approver: ", oPopulatedEmployee);
+                        }else{
+                            return false;
+                        }
+                        break;
+                    case Constant.Role.PROJECT_OWNER:
+                        if(sProjectCode){
+                            console.log("Project Code: ", sProjectCode);
+                            console.log("System Year: ", sSystemYear);
+                            oProjectDetails = await retrieveProjectOwnerDetails(sProjectCode, sSystemYear);
+                            console.log("Project Details: ", oProjectDetails);
+                            if(!oProjectDetails){
+                                return false;
+                            }
+                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
+                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            if(oPopulatedEmployee){
+                                aApproversDetails.push(oPopulatedEmployee);
+                            }
+                            
+                            console.log("Project Owner: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
@@ -216,18 +238,18 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
     //console.log(aUniqueApproversDetails);
-    // Variable declaration for substitutes
-    let sSubstitute = null;         // Variable to store substitute user
-    let oSubstituteDetails = null;  // Variable to store substitute user details
-    let sSubstitute_eeid = "";       // Variable to store substitute EEID
-    let sSubstitute_name = "";       // Variable to store substitute name
-    let sSubstitute_email = "";      // Variable to store substitute email
     // Retrieve substitute for approvers
     for (const oApprover of aUniqueApproversDetails){
+        // Variable declaration for substitutes
+        let sSubstitute = null;         // Variable to store substitute user
+        let oSubstituteDetails = null;  // Variable to store substitute user details
+        let sSubstitute_eeid = "";       // Variable to store substitute EEID
+        let sSubstitute_name = "";       // Variable to store substitute name
+        let sSubstitute_email = "";      // Variable to store substitute email
         // If LEVEL = 0, Approver is Auto
         if(oApprover.LEVEL > 0){
             sSubstitute = await retrieveSubstitute(oApprover.EEID);
-            //console.log(sSubstitute);
+            //console.log("sSubstitute", sSubstitute);
             if(sSubstitute){
                 oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
                 if(oSubstituteDetails){

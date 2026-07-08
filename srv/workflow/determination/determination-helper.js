@@ -18,7 +18,8 @@ const WORKFLOW_RULE_COLUMNS = [
     Constant.EntitiesFields.OUTCOME_WORKFLOW_CODE,
     Constant.EntitiesFields.ROLE,
     Constant.EntitiesFields.DIVISION,
-    Constant.EntitiesFields.LOCATION_TYPE
+    Constant.EntitiesFields.LOCATION_TYPE,
+    Constant.EntitiesFields.PROJECT_CLAIM
 ];
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return cds.run(
@@ -116,6 +117,53 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
     const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
     if (oBudgetOwnerContext){
         sEEID = oBudgetOwnerContext[Constant.EntitiesFields.EEID];
+    }
+    
+    // Return only the required fields
+    return {
+        YEAR:               oBudgetContext[Constant.EntitiesFields.YEAR],
+        INTERNAL_ORDER:     oBudgetContext[Constant.EntitiesFields.INTERNAL_ORDER],
+        COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
+        FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
+        MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_ID:    sEEID
+    };
+}
+async function retrieveProjectOwnerDetails(sProjectCode, sYear){
+    let oBudgetContext = null;
+
+    // Main table path
+    const sBudgetTablePath = cds.entities['eclaim_srv.ZBUDGET'];
+    const sProjectCodeSafe = String(sProjectCode);
+    const sYearSafe = String(sYear);
+    let sEEID = "";
+
+    // Fetch data
+    console.log("Start Project Code check");
+    oBudgetContext = await cds.run(
+        SELECT
+            .one
+            .from(sBudgetTablePath)
+            .where({
+                [Constant.EntitiesFields.PROJECT_CODE]   : sProjectCodeSafe,
+                [Constant.EntitiesFields.YEAR]          : sYearSafe
+            })
+            .columns(
+                Constant.EntitiesFields.YEAR,
+                Constant.EntitiesFields.INTERNAL_ORDER,
+                Constant.EntitiesFields.COMMITMENT_ITEM,
+                Constant.EntitiesFields.FUND_CENTER,
+                Constant.EntitiesFields.MATERIAL_GROUP,
+                Constant.EntitiesFields.BUDGET_OWNER_ID
+            )
+    )
+    if(!oBudgetContext){
+        return null;
+    }
+    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    if (oProjectOwnerContext){
+        sEEID = oProjectOwnerContext[Constant.EntitiesFields.EEID];
     }
     
     // Return only the required fields
@@ -460,11 +508,87 @@ async function normalizeWorkflowRequestType(sId, oDescriptor) {
     }
     return null;
 }
+
+async function sendClaimBatch(sId){
+    try {
+        if(!sId){
+            return null;
+        }
+
+        const sPrefix = sId.slice(0,3);
+        if(sPrefix != Constant.WorkflowType.CLAIM){
+            return;
+        }
+        const ISservice = await cds.connect.to('IS_Conn');
+        const aAllClaimItem = await cds.run(
+            SELECT
+                .from('eclaim_view_srv.ZEMP_CLAIM_DETAILS')
+                .where({
+                    [Constant.EntitiesFields.CLAIMID]   : sId
+                }).orderBy('CLAIM_SUB_ID')
+        )
+        if(!aAllClaimItem){
+            return null;
+        }
+
+        // Forward the single consolidated payload to IS
+        if(aAllClaimItem[0].INTERNAL_ORDER == null){
+            var sData = 
+                aAllClaimItem.map(oItem => ({
+                    CLAIM_ID:                sId,
+                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
+                    EMP_ID:                  oItem.EMP_ID,
+                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                  oItem.AMOUNT,
+                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
+                    COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
+                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
+                    MATERIAL_CODE:           oItem.MATERIAL_CODE,
+                    INTERNAL_ORDER:          null
+                }));
+        }else{ 
+            sData = 
+                aAllClaimItem.map(oItem => ({
+                    CLAIM_ID:                sId,
+                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
+                    EMP_ID:                  oItem.EMP_ID,
+                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                  oItem.AMOUNT,
+                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
+                    COST_CENTER:             null,
+                    GL_ACCOUNT:              null,
+                    MATERIAL_CODE:           null,
+                    INTERNAL_ORDER:          oItem.INTERNAL_ORDER
+                }));
+        }
+
+        const oResponse = await ISservice.send({
+        method: 'POST',
+        path: "/http/ApprovedClaim",  
+        data: { 
+            ZEMP_CLAIMS_DETAILS: sData
+        }
+        });
+
+        return { message: "Approved claim batch sent", oResponse };
+
+    } catch (e) {
+        console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+    }
+}
+
 module.exports = { 
     determineWorkflowStepContext,
     retrieveFromConstantTable,
     retrieveApprover,
     retrieveBudgetDetails,
+    retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,
     retrieveSubstitute,
@@ -476,5 +600,6 @@ module.exports = {
     retrieveWorkflowByDefault,
     retrieveWorkflowByClaimTypeRoleAndDivision,
     retrieveWorkflowByClaimTypeAndDivision,
-    retrieveWorkflowByClaimType
+    retrieveWorkflowByClaimType,
+    sendClaimBatch
 };

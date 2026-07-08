@@ -29,7 +29,8 @@ module.exports = (srv) => {
             RECEIPT_DATE:            oItem.ReceiptDate,
             COST_CENTER:             oItem.CostCenter,
             GL_ACCOUNT:              oItem.GLAccount,
-            MATERIAL_CODE:           oItem.MaterialCode
+            MATERIAL_CODE:           oItem.MaterialCode,
+            INTERNAL_ORDER:          oItem.InternalOrder
         }));
       const oResponse = await ISservice.send({
         method: 'POST',
@@ -37,12 +38,12 @@ module.exports = (srv) => {
         data: { 
           ZEMP_CLAIMS_DETAILS: sData
         }
-        });
+      });
 
       return { message: "Approved claim batch sent", oResponse };
 
     } catch (e) {
-      req.error(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+        req.error(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
     }
   });
 };

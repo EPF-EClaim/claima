@@ -177,8 +177,6 @@
                     id="select_claimdetails_input_funeral_transportation"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/funeral_transportation}"
-                    change="onSelect_ClaimDetails_FuneralTransport"
-                    liveChange="onSelect_ClaimDetails_FuneralTransport"
                     visible="false"
                     required="true"
 				>
@@ -1082,8 +1080,6 @@
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
 						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
                         !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
-                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/DALAM_STESEN} &amp;&amp;
-                        ${claimitem_input>/claim_item/funeral_transportation} !== ${constant>/TransportPassing/LUAR_STESEN} &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/CERAMAH} &amp;&amp;
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KEMATIAN}	
                         }"
