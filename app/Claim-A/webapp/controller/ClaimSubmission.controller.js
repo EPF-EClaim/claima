@@ -337,8 +337,6 @@ sap.ui.define([
 				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
 
-				// set view-only features
-				// DRAFT and SEND_BACK claims stay editable; everything else is view-only
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
 					if (sStatusId !== this._oConstant.ClaimStatus.DRAFT && !bIsSendBack) {
 						oClaimSubmissionModel.setProperty("/view_only", true)
@@ -348,27 +346,20 @@ sap.ui.define([
 					this._setClaimItemTableToolbar(false);
 				}
 
-				// show approval log fragment for anything that has been submitted before,
-				// including SEND_BACK (so the claimant can see why it was returned)
 				if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 					this._setApprovalLog(true);
 					Utility.updateFooterState(
 						this.getView(),
 						oClaimSubmissionModel,
 						this._oConstant,
-						// SEND_BACK keeps the normal editable/submit footer instead of VIEW_ONLY
 						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
 					);
 
-
-					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
 					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
-					// approver view — not applicable to SEND_BACK, since the claim is back
-					// with the claimant to fix and resubmit, not out for approval
 					if (!bIsSendBack) {
 						//// set approver view if current user is approver
 						let oApprovalLogFragment = await this._getFormFragment("approval_log");
@@ -1414,8 +1405,7 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				oPage.removeContent(oClaimItemFragment);
 			}
-			// hide approval log while editing/creating an item; it is restored by
-			// _afterLoadFragments() when returning to the summary screen
+
 			if (await this._getFormFragment("approval_log")) {
 				this._setApprovalLog(false);
 			}
@@ -4171,9 +4161,6 @@ sap.ui.define([
 				oPage.insertContent(oVBox, 2);
 			});
 
-			// swap the claim item summary back in BEFORE re-running _afterLoadFragments():
-			// that call re-inserts the approval log at a fixed index, so the summary table
-			// needs to already be in its final slot or the log ends up above it instead of below
 			await this._afterLoadFragments();
 
 			let sFooterMode;
@@ -4199,11 +4186,6 @@ sap.ui.define([
 			// Reload when item cancellation
 			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 
-			// _loadClaimById() replaces the "claimsubmission_input" model with a brand-new
-			// JSONModel instance (this.getView().setModel(...)), so the footer state we just
-			// set above was applied against the OLD model reference. Re-fetch the live model
-			// and re-apply the footer state so the submit/edit/duplicate/delete buttons don't
-			// fall back to defaults after the reload.
 			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
 			this._setEnabledToolbarFooter();
