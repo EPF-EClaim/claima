@@ -8,6 +8,7 @@ const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScen
 const EmailReminder = require('./utils/EmailReminder');
 const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
+const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 
 module.exports = (srv) => {
@@ -214,18 +215,10 @@ module.exports = (srv) => {
 
     srv.on('sendEmail', async (req) => {
         try {
-            const ISservice = await cds.connect.to('IS_Conn');
-
-            const response = await ISservice.send({
-                method: 'POST',
-                path: "/http/SendEmailNotification_eClaim",
-                data: req.data
-            });
-
+            const response = await sendEmailInternal(req.data);
             return response;
-
         } catch (error) {
-            req.error(400, `Fail sending email: ${error.message}`);
+            req.error(400, error.message);
         }
     });
 
@@ -2332,6 +2325,102 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+
+    /**
+     * After creating a substitution rule, this handler will find all relevant claims and pre-approvals 
+     * that match the criteria of the new rule and update them with the substitute approver ID. 
+     * It will also trigger email notifications for any claims or pre-approvals that are in 
+     * pending approval status (STAT02) to inform the substitute approver of their new responsibilities.
+     */
+    srv.after('CREATE', 'ZSUBSTITUTION_RULES', async (data, req) => {
+        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
+        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
+
+        const tx = cds.tx(req);
+
+        try {
+            // =======================================================================
+            // PROCESS 1: ZAPPROVER_DETAILS_CLAIMS
+            // =======================================================================
+
+            // Step 1A: SELECT with JOIN to ZCLAIM_HEADER to check SUBMITTED_DATE
+            const matchingClaims = await tx.run(
+                SELECT.from('ZAPPROVER_DETAILS_CLAIMS', 'D')
+                    .join('ZCLAIM_HEADER', 'H')
+                    .on('D.CLAIM_ID = H.CLAIM_ID')
+                    .where(`D.APPROVER_ID =`, USER_ID)
+                    .and(`(D.STATUS = 'STAT02' OR D.STATUS IS NULL OR D.STATUS = '')`)
+                    .and(`H.SUBMITTED_DATE >=`, VALID_FROM)
+                    .and(`H.SUBMITTED_DATE <=`, VALID_TO)
+                    // Select the specific keys we need for the update and the email
+                    .columns('D.CLAIM_ID', 'D.LEVEL', 'D.STATUS') 
+            );
+
+            if (matchingClaims.length > 0) {
+                // Step 1B: Update the exact records we found using their primary keys
+                const claimUpdates = matchingClaims.map(claim => 
+                    UPDATE('ZAPPROVER_DETAILS_CLAIMS')
+                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                        .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
+                );
+                await Promise.all(claimUpdates.map(query => tx.run(query)));
+
+                // Step 1C: Group records with STAT02 and trigger emails
+                const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
+                for (const claim of pendingClaims) {
+                    await sendEmailInternal({
+                        ApproverName: SUBSTITUTE_ID,
+                        ClaimID: claim.CLAIM_ID,
+                        Action: "Pending Approval (Delegated)",
+                        EmailTitle: `Action Required: Delegated Claim ${claim.CLAIM_ID}`,
+                        // ... other fields
+                    });
+                }
+            }
+
+            // =======================================================================
+            // PROCESS 2: ZAPPROVER_DETAILS_PREAPPROVAL
+            // =======================================================================
+
+            // Step 2A: SELECT with JOIN to ZREQUEST_HEADER
+            // Note: Joining on H.REQUEST_ID = D.PREAPPROVAL_ID based on your schema
+            const matchingPreApprovals = await tx.run(
+                SELECT.from('ZAPPROVER_DETAILS_PREAPPROVAL', 'D')
+                    .join('ZREQUEST_HEADER', 'H')
+                    .on('D.PREAPPROVAL_ID = H.REQUEST_ID')
+                    .where(`D.APPROVER_ID =`, USER_ID)
+                    .and(`(D.STATUS = 'STAT02' OR D.STATUS IS NULL OR D.STATUS = '')`)
+                    .and(`H.SUBMITTED_DATE >=`, VALID_FROM)
+                    .and(`H.SUBMITTED_DATE <=`, VALID_TO)
+                    .columns('D.PREAPPROVAL_ID', 'D.LEVEL', 'D.STATUS')
+            );
+
+            if (matchingPreApprovals.length > 0) {
+                const preAppUpdates = matchingPreApprovals.map(preApp => 
+                    UPDATE('ZAPPROVER_DETAILS_PREAPPROVAL')
+                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                        .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
+                );
+                await Promise.all(preAppUpdates.map(query => tx.run(query)));
+
+                // Step 2C: Group records with STAT02 and trigger emails
+                const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
+                for (const preApp of pendingPreApprovals) {
+                    await sendEmailInternal({
+                        ApproverName: SUBSTITUTE_ID,
+                        ClaimID: preApp.PREAPPROVAL_ID,
+                        Action: "Pending Pre-Approval (Delegated)",
+                        EmailTitle: `Action Required: Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
+                        // ... other fields
+                    });
+                }
+            }
+
+        } catch (error) {
+            req.warn(500, `Substitution rule saved, but failed to update existing records: ${error.message}`);
+        }
+    });
+    
     /**
     * Update Header tables with approver actions
     * @public
