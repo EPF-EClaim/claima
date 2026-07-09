@@ -753,8 +753,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				//start of 1 july 
-				//oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				
 				var sRequestId = oRequestForm.getKey();
 				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
 				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
