@@ -3198,4 +3198,21 @@ module.exports = (srv) => {
             });
         }
     });
+
+    srv.before('READ', 'ZEMP_APPROVER_LIST_VH', async (req) => {
+
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {        
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+
+            if (!oEmp || !oEmp.DEP) return;
+
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
+        }
+    });    
 }

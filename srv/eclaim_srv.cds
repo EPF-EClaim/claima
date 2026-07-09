@@ -1263,7 +1263,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 key REQUEST_ID                     as ID,
                     EMP_ID,
                     CLAIM_TYPE_ID,
-                    STATUS,
+                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC                as STATUS_DESC,
                     SUBMITTED_DATE
             }
@@ -1274,7 +1274,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 key CLAIM_ID                              as ID,
                     EMP_ID,
                     CLAIM_TYPE_ID,
-                    STATUS_ID,
+                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC                   as STATUS_DESC,
                     SUBMITTED_DATE
             }

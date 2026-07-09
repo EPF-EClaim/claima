@@ -4,7 +4,7 @@
 >
     <Dialog
         id="detailDialog"
-        title="Modify Pending Approvers"
+        title="{i18n>modify_approver}"
         contentWidth="60%"
     >
         <content>
@@ -20,16 +20,16 @@
             >
                 <columns>
                     <Column width="4rem">
-                        <Text text="Level" />
+                        <Text text="{i18n>level}" />
                     </Column>
                     <Column>
-                        <Text text="Status" />
+                        <Text text="{i18n>status}" />
                     </Column>
                     <Column>
-                        <Text text="Current Approver" />
+                        <Text text="{i18n>current_approver}" />
                     </Column>
                     <Column>
-                        <Text text="New Approver" />
+                        <Text text="{i18n>new_approver}" />
                     </Column>
                 </columns>
                 <items>
@@ -50,14 +50,14 @@
         </content>
         <beginButton>
             <Button
-                text="Save Changes"
+                text="{i18n>save_changes}"
                 type="Emphasized"
                 press=".onSaveApprovers"
             />
         </beginButton>
         <endButton>
             <Button
-                text="Cancel"
+                text="{i18n>cancel}"
                 press=".onCloseDialog"
             />
         </endButton>

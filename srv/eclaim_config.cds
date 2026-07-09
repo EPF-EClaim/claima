@@ -8044,7 +8044,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         }
     );
 
-    COMMITMENT_ITEM         @(
+    COMMITMENT_ITEM @(
         Common.Label                   : 'GL Code',
         Common.Text                    : GL_ACCOUNT_DESC,
         Common.TextArrangement         : #TextSeparate,
@@ -8158,6 +8158,7 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
 
 annotate service.ZEMP_PENDING_LIST with @(
     Capabilities.DeleteRestrictions: {Deletable: false},
+    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC]},
     UI                             : {
 
         HeaderInfo: {
@@ -8181,7 +8182,7 @@ annotate service.ZEMP_PENDING_LIST with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
+                Value            : CLAIM_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type'
             },
@@ -8196,10 +8197,49 @@ annotate service.ZEMP_PENDING_LIST with @(
                 Value            : SUBMITTED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Submitted Date'
-            }            
+            }
         ]
     }
-);
+) {
+    ID @Common.Label: 'ID';
+    CLAIM_TYPE_ID @(
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE',
+            // The entity/view holding your dropdown options
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: ClaimType,
+                    ValueListProperty: 'CLAIM_TYPE_ID' // The key field in your value help entity
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'CLAIM_TYPE_DESC' // The text label field
+                }
+            ]
+        }
+    );
+    EMP_ID @(
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'Employee Selection',
+            CollectionPath: 'ZEMP_APPROVER_LIST_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: EMP_ID,
+                    ValueListProperty: 'EEID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );    
+};
 
 annotate service.ZEMP_APPROVER_LIST_VH with @(UI.SelectionFields: [
     EEID,
