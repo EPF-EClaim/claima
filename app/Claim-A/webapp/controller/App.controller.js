@@ -694,11 +694,25 @@ sap.ui.define([
 					// filter
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
+					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
 					var aFilterSelectRequestForm = [
-						new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-						new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
+						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
 					];
+					if (aParticipantPARs.length > 0) {
+						var aRequestIdFilters = aParticipantPARs.map(function (oPAR) {
+							return new Filter("REQUEST_ID", FilterOperator.EQ, oPAR.REQUEST_ID);
+						});
+
+						aFilterSelectRequestForm.push(new Filter({
+							filters: aRequestIdFilters,
+							and: false
+						}));
+					} else {
+						aFilterSelectRequestForm.push(
+							new Filter("REQUEST_ID", FilterOperator.EQ, "__NO_ELIGIBLE_PAR__")
+						);
+					}
 					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
 				}
 			}
@@ -739,7 +753,20 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				
+				var sRequestId = oRequestForm.getKey();
+				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
+				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
+
+				if (!oParticipantPAR) {
+					oInputModel.setProperty("/claimtype/requestform/request_id", null);
+					oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
+					oInputModel.setProperty("/claim_header/preapproved_amount", null);
+					return;
+				}
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount",oParticipantPAR.PREAPPROVED_AMOUNT);
+				oInputModel.setProperty("/claim_header/preapproved_amount",oParticipantPAR.PREAPPROVED_AMOUNT);
+
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
 				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
@@ -762,6 +789,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", null);
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", null);
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
+				oInputModel.setProperty("/claim_header/preapproved_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
  				oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -2029,6 +2057,50 @@ sap.ui.define([
 			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
+		},
+
+		//participant pre-approval records
+		_getParticipantPreApprovalRecords: async function (sRequestId) {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oEmployeeModel = this.getView().getModel("employee_view");
+
+			var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
+			var sClaimTypeId = oInputModel.getProperty("/claimtype/type");
+			if (!sParticipantId || !sClaimTypeId) {
+				return [];
+			}
+
+			try {
+				var aFilters = [
+					new Filter("PARTICIPANTS_ID", FilterOperator.EQ, sParticipantId),
+					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
+				];
+
+				if (sRequestId) {
+					aFilters.push(
+						new Filter("REQUEST_ID", FilterOperator.EQ, sRequestId)
+					);
+				}
+
+				var oListBinding = oEmployeeModel.bindList(
+					"/ZPARTICIPANT_PREAPPROVED_AMOUNT",
+					null,
+					null,
+					aFilters,
+					{
+						$select: "REQUEST_ID,PARTICIPANTS_ID,CLAIM_TYPE_ID,STATUS,PREAPPROVED_AMOUNT"
+					}
+				);
+
+				var aContexts = await oListBinding.requestContexts(0, 100);
+
+				return aContexts.map(function (oContext) {
+					return oContext.getObject();
+				});
+			} catch (oError) {
+				return [];
+			}
 		}
 	});
 });
