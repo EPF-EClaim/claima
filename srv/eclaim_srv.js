@@ -2933,16 +2933,31 @@ module.exports = (srv) => {
     srv.before('READ', 'ZEMP_CC_BUDGET_REPORT', async (req) => {
 
         if (req.user.is(Constant.Admin.Admin_CC)) {
-
             const tx = cds.tx(req);
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            req.query.where([
-                { ref: ['FUND_CENTER'] },
-                '=',
-                { val: oEmp.CC }
-            ]);
-        }
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0'); 
+                return;
+            }
 
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC')
+                .from('ZEMP_MASTER')
+                .where({ DEP: oEmp.DEP })
+            );
+
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
+
+            if (aCostCenters.length > 0) {
+                
+                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
+
+            } else {
+                req.query.where('1 = 0');
+            }
+        }
     });
 }
