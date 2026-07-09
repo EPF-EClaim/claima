@@ -1446,11 +1446,11 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
 }
 
 entity ZSUBSTITUTION_RULES : managed {
-    key SUBSTITUTE_RULE_ID : String(10) @mandatory;
-    key USER_ID            : String     @mandatory;
-    key SUBSTITUTE_ID      : String     @mandatory;
-    key VALID_FROM         : Date       @mandatory;
-    key VALID_TO           : Date       @mandatory;
+    key SUBSTITUTE_RULE_ID : String(10) @mandatory @Common.Label: 'Substitution Rule ID';
+    key USER_ID            : String     @mandatory @Common.Label: 'User ID';
+    key SUBSTITUTE_ID      : String     @mandatory @Common.Label: 'Substitute ID';
+    key VALID_FROM         : Date       @mandatory @Common.Label: 'Valid From';
+    key VALID_TO           : Date       @mandatory @Common.Label: 'Valid To';
         ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
                                  on ZEMP_MASTER_USER.EEID = USER_ID;
         ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER

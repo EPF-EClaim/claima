@@ -2960,4 +2960,242 @@ module.exports = (srv) => {
             }
         }
     });
+
+    const { ZEMP_MASTER } = cds.entities;
+
+    srv.before('READ', 'ZSUBSTITUTION_RULES_CONFIG', async (req) => {
+        
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
+                .from(ZEMP_MASTER)
+                .where({ EMAIL: req.user.id });
+            if (!oEmp || !oEmp.DEP) return;
+
+            const subquery = SELECT('EEID').from(ZEMP_MASTER).where({ DEP: oEmp.DEP });
+            req.query.where({
+                USER_ID: { in: subquery }
+            });
+        }
+    });
+
+    srv.before('READ', 'ZEMP_APPROVER_VH', async (req) => {
+
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {        
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+
+            if (!oEmp || !oEmp.DEP) return;
+
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
+        }
+    });
+
+    function getFilterValue(where, fieldName) {
+        if (!where || !Array.isArray(where)) return null;
+        for (let i = 0; i < where.length; i++) {
+            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
+                if ((where[i + 1] === '=' || where[i + 1] === 'eq') && where[i + 2]) {
+                    return where[i + 2].val !== undefined ? where[i + 2].val : where[i + 2];
+                }
+            }
+            if (Array.isArray(where[i])) {
+                const val = getFilterValue(where[i], fieldName);
+                if (val) return val;
+            }
+        }
+        return null;
+    }
+    // Function to recursively strip out the virtual 'SELECTED_APPROVER' parameter
+    // so the database doesn't look for a non-existent database column.
+    function removeFilterField(where, fieldName) {
+        if (!where || !Array.isArray(where)) return;
+        for (let i = where.length - 1; i >= 0; i--) {
+            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
+                // Remove the field ref, the operator (=), and the value
+                where.splice(i, 3);
+                // Clean up trailing 'and' / 'or' operators left over around it
+                if (where[i] === 'and' || where[i] === 'or') where.splice(i, 1);
+                else if (i > 0 && (where[i - 1] === 'and' || where[i - 1] === 'or')) where.splice(i - 1, 1);
+            } else if (Array.isArray(where[i])) {
+                removeFilterField(where[i], fieldName);
+            }
+        }
+    }
+
+    srv.before('READ', 'ZEMP_SUBSTITUTE_VH', async (req) => {
+        const oWhereClause = req.query && req.query.SELECT && req.query.SELECT.where;
+        let sSelectedApproverID = getFilterValue(oWhereClause, 'SELECTED_APPROVER') || getFilterValue(oWhereClause, 'USER_ID');
+        if (!sSelectedApproverID && req._ && req._.req && req._.req.query && req._.req.query.$filter) {
+            const sRawFilter = req._.req.query.$filter;
+            const oMatch = sRawFilter.match(/(?:SELECTED_APPROVER|USER_ID)\s+(?:eq|=)\s+['"]([^'"]+)['"]/);
+            if (oMatch) sSelectedApproverID = oMatch[1];
+        }
+        removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
+        removeFilterField(req.query.SELECT.where, 'USER_ID');
+        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
+            const oCurrentUser = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+            // If we can find their department, apply it as a filter constraint
+            if (oCurrentUser && oCurrentUser.DEP) {
+                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
+                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                    req.query.SELECT.where = [
+                        '(', ...req.query.SELECT.where, ')',
+                        'and',
+                        ...oDeptFilter
+                    ];
+                } else {
+                    req.query.SELECT.where = oDeptFilter;
+                }
+            }
+            return;
+        }
+        const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
+        if (oApproverData) {
+            const oTargetFilters = [
+                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
+                'and',
+                { ref: ['ROLE'] }, '=', { val: oApproverData.ROLE },
+                'and',
+                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
+            ];
+            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                req.query.SELECT.where = [
+                    '(', ...req.query.SELECT.where, ')',
+                    'and',
+                    ...oTargetFilters
+                ];
+            } else {
+                req.query.SELECT.where = oTargetFilters;
+            }
+        }
+    });
+
+    const { ZNUM_RANGE, ZSUBSTITUTION_RULES_CONFIG } = srv.entities;
+
+    //need to create for draft table, else ID will not be capture and will throw error
+    srv.before('NEW', 'ZSUBSTITUTION_RULES_CONFIG.drafts', async (req) => {
+        if (!req.data.SUBSTITUTE_RULE_ID) {
+            const tx = cds.tx(req)
+            try {
+                const oNumRange = await tx.run(
+                    SELECT.one.from(ZNUM_RANGE).where({ RANGE_ID: Constant.NumberRange.SUBSTITUTION_RULE })
+                );
+                if (!oNumRange) {
+                    return req.error(500, `Configuration error: Range ID '${Constant.NumberRange.SUBSTITUTION_RULE}' not found in ZNUM_RANGE table.`);
+                }
+
+                const sPrefix = oNumRange.PREFIX || "SUB";
+                const iCurrent = Number(oNumRange.CURRENT || 0);
+
+                const sGeneratedID = `${sPrefix}${String(iCurrent).padStart(7, "0")}`;
+
+                req.data.SUBSTITUTE_RULE_ID = sGeneratedID;
+
+                const sNextNumberStr = String(iCurrent + 1);
+
+                await tx.run(
+                    UPDATE(ZNUM_RANGE)
+                        .set({ CURRENT: sNextNumberStr })
+                        .where({ RANGE_ID: Constant.NumberRange.SUBSTITUTION_RULE })
+                );
+            } catch (err) {
+                console.error("Number Range Assignment Error:", err);
+                return req.error(500, "Failed to automatically generate a unique Substitution Rule ID sequence.");
+            }
+        }
+    });
+
+    srv.before('CREATE', 'ZSUBSTITUTION_RULES_CONFIG.drafts', async (req) => {
+        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO, DraftAdministrativeData_DraftUUID } = req.data;
+        const tx = cds.tx(req)
+
+        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
+
+        const oToday = new Date();
+        // Generates a dynamic YYYY-MM-DD string based on today's real-time date
+        const sTodayIso = `${oToday.getFullYear()}-${String(oToday.getMonth() + 1).padStart(2, '0')}-${String(oToday.getDate()).padStart(2, '0')}`;
+        // 1. Block VALID_FROM if it is before today
+        if (VALID_FROM < sTodayIso) {
+            return req.error({
+                code: 'PAST_START_DATE',
+                message: 'The Valid From date cannot be in the past. Please choose today or a future date.',
+                target: 'VALID_FROM',
+                status: 400
+            });
+        }
+        // 2. Block VALID_TO if it is before today
+        if (VALID_TO < sTodayIso) {
+            return req.error({
+                code: 'PAST_END_DATE',
+                message: 'The Valid To date cannot be in the past. Please choose today or a future date.',
+                target: 'VALID_TO',
+                status: 400
+            });
+        }
+
+        if (new Date(VALID_TO) < new Date(VALID_FROM)) {
+            return req.error({
+                code: 'INVALID_DATE_RANGE',
+                message: 'The Valid To Date cannot be earlier than the Valid From Date.',
+                target: 'VALID_TO',
+                status: 400
+            });
+        }
+
+        // Fetch employee master data profiles in parallel
+        const [oApprover, oSubstitute] = await Promise.all([
+            SELECT.one.from('ZEMP_MASTER').where({ EEID: USER_ID }),
+            SELECT.one.from('ZEMP_MASTER').where({ EEID: SUBSTITUTE_ID })
+        ]);
+
+        if (!oApprover || !oSubstitute) return;
+        // Validate matching Department (DEP) and Role (ROLE)
+        if (oApprover.DEP !== oSubstitute.DEP || oApprover.ROLE !== oSubstitute.ROLE) {
+            return req.error({
+                code: 'INVALID_SUBSTITUTE_COMBINATION',
+                message: `The substitute must belong to the same department (${oApprover.DEP}) and hold the same role (${oApprover.ROLE}) as the approver.`,
+                target: 'SUBSTITUTE_ID', // Turns the Substitute ID field border red
+                status: 400
+            });
+        }
+
+        const [oActiveOverlap, oDraftOverlap] = await Promise.all([
+            // A. Check finalized records in the active table
+            tx.run(
+                SELECT.one.from('ZSUBSTITUTION_RULES').where({
+                    USER_ID: USER_ID,
+                    VALID_FROM: { '<=': VALID_TO },
+                    VALID_TO: { '>=': VALID_FROM }
+                })
+            ),
+            // B. Check other users' drafts, but EXCLUDE our current editing session GUID
+            tx.run(
+                SELECT.one.from(ZSUBSTITUTION_RULES_CONFIG.drafts).where({
+                    USER_ID: USER_ID,
+                    DraftAdministrativeData_DraftUUID: { '!=': DraftAdministrativeData_DraftUUID }, // Don't match against our record
+                    VALID_FROM: { '<=': VALID_TO },
+                    VALID_TO: { '>=': VALID_FROM }
+                })
+            )
+        ]);
+
+        // If an overlap is stop the transaction
+        if (oActiveOverlap || oDraftOverlap) {
+            const oExisting = oActiveOverlap || oDraftOverlap;
+            return req.error({
+                code: 'SUBSTITUTE_OVERLAP',
+                message: `This approver already has an assigned substitute within this timeframe (${oExisting.VALID_FROM} to ${oExisting.VALID_TO}).`,
+                target: 'VALID_FROM',
+                status: 400
+            });
+        }
+    });
 }

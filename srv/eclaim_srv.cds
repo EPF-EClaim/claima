@@ -296,6 +296,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZSUBSTITUTION_RULES as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
+    entity ZSUBSTITUTION_RULES_CONFIG    as
+        projection on ECLAIM.ZSUBSTITUTION_RULES {
+                @Core.Computed
+            key SUBSTITUTE_RULE_ID,
+                *
+        }
+        where
+            VALID_TO >= cast(
+                $now as Date
+            );
+
     entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
 
     type PreApproveClaims {
@@ -1239,4 +1250,73 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
 
     function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
+    @cds.autoexpose
+    entity ZEMP_APPROVER_LIST_VH              as
+        projection on ZEMP_MASTER {
+            key EEID,
+            NAME,
+            DEP
+        };    
+
+    entity ZEMP_PENDING_LIST           as
+            select from ECLAIM.ZREQUEST_HEADER as request {
+                key REQUEST_ID                     as ID,
+                    EMP_ID,
+                    CLAIM_TYPE_ID,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+        union all
+            select from ECLAIM.ZCLAIM_HEADER as claim {
+                key CLAIM_ID                              as ID,
+                    EMP_ID,
+                    CLAIM_TYPE_ID,
+                    STATUS_ID,
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+
+    entity ZEMP_PENDING_LIST_APPROVER           as
+            select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
+                key PREAPPROVAL_ID                     as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME          as APPROVER_NAME,
+                    cast('' as String)                 as NEW_APPROVER_ID
+            }
+        union all
+            select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim {
+                key CLAIM_ID                              as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME             as APPROVER_NAME,
+                    cast('' as String)                 as NEW_APPROVER_ID
+            }
+
+    entity ZEMP_APPROVER_VH              as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP
+        };
+
+    entity ZEMP_SUBSTITUTE_VH            as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP,
+            virtual null as SELECTED_APPROVER : String
+        };
+
 };
