@@ -1265,6 +1265,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     CLAIM_TYPE_ID,
                     STATUS,
                     ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    SUBMITTED_DATE
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
@@ -1274,7 +1275,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     EMP_ID,
                     CLAIM_TYPE_ID,
                     STATUS_ID,
-                    ZSTATUS.STATUS_DESC                   as STATUS_DESC
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    SUBMITTED_DATE
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';

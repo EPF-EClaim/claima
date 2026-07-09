@@ -8183,14 +8183,20 @@ annotate service.ZEMP_PENDING_LIST with @(
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
                 ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
+                Label            : 'Claim Type'
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submitted Date'
+            }            
         ]
     }
 );
