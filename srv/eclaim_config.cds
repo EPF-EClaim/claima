@@ -8129,15 +8129,15 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
+                Value            : CLAIM_TYPE_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID  '
+                Label            : 'Claim Type  '
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ITEM_ID,
+                Value            : CLAIM_TYPE_ITEM_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Claim Type Item ID  '
+                Label            : 'Claim Type Item  '
             },
             {
                 $Type            : 'UI.DataField',
@@ -8147,9 +8147,9 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : STATUS_ID,
+                Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Status ID  '
+                Label            : 'Status  '
             }
             
         ]

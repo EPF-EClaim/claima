@@ -19,7 +19,8 @@ const WORKFLOW_RULE_COLUMNS = [
     Constant.EntitiesFields.ROLE,
     Constant.EntitiesFields.DIVISION,
     Constant.EntitiesFields.LOCATION_TYPE,
-    Constant.EntitiesFields.PROJECT_CLAIM
+    Constant.EntitiesFields.PROJECT_CLAIM,
+    Constant.EntitiesFields.CASH_REPAYMENT
 ];
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return cds.run(
