@@ -1239,4 +1239,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
 
     function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
+
+    type ReassignmentPayload {
+        APPROVER_ID: String;
+        APPROVER_NAME:  String;
+        ID: String;
+        LEVEL: Integer;
+        NEW_APPROVER_ID: String;
+    }
+
+    action reassignApprover(payload: many ReassignmentPayload) returns Boolean;
+    
 };
