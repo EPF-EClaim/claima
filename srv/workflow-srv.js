@@ -46,11 +46,12 @@ module.exports = (srv) => {
     srv.on('startWorkflow', async req => {
         const oTx = cds.tx(req)
         const { id : sId } = req.data
-        let bStatus = true;
+        let bStatus = false;    // default to false, will be set to true
         let sStatus = '';
         let aReturn = [];
-        const oDescriptor = resolveDocDescriptor(sId);
         let aBudgetContext = [];
+
+        const oDescriptor = resolveDocDescriptor(sId);
         if (!oDescriptor) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`, false);
         }
@@ -61,6 +62,7 @@ module.exports = (srv) => {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched', false);
         }
         console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
+
         //2. Determine approvers and substitutes
         const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
         if(!aApproversContext.length) {
@@ -70,24 +72,24 @@ module.exports = (srv) => {
         //3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
         const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
         if(!aApproversContextNew.length) {
-            bStatus = false;
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization', false);
         }
         console.log('[workflow-srv] aApproversContextNew:', aApproversContextNew)
+
         const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
         const sInsert = await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
         console.log(sDelete);
         console.log(sInsert);
 
-        //4. Perform budget checking for auto approve
+        //4. Perform budget actualization for auto approve
         if(aApproversContext[0].LEVEL == 0) {
-            // aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
-            // aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            // const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            // if(oReturn) {
-            //     bStatus = false;
-            //     return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
-            // }
+            aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
+            aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            if(oReturn) {
+                bStatus = false;
+                return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
+            }
             //   If successful, update Header table with approved status and timestamp
             await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
         }
@@ -105,9 +107,16 @@ module.exports = (srv) => {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification', false);
         }
         console.log('[workflow-srv] sStatus:', sStatus)
+
+        // check if workflow found and approvers determined, change bStatus to true
+        if (oWorkflowContext && aApproversContext.length) {
+            bStatus = true;
+        }
+
         return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started', aApproversContextNew[0].LEVEL === 0 ? true : false);
         
     }),
+
     srv.on('processApproval', async req => {
         console.log("Request Payload: ", req.data);
         const { 
@@ -149,18 +158,18 @@ module.exports = (srv) => {
         console.log("Approver Action Completed: ", bStatus);
 
         // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
-        // if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
-        //     const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
-        //     console.log("aBudgetContext: ", aBudgetContext);
-        //     const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-        //     console.log("aReturn: ", aReturn);
-        //     const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-        //     if(oReturn) {
-        //         bStatus = false;
-        //         throw new Error('Error encountered during Budget Checking')
-        //     }
-        //     console.log("Budget Checking Status: ", bStatus);
-        // }
+        if(oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || oLastLevelApproverStatus.SUCCESS) {
+            const aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, oActionDescriptor.budgetActionValue);
+            console.log("aBudgetContext: ", aBudgetContext);
+            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
+            console.log("aReturn: ", aReturn);
+            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+            if(oReturn) {
+                bStatus = false;
+                throw new Error('Error encountered during Budget Checking')
+            }
+            console.log("Budget Checking Status: ", bStatus);
+        }
 
         // update PEDU entitlement usage if action is reject
         await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);
