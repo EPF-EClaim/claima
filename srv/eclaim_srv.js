@@ -1783,20 +1783,18 @@ module.exports = (srv) => {
      */
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
-        // const sUserEmail =
-        //     req.user?.attr?.email ||
-        //     req.user?.attr?.mail ||
-        //     req.user?.attr?.user_name ||
-        //     req.user?.attr?.login_name ||
-        //     req.user?.id;
+        const sUserEmail =
+            req.user?.attr?.email ||
+            req.user?.attr?.mail ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.login_name ||
+            req.user?.id;
 
-        // if (!sUserEmail) {
-        //     req.error(401, "Unable to determine logged-in user");
-        // }
-        const sUserEmail = "jefry.yap@my.ey.com"; // Hardcoded for testing purposes, remove in production
+        if (!sUserEmail) {
+            req.error(401, "Unable to determine logged-in user");
+        }
         const oEmp = await tx.run(
-            // SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
-            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: sUserEmail })
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
         if (!oEmp) {
             req.error(404, "Employee record not found");
@@ -2889,8 +2887,7 @@ module.exports = (srv) => {
         } = srv.entities;
 
         const tx = cds.tx(req);
-
-        const sCurrentUser = req.user?.id || 'SYSTEM';
+        const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
         const dCurrentTimestamp = new Date();
         const aLogsToInsert = [];
 
@@ -2923,7 +2920,7 @@ module.exports = (srv) => {
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
-                        MESSAGE: `User ${sCurrentUser} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
                     });
                 });
 
@@ -2978,7 +2975,7 @@ module.exports = (srv) => {
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
-                        MESSAGE: `User ${sCurrentUser} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
                     });
                 });
 
