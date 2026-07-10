@@ -583,7 +583,7 @@ async function sendClaimBatch(sId){
         console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
-        await sendFinalApproveLog(sId, "", "sendClaimBatch" ,iStatusCode, sMessage);
+        await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
     }
 }
 

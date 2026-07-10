@@ -119,7 +119,7 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
         console.log("Error found: ", oError);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
-        await sendFinalApproveLog(sId, "", "updateApproverDetailsTable" ,iStatusCode, sMessage);
+        await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
         return false;
     }
 }
