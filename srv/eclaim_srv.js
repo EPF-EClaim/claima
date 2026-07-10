@@ -3034,7 +3034,7 @@ module.exports = (srv) => {
                     } catch (oEmailError) {
                         console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
                         aLogsToInsert.push({
-                            TIMESTAMP: new Date();,
+                            TIMESTAMP: new Date(),
                             RECORD_ID: preApp.PREAPPROVAL_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'W',
