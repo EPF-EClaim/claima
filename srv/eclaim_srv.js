@@ -2883,7 +2883,7 @@ module.exports = (srv) => {
             ZEMP_APPROVER_REQUEST_DETAILS,
             ZAPPROVER_DETAILS_CLAIMS,
             ZAPPROVER_DETAILS_PREAPPROVAL,
-            ZLOG_TEMP
+            ZLOG
         } = srv.entities;
 
         const tx = cds.tx(req);
@@ -3002,8 +3002,8 @@ module.exports = (srv) => {
                 }
             }
 
-            if (aLogsToInsert.length > 0 && ZLOG_TEMP) {
-                await tx.run(INSERT.into(ZLOG_TEMP).entries(aLogsToInsert));
+            if (aLogsToInsert.length > 0 && ZLOG) {
+                await tx.run(INSERT.into(ZLOG).entries(aLogsToInsert));
             }
 
         } catch (oError) {
@@ -3011,9 +3011,9 @@ module.exports = (srv) => {
             req.warn(500, `Substitution rule saved, but failed to update existing records: ${oError.message}`);
 
             try {
-                if (ZLOG_TEMP) {
+                if (ZLOG) {
                     await cds.tx(async (oLogTx) => {
-                        await oLogTx.run(INSERT.into(ZLOG_TEMP).entries([{
+                        await oLogTx.run(INSERT.into(ZLOG).entries([{
                             TIMESTAMP: dCurrentTimestamp,
                             RECORD_ID: USER_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
@@ -3126,7 +3126,7 @@ module.exports = (srv) => {
             
             if (aLogsToInsert.length > 0) {
                 await cds.tx(async (oLogTx) => {
-                    await oLogTx.run(INSERT.into(Constant.Entities.ZLOG_TEMP).entries(aLogsToInsert));
+                    await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
                 });
             }
 

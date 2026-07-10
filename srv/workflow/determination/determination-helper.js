@@ -589,7 +589,7 @@ async function sendClaimBatch(sId){
 
 async function sendFinalApproveLog(sRecordId, sMessageType, sStatusCode, sMessage){
     await cds.run(
-        INSERT.into("ZLOG_TEMP").entries({
+        INSERT.into("ZLOG").entries({
             TIMESTAMP: new Date(),
             RECORD_ID: sRecordId,
             MESSAGE_TYPE: sMessageType,
