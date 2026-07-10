@@ -2927,12 +2927,11 @@ module.exports = (srv) => {
             ZEMP_APPROVER_REQUEST_DETAILS,
             ZAPPROVER_DETAILS_CLAIMS,
             ZAPPROVER_DETAILS_PREAPPROVAL,
-            ZLOG_TEMP
+            ZLOG
         } = srv.entities;
 
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
-        const dCurrentTimestamp = new Date();
         const aLogsToInsert = [];
 
         try {
@@ -2959,7 +2958,7 @@ module.exports = (srv) => {
 
                 matchingClaims.forEach(claim => {
                     aLogsToInsert.push({
-                        TIMESTAMP: dCurrentTimestamp,
+                        TIMESTAMP: new Date(),
                         RECORD_ID: claim.CLAIM_ID,
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
@@ -2980,7 +2979,7 @@ module.exports = (srv) => {
                     } catch (oEmailError) {
                         console.error(`Email failed for Claim ${claim.CLAIM_ID}`, oEmailError);
                         aLogsToInsert.push({
-                            TIMESTAMP: dCurrentTimestamp,
+                            TIMESTAMP: new Date(),
                             RECORD_ID: claim.CLAIM_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'W',
@@ -3014,7 +3013,7 @@ module.exports = (srv) => {
 
                 matchingPreApprovals.forEach(preApp => {
                     aLogsToInsert.push({
-                        TIMESTAMP: dCurrentTimestamp,
+                        TIMESTAMP: new Date(),
                         RECORD_ID: preApp.PREAPPROVAL_ID,
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
@@ -3035,7 +3034,7 @@ module.exports = (srv) => {
                     } catch (oEmailError) {
                         console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
                         aLogsToInsert.push({
-                            TIMESTAMP: dCurrentTimestamp,
+                            TIMESTAMP: new Date();,
                             RECORD_ID: preApp.PREAPPROVAL_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'W',
@@ -3046,8 +3045,8 @@ module.exports = (srv) => {
                 }
             }
 
-            if (aLogsToInsert.length > 0 && ZLOG_TEMP) {
-                await tx.run(INSERT.into(ZLOG_TEMP).entries(aLogsToInsert));
+            if (aLogsToInsert.length > 0 && ZLOG) {
+                await tx.run(INSERT.into(ZLOG).entries(aLogsToInsert));
             }
 
         } catch (oError) {
@@ -3055,10 +3054,10 @@ module.exports = (srv) => {
             req.warn(500, `Substitution rule saved, but failed to update existing records: ${oError.message}`);
 
             try {
-                if (ZLOG_TEMP) {
+                if (ZLOG) {
                     await cds.tx(async (oLogTx) => {
-                        await oLogTx.run(INSERT.into(ZLOG_TEMP).entries([{
-                            TIMESTAMP: dCurrentTimestamp,
+                        await oLogTx.run(INSERT.into(ZLOG).entries([{
+                            TIMESTAMP: new Date(),
                             RECORD_ID: USER_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'E',
@@ -3088,7 +3087,6 @@ module.exports = (srv) => {
         const aPayloads = req.data.payload; 
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
-        const sCurrentTimestamp = new Date();
 
         if (!Array.isArray(aPayloads) || aPayloads.length === 0) {
             return req.error(400, "Payload array is empty or missing.");
@@ -3099,8 +3097,9 @@ module.exports = (srv) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID } = oItem;
 
                 let oLogEntry = {
-                    TIMESTAMP: sCurrentTimestamp,
-                    RECORD_ID: ID
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: ID,
+                    PROGRAM: 'REASSIGN_APPROVER'
                 };
 
                 if (!NEW_APPROVER_ID || NEW_APPROVER_ID.trim() === '') {
@@ -3170,7 +3169,7 @@ module.exports = (srv) => {
             
             if (aLogsToInsert.length > 0) {
                 await cds.tx(async (oLogTx) => {
-                    await oLogTx.run(INSERT.into(Constant.Entities.ZLOG_TEMP).entries(aLogsToInsert));
+                    await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
                 });
             }
 
