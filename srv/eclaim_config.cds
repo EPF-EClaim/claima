@@ -8225,7 +8225,7 @@ annotate service.ZEMP_PENDING_LIST with @(
         Common.ValueListWithFixedValues: false,
         Common.ValueList               : {
             Label         : 'Employee Selection',
-            CollectionPath: 'ZEMP_APPROVER_LIST_VH',
+            CollectionPath: 'ZEMP_APPROVER_LIST_DEP',
             Parameters    : [
                 {
                     $Type            : 'Common.ValueListParameterInOut',

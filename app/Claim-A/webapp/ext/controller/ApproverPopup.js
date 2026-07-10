@@ -79,7 +79,7 @@ sap.ui.define([
                 if (oTable) {
                     var oBinding = oTable.getBinding("items");
                     if (oBinding) {
-                        oBinding.refresh(); 
+                        oBinding.refresh();
                     }
                 }
                 BusyIndicator.hide();
@@ -107,6 +107,8 @@ sap.ui.define([
         onApproverValueHelpRequest: function (oEvent) {
             var oInput = oEvent.getSource();
             var oBindingContext = oInput.getBindingContext();
+            var sDept = "";
+            var iCurrentSeq = null;
             if (oBindingContext) {
                 var sStatus = oBindingContext.getProperty("STATUS");
                 var sNormalizedStatus = sStatus ? sStatus.trim() : "";
@@ -114,25 +116,30 @@ sap.ui.define([
                     MessageToast.show(Utility.getText("msg_disable_edit"));
                     return;
                 }
+
+                sDept = oBindingContext.getProperty("APPROVER_DEP");
+                var sSeqRaw = oBindingContext.getProperty("GRADE_SEQUENCE");
+                if (sSeqRaw) {
+                    iCurrentSeq = parseInt(sSeqRaw, 10);
+                }
             }
             var oModel = oInput.getModel();
             if (oApproverPopupModule._oApproverVHDialog) {
                 oApproverPopupModule._oApproverVHDialog.destroy();
                 oApproverPopupModule._oApproverVHDialog = null;
             }
-            //    oApproverPopupModule._oApproverVHDialog = new sap.m.SelectDialog({
-            //        title: "Select Valid Approver",
-            //        items: {
-            //            path: "/ZEMP_APPROVER_LIST_VH",
-            //            template: new sap.m.StandardListItem({
-            //                title: "{NAME}",
-            //                description: "{EEID}"
-            //            })
-            //        },
+
+            var aInitialFilters = [];
+            if (sDept) {
+                aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
+            }
+            if (iCurrentSeq !== null) {
+            aInitialFilters.push(new sap.ui.model.Filter("GRADE_SEQUENCE", sap.ui.model.FilterOperator.GE, iCurrentSeq));
+            }
+
             oApproverPopupModule._oApproverVHDialog = new sap.m.TableSelectDialog({
-                title: "Select Valid Approver",
-                contentWidth: "35rem", // Generous width for column space
-                // Define the parallel column headers here
+                title: "Select Approver",
+                contentWidth: "35rem",
                 columns: [
                     new sap.m.Column({
                         header: new sap.m.Label({ text: "Name" })
@@ -141,7 +148,7 @@ sap.ui.define([
                         header: new sap.m.Label({ text: "Employee ID" })
                     })
                 ],
-                // Bind data using ColumnListItem instead of DisplayListItem
+
                 items: {
                     path: "/ZEMP_APPROVER_LIST_VH",
                     template: new sap.m.ColumnListItem({
@@ -149,18 +156,10 @@ sap.ui.define([
                             new sap.m.Text({ text: "{NAME}" }),
                             new sap.m.Text({ text: "{EEID}" })
                         ]
-                    })
+                    }),
+                    filters: aInitialFilters
                 },
-                // confirm: function (oConfirmEvent) {
-                //     var oSelectedItem = oConfirmEvent.getParameter("selectedItem");
-                //     if (oSelectedItem) {
-                //         var sNewApproverId = oSelectedItem.getDescription();
-                //         var oInputContext = oInput.getBindingContext();
-                //         if (oInputContext) {
-                //             oInputContext.setProperty("NEW_APPROVER_ID", sNewApproverId);
-                //         }
-                //     }
-                // },
+
                 confirm: function (oConfirmEvent) {
                     var oSelectedItem = oConfirmEvent.getParameter("selectedItem");
                     if (oSelectedItem) {

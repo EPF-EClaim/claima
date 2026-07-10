@@ -376,7 +376,7 @@ module.exports = (srv) => {
                         COMMITMENT_ITEM: entry.COMMITMENT_ITEM
                     };
                 }
-                
+
                 let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
                     ? await tx.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
                     : await tx.run(SELECT.one.from(ZBUDGET).where(condition));
@@ -643,23 +643,23 @@ module.exports = (srv) => {
 
     async function getInternalOrderByProjectCode(tx, sProjectCode) {
 
-    if (!sProjectCode) {
-        return null;
+        if (!sProjectCode) {
+            return null;
+        }
+
+        const sCurrentYear = String(new Date().getFullYear());
+        const oBudget = await tx.run(
+            SELECT.one
+                .from('ZBUDGET')
+                .columns('WBS_CODE')
+                .where({
+                    PROJECT_CODE: sProjectCode,
+                    YEAR: sCurrentYear
+                })
+        );
+
+        return oBudget?.WBS_CODE || null;
     }
-
-    const sCurrentYear = String(new Date().getFullYear());
-    const oBudget = await tx.run(
-        SELECT.one
-            .from('ZBUDGET')
-            .columns('WBS_CODE')
-            .where({
-                PROJECT_CODE: sProjectCode,
-                YEAR: sCurrentYear
-            })
-    );
-
-    return oBudget?.WBS_CODE || null;
-}
 
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
         const tx = cds.tx(req);
@@ -2323,7 +2323,7 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
-    
+
     /**
     * Update Header tables with approver actions
     * @public
@@ -2720,19 +2720,19 @@ module.exports = (srv) => {
 
     srv.on('getInternalOrderByProjectCode', async (req) => {
 
-    try {
+        try {
 
-        const tx = cds.tx(req);
+            const tx = cds.tx(req);
 
-        return await getInternalOrderByProjectCode(
-            tx,
-            req.data.sProjectCode
-        );
+            return await getInternalOrderByProjectCode(
+                tx,
+                req.data.sProjectCode
+            );
 
-    } catch (error) {
-        req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
-    }
-});
+        } catch (error) {
+            req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
+        }
+    });
 
     srv.on("getBantuanKebajikanKematianAmount", async (req) => {
         const tx = cds.tx(req);
@@ -2840,14 +2840,14 @@ module.exports = (srv) => {
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
             if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0'); 
+                req.query.where('1 = 0');
                 return;
             }
 
             const aDeptRecords = await tx.run(
                 SELECT.distinct('CC')
-                .from('ZEMP_MASTER')
-                .where({ DEP: oEmp.DEP })
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
             );
 
             const aCostCenters = aDeptRecords
@@ -2855,7 +2855,7 @@ module.exports = (srv) => {
                 .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
             if (aCostCenters.length > 0) {
-                
+
                 req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
 
             } else {
@@ -2990,7 +2990,7 @@ module.exports = (srv) => {
                     } catch (oEmailError) {
                         console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
                         aLogsToInsert.push({
-                            TIMESTAMP: new Date();,
+                            TIMESTAMP: new Date(),
                             RECORD_ID: preApp.PREAPPROVAL_ID,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'W',
@@ -3035,12 +3035,12 @@ module.exports = (srv) => {
      * @returns {Boolean} - Returns true if reassignment is successful, otherwise throws an error.
      */
     srv.on('reassignApprover', async (req) => {
-        const { 
-            ZAPPROVER_DETAILS_CLAIMS, 
+        const {
+            ZAPPROVER_DETAILS_CLAIMS,
             ZAPPROVER_DETAILS_PREAPPROVAL
-        } = srv.entities; 
+        } = srv.entities;
 
-        const aPayloads = req.data.payload; 
+        const aPayloads = req.data.payload;
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
 
@@ -3081,10 +3081,10 @@ module.exports = (srv) => {
 
                 const iRowsAffected = await UPDATE(oTargetEntity)
                     .set({ APPROVER_ID: NEW_APPROVER_ID })
-                    .where({ 
-                        [sIdColumnName]: ID, 
-                        LEVEL: LEVEL, 
-                        APPROVER_ID: APPROVER_ID 
+                    .where({
+                        [sIdColumnName]: ID,
+                        LEVEL: LEVEL,
+                        APPROVER_ID: APPROVER_ID
                     });
 
                 if (iRowsAffected > 0) {
@@ -3122,7 +3122,7 @@ module.exports = (srv) => {
             });
 
             console.log("aLogsToInsert", aLogsToInsert);
-            
+
             if (aLogsToInsert.length > 0) {
                 await cds.tx(async (oLogTx) => {
                     await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
@@ -3135,7 +3135,7 @@ module.exports = (srv) => {
                     message: `Batch complete with issues. Failed or skipped ${aErrorMessages.length} record(s).`,
                     status: 400,
                     target: 'payload',
-                    details: aErrorMessages 
+                    details: aErrorMessages
                 });
             }
 
@@ -3150,7 +3150,7 @@ module.exports = (srv) => {
     const { ZEMP_MASTER } = cds.entities;
 
     srv.before('READ', 'ZSUBSTITUTION_RULES_CONFIG', async (req) => {
-        
+
         //for GA, show their department only. for JKEW show all
         if (req.user.is(Constant.Admin.Admin_CC)) {
             const oEmp = await SELECT.one
@@ -3168,7 +3168,7 @@ module.exports = (srv) => {
     srv.before('READ', 'ZEMP_APPROVER_VH', async (req) => {
 
         //for GA, show their department only. for JKEW show all
-        if (req.user.is(Constant.Admin.Admin_CC)) {        
+        if (req.user.is(Constant.Admin.Admin_CC)) {
             const oEmp = await SELECT.one
                 .from('ZEMP_MASTER')
                 .where({ EMAIL: req.user.id });
@@ -3245,18 +3245,53 @@ module.exports = (srv) => {
         }
         const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
         if (oApproverData) {
+            let iCurrentSeq = 0;
+            if (oApproverData.GRADE) {
+                const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+                    LOW_VALUE: oApproverData.GRADE,
+                    VARIABLE_NAME: 'PERSONAL_GRADE'
+                });
+                if (oConfig && oConfig.SEQUENCE_NO) {
+                    iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
+                }
+            }
+
+            // Fetch all grade strings that match or exceed the current sequence rank
+            const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
+                VARIABLE_NAME: 'PERSONAL_GRADE',
+                SEQUENCE_NO: { '>=': iCurrentSeq }
+            });
+
+            const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
+
+            let oGradeFilter = [];
+            if (aAllowedGradeValues.length > 0) {
+                aAllowedGradeValues.forEach((sGrade, index) => {
+                    oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
+                    if (index < aAllowedGradeValues.length - 1) {
+                        oGradeFilter.push('or');
+                    }
+                });
+                if (aAllowedGradeValues.length > 1) {
+                    oGradeFilter = ['(', ...oGradeFilter, ')'];
+                }
+            } else {
+                oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
+            }
+
             const oTargetFilters = [
                 { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
                 'and',
-                { ref: ['ROLE'] }, '=', { val: oApproverData.ROLE },
+                ...oGradeFilter,
                 'and',
                 { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
             ];
+
             if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
                 req.query.SELECT.where = [
                     '(', ...req.query.SELECT.where, ')',
                     'and',
-                    ...oTargetFilters
+                    '(', ...oTargetFilters, ')'
                 ];
             } else {
                 req.query.SELECT.where = oTargetFilters;
@@ -3385,10 +3420,11 @@ module.exports = (srv) => {
         }
     });
 
-    srv.before('READ', 'ZEMP_APPROVER_LIST_VH', async (req) => {
+    //this is for list report which will be filter by department for GA
+    srv.before('READ', 'ZEMP_APPROVER_LIST_DEP', async (req) => {
 
         //for GA, show their department only. for JKEW show all
-        if (req.user.is(Constant.Admin.Admin_CC)) {        
+        if (req.user.is(Constant.Admin.Admin_CC)) {
             const oEmp = await SELECT.one
                 .from('ZEMP_MASTER')
                 .where({ EMAIL: req.user.id });
@@ -3400,5 +3436,5 @@ module.exports = (srv) => {
                 DEP: oEmp.DEP
             });
         }
-    });    
+    });
 }
