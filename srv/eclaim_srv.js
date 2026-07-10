@@ -1793,11 +1793,9 @@ module.exports = (srv) => {
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");
         }
-
         const oEmp = await tx.run(
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
-
         if (!oEmp) {
             req.error(404, "Employee record not found");
         }
@@ -2323,101 +2321,6 @@ module.exports = (srv) => {
             return result;
         } catch (error) {
             return req.reject(400, `Fail processing records: ${error.message}`);
-        }
-    });
-
-    /**
-     * After creating a substitution rule, this handler will find all relevant claims and pre-approvals 
-     * that match the criteria of the new rule and update them with the substitute approver ID. 
-     * It will also trigger email notifications for any claims or pre-approvals that are in 
-     * pending approval status (STAT02) to inform the substitute approver of their new responsibilities.
-     */
-    srv.after('CREATE', 'ZSUBSTITUTION_RULES', async (data, req) => {
-        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
-        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
-
-        const tx = cds.tx(req);
-
-        try {
-            // =======================================================================
-            // PROCESS 1: ZAPPROVER_DETAILS_CLAIMS
-            // =======================================================================
-
-            // Step 1A: SELECT with JOIN to ZCLAIM_HEADER to check SUBMITTED_DATE
-            const matchingClaims = await tx.run(
-                SELECT.from('ZAPPROVER_DETAILS_CLAIMS', 'D')
-                    .join('ZCLAIM_HEADER', 'H')
-                    .on('D.CLAIM_ID = H.CLAIM_ID')
-                    .where(`D.APPROVER_ID =`, USER_ID)
-                    .and(`(D.STATUS = 'STAT02' OR D.STATUS IS NULL OR D.STATUS = '')`)
-                    .and(`H.SUBMITTED_DATE >=`, VALID_FROM)
-                    .and(`H.SUBMITTED_DATE <=`, VALID_TO)
-                    // Select the specific keys we need for the update and the email
-                    .columns('D.CLAIM_ID', 'D.LEVEL', 'D.STATUS') 
-            );
-
-            if (matchingClaims.length > 0) {
-                // Step 1B: Update the exact records we found using their primary keys
-                const claimUpdates = matchingClaims.map(claim => 
-                    UPDATE('ZAPPROVER_DETAILS_CLAIMS')
-                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
-                        .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
-                );
-                await Promise.all(claimUpdates.map(query => tx.run(query)));
-
-                // Step 1C: Group records with STAT02 and trigger emails
-                const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
-                for (const claim of pendingClaims) {
-                    await sendEmailInternal({
-                        ApproverName: SUBSTITUTE_ID,
-                        ClaimID: claim.CLAIM_ID,
-                        Action: "Pending Approval (Delegated)",
-                        EmailTitle: `Action Required: Delegated Claim ${claim.CLAIM_ID}`,
-                        // ... other fields
-                    });
-                }
-            }
-
-            // =======================================================================
-            // PROCESS 2: ZAPPROVER_DETAILS_PREAPPROVAL
-            // =======================================================================
-
-            // Step 2A: SELECT with JOIN to ZREQUEST_HEADER
-            // Note: Joining on H.REQUEST_ID = D.PREAPPROVAL_ID based on your schema
-            const matchingPreApprovals = await tx.run(
-                SELECT.from('ZAPPROVER_DETAILS_PREAPPROVAL', 'D')
-                    .join('ZREQUEST_HEADER', 'H')
-                    .on('D.PREAPPROVAL_ID = H.REQUEST_ID')
-                    .where(`D.APPROVER_ID =`, USER_ID)
-                    .and(`(D.STATUS = 'STAT02' OR D.STATUS IS NULL OR D.STATUS = '')`)
-                    .and(`H.SUBMITTED_DATE >=`, VALID_FROM)
-                    .and(`H.SUBMITTED_DATE <=`, VALID_TO)
-                    .columns('D.PREAPPROVAL_ID', 'D.LEVEL', 'D.STATUS')
-            );
-
-            if (matchingPreApprovals.length > 0) {
-                const preAppUpdates = matchingPreApprovals.map(preApp => 
-                    UPDATE('ZAPPROVER_DETAILS_PREAPPROVAL')
-                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
-                        .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
-                );
-                await Promise.all(preAppUpdates.map(query => tx.run(query)));
-
-                // Step 2C: Group records with STAT02 and trigger emails
-                const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
-                for (const preApp of pendingPreApprovals) {
-                    await sendEmailInternal({
-                        ApproverName: SUBSTITUTE_ID,
-                        ClaimID: preApp.PREAPPROVAL_ID,
-                        Action: "Pending Pre-Approval (Delegated)",
-                        EmailTitle: `Action Required: Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
-                        // ... other fields
-                    });
-                }
-            }
-
-        } catch (error) {
-            req.warn(500, `Substitution rule saved, but failed to update existing records: ${error.message}`);
         }
     });
     
@@ -2958,6 +2861,290 @@ module.exports = (srv) => {
             } else {
                 req.query.where('1 = 0');
             }
+        }
+    });
+
+    /**
+     * After creating a substitution rule, this handler will find all relevant claims and pre-approvals 
+     * that match the criteria of the new rule and update them with the substitute approver ID. 
+     * It will also trigger email notifications for any claims or pre-approvals that are in 
+     * pending approval status (STAT02) to inform the substitute approver of their new responsibilities.
+     * @public
+     * @param {Object} data - The data of the newly created substitution rule.
+     * @param {Object} req - The request object containing context and transaction information.
+     */
+    srv.after('CREATE', 'ZSUBSTITUTION_RULES', async (data, req) => {
+        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
+        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
+
+        // All entities used here are exposed by THIS service — single consistent model
+        const {
+            ZEMP_APPROVER_CLAIM_DETAILS,
+            ZEMP_APPROVER_REQUEST_DETAILS,
+            ZAPPROVER_DETAILS_CLAIMS,
+            ZAPPROVER_DETAILS_PREAPPROVAL,
+            ZLOG_TEMP
+        } = srv.entities;
+
+        const tx = cds.tx(req);
+        const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
+        const dCurrentTimestamp = new Date();
+        const aLogsToInsert = [];
+
+        try {
+            // =======================================================================
+            // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
+            // =======================================================================
+
+            const matchingClaims = await tx.run(
+                SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
+                    .where({ APPROVER_ID: USER_ID })
+                    .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                    .and('SUBMITTED_DATE >=', VALID_FROM)
+                    .and('SUBMITTED_DATE <=', VALID_TO)
+                    .columns('CLAIM_ID', 'LEVEL', 'STATUS')
+            );
+
+            if (matchingClaims.length > 0) {
+                const claimUpdates = matchingClaims.map(claim =>
+                    UPDATE(ZAPPROVER_DETAILS_CLAIMS)   // write to base table, not the view
+                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                        .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
+                );
+                await Promise.all(claimUpdates.map(query => tx.run(query)));
+
+                matchingClaims.forEach(claim => {
+                    aLogsToInsert.push({
+                        TIMESTAMP: dCurrentTimestamp,
+                        RECORD_ID: claim.CLAIM_ID,
+                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                        MESSAGE_TYPE: 'S',
+                        STATUS_CODE: '200',
+                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                    });
+                });
+
+                const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
+                for (const claim of pendingClaims) {
+                    try {
+                        await sendEmailInternal({
+                            ApproverName: SUBSTITUTE_ID,
+                            ClaimID: claim.CLAIM_ID,
+                            Action: "Pending Approval (Delegated)",
+                            EmailTitle: `Action Required: Delegated Claim ${claim.CLAIM_ID}`,
+                        });
+                    } catch (oEmailError) {
+                        console.error(`Email failed for Claim ${claim.CLAIM_ID}`, oEmailError);
+                        aLogsToInsert.push({
+                            TIMESTAMP: dCurrentTimestamp,
+                            RECORD_ID: claim.CLAIM_ID,
+                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                            MESSAGE_TYPE: 'W',
+                            STATUS_CODE: '207',
+                            MESSAGE: `Claim ${claim.CLAIM_ID} updated, but delegation notification email to ${SUBSTITUTE_ID} failed.`
+                        });
+                    }
+                }
+            }
+
+            // =======================================================================
+            // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
+            // =======================================================================
+
+            const matchingPreApprovals = await tx.run(
+                SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
+                    .where({ APPROVER_ID: USER_ID })
+                    .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                    .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
+                    .and('REQUEST_DATE <=', VALID_TO)
+                    .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS')
+            );
+
+            if (matchingPreApprovals.length > 0) {
+                const preAppUpdates = matchingPreApprovals.map(preApp =>
+                    UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
+                        .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                        .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
+                );
+                await Promise.all(preAppUpdates.map(query => tx.run(query)));
+
+                matchingPreApprovals.forEach(preApp => {
+                    aLogsToInsert.push({
+                        TIMESTAMP: dCurrentTimestamp,
+                        RECORD_ID: preApp.PREAPPROVAL_ID,
+                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                        MESSAGE_TYPE: 'S',
+                        STATUS_CODE: '200',
+                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                    });
+                });
+
+                const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
+                for (const preApp of pendingPreApprovals) {
+                    try {
+                        await sendEmailInternal({
+                            ApproverName: SUBSTITUTE_ID,
+                            ClaimID: preApp.PREAPPROVAL_ID,
+                            Action: "Pending Pre-Approval (Delegated)",
+                            EmailTitle: `Action Required: Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
+                        });
+                    } catch (oEmailError) {
+                        console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
+                        aLogsToInsert.push({
+                            TIMESTAMP: dCurrentTimestamp,
+                            RECORD_ID: preApp.PREAPPROVAL_ID,
+                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                            MESSAGE_TYPE: 'W',
+                            STATUS_CODE: '207',
+                            MESSAGE: `Pre-Approval ${preApp.PREAPPROVAL_ID} updated, but delegation notification email to ${SUBSTITUTE_ID} failed.`
+                        });
+                    }
+                }
+            }
+
+            if (aLogsToInsert.length > 0 && ZLOG_TEMP) {
+                await tx.run(INSERT.into(ZLOG_TEMP).entries(aLogsToInsert));
+            }
+
+        } catch (oError) {
+            console.error("Substitution assignment log error:", oError);
+            req.warn(500, `Substitution rule saved, but failed to update existing records: ${oError.message}`);
+
+            try {
+                if (ZLOG_TEMP) {
+                    await cds.tx(async (oLogTx) => {
+                        await oLogTx.run(INSERT.into(ZLOG_TEMP).entries([{
+                            TIMESTAMP: dCurrentTimestamp,
+                            RECORD_ID: USER_ID,
+                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                            MESSAGE_TYPE: 'E',
+                            STATUS_CODE: '500',
+                            MESSAGE: `Substitution batch processing runtime error for ruleset: ${oError.message}`
+                        }]));
+                    });
+                }
+            } catch (oFallbackError) {
+                console.error("Critical fallback logger failure:", oFallbackError);
+            }
+        }
+    });
+
+    /**
+     * Reassign Approver for Claims and Pre-Approvals
+     * @public
+     * @param {Object} req - The request object containing the payload for reassignment.
+     * @returns {Boolean} - Returns true if reassignment is successful, otherwise throws an error.
+     */
+    srv.on('reassignApprover', async (req) => {
+        const { 
+            ZAPPROVER_DETAILS_CLAIMS, 
+            ZAPPROVER_DETAILS_PREAPPROVAL
+        } = srv.entities; 
+
+        const aPayloads = req.data.payload; 
+        const tx = cds.tx(req);
+        const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
+        const sCurrentTimestamp = new Date();
+
+        if (!Array.isArray(aPayloads) || aPayloads.length === 0) {
+            return req.error(400, "Payload array is empty or missing.");
+        }
+
+        try {
+            const aUpdatePromises = aPayloads.map(async (oItem) => {
+                const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID } = oItem;
+
+                let oLogEntry = {
+                    TIMESTAMP: sCurrentTimestamp,
+                    RECORD_ID: ID
+                };
+
+                if (!NEW_APPROVER_ID || NEW_APPROVER_ID.trim() === '') {
+                    return;
+                }
+
+                const sPrefix = ID ? ID.substring(0, 3).toUpperCase() : null;
+                let oTargetEntity = null;
+                let sIdColumnName = '';
+
+                if (sPrefix === 'CLM') {
+                    oTargetEntity = ZAPPROVER_DETAILS_CLAIMS;
+                    sIdColumnName = Constant.ApproverDetailsTable.CLAIM_ID;
+                } else if (sPrefix === 'REQ') {
+                    oTargetEntity = ZAPPROVER_DETAILS_PREAPPROVAL;
+                    sIdColumnName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
+                } else {
+                    oLogEntry.MESSAGE_TYPE = 'E';
+                    oLogEntry.STATUS_CODE = '400';
+                    oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} failed reassignment for ID ${ID} (Level ${LEVEL}): Unknown ID prefix.`;
+                    return { iRowsAffected: 0, oLog: oLogEntry };
+                }
+
+                const iRowsAffected = await UPDATE(oTargetEntity)
+                    .set({ APPROVER_ID: NEW_APPROVER_ID })
+                    .where({ 
+                        [sIdColumnName]: ID, 
+                        LEVEL: LEVEL, 
+                        APPROVER_ID: APPROVER_ID 
+                    });
+
+                if (iRowsAffected > 0) {
+                    oLogEntry.MESSAGE_TYPE = 'S';
+                    oLogEntry.STATUS_CODE = '200';
+                    oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to approver ${NEW_APPROVER_ID}.`;
+                } else {
+                    oLogEntry.MESSAGE_TYPE = 'W';
+                    oLogEntry.STATUS_CODE = '404';
+                    oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} attempted reassignment for record ${ID} (Level ${LEVEL}), but no match found for current approver ${APPROVER_ID}.`;
+                }
+
+                return { iRowsAffected, oLog: oLogEntry };
+            });
+
+            const aResults = await Promise.all(aUpdatePromises);
+
+            let iSuccessCount = 0;
+            const aLogsToInsert = [];
+            const aErrorMessages = [];
+
+            aResults.forEach(oResult => {
+                if (oResult) {
+                    iSuccessCount += oResult.iRowsAffected;
+                    aLogsToInsert.push(oResult.oLog);
+
+                    if (oResult.oLog.STATUS_CODE !== '200') {
+                        aErrorMessages.push({
+                            recordId: oResult.oLog.RECORD_ID,
+                            statusCode: oResult.oLog.STATUS_CODE,
+                            message: oResult.oLog.MESSAGE
+                        });
+                    }
+                }
+            });
+
+            console.log("aLogsToInsert", aLogsToInsert);
+            
+            if (aLogsToInsert.length > 0) {
+                await cds.tx(async (oLogTx) => {
+                    await oLogTx.run(INSERT.into(Constant.Entities.ZLOG_TEMP).entries(aLogsToInsert));
+                });
+            }
+
+            if (aErrorMessages.length > 0) {
+                return req.error({
+                    code: 'BATCH_REASSIGNMENT_FAILED',
+                    message: `Batch complete with issues. Failed or skipped ${aErrorMessages.length} record(s).`,
+                    status: 400,
+                    target: 'payload',
+                    details: aErrorMessages 
+                });
+            }
+
+            return true;
+
+        } catch (oError) {
+            console.error("Batch reassignment error:", oError);
+            return req.error(500, "Database error occurred during batch reassignment.");
         }
     });
 
