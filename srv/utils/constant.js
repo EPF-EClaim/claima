@@ -512,6 +512,12 @@ const Constant = {
     PeduResult: {
         EXCEEDED: "EXCEEDED",
         NOT_EXCEEDED: "NOT_EXCEEDED"
+    },
+    SpecialMultipleConstantApproverList: {
+        "MED_REVIEWER": "MED_REVIEWER", 
+        "MED_APPROVER": "MED_APPROVER", 
+        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
+        "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
     }
 
 };
