@@ -581,9 +581,23 @@ async function sendClaimBatch(sId){
 
     } catch (e) {
         console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+        const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
+        const sMessage = oError?.message || "No Message";
+        await sendFinalApproveLog(sId, "", iStatusCode, sMessage);
     }
 }
 
+async function sendFinalApproveLog(sRecordId, sMessageType, sStatusCode, sMessage){
+    await cds.run(
+        INSERT.into("ZLOG_TEMP").entries({
+            TIMESTAMP: new Date(),
+            RECORD_ID: sRecordId,
+            MESSAGE_TYPE: sMessageType,
+            STATUS_CODE: sStatusCode,
+            MESSAGE: sMessage
+        })
+    );
+}
 module.exports = { 
     determineWorkflowStepContext,
     retrieveFromConstantTable,
@@ -602,5 +616,6 @@ module.exports = {
     retrieveWorkflowByClaimTypeRoleAndDivision,
     retrieveWorkflowByClaimTypeAndDivision,
     retrieveWorkflowByClaimType,
-    sendClaimBatch
+    sendClaimBatch,
+    sendFinalApproveLog
 };
