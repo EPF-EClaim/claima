@@ -261,35 +261,50 @@
 #          "sRecordId": "REQ26000000095"
 # }
      
-POST http://localhost:4004/odata/v4/EmployeeSrv/sendEmail
-Content-Type: application/json
-Authorization: Basic alice
+# POST http://localhost:4004/odata/v4/EmployeeSrv/sendEmail
+# Content-Type: application/json
+# Authorization: Basic alice
 
-{
-    "ApproverName": "John Doe",
-    "SubmissionDate": "2026-05-28",
-    "ClaimantName": "Jane Smith",
-    "ClaimType": "Travel Expense",
-    "ClaimID": "CLM-40992",
-    "RecipientName": "Jane Smith",
-    "Action": "Approve",
-    "ReceiverEmail": "jefry.yap@my.ey.com"
-}
+# {
+#     "ApproverName": "John Doe",
+#     "SubmissionDate": "2026-05-28",
+#     "ClaimantName": "Jane Smith",
+#     "ClaimType": "Travel Expense",
+#     "ClaimID": "CLM-40992",
+#     "RecipientName": "Jane Smith",
+#     "Action": "Approve",
+#     "ReceiverEmail": "jefry.yap@my.ey.com"
+# }
 
-GET  http://localhost:4004/odata/v4/EmployeeSrv/getAmountEntitlement
-Content-Type: application/json
-Authorization: Basic alice
+# GET  http://localhost:4004/odata/v4/EmployeeSrv/getAmountEntitlement
+# Content-Type: application/json
+# Authorization: Basic alice
       
+# {
+#       "day": 2,
+#       "hours": 48,
+#       "location": "01",
+#       "claimtypeid": "ELAUN_PINDAH", 
+#       "claimtypeitem": "MKN_LOAN",
+#       "breakfast": 0,
+#       "lunch": 0,
+#       "dinner": 0,
+#       "employeeid": "010310",
+#       "dependent": 1,
+#       "exclude_tips": true
+# }
+
+POST http://localhost:4004/odata/v4/EmployeeSrv/reassignApprover
+Content-Type: application/json
+Authorization: Basic alice
+
 {
-      "day": 2,
-      "hours": 48,
-      "location": "01",
-      "claimtypeid": "ELAUN_PINDAH", 
-      "claimtypeitem": "MKN_LOAN",
-      "breakfast": 0,
-      "lunch": 0,
-      "dinner": 0,
-      "employeeid": "010310",
-      "dependent": 1,
-      "exclude_tips": true
+    "payload": [
+        {
+            "ID": "CLM26000002706",
+            "LEVEL": 1,
+            "APPROVER_ID": "010310",
+            "NEW_APPROVER_ID": "904897"
+        }
+    ]
 }

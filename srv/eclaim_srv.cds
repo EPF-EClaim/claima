@@ -1183,7 +1183,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CT.CLAIM_TYPE_DESC       as CLAIM_TYPE_DESC,
                 CTI.CLAIM_TYPE_ITEM_DESC as CLAIM_TYPE_ITEM_DESC,
                 ITEM.AMOUNT
-        };
+        } where HEADER.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
 
     entity ZEMP_CC_BUDGET_REPORT         as
         projection on ECLAIM.ZBUDGET {
@@ -1239,4 +1239,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
 
     function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
+
+    type ReassignmentPayload {
+        APPROVER_ID: String;
+        APPROVER_NAME:  String;
+        ID: String;
+        LEVEL: Integer;
+        NEW_APPROVER_ID: String;
+    }
+
+    action reassignApprover(payload: many ReassignmentPayload) returns Boolean;
+    
 };
