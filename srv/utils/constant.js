@@ -78,7 +78,7 @@ const Constant = {
         "ZEMP_SUBSTITUTION_RULE": "ZSUBSTITUTION_RULES",
         "ZAPPROVER_DETAILS_CLAIMS": "ZAPPROVER_DETAILS_CLAIMS",
         "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL",
-        "ZLOG_TEMP": "ZLOG_TEMP"
+        "ZLOG": "ZLOG"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -513,6 +513,12 @@ const Constant = {
     PeduResult: {
         EXCEEDED: "EXCEEDED",
         NOT_EXCEEDED: "NOT_EXCEEDED"
+    },
+    SpecialMultipleConstantApproverList: {
+        "MED_REVIEWER": "MED_REVIEWER", 
+        "MED_APPROVER": "MED_APPROVER", 
+        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
+        "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
     }
 
 };

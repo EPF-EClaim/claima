@@ -12,7 +12,8 @@ const {
     setApproversContext,
     sendClaimBatch,
     deleteApproverDetails,
-    insertRecords
+    insertRecords,
+    sendFinalApproveLog
 } = require("./workflow/determination/determination-helper");
 const {
     resolveDocDescriptor,

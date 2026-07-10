@@ -136,58 +136,25 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                     case Constant.Role.FI_SETTLEMENT_B:
                     case Constant.Role.HOD_JKEW:
                     case Constant.Role.MED_REVIEWER:
+                    case Constant.Role.MED_APPROVER:
+                    case Constant.Role.ELAUN_PINDAH_VERIFIER:
+                    case Constant.Role.WILAYAH_ASAL_VERIFIER:
                         // Possible multiple approvers retrieved from ZCONSTANTS table
                         aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
                         console.log("aConstantValues", aConstantValues)
-                        if(aConstantValues.length){
-                            for(const oId of aConstantValues){
-                                if(oId.VALUE){
-                                    oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
-                                    console.log("oApproverDetails", oApproverDetails)
-                                    oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                                    console.log("oPopulatedEmployee", oPopulatedEmployee)
-                                    if(oPopulatedEmployee){
-                                        aApproversDetails.push(oPopulatedEmployee);
-                                    }else{
-                                        return [];
-                                    }
-                                    console.log("Constant Approver: ", oPopulatedEmployee)
-                                }else{
-                                    return [];
-                                }
+                        if(aConstantValues.length > 1){
+                            oApproverDetails = await retrieveEmployeeDetails(aConstantValues[0].VALUE);
+                            console.log("oApproverDetails", oApproverDetails)
+                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            console.log("oPopulatedEmployee", oPopulatedEmployee)
+                            if(oPopulatedEmployee){
+                                aApproversDetails.push(oPopulatedEmployee);
+                            }else{
+                                return [];
                             }
-
+                            console.log("Constant Approver: ", oPopulatedEmployee)
                         }
-                        break;
-                        case Constant.Role.ELAUN_PINDAH_VERIFIER:
-                        // Possible multiple approvers retrieved from ZCONSTANTS table
-                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
-                        console.log("aConstantValues", aConstantValues)
-                        if(aConstantValues.length){
-                            for(const oId of aConstantValues){
-                                if(oId.VALUE){
-                                    oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
-                                    console.log("oApproverDetails", oApproverDetails)
-                                    oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                                    console.log("oPopulatedEmployee", oPopulatedEmployee)
-                                    if(oPopulatedEmployee){
-                                        aApproversDetails.push(oPopulatedEmployee);
-                                    }else{
-                                        return [];
-                                    }
-                                    console.log("Constant Approver: ", oPopulatedEmployee)
-                                }else{
-                                    return [];
-                                }
-                            }
-
-                        }
-                        break;
-                        case Constant.Role.WILAYAH_ASAL_VERIFIER:
-                        // Possible multiple approvers retrieved from ZCONSTANTS table
-                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
-                        console.log("aConstantValues", aConstantValues)
-                        if(aConstantValues.length){
+                        else{
                             for(const oId of aConstantValues){
                                 if(oId.VALUE){
                                     oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
@@ -237,9 +204,11 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         }
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
-    //console.log(aUniqueApproversDetails);
+    //console.log("aUniqueApproversDetails", aUniqueApproversDetails);
+    var test = ["MED_REVIEWER", "MED_APPROVER", "WILAYAH_ASAL_VERIFIER" , "ELAUN_PINDAH_VERIFIER"];
     // Retrieve substitute for approvers
-    for (const oApprover of aUniqueApproversDetails){
+    for (const [iIndex, oApprover] of aUniqueApproversDetails.entries()){
+
         // Variable declaration for substitutes
         let sSubstitute = null;         // Variable to store substitute user
         let oSubstituteDetails = null;  // Variable to store substitute user details
@@ -248,16 +217,32 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         let sSubstitute_email = "";      // Variable to store substitute email
         // If LEVEL = 0, Approver is Auto
         if(oApprover.LEVEL > 0){
-            sSubstitute = await retrieveSubstitute(oApprover.EEID);
-            //console.log("sSubstitute", sSubstitute);
-            if(sSubstitute){
-                oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
+            if(Object.values(Constant.SpecialMultipleConstantApproverList).includes(aWorkflowApprStep[iIndex])){
+                aConstantValues = await retrieveFromConstantTable(oTx, aWorkflowApprStep[iIndex]);
+                const aOtherConstantAppr = aConstantValues.filter(item => item.VALUE !== oApprover.EEID);
+                oSubstituteDetails = await retrieveEmployeeDetails(aOtherConstantAppr[0].VALUE);
+                console.log("aWorkflowApprStep[iIndex]" , aWorkflowApprStep[iIndex]);
+                console.log("aConstantValues", aConstantValues);
+                console.log("aOtherConstantAppr", aOtherConstantAppr);
+                console.log("oSubstituteDetails", oSubstituteDetails);
                 if(oSubstituteDetails){
                     sSubstitute_eeid = oSubstituteDetails.EEID;
                     sSubstitute_name = oSubstituteDetails.NAME;
                     sSubstitute_email = oSubstituteDetails.EMAIL;
                 }
             }
+            else{
+                sSubstitute = await retrieveSubstitute(oApprover.EEID);
+                //console.log("sSubstitute", sSubstitute);
+                if(sSubstitute){
+                    oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
+                    if(oSubstituteDetails){
+                        sSubstitute_eeid = oSubstituteDetails.EEID;
+                        sSubstitute_name = oSubstituteDetails.NAME;
+                        sSubstitute_email = oSubstituteDetails.EMAIL;
+                    }
+                }
+            }  
         }else{
             sSubstitute_name = Constant.Role.AUTO;
         }
