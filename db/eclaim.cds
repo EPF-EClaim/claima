@@ -405,7 +405,9 @@ entity ZCLAIM_HEADER : managed {
         ZTRAIN_COURSE_PART             : Association to ZTRAIN_COURSE_PART
                                              on  ZTRAIN_COURSE_PART.PARTICIPANT_ID = EMP_ID
                                              and ZTRAIN_COURSE_PART.COURSE_ID      = COURSE_CODE
-                                             and ZTRAIN_COURSE_PART.SESSION_NUMBER = SESSION_NUMBER;
+                                             and ZTRAIN_COURSE_PART.SESSION_NUMBER = SESSION_NUMBER
+                                             and ZTRAIN_COURSE_PART.START_DATE     = TRIP_START_DATE
+                                             and ZTRAIN_COURSE_PART.END_DATE       = TRIP_END_DATE;
         ZREJECT_REASON                 : Association to ZREJECT_REASON
                                              on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON               : Association to ZREJECT_REASON
