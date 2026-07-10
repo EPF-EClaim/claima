@@ -12,16 +12,22 @@ sap.ui.define([
          */
         saveApproverData: function (aTableItems, oModel) {
             var aPayloadItems = aTableItems.map(function (oItem) {
-                var oContext = oItem.getBindingContext(); 
+                var oContext = oItem.getBindingContext();
                 if (!oContext) { return null; }
-                return oContext.getObject();
+                return {
+                    ID: oContext.getProperty("ID"),
+                    LEVEL: parseInt(oContext.getProperty("LEVEL"), 10),
+                    APPROVER_ID: oContext.getProperty("APPROVER_ID"),
+                    APPROVER_NAME: oContext.getProperty("APPROVER_NAME"),
+                    NEW_APPROVER_ID: oContext.getProperty("NEW_APPROVER_ID")
+                };
             }).filter(Boolean);
 
             if (aPayloadItems.length === 0) {
                 return Promise.resolve("No records to save");
             }
             var oOperation = oModel.bindContext("/reassignApprover(...)");
-            oOperation.setParameter("items", aPayloadItems);
+            oOperation.setParameter("payload", aPayloadItems);
             return oOperation.execute().then(function () {
                 return "Success";
             });

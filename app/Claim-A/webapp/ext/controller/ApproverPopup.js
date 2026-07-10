@@ -75,6 +75,13 @@ sap.ui.define([
                         oResetPromise.catch(function () { });
                     }
                 }
+
+                if (oTable) {
+                    var oBinding = oTable.getBinding("items");
+                    if (oBinding) {
+                        oBinding.refresh(); 
+                    }
+                }
                 BusyIndicator.hide();
                 MessageToast.show(Utility.getText("msg_approver_save_success"));
                 if (oApproverFragment) { oApproverFragment.close(); }
