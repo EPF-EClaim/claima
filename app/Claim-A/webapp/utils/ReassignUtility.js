@@ -20,7 +20,7 @@ sap.ui.define([
             if (aPayloadItems.length === 0) {
                 return Promise.resolve("No records to save");
             }
-            var oOperation = oModel.bindContext("/saveApproverData(...)");
+            var oOperation = oModel.bindContext("/reassignApprover(...)");
             oOperation.setParameter("items", aPayloadItems);
             return oOperation.execute().then(function () {
                 return "Success";
