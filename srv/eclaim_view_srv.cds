@@ -1088,7 +1088,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_APPROVER_DETAILS @(restrict: [{
         grant: 'READ',
         to   : ['Approver'],
-        where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) OR SUBSTITUTE_APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
     }])                                  as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
