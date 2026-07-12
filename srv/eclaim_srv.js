@@ -1620,9 +1620,11 @@ module.exports = (srv) => {
     srv.on('checkPreApprovalUsage', async (req) => {
         const { ZCLAIM_HEADER } = srv.entities;
         const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         const claim = await tx.run(
             SELECT.one.from(ZCLAIM_HEADER).where({
+                EMP_ID: oEmp.EEID,
                 REQUEST_ID: req.data.requestID,
                 STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
             })
@@ -2473,18 +2475,34 @@ module.exports = (srv) => {
     });
 
     srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
 
-        if (!isAdminCC) return;
-        const oEmp = await SELECT.one
-            .from('ZEMP_MASTER')
-            .where({ EMAIL: req.user.id });
-        if (!oEmp || !oEmp.CC) return;
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const tx = cds.tx(req);
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        // Admin_CC sees their own cost center only
-        req.query.where({
-            COST_CENTER_ID: oEmp.CC
-        });
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0'); 
+                return;
+            }
+
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC')
+                .from('ZEMP_MASTER')
+                .where({ DEP: oEmp.DEP })
+            );
+
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
+
+            if (aCostCenters.length > 0) {
+                
+                req.query.where({ COST_CENTER_ID: { 'in': aCostCenters } });
+
+            } else {
+                req.query.where('1 = 0');
+            }
+        }
     });
 
     srv.on("getJenazahEligibleAmount", async (req) => {
