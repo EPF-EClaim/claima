@@ -2873,7 +2873,7 @@ module.exports = (srv) => {
      * @param {Object} data - The data of the newly created substitution rule.
      * @param {Object} req - The request object containing context and transaction information.
      */
-    srv.after('CREATE', 'ZSUBSTITUTION_RULES', async (data, req) => {
+    srv.after('CREATE', ['ZSUBSTITUTION_RULES', 'ZSUBSTITUTION_RULES_CONFIG.drafts'], async (data, req) => {
         const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
         if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
 
@@ -3378,12 +3378,45 @@ module.exports = (srv) => {
         ]);
 
         if (!oApprover || !oSubstitute) return;
-        // Validate matching Department (DEP) and Role (ROLE)
-        if (oApprover.DEP !== oSubstitute.DEP || oApprover.ROLE !== oSubstitute.ROLE) {
+        // Validate matching Department (DEP) 
+        if (oApprover.DEP !== oSubstitute.DEP) {
             return req.error({
                 code: 'INVALID_SUBSTITUTE_COMBINATION',
-                message: `The substitute must belong to the same department (${oApprover.DEP}) and hold the same role (${oApprover.ROLE}) as the approver.`,
+                message: `The substitute must belong to the same department (${oApprover.DEP})`,
                 target: 'SUBSTITUTE_ID', // Turns the Substitute ID field border red
+                status: 400
+            });
+        }
+
+        // 2. Validate matching Grade Hierarchy Level (Same or Greater Grade)
+        let iApproverSeq = 0;
+        let iSubstituteSeq = 0;
+        // Fetch sequence ranking config for Approver
+        if (oApprover.GRADE) {
+            const oApproverConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+                LOW_VALUE: oApprover.GRADE,
+                VARIABLE_NAME: 'PERSONAL_GRADE'
+            });
+            if (oApproverConfig && oApproverConfig.SEQUENCE_NO) {
+                iApproverSeq = parseInt(oApproverConfig.SEQUENCE_NO, 10);
+            }
+        }
+        // Fetch sequence ranking config for Substitute
+        if (oSubstitute.GRADE) {
+            const oSubstituteConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+                LOW_VALUE: oSubstitute.GRADE,
+                VARIABLE_NAME: 'PERSONAL_GRADE'
+            });
+            if (oSubstituteConfig && oSubstituteConfig.SEQUENCE_NO) {
+                iSubstituteSeq = parseInt(oSubstituteConfig.SEQUENCE_NO, 10);
+            }
+        }
+        // Throw error if the substitute's grade sequence number is lower than the approver's
+        if (iSubstituteSeq < iApproverSeq) {
+            return req.error({
+                code: 'INVALID_GRADE_LEVEL',
+                message: `The selected substitute's grade (${oSubstitute.GRADE || 'None'}) must be equal to or higher than the employee's grade (${oApprover.GRADE || 'None'})`,
+                target: 'SUBSTITUTE_ID',
                 status: 400
             });
         }
