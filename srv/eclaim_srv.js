@@ -3362,14 +3362,14 @@ module.exports = (srv) => {
         // Generates a dynamic YYYY-MM-DD string based on today's real-time date
         const sTodayIso = `${oToday.getFullYear()}-${String(oToday.getMonth() + 1).padStart(2, '0')}-${String(oToday.getDate()).padStart(2, '0')}`;
         // 1. Block VALID_FROM if it is before today
-        if (VALID_FROM < sTodayIso) {
-            return req.error({
-                code: 'PAST_START_DATE',
-                message: 'The Valid From date cannot be in the past. Please choose today or a future date.',
-                target: 'VALID_FROM',
-                status: 400
-            });
-        }
+        // if (VALID_FROM < sTodayIso) {
+        //     return req.error({
+        //         code: 'PAST_START_DATE',
+        //         message: 'The Valid From date cannot be in the past. Please choose today or a future date.',
+        //         target: 'VALID_FROM',
+        //         status: 400
+        //     });
+        // }
         // 2. Block VALID_TO if it is before today
         if (VALID_TO < sTodayIso) {
             return req.error({
