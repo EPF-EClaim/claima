@@ -1620,9 +1620,11 @@ module.exports = (srv) => {
     srv.on('checkPreApprovalUsage', async (req) => {
         const { ZCLAIM_HEADER } = srv.entities;
         const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         const claim = await tx.run(
             SELECT.one.from(ZCLAIM_HEADER).where({
+                EMP_ID: oEmp.EEID,
                 REQUEST_ID: req.data.requestID,
                 STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
             })
