@@ -2481,14 +2481,14 @@ module.exports = (srv) => {
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
             if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0'); 
+                req.query.where('1 = 0');
                 return;
             }
 
             const aDeptRecords = await tx.run(
                 SELECT.distinct('CC')
-                .from('ZEMP_MASTER')
-                .where({ DEP: oEmp.DEP })
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
             );
 
             const aCostCenters = aDeptRecords
@@ -2496,7 +2496,7 @@ module.exports = (srv) => {
                 .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
             if (aCostCenters.length > 0) {
-                
+
                 req.query.where({ COST_CENTER_ID: { 'in': aCostCenters } });
 
             } else {
@@ -3361,15 +3361,6 @@ module.exports = (srv) => {
         const oToday = new Date();
         // Generates a dynamic YYYY-MM-DD string based on today's real-time date
         const sTodayIso = `${oToday.getFullYear()}-${String(oToday.getMonth() + 1).padStart(2, '0')}-${String(oToday.getDate()).padStart(2, '0')}`;
-        // 1. Block VALID_FROM if it is before today
-        // if (VALID_FROM < sTodayIso) {
-        //     return req.error({
-        //         code: 'PAST_START_DATE',
-        //         message: 'The Valid From date cannot be in the past. Please choose today or a future date.',
-        //         target: 'VALID_FROM',
-        //         status: 400
-        //     });
-        // }
         // 2. Block VALID_TO if it is before today
         if (VALID_TO < sTodayIso) {
             return req.error({
@@ -3488,4 +3479,23 @@ module.exports = (srv) => {
             });
         }
     });
+
+    //this is for list report which will be filter by department for GA
+    srv.before('READ', 'ZEMP_PENDING_LIST', async (req) => {
+
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+
+            if (!oEmp || !oEmp.DEP) return;
+
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
+        }
+    });
+
 }
