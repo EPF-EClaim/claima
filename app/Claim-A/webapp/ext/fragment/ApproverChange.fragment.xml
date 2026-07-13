@@ -1,0 +1,65 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <Dialog
+        id="detailDialog"
+        title="{i18n>modify_approver}"
+        contentWidth="60%"
+    >
+        <content>
+            <Table
+                id="popupTable"
+                items="{
+                    path: '/ZEMP_PENDING_LIST_APPROVER',
+                    parameters: {
+                        $select: 'ID,LEVEL,STATUS,APPROVER_ID,APPROVER_NAME,APPROVER_DEP,APPROVER_GRADE,GRADE_SEQUENCE',
+                            $$updateGroupId: 'manualGroup'
+                    }
+                }"
+            >
+                <columns>
+                    <Column width="4rem">
+                        <Text text="{i18n>level}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>status}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>current_approver}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>new_approver}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{LEVEL}" />
+                            <Text text="{STATUS_DESC}" />
+                            <Text text="{APPROVER_NAME}" />
+                            <Input
+                                value="{NEW_APPROVER_ID}"
+                                showValueHelp="true"
+                                valueHelpRequest="onApproverValueHelpRequest"
+                            />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+        <beginButton>
+            <Button
+                text="{i18n>save_changes}"
+                type="Emphasized"
+                press=".onSaveApprovers"
+            />
+        </beginButton>
+        <endButton>
+            <Button
+                text="{i18n>cancel}"
+                press=".onCloseDialog"
+            />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
