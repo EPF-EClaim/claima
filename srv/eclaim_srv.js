@@ -2943,7 +2943,7 @@ module.exports = (srv) => {
 
                 const oSubstitute = await tx.run(
                     SELECT.one.from('ZEMP_MASTER')
-                        .where({ EEID: SUBSTITUTE_ID }) 
+                        .where({ EEID: SUBSTITUTE_ID })
                         .columns('EMAIL', 'NAME')
                 );
 
@@ -2956,7 +2956,7 @@ module.exports = (srv) => {
                             Action: "Pending Approval (Delegated)",
                             EmailTitle: `Action Required: Delegated Claim ${claim.CLAIM_ID}`,
                             ReceiverEmail: oSubstitute.EMAIL,
-                            SubmissionDate: claim.SUBMITTED_DATE, 
+                            SubmissionDate: claim.SUBMITTED_DATE,
                             ClaimantName: claim.EMPLOYEE_NAME,
                             RecipientName: oSubstitute.NAME
                         });
@@ -3008,9 +3008,9 @@ module.exports = (srv) => {
 
                 const oSubstitute = await tx.run(
                     SELECT.one.from('ZEMP_MASTER')
-                        .where({ EEID: SUBSTITUTE_ID }) 
-                        .columns('EMAIL', 'NAME') 
-                );               
+                        .where({ EEID: SUBSTITUTE_ID })
+                        .columns('EMAIL', 'NAME')
+                );
 
                 const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
                 for (const preApp of pendingPreApprovals) {
@@ -3021,7 +3021,7 @@ module.exports = (srv) => {
                             Action: "Pending Pre-Approval (Delegated)",
                             EmailTitle: `Action Required: Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
                             ReceiverEmail: oSubstitute.EMAIL,
-                            SubmissionDate: preApp.REQUEST_DATE, 
+                            SubmissionDate: preApp.REQUEST_DATE,
                             ClaimantName: preApp.EMPLOYEE_NAME,
                             RecipientName: oSubstitute.NAME
                         });
@@ -3087,12 +3087,46 @@ module.exports = (srv) => {
         }
 
         try {
+            for (const oItem of aPayloads) {
+                const sApproverID = oItem.APPROVER_ID; 
+                const sNewApproverID = oItem.NEW_APPROVER_ID; 
+                if (sApproverID && sNewApproverID) {
+
+                    const [oApprover, oApproverNew] = await Promise.all([
+                        SELECT.one.from('ZEMP_MASTER').where({ EEID: sApproverID }),
+                        SELECT.one.from('ZEMP_MASTER').where({ EEID: sNewApproverID })
+                    ]);
+                    if (!oApprover || !oApproverNew) {
+                        return req.error(400, "Master profile data missing for the selected employees.");
+                    }
+                    // A. Check matching Department (DEP)
+                    if (oApprover.DEP !== oApproverNew.DEP) {
+                        return req.error(400, `The selected approver must belong to the same department (${oApprover.DEP}).`);
+                    }
+                    // B. Check Grade Sequence Hierarchy Level
+                    let iApproverSeq = 0;
+                    let iSubstituteSeq = 0;
+                    if (oApprover.GRADE) {
+                        const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApprover.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
+                        if (oConf && oConf.SEQUENCE_NO) iApproverSeq = parseInt(oConf.SEQUENCE_NO, 10);
+                    }
+                    if (oApproverNew.GRADE) {
+                        const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApproverNew.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
+                        if (oConf && oConf.SEQUENCE_NO) iSubstituteSeq = parseInt(oConf.SEQUENCE_NO, 10);
+                    }
+                    if (iSubstituteSeq < iApproverSeq) {
+                        return req.error(400, `The selected substitute's grade level (${oApproverNew.GRADE || 'None'}) must be equal to or higher than the current approver's grade (${oApprover.GRADE || 'None'}).`);
+                    }
+                }
+            }
+
             const aUpdatePromises = aPayloads.map(async (oItem) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID } = oItem;
 
                 let oLogEntry = {
                     TIMESTAMP: new Date(),
                     RECORD_ID: ID,
+                    RECORD_ID: `${ID}_${LEVEL}`,
                     PROGRAM: 'REASSIGN_APPROVER'
                 };
 

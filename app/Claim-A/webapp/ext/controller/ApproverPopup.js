@@ -87,8 +87,21 @@ sap.ui.define([
                 if (oApproverFragment) { oApproverFragment.close(); }
             }).catch(function (oError) {
                 BusyIndicator.hide();
-                MessageBox.error(Utility.getText("msg_approver_save_fail"));
 
+                var sMsg = "";
+                if (oError) {
+                    if (oError.error && oError.error.message) {
+                        sMsg = oError.error.message;
+                    } else if (oError.message) {
+                        sMsg = oError.message;
+                    } else if (typeof oError.getParameter === "function") {
+                        sMsg = oError.getParameter("message");
+                    }
+                }
+
+                var sFinalMessage = sMsg || Utility.getText("msg_approver_save_fail");
+
+                MessageBox.error(sFinalMessage);
             });
         },
         onCloseDialog: function (oEvent) {
@@ -134,7 +147,7 @@ sap.ui.define([
                 aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
             }
             if (iCurrentSeq !== null) {
-            aInitialFilters.push(new sap.ui.model.Filter("GRADE_SEQUENCE", sap.ui.model.FilterOperator.GE, iCurrentSeq));
+                aInitialFilters.push(new sap.ui.model.Filter("GRADE_SEQUENCE", sap.ui.model.FilterOperator.GE, iCurrentSeq));
             }
 
             oApproverPopupModule._oApproverVHDialog = new sap.m.TableSelectDialog({

@@ -1512,7 +1512,7 @@ entity ZDIVISION : managed {
 
 entity ZLOG : managed {
     key TIMESTAMP    : Timestamp   @mandatory  @Common.Label: 'Timestamp';
-    key RECORD_ID    : String(14)  @mandatory  @Common.Label: 'Record ID';
+    key RECORD_ID    : String(20)  @mandatory  @Common.Label: 'Record ID';
         PROGRAM      : String(40)  @Common.Label: 'Program Name';
         MESSAGE_TYPE : String(1)   @Common.Label: 'Message Type';
         STATUS_CODE  : String(3)   @Common.Label: 'Status Code';
