@@ -2941,7 +2941,6 @@ module.exports = (srv) => {
                     });
                 });
 
-                // 1. Fetch the substitute's email directly from ZEMP_MASTER using the SUBSTITUTE_ID
                 const oSubstitute = await tx.run(
                     SELECT.one.from('ZEMP_MASTER')
                         .where({ EEID: SUBSTITUTE_ID }) 
@@ -3006,6 +3005,12 @@ module.exports = (srv) => {
                         MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
                     });
                 });
+
+                const oSubstitute = await tx.run(
+                    SELECT.one.from('ZEMP_MASTER')
+                        .where({ EEID: SUBSTITUTE_ID }) 
+                        .columns('EMAIL', 'NAME') 
+                );               
 
                 const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
                 for (const preApp of pendingPreApprovals) {
