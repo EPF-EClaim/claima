@@ -171,6 +171,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZINDIV_GROUP as projection on ECLAIM.ZINDIV_GROUP;
 
+    entity ZLOG as projection on ECLAIM.ZLOG;
+
     @cds.redirection.target
     entity ZTRAIN_COURSE_PART            as projection on ECLAIM.ZTRAIN_COURSE_PART;
 

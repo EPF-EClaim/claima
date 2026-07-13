@@ -2919,7 +2919,7 @@ module.exports = (srv) => {
                     .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                     .and('SUBMITTED_DATE >=', VALID_FROM)
                     .and('SUBMITTED_DATE <=', VALID_TO)
-                    .columns('CLAIM_ID', 'LEVEL', 'STATUS')
+                    .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
             );
 
             if (matchingClaims.length > 0) {
@@ -2941,14 +2941,25 @@ module.exports = (srv) => {
                     });
                 });
 
+                // 1. Fetch the substitute's email directly from ZEMP_MASTER using the SUBSTITUTE_ID
+                const oSubstitute = await tx.run(
+                    SELECT.one.from('ZEMP_MASTER')
+                        .where({ EEID: SUBSTITUTE_ID }) 
+                        .columns('EMAIL', 'NAME')
+                );
+
                 const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
                 for (const claim of pendingClaims) {
                     try {
                         await sendEmailInternal({
-                            ApproverName: SUBSTITUTE_ID,
+                            ApproverName: oSubstitute.NAME,
                             ClaimID: claim.CLAIM_ID,
                             Action: "Pending Approval (Delegated)",
                             EmailTitle: `Action Required: Delegated Claim ${claim.CLAIM_ID}`,
+                            ReceiverEmail: oSubstitute.EMAIL,
+                            SubmissionDate: claim.SUBMITTED_DATE, 
+                            ClaimantName: claim.EMPLOYEE_NAME,
+                            RecipientName: oSubstitute.NAME
                         });
                     } catch (oEmailError) {
                         console.error(`Email failed for Claim ${claim.CLAIM_ID}`, oEmailError);
@@ -2974,7 +2985,7 @@ module.exports = (srv) => {
                     .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                     .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
                     .and('REQUEST_DATE <=', VALID_TO)
-                    .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS')
+                    .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
             );
 
             if (matchingPreApprovals.length > 0) {
@@ -3000,10 +3011,14 @@ module.exports = (srv) => {
                 for (const preApp of pendingPreApprovals) {
                     try {
                         await sendEmailInternal({
-                            ApproverName: SUBSTITUTE_ID,
+                            ApproverName: oSubstitute.NAME,
                             ClaimID: preApp.PREAPPROVAL_ID,
                             Action: "Pending Pre-Approval (Delegated)",
                             EmailTitle: `Action Required: Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
+                            ReceiverEmail: oSubstitute.EMAIL,
+                            SubmissionDate: preApp.REQUEST_DATE, 
+                            ClaimantName: preApp.EMPLOYEE_NAME,
+                            RecipientName: oSubstitute.NAME
                         });
                     } catch (oEmailError) {
                         console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
