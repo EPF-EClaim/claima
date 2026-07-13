@@ -153,6 +153,7 @@
                     </tnt:NavigationListGroup>    
 
                     <tnt:NavigationListGroup text="{i18n>nav_reroute}" expanded="false"
+                    visible="{= ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://add-contact"
