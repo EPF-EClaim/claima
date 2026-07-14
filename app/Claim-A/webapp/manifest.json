@@ -668,6 +668,16 @@
                     "target": "ZTRAIN_COURSE_PART"
                 },
                 {
+                    "pattern": "ZEMP_PENDING_LIST",
+                    "name": "ZEMP_PENDING_LIST",
+                    "target": "ZEMP_PENDING_LIST"
+                },
+                {
+                    "pattern": "ZSUBSTITUTION_RULES_CONFIG",
+                    "name": "ZSUBSTITUTION_RULES_CONFIG",
+                    "target": "ZSUBSTITUTION_RULES_CONFIG"
+                },                
+                {
                     "pattern": "ZEMP_REQUEST_REPORT_SUMMARY",
                     "name": "ZEMP_REQUEST_REPORT_SUMMARY",
                     "target": "ZEMP_REQUEST_REPORT_SUMMARY"
@@ -701,7 +711,7 @@
                     "pattern": "ZEMP_CC_BUDGET_DETAIL(FUND_CENTER={FUND_CENTER},COMMITMENT_ITEM={COMMITMENT_ITEM},MATERIAL_GROUP={MATERIAL_GROUP})",
                     "name": "ZEMP_CC_BUDGET_DETAIL",
                     "target": "ZEMP_CC_BUDGET_DETAIL"
-                }                              
+                }
             ],
             "targets": {
                 "TargetMain": {
@@ -841,6 +851,113 @@
                         }
                     }
                 },
+                "ZEMP_PENDING_LIST": {
+                    "type": "Component",
+                    "id": "ZEMP_PENDING_LIST",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "entitySet": "ZEMP_PENDING_LIST",
+                            "variantManagement": "None",
+                            "hideFilterBar": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "deletable": false,
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },                                    
+                                    "actions": {
+                                        "CustomPopupAction": {
+                                            "press": "claima.ext.controller.ApproverPopup.onClickChangeApprover",
+                                            "visible": true,
+                                            "requiresSelection": true,
+                                            "text": "Change Approver"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZSUBSTITUTION_RULES_CONFIG": {
+                    "type": "Component",
+                    "id": "ZSUBSTITUTION_RULES_CONFIG",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZSUBSTITUTION_RULES_CONFIG",
+                            "entitySet": "ZSUBSTITUTION_RULES_CONFIG",
+                            "variantManagement": "None",
+                            "showFooter": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },                  
                 "ZOFFICE_LOCATION": {
                     "type": "Component",
                     "id": "ZOFFICE_LOCATION",
@@ -4742,7 +4859,7 @@
                             }
                         }
                     }
-                },  
+                },
                 "ZEMP_CASHADVANCE_REPORT": {
                     "type": "Component",
                     "id": "ZEMP_CASHADVANCE_REPORT",
@@ -4789,8 +4906,8 @@
                             }
                         }
                     }
-                }, 
-                  "ZEMP_CC_BUDGET_REPORT": {
+                },
+                "ZEMP_CC_BUDGET_REPORT": {
                     "type": "Component",
                     "id": "ZEMP_CC_BUDGET_REPORT",
                     "name": "sap.fe.templates.ListReport",
@@ -4847,7 +4964,7 @@
                             }
                         }
                     }
-                }, 
+                },
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",

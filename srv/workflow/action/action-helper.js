@@ -3,7 +3,7 @@ const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
 const { constants } = require('@sap/xssec');
 const { fn } = cds;
-const { sendFinalApproveLog } = require("./workflow/determination/determination-helper");
+const { sendFinalApproveLog } = require("../determination/determination-helper");
 
 
 const aApproverActions = {

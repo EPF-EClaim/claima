@@ -1446,11 +1446,11 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
 }
 
 entity ZSUBSTITUTION_RULES : managed {
-    key SUBSTITUTE_RULE_ID : String(10) @mandatory;
-    key USER_ID            : String     @mandatory;
-    key SUBSTITUTE_ID      : String     @mandatory;
-    key VALID_FROM         : Date       @mandatory;
-    key VALID_TO           : Date       @mandatory;
+    key SUBSTITUTE_RULE_ID : String(10)  @mandatory  @Common.Label: 'Substitution Rule ID';
+    key USER_ID            : String      @mandatory  @Common.Label: 'User ID';
+    key SUBSTITUTE_ID      : String      @mandatory  @Common.Label: 'Substitute ID';
+    key VALID_FROM         : Date        @mandatory  @Common.Label: 'Valid From';
+    key VALID_TO           : Date        @mandatory  @Common.Label: 'Valid To';
         ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
                                  on ZEMP_MASTER_USER.EEID = USER_ID;
         ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER
@@ -1511,10 +1511,23 @@ entity ZDIVISION : managed {
 }
 
 entity ZLOG : managed {
-    key TIMESTAMP     : Timestamp   @mandatory  @Common.Label: 'Timestamp';
-    key RECORD_ID     : String(14)  @mandatory  @Common.Label: 'Record ID';
-        PROGRAM       : String(40)  @Common.Label: 'Program Name';
-        MESSAGE_TYPE  : String(1)   @Common.Label: 'Message Type';
-        STATUS_CODE   : String(3)   @Common.Label: 'Status Code';
-        MESSAGE       : String      @Common.Label: 'Message';
+    key TIMESTAMP    : Timestamp   @mandatory  @Common.Label: 'Timestamp';
+    key RECORD_ID    : String(20)  @mandatory  @Common.Label: 'Record ID';
+        PROGRAM      : String(40)  @Common.Label: 'Program Name';
+        MESSAGE_TYPE : String(1)   @Common.Label: 'Message Type';
+        STATUS_CODE  : String(3)   @Common.Label: 'Status Code';
+        MESSAGE      : String      @Common.Label: 'Message';
+}
+
+
+entity ZCONFIG_VARIABLE : managed {
+    key VARIABLE_NAME : String(100)  @mandatory  @Common.Label: 'Variable Name';
+    key SEQUENCE_NO   : Integer      @mandatory  @Common.Label: 'Sequence Number';
+        PROGRAM       : String(40)   @Common.Label: 'Program Name';
+        SIGN          : String(1)    @Common.Label: 'Sign';
+        OPTION        : String(2)    @Common.Label: 'Option';
+        LOW_VALUE     : String(255)  @Common.Label: 'Low Value';
+        HIGH_VALUE    : String(255)  @Common.Label: 'High Value';
+        VALID_FROM    : Date         @Common.Label: 'Valid From';
+        VALID_TO      : Date         @Common.Label: 'Valid To';
 }
