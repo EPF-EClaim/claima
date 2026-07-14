@@ -3189,7 +3189,7 @@ module.exports = (srv) => {
 
                     if (oResult.iRowsAffected > 0) {
                         aSuccessfulPayloads.push(aPayloads[index]);
-                    } else if (oResult.oLog.STATUS_CODE !== '200') {
+                    } else if (oResult.oLog.STATUS_CODE !== Constant.StatusCode.SUCCESS) {
                         aErrorMessages.push({
                             recordId: oResult.oLog.RECORD_ID,
                             statusCode: oResult.oLog.STATUS_CODE,
@@ -3208,7 +3208,7 @@ module.exports = (srv) => {
             }
 
             const aFilteredPayloads = aSuccessfulPayloads.filter(
-                oItem => oItem.STATUS === 'STAT02'
+                oItem => oItem.STATUS === Constant.Status.PENDING_APPROVAL
             );
 
             if (aFilteredPayloads.length > 0) {
@@ -3222,7 +3222,7 @@ module.exports = (srv) => {
                         let oClaimant = null;
                         let sAction = "REASSIGN";
 
-                        if (sPrefix === 'CLM') {
+                        if (sPrefix === Constant.WorkflowType.CLAIM) {
 
                             oApproverRecord = await tx.run(
                                 SELECT.one.from(ZEMP_MASTER)
@@ -3259,10 +3259,10 @@ module.exports = (srv) => {
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
-                                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                                        PROGRAM: 'REASSIGN_TRIGGER',
                                         MESSAGE_TYPE: 'W',
-                                        STATUS_CODE: '207',
-                                        MESSAGE: `Claim ${ID} updated, but reassign notification email to ${NEW_APPROVER_ID} failed.`
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
                                     });
                                 }
                                 //old approver
@@ -3282,14 +3282,14 @@ module.exports = (srv) => {
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
-                                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                                        PROGRAM: 'REASSIGN_TRIGGER',
                                         MESSAGE_TYPE: 'W',
-                                        STATUS_CODE: '207',
-                                        MESSAGE: `Claim ${ID} updated, but reassign notification email to ${APPROVER_ID} failed.`
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
                                     });
                                 }                                
                             }
-                        } else if (sPrefix === 'REQ') {
+                        } else if (sPrefix === Constant.WorkflowType.REQUEST) {
 
                             oApproverRecord = await tx.run(
                                 SELECT.one.from(ZEMP_MASTER)
@@ -3326,10 +3326,10 @@ module.exports = (srv) => {
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
-                                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                                        PROGRAM: 'REASSIGN_TRIGGER',
                                         MESSAGE_TYPE: 'W',
-                                        STATUS_CODE: '207',
-                                        MESSAGE: `Pre-Approval ${ID} updated, but reassign notification email to ${NEW_APPROVER_ID} failed.`
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
                                     });
                                 }
                                 //old approver
@@ -3349,10 +3349,10 @@ module.exports = (srv) => {
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
-                                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                                        PROGRAM: 'REASSIGN_TRIGGER',
                                         MESSAGE_TYPE: 'W',
-                                        STATUS_CODE: '207',
-                                        MESSAGE: `Pre-Approval ${ID} updated, but reassign notification email to ${APPROVER_ID} failed.`
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
                                     });
                                 }                                
                             }
