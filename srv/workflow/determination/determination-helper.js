@@ -19,7 +19,8 @@ const WORKFLOW_RULE_COLUMNS = [
     Constant.EntitiesFields.ROLE,
     Constant.EntitiesFields.DIVISION,
     Constant.EntitiesFields.LOCATION_TYPE,
-    Constant.EntitiesFields.PROJECT_CLAIM
+    Constant.EntitiesFields.PROJECT_CLAIM,
+    Constant.EntitiesFields.CASH_REPAYMENT
 ];
 async function determineWorkflowStepContext(oTx, sOutcomeWorkflowCode, oDescriptor) {
     return cds.run(
@@ -532,22 +533,41 @@ async function sendClaimBatch(sId){
         }
 
         // Forward the single consolidated payload to IS
-        const sData = 
-        aAllClaimItem.map(oItem => ({
-            CLAIM_ID:                sId,
-            CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
-            EMP_ID:                  oItem.EMP_ID,
-            SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
-            FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
-            CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
-            LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
-            AMOUNT:                  oItem.AMOUNT,
-            RECEIPT_DATE:            oItem.RECEIPT_DATE,
-            COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
-            GL_ACCOUNT:              oItem.GL_ACCOUNT,
-            MATERIAL_CODE:           oItem.MATERIAL_CODE,
-            INTERNAL_ORDER:          oItem.INTERNAL_ORDER
-        }));
+        if(aAllClaimItem[0].INTERNAL_ORDER == null){
+            var sData = 
+                aAllClaimItem.map(oItem => ({
+                    CLAIM_ID:                sId,
+                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
+                    EMP_ID:                  oItem.EMP_ID,
+                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                  oItem.AMOUNT,
+                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
+                    COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
+                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
+                    MATERIAL_CODE:           oItem.MATERIAL_CODE,
+                    INTERNAL_ORDER:          null
+                }));
+        }else{ 
+            sData = 
+                aAllClaimItem.map(oItem => ({
+                    CLAIM_ID:                sId,
+                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
+                    EMP_ID:                  oItem.EMP_ID,
+                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                  oItem.AMOUNT,
+                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
+                    COST_CENTER:             null,
+                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
+                    MATERIAL_CODE:           null,
+                    INTERNAL_ORDER:          oItem.INTERNAL_ORDER
+                }));
+        }
 
         const oResponse = await ISservice.send({
         method: 'POST',
@@ -561,9 +581,24 @@ async function sendClaimBatch(sId){
 
     } catch (e) {
         console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+        const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
+        const sMessage = oError?.message || "No Message";
+        await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
     }
 }
 
+async function sendFinalApproveLog(sRecordId, sMessageType, sProgram, sStatusCode, sMessage){
+    await cds.run(
+        INSERT.into("ZLOG").entries({
+            TIMESTAMP: new Date(),
+            RECORD_ID: sRecordId,
+            PROGRAM: sProgram,
+            MESSAGE_TYPE: sMessageType,
+            STATUS_CODE: sStatusCode,
+            MESSAGE: sMessage
+        })
+    );
+}
 module.exports = { 
     determineWorkflowStepContext,
     retrieveFromConstantTable,
@@ -582,5 +617,6 @@ module.exports = {
     retrieveWorkflowByClaimTypeRoleAndDivision,
     retrieveWorkflowByClaimTypeAndDivision,
     retrieveWorkflowByClaimType,
-    sendClaimBatch
+    sendClaimBatch,
+    sendFinalApproveLog
 };

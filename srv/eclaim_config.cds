@@ -6399,7 +6399,7 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Branch'
             },
-              {
+            {
                 $Type            : 'UI.DataField',
                 Value            : BRANCH_DESC,
                 ![@UI.Importance]: #High,
@@ -7737,7 +7737,7 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Branch'
             },
-               {
+            {
                 $Type            : 'UI.DataField',
                 Value            : BRANCH_DESC,
                 ![@UI.Importance]: #High,
@@ -7935,7 +7935,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         Insertable: false
     },
 
-    
+
     Capabilities: {
         Searchable: true
     },
@@ -7947,9 +7947,9 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
             TypeName      : 'Cost Center Budget Report',
             TypeNamePlural: 'Cost Center Budget Report',
         },
-        
+
         LineItem  : [
-             
+
             {
                 $Type            : 'UI.DataField',
                 Value            : YEAR,
@@ -8044,7 +8044,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         }
     );
 
-    COMMITMENT_ITEM         @(
+    COMMITMENT_ITEM @(
         Common.Label                   : 'GL Code',
         Common.Text                    : GL_ACCOUNT_DESC,
         Common.TextArrangement         : #TextSeparate,
@@ -8129,15 +8129,15 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
+                Value            : CLAIM_TYPE_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID  '
+                Label            : 'Claim Type  '
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ITEM_ID,
+                Value            : CLAIM_TYPE_ITEM_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Claim Type Item ID  '
+                Label            : 'Claim Type Item  '
             },
             {
                 $Type            : 'UI.DataField',
@@ -8147,12 +8147,250 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : STATUS_ID,
+                Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Status ID  '
+                Label            : 'Status  '
             }
-            
+
         ]
     }
 );
 
+annotate service.ZEMP_PENDING_LIST with @(
+    Capabilities.DeleteRestrictions: {Deletable: false},
+    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC]},
+    UI                             : {
+
+        HeaderInfo: {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Reassign Approvers',
+            TypeNamePlural: 'Reassign Approvers',
+        },
+
+        LineItem  : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ID,
+                ![@UI.Importance]: #High,
+                Label            : 'ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMITTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submitted Date'
+            }
+        ]
+    }
+) {
+    ID @Common.Label: 'ID';
+    CLAIM_TYPE_ID @(
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Claim Type Selection',
+            CollectionPath: 'ZCLAIM_TYPE',
+            // The entity/view holding your dropdown options
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: ClaimType,
+                    ValueListProperty: 'CLAIM_TYPE_ID' // The key field in your value help entity
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'CLAIM_TYPE_DESC' // The text label field
+                }
+            ]
+        }
+    );
+    EMP_ID @(
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'Employee Selection',
+            CollectionPath: 'ZEMP_APPROVER_LIST_DEP',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: EMP_ID,
+                    ValueListProperty: 'EEID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );    
+};
+
+annotate service.ZEMP_APPROVER_LIST_VH with @(UI.SelectionFields: [
+    EEID,
+    NAME,
+]) {
+    @UI.hidden: true
+    DEP;
+};
+
+annotate service.ZEMP_APPROVER_VH with @(UI.SelectionFields: [
+    EEID,
+    NAME,
+    EMAIL
+]) {
+    @UI.hidden: true
+    ROLE;
+    @UI.hidden: true
+    DEP;
+};
+
+annotate service.ZEMP_SUBSTITUTE_VH with @(UI.SelectionFields: [
+    EEID,
+    NAME,
+    EMAIL
+]) {
+    @UI.hidden: true
+    ROLE;
+    @UI.hidden: true
+    DEP;
+    @UI.hidden: true
+    SELECTED_APPROVER;
+};
+
+annotate service.ZSUBSTITUTION_RULES_CONFIG with {
+    @Core.Computed SUBSTITUTE_RULE_ID;
+    VALID_FROM @(Common.Label: 'Valid From');
+    VALID_TO   @(Common.Label: 'Valid To');
+}
+
+annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [
+        SUBSTITUTE_RULE_ID,
+        USER_ID,
+        SUBSTITUTE_ID,
+        VALID_FROM,
+        VALID_TO
+    ],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : false,
+        Insertable: true
+    },
+    odata.draft.enabled,
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Substitution Rules - ZSUBSTITUTION_RULES',
+            TypeNamePlural: 'Substitution Rules - ZSUBSTITUTION_RULES',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_RULE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitution Rule ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitute ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALID_FROM,
+                ![@UI.Importance]: #High,
+                Label            : 'Valid From'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALID_TO,
+                ![@UI.Importance]: #High,
+                Label            : 'Valid To'
+            }
+        ]
+    }
+) {
+    USER_ID       @(
+        Common.Label                   : 'Approver ID',
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'User Selection',
+            CollectionPath: 'ZEMP_APPROVER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: USER_ID, // Use the actual property of your main entity
+                    ValueListProperty: 'EEID' // The key field in ZEMP_MASTER
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'EMAIL'
+                }
+            ]
+        },
+        Common.SideEffects             : {
+            $Type           : 'Common.SideEffectsType',
+            SourceProperties: [USER_ID],
+            TargetProperties: [SUBSTITUTE_ID]
+        }
+    );
+    SUBSTITUTE_ID @(
+        Common.Label                   : 'Substitute ID',
+        Common.ValueListWithFixedValues: false,
+        Common.ValueList               : {
+            Label         : 'Substitute Selection',
+            CollectionPath: 'ZEMP_SUBSTITUTE_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterIn',
+                    LocalDataProperty: USER_ID,
+                    ValueListProperty: 'SELECTED_APPROVER'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: SUBSTITUTE_ID,
+                    ValueListProperty: 'EEID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'NAME'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'EMAIL'
+                }
+            ]
+        }
+    );
+};

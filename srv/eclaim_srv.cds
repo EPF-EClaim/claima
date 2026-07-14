@@ -171,6 +171,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZINDIV_GROUP as projection on ECLAIM.ZINDIV_GROUP;
 
+    entity ZLOG as projection on ECLAIM.ZLOG;
+
     @cds.redirection.target
     entity ZTRAIN_COURSE_PART            as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
@@ -295,6 +297,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
     entity ZSUBSTITUTION_RULES as projection on ECLAIM.ZSUBSTITUTION_RULES;
+
+    entity ZSUBSTITUTION_RULES_CONFIG    as
+        projection on ECLAIM.ZSUBSTITUTION_RULES {
+                @Core.Computed
+            key SUBSTITUTE_RULE_ID,
+                *
+        }
+        where
+            VALID_TO >= cast(
+                $now as Date
+            );
 
     entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
 
@@ -1144,6 +1157,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
             on HEADER.CLAIM_ID = ITEM.CLAIM_ID
         left join ECLAIM.ZEMP_MASTER as EMP
             on HEADER.EMP_ID = EMP.EEID
+        left join ECLAIM.ZSTATUS as STATUS
+            on HEADER.STATUS_ID = STATUS.STATUS_ID
+        left join ECLAIM.ZCLAIM_TYPE as CT
+            on ITEM.CLAIM_TYPE_ID = CT.CLAIM_TYPE_ID
+        left join ECLAIM.ZCLAIM_TYPE_ITEM as CTI
+            on ITEM.CLAIM_TYPE_ID = CTI.CLAIM_TYPE_ID
+            and ITEM.CLAIM_TYPE_ITEM_ID = CTI.CLAIM_TYPE_ITEM_ID
         {
             key HEADER.CLAIM_ID,
             key ITEM.CLAIM_SUB_ID,
@@ -1168,15 +1188,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
                 HEADER.PAYMENT_DATE,
-                HEADER.STATUS_ID,
+                STATUS.STATUS_DESC as STATUS_DESC,
                 HEADER.PURPOSE,
                 HEADER.TRIP_START_DATE,
                 HEADER.TRIP_END_DATE,
 
-                ITEM.CLAIM_TYPE_ID,
-                ITEM.CLAIM_TYPE_ITEM_ID,
+                CT.CLAIM_TYPE_DESC       as CLAIM_TYPE_DESC,
+                CTI.CLAIM_TYPE_ITEM_DESC as CLAIM_TYPE_ITEM_DESC,
                 ITEM.AMOUNT
-        };
+        } where HEADER.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
 
     entity ZEMP_CC_BUDGET_REPORT         as
         projection on ECLAIM.ZBUDGET {
@@ -1231,5 +1251,125 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
 
-    function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);
+    function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);                        
+
+    type ReassignmentPayload {
+        APPROVER_ID: String;
+        APPROVER_NAME:  String;
+        ID: String;
+        LEVEL: Integer;
+        NEW_APPROVER_ID: String;
+    }
+
+    action reassignApprover(payload: many ReassignmentPayload) returns Boolean;
+    
+    entity ZCONFIG_VARIABLE as projection on ECLAIM.ZCONFIG_VARIABLE;
+
+    @cds.autoexpose
+    //this will be used by the New Approver popup. Need filtering more than the department
+    entity ZEMP_APPROVER_LIST_VH as 
+        select from ZEMP_MASTER as emp 
+        left join ZCONFIG_VARIABLE as cfg 
+        on cfg.LOW_VALUE = emp.GRADE 
+        and cfg.VARIABLE_NAME = 'PERSONAL_GRADE' 
+        { 
+            key emp.EEID as EEID, 
+            emp.NAME as NAME, 
+            emp.DEP as DEP, 
+            emp.GRADE as GRADE, 
+            cfg.SEQUENCE_NO as GRADE_SEQUENCE 
+            };        
+    @cds.autoexpose
+    //this will filter by department for GA
+    entity ZEMP_APPROVER_LIST_DEP        as
+        projection on ZEMP_MASTER {
+            key EEID,
+                NAME,
+                DEP
+        };
+
+    entity ZEMP_PENDING_LIST           as
+            select from ECLAIM.ZREQUEST_HEADER as request {
+                key REQUEST_ID                     as ID,
+                    EMP_ID,
+                    CLAIM_TYPE_ID,
+                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    SUBMITTED_DATE,
+                    ZEMP_MASTER.DEP
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+        union all
+            select from ECLAIM.ZCLAIM_HEADER as claim {
+                key CLAIM_ID                              as ID,
+                    EMP_ID,
+                    CLAIM_TYPE_ID,
+                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    SUBMITTED_DATE,
+                    ZEMP_MASTER.DEP
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+
+    entity ZEMP_PENDING_LIST_APPROVER as
+        select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
+        left join ZEMP_MASTER as master
+            on master.EEID = request.APPROVER_ID
+        left join ZCONFIG_VARIABLE as cfg
+            on cfg.LOW_VALUE = master.GRADE
+            and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
+        {
+            key PREAPPROVAL_ID as ID,
+            key LEVEL,
+            STATUS,
+            ZSTATUS.STATUS_DESC as STATUS_DESC,
+            APPROVER_ID,
+            master.NAME as APPROVER_NAME,
+            cast('' as String) as NEW_APPROVER_ID,
+            master.DEP as APPROVER_DEP,
+            master.GRADE as APPROVER_GRADE,
+            cfg.SEQUENCE_NO as GRADE_SEQUENCE
+        }
+        union all
+        select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
+        left join ZEMP_MASTER as master
+            on master.EEID = claim.APPROVER_ID
+        left join ZCONFIG_VARIABLE as cfg
+            on cfg.LOW_VALUE = master.GRADE
+            and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
+        {
+            key CLAIM_ID as ID,
+            key LEVEL,
+            STATUS,
+            ZSTATUS.STATUS_DESC as STATUS_DESC,
+            APPROVER_ID,
+            master.NAME as APPROVER_NAME,
+            cast('' as String) as NEW_APPROVER_ID,
+            master.DEP as APPROVER_DEP,
+            master.GRADE as APPROVER_GRADE,
+            cfg.SEQUENCE_NO as GRADE_SEQUENCE
+        };
+
+    entity ZEMP_APPROVER_VH              as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP
+        };
+
+    entity ZEMP_SUBSTITUTE_VH            as
+        projection on ZEMP_MASTER {
+            EEID,
+            NAME,
+            EMAIL,
+            ROLE,
+            DEP,
+            GRADE,
+            virtual null as SELECTED_APPROVER : String
+        };
+
 };

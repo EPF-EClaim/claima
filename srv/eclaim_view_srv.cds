@@ -1181,18 +1181,55 @@ entity ZEMP_APPROVER_DETAILS           as
         select from ECLAIM.ZREQ_ITEM_PART as itemPart
             inner join ECLAIM.ZREQUEST_HEADER as req
                 on itemPart.REQUEST_ID = req.REQUEST_ID
-            left join ECLAIM.ZCLAIM_HEADER as claim
-                on itemPart.REQUEST_ID = claim.REQUEST_ID
         {
             key itemPart.REQUEST_ID,
             key itemPart.PARTICIPANTS_ID,
+
+            req.EMP_ID,
+            req.CLAIM_TYPE_ID,
+            req.STATUS,
+            
+            req.OBJECTIVE_PURPOSE,
+            req.TRIP_START_DATE,
+            req.TRIP_END_DATE,
+            req.EVENT_START_DATE,
+            req.EVENT_END_DATE,
+
+            req.ALTERNATE_COST_CENTER,
+            req.PREAPPROVAL_AMOUNT as HEADER_PREAPPROVAL_AMOUNT,
+            req.CASH_ADVANCE,
+            req.PROJECT_CODE,
+
+            req.TRANSFER_MODE_ID,
+            req.TRAVEL_ALONE_FAMILY,
+            req.TRAVEL_FAMILY_NOW_LATER,
+
             sum(itemPart.ALLOCATED_AMOUNT) as PREAPPROVED_AMOUNT : Decimal
         }
         where
             req.STATUS = 'STAT05'
-            and claim.REQUEST_ID is null
+            
         group by
             itemPart.REQUEST_ID,
-            itemPart.PARTICIPANTS_ID;
+            itemPart.PARTICIPANTS_ID,
+            
+            req.EMP_ID,
+            req.CLAIM_TYPE_ID,
+            req.STATUS,
+
+            req.OBJECTIVE_PURPOSE,
+            req.TRIP_START_DATE,
+            req.TRIP_END_DATE,
+            req.EVENT_START_DATE,
+            req.EVENT_END_DATE,
+
+            req.ALTERNATE_COST_CENTER,
+            req.PREAPPROVAL_AMOUNT,
+            req.CASH_ADVANCE,
+            req.PROJECT_CODE,
+
+            req.TRANSFER_MODE_ID,
+            req.TRAVEL_ALONE_FAMILY,
+            req.TRAVEL_FAMILY_NOW_LATER;
 
 }

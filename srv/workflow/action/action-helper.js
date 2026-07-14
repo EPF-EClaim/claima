@@ -3,6 +3,8 @@ const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
 const { constants } = require('@sap/xssec');
 const { fn } = cds;
+const { sendFinalApproveLog } = require("../determination/determination-helper");
+
 
 const aApproverActions = {
     [Constant.Status.APPROVED]  : {
@@ -115,6 +117,9 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
     }
     catch(oError) {
         console.log("Error found: ", oError);
+        const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
+        const sMessage = oError?.message || "No Message";
+        await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
         return false;
     }
 }

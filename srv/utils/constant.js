@@ -25,7 +25,8 @@ const Constant = {
     },
     NumberRange: {
         REQUEST: "NR01",
-        CLAIM: "NR02"
+        CLAIM: "NR02",
+        SUBSTITUTION_RULE: "NR04"        
     },
     DisbursementStatus: {
         TO_BE_DISBURSED: "01",
@@ -76,7 +77,8 @@ const Constant = {
         "ZWORKFLOW_RULE": "ZWORKFLOW_RULE",
         "ZEMP_SUBSTITUTION_RULE": "ZSUBSTITUTION_RULES",
         "ZAPPROVER_DETAILS_CLAIMS": "ZAPPROVER_DETAILS_CLAIMS",
-        "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL"
+        "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL",
+        "ZLOG": "ZLOG"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -300,7 +302,8 @@ const Constant = {
         "DURATION" : "DURATION",
         "PROJECT_CODE" : "PROJECT_CODE",
         "PROJECT_CLAIM" : "PROJECT_CLAIM",
-        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT"
+        "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT",
+        "CASH_REPAYMENT" : "CASH_REPAYMENT"
     },
     Wildcard: {
         "All": "*",
@@ -510,6 +513,12 @@ const Constant = {
     PeduResult: {
         EXCEEDED: "EXCEEDED",
         NOT_EXCEEDED: "NOT_EXCEEDED"
+    },
+    SpecialMultipleConstantApproverList: {
+        "MED_REVIEWER": "MED_REVIEWER", 
+        "MED_APPROVER": "MED_APPROVER", 
+        "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
+        "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
     }
 
 };

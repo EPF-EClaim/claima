@@ -420,7 +420,6 @@
                         }"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
-
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null ||
                                 ${claimsubmission_input>/req_emailapprove})
                         }"
@@ -431,16 +430,9 @@
                     <Label text="{i18n>label_claiminput_altcc}" />
                     <Input
                         id="input_claiminput_altcc"
-                        value="{
-                                parts: [
-                                    'claimsubmission_input>/claim_header/alternate_cost_center',
-                                    'claimsubmission_input>/claimtype/requestform/descr/alternate_cost_center'
-                                ],
-                                formatter: '.Utility.formatAltCostCenter'
-                            }"
+                        value="{= ${claimsubmission_input>/claim_header/alternate_cost_center} + ' (' + ${claimsubmission_input>/claim_header/descr/alternate_cost_center} + ')'}"
                         editable="false"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
-
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null &amp;&amp;
                                 !${claimsubmission_input>/req_emailapprove})
                         }"
@@ -462,8 +454,7 @@
                             ],
                             formatter: '.Utility.setFieldEditableState'
                         }"
-                        visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null 
-                        &amp;&amp; ${claimsubmission_input>/claim_header/alternate_cost_center} }"
+                        visible="{= ${claimsubmission_input>/claimtype/project_claim} === true &amp;&amp; ${claimsubmission_input>/claimtype/item} !== null }"
                         items="{
                             path: 'employee_view>/ZPROJECT_DROPDOWN_VH',
                             sorter: [
