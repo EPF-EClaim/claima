@@ -684,20 +684,6 @@ sap.ui.define([
                     
                     break;
             }
-        },
-
-        //format Alt Cost Center 
-        formatAltCostCenter: function (sAltCC, sAltCCDesc) {
-
-            if (!sAltCC) {
-                return "";
-            }
-
-            if (!sAltCCDesc) {
-                return sAltCC;
-            }
-
-            return `${sAltCC} (${sAltCCDesc})`;
         }
 
     };
