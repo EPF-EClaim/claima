@@ -616,74 +616,6 @@
 				>
 				</Select>
 
-				<!-- Date of Purchase of Insurance -->
-				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_insurance_purchase_date"
-					value="{claimitem_input>/claim_item/insurance_purchase_date}"
-					visible="{claimitem_property>/insurance_purchase_date/is_visible}"
-					displayFormat="dd-MMM-yyyy"
-                    required="true"
-				>
-					<customData>
-						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
-					</customData>
-				</DatePicker>
-
-				<!-- Insurance Period of Certificate Start Date -->
-				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_insurance_cert_start_date"
-					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
-					visible="{claimitem_property>/insurance_cert_start_date/is_visible}"
-                    required="true"
-					maxDate="{
-						parts: [
-							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
-							'claimsubmission_input>/claim_header/claim_id',
-							'claimsubmission_input>/claim_header/claim_type_id',
-							'claimitem_input>/claim_item/claim_type_item_id',
-							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
-						],
-						formatter: '.DateUtility.determineMaxDate'
-					}"
-					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_InsuranceCertDate"
-				>
-					<customData>
-						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
-						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customMaxDateError}" />						
-					</customData>
-				</DatePicker>
-
-				<!-- Insurance Period of Certificate End Date -->
-				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_insurance_cert_end_date"
-					value="{claimitem_input>/claim_item/insurance_cert_end_date}"
-					visible="{claimitem_property>/insurance_cert_end_date/is_visible}"
-                    required="true"
-					minDate="{
-						parts: [
-							'constant>/EntitiesFields/INSURANCE_CERT_END_DATE',
-							'claimsubmission_input>/claim_header/claim_id',
-							'claimsubmission_input>/claim_header/claim_type_id',
-							'claimitem_input>/claim_item/claim_type_item_id',
-							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
-						],
-						formatter: '.DateUtility.determineMinDate'
-					}"
-					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_InsuranceCertDate"
-				>
-					<customData>
-						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />
-						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customMinDateError}" />						
-					</customData>
-				</DatePicker>
-
                 <!-- Mode of Transfer-->
                 <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
                 <Select
@@ -729,7 +661,7 @@
 					change="onChange_ClaimDetails_NumberOfDays"
 					liveChange="onChange_ClaimDetails_NumberOfDays"
 					visible="{claimitem_property>/no_of_days/is_visible}"
-					editable="false"
+					editable="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TRAVEL_INSURANCE} }"
 					required="true"
 				/>
 

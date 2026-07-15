@@ -3452,20 +3452,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * On setting insurance cert start/end date, call private method to calculate number of days
-		 * @public
-		 */
-		onChange_ClaimDetails_InsuranceCertDate: function () {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oInputModel = this.getView().getModel("claimitem_input");
-			oInputModel.refresh(true);
-
-			// update number of days
-			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
-			this.onChange_ClaimDetails_NumberOfDays();
-		},
-
-		/**
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
