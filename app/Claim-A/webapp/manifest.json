@@ -924,15 +924,6 @@
                                             "name": "CreationDialog",
                                             "creationFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
                                         }
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        }
                                     }
                                 }
                             },
