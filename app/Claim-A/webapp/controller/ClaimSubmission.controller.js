@@ -4668,7 +4668,6 @@ sap.ui.define([
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
 						TOTAL_TRAVELLER: claim_item.number_of_travellers,
-						//INTERNAL_ORDER: claim_item.internal_order
 					});
 
 					if (i >= itemCountDb) {
