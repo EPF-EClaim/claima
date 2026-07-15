@@ -729,7 +729,7 @@
 					change="onChange_ClaimDetails_NumberOfDays"
 					liveChange="onChange_ClaimDetails_NumberOfDays"
 					visible="{claimitem_property>/no_of_days/is_visible}"
-					editable="false"
+					editable="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TRAVEL_INSURANCE} }"
 					required="true"
 				/>
 
