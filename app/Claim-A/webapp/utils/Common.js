@@ -112,6 +112,18 @@ sap.ui.define([
                                 oInputModel.setProperty("/req_header/projectdesc",  oProjectData.PROJECT_DESC);
                             }
 
+                            var oProject = this._oView.byId("select_request_project_code");
+
+                            if (oProject && oProject.getSelectedItem()) {
+
+                                var oProjectData =
+                                    oProject.getSelectedItem()
+                                        .getBindingContext("employee_view")
+                                        .getObject();
+
+                                oInputModel.setProperty("/req_header/projectdesc",  oProjectData.PROJECT_DESC);
+                            }
+
                             await oODataModel.submitBatch("$auto");
 
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
