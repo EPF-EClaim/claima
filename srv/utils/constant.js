@@ -519,6 +519,9 @@ const Constant = {
         "MED_APPROVER": "MED_APPROVER", 
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
         "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
+    },
+    StatusCode: {       
+        SUCCESS: "200"
     }
 
 };
