@@ -618,7 +618,7 @@
 				>
 				</Select>
 
-				<!-- Date of Purchase of Insurance -->
+				<!-- Date of Purchase of Insurance 
 				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_purchase_date"
@@ -630,9 +630,9 @@
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
-				<!-- Insurance Period of Certificate Start Date -->
+				<!-- Insurance Period of Certificate Start Date 
 				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_cert_start_date"
@@ -657,9 +657,9 @@
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
 						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customMaxDateError}" />						
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
-				<!-- Insurance Period of Certificate End Date -->
+				<!-- Insurance Period of Certificate End Date 
 				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_cert_end_date"
@@ -684,7 +684,7 @@
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />
 						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customMinDateError}" />						
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
                 <!-- Mode of Transfer-->
                 <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
@@ -731,7 +731,7 @@
 					change="onChange_ClaimDetails_NumberOfDays"
 					liveChange="onChange_ClaimDetails_NumberOfDays"
 					visible="{claimitem_property>/no_of_days/is_visible}"
-					editable="false"
+					editable="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TRAVEL_INSURANCE} }"
 					required="true"
 				/>
 
