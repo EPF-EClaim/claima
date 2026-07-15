@@ -3119,7 +3119,11 @@ module.exports = (srv) => {
     srv.on('reassignApprover', async (req) => {
         const {
             ZAPPROVER_DETAILS_CLAIMS,
-            ZAPPROVER_DETAILS_PREAPPROVAL
+            ZAPPROVER_DETAILS_PREAPPROVAL,
+            ZEMP_APPROVER_CLAIM_DETAILS,
+            ZEMP_APPROVER_REQUEST_DETAILS,
+            ZEMP_MASTER,
+            ZLOG
         } = srv.entities;
 
         const aPayloads = req.data.payload;
@@ -3169,7 +3173,6 @@ module.exports = (srv) => {
 
                 let oLogEntry = {
                     TIMESTAMP: new Date(),
-                    RECORD_ID: ID,
                     RECORD_ID: `${ID}_${LEVEL}`,
                     PROGRAM: 'REASSIGN_APPROVER'
                 };
@@ -3221,13 +3224,16 @@ module.exports = (srv) => {
             let iSuccessCount = 0;
             const aLogsToInsert = [];
             const aErrorMessages = [];
+            const aSuccessfulPayloads = [];
 
-            aResults.forEach(oResult => {
+            aResults.forEach((oResult, index) => {
                 if (oResult) {
                     iSuccessCount += oResult.iRowsAffected;
                     aLogsToInsert.push(oResult.oLog);
 
-                    if (oResult.oLog.STATUS_CODE !== '200') {
+                    if (oResult.iRowsAffected > 0) {
+                        aSuccessfulPayloads.push(aPayloads[index]);
+                    } else if (oResult.oLog.STATUS_CODE !== Constant.StatusCode.SUCCESS) {
                         aErrorMessages.push({
                             recordId: oResult.oLog.RECORD_ID,
                             statusCode: oResult.oLog.STATUS_CODE,
@@ -3243,6 +3249,166 @@ module.exports = (srv) => {
                 await cds.tx(async (oLogTx) => {
                     await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
                 });
+            }
+
+            const aFilteredPayloads = aSuccessfulPayloads.filter(
+                oItem => oItem.STATUS === Constant.Status.PENDING_APPROVAL
+            );
+
+            if (aFilteredPayloads.length > 0) {
+                const aBackgroundLogs = [];
+                for (const oItem of aFilteredPayloads) {
+                    const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID } = oItem;
+                    const sPrefix = ID.substring(0, 3).toUpperCase();
+                    try {
+                        let oApproverRecord = null;
+                        let oOldApproverRecord = null;
+                        let oClaimant = null;
+                        let sAction = "REASSIGN";
+
+                        if (sPrefix === Constant.WorkflowType.CLAIM) {
+
+                            oApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: NEW_APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );
+                            oOldApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );   
+                            oClaimant = await tx.run(
+                                SELECT.one.from(ZEMP_APPROVER_CLAIM_DETAILS)
+                                    .where({ CLAIM_ID: ID })
+                                    .and('LEVEL =', LEVEL)
+                                    .columns('SUBMITTED_DATE', 'EMPLOYEE_NAME')
+                            );                                                     
+
+                            if (oApproverRecord) {
+                                //new approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: "Reassign New",
+                                        EmailTitle: `Action Required: Reassigned Claim ${ID}`,
+                                        ReceiverEmail: oApproverRecord.EMAIL,
+                                        SubmissionDate: oClaimant.SUBMITTED_DATE,
+                                        ClaimantName: oClaimant.EMPLOYEE_NAME,
+                                        RecipientName: oApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }
+                                //old approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oOldApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: sAction,
+                                        EmailTitle: `Action Required: Reassigned Claim ${ID}`,
+                                        ReceiverEmail: oOldApproverRecord.EMAIL,
+                                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                                        ClaimantName: oCurrentUser.NAME,//for old approver need to put the assigner name
+                                        RecipientName: oOldApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }                                
+                            }
+                        } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+
+                            oApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: NEW_APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );
+                            oOldApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );   
+                            oClaimant = await tx.run(
+                                SELECT.one.from(ZEMP_APPROVER_REQUEST_DETAILS)
+                                    .where({ PREAPPROVAL_ID: ID })
+                                    .and('LEVEL =', LEVEL)
+                                    .columns('REQUEST_DATE', 'EMPLOYEE_NAME')
+                            );                             
+                            
+                            if (oApproverRecord) {
+                                //new approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: "Reassign New",
+                                        EmailTitle: `Action Required: Reassigned Pre-Approval ${ID}`,
+                                        ReceiverEmail: oApproverRecord.EMAIL,
+                                        SubmissionDate: oClaimant.REQUEST_DATE,
+                                        ClaimantName: oClaimant.EMPLOYEE_NAME,
+                                        RecipientName: oApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }
+                                //old approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oOldApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: sAction,
+                                        EmailTitle: `Action Required: Reassigned Pre-Approval ${ID}`,
+                                        ReceiverEmail: oOldApproverRecord.EMAIL,
+                                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                                        ClaimantName: oCurrentUser.NAME,//for old approver need to put the assigner name
+                                        RecipientName: oOldApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }                                
+                            }
+                        }
+                    } catch (oLoopError) {
+                        console.error(`Critical loop processing breakdown for record ${ID}: `, oLoopError);
+                    }
+                }
+                // Write any background warnings to the Log table if email attempts failed
+                if (aBackgroundLogs.length > 0) {
+                    await tx.run(INSERT.into(ZLOG).entries(aBackgroundLogs));
+                }
             }
 
             if (aErrorMessages.length > 0) {
