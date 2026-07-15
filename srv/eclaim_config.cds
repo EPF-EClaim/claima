@@ -8296,8 +8296,9 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
     },
     odata.draft.enabled,
     UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        //this features only accessible by JKEW and GA Admin. Both role can perform Create and Delete
+        //CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        //DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Substitution Rules - ZSUBSTITUTION_RULES',
