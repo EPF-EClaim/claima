@@ -24,7 +24,7 @@ sap.ui.define([
         today: DateUtility.toYMD(new Date()), // yyyy-MM-dd in local time
         subValid: false,
         subInfo: "",
-        isApprover: true,
+        isApprover: false,
         canEdit: false,
         subInput: "",
         editRule: {
@@ -43,8 +43,7 @@ sap.ui.define([
     // Resolve user type via function import
       const oModel = this.getOwnerComponent().getModel();
       const ctx = oModel.bindContext("/getUserType()");
-      //var isApprover = this._oRoleModel.getProperty("/isApprover");
-      var isApprover = true;
+      var isApprover = this._oRoleModel.getProperty("/isApprover");
         oVM.setProperty("/isApprover", isApprover);
         oVM.setProperty("/canEdit",oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection"));
 
