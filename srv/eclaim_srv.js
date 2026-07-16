@@ -4250,4 +4250,74 @@ module.exports = (srv) => {
         }
     }
 
+    srv.on("updateSubstitutionValidTo", async (req) => {
+
+        const { SUBSTITUTE_RULE_ID, USER_ID, SUBSTITUTE_ID, VALID_FROM, OLD_VALID_TO, NEW_VALID_TO } = req.data;
+
+        const tx = cds.tx(req);
+
+        const result = await tx.run(
+            UPDATE("ZSUBSTITUTION_RULES")
+                .set({
+                    VALID_TO: NEW_VALID_TO
+                })
+                .where({
+                    SUBSTITUTE_RULE_ID,
+                    USER_ID,
+                    SUBSTITUTE_ID,
+                    VALID_FROM,
+                    VALID_TO: OLD_VALID_TO
+                })
+        );
+
+        if (!result) {
+            return req.error({
+                code: "UPDATE_FAILED",
+                message: "Failed to update substitution rule."
+            });
+        }
+
+        // Get current user
+        const oCurrentUser = await getLoggedInEmployee(
+            tx,
+            req,
+            srv.entities
+        );
+
+        const oLogEntry = {
+            TIMESTAMP: new Date(),
+            RECORD_ID: String(SUBSTITUTE_RULE_ID),
+            PROGRAM: 'SUBSTITUTION_RULE_UPDATE',
+            MESSAGE_TYPE: 'S',
+            STATUS_CODE: '200',
+            MESSAGE: `User ${oCurrentUser.EEID} updated VALID_TO for Rule ${SUBSTITUTE_RULE_ID} from ${OLD_VALID_TO} to ${NEW_VALID_TO}.`
+        };
+
+        await tx.run(
+            INSERT.into('ZLOG').entries(oLogEntry)
+        );
+
+        if (NEW_VALID_TO > OLD_VALID_TO) {
+            console.log(">>> Extension detected. Processing new assignments...");
+            // Pass the original validation start as oldDate to only look at the expanded window gap
+            await handleNewAssignments(tx, srv.entities, {
+                sUserID: USER_ID, 
+                sSubstituteID: SUBSTITUTE_ID,
+                VALID_FROM: OLD_VALID_TO, // Start from the old limit to find new matching records
+                VALID_TO: NEW_VALID_TO, oCurrentUser
+            });
+        } else if (NEW_VALID_TO < OLD_VALID_TO) {
+            console.log(">>> Shortening detected. Processing de-delegations...");
+            await handleDeDelegations(tx, srv.entities, {
+                sUserID: USER_ID, 
+                sSubstituteID: SUBSTITUTE_ID,
+                VALID_FROM: NEW_VALID_TO, // Look into items trapped between the new earlier limit...
+                VALID_TO: OLD_VALID_TO, // ...and the old higher limit
+                oCurrentUser
+            });
+        }
+
+        return true;
+    });
+
 }
