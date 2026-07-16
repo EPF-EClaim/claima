@@ -2363,4 +2363,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
             virtual null as SELECTED_APPROVER : String
         };
 
+    entity ZCORPORATE_CARD as projection on ECLAIM.ZCORPORATE_CARD;
+ 
+    entity ZCORPORATE_CARD_ADVANCED as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
+
 };
