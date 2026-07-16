@@ -303,11 +303,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
                 *
-        }
-        where
-            VALID_TO >= cast(
-                $now as Date
-            );
+        };
 
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 

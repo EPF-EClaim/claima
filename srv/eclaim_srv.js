@@ -3135,26 +3135,25 @@ module.exports = (srv) => {
                     PROGRAM: 'REASSIGN_APPROVER'
                 };
 
-                //Get any valid substitute based on the Submitted/Request Date
-                //In view both Claim and PAR renamed as Request Date
-                if (REQUEST_DATE) {
-                    const oActiveSubstitution = await tx.run(
-                        SELECT.one.from('ZSUBSTITUTION_RULES')
-                            .where({ USER_ID: NEW_APPROVER_ID })
-                            .and('VALID_FROM <=', REQUEST_DATE)
-                            .and('VALID_TO >=', REQUEST_DATE)
-                            .columns('SUBSTITUTE_ID')
-                    );
-
-                    if (oActiveSubstitution) {
-                        sSubstituteID = oActiveSubstitution.SUBSTITUTE_ID;
-                    } else {
-                        sSubstituteID = null;
-                    }
-                }
-
                 if (!NEW_APPROVER_ID || NEW_APPROVER_ID.trim() === '') {
                     return;
+                }
+
+                if (REQUEST_DATE) {
+                    try {
+                        const oActiveSubstitution = await tx.run(
+                            SELECT.one.from('ZSUBSTITUTION_RULES')
+                                .where({ USER_ID: NEW_APPROVER_ID })
+                                .and('VALID_FROM <=', REQUEST_DATE)
+                                .and('VALID_TO >=', REQUEST_DATE)
+                                .columns('SUBSTITUTE_ID')
+                        );
+                        if (oActiveSubstitution) {
+                            sSubstituteID = oActiveSubstitution.SUBSTITUTE_ID;
+                        }
+                    } catch (oSubError) {
+                        console.error(`Substitution lookup failed for record ${ID}:`, oSubError);
+                    }
                 }
 
                 const sPrefix = ID ? ID.substring(0, 3).toUpperCase() : null;
@@ -3177,7 +3176,7 @@ module.exports = (srv) => {
                 //keep the old substitute to send email say its revoked
                 const oOldSubstitution = await tx.run(
                     SELECT.one.from(oTargetEntity)
-                        .where({ sIdColumnName: ID })
+                        .where({ [sIdColumnName]: ID })
                         .and({ LEVEL: LEVEL })
                         .columns('SUBSTITUTE_APPROVER_ID')
                 );
@@ -3191,7 +3190,7 @@ module.exports = (srv) => {
                 const iRowsAffected = await UPDATE(oTargetEntity)
                     .set({
                         APPROVER_ID: NEW_APPROVER_ID,
-                        SUBSTITUTE_APPROVER_ID: sSubstituteID
+                        SUBSTITUTE_APPROVER_ID: sSubstituteID // Will be populated if rule exists, or null if it doesn't
                     })
                     .where({
                         [sIdColumnName]: ID,
@@ -3202,7 +3201,6 @@ module.exports = (srv) => {
                 if (iRowsAffected > 0) {
                     oLogEntry.MESSAGE_TYPE = 'S';
                     oLogEntry.STATUS_CODE = '200';
-                    // Dynamically shift message text based on whether a substitute exists
                     if (sSubstituteID) {
                         oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to new approver ${NEW_APPROVER_ID} (Delegated to Substitute ${sSubstituteID}).`;
                     } else {
@@ -3398,7 +3396,7 @@ module.exports = (srv) => {
                                         MESSAGE: oEmailError?.message || "No Message"
                                     });
                                 }
-                            }                            
+                            }
                         } else if (sPrefix === Constant.WorkflowType.REQUEST) {
 
                             const aEEIDs = [
@@ -3890,7 +3888,7 @@ module.exports = (srv) => {
         }
     });
 
-    srv.before('UPDATE', 'ZSUBSTITUTION_RULES_CONFIG', async (req) => {
+    srv.before('UPDATE', ['ZSUBSTITUTION_RULES', 'ZSUBSTITUTION_RULES_CONFIG'], async (req) => {
         const { VALID_FROM, VALID_TO } = req.data;
         if (VALID_FROM === undefined && VALID_TO === undefined) return;
         const tx = cds.tx(req);
@@ -3916,37 +3914,53 @@ module.exports = (srv) => {
         }
     });
 
-    srv.after('UPDATE', 'ZSUBSTITUTION_RULES_CONFIG', async (data, req) => {
+    srv.after('UPDATE', ['ZSUBSTITUTION_RULES', 'ZSUBSTITUTION_RULES_CONFIG'], async (data, req) => {
 
-        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
-        if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
+        const { SUBSTITUTE_RULE_ID, VALID_TO } = data;
+        if (!SUBSTITUTE_RULE_ID || !VALID_TO) return;
 
         //Get the original value from the database (passed forward from your before hook)
-        const oldValidToStr = req.context._oldRecord?.VALID_TO;
+        const sOldValidToStr = req.context._oldRecord?.VALID_TO;
+        const sUserID = req.context._oldRecord?.USER_ID;
+        const sSubstituteID = req.context._oldRecord?.SUBSTITUTE_ID;
 
-        if (!oldValidToStr || oldValidToStr === VALID_TO) return;
+        if (!sOldValidToStr || sOldValidToStr === VALID_TO) return;
 
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
 
         try {
-            if (newDate > oldDate) {
+            const oLogEntry = {
+                TIMESTAMP: new Date(),
+                RECORD_ID: String(SUBSTITUTE_RULE_ID),
+                PROGRAM: 'SUBSTITUTION_RULE_UPDATE',
+                MESSAGE_TYPE: 'S',
+                STATUS_CODE: '200',
+                MESSAGE: `User ${oCurrentUser.EEID} updated VALID_TO for Rule ${SUBSTITUTE_RULE_ID} from ${sOldValidToStr} to ${VALID_TO}.`
+            };
+
+            await tx.run(
+                INSERT.into('ZLOG').entries(oLogEntry)
+            );
+
+            if (VALID_TO > sOldValidToStr) {
                 console.log(">>> Extension detected. Processing new assignments...");
                 // Pass the original validation start as oldDate to only look at the expanded window gap
                 await handleNewAssignments(tx, srv.entities, {
-                    USER_ID, SUBSTITUTE_ID,
-                    VALID_FROM: oldValidToStr, // Start from the old limit to find new matching records
+                    sUserID, sSubstituteID,
+                    VALID_FROM: sOldValidToStr, // Start from the old limit to find new matching records
                     VALID_TO, oCurrentUser
                 });
-            } else if (newDate < oldDate) {
+            } else if (VALID_TO < sOldValidToStr) {
                 console.log(">>> Shortening detected. Processing de-delegations...");
                 await handleDeDelegations(tx, srv.entities, {
-                    USER_ID, SUBSTITUTE_ID,
+                    sUserID, sSubstituteID,
                     VALID_FROM: VALID_TO, // Look into items trapped between the new earlier limit...
-                    VALID_TO: oldValidToStr, // ...and the old higher limit
+                    VALID_TO: sOldValidToStr, // ...and the old higher limit
                     oCurrentUser
                 });
             }
+
         } catch (oError) {
             console.error("Substitution update processing runtime error:", oError);
             req.warn(500, `Substitution rule updated, but post-processing failed: ${oError.message}`);
@@ -3954,8 +3968,12 @@ module.exports = (srv) => {
     });
 
     async function handleDeDelegations(tx, entities, params) {
-        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO, oCurrentUser } = params;
-        const { ZEMP_APPROVER_CLAIM_DETAILS, ZAPPROVER_DETAILS_CLAIMS, ZLOG } = entities;
+        const { sUserID, sSubstituteID, VALID_FROM, VALID_TO, oCurrentUser } = params;
+        const { ZEMP_APPROVER_CLAIM_DETAILS,
+            ZAPPROVER_DETAILS_CLAIMS,
+            ZEMP_APPROVER_REQUEST_DETAILS,
+            ZAPPROVER_DETAILS_PREAPPROVAL,
+            ZLOG } = entities;
         const aLogsToInsert = [];
 
         // =======================================================================
@@ -3964,7 +3982,7 @@ module.exports = (srv) => {
         // 1. Find Claims previously routed to substitute within the dropped window
         const orphanedClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
-                .where({ APPROVER_ID: USER_ID, SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
                 .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                 .and('SUBMITTED_DATE >', VALID_FROM) // items falling outside the new window
                 .and('SUBMITTED_DATE <=', VALID_TO)
@@ -3975,7 +3993,7 @@ module.exports = (srv) => {
             const claimClears = orphanedClaims.map(claim =>
                 UPDATE(ZAPPROVER_DETAILS_CLAIMS)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
-                    .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
+                    .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(claimClears.map(query => tx.run(query)));
             // 3. Log the removal action
@@ -3986,13 +4004,13 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'W',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Claim ${claim.CLAIM_ID} removed from substitute ${SUBSTITUTE_ID}.`
+                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Claim ${claim.CLAIM_ID} removed from substitute ${sSubstituteID}.`
                 });
             });
             // 4. Fetch substitute metadata to inform them of the task revocation
             const oSubstitute = await tx.run(
                 SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: SUBSTITUTE_ID })
+                    .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
             const pendingClaims = orphanedClaims.filter(claim => claim.STATUS === 'STAT02');
@@ -4001,10 +4019,10 @@ module.exports = (srv) => {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
                         ClaimID: claim.CLAIM_ID,
-                        Action: "REVOKED",
+                        Action: "REVOKE",
                         EmailTitle: `Notification: Revoked Delegated Claim ${claim.CLAIM_ID}`,
                         ReceiverEmail: oSubstitute.EMAIL,
-                        SubmissionDate: claim.SUBMITTED_DATE,
+                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
                         ClaimantName: claim.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
                     });
@@ -4027,7 +4045,7 @@ module.exports = (srv) => {
         // 1. Find Pre-Approvals previously routed to substitute within the dropped window
         const orphanedRequest = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
-                .where({ APPROVER_ID: USER_ID, SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
+                .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
                 .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                 .and('REQUEST_DATE >', VALID_FROM) // items falling outside the new window
                 .and('REQUEST_DATE <=', VALID_TO)
@@ -4038,7 +4056,7 @@ module.exports = (srv) => {
             const RequestClears = orphanedRequest.map(preApp =>
                 UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
-                    .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
+                    .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(RequestClears.map(query => tx.run(query)));
             // 3. Log the removal action
@@ -4049,13 +4067,13 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'W',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Pre Approval ${preApp.PREAPPROVAL_ID} removed from substitute ${SUBSTITUTE_ID}.`
+                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Pre Approval ${preApp.PREAPPROVAL_ID} removed from substitute ${sSubstituteID}.`
                 });
             });
             // 4. Fetch substitute metadata to inform them of the task revocation
             const oSubstitute = await tx.run(
                 SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: SUBSTITUTE_ID })
+                    .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
             const pendingRequest = orphanedRequest.filter(preApp => preApp.STATUS === 'STAT02');
@@ -4064,10 +4082,10 @@ module.exports = (srv) => {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
                         ClaimID: preApp.PREAPPROVAL_ID,
-                        Action: "REVOKED",
-                        EmailTitle: `Notification: Revoked Delegated Claim ${preApp.PREAPPROVAL_ID}`,
+                        Action: "REVOKE",
+                        EmailTitle: `Notification: Revoked Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
                         ReceiverEmail: oSubstitute.EMAIL,
-                        SubmissionDate: preApp.SUBMITTED_DATE,
+                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
                         ClaimantName: preApp.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
                     });
@@ -4091,8 +4109,12 @@ module.exports = (srv) => {
     };
 
     async function handleNewAssignments(tx, entities, params) {
-        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO, oCurrentUser } = params;
-        const { ZEMP_APPROVER_CLAIM_DETAILS, ZAPPROVER_DETAILS_CLAIMS, ZLOG } = entities;
+        const { sUserID, sSubstituteID, VALID_FROM, VALID_TO, oCurrentUser } = params;
+        const { ZEMP_APPROVER_CLAIM_DETAILS,
+            ZAPPROVER_DETAILS_CLAIMS,
+            ZEMP_APPROVER_REQUEST_DETAILS,
+            ZAPPROVER_DETAILS_PREAPPROVAL,
+            ZLOG } = entities;        
         const aLogsToInsert = [];
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
@@ -4100,7 +4122,7 @@ module.exports = (srv) => {
 
         const matchingClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
-                .where({ APPROVER_ID: USER_ID })
+                .where({ APPROVER_ID: sUserID })
                 .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                 .and('SUBMITTED_DATE >=', VALID_FROM)
                 .and('SUBMITTED_DATE <=', VALID_TO)
@@ -4110,8 +4132,8 @@ module.exports = (srv) => {
         if (matchingClaims.length > 0) {
             const claimUpdates = matchingClaims.map(claim =>
                 UPDATE(ZAPPROVER_DETAILS_CLAIMS)   // write to base table, not the view
-                    .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
-                    .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
+                    .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
+                    .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(claimUpdates.map(query => tx.run(query)));
 
@@ -4122,13 +4144,13 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
                 });
             });
 
             const oSubstitute = await tx.run(
                 SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: SUBSTITUTE_ID })
+                    .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
 
@@ -4164,7 +4186,7 @@ module.exports = (srv) => {
 
         const matchingPreApprovals = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
-                .where({ APPROVER_ID: USER_ID })
+                .where({ APPROVER_ID: sUserID })
                 .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
                 .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
                 .and('REQUEST_DATE <=', VALID_TO)
@@ -4174,8 +4196,8 @@ module.exports = (srv) => {
         if (matchingPreApprovals.length > 0) {
             const preAppUpdates = matchingPreApprovals.map(preApp =>
                 UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
-                    .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
-                    .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
+                    .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
+                    .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(preAppUpdates.map(query => tx.run(query)));
 
@@ -4186,13 +4208,13 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
                 });
             });
 
             const oSubstitute = await tx.run(
                 SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: SUBSTITUTE_ID })
+                    .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
 
