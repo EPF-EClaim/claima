@@ -13,7 +13,7 @@ sap.ui.define([
   "use strict";
 
   return Controller.extend("claima.controller.ManageSub", {
-    //testt tetsts
+
     // ============================================================
     // INIT
     // ============================================================
