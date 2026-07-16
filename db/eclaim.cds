@@ -1518,3 +1518,38 @@ entity ZLOG : managed {
         STATUS_CODE   : String(3)   @Common.Label: 'Status Code';
         MESSAGE       : String      @Common.Label: 'Message';
 }
+
+entity ZCONFIG_VARIABLE : managed {
+    key VARIABLE_NAME : String(100)  @mandatory  @Common.Label: 'Variable Name';
+    key SEQUENCE_NO   : Integer      @mandatory  @Common.Label: 'Sequence Number';
+        PROGRAM       : String(40)   @Common.Label: 'Program Name';
+        SIGN          : String(1)    @Common.Label: 'Sign';
+        OPTION        : String(2)    @Common.Label: 'Option';
+        LOW_VALUE     : String(255)  @Common.Label: 'Low Value';
+        HIGH_VALUE    : String(255)  @Common.Label: 'High Value';
+        VALID_FROM    : Date         @Common.Label: 'Valid From';
+        VALID_TO      : Date         @Common.Label: 'Valid To';
+}
+
+entity ZCORPORATE_CARD : managed {
+    key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID  : Integer      @mandatory  @Common.Label: 'Cardholder Employee ID';
+    key PRINCIPLE      : Boolean      @mandatory  @Common.Label: 'Principle';
+    START_DATE         : Date         @Common.Label: 'Start Date';
+    END_DATE           : Date         @Common.Label: 'End Date';
+    CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';
+    STATEMENT_DATE     : Integer      @Common.Label: 'Statement Date (Day)';
+    DUE_DATE           : Integer      @Common.Label: 'Statement Due Date (Day)';
+    EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
+    REMARKS            : String(500)  @Common.Label: 'Remarks';
+}
+ 
+entity ZCORPORATE_CARD_ADVANCED : managed {
+    key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID           : Integer         @mandatory  @Common.Label: 'Cardholder Employee ID';
+    STATUS                      : String          @Common.Label: 'Status';
+    MONTHLY_ADVANCED_AMT        : Decimal(16, 2)  @Common.Label: 'Monthly Advanced Amount';
+    COMMIT_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Commitment Offset Amount';
+    ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
+    CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
+}
