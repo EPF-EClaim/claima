@@ -1688,6 +1688,10 @@ sap.ui.define([
 				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
 			}
 
+			if (sUserType !== this._oConstant.Role.JKEW_ADMIN) {
+				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC));
+			}
+
 			oBinding.filter(aFilters);
 		},
 

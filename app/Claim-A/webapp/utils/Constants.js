@@ -409,7 +409,8 @@ sap.ui.define([
             "EVENTS": "RT0003",
             "REIMBURSEMENT": "RT0004",
             "MEDICAL": "RT0005",
-            "PROJECT": "RT0006"
+            "PROJECT": "RT0006",
+            "CORP_CC" : "RT0007"
         },
         "ClaimFooterMode": {
             "SUMMARY": "SUMMARY",

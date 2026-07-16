@@ -1533,6 +1533,7 @@ entity ZCONFIG_VARIABLE : managed {
 }
 
 entity ZCORPORATE_CARD : managed {
+<<<<<<< HEAD
     START_DATE : Date  @Common.Label: 'Start Date';
     END_DATE : Date  @Common.Label: 'End Date';
     key CARD_NO : String(16) @mandatory  @Common.Label: 'Credit Card No';
@@ -1555,3 +1556,26 @@ entity ZCORPORATE_CARD_ADVANCED : managed {
     CURRENT_ADVANCED_BALANCE : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
 }
 
+=======
+    key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID  : Integer      @mandatory  @Common.Label: 'Cardholder Employee ID';
+    key PRINCIPLE      : Boolean      @mandatory  @Common.Label: 'Principle';
+    START_DATE         : Date         @Common.Label: 'Start Date';
+    END_DATE           : Date         @Common.Label: 'End Date';
+    CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';
+    STATEMENT_DATE     : Integer      @Common.Label: 'Statement Date (Day)';
+    DUE_DATE           : Integer      @Common.Label: 'Statement Due Date (Day)';
+    EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
+    REMARKS            : String(500)  @Common.Label: 'Remarks';
+}
+ 
+entity ZCORPORATE_CARD_ADVANCED : managed {
+    key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID           : Integer         @mandatory  @Common.Label: 'Cardholder Employee ID';
+    STATUS                      : String          @Common.Label: 'Status';
+    MONTHLY_ADVANCED_AMT        : Decimal(16, 2)  @Common.Label: 'Monthly Advanced Amount';
+    COMMIT_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Commitment Offset Amount';
+    ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
+    CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
+}
+>>>>>>> 1bb9cb243e80a2c6246fb0ec33f57bd8f0cc4433

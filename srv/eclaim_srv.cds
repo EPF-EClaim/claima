@@ -1374,8 +1374,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
         };
 
     entity ZCORPORATE_CARD as projection on ECLAIM.ZCORPORATE_CARD;
+<<<<<<< HEAD
 
     entity ZCORPORATE_CARD_ADVANCED as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
 
 
+=======
+ 
+    entity ZCORPORATE_CARD_ADVANCED as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
+
+>>>>>>> 1bb9cb243e80a2c6246fb0ec33f57bd8f0cc4433
 };
