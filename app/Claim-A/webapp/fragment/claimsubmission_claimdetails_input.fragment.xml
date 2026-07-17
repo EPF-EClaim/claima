@@ -335,15 +335,6 @@
 					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
-                <!-- Course Title -->
-                <Label text="{i18n>label_claimdetails_input_coursetitle}" />
-                <Input
-                    id="input_claimdetails_input_course_title"
-                    value="{claimitem_input>/claim_item/course_title}"
-                    visible="false"
-                    required="true"
-                />
-
                 <!-- Level of Studies -->
                 <Label text="{i18n>label_claimdetails_input_levelstudies}" />
                 <Select
@@ -556,8 +547,8 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
                     required="true"
 				/>
-
-                <!-- Course Duration -->
+                
+                 <!-- Course Duration -->
 				<Label text="{i18n>label_claimdetails_input_courseduration}" />
                 <Text
                     id="text_claimdetails_input_course_duration" 
@@ -566,6 +557,15 @@
                         formatter: '.formatDuration'
                     }"
                     visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimType/CERAMAH} }"
+                />
+
+                <!-- Course Title -->
+                <Label text="{i18n>label_claimdetails_input_coursetitle}" />
+                <Input
+                    id="input_claimdetails_input_course_title"
+                    value="{claimitem_input>/claim_item/course_title}"
+                    visible="false"
+                    required="true"
                 />
 
                  <!-- Region (Semenanjung/Sabah/Sarawak) -->
