@@ -2033,7 +2033,7 @@ sap.ui.define([
 					}
 					
 					console.log("Payload Send Back: ", oPayload);
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
@@ -2101,7 +2101,7 @@ sap.ui.define([
 				console.log("Payload Send Back: ", oPayload); 
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
-				MessageToast.show(sMessageKey);
+				//MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
@@ -2156,7 +2156,7 @@ sap.ui.define([
 				console.log("Payload Send Back: ", oPayload);
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
-				MessageToast.show(sMessageKey);
+				//MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
