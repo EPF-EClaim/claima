@@ -25,8 +25,7 @@ const Constant = {
     },
     NumberRange: {
         REQUEST: "NR01",
-        CLAIM: "NR02",
-        SUBSTITUTION_RULE: "NR04"        
+        CLAIM: "NR02"
     },
     DisbursementStatus: {
         TO_BE_DISBURSED: "01",
