@@ -92,7 +92,7 @@ sap.ui.define([
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
 			this._oDeleteAttachmentDialog = null;
-
+		
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
@@ -618,6 +618,7 @@ sap.ui.define([
 					exclude_tips: it.EXCLUDE_TIPS,
 					number_of_travellers: it.TOTAL_TRAVELLER,
 					internal_order: it.INTERNAL_ORDER,
+					course_duration: it.COURSE_DURATION,
 					descr: {},
 				}));
 
@@ -1401,6 +1402,10 @@ sap.ui.define([
 			}
 			else {
 				this._onInit_ClaimDetails_Input();
+
+				// Reset Ceramah rollback values
+				this._sPreviousEndTime = null;
+				this._iPreviousAmount = 0;
 
 				// initialize new item values
 				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3174,7 +3179,8 @@ sap.ui.define([
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
-					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order")
+					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration")
 				});
 
 				// to save the attachment inside SF
@@ -3514,10 +3520,42 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CERAMAH) {
 				var durationMs = endTimeValue - startTimeValue;
 				var iCourseDurationMinutes = Math.floor(durationMs / (1000 * 60));
-				oInputModel.setProperty("/claim_item/course_duration", iCourseDurationMinutes);
-				oInputModel.setProperty("/claim_item/amount", await ClaimUtility.getCeramahEligibleAmount(iCourseDurationMinutes));
+
+				if (iCourseDurationMinutes <= 0) {
+					MessageBox.error(Utility.getText("ceramah_duration_must_be_greater_than_zero"));
+
+					if (this._sPreviousEndTime) {
+
+						// Existing valid value -> revert
+						oInputModel.setProperty("/claim_item/end_time",this._sPreviousEndTime);
+						oInputModel.setProperty("/claim_item/amount",this._iPreviousAmount);
+
+					} else {
+
+						// New claim -> clear
+						oInputModel.setProperty("/claim_item/end_time","");
+						this.byId(endtime).setValue("");
+						oInputModel.setProperty("/claim_item/amount",0);
+					}
+
+					return;
+				}
+
+				// VALID duration
+				var iAmount = await ClaimUtility.getCeramahEligibleAmount(
+					iCourseDurationMinutes
+				);
+
+				oInputModel.setProperty("/claim_item/course_duration",iCourseDurationMinutes);
+				oInputModel.setProperty("/claim_item/amount",iAmount);
+
+				// Save last valid values
+				this._sPreviousEndTime =
+					oInputModel.getProperty("/claim_item/end_time");
+
+				this._iPreviousAmount = iAmount;
 			}
-			
+
 			// reset claim detail amounts
 			this._resetPerDiem();
 
@@ -3527,7 +3565,7 @@ sap.ui.define([
 			if (!startDateValue || !endDateValue) {
 				return;
 			}
-			
+
 			// check if end datetime earlier than start datetime
 			var startDateUnix = new Date(startDateValue).valueOf();
 			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
