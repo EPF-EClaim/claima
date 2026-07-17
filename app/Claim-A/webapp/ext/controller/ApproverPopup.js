@@ -149,10 +149,10 @@ sap.ui.define([
                 aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
             }
             if (iCurrentSeq !== null) {
-                aInitialFilters.push(new sap.ui.model.Filter("GRADE_SEQUENCE", sap.ui.model.FilterOperator.GE, iCurrentSeq));
+                aInitialFilters.push(new Filter("GRADE_SEQUENCE", FilterOperator.GE, iCurrentSeq));
             }
             if (sApproverID) {
-                aInitialFilters.push(new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.NE, sApproverID));
+                aInitialFilters.push(new Filter("EEID", FilterOperator.NE, sApproverID));
             }
 
             oApproverPopupModule._oApproverVHDialog = new sap.m.TableSelectDialog({
