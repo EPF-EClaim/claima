@@ -44,7 +44,7 @@ sap.ui.define([
                 });
                 // Bind the items to the table instance
                 oTable.bindItems({
-                    path: "employee>/ZEMP_MASTER",
+                    path: "employee>/ZEMP_SUBSTITUTE_VH",
                     template: new ColumnListItem({
                         type: "Active",
                         cells: [
@@ -59,29 +59,50 @@ sap.ui.define([
             }, fnReject);
         });
     };
-    JSONValueHelpDelegate.updateBindingInfo = function(oValueHelp, oContent, oBindingInfo) {
-        ValueHelpDelegate.updateBindingInfo(oValueHelp, oContent, oBindingInfo);
+
+    JSONValueHelpDelegate.updateBindingInfo = function (oValueHelp,oContent,oBindingInfo) {
+
+        ValueHelpDelegate.updateBindingInfo(oValueHelp,oContent,oBindingInfo);
+
         const oPayload = oValueHelp.getPayload();
-        if (oPayload && oPayload.searchKeys) {
+
+        if (!oBindingInfo.filters) {
+            oBindingInfo.filters = [];
+        }
+
+        // ALWAYS add approver filter
+        if (oPayload?.selectedApprover) {
+            oBindingInfo.filters.push(
+                new Filter(
+                    "SELECTED_APPROVER",
+                    FilterOperator.EQ,
+                    oPayload.selectedApprover
+                )
+            );
+        }
+
+        // Search filter
+        if (oPayload?.searchKeys) {
+
             const sSearchQuery = oContent.getSearch();
-            if (sSearchQuery) { // Only create filters if there is actual text typed
+
+            if (sSearchQuery) {
+
                 const aFilters = oPayload.searchKeys.map((sPath) => {
-                    return new Filter({
-                        path: sPath, 
-                        operator: FilterOperator.Contains, 
-                        value1: sSearchQuery, 
-                        caseSensitive: oContent.getCaseSensitive()
+                        return new Filter({
+                            path: sPath, 
+                            operator: FilterOperator.Contains, 
+                            value1: sSearchQuery, 
+                            caseSensitive: oContent.getCaseSensitive()
+                        });
                     });
-                });
-                
-                const oSearchFilter = new Filter({ filters: aFilters, and: false }); // OR condition between fields
-                
-                if (!oBindingInfo.filters) {
-                    oBindingInfo.filters = [];
-                }
-                oBindingInfo.filters.push(oSearchFilter);
+
+                oBindingInfo.filters.push(new Filter({filters: aFilters,and: false})
+                );
             }
         }
+
+        console.log("FILTERS:", oBindingInfo.filters);
     };
     JSONValueHelpDelegate.isSearchSupported = function (oValueHelp, oContent, oListBinding) {
         return !!(oValueHelp.getPayload() && oValueHelp.getPayload().searchKeys);

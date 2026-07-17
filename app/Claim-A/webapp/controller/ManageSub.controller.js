@@ -24,7 +24,7 @@ sap.ui.define([
         today: DateUtility.toYMD(new Date()), // yyyy-MM-dd in local time
         subValid: false,
         subInfo: "",
-        isApprover: false,
+        isApprover: true,
         canEdit: false,
         subInput: "",
         editRule: {
@@ -43,7 +43,8 @@ sap.ui.define([
     // Resolve user type via function import
       const oModel = this.getOwnerComponent().getModel();
       const ctx = oModel.bindContext("/getUserType()");
-      var isApprover = this._oRoleModel.getProperty("/isApprover");
+      //var isApprover = this._oRoleModel.getProperty("/isApprover");
+      var isApprover = true;
         oVM.setProperty("/isApprover", isApprover);
         oVM.setProperty("/canEdit",oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection"));
 
@@ -167,31 +168,39 @@ sap.ui.define([
         this.byId("inpUser").setValueStateText(`Matched: ${oEmp.EEID} — ${oEmp.EMAIL || ""}`);
       }
 
+      // ============================================================
+      // BACKEND OVERLAP CHECK
+      // ============================================================
       try {
-          const bOverlap = await this._hasOverlappingRule(sUserId, oEmp.EEID, dStart, dEnd);
-          if (bOverlap) {
-            MessageBox.error(this._i18n("overlappingRuleSameSubOnly") || "A substitution already exists for the same user & substitute within the selected period.");
-            return;
-          }
-        } catch (e) {
-          MessageBox.error(this._i18n("backendUnavailable") || "Failed to check overlap. Please try again.");
+        const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", sUserId);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dStart));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dEnd));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", "");
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
+        if (bOverlap) {
+          MessageBox.error(this._i18n("overlappingRuleSameSubOnly") || "A substitution already exists for the same user & substitute within the selected period.");
           return;
         }
-
-      // Map UI -> backend fields
-      const toISO = (d) => {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-      };
-      
+      } catch (e) {
+        MessageBox.error(this._i18n("backendUnavailable") || "Failed to check overlap. Please try again.");
+        return;
+      }
       const oPayload = {
         SUBSTITUTE_RULE_ID: sSubstituteRulesId,
-        USER_ID: sUserId,   
-        SUBSTITUTE_ID: oEmp.EEID,   
-        VALID_FROM: toISO(dStart),
-        VALID_TO:   toISO(dEnd)
+        USER_ID: sUserId,
+        SUBSTITUTE_ID: oEmp.EEID,
+        VALID_FROM: DateUtility.toYMD(dStart),
+        VALID_TO: DateUtility.toYMD(dEnd)
       };
 
       const oTable = this.byId("tblSubs");
@@ -206,7 +215,6 @@ sap.ui.define([
         MessageToast.show(this._i18n("created"));
       } catch (err) {
         MessageBox.error(err.message || "Create failed");
-        this.byId("dlgAdd").setBusy(false);
       } finally {
         if (oResult) {
           this._updateCurrentReqNumber(oResult.current);
@@ -275,88 +283,6 @@ sap.ui.define([
 			}
 		},
 
-    // ============================================================
-    // CHECK IF THERE'S AN OVERLAPPING RULE FOR USER ID + SUBSTITUTE
-    // ============================================================
-      
-    _hasOverlappingRule: async function (sUserId, sSubstituteId, dStart, dEnd, sCurrentRuleId) {
-      if (!sUserId || !sSubstituteId || !dStart || !dEnd) return false;
-
-      const sStart = DateUtility.toYMD(dStart);
-      const sEnd = DateUtility.toYMD(dEnd);
-      const oModel = this.getOwnerComponent().getModel();
-
-      let sEntitySetPath = "/ZSUBSTITUTION_RULES";
-      const oTable = this.byId("tblSubs");
-      const oBinding = oTable && oTable.getBinding && oTable.getBinding("items");
-      if (oBinding && typeof oBinding.getPath === "function" && oBinding.getPath()) {
-        sEntitySetPath = oBinding.getPath();
-      }
-
-      // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
-      const aFilters = [
-        new Filter("USER_ID", FilterOperator.EQ, sUserId),
-        new Filter("VALID_TO", FilterOperator.GE, sStart),
-        new Filter("VALID_FROM", FilterOperator.LE, sEnd)
-      ];
-
-      const oList = oModel.bindList(
-        sEntitySetPath,
-        null,
-        null,
-        aFilters,
-        {
-          $select: "SUBSTITUTE_RULE_ID,USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
-        }
-      );
-
-      try {
-        const aCtx = await oList.requestContexts(0, 100);
-        if (!aCtx.length) return false;
-
-        const dNewFrom = new Date(dStart.getFullYear(), dStart.getMonth(), dStart.getDate());
-        const dNewTo = new Date(dEnd.getFullYear(), dEnd.getMonth(), dEnd.getDate());
-
-        for (const oCtx of aCtx) {
-          const rec = oCtx.getObject();
-
-          if (sCurrentRuleId && rec.SUBSTITUTE_RULE_ID === sCurrentRuleId) {
-            continue;
-          }
-
-          const dExistingFrom = DateUtility.toDate(rec.VALID_FROM);
-          const dExistingTo = DateUtility.toDate(rec.VALID_TO);
-
-          if (!dExistingFrom || !dExistingTo) {
-            return true;
-          }
-
-          const dOldFrom = new Date(
-            dExistingFrom.getFullYear(),
-            dExistingFrom.getMonth(),
-            dExistingFrom.getDate()
-          );
-
-          const dOldTo = new Date(
-            dExistingTo.getFullYear(),
-            dExistingTo.getMonth(),
-            dExistingTo.getDate()
-          );
-
-          const bOverlap = dOldTo >= dNewFrom && dOldFrom <= dNewTo;
-
-          if (bOverlap) {
-            return true;
-          }
-        }
-
-        return false;
-
-      } catch (e) {
-        console.error("Overlap check failed", e);
-        throw e;
-      }
-    },
     // ============================================================
     // SELECTION + EDIT (OData V4)
     // ============================================================
@@ -427,25 +353,44 @@ sap.ui.define([
         return;
       }
 
+      if (dValidTo < dValidFrom) {
+        MessageBox.error(
+          Utility.getText("msg_mngesub_valid_to_before_from") ||
+          "Valid To cannot be earlier than Valid From."
+        );
+        return;
+      }
+
       try {
         this.byId("dlgEdit").setBusy(true);
 
-        // Overlap check during edit
-        const bOverlap = await this._hasOverlappingRule(
-          oEdit.USER_ID,
-          oEdit.SUBSTITUTE_ID,
-          dValidFrom,
-          dValidTo,
-          oEdit.SUBSTITUTE_RULE_ID
-        );
+        // ============================================================
+        // BACKEND OVERLAP CHECK
+        // ============================================================
+        const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", oEdit.USER_ID);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dValidFrom));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dValidTo));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", oEdit.SUBSTITUTE_RULE_ID);
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
 
         if (bOverlap) {
           MessageBox.error(Utility.getText("msg_mngesub_overlapping"));
           return;
         }
 
-        const oCtx = oItem.getBindingContext();
-
+        // ============================================================
+        // UPDATE VALID_TO USING BACKEND ACTION
+        // ============================================================
         const oOldData =
           oItem.getBindingContext().getObject();
 

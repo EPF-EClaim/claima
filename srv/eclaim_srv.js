@@ -3627,8 +3627,11 @@ module.exports = (srv) => {
     }
 
     srv.before('READ', 'ZEMP_SUBSTITUTE_VH', async (req) => {
+        console.log("========== READ ZEMP_SUBSTITUTE_VH ==========");
+        console.log(JSON.stringify(req.query, null, 2));
         const oWhereClause = req.query && req.query.SELECT && req.query.SELECT.where;
         let sSelectedApproverID = getFilterValue(oWhereClause, 'SELECTED_APPROVER') || getFilterValue(oWhereClause, 'USER_ID');
+        console.log("Selected Approver:", sSelectedApproverID);
         if (!sSelectedApproverID && req._ && req._.req && req._.req.query && req._.req.query.$filter) {
             const sRawFilter = req._.req.query.$filter;
             const oMatch = sRawFilter.match(/(?:SELECTED_APPROVER|USER_ID)\s+(?:eq|=)\s+['"]([^'"]+)['"]/);
@@ -4322,6 +4325,44 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+    srv.on("checkSubstitutionOverlap", async (req) => {
+
+        const {USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,SUBSTITUTE_RULE_ID} = req.data;
+        const tx = cds.tx(req);
+        const aRules = await tx.run(
+            SELECT.from("ZSUBSTITUTION_RULES")
+                .where({
+                    USER_ID: USER_ID
+                })
+        );
+
+        const dNewFrom = new Date(VALID_FROM);
+        const dNewTo = new Date(VALID_TO);
+
+        for (const oRule of aRules) {
+
+            if (
+                SUBSTITUTE_RULE_ID &&
+                oRule.SUBSTITUTE_RULE_ID === SUBSTITUTE_RULE_ID
+            ) {
+                continue;
+            }
+
+            const dOldFrom = new Date(oRule.VALID_FROM);
+            const dOldTo = new Date(oRule.VALID_TO);
+
+            const bOverlap =
+                dOldTo >= dNewFrom &&
+                dOldFrom <= dNewTo;
+
+            if (bOverlap) {
+                return true;
+            }
+        }
+
+        return false;
     });
 
 }

@@ -112,7 +112,8 @@
                                 'Name',
                                 'Email'
                             ],
-                            openOnClick: true
+                            openOnClick: true,
+                            selectedApprover: '010310'
                         }
                     }">
                     <mdc:typeahead>
@@ -163,8 +164,7 @@
             id="drs"
             displayFormat="medium"
             valueFormat="yyyy-MM-dd"
-            placeholder="{i18n>periodPlaceholder}"
-            minDate="{vm>/todayDate}" />
+            placeholder="{i18n>periodPlaceholder}"/>
         </VBox>
     </content>
 
