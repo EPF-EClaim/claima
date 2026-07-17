@@ -363,7 +363,9 @@
                     id="input_claimdetails_input_receipt_number"
                     value="{claimitem_input>/claim_item/receipt_number}"
                     visible="false"
-                    required="true"
+                    required="{= 
+                            (${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER})
+                            || (parseFloat(${claimitem_input>/claim_item/toll}) &gt; 0.00 &amp;&amp; ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})}"
                 />
 
                 <!-- Receipt Date -->
@@ -389,7 +391,7 @@
 					}"
                     showCurrentDateButton="true"
                     visible="false"
-                    required="true"
+                    required= "true"
                     change="onChange_ClaimDetails_StartEndDate"
                     minDate="{
 						parts: [
@@ -616,7 +618,7 @@
 				>
 				</Select>
 
-				<!-- Date of Purchase of Insurance -->
+				<!-- Date of Purchase of Insurance 
 				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_purchase_date"
@@ -628,9 +630,9 @@
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
-				<!-- Insurance Period of Certificate Start Date -->
+				<!-- Insurance Period of Certificate Start Date 
 				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_cert_start_date"
@@ -655,9 +657,9 @@
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
 						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customMaxDateError}" />						
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
-				<!-- Insurance Period of Certificate End Date -->
+				<!-- Insurance Period of Certificate End Date 
 				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_insurance_cert_end_date"
@@ -682,7 +684,7 @@
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />
 						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customMinDateError}" />						
 					</customData>
-				</DatePicker>
+				</DatePicker>-->
 
                 <!-- Mode of Transfer-->
                 <Label text="{i18n>label_claimdetails_input_mode_of_transfer}" />
@@ -729,7 +731,7 @@
 					change="onChange_ClaimDetails_NumberOfDays"
 					liveChange="onChange_ClaimDetails_NumberOfDays"
 					visible="{claimitem_property>/no_of_days/is_visible}"
-					editable="false"
+					editable="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TRAVEL_INSURANCE} }"
 					required="true"
 				/>
 
@@ -883,6 +885,7 @@
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
 					change="onSelect_ClaimDetails_FromState"
 					liveChange="onSelect_ClaimDetails_FromState"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                 >
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
@@ -907,6 +910,7 @@
                     change="onSelect_ClaimDetails_FromLocationOffice"
                     liveChange="onSelect_ClaimDetails_FromLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/from_state_id} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
@@ -931,6 +935,7 @@
                             sorter: { path: 'TO_STATE_ID', descending: false }}"
 					change="onSelect_ClaimDetails_ToState"
 					liveChange="onSelect_ClaimDetails_ToState"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/from_location_office}}"
                 >
                     <items>
@@ -975,6 +980,7 @@
                     change="onSelect_ClaimDetails_ToLocationOffice"
                     liveChange="onSelect_ClaimDetails_ToLocationOffice"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    enabled="{= !${claimsubmission_input>/view_only} }"
                     editable = "{= !!${claimitem_input>/claim_item/to_state_id}}"
                     required="true"
                     items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
@@ -1570,7 +1576,10 @@
                     visible="false"
                     required="{= ${claimitem_input>/claim_item/attachment_file_1} === null &amp;&amp;
 
-                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT}
+                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
+                                    (${claimitem_input>/claim_item/location_type} !== ${constant>/LocationType/KWSP} 
+                                        || (parseFloat(${claimitem_input>/claim_item/toll}) &gt; 0.00 &amp;&amp; ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
+                                    )
                     }"
 				>
 				</u:FileUploader>

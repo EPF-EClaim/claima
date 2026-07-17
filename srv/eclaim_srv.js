@@ -269,6 +269,20 @@ module.exports = (srv) => {
                     .limit(1);
 
                 if (!existing.length) {
+
+                    original_budget = Number(row.ORIGINAL_BUDGET) || 0;
+                    virement_in = Number(row.VIREMENT_IN) || 0;
+                    virement_out = Number(row.VIREMENT_OUT) || 0;
+                    supplement = Number(row.SUPPLEMENT) || 0;
+                    return_value = Number(row.RETURN) || 0;
+                    consumed = Number(row.CONSUMED) || 0;
+
+                    var currentBudget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var budgetBalance = currentBudget + consumed;
+
+                    row.CURRENT_BUDGET = currentBudget.toFixed(2);
+                    row.BUDGET_BALANCE = budgetBalance.toFixed(2);
+
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
 
                     results.push({
@@ -297,13 +311,13 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN);
-                    original_budget = original_budget === 0 ? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
+                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
                     // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
-                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
+                    var total_budget = newOriginalBudget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
@@ -311,6 +325,7 @@ module.exports = (srv) => {
                     updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
                     updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
                     updatePayload.RETURN = new_return.toFixed(2);
+                    updatePayload.ORIGINAL_BUDGET = newOriginalBudget.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -2118,8 +2133,8 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 1. Current Checking (Position & Date Logic)
         // ---------------------------------------------------------
-        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
-        const sPositionStartDate = oEmp.POSITION_START_DATE;
+        const sPositionEvent = oEmp.ELAUN_TUKAR_REASON;
+        const sPositionStartDate = oEmp.ELAUN_TUKAR_START_DATE;
 
         if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
@@ -2130,7 +2145,6 @@ module.exports = (srv) => {
                 .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER })
         );
-
         const iDays = parseInt(oConstantRec?.VALUE || '0', 10);
         const dEligibleDate = new Date(sPositionStartDate);
         dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
@@ -2138,7 +2152,7 @@ module.exports = (srv) => {
         const dCurrentDate = new Date();
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
-        if (dCurrentDate <= dEligibleDate) {
+        if (dCurrentDate >= dEligibleDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
@@ -2211,8 +2225,7 @@ module.exports = (srv) => {
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        console.log("here_req", request)
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
                     }
                 }
             }
@@ -2325,6 +2338,37 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
+
+    srv.on('getCentraLink', async (req) => {
+        const tx = cds.tx(req);
+        var oCentraLink = await tx.run(SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .where({
+                ID: Constant.ConstantId.PROD_CENTRA_LINK
+            })
+        )
+        return {
+            sCentraLink: oCentraLink.VALUE
+        };
+    });
+
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+        const tx = cds.tx(req);
+        try {
+            var oStatus = await tx.run(SELECT.one
+                                    .from(Constant.Entities.ZCLAIM_HEADER)
+                                    .where({
+                                        CLAIM_ID: req.data.sClaimID
+                                    })
+            )
+
+            return { sStatus: oStatus.STATUS_ID}
+        }catch(oError){
+            throw new Error(oError)
+        }
+        
+    });
+
 
     /**
     * Update Header tables with approver actions
@@ -2723,6 +2767,10 @@ module.exports = (srv) => {
                     return fDuration >= iDuration;
                 } else if (sCondition === Constant.Operator.LESSTHAN) {
                     return fDuration < iDuration;
+                } else if (sCondition === Constant.Operator.LESSTHANOREQUAL) {
+                    return fDuration <= iDuration;
+                } else if (sCondition === Constant.Operator.GREATERTHAN) {
+                    return fDuration > iDuration;
                 }
                 return false;
             });
@@ -3075,7 +3123,11 @@ module.exports = (srv) => {
     srv.on('reassignApprover', async (req) => {
         const {
             ZAPPROVER_DETAILS_CLAIMS,
-            ZAPPROVER_DETAILS_PREAPPROVAL
+            ZAPPROVER_DETAILS_PREAPPROVAL,
+            ZEMP_APPROVER_CLAIM_DETAILS,
+            ZEMP_APPROVER_REQUEST_DETAILS,
+            ZEMP_MASTER,
+            ZLOG
         } = srv.entities;
 
         const aPayloads = req.data.payload;
@@ -3125,7 +3177,6 @@ module.exports = (srv) => {
 
                 let oLogEntry = {
                     TIMESTAMP: new Date(),
-                    RECORD_ID: ID,
                     RECORD_ID: `${ID}_${LEVEL}`,
                     PROGRAM: 'REASSIGN_APPROVER'
                 };
@@ -3177,13 +3228,16 @@ module.exports = (srv) => {
             let iSuccessCount = 0;
             const aLogsToInsert = [];
             const aErrorMessages = [];
+            const aSuccessfulPayloads = [];
 
-            aResults.forEach(oResult => {
+            aResults.forEach((oResult, index) => {
                 if (oResult) {
                     iSuccessCount += oResult.iRowsAffected;
                     aLogsToInsert.push(oResult.oLog);
 
-                    if (oResult.oLog.STATUS_CODE !== '200') {
+                    if (oResult.iRowsAffected > 0) {
+                        aSuccessfulPayloads.push(aPayloads[index]);
+                    } else if (oResult.oLog.STATUS_CODE !== Constant.StatusCode.SUCCESS) {
                         aErrorMessages.push({
                             recordId: oResult.oLog.RECORD_ID,
                             statusCode: oResult.oLog.STATUS_CODE,
@@ -3199,6 +3253,166 @@ module.exports = (srv) => {
                 await cds.tx(async (oLogTx) => {
                     await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
                 });
+            }
+
+            const aFilteredPayloads = aSuccessfulPayloads.filter(
+                oItem => oItem.STATUS === Constant.Status.PENDING_APPROVAL
+            );
+
+            if (aFilteredPayloads.length > 0) {
+                const aBackgroundLogs = [];
+                for (const oItem of aFilteredPayloads) {
+                    const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID } = oItem;
+                    const sPrefix = ID.substring(0, 3).toUpperCase();
+                    try {
+                        let oApproverRecord = null;
+                        let oOldApproverRecord = null;
+                        let oClaimant = null;
+                        let sAction = "REASSIGN";
+
+                        if (sPrefix === Constant.WorkflowType.CLAIM) {
+
+                            oApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: NEW_APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );
+                            oOldApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );   
+                            oClaimant = await tx.run(
+                                SELECT.one.from(ZEMP_APPROVER_CLAIM_DETAILS)
+                                    .where({ CLAIM_ID: ID })
+                                    .and('LEVEL =', LEVEL)
+                                    .columns('SUBMITTED_DATE', 'EMPLOYEE_NAME')
+                            );                                                     
+
+                            if (oApproverRecord) {
+                                //new approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: "Reassign New",
+                                        EmailTitle: `Action Required: Reassigned Claim ${ID}`,
+                                        ReceiverEmail: oApproverRecord.EMAIL,
+                                        SubmissionDate: oClaimant.SUBMITTED_DATE,
+                                        ClaimantName: oClaimant.EMPLOYEE_NAME,
+                                        RecipientName: oApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }
+                                //old approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oOldApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: sAction,
+                                        EmailTitle: `Action Required: Reassigned Claim ${ID}`,
+                                        ReceiverEmail: oOldApproverRecord.EMAIL,
+                                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                                        ClaimantName: oCurrentUser.NAME,//for old approver need to put the assigner name
+                                        RecipientName: oOldApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }                                
+                            }
+                        } else if (sPrefix === Constant.WorkflowType.REQUEST) {
+
+                            oApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: NEW_APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );
+                            oOldApproverRecord = await tx.run(
+                                SELECT.one.from(ZEMP_MASTER)
+                                    .where({ EEID: APPROVER_ID })
+                                    .columns('NAME', 'EMAIL')
+                            );   
+                            oClaimant = await tx.run(
+                                SELECT.one.from(ZEMP_APPROVER_REQUEST_DETAILS)
+                                    .where({ PREAPPROVAL_ID: ID })
+                                    .and('LEVEL =', LEVEL)
+                                    .columns('REQUEST_DATE', 'EMPLOYEE_NAME')
+                            );                             
+                            
+                            if (oApproverRecord) {
+                                //new approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: "Reassign New",
+                                        EmailTitle: `Action Required: Reassigned Pre-Approval ${ID}`,
+                                        ReceiverEmail: oApproverRecord.EMAIL,
+                                        SubmissionDate: oClaimant.REQUEST_DATE,
+                                        ClaimantName: oClaimant.EMPLOYEE_NAME,
+                                        RecipientName: oApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }
+                                //old approver
+                                try {
+                                    await sendEmailInternal({
+                                        ApproverName: oOldApproverRecord.NAME,
+                                        ClaimID: ID,
+                                        Action: sAction,
+                                        EmailTitle: `Action Required: Reassigned Pre-Approval ${ID}`,
+                                        ReceiverEmail: oOldApproverRecord.EMAIL,
+                                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                                        ClaimantName: oCurrentUser.NAME,//for old approver need to put the assigner name
+                                        RecipientName: oOldApproverRecord.NAME
+                                    });
+                                } catch (oEmailError) {
+                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
+                                    aBackgroundLogs.push({
+                                        TIMESTAMP: new Date(),
+                                        RECORD_ID: ID,
+                                        PROGRAM: 'REASSIGN_TRIGGER',
+                                        MESSAGE_TYPE: 'W',
+                                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
+                                        MESSAGE: oEmailError?.message || "No Message"
+                                    });
+                                }                                
+                            }
+                        }
+                    } catch (oLoopError) {
+                        console.error(`Critical loop processing breakdown for record ${ID}: `, oLoopError);
+                    }
+                }
+                // Write any background warnings to the Log table if email attempts failed
+                if (aBackgroundLogs.length > 0) {
+                    await tx.run(INSERT.into(ZLOG).entries(aBackgroundLogs));
+                }
             }
 
             if (aErrorMessages.length > 0) {

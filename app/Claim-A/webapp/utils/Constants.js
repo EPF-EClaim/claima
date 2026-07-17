@@ -698,8 +698,16 @@ sap.ui.define([
             "LUAR_STESEN": "2",
             "FLIGHT": "3"
         },
+        "SubmissionOwnerType": {
+            "REQUESTOR": "Requestor",
+            "CLAIMANT": "Claimant"
+        },
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
+        },
+        "SuccessFactorCompanyCode": {
+            "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
+            "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         },
         "RelationshipType": {
             "SPOUSE": "01",
@@ -710,6 +718,6 @@ sap.ui.define([
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
         }
-        
+
     }
 });

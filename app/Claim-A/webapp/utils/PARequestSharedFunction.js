@@ -3,12 +3,16 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",
-	"claima/utils/ApprovalLog"
+	"claima/utils/ApprovalLog",
+	"claima/utils/Utility",
+	"claima/utils/Constants"
 ], function (Filter,
 	FilterOperator,
 	Sorter,
 	DateFormat,
-	ApprovalLog) {
+	ApprovalLog,
+	Utility,
+	Constants) {
 	"use strict";
 
 	return {
@@ -36,7 +40,7 @@ sap.ui.define([
 		* Get My Pre-Approval Request Details
 		* ======================================================= */
 
-		async _getHeader(oController, sReqId) {
+		async getHeader(oController, sReqId) {
 			const oReqModel = oController._oReqModel;
 
 			if (!sReqId) {
@@ -96,6 +100,8 @@ sap.ui.define([
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
+
+				Utility.mapOwnerDetail(oController.getOwnerComponent().getModel("owner_detail"), oData, Constants.SubmissionOwnerType.REQUESTOR);
 
 			} catch (err) {
 				console.error("Header fetch failed:", err);
