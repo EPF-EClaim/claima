@@ -151,9 +151,9 @@ sap.ui.define([
                                 return;
                             }
 
-                            // Bind to existing claim header 
+                            // Bind to existing claim header
                             const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId);
-
+                            
                             const dLastModifiedDate = DateUtility.getHanaDate(new Date());
 
                             oContext.setProperty("LAST_MODIFIED_DATE", dLastModifiedDate);

@@ -94,6 +94,8 @@ sap.ui.define([
 			this._oDeleteAttachmentDialog = null;
 			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
 		
+			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
+		
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
