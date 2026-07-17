@@ -564,6 +564,7 @@ entity ZCLAIM_ITEM : managed {
         TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
         DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
+        COURSE_DURATION            : Integer        @Common.Label: 'Course Duration';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY

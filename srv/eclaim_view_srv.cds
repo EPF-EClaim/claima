@@ -511,7 +511,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_TRAVELLER,
                 ZCLAIM_HEADER.STATUS_ID,
                 ZCLAIM_HEADER.ZSTATUS.STATUS_DESC,
-                INTERNAL_ORDER
+                INTERNAL_ORDER,
+                COURSE_DURATION
         };
 
     entity ZEMP_REQUEST_STATUS            as
