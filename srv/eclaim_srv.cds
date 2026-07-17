@@ -2208,7 +2208,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         ID: String;
         LEVEL: Integer;
         NEW_APPROVER_ID: String;
-        STATUS: String;
     }
 
     action reassignApprover(payload: many ReassignmentPayload) returns Boolean;
