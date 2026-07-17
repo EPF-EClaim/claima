@@ -100,6 +100,18 @@ sap.ui.define([
                                 DateUtility.getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
                             );
 
+                            var oProject = this._oView.byId("select_request_project_code");
+
+                            if (oProject && oProject.getSelectedItem()) {
+
+                                var oProjectData =
+                                    oProject.getSelectedItem()
+                                        .getBindingContext("employee_view")
+                                        .getObject();
+
+                                oInputModel.setProperty("/req_header/projectdesc",  oProjectData.PROJECT_DESC);
+                            }
+
                             await oODataModel.submitBatch("$auto");
 
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
@@ -139,9 +151,9 @@ sap.ui.define([
                                 return;
                             }
 
-                            // Bind to existing claim header 
+                            // Bind to existing claim header
                             const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId);
-
+                            
                             const dLastModifiedDate = DateUtility.getHanaDate(new Date());
 
                             oContext.setProperty("LAST_MODIFIED_DATE", dLastModifiedDate);
@@ -170,7 +182,34 @@ sap.ui.define([
                                 DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
                             );
 
+                            var oProject = this._oView.byId("select_claimsummary_project_code");
+
+                            if (oProject && oProject.getSelectedItem()) {
+
+                                var oProjectData =
+                                    oProject.getSelectedItem()
+                                        .getBindingContext("employee_view")
+                                        .getObject();
+
+                                oInputModel.setProperty("/claim_header/descr/project_code",oProjectData.PROJECT_DESC);
+                            }
+
                             await oODataModel.submitBatch("$auto");
+                            
+                            // Update all claim item cost centers after header save
+                            var itemCc =
+                                oInputModel.getProperty("/claim_header/alternate_cost_center") ||
+                                oInputModel.getProperty("/claim_header/cost_center") ||
+                                null;
+
+                            var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+                            aClaimItems.forEach(function (oItem, i) {
+                                oInputModel.setProperty("/claim_items/" + i + "/cost_center", itemCc);
+                            });
+   
+                            //calling from claim submission controller to update claim items after header save
+                            const oController = this._oView.getController();
+                            await oController._updateClaimItems();
 
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.CLAIMHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(

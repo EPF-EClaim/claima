@@ -644,6 +644,31 @@ sap.ui.define([
             return oResult.fFinalAmount;
         },
 
+        mapOwnerDetail: function (oOwnerDetailModel, oHeader, ownerType) {
+            oOwnerDetailModel.setProperty("/owner_detail_title", this.getText("owner_detail_title", [ownerType]));
+            oOwnerDetailModel.setProperty("/owner_name_label", this.getText("owner_name", [ownerType]));
+            oOwnerDetailModel.setProperty("/owner_name", oHeader.NAME);
+            oOwnerDetailModel.setProperty("/owner_grade", oHeader.GRADE);
+            oOwnerDetailModel.setProperty("/owner_department", oHeader.DEP + " - " + oHeader.DEPARTMENT_DESC);
+            oOwnerDetailModel.setProperty("/owner_position", oHeader.POSITION_NAME);
+        },
+
+        getCentraLink: async function () {
+            const oDataModel = this._oOwnerComponent.getModel();
+            const oFunction = oDataModel.bindContext("/getCentraLink(...)");
+
+            try {                
+                await oFunction.execute();
+                const oContext = oFunction.getBoundContext();
+                const oResult  = oContext.getObject();
+                return oResult.sCentraLink;
+                
+            } catch (oError) {
+                MessageBox.error(this.getText("error_centra_link_not_found", []));
+                return null; 
+            }
+        },
+
         getInternalOrderByProjectCode: async function (oModel, sProjectCode) {
             if (!sProjectCode) {
                 return null;

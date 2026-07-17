@@ -303,7 +303,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                            if (sType === Constants.ClaimType.KURSUS_DLM_NEGARA) {
                                 // Kursus Dalam Negara/Kursus Luar Negara - minimum date = 1 day before header start date
                                 _dMinDate = new Date(oHeader.trip_start_date);
                                 _dMinDate.setDate(_dMinDate.getDate() - 1);
@@ -317,6 +317,13 @@ sap.ui.define([
                                 _dMinDate = dPastDate;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                            }else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
+                                // Kursus Dalam Negara/Kursus Luar Negara - minimum date = 2 day before header start date
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _dMinDate.setDate(_dMinDate.getDate() - 2);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                    _oResourceBundle.getText("error_start_date_kursus_mindate"));
                             }
                             break;
                     }
@@ -332,7 +339,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                            if (sType === Constants.ClaimType.KURSUS_DLM_NEGARA) {
                                 // Kursus Dalam Negara/Kursus Luar Negara - minimum date = item start date
                                 // if item start date not set, use 1 day before header start date
                                 if (!!new Date(oItem["start_date"]).getTime()) {
@@ -343,6 +350,20 @@ sap.ui.define([
                                 else {
                                     _dMinDate = new Date(oHeader.trip_start_date);
                                     _dMinDate.setDate(_dMinDate.getDate() - 1);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_end_date_kursus_mindate"));
+                                }
+                            } else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
+                                // Kursus Dalam Negara/Kursus Luar Negara - minimum date = item start date
+                                // if item start date not set, use 2 day before header start date
+                                if (!!new Date(oItem["start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["start_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_end_date_kursus_item_mindate"));
+                                }
+                                else {
+                                    _dMinDate = new Date(oHeader.trip_start_date);
+                                    _dMinDate.setDate(_dMinDate.getDate() - 2);
                                     _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("error_end_date_kursus_mindate"));
                                 }
@@ -625,7 +646,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                            if (sType === Constants.ClaimType.KURSUS_DLM_NEGARA) {
                                 // Kursus Dalam Negara/Kursus Luar Negara - maximum date = item end date
                                 // if end date not set, use 1 day after header end date
                                 if (!!new Date(oItem["end_date"]).getTime()) {
@@ -649,6 +670,23 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
                             }
+                            else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
+                                // Kursus Dalam Negara/Kursus Luar Negara - maximum date = item end date
+                                // if end date not set, use 2 day after header end date
+                                if (!!new Date(oItem["end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["end_date"]);
+                                    // set validator error message
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_kursus_item_maxdate"));
+                                }
+                                else {
+                                    _dMaxDate = new Date(oHeader.trip_end_date);
+                                    _dMaxDate.setDate(_dMaxDate.getDate() + 2);
+                                    // set validator error message
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_kursus_maxdate"));
+                                }
+                            }
                             else {
                                 // Other Claim Type - maximum date = item end date
                                 // if end date not set, default to null (no constraint)
@@ -657,6 +695,7 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_start_date_maxdate"));
                             }
+                            
                             break;
                     }
                     break;
@@ -673,10 +712,18 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                            if (sType === Constants.ClaimType.KURSUS_DLM_NEGARA) {
                                 // Kursus Dalam Negara/Kursus Luar Negara - maximum date = 1 day after header end date
                                 _dMaxDate = new Date(oHeader.trip_end_date);
                                 _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("error_end_date_kursus_maxdate"));
+                            }
+                            else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
+                                // Kursus Dalam Negara/Kursus Luar Negara - maximum date = 2 day after header end date
+                                _dMaxDate = new Date(oHeader.trip_end_date);
+                                _dMaxDate.setDate(_dMaxDate.getDate() + 2);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_end_date_kursus_maxdate"));

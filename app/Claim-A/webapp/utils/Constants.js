@@ -490,7 +490,7 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART", "ZEMP_PENDING_LIST", "ZSUBSTITUTION_RULES_CONFIG"
             ],
         "ExcludeField":
         {
@@ -698,8 +698,16 @@ sap.ui.define([
             "LUAR_STESEN": "2",
             "FLIGHT": "3"
         },
+        "SubmissionOwnerType": {
+            "REQUESTOR": "Requestor",
+            "CLAIMANT": "Claimant"
+        },
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
+        },
+        "SuccessFactorCompanyCode": {
+            "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
+            "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         },
         "RelationshipType": {
             "SPOUSE": "01",
@@ -710,6 +718,6 @@ sap.ui.define([
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
         }
-        
+
     }
 });

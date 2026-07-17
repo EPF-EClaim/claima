@@ -240,7 +240,11 @@ sap.ui.define([
 							break;
 
 						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
-							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
+							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.ROOM_TYPE_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_room_type", [sEmpId]);
 							break;
 
 						case Constants.EntitiesFields.VEHICLE_OWNERSHIP_ID:
@@ -267,7 +271,7 @@ sap.ui.define([
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
 							break;
 					}
-					if (!aErrorMessages.includes(sErrorMsg)) {
+					if (!aErrorMessages.includes(sErrorMsg) && sErrorMsg) {
 						aErrorMessages.push(sErrorMsg);
 					}
 

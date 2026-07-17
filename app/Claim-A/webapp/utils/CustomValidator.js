@@ -213,10 +213,6 @@ sap.ui.define([
                         }
                     }
                     
-                    if (oInputModel?.getProperty("/claim_item/amount") <= 0) {
-                        MessageBox.error(Utility.getText("msg_claimdetails_invalid_amount"));
-                        bCanProceed = false;
-                    }
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
@@ -255,9 +251,15 @@ sap.ui.define([
                             // course code pre-check
                             var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
                             var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
-                            if (bCourseAlreadyApproved) {
+                            var sActiveStatus = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"), oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+                            if (sActiveStatus === Constants.ClaimStatus.APPROVED || sActiveStatus === Constants.ClaimStatus.COMPLETED_DISBURSEMENT) {
                                 MessageBox.error(Utility.getText("error_msg_course_already_approved"));
+                                bCanProceed = false;
+                            } else if (sActiveStatus === Constants.ClaimStatus.PENDING_APPROVAL) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_pending"));
+                                bCanProceed = false;
+                            } else if (!!sActiveStatus && sActiveStatus !== Constants.ClaimStatus.CANCELLED && sActiveStatus !== Constants.ClaimStatus.REJECTED) {
+                                MessageBox.error(Utility.getText("error_msg_active_course_claim"));
                                 bCanProceed = false;
                             }
                         }

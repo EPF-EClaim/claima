@@ -25,7 +25,8 @@ const Constant = {
     },
     NumberRange: {
         REQUEST: "NR01",
-        CLAIM: "NR02"
+        CLAIM: "NR02",
+        SUBSTITUTION_RULE: "NR04"        
     },
     DisbursementStatus: {
         TO_BE_DISBURSED: "01",
@@ -440,6 +441,7 @@ const Constant = {
     },
     ConstantId: {
         ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER",
+        PROD_CENTRA_LINK: "PROD_CENTRA_LINK",
         EXCEPTION_COUNTRY_TRAVEL_INSURANCE: "EXCEPTION_COUNTRY_TRAVEL_INSURANCE",
         EXCEPTION_HP_FREQUENCY_JOB_GRADE: "EXCEPTION_HP_FREQUENCY_JOB_GRADE",
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
@@ -518,6 +520,9 @@ const Constant = {
         "MED_APPROVER": "MED_APPROVER", 
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
         "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
+    },
+    StatusCode: {       
+        SUCCESS: "200"
     }
 
 };

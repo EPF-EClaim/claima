@@ -150,7 +150,26 @@
                             key="cc_budgetreport"
                         >
                         </tnt:NavigationListItem>
-                    </tnt:NavigationListGroup>                        
+                    </tnt:NavigationListGroup>    
+
+                    <tnt:NavigationListGroup text="{i18n>nav_reroute}" expanded="false"
+                    visible="{= ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
+                    >
+                        <tnt:NavigationListItem
+                            icon="sap-icon://add-contact"
+                            text="{i18n>reroute_delegate}"
+                            key="ZSUBSTITUTION_RULES_CONFIG"
+                            enabled="true"
+                        >
+                        </tnt:NavigationListItem>
+                        <tnt:NavigationListItem
+                            icon="sap-icon://customer-order-entry"
+                            text="{i18n>reroute_reassign}"
+                            key="ZEMP_PENDING_LIST"
+                            enabled="true"
+                        >
+                        </tnt:NavigationListItem>                        
+                    </tnt:NavigationListGroup>                                                               
 
                     <tnt:NavigationListGroup text="Configuration" expanded="false">
                         <tnt:NavigationListItem

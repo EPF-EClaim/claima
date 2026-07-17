@@ -563,7 +563,7 @@ async function sendClaimBatch(sId){
                     AMOUNT:                  oItem.AMOUNT,
                     RECEIPT_DATE:            oItem.RECEIPT_DATE,
                     COST_CENTER:             null,
-                    GL_ACCOUNT:              null,
+                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
                     INTERNAL_ORDER:          oItem.INTERNAL_ORDER
                 }));
