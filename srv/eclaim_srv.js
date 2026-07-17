@@ -2917,24 +2917,24 @@ module.exports = (srv) => {
             // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
             // =======================================================================
 
-            const matchingClaims = await tx.run(
+            const aMatchingClaims = await tx.run(
                 SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
                     .where({ APPROVER_ID: USER_ID })
-                    .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                    .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                     .and('SUBMITTED_DATE >=', VALID_FROM)
                     .and('SUBMITTED_DATE <=', VALID_TO)
                     .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
             );
 
-            if (matchingClaims.length > 0) {
-                const claimUpdates = matchingClaims.map(claim =>
+            if (aMatchingClaims.length > 0) {
+                const aClaimUpdates = aMatchingClaims.map(claim =>
                     UPDATE(ZAPPROVER_DETAILS_CLAIMS)   // write to base table, not the view
                         .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
                         .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: USER_ID })
                 );
-                await Promise.all(claimUpdates.map(query => tx.run(query)));
+                await Promise.all(aClaimUpdates.map(query => tx.run(query)));
 
-                matchingClaims.forEach(claim => {
+                aMatchingClaims.forEach(claim => {
                     aLogsToInsert.push({
                         TIMESTAMP: new Date(),
                         RECORD_ID: claim.CLAIM_ID,
@@ -2951,8 +2951,8 @@ module.exports = (srv) => {
                         .columns('EMAIL', 'NAME')
                 );
 
-                const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
-                for (const claim of pendingClaims) {
+                const aPendingClaims = aMatchingClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
+                for (const claim of aPendingClaims) {
                     try {
                         await sendEmailInternal({
                             ApproverName: oSubstitute.NAME,
@@ -2982,24 +2982,24 @@ module.exports = (srv) => {
             // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
             // =======================================================================
 
-            const matchingPreApprovals = await tx.run(
+            const aMatchingPreApprovals = await tx.run(
                 SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                     .where({ APPROVER_ID: USER_ID })
-                    .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                    .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                     .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
                     .and('REQUEST_DATE <=', VALID_TO)
                     .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
             );
 
-            if (matchingPreApprovals.length > 0) {
-                const preAppUpdates = matchingPreApprovals.map(preApp =>
+            if (aMatchingPreApprovals.length > 0) {
+                const aPreAppUpdates = aMatchingPreApprovals.map(preApp =>
                     UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
                         .set({ SUBSTITUTE_APPROVER_ID: SUBSTITUTE_ID })
                         .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
                 );
-                await Promise.all(preAppUpdates.map(query => tx.run(query)));
+                await Promise.all(aPreAppUpdates.map(query => tx.run(query)));
 
-                matchingPreApprovals.forEach(preApp => {
+                aMatchingPreApprovals.forEach(preApp => {
                     aLogsToInsert.push({
                         TIMESTAMP: new Date(),
                         RECORD_ID: preApp.PREAPPROVAL_ID,
@@ -3016,8 +3016,8 @@ module.exports = (srv) => {
                         .columns('EMAIL', 'NAME')
                 );
 
-                const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
-                for (const preApp of pendingPreApprovals) {
+                const aPendingPreApprovals = aMatchingPreApprovals.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
+                for (const preApp of aPendingPreApprovals) {
                     try {
                         await sendEmailInternal({
                             ApproverName: oSubstitute.NAME,
@@ -3984,24 +3984,24 @@ module.exports = (srv) => {
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================        
         // 1. Find Claims previously routed to substitute within the dropped window
-        const orphanedClaims = await tx.run(
+        const aOrphanedClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
                 .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
-                .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                 .and('SUBMITTED_DATE >', VALID_FROM) // items falling outside the new window
                 .and('SUBMITTED_DATE <=', VALID_TO)
                 .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
         );
-        if (orphanedClaims.length > 0) {
+        if (aOrphanedClaims.length > 0) {
             // 2. Clear out the substitute assignment back to null
-            const claimClears = orphanedClaims.map(claim =>
+            const aClaimClears = aOrphanedClaims.map(claim =>
                 UPDATE(ZAPPROVER_DETAILS_CLAIMS)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
                     .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
-            await Promise.all(claimClears.map(query => tx.run(query)));
+            await Promise.all(aClaimClears.map(query => tx.run(query)));
             // 3. Log the removal action
-            orphanedClaims.forEach(claim => {
+            aOrphanedClaims.forEach(claim => {
                 aLogsToInsert.push({
                     TIMESTAMP: new Date(),
                     RECORD_ID: claim.CLAIM_ID,
@@ -4017,8 +4017,8 @@ module.exports = (srv) => {
                     .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
-            const pendingClaims = orphanedClaims.filter(claim => claim.STATUS === 'STAT02');
-            for (const claim of pendingClaims) {
+            const aPendingClaims = aOrphanedClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
+            for (const claim of aPendingClaims) {
                 try {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
@@ -4047,24 +4047,24 @@ module.exports = (srv) => {
         // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
         // =======================================================================
         // 1. Find Pre-Approvals previously routed to substitute within the dropped window
-        const orphanedRequest = await tx.run(
+        const aOrphanedRequests = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                 .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
-                .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                 .and('REQUEST_DATE >', VALID_FROM) // items falling outside the new window
                 .and('REQUEST_DATE <=', VALID_TO)
                 .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
         );
-        if (orphanedRequest.length > 0) {
+        if (aOrphanedRequests.length > 0) {
             // 2. Clear out the substitute assignment back to null
-            const RequestClears = orphanedRequest.map(preApp =>
+            const aRequestClears = aOrphanedRequests.map(preApp =>
                 UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
                     .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
-            await Promise.all(RequestClears.map(query => tx.run(query)));
+            await Promise.all(aRequestClears.map(query => tx.run(query)));
             // 3. Log the removal action
-            orphanedRequest.forEach(preApp => {
+            aOrphanedRequests.forEach(preApp => {
                 aLogsToInsert.push({
                     TIMESTAMP: new Date(),
                     RECORD_ID: preApp.PREAPPROVAL_ID,
@@ -4080,8 +4080,8 @@ module.exports = (srv) => {
                     .where({ EEID: sSubstituteID })
                     .columns('EMAIL', 'NAME')
             );
-            const pendingRequest = orphanedRequest.filter(preApp => preApp.STATUS === 'STAT02');
-            for (const preApp of pendingRequest) {
+            const aPendingRequest = aOrphanedRequests.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
+            for (const preApp of aPendingRequest) {
                 try {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
@@ -4124,24 +4124,24 @@ module.exports = (srv) => {
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================
 
-        const matchingClaims = await tx.run(
+        const aMatchingClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
                 .where({ APPROVER_ID: sUserID })
-                .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                 .and('SUBMITTED_DATE >=', VALID_FROM)
                 .and('SUBMITTED_DATE <=', VALID_TO)
                 .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
         );
 
-        if (matchingClaims.length > 0) {
-            const claimUpdates = matchingClaims.map(claim =>
+        if (aMatchingClaims.length > 0) {
+            const claimUpdates = aMatchingClaims.map(claim =>
                 UPDATE(ZAPPROVER_DETAILS_CLAIMS)   // write to base table, not the view
                     .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
                     .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(claimUpdates.map(query => tx.run(query)));
 
-            matchingClaims.forEach(claim => {
+            aMatchingClaims.forEach(claim => {
                 aLogsToInsert.push({
                     TIMESTAMP: new Date(),
                     RECORD_ID: claim.CLAIM_ID,
@@ -4158,8 +4158,8 @@ module.exports = (srv) => {
                     .columns('EMAIL', 'NAME')
             );
 
-            const pendingClaims = matchingClaims.filter(claim => claim.STATUS === 'STAT02');
-            for (const claim of pendingClaims) {
+            const aPendingClaims = aMatchingClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
+            for (const claim of aPendingClaims) {
                 try {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
@@ -4188,24 +4188,24 @@ module.exports = (srv) => {
         // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
         // =======================================================================
 
-        const matchingPreApprovals = await tx.run(
+        const aMatchingPreApprovals = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                 .where({ APPROVER_ID: sUserID })
-                .and(`(STATUS = 'STAT02' OR STATUS IS NULL OR STATUS = '')`)
+                .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
                 .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
                 .and('REQUEST_DATE <=', VALID_TO)
                 .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
         );
 
-        if (matchingPreApprovals.length > 0) {
-            const preAppUpdates = matchingPreApprovals.map(preApp =>
+        if (aMatchingPreApprovals.length > 0) {
+            const aPreAppUpdates = aMatchingPreApprovals.map(preApp =>
                 UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
                     .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
                     .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
-            await Promise.all(preAppUpdates.map(query => tx.run(query)));
+            await Promise.all(aPreAppUpdates.map(query => tx.run(query)));
 
-            matchingPreApprovals.forEach(preApp => {
+            aMatchingPreApprovals.forEach(preApp => {
                 aLogsToInsert.push({
                     TIMESTAMP: new Date(),
                     RECORD_ID: preApp.PREAPPROVAL_ID,
@@ -4222,8 +4222,8 @@ module.exports = (srv) => {
                     .columns('EMAIL', 'NAME')
             );
 
-            const pendingPreApprovals = matchingPreApprovals.filter(preApp => preApp.STATUS === 'STAT02');
-            for (const preApp of pendingPreApprovals) {
+            const aPendingPreApprovals = aMatchingPreApprovals.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
+            for (const preApp of aPendingPreApprovals) {
                 try {
                     await sendEmailInternal({
                         ApproverName: oSubstitute.NAME,
