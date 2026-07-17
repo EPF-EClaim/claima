@@ -2723,6 +2723,10 @@ module.exports = (srv) => {
                     return fDuration >= iDuration;
                 } else if (sCondition === Constant.Operator.LESSTHAN) {
                     return fDuration < iDuration;
+                } else if (sCondition === Constant.Operator.LESSTHANOREQUAL) {
+                    return fDuration <= iDuration;
+                } else if (sCondition === Constant.Operator.GREATERTHAN) {
+                    return fDuration > iDuration;
                 }
                 return false;
             });
