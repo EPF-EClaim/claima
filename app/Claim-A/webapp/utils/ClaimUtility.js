@@ -742,7 +742,11 @@ sap.ui.define([
 		},
 
 		getCeramahEligibleAmount: async function (fDurationMinute) {
-			var fDurationHour = parseFloat(fDurationMinute) / 60;
+			if (!fDurationMinute || fDurationMinute <= 0) {
+                MessageBox.error(Utility.getText("ceramah_duration_must_be_greater_than_zero"));
+                return 0;
+            }
+			var fDurationHour = parseFloat((fDurationMinute) / 60).toFixed(2);
 			const oContext = this._oView.getModel().bindContext("/getCeramahEntitlement(...)");
 			oContext.setParameter("fDuration", fDurationHour);
 
