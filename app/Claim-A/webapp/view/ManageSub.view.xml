@@ -24,7 +24,7 @@
                      parameters: {
                        $orderby: 'VALID_FROM desc'
                        , $expand: 'ZEMP_MASTER_SUBS',
-                         $select: 'SUBSTITUTE_ID,VALID_FROM,VALID_TO,ZEMP_MASTER_SUBS/EMAIL,ZEMP_MASTER_SUBS/NAME'   
+                         $select: 'SUBSTITUTE_RULE_ID,USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,ZEMP_MASTER_SUBS/EMAIL,ZEMP_MASTER_SUBS/NAME'  
                      }
                    }">
 
@@ -91,11 +91,11 @@
                         text="{i18n>addNew}"
                         press=".onAdd" 
                         visible="{vm>/isApprover}"/>
-                <Button id="Deletebtn"
+                <Button id="Editbtn"
                         type="Transparent"
-                        text="{i18n>delete}"
-                        visible="{vm>/canDelete}"
-                        press=".onDelete" />
+                        text="{i18n>edit}"
+                        visible="{vm>/canEdit}"
+                        press=".onEdit" />
             </OverflowToolbar>
         </footer>
 
@@ -175,5 +175,51 @@
         <Button text="{i18n>cancel}" press=".onCancel"/>
     </endButton>
     </Dialog>
+
+<Dialog
+    id="dlgEdit"
+    title="Edit Substitution"
+    draggable="true"
+    resizable="true">
+
+    <content>
+        <VBox class="sapUiSmallMargin">
+
+            <Label text="Substitute ID"/>
+            <Input
+                value="{vm>/editRule/SUBSTITUTE_ID}"
+                editable="false"/>
+
+            <Label text="Valid From"/>
+            <DatePicker
+                value="{vm>/editRule/VALID_FROM}"
+                valueFormat="yyyy-MM-dd"
+                displayFormat="medium"
+                editable="false"/>
+
+            <Label text="Valid To"/>
+            <DatePicker
+                id="dpEditValidTo"
+                value="{vm>/editRule/VALID_TO}"
+                valueFormat="yyyy-MM-dd"
+                displayFormat="medium"/>
+
+        </VBox>
+    </content>
+
+    <beginButton>
+        <Button
+            text="Save"
+            type="Emphasized"
+            press=".onSaveEdit"/>
+    </beginButton>
+
+    <endButton>
+        <Button
+            text="Cancel"
+            press=".onCancelEdit"/>
+    </endButton>
+
+</Dialog>
     </Page>
 </mvc:View>

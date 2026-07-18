@@ -121,6 +121,7 @@ sap.ui.define([
             var oInput = oEvent.getSource();
             var oBindingContext = oInput.getBindingContext();
             var sDept = "";
+            var sApproverID = "";
             var iCurrentSeq = null;
             if (oBindingContext) {
                 var sStatus = oBindingContext.getProperty("STATUS");
@@ -131,6 +132,7 @@ sap.ui.define([
                 }
 
                 sDept = oBindingContext.getProperty("APPROVER_DEP");
+                sApproverID = oBindingContext.getProperty("APPROVER_ID");
                 var sSeqRaw = oBindingContext.getProperty("GRADE_SEQUENCE");
                 if (sSeqRaw) {
                     iCurrentSeq = parseInt(sSeqRaw, 10);
@@ -147,7 +149,10 @@ sap.ui.define([
                 aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
             }
             if (iCurrentSeq !== null) {
-                aInitialFilters.push(new sap.ui.model.Filter("GRADE_SEQUENCE", sap.ui.model.FilterOperator.GE, iCurrentSeq));
+                aInitialFilters.push(new Filter("GRADE_SEQUENCE", FilterOperator.GE, iCurrentSeq));
+            }
+            if (sApproverID) {
+                aInitialFilters.push(new Filter("EEID", FilterOperator.NE, sApproverID));
             }
 
             oApproverPopupModule._oApproverVHDialog = new sap.m.TableSelectDialog({
