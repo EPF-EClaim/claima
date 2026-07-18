@@ -20,7 +20,8 @@ sap.ui.define([
                     APPROVER_ID: oContext.getProperty("APPROVER_ID"),
                     APPROVER_NAME: oContext.getProperty("APPROVER_NAME"),
                     NEW_APPROVER_ID: oContext.getProperty("NEW_APPROVER_ID"),
-                    STATUS: oContext.getProperty("STATUS")
+                    STATUS: oContext.getProperty("STATUS"),
+                    REQUEST_DATE: oContext.getProperty("REQUEST_DATE")
                 };
             }).filter(Boolean);
 

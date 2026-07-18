@@ -867,7 +867,7 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
+                                        "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
@@ -910,8 +910,8 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
-                                        "selectionMode": "Multi",
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
                                             "filter": true,
@@ -921,7 +921,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                            "visibleFields": "VALID_TO"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {

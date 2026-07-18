@@ -8158,6 +8158,7 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
 
 annotate service.ZEMP_PENDING_LIST with @(
     Capabilities.DeleteRestrictions: {Deletable: false},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC]},
     UI                             : {
 
@@ -8290,8 +8291,8 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
         VALID_TO
     ],
     Capabilities                   : {
-        Deletable : true,
-        Updatable : false,
+        Deletable : false,
+        Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,

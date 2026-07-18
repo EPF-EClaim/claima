@@ -591,7 +591,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
     ])                                   as projection on ECLAIM.ZINDIV_GROUP;
 
-    entity ZLOG as projection on ECLAIM.ZLOG;
+    entity ZLOG                          as projection on ECLAIM.ZLOG;
 
     @cds.redirection.target
     entity ZTRAIN_COURSE_PART            as projection on ECLAIM.ZTRAIN_COURSE_PART;
@@ -950,12 +950,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
     ])                                   as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
-     type UserRoles {
-        isClaimant     : Boolean;
-        isApprover     : Boolean;
-        isDTDAdmin     : Boolean;
-        isAdminSystem  : Boolean;
-        isAdminCC      : Boolean;
+    type UserRoles {
+        isClaimant    : Boolean;
+        isApprover    : Boolean;
+        isDTDAdmin    : Boolean;
+        isAdminSystem : Boolean;
+        isAdminCC     : Boolean;
     }
 
     type UserInfo {
@@ -1273,11 +1273,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
                 *
-        }
-        where
-            VALID_TO >= cast(
-                $now as Date
-            );
+        };
 
     entity ZDB_STRUCTURE @(restrict: [
         {
@@ -1394,25 +1390,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                   exclude_tips: Boolean,
                                   dependent: Integer)                                                    returns perdiem;
 
-    action getMeterCubeEntitlement(
-        selectedDependents : array of String
-    )                                                                                                    returns Decimal(15, 2);
+    action   getMeterCubeEntitlement(selectedDependents: array of String)                                returns Decimal(15, 2);
 
     type meterCubeAmount {
         entitled : Decimal(15, 2);
         amount   : Decimal(15, 2);
     }
 
-    action calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
+    action   calculatePengangkutanLautAmount(actualMeterCube: Decimal(15, 2),
                                              actualAmount: Decimal(15, 2),
-                                             selectedDependents : array of String)                       returns meterCubeAmount;
+                                             selectedDependents: array of String)                        returns meterCubeAmount;
 
     type matawangAmount {
         percentage : Decimal(15, 2);
         amount     : Decimal(15, 2);
     }
 
-    action calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
+    action   calculateMatawangAmount(claimItems: LargeString)                                            returns matawangAmount;
 
     entity ZCLM_TYPE_EXCEPTION_LIST      as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
@@ -1505,14 +1499,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
                               oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
 
     type JenazahEligibleAmount {
-        iAmount : Decimal(16,2);
+        iAmount : Decimal(16, 2);
     }
 
-    function getJenazahEligibleAmount(
-            sTransportPassingID: String,
-            sClaimType: String,
-            sClaimTypeItem: String)
-        returns JenazahEligibleAmount;
+    function getJenazahEligibleAmount(sTransportPassingID: String,
+                                      sClaimType: String,
+                                      sClaimTypeItem: String)                                            returns JenazahEligibleAmount;
 
     function checkElaunTukarEligible(IS_CLAIM: Boolean)                                                  returns Boolean;
 
@@ -1525,10 +1517,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   updateApproverHeader(sRecordId: String,
                                   sStatus: String)                                                       returns Response;
+
     type Roundtripamount {
-        fFinalAmount: Decimal(15,2);
+        fFinalAmount : Decimal(15, 2);
     }
-    function calculateRoundTripKM (fKM: Decimal(15, 2))                                              returns Roundtripamount;
+
+    function calculateRoundTripKM(fKM: Decimal(15, 2))                                                   returns Roundtripamount;
 
     entity ZEMP_APPROVER_REQUEST_DETAILS as
         projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {
@@ -1732,8 +1726,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 createdBy,
                 IND_OR_GROUP,
                 ZINDIV_GROUP.IND_OR_GROUP_DESC,
-                 // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer
+                // Calculate the difference between Submitted and Last Approved date
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                           as DAYS_APPROVED : Integer
         };
 
     entity ZEMP_REQUEST_REPORT_DETAILS   as
@@ -1856,8 +1852,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.DEPARTURE_TIME,
                 ZREQUEST_ITEM.ARRIVAL_TIME,
                 ZREQUEST_ITEM.TOTAL_TRAVELLER,
-                 // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer                
+                // Calculate the difference between Submitted and Last Approved date
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                                                              as DAYS_APPROVED : Integer
         };
 
 
@@ -1913,10 +1911,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
                 LAST_PUSH_BACK_DATE,
-                createdBy, 
-                 // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                
+                createdBy,
+                // Calculate the difference between Submitted and Last Approved date
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                             as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
         };
 
     entity ZEMP_CLAIM_REPORT_DETAILS     as
@@ -2089,9 +2089,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
                 ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
-                 // Calculate the difference between Submitted and Last Approved date
-                days_between(HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE) as DAYS_APPROVED : Integer,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC                 
+                // Calculate the difference between Submitted and Last Approved date
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                                                            as DAYS_APPROVED : Integer,
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
         };
 
     entity ZEMP_CASHADVANCE_REPORT       as
@@ -2117,8 +2119,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.UNIT_SECTION,
                 createdBy,
                 ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
-                CASH_ADVANCE_DATE           as PAYMENT_DATE
-        } where ZREQUEST_HEADER.CASH_ADVANCE > 0;
+                CASH_ADVANCE_DATE                 as PAYMENT_DATE
+        }
+        where
+            ZREQUEST_HEADER.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
@@ -2146,7 +2150,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         left join ECLAIM.ZCLAIM_TYPE as CT
             on ITEM.CLAIM_TYPE_ID = CT.CLAIM_TYPE_ID
         left join ECLAIM.ZCLAIM_TYPE_ITEM as CTI
-            on ITEM.CLAIM_TYPE_ID = CTI.CLAIM_TYPE_ID
+            on  ITEM.CLAIM_TYPE_ID      = CTI.CLAIM_TYPE_ID
             and ITEM.CLAIM_TYPE_ITEM_ID = CTI.CLAIM_TYPE_ITEM_ID
         {
             key HEADER.CLAIM_ID,
@@ -2163,16 +2167,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
                          and HEADER.ALTERNATE_COST_CENTER <> ''
                          then HEADER.ALTERNATE_COST_CENTER
                     else HEADER.COST_CENTER
-                end                as FUND_CENTER : String,
+                end                      as FUND_CENTER : String,
 
                 /* Match with budget */
-                ITEM.GL_ACCOUNT    as COMMITMENT_ITEM,
-                ITEM.MATERIAL_CODE as MATERIAL_GROUP,
+                ITEM.GL_ACCOUNT          as COMMITMENT_ITEM,
+                ITEM.MATERIAL_CODE       as MATERIAL_GROUP,
 
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
                 HEADER.PAYMENT_DATE,
-                STATUS.STATUS_DESC as STATUS_DESC,
+                STATUS.STATUS_DESC       as STATUS_DESC,
                 HEADER.PURPOSE,
                 HEADER.TRIP_START_DATE,
                 HEADER.TRIP_END_DATE,
@@ -2180,7 +2184,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CT.CLAIM_TYPE_DESC       as CLAIM_TYPE_DESC,
                 CTI.CLAIM_TYPE_ITEM_DESC as CLAIM_TYPE_ITEM_DESC,
                 ITEM.AMOUNT
-        } where HEADER.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
+        }
+        where
+            HEADER.STATUS_ID in (
+                'STAT02', 'STAT05', 'STAT06'
+            );
 
     entity ZEMP_CC_BUDGET_REPORT         as
         projection on ECLAIM.ZBUDGET {
@@ -2214,22 +2222,22 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 CONSUMED,
                 BUDGET_BALANCE,
                 _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on $self.FUND_CENTER = _Detail.FUND_CENTER and
-                                            $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM and
-                                            $self.MATERIAL_GROUP = _Detail.MATERIAL_GROUP
+                                         on  $self.FUND_CENTER     = _Detail.FUND_CENTER
+                                         and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
+                                         and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
 
         };
 
     action   updatePEDUEntitleAmount(sRecordId: String,
-                                     sStatus: String)                                                    returns Response;         
+                                     sStatus: String)                                                    returns Response;
 
     type CentraLinkObject {
         sCentraLink : Boolean;
     }
 
-    function getCentraLink()                                                                            returns CentraLinkObject;
+    function getCentraLink()                                                                             returns CentraLinkObject;
 
-    function checkGalakanEligible()                                                                     returns Boolean;
+    function checkGalakanEligible()                                                                      returns Boolean;
 
     function getCeramahEntitlement(fDuration: Decimal(5,2))                                             returns Decimal(10,2);
 
@@ -2239,37 +2247,39 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function checkClaimHeaderStatusForAutoApproval(sClaimID: String) returns ClaimStatusAuto;
 
-    action getInternalOrderByProjectCode(sProjectCode : String)                                         returns String;
+    action   getInternalOrderByProjectCode(sProjectCode: String)                                         returns String;
 
-    function getBantuanKebajikanKematianAmount(sDependentType: String)                                  returns Decimal(10,2);                        
+    function getBantuanKebajikanKematianAmount(sDependentType: String)                                   returns Decimal(10, 2);
 
     type ReassignmentPayload {
-        APPROVER_ID: String;
-        APPROVER_NAME:  String;
-        ID: String;
-        LEVEL: Integer;
-        NEW_APPROVER_ID: String;
-        STATUS: String;
+        APPROVER_ID     : String;
+        APPROVER_NAME   : String;
+        ID              : String;
+        LEVEL           : Integer;
+        NEW_APPROVER_ID : String;
+        STATUS          : String;
+        REQUEST_DATE    : Date;
     }
 
-    action reassignApprover(payload: many ReassignmentPayload) returns Boolean;
-    
-    entity ZCONFIG_VARIABLE as projection on ECLAIM.ZCONFIG_VARIABLE;
+    action   reassignApprover(payload: many ReassignmentPayload)                                         returns Boolean;
+
+    entity ZCONFIG_VARIABLE              as projection on ECLAIM.ZCONFIG_VARIABLE;
 
     @cds.autoexpose
     //this will be used by the New Approver popup. Need filtering more than the department
-    entity ZEMP_APPROVER_LIST_VH as 
-        select from ZEMP_MASTER as emp 
-        left join ZCONFIG_VARIABLE as cfg 
-        on cfg.LOW_VALUE = emp.GRADE 
-        and cfg.VARIABLE_NAME = 'PERSONAL_GRADE' 
-        { 
-            key emp.EEID as EEID, 
-            emp.NAME as NAME, 
-            emp.DEP as DEP, 
-            emp.GRADE as GRADE, 
-            cfg.SEQUENCE_NO as GRADE_SEQUENCE 
-            };        
+    entity ZEMP_APPROVER_LIST_VH         as
+        select from ZEMP_MASTER as emp
+        left join ZCONFIG_VARIABLE as cfg
+            on  cfg.LOW_VALUE     = emp.GRADE
+            and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
+        {
+            key emp.EEID        as EEID,
+                emp.NAME        as NAME,
+                emp.DEP         as DEP,
+                emp.GRADE       as GRADE,
+                cfg.SEQUENCE_NO as GRADE_SEQUENCE
+        };
+
     @cds.autoexpose
     //this will filter by department for GA
     entity ZEMP_APPROVER_LIST_DEP        as
@@ -2279,13 +2289,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 DEP
         };
 
-    entity ZEMP_PENDING_LIST           as
+    entity ZEMP_PENDING_LIST             as
             select from ECLAIM.ZREQUEST_HEADER as request {
-                key REQUEST_ID                     as ID,
+                key REQUEST_ID          as ID,
                     EMP_ID,
                     CLAIM_TYPE_ID,
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
                     ZEMP_MASTER.DEP
             }
@@ -2293,55 +2303,65 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
         union all
             select from ECLAIM.ZCLAIM_HEADER as claim {
-                key CLAIM_ID                              as ID,
+                key CLAIM_ID            as ID,
                     EMP_ID,
                     CLAIM_TYPE_ID,
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
                     ZEMP_MASTER.DEP
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_PENDING_LIST_APPROVER as
-        select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
-        left join ZEMP_MASTER as master
-            on master.EEID = request.APPROVER_ID
-        left join ZCONFIG_VARIABLE as cfg
-            on cfg.LOW_VALUE = master.GRADE
-            and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
-        {
-            key PREAPPROVAL_ID as ID,
-            key LEVEL,
-            STATUS,
-            ZSTATUS.STATUS_DESC as STATUS_DESC,
-            APPROVER_ID,
-            master.NAME as APPROVER_NAME,
-            cast('' as String) as NEW_APPROVER_ID,
-            master.DEP as APPROVER_DEP,
-            master.GRADE as APPROVER_GRADE,
-            cfg.SEQUENCE_NO as GRADE_SEQUENCE
-        }
+    entity ZEMP_PENDING_LIST_APPROVER    as
+            select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
+            left join ZEMP_MASTER as master
+                on master.EEID = request.APPROVER_ID
+            left join ZCONFIG_VARIABLE as cfg
+                on  cfg.LOW_VALUE     = master.GRADE
+                and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
+            left join ZREQUEST_HEADER as header
+                on header.REQUEST_ID = request.PREAPPROVAL_ID
+            {
+                key PREAPPROVAL_ID              as ID,
+                key LEVEL,
+                    request.STATUS,
+                    request.ZSTATUS.STATUS_DESC as STATUS_DESC,
+                    APPROVER_ID,
+                    master.NAME                 as APPROVER_NAME,
+                    cast(
+                        '' as String
+                    )                           as NEW_APPROVER_ID,
+                    master.DEP                  as APPROVER_DEP,
+                    master.GRADE                as APPROVER_GRADE,
+                    cfg.SEQUENCE_NO             as GRADE_SEQUENCE,
+                    header.REQUEST_DATE
+            }
         union all
-        select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
-        left join ZEMP_MASTER as master
-            on master.EEID = claim.APPROVER_ID
-        left join ZCONFIG_VARIABLE as cfg
-            on cfg.LOW_VALUE = master.GRADE
-            and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
-        {
-            key CLAIM_ID as ID,
-            key LEVEL,
-            STATUS,
-            ZSTATUS.STATUS_DESC as STATUS_DESC,
-            APPROVER_ID,
-            master.NAME as APPROVER_NAME,
-            cast('' as String) as NEW_APPROVER_ID,
-            master.DEP as APPROVER_DEP,
-            master.GRADE as APPROVER_GRADE,
-            cfg.SEQUENCE_NO as GRADE_SEQUENCE
-        };
+            select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
+            left join ZEMP_MASTER as master
+                on master.EEID = claim.APPROVER_ID
+            left join ZCONFIG_VARIABLE as cfg
+                on  cfg.LOW_VALUE     = master.GRADE
+                and cfg.VARIABLE_NAME = 'PERSONAL_GRADE'
+            left join ZCLAIM_HEADER as header
+                on header.CLAIM_ID = claim.CLAIM_ID
+            {
+                key claim.CLAIM_ID            as ID,
+                key LEVEL,
+                    STATUS,
+                    claim.ZSTATUS.STATUS_DESC as STATUS_DESC,
+                    APPROVER_ID,
+                    master.NAME               as APPROVER_NAME,
+                    cast(
+                        '' as String
+                    )                         as NEW_APPROVER_ID,
+                    master.DEP                as APPROVER_DEP,
+                    master.GRADE              as APPROVER_GRADE,
+                    cfg.SEQUENCE_NO           as GRADE_SEQUENCE,
+                    header.SUBMITTED_DATE     as REQUEST_DATE
+            };
 
     entity ZEMP_APPROVER_VH              as
         projection on ZEMP_MASTER {
@@ -2363,8 +2383,16 @@ service eclaim_srv @(requires: 'authenticated-user') {
             virtual null as SELECTED_APPROVER : String
         };
 
-    entity ZCORPORATE_CARD as projection on ECLAIM.ZCORPORATE_CARD;
  
     entity ZCORPORATE_CARD_ADVANCED as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
+
+    action updateSubstitutionValidTo(
+            SUBSTITUTE_RULE_ID : String(10),
+            USER_ID            : String,
+            SUBSTITUTE_ID      : String,
+            VALID_FROM         : Date,
+            OLD_VALID_TO       : Date,
+            NEW_VALID_TO       : Date
+        ) returns Boolean;
 
 };
