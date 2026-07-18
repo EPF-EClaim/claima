@@ -163,8 +163,7 @@
             id="drs"
             displayFormat="medium"
             valueFormat="yyyy-MM-dd"
-            placeholder="{i18n>periodPlaceholder}"
-            minDate="{vm>/todayDate}" />
+            placeholder="{i18n>periodPlaceholder}" />
         </VBox>
     </content>
 
