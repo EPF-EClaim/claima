@@ -131,12 +131,12 @@ sap.ui.define([
                     return;
                 }
 
-                sDept = oBindingContext.getProperty("APPROVER_DEP");
-                sApproverID = oBindingContext.getProperty("APPROVER_ID");
-                var sSeqRaw = oBindingContext.getProperty("GRADE_SEQUENCE");
-                if (sSeqRaw) {
-                    iCurrentSeq = parseInt(sSeqRaw, 10);
-                }
+                // sDept = oBindingContext.getProperty("APPROVER_DEP");
+                // sApproverID = oBindingContext.getProperty("APPROVER_ID");
+                // var sSeqRaw = oBindingContext.getProperty("GRADE_SEQUENCE");
+                // if (sSeqRaw) {
+                //     iCurrentSeq = parseInt(sSeqRaw, 10);
+                // }
             }
             var oModel = oInput.getModel();
             if (oApproverPopupModule._oApproverVHDialog) {
@@ -145,15 +145,15 @@ sap.ui.define([
             }
 
             var aInitialFilters = [];
-            if (sDept) {
-                aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
-            }
-            if (iCurrentSeq !== null) {
-                aInitialFilters.push(new Filter("GRADE_SEQUENCE", FilterOperator.GE, iCurrentSeq));
-            }
-            if (sApproverID) {
-                aInitialFilters.push(new Filter("EEID", FilterOperator.NE, sApproverID));
-            }
+            // if (sDept) {
+            //     aInitialFilters.push(new Filter("DEP", FilterOperator.EQ, sDept));
+            // }
+            // if (iCurrentSeq !== null) {
+            //     aInitialFilters.push(new Filter("GRADE_SEQUENCE", FilterOperator.GE, iCurrentSeq));
+            // }
+            // if (sApproverID) {
+            //     aInitialFilters.push(new Filter("EEID", FilterOperator.NE, sApproverID));
+            // }
 
             oApproverPopupModule._oApproverVHDialog = new sap.m.TableSelectDialog({
                 title: "Select Approver",

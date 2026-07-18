@@ -2395,4 +2395,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
             NEW_VALID_TO       : Date
         ) returns Boolean;
 
+    action checkSubstitutionOverlap(
+        USER_ID            : String,
+        SUBSTITUTE_ID      : String,
+        VALID_FROM         : Date,
+        VALID_TO           : Date,
+        SUBSTITUTE_RULE_ID : String
+        ) returns Boolean;
+
 };

@@ -5,11 +5,9 @@ sap.ui.define([
   "sap/m/MessageBox",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter",
-  "claima/utils/ValueHelpDelegate_MngeSub",
   "claima/utils/DateUtility",
   "claima/utils/Utility"
-], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, Sorter, ValueHelpDelegate_MngeSub, DateUtility, Utility) {
+], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, DateUtility, Utility) {
   "use strict";
 
   return Controller.extend("claima.controller.ManageSub", {
@@ -120,8 +118,6 @@ sap.ui.define([
       const oVM = this.getView().getModel("vm");
       oVM.setProperty("/subValid", false);
       oVM.setProperty("/subInfo", "");
-      this.byId("inpUser").setValueState("None");
-      this.byId("inpUser").setValueStateText("");
     },
 
     // ============================================================
@@ -140,58 +136,58 @@ sap.ui.define([
       const sSubstituteRulesId = oResult && oResult.subNo;
 
       if (!sSubstituteId || !dStart || !dEnd) {
-        MessageToast.show(this._i18n("pleaseProvideAll"));
+        MessageToast.show(Utility.getText("pleaseProvideAll"));
         return;
       }
       if (dEnd < dStart) {
-        MessageToast.show(this._i18n("endBeforeStart"));
+        MessageToast.show(Utility.getText("endBeforeStart"));
         return;
       }
 
       let oEmp;
       try {
-        //oEmp = await this._getEmployeeByEEID(sSubstituteId);
         oEmp = await this._getEmployeeByIdOrEmail(sSubstituteId);
       } catch (e) {
-        MessageBox.error(this._i18n("backendUnavailable") || "Unable to validate employee at the moment.");
+        MessageBox.error(Utility.getText("backendUnavailable"));
         return;
       }
       if (!oEmp) {
-        const oInp = this.byId("inpUser");
-        oInp.setValueState("Error");
-        oInp.setValueStateText(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
-        MessageBox.error(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
+        MessageBox.error(Utility.getText("empNotFound"));
         return;
-      } else {
-        this.byId("inpUser").setValueState("Success");
-        this.byId("inpUser").setValueStateText(`Matched: ${oEmp.EEID} — ${oEmp.EMAIL || ""}`);
       }
 
+      // BACKEND OVERLAP CHECK
       try {
-          const bOverlap = await this._hasOverlappingRule(sUserId, oEmp.EEID, dStart, dEnd);
-          if (bOverlap) {
-            MessageBox.error(this._i18n("overlappingRuleSameSubOnly") || "A substitution already exists for the same user & substitute within the selected period.");
-            return;
-          }
-        } catch (e) {
-          MessageBox.error(this._i18n("backendUnavailable") || "Failed to check overlap. Please try again.");
+          const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", sUserId);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dStart));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dEnd));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", "");
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
+        if (bOverlap) {
+          MessageBox.error(Utility.getText("overlappingRuleSameSubOnly") );
           return;
         }
 
-      // Map UI -> backend fields
-      const toISO = (d) => {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-      };
+         } catch (e) {
+        return;
+      }
       
       const oPayload = {
         SUBSTITUTE_RULE_ID: sSubstituteRulesId,
         USER_ID: sUserId,   
         SUBSTITUTE_ID: oEmp.EEID,   
-        VALID_FROM: toISO(dStart),
-        VALID_TO:   toISO(dEnd)
+        VALID_FROM: DateUtility.toYMD(dStart),
+        VALID_TO:DateUtility.toYMD(dEnd)
       };
 
       const oTable = this.byId("tblSubs");
@@ -203,10 +199,9 @@ sap.ui.define([
         await oCreatedCtx.created();
 
         this.onCancel();
-        MessageToast.show(this._i18n("created"));
+        MessageToast.show(Utility.getText("created"));
       } catch (err) {
         MessageBox.error(err.message || "Create failed");
-        this.byId("dlgAdd").setBusy(false);
       } finally {
         if (oResult) {
           this._updateCurrentReqNumber(oResult.current);
@@ -276,88 +271,6 @@ sap.ui.define([
 		},
 
     // ============================================================
-    // CHECK IF THERE'S AN OVERLAPPING RULE FOR USER ID + SUBSTITUTE
-    // ============================================================
-      
-    _hasOverlappingRule: async function (sUserId, sSubstituteId, dStart, dEnd, sCurrentRuleId) {
-      if (!sUserId || !sSubstituteId || !dStart || !dEnd) return false;
-
-      const sStart = DateUtility.toYMD(dStart);
-      const sEnd = DateUtility.toYMD(dEnd);
-      const oModel = this.getOwnerComponent().getModel();
-
-      let sEntitySetPath = "/ZSUBSTITUTION_RULES";
-      const oTable = this.byId("tblSubs");
-      const oBinding = oTable && oTable.getBinding && oTable.getBinding("items");
-      if (oBinding && typeof oBinding.getPath === "function" && oBinding.getPath()) {
-        sEntitySetPath = oBinding.getPath();
-      }
-
-      // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
-      const aFilters = [
-        new Filter("USER_ID", FilterOperator.EQ, sUserId),
-        new Filter("VALID_TO", FilterOperator.GE, sStart),
-        new Filter("VALID_FROM", FilterOperator.LE, sEnd)
-      ];
-
-      const oList = oModel.bindList(
-        sEntitySetPath,
-        null,
-        null,
-        aFilters,
-        {
-          $select: "SUBSTITUTE_RULE_ID,USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
-        }
-      );
-
-      try {
-        const aCtx = await oList.requestContexts(0, 100);
-        if (!aCtx.length) return false;
-
-        const dNewFrom = new Date(dStart.getFullYear(), dStart.getMonth(), dStart.getDate());
-        const dNewTo = new Date(dEnd.getFullYear(), dEnd.getMonth(), dEnd.getDate());
-
-        for (const oCtx of aCtx) {
-          const rec = oCtx.getObject();
-
-          if (sCurrentRuleId && rec.SUBSTITUTE_RULE_ID === sCurrentRuleId) {
-            continue;
-          }
-
-          const dExistingFrom = DateUtility.toDate(rec.VALID_FROM);
-          const dExistingTo = DateUtility.toDate(rec.VALID_TO);
-
-          if (!dExistingFrom || !dExistingTo) {
-            return true;
-          }
-
-          const dOldFrom = new Date(
-            dExistingFrom.getFullYear(),
-            dExistingFrom.getMonth(),
-            dExistingFrom.getDate()
-          );
-
-          const dOldTo = new Date(
-            dExistingTo.getFullYear(),
-            dExistingTo.getMonth(),
-            dExistingTo.getDate()
-          );
-
-          const bOverlap = dOldTo >= dNewFrom && dOldFrom <= dNewTo;
-
-          if (bOverlap) {
-            return true;
-          }
-        }
-
-        return false;
-
-      } catch (e) {
-        console.error("Overlap check failed", e);
-        throw e;
-      }
-    },
-    // ============================================================
     // SELECTION + EDIT (OData V4)
     // ============================================================
     onSelectionChange: function (oEvent) {
@@ -422,8 +335,8 @@ sap.ui.define([
       const dValidFrom = DateUtility.toDate(oEdit.VALID_FROM);
       const dValidTo = DateUtility.toDate(oEdit.VALID_TO);
 
-      if (!dValidFrom || !dValidTo) {
-        MessageBox.error(Utility.getText("msg_mngesub_provide_date"));
+      if (dValidTo < dValidFrom) {
+        MessageBox.error(Utility.getText("msg_mngesub_valid_to_before_from") );
         return;
       }
 
@@ -431,20 +344,26 @@ sap.ui.define([
         this.byId("dlgEdit").setBusy(true);
 
         // Overlap check during edit
-        const bOverlap = await this._hasOverlappingRule(
-          oEdit.USER_ID,
-          oEdit.SUBSTITUTE_ID,
-          dValidFrom,
-          dValidTo,
-          oEdit.SUBSTITUTE_RULE_ID
-        );
+        const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", oEdit.USER_ID);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dValidFrom));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dValidTo));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", oEdit.SUBSTITUTE_RULE_ID);
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
 
         if (bOverlap) {
           MessageBox.error(Utility.getText("msg_mngesub_overlapping"));
           return;
         }
-
-        const oCtx = oItem.getBindingContext();
 
         const oOldData =
           oItem.getBindingContext().getObject();
@@ -488,12 +407,9 @@ sap.ui.define([
     // ============================================================
     onSubstituteIdChange: async function (oEvent) {
         const sVal = oEvent.getParameter("value").trim();
-        const oInp = oEvent.getSource();
         const oVM  = this.getView().getModel("vm");
 
         if (!sVal) {
-          oInp.setValueState("None");
-          oInp.setValueStateText("");
           oVM.setProperty("/subValid", false);
           oVM.setProperty("/subInfo", "");
           return;
@@ -583,31 +499,6 @@ sap.ui.define([
       return "";
     },
 
-    // ============================================================
-    // OData helper: ZEMP_MASTER by EEID with $select
-    // ============================================================
-    /** Lookup employee by EEID (projects only eeid,email) */
-    _getEmployeeByEEID: async function (sEEID) {
-      if (!sEEID) return null;
-
-      const oMainModel = this.getOwnerComponent().getModel(); // OData V4
-      const oList = oMainModel.bindList(
-        "/ZEMP_MASTER",
-        null,                  // context
-        null,                  // sorters
-        [ new Filter("EEID",FilterOperator.EQ, sEEID) ],
-        { $select: "EEID,EMAIL,NAME" } // ← fetch eeid,email and name 
-      );
-
-      try {
-        const aCtx = await oList.requestContexts(0, 1);
-        return aCtx.length ? aCtx[0].getObject() : null; // { eeid, email }
-      } catch (e) {
-        console.error("ZEMP_MASTER lookup failed", e);
-        throw e;
-      }
-    },
-
         /**Lookup employee by EEID or EMAIL.*/
     _getEmployeeByIdOrEmail: async function (sValue) {
       if (!sValue) return null;
@@ -667,8 +558,5 @@ sap.ui.define([
       }
     },
 
-    _i18n: function (sKey) {
-      return this.getView().getModel("i18n").getResourceBundle().getText(sKey);
-    }
   });
 });

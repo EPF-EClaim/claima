@@ -3151,24 +3151,25 @@ module.exports = (srv) => {
                     if (!oApprover || !oApproverNew) {
                         return req.error(400, "Master profile data missing for the selected employees.");
                     }
+                    
                     // A. Check matching Department (DEP)
-                    if (oApprover.DEP !== oApproverNew.DEP) {
-                        return req.error(400, `The selected approver must belong to the same department (${oApprover.DEP}).`);
-                    }
+                    // if (oApprover.DEP !== oApproverNew.DEP) {
+                    //     return req.error(400, `The selected approver must belong to the same department (${oApprover.DEP}).`);
+                    // }
                     // B. Check Grade Sequence Hierarchy Level
-                    let iApproverSeq = 0;
-                    let iSubstituteSeq = 0;
-                    if (oApprover.GRADE) {
-                        const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApprover.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
-                        if (oConf && oConf.SEQUENCE_NO) iApproverSeq = parseInt(oConf.SEQUENCE_NO, 10);
-                    }
-                    if (oApproverNew.GRADE) {
-                        const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApproverNew.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
-                        if (oConf && oConf.SEQUENCE_NO) iSubstituteSeq = parseInt(oConf.SEQUENCE_NO, 10);
-                    }
-                    if (iSubstituteSeq < iApproverSeq) {
-                        return req.error(400, `The selected substitute's grade level (${oApproverNew.GRADE || 'None'}) must be equal to or higher than the current approver's grade (${oApprover.GRADE || 'None'}).`);
-                    }
+                    // let iApproverSeq = 0;
+                    // let iSubstituteSeq = 0;
+                    // if (oApprover.GRADE) {
+                    //     const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApprover.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
+                    //     if (oConf && oConf.SEQUENCE_NO) iApproverSeq = parseInt(oConf.SEQUENCE_NO, 10);
+                    // }
+                    // if (oApproverNew.GRADE) {
+                    //     const oConf = await SELECT.one.from('ZCONFIG_VARIABLE').where({ LOW_VALUE: oApproverNew.GRADE, VARIABLE_NAME: 'PERSONAL_GRADE' });
+                    //     if (oConf && oConf.SEQUENCE_NO) iSubstituteSeq = parseInt(oConf.SEQUENCE_NO, 10);
+                    // }
+                    // if (iSubstituteSeq < iApproverSeq) {
+                    //     return req.error(400, `The selected substitute's grade level (${oApproverNew.GRADE || 'None'}) must be equal to or higher than the current approver's grade (${oApprover.GRADE || 'None'}).`);
+                    // }
                 }
             }
 
@@ -3624,18 +3625,18 @@ module.exports = (srv) => {
     srv.before('READ', 'ZEMP_APPROVER_VH', async (req) => {
 
         //for GA, show their department only. for JKEW show all
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const oEmp = await SELECT.one
-                .from('ZEMP_MASTER')
-                .where({ EMAIL: req.user.id });
+        // if (req.user.is(Constant.Admin.Admin_CC)) {
+        //     const oEmp = await SELECT.one
+        //         .from('ZEMP_MASTER')
+        //         .where({ EMAIL: req.user.id });
 
-            if (!oEmp || !oEmp.DEP) return;
+        //     if (!oEmp || !oEmp.DEP) return;
 
-            // Admin can sees their own department only
-            req.query.where({
-                DEP: oEmp.DEP
-            });
-        }
+        //     // Admin can sees their own department only
+        //     req.query.where({
+        //         DEP: oEmp.DEP
+        //     });
+        // }
     });
 
     function getFilterValue(where, fieldName) {
@@ -3680,79 +3681,80 @@ module.exports = (srv) => {
         }
         removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
         removeFilterField(req.query.SELECT.where, 'USER_ID');
-        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
-            const oCurrentUser = await SELECT.one
-                .from('ZEMP_MASTER')
-                .where({ EMAIL: req.user.id });
-            // If we can find their department, apply it as a filter constraint
-            if (oCurrentUser && oCurrentUser.DEP) {
-                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
-                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                    req.query.SELECT.where = [
-                        '(', ...req.query.SELECT.where, ')',
-                        'and',
-                        ...oDeptFilter
-                    ];
-                } else {
-                    req.query.SELECT.where = oDeptFilter;
-                }
-            }
-            return;
-        }
+        // if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
+        //     const oCurrentUser = await SELECT.one
+        //         .from('ZEMP_MASTER')
+        //         .where({ EMAIL: req.user.id });
+        //     // If we can find their department, apply it as a filter constraint
+        //     if (oCurrentUser && oCurrentUser.DEP) {
+        //         const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
+        //         if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+        //             req.query.SELECT.where = [
+        //                 '(', ...req.query.SELECT.where, ')',
+        //                 'and',
+        //                 ...oDeptFilter
+        //             ];
+        //         } else {
+        //             req.query.SELECT.where = oDeptFilter;
+        //         }
+        //     }
+        //     return;
+        // }
         const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
-        if (oApproverData) {
-            let iCurrentSeq = 0;
-            if (oApproverData.GRADE) {
-                const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-                    LOW_VALUE: oApproverData.GRADE,
-                    VARIABLE_NAME: 'PERSONAL_GRADE'
-                });
-                if (oConfig && oConfig.SEQUENCE_NO) {
-                    iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
-                }
-            }
+        //commented out this one just in case later will need to filter by grade/department
+        // if (oApproverData) {
+        //     let iCurrentSeq = 0;
+        //     if (oApproverData.GRADE) {
+        //         const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+        //             LOW_VALUE: oApproverData.GRADE,
+        //             VARIABLE_NAME: 'PERSONAL_GRADE'
+        //         });
+        //         if (oConfig && oConfig.SEQUENCE_NO) {
+        //             iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
+        //         }
+        //     }
 
-            // Fetch all grade strings that match or exceed the current sequence rank
-            const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
-                VARIABLE_NAME: 'PERSONAL_GRADE',
-                SEQUENCE_NO: { '>=': iCurrentSeq }
-            });
+        //     // Fetch all grade strings that match or exceed the current sequence rank
+        //     const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
+        //         VARIABLE_NAME: 'PERSONAL_GRADE',
+        //         SEQUENCE_NO: { '>=': iCurrentSeq }
+        //     });
 
-            const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
+        //     const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
 
-            let oGradeFilter = [];
-            if (aAllowedGradeValues.length > 0) {
-                aAllowedGradeValues.forEach((sGrade, index) => {
-                    oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
-                    if (index < aAllowedGradeValues.length - 1) {
-                        oGradeFilter.push('or');
-                    }
-                });
-                if (aAllowedGradeValues.length > 1) {
-                    oGradeFilter = ['(', ...oGradeFilter, ')'];
-                }
-            } else {
-                oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
-            }
+        //     let oGradeFilter = [];
+        //     if (aAllowedGradeValues.length > 0) {
+        //         aAllowedGradeValues.forEach((sGrade, index) => {
+        //             oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
+        //             if (index < aAllowedGradeValues.length - 1) {
+        //                 oGradeFilter.push('or');
+        //             }
+        //         });
+        //         if (aAllowedGradeValues.length > 1) {
+        //             oGradeFilter = ['(', ...oGradeFilter, ')'];
+        //         }
+        //     } else {
+        //         oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
+        //     }
 
-            const oTargetFilters = [
-                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-                'and',
-                ...oGradeFilter,
-                'and',
-                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-            ];
+        //     const oTargetFilters = [
+        //         { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
+        //         'and',
+        //         ...oGradeFilter,
+        //         'and',
+        //         { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
+        //     ];
 
-            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                req.query.SELECT.where = [
-                    '(', ...req.query.SELECT.where, ')',
-                    'and',
-                    '(', ...oTargetFilters, ')'
-                ];
-            } else {
-                req.query.SELECT.where = oTargetFilters;
-            }
-        }
+        //     if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+        //         req.query.SELECT.where = [
+        //             '(', ...req.query.SELECT.where, ')',
+        //             'and',
+        //             '(', ...oTargetFilters, ')'
+        //         ];
+        //     } else {
+        //         req.query.SELECT.where = oTargetFilters;
+        //     }
+        // }
     });
 
     const { ZNUM_RANGE, ZSUBSTITUTION_RULES_CONFIG } = srv.entities;
@@ -3824,49 +3826,49 @@ module.exports = (srv) => {
             SELECT.one.from('ZEMP_MASTER').where({ EEID: SUBSTITUTE_ID })
         ]);
 
-        if (!oApprover || !oSubstitute) return;
-        // Validate matching Department (DEP) 
-        if (oApprover.DEP !== oSubstitute.DEP) {
-            return req.error({
-                code: 'INVALID_SUBSTITUTE_COMBINATION',
-                message: `The substitute must belong to the same department (${oApprover.DEP})`,
-                target: 'SUBSTITUTE_ID', // Turns the Substitute ID field border red
-                status: 400
-            });
-        }
+        // if (!oApprover || !oSubstitute) return;
+        // // Validate matching Department (DEP) 
+        // if (oApprover.DEP !== oSubstitute.DEP) {
+        //     return req.error({
+        //         code: 'INVALID_SUBSTITUTE_COMBINATION',
+        //         message: `The substitute must belong to the same department (${oApprover.DEP})`,
+        //         target: 'SUBSTITUTE_ID', // Turns the Substitute ID field border red
+        //         status: 400
+        //     });
+        // }
 
-        // 2. Validate matching Grade Hierarchy Level (Same or Greater Grade)
-        let iApproverSeq = 0;
-        let iSubstituteSeq = 0;
-        // Fetch sequence ranking config for Approver
-        if (oApprover.GRADE) {
-            const oApproverConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-                LOW_VALUE: oApprover.GRADE,
-                VARIABLE_NAME: 'PERSONAL_GRADE'
-            });
-            if (oApproverConfig && oApproverConfig.SEQUENCE_NO) {
-                iApproverSeq = parseInt(oApproverConfig.SEQUENCE_NO, 10);
-            }
-        }
-        // Fetch sequence ranking config for Substitute
-        if (oSubstitute.GRADE) {
-            const oSubstituteConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-                LOW_VALUE: oSubstitute.GRADE,
-                VARIABLE_NAME: 'PERSONAL_GRADE'
-            });
-            if (oSubstituteConfig && oSubstituteConfig.SEQUENCE_NO) {
-                iSubstituteSeq = parseInt(oSubstituteConfig.SEQUENCE_NO, 10);
-            }
-        }
-        // Throw error if the substitute's grade sequence number is lower than the approver's
-        if (iSubstituteSeq < iApproverSeq) {
-            return req.error({
-                code: 'INVALID_GRADE_LEVEL',
-                message: `The selected substitute's grade (${oSubstitute.GRADE || 'None'}) must be equal to or higher than the employee's grade (${oApprover.GRADE || 'None'})`,
-                target: 'SUBSTITUTE_ID',
-                status: 400
-            });
-        }
+        // // 2. Validate matching Grade Hierarchy Level (Same or Greater Grade)
+        // let iApproverSeq = 0;
+        // let iSubstituteSeq = 0;
+        // // Fetch sequence ranking config for Approver
+        // if (oApprover.GRADE) {
+        //     const oApproverConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+        //         LOW_VALUE: oApprover.GRADE,
+        //         VARIABLE_NAME: 'PERSONAL_GRADE'
+        //     });
+        //     if (oApproverConfig && oApproverConfig.SEQUENCE_NO) {
+        //         iApproverSeq = parseInt(oApproverConfig.SEQUENCE_NO, 10);
+        //     }
+        // }
+        // // Fetch sequence ranking config for Substitute
+        // if (oSubstitute.GRADE) {
+        //     const oSubstituteConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+        //         LOW_VALUE: oSubstitute.GRADE,
+        //         VARIABLE_NAME: 'PERSONAL_GRADE'
+        //     });
+        //     if (oSubstituteConfig && oSubstituteConfig.SEQUENCE_NO) {
+        //         iSubstituteSeq = parseInt(oSubstituteConfig.SEQUENCE_NO, 10);
+        //     }
+        // }
+        // // Throw error if the substitute's grade sequence number is lower than the approver's
+        // if (iSubstituteSeq < iApproverSeq) {
+        //     return req.error({
+        //         code: 'INVALID_GRADE_LEVEL',
+        //         message: `The selected substitute's grade (${oSubstitute.GRADE || 'None'}) must be equal to or higher than the employee's grade (${oApprover.GRADE || 'None'})`,
+        //         target: 'SUBSTITUTE_ID',
+        //         status: 400
+        //     });
+        // }
 
         const [oActiveOverlap, oDraftOverlap] = await Promise.all([
             // A. Check finalized records in the active table
@@ -4366,6 +4368,44 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+     srv.on("checkSubstitutionOverlap", async (req) => {
+
+        const {USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,SUBSTITUTE_RULE_ID} = req.data;
+        const tx = cds.tx(req);
+        const aRules = await tx.run(
+            SELECT.from("ZSUBSTITUTION_RULES")
+                .where({
+                    USER_ID: USER_ID
+                })
+        );
+
+        const dNewFrom = new Date(VALID_FROM);
+        const dNewTo = new Date(VALID_TO);
+
+        for (const oRule of aRules) {
+
+            if (
+                SUBSTITUTE_RULE_ID &&
+                oRule.SUBSTITUTE_RULE_ID === SUBSTITUTE_RULE_ID
+            ) {
+                continue;
+            }
+
+            const dOldFrom = new Date(oRule.VALID_FROM);
+            const dOldTo = new Date(oRule.VALID_TO);
+
+            const bOverlap =
+                dOldTo >= dNewFrom &&
+                dOldFrom <= dNewTo;
+
+            if (bOverlap) {
+                return true;
+            }
+        }
+
+        return false;
     });
 
 }
