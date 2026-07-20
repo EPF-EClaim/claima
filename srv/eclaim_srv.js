@@ -2943,7 +2943,7 @@ module.exports = (srv) => {
         const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
         if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
 
-        // All entities used here are exposed by THIS service — single consistent model
+// All entities used here are exposed by THIS service — single consistent model
         const {
             ZEMP_APPROVER_CLAIM_DETAILS,
             ZEMP_APPROVER_REQUEST_DETAILS,
@@ -2955,8 +2955,16 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
         const aLogsToInsert = [];
-
+        const aPendingEmailsToAsyncSend = [];
         try {
+            // Fetch Substitute info ONCE upfront
+            const oSubstitute = await tx.run(
+                SELECT.one.from('ZEMP_MASTER')
+                    .where({ EEID: SUBSTITUTE_ID })
+                    .columns('EMAIL', 'NAME')
+            );
+            const ibaseTime = new Date().getTime();
+            let ilogIndexCounter = 0;
             // =======================================================================
             // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
             // =======================================================================
@@ -2980,25 +2988,22 @@ module.exports = (srv) => {
 
                 aMatchingClaims.forEach(claim => {
                     aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: claim.CLAIM_ID,
+                        // Stagger milliseconds to prevent primary key collisions on TIMESTAMP
+                        TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                        RECORD_ID: `${claim.CLAIM_ID}_${claim.LEVEL}`, // Combined ID + Level for general log table
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
                         MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
                     });
                 });
-
-                const oSubstitute = await tx.run(
-                    SELECT.one.from('ZEMP_MASTER')
-                        .where({ EEID: SUBSTITUTE_ID })
-                        .columns('EMAIL', 'NAME')
-                );
-
+                // Queue pending claim emails for parallel background execution
                 const aPendingClaims = aMatchingClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
-                for (const claim of aPendingClaims) {
-                    try {
-                        await sendEmailInternal({
+                aPendingClaims.forEach(claim => {
+                    aPendingEmailsToAsyncSend.push({
+                        type: Constant.EmailType.CLAIM,
+                        recordId: claim.CLAIM_ID,
+                        payload: {
                             ApproverName: oSubstitute.NAME,
                             ClaimID: claim.CLAIM_ID,
                             Action: "Pending Approval (Delegated)",
@@ -3007,21 +3012,10 @@ module.exports = (srv) => {
                             SubmissionDate: claim.SUBMITTED_DATE,
                             ClaimantName: claim.EMPLOYEE_NAME,
                             RecipientName: oSubstitute.NAME
-                        });
-                    } catch (oEmailError) {
-                        console.error(`Email failed for Claim ${claim.CLAIM_ID}`, oEmailError);
-                        aLogsToInsert.push({
-                            TIMESTAMP: new Date(),
-                            RECORD_ID: claim.CLAIM_ID,
-                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                            MESSAGE_TYPE: 'W',
-                            STATUS_CODE: '207',
-                            MESSAGE: `Claim ${claim.CLAIM_ID} updated, but delegation notification email to ${SUBSTITUTE_ID} failed.`
-                        });
-                    }
-                }
+                        }
+                    });
+                });
             }
-
             // =======================================================================
             // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
             // =======================================================================
@@ -3030,11 +3024,11 @@ module.exports = (srv) => {
                 SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                     .where({ APPROVER_ID: USER_ID })
                     .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
-                    .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
+                    .and('REQUEST_DATE >=', VALID_FROM)
                     .and('REQUEST_DATE <=', VALID_TO)
                     .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
             );
-
+            
             if (aMatchingPreApprovals.length > 0) {
                 const aPreAppUpdates = aMatchingPreApprovals.map(preApp =>
                     UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
@@ -3045,25 +3039,21 @@ module.exports = (srv) => {
 
                 aMatchingPreApprovals.forEach(preApp => {
                     aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: preApp.PREAPPROVAL_ID,
+                        TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                        RECORD_ID: `${preApp.PREAPPROVAL_ID}_${preApp.LEVEL}`,
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
                         MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
                     });
                 });
-
-                const oSubstitute = await tx.run(
-                    SELECT.one.from('ZEMP_MASTER')
-                        .where({ EEID: SUBSTITUTE_ID })
-                        .columns('EMAIL', 'NAME')
-                );
-
+                // Queue pending pre-approval emails for parallel background execution
                 const aPendingPreApprovals = aMatchingPreApprovals.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
-                for (const preApp of aPendingPreApprovals) {
-                    try {
-                        await sendEmailInternal({
+                aPendingPreApprovals.forEach(preApp => {
+                    aPendingEmailsToAsyncSend.push({
+                        type: Constant.EmailType.PREAPPROVAL,
+                        recordId: preApp.PREAPPROVAL_ID,
+                        payload: {
                             ApproverName: oSubstitute.NAME,
                             ClaimID: preApp.PREAPPROVAL_ID,
                             Action: "Pending Pre-Approval (Delegated)",
@@ -3072,25 +3062,41 @@ module.exports = (srv) => {
                             SubmissionDate: preApp.REQUEST_DATE,
                             ClaimantName: preApp.EMPLOYEE_NAME,
                             RecipientName: oSubstitute.NAME
-                        });
-                    } catch (oEmailError) {
-                        console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
-                        aLogsToInsert.push({
-                            TIMESTAMP: new Date(),
-                            RECORD_ID: preApp.PREAPPROVAL_ID,
-                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                            MESSAGE_TYPE: 'W',
-                            STATUS_CODE: '207',
-                            MESSAGE: `Pre-Approval ${preApp.PREAPPROVAL_ID} updated, but delegation notification email to ${SUBSTITUTE_ID} failed.`
-                        });
-                    }
-                }
+                        }
+                    });
+                });
             }
-
+            // Write batch success logs to DB first
             if (aLogsToInsert.length > 0 && ZLOG) {
                 await tx.run(INSERT.into(ZLOG).entries(aLogsToInsert));
             }
-
+            // Fire emails concurrently in parallel using Promise.allSettled
+            if (aPendingEmailsToAsyncSend.length > 0) {
+                const aEmailResults = await Promise.allSettled(
+                    aPendingEmailsToAsyncSend.map(item => sendEmailInternal(item.payload))
+                );
+                // Log warnings for any emails that failed without blocking response
+                const aFailedEmailLogs = [];
+                aEmailResults.forEach((res, idx) => {
+                    if (res.status === Constant.EmailStatus.REJECTED) {
+                        const item = aPendingEmailsToAsyncSend[idx];
+                        console.error(`Email failed for ${item.type} ${item.recordId}:`, res.reason);
+                        aFailedEmailLogs.push({
+                            TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                            RECORD_ID: item.recordId,
+                            PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                            MESSAGE_TYPE: 'W',
+                            STATUS_CODE: '207',
+                            MESSAGE: `${item.type} ${item.recordId} updated, but delegation notification email to ${SUBSTITUTE_ID} failed.`
+                        });
+                    }
+                });
+                if (aFailedEmailLogs.length > 0 && ZLOG) {
+                    await cds.tx(async (oLogTx) => {
+                        await oLogTx.run(INSERT.into(ZLOG).entries(aFailedEmailLogs));
+                    });
+                }
+            }
         } catch (oError) {
             console.error("Substitution assignment log error:", oError);
             req.warn(500, `Substitution rule saved, but failed to update existing records: ${oError.message}`);
@@ -3151,7 +3157,7 @@ module.exports = (srv) => {
                     if (!oApprover || !oApproverNew) {
                         return req.error(400, "Master profile data missing for the selected employees.");
                     }
-                    
+
                     // A. Check matching Department (DEP)
                     // if (oApprover.DEP !== oApproverNew.DEP) {
                     //     return req.error(400, `The selected approver must belong to the same department (${oApprover.DEP}).`);
@@ -4164,7 +4170,7 @@ module.exports = (srv) => {
             ZAPPROVER_DETAILS_CLAIMS,
             ZEMP_APPROVER_REQUEST_DETAILS,
             ZAPPROVER_DETAILS_PREAPPROVAL,
-            ZLOG } = entities;        
+            ZLOG } = entities;
         const aLogsToInsert = [];
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
@@ -4351,7 +4357,7 @@ module.exports = (srv) => {
             console.log(">>> Extension detected. Processing new assignments...");
             // Pass the original validation start as oldDate to only look at the expanded window gap
             await handleNewAssignments(tx, srv.entities, {
-                sUserID: USER_ID, 
+                sUserID: USER_ID,
                 sSubstituteID: SUBSTITUTE_ID,
                 VALID_FROM: OLD_VALID_TO, // Start from the old limit to find new matching records
                 VALID_TO: NEW_VALID_TO, oCurrentUser
@@ -4359,7 +4365,7 @@ module.exports = (srv) => {
         } else if (NEW_VALID_TO < OLD_VALID_TO) {
             console.log(">>> Shortening detected. Processing de-delegations...");
             await handleDeDelegations(tx, srv.entities, {
-                sUserID: USER_ID, 
+                sUserID: USER_ID,
                 sSubstituteID: SUBSTITUTE_ID,
                 VALID_FROM: NEW_VALID_TO, // Look into items trapped between the new earlier limit...
                 VALID_TO: OLD_VALID_TO, // ...and the old higher limit
@@ -4370,7 +4376,7 @@ module.exports = (srv) => {
         return true;
     });
 
-     srv.on("checkSubstitutionOverlap", async (req) => {
+    srv.on("checkSubstitutionOverlap", async (req) => {
 
         const {USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,SUBSTITUTE_RULE_ID} = req.data;
         const tx = cds.tx(req);

@@ -523,6 +523,13 @@ const Constant = {
     },
     StatusCode: {       
         SUCCESS: "200"
+    },
+    EmailStatus: {
+        REJECTED: "rejected"
+    },
+    EmailType: {
+        CLAIM: "CLAIM",
+        PREAPPROVAL: "PREAPPROVAL"
     }
 
 };
