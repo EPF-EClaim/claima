@@ -18,8 +18,6 @@ sap.ui.define([
     onInit: function () {
       const oVM = new JSONModel({
         hasSelection: false,
-        todayDate: new Date(),
-        today: DateUtility.toYMD(new Date()), // yyyy-MM-dd in local time
         subValid: false,
         subInfo: "",
         isApprover: false,
@@ -50,7 +48,6 @@ sap.ui.define([
         this._applyActiveFilter();
       });
 
-      this._scheduleMidnightRefresh();
     },
 
     /** Applies filter: VALID_TO >= vm>/today */
@@ -60,42 +57,17 @@ sap.ui.define([
       if (!oBinding) return;
 
       const sToday = this.getView().getModel("vm").getProperty("/today");
+      const userModelData = this._oSessionModel.getData();
+      const sUserId = userModelData.userId;
 
-      const oFilter = new Filter({
-        path: "VALID_TO",
-        operator: FilterOperator.GE,
-        value1: sToday
-      });
+      const oFilter = new Filter(
+        "USER_ID",
+        FilterOperator.EQ,
+        sUserId
+      );
 
       oBinding.filter([oFilter]);
-    },
 
-    /** Schedules a refresh exactly at the next local midnight, then every 24h */
-    _scheduleMidnightRefresh: function () {
-      const now = new Date();
-      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const msUntilMidnight = nextMidnight.getTime() - now.getTime();
-
-      this._midnightTimer && clearTimeout(this._midnightTimer);
-      this._midnightTimer = setTimeout(() => {
-        const vm = this.getView().getModel("vm");
-        vm.setProperty("/todayDate", new Date());           // Date object
-        vm.setProperty("/today", DateUtility.toYMD(new Date())); // 'yyyy-MM-dd' string
-        this._applyActiveFilter();
-
-        this._midnightInterval && clearInterval(this._midnightInterval);
-        this._midnightInterval = setInterval(() => {
-          const vm2 = this.getView().getModel("vm");
-          vm2.setProperty("/todayDate", new Date());
-          vm2.setProperty("/today", DateUtility.toYMD(new Date()));
-          this._applyActiveFilter();
-        }, 24 * 60 * 60 * 1000);
-      }, msUntilMidnight);
-    },
-
-    onExit: function () {
-      this._midnightTimer && clearTimeout(this._midnightTimer);
-      this._midnightInterval && clearInterval(this._midnightInterval);
     },
 
     // ============================================================
@@ -128,9 +100,7 @@ sap.ui.define([
       const oDRS = this.byId("drs");
       const dStart = oDRS.getDateValue();
       const dEnd   = oDRS.getSecondDateValue();
-      const userModelData = this._oSessionModel.getData();
-			const emp_data = await this._getEmpIdDetail(userModelData.email);
-      const sUserId = emp_data.eeid;
+      const sUserId = this._oSessionModel.getData().userId;
 
       const oResult = await this._getCurrentSubNumber("NR04");
       const sSubstituteRulesId = oResult && oResult.subNo;
