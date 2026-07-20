@@ -2919,8 +2919,8 @@ module.exports = (srv) => {
                     .where({ EEID: SUBSTITUTE_ID })
                     .columns('EMAIL', 'NAME')
             );
-            const baseTime = new Date().getTime();
-            let logIndexCounter = 0;
+            const ibaseTime = new Date().getTime();
+            let ilogIndexCounter = 0;
             // =======================================================================
             // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
             // =======================================================================
@@ -2945,7 +2945,7 @@ module.exports = (srv) => {
                 aMatchingClaims.forEach(claim => {
                     aLogsToInsert.push({
                         // Stagger milliseconds to prevent primary key collisions on TIMESTAMP
-                        TIMESTAMP: new Date(baseTime + (logIndexCounter++)),
+                        TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
                         RECORD_ID: `${claim.CLAIM_ID}_${claim.LEVEL}`, // Combined ID + Level for general log table
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
@@ -2957,7 +2957,7 @@ module.exports = (srv) => {
                 const aPendingClaims = aMatchingClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
                 aPendingClaims.forEach(claim => {
                     aPendingEmailsToAsyncSend.push({
-                        type: 'CLAIM',
+                        type: Constant.EmailType.CLAIM,
                         recordId: claim.CLAIM_ID,
                         payload: {
                             ApproverName: oSubstitute.NAME,
@@ -2992,10 +2992,10 @@ module.exports = (srv) => {
                         .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: USER_ID })
                 );
                 await Promise.all(aPreAppUpdates.map(query => tx.run(query)));
-                
+
                 aMatchingPreApprovals.forEach(preApp => {
                     aLogsToInsert.push({
-                        TIMESTAMP: new Date(baseTime + (logIndexCounter++)),
+                        TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
                         RECORD_ID: `${preApp.PREAPPROVAL_ID}_${preApp.LEVEL}`,
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
@@ -3007,7 +3007,7 @@ module.exports = (srv) => {
                 const aPendingPreApprovals = aMatchingPreApprovals.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
                 aPendingPreApprovals.forEach(preApp => {
                     aPendingEmailsToAsyncSend.push({
-                        type: 'PREAPPROVAL',
+                        type: Constant.EmailType.PREAPPROVAL,
                         recordId: preApp.PREAPPROVAL_ID,
                         payload: {
                             ApproverName: oSubstitute.NAME,
@@ -3034,11 +3034,11 @@ module.exports = (srv) => {
                 // Log warnings for any emails that failed without blocking response
                 const aFailedEmailLogs = [];
                 aEmailResults.forEach((res, idx) => {
-                    if (res.status === 'rejected') {
+                    if (res.status === Constant.EmailStatus.REJECTED) {
                         const item = aPendingEmailsToAsyncSend[idx];
                         console.error(`Email failed for ${item.type} ${item.recordId}:`, res.reason);
                         aFailedEmailLogs.push({
-                            TIMESTAMP: new Date(baseTime + (logIndexCounter++)),
+                            TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
                             RECORD_ID: item.recordId,
                             PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                             MESSAGE_TYPE: 'W',
