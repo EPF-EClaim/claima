@@ -5,9 +5,9 @@ sap.ui.define([
   "sap/m/MessageBox",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter",
-  "claima/utils/ValueHelpDelegate_MngeSub"
-], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, Sorter, ValueHelpDelegate_MngeSub ) {
+  "claima/utils/DateUtility",
+  "claima/utils/Utility"
+], function (Controller, JSONModel, MessageToast, MessageBox, Filter, FilterOperator, DateUtility, Utility) {
   "use strict";
 
   return Controller.extend("claima.controller.ManageSub", {
@@ -19,12 +19,20 @@ sap.ui.define([
       const oVM = new JSONModel({
         hasSelection: false,
         todayDate: new Date(),
-        today: this._fmtYMD(new Date()), // yyyy-MM-dd in local time
+        today: DateUtility.toYMD(new Date()), // yyyy-MM-dd in local time
         subValid: false,
         subInfo: "",
         isApprover: false,
-        canDelete: false,
-        subInput: ""
+        canEdit: false,
+        subInput: "",
+        editRule: {
+          SUBSTITUTE_RULE_ID: "",
+          USER_ID: "",
+          SUBSTITUTE_ID: "",
+          VALID_FROM: "",
+          VALID_TO: ""
+        }
+
       });
       this.getView().setModel(oVM, "vm");
       this._oSessionModel 	= this.getOwnerComponent().getModel("session");
@@ -35,11 +43,7 @@ sap.ui.define([
       const ctx = oModel.bindContext("/getUserType()");
       var isApprover = this._oRoleModel.getProperty("/isApprover");
         oVM.setProperty("/isApprover", isApprover);
-        // Recompute delete visibility with current selection state
-        oVM.setProperty(
-          "/canDelete",
-          oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection")
-        );
+        oVM.setProperty("/canEdit",oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection"));
 
       const oTable = this.byId("tblSubs");
       oTable.attachEventOnce("updateFinished", () => {
@@ -47,14 +51,6 @@ sap.ui.define([
       });
 
       this._scheduleMidnightRefresh();
-    },
-
-    /** Format local date as yyyy-MM-dd  */
-    _fmtYMD: function (d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
     },
 
     /** Applies filter: VALID_TO >= vm>/today */
@@ -84,14 +80,14 @@ sap.ui.define([
       this._midnightTimer = setTimeout(() => {
         const vm = this.getView().getModel("vm");
         vm.setProperty("/todayDate", new Date());           // Date object
-        vm.setProperty("/today", this._fmtYMD(new Date())); // 'yyyy-MM-dd' string
+        vm.setProperty("/today", DateUtility.toYMD(new Date())); // 'yyyy-MM-dd' string
         this._applyActiveFilter();
 
         this._midnightInterval && clearInterval(this._midnightInterval);
         this._midnightInterval = setInterval(() => {
           const vm2 = this.getView().getModel("vm");
           vm2.setProperty("/todayDate", new Date());
-          vm2.setProperty("/today", this._fmtYMD(new Date()));
+          vm2.setProperty("/today", DateUtility.toYMD(new Date()));
           this._applyActiveFilter();
         }, 24 * 60 * 60 * 1000);
       }, msUntilMidnight);
@@ -122,8 +118,6 @@ sap.ui.define([
       const oVM = this.getView().getModel("vm");
       oVM.setProperty("/subValid", false);
       oVM.setProperty("/subInfo", "");
-      this.byId("inpUser").setValueState("None");
-      this.byId("inpUser").setValueStateText("");
     },
 
     // ============================================================
@@ -142,58 +136,58 @@ sap.ui.define([
       const sSubstituteRulesId = oResult && oResult.subNo;
 
       if (!sSubstituteId || !dStart || !dEnd) {
-        MessageToast.show(this._i18n("pleaseProvideAll"));
+        MessageToast.show(Utility.getText("pleaseProvideAll"));
         return;
       }
       if (dEnd < dStart) {
-        MessageToast.show(this._i18n("endBeforeStart"));
+        MessageToast.show(Utility.getText("endBeforeStart"));
         return;
       }
 
       let oEmp;
       try {
-        //oEmp = await this._getEmployeeByEEID(sSubstituteId);
         oEmp = await this._getEmployeeByIdOrEmail(sSubstituteId);
       } catch (e) {
-        MessageBox.error(this._i18n("backendUnavailable") || "Unable to validate employee at the moment.");
+        MessageBox.error(Utility.getText("backendUnavailable"));
         return;
       }
       if (!oEmp) {
-        const oInp = this.byId("inpUser");
-        oInp.setValueState("Error");
-        oInp.setValueStateText(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
-        MessageBox.error(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
+        MessageBox.error(Utility.getText("empNotFound"));
         return;
-      } else {
-        this.byId("inpUser").setValueState("Success");
-        this.byId("inpUser").setValueStateText(`Matched: ${oEmp.EEID} — ${oEmp.EMAIL || ""}`);
       }
 
+      // BACKEND OVERLAP CHECK
       try {
-          const bOverlap = await this._hasOverlappingRule(sUserId, oEmp.EEID, dStart, dEnd);
-          if (bOverlap) {
-            MessageBox.error(this._i18n("overlappingRuleSameSubOnly") || "A substitution already exists for the same user & substitute within the selected period.");
-            return;
-          }
-        } catch (e) {
-          MessageBox.error(this._i18n("backendUnavailable") || "Failed to check overlap. Please try again.");
+          const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", sUserId);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dStart));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dEnd));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", "");
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
+        if (bOverlap) {
+          MessageBox.error(Utility.getText("overlappingRuleSameSubOnly") );
           return;
         }
 
-      // Map UI -> backend fields
-      const toISO = (d) => {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-      };
+         } catch (e) {
+        return;
+      }
       
       const oPayload = {
         SUBSTITUTE_RULE_ID: sSubstituteRulesId,
         USER_ID: sUserId,   
         SUBSTITUTE_ID: oEmp.EEID,   
-        VALID_FROM: toISO(dStart),
-        VALID_TO:   toISO(dEnd)
+        VALID_FROM: DateUtility.toYMD(dStart),
+        VALID_TO:DateUtility.toYMD(dEnd)
       };
 
       const oTable = this.byId("tblSubs");
@@ -205,10 +199,9 @@ sap.ui.define([
         await oCreatedCtx.created();
 
         this.onCancel();
-        MessageToast.show(this._i18n("created"));
+        MessageToast.show(Utility.getText("created"));
       } catch (err) {
         MessageBox.error(err.message || "Create failed");
-        this.byId("dlgAdd").setBusy(false);
       } finally {
         if (oResult) {
           this._updateCurrentReqNumber(oResult.current);
@@ -278,126 +271,145 @@ sap.ui.define([
 		},
 
     // ============================================================
-    // CHECK IF THERE'S AN OVERLAPPING RULE FOR USER ID + SUBSTITUTE
-    // ============================================================
-      
-    _hasOverlappingRule: async function (sUserId, sSubstituteId, dStart, dEnd) {
-      if (!sUserId || !sSubstituteId || !dStart || !dEnd) return false;
-
-      const toISO = (d) => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
-
-      const sStart = toISO(dStart);
-      const sEnd   = toISO(dEnd);
-
-      const oModel = this.getOwnerComponent().getModel();
-
-      let sEntitySetPath = "/ZSUBSTITUTION_RULES";
-      const oTable = this.byId("tblSubs");
-      const oBinding = oTable && oTable.getBinding && oTable.getBinding("items");
-      if (oBinding && typeof oBinding.getPath === "function" && oBinding.getPath()) {
-        sEntitySetPath = oBinding.getPath();
-      }
-
-      // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
-      const aFilters = [
-        new Filter("USER_ID", FilterOperator.EQ, sUserId),
-        new Filter("VALID_TO", FilterOperator.GE, sStart),
-        new Filter("VALID_FROM", FilterOperator.LE, sEnd)
-      ];
-
-      const oList = oModel.bindList(
-        sEntitySetPath,
-        null,
-        null,
-        aFilters,
-        { $select: "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO" }
-      );
-
-      try {
-        const aCtx = await oList.requestContexts(0, 1);
-        if (!aCtx.length) return false;
-
-        // Extra local check to be robust to any server-side date normalization
-        const rec = aCtx[0].getObject();
-        const parseYMDLocal = (s) => {
-          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-          return m ? new Date(+m[1], +m[2] - 1, +m[3]) : (isNaN(new Date(s)) ? null : new Date(s));
-        };
-        const exFrom = parseYMDLocal(rec.VALID_FROM);
-        const exTo   = parseYMDLocal(rec.VALID_TO);
-        if (!exFrom || !exTo) return true;
-
-        const dA1 = new Date(exFrom.getFullYear(), exFrom.getMonth(), exFrom.getDate());
-        const dA2 = new Date(exTo.getFullYear(),   exTo.getMonth(),   exTo.getDate());
-        const dB1 = new Date(dStart.getFullYear(), dStart.getMonth(), dStart.getDate());
-        const dB2 = new Date(dEnd.getFullYear(),   dEnd.getMonth(),   dEnd.getDate());
-
-        return (dA2 >= dB1) && (dA1 <= dB2); // inclusive overlap
-      } catch (e) {
-        console.error("Overlap check failed", e);
-        // Fail-closed so we don't permit duplicates silently
-        throw e;
-      }
-    },
-
-    // ============================================================
-    // SELECTION + DELETE (OData V4)
+    // SELECTION + EDIT (OData V4)
     // ============================================================
     onSelectionChange: function (oEvent) {
       const vm = this.getView().getModel("vm");
       const bHasSelection = !!oEvent.getSource().getSelectedItem();
       vm.setProperty("/hasSelection", bHasSelection);
-        vm.setProperty(
-          "/canDelete",
-          vm.getProperty("/isApprover") && bHasSelection
-        );
+      vm.setProperty("/canEdit",vm.getProperty("/isApprover") && bHasSelection);
       },
 
-    onDelete: function () {
+    onEdit: function () {
+
       const oTable = this.byId("tblSubs");
       const oItem = oTable.getSelectedItem();
       if (!oItem) {
-        MessageToast.show(this._i18n("nothingSelected"));
+        MessageToast.show(Utility.getText("msg_mngesub_no_select"));
         return;
       }
-      MessageBox.confirm(
-        this._i18n("confirmDeleteMsg"),
-        {
-          title: this._i18n("confirmDeleteTitle"),
-          actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-          emphasizedAction: MessageBox.Action.OK,
-          onClose: async (sAction) => {
-            if (sAction === MessageBox.Action.OK) {
-              try {
-                const oCtx = oItem.getBindingContext(); // V4 context
-                await oCtx.delete();
-                this.getView().getModel("vm").setProperty("/hasSelection", false);
-                MessageToast.show(this._i18n("deleted"));
-              } catch (e) {
-                MessageBox.error(e.message || "Delete failed");
-              }
-            }
-          }
-        }
-      );
+
+      const oData = oItem.getBindingContext().getObject();
+      const oVM = this.getView().getModel("vm");
+
+      oVM.setProperty("/editRule", {
+        SUBSTITUTE_RULE_ID: oData.SUBSTITUTE_RULE_ID,
+        USER_ID: oData.USER_ID,
+        SUBSTITUTE_ID: oData.SUBSTITUTE_ID,
+        VALID_FROM: oData.VALID_FROM,
+        VALID_TO: oData.VALID_TO
+      });
+
+      // Restrict VALID_TO: cannot select before VALID_FROM
+      const dValidFrom = DateUtility.toDate(oData.VALID_FROM);
+
+      this.byId("dpEditValidTo").setMinDate(dValidFrom);
+      this.byId("dlgEdit").open();
     },
+
+    onCancelEdit: function () {
+      this.byId("dlgEdit").close();
+
+      const oVM = this.getView().getModel("vm");
+      oVM.setProperty("/editRule", {
+        SUBSTITUTE_RULE_ID: "",
+        USER_ID: "",
+        SUBSTITUTE_ID: "",
+        VALID_FROM: "",
+        VALID_TO: ""
+      });
+    },
+
+    onSaveEdit: async function () {
+      const oVM = this.getView().getModel("vm");
+      const oEdit = oVM.getProperty("/editRule");
+
+      const oTable = this.byId("tblSubs");
+      const oItem = oTable.getSelectedItem();
+
+      if (!oItem) {
+        MessageToast.show(Utility.getText("msg_mngesub_no_select"));
+        return;
+      }
+
+      const dValidFrom = DateUtility.toDate(oEdit.VALID_FROM);
+      const dValidTo = DateUtility.toDate(oEdit.VALID_TO);
+
+      if (dValidTo < dValidFrom) {
+        MessageBox.error(Utility.getText("msg_mngesub_valid_to_before_from") );
+        return;
+      }
+
+      try {
+        this.byId("dlgEdit").setBusy(true);
+
+        // Overlap check during edit
+        const oOverlapAction = this.getOwnerComponent()
+          .getModel()
+          .bindContext("/checkSubstitutionOverlap(...)");
+
+        oOverlapAction.setParameter("USER_ID", oEdit.USER_ID);
+        oOverlapAction.setParameter("VALID_FROM", DateUtility.toYMD(dValidFrom));
+        oOverlapAction.setParameter("VALID_TO", DateUtility.toYMD(dValidTo));
+        oOverlapAction.setParameter("SUBSTITUTE_RULE_ID", oEdit.SUBSTITUTE_RULE_ID);
+
+        await oOverlapAction.execute("$auto");
+
+        const bOverlap = oOverlapAction
+          .getBoundContext()
+          .getObject()
+          .value;
+
+        if (bOverlap) {
+          MessageBox.error(Utility.getText("msg_mngesub_overlapping"));
+          return;
+        }
+
+        const oOldData =
+          oItem.getBindingContext().getObject();
+
+        const oAction =
+          this.getOwnerComponent()
+            .getModel()
+            .bindContext("/updateSubstitutionValidTo(...)");
+
+        oAction.setParameter("SUBSTITUTE_RULE_ID",oOldData.SUBSTITUTE_RULE_ID);
+        oAction.setParameter("USER_ID",oOldData.USER_ID);
+        oAction.setParameter("SUBSTITUTE_ID",oOldData.SUBSTITUTE_ID);
+        oAction.setParameter("VALID_FROM",oOldData.VALID_FROM);
+        oAction.setParameter("OLD_VALID_TO",oOldData.VALID_TO);
+        oAction.setParameter("NEW_VALID_TO",DateUtility.toYMD(dValidTo));
+
+        await oAction.execute("$auto");
+
+        const oBinding = oTable.getBinding("items");
+
+        if (oBinding) {
+          oBinding.refresh();
+        }
+
+        MessageToast.show(
+          Utility.getText("msg_mngesub_update_success")
+        );
+
+        this.onCancelEdit();
+
+      } catch (e) {
+        MessageBox.error(e?.message || Utility.getText("msg_update_failed"));
+      } finally {
+        this.byId("dlgEdit").setBusy(false);
+      }
+    },
+
 
     // ============================================================
     // LIVE VALIDATION: EEID -> show eeid + email
     // ============================================================
     onSubstituteIdChange: async function (oEvent) {
         const sVal = oEvent.getParameter("value").trim();
-        const oInp = oEvent.getSource();
         const oVM  = this.getView().getModel("vm");
 
         if (!sVal) {
-          oInp.setValueState("None");
-          oInp.setValueStateText("");
           oVM.setProperty("/subValid", false);
           oVM.setProperty("/subInfo", "");
           return;
@@ -487,31 +499,6 @@ sap.ui.define([
       return "";
     },
 
-    // ============================================================
-    // OData helper: ZEMP_MASTER by EEID with $select
-    // ============================================================
-    /** Lookup employee by EEID (projects only eeid,email) */
-    _getEmployeeByEEID: async function (sEEID) {
-      if (!sEEID) return null;
-
-      const oMainModel = this.getOwnerComponent().getModel(); // OData V4
-      const oList = oMainModel.bindList(
-        "/ZEMP_MASTER",
-        null,                  // context
-        null,                  // sorters
-        [ new Filter("EEID",FilterOperator.EQ, sEEID) ],
-        { $select: "EEID,EMAIL,NAME" } // ← fetch eeid,email and name 
-      );
-
-      try {
-        const aCtx = await oList.requestContexts(0, 1);
-        return aCtx.length ? aCtx[0].getObject() : null; // { eeid, email }
-      } catch (e) {
-        console.error("ZEMP_MASTER lookup failed", e);
-        throw e;
-      }
-    },
-
         /**Lookup employee by EEID or EMAIL.*/
     _getEmployeeByIdOrEmail: async function (sValue) {
       if (!sValue) return null;
@@ -571,8 +558,5 @@ sap.ui.define([
       }
     },
 
-    _i18n: function (sKey) {
-      return this.getView().getModel("i18n").getResourceBundle().getText(sKey);
-    }
   });
 });

@@ -13,7 +13,7 @@
                 items="{
                     path: '/ZEMP_PENDING_LIST_APPROVER',
                     parameters: {
-                        $select: 'ID,LEVEL,STATUS,APPROVER_ID,APPROVER_NAME,APPROVER_DEP,APPROVER_GRADE,GRADE_SEQUENCE',
+                        $select: 'ID,LEVEL,STATUS,APPROVER_ID,APPROVER_NAME,APPROVER_DEP,APPROVER_GRADE,GRADE_SEQUENCE,REQUEST_DATE',
                             $$updateGroupId: 'manualGroup'
                     }
                 }"
