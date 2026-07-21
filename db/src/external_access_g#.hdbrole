@@ -26,7 +26,17 @@
         "name": "ECLAIM_ZOFFICE_LOCATION",
         "type": "TABLE",
         "privileges_with_grant_option": ["SELECT"]
-      }      
+      },
+      {
+        "name": "ECLAIM_ZOFFICE_DISTANCE",
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      },
+      {
+        "name": "ECLAIM_ZSTATE",
+        "type": "TABLE",
+        "privileges_with_grant_option": ["SELECT"]
+      }            
     ]
   }
 }
