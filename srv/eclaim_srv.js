@@ -2943,7 +2943,7 @@ module.exports = (srv) => {
         const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO } = data;
         if (!USER_ID || !SUBSTITUTE_ID || !VALID_FROM || !VALID_TO) return;
 
-// All entities used here are exposed by THIS service — single consistent model
+        // All entities used here are exposed by THIS service — single consistent model
         const {
             ZEMP_APPROVER_CLAIM_DETAILS,
             ZEMP_APPROVER_REQUEST_DETAILS,
@@ -3028,7 +3028,7 @@ module.exports = (srv) => {
                     .and('REQUEST_DATE <=', VALID_TO)
                     .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
             );
-            
+
             if (aMatchingPreApprovals.length > 0) {
                 const aPreAppUpdates = aMatchingPreApprovals.map(preApp =>
                     UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
@@ -4025,17 +4025,26 @@ module.exports = (srv) => {
 
     async function handleDeDelegations(tx, entities, params) {
         const { sUserID, sSubstituteID, VALID_FROM, VALID_TO, oCurrentUser } = params;
-        const { ZEMP_APPROVER_CLAIM_DETAILS,
+        const {
+            ZEMP_APPROVER_CLAIM_DETAILS,
             ZAPPROVER_DETAILS_CLAIMS,
             ZEMP_APPROVER_REQUEST_DETAILS,
             ZAPPROVER_DETAILS_PREAPPROVAL,
-            ZLOG } = entities;
+            ZLOG
+        } = entities;
         const aLogsToInsert = [];
-
+        const aPendingEmails = [];
+        const iBaseTime = new Date().getTime();
+        let iLogIndexCounter = 0;
+        // Fetch Substitute employee master info ONCE upfront
+        const oSubstitute = await tx.run(
+            SELECT.one.from('ZEMP_MASTER')
+                .where({ EEID: sSubstituteID })
+                .columns('EMAIL', 'NAME')
+        );
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
-        // =======================================================================        
-        // 1. Find Claims previously routed to substitute within the dropped window
+        // =======================================================================
         const aOrphanedClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
                 .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
@@ -4045,60 +4054,46 @@ module.exports = (srv) => {
                 .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
         );
         if (aOrphanedClaims.length > 0) {
-            // 2. Clear out the substitute assignment back to null
+            // Clear out substitute assignment back to null
             const aClaimClears = aOrphanedClaims.map(claim =>
                 UPDATE(ZAPPROVER_DETAILS_CLAIMS)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
                     .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(aClaimClears.map(query => tx.run(query)));
-            // 3. Log the removal action
+            // Log the removal action
             aOrphanedClaims.forEach(claim => {
                 aLogsToInsert.push({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: claim.CLAIM_ID,
+                    TIMESTAMP: new Date(iBaseTime + (iLogIndexCounter++)),
+                    RECORD_ID: `${claim.CLAIM_ID}_${claim.LEVEL}`,
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'W',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Claim ${claim.CLAIM_ID} removed from substitute ${sSubstituteID}.`
+                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} shortened substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) removed from substitute ${sSubstituteID}.`
                 });
             });
-            // 4. Fetch substitute metadata to inform them of the task revocation
-            const oSubstitute = await tx.run(
-                SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: sSubstituteID })
-                    .columns('EMAIL', 'NAME')
-            );
+            // Queue revoke notifications for pending claims
             const aPendingClaims = aOrphanedClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
-            for (const claim of aPendingClaims) {
-                try {
-                    await sendEmailInternal({
+            aPendingClaims.forEach(claim => {
+                aPendingEmails.push({
+                    type: Constant.EmailType.CLAIM,
+                    recordId: claim.CLAIM_ID,
+                    payload: {
                         ApproverName: oSubstitute.NAME,
                         ClaimID: claim.CLAIM_ID,
                         Action: "REVOKE",
                         EmailTitle: `Notification: Revoked Delegated Claim ${claim.CLAIM_ID}`,
                         ReceiverEmail: oSubstitute.EMAIL,
-                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                        SubmissionDate: new Date().toISOString().split('T')[0], // Today's date
                         ClaimantName: claim.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
-                    });
-                } catch (oEmailError) {
-                    console.error(`Removal email notification failed for Claim ${claim.CLAIM_ID}`, oEmailError);
-                    aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: claim.CLAIM_ID,
-                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                        MESSAGE_TYPE: 'W',
-                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
-                        MESSAGE: oEmailError?.message || "No Message"
-                    });
-                }
-            }
+                    }
+                });
+            });
         }
         // =======================================================================
         // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
         // =======================================================================
-        // 1. Find Pre-Approvals previously routed to substitute within the dropped window
         const aOrphanedRequests = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                 .where({ APPROVER_ID: sUserID, SUBSTITUTE_APPROVER_ID: sSubstituteID })
@@ -4108,74 +4103,99 @@ module.exports = (srv) => {
                 .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
         );
         if (aOrphanedRequests.length > 0) {
-            // 2. Clear out the substitute assignment back to null
+            // Clear out substitute assignment back to null
             const aRequestClears = aOrphanedRequests.map(preApp =>
                 UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)
                     .set({ SUBSTITUTE_APPROVER_ID: null })
                     .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(aRequestClears.map(query => tx.run(query)));
-            // 3. Log the removal action
+            // Log the removal action
             aOrphanedRequests.forEach(preApp => {
                 aLogsToInsert.push({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: preApp.PREAPPROVAL_ID,
+                    TIMESTAMP: new Date(iBaseTime + (iLogIndexCounter++)),
+                    RECORD_ID: `${preApp.PREAPPROVAL_ID}_${preApp.LEVEL}`,
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'W',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} shortened substitution rule. Pre Approval ${preApp.PREAPPROVAL_ID} removed from substitute ${sSubstituteID}.`
+                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} shortened substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) removed from substitute ${sSubstituteID}.`
                 });
             });
-            // 4. Fetch substitute metadata to inform them of the task revocation
-            const oSubstitute = await tx.run(
-                SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: sSubstituteID })
-                    .columns('EMAIL', 'NAME')
-            );
-            const aPendingRequest = aOrphanedRequests.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
-            for (const preApp of aPendingRequest) {
-                try {
-                    await sendEmailInternal({
+            // Queue revoke notifications for pending pre-approvals
+            const aPendingRequests = aOrphanedRequests.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
+            aPendingRequests.forEach(preApp => {
+                aPendingEmails.push({
+                    type: Constant.EmailType.PREAPPROVAL,
+                    recordId: preApp.PREAPPROVAL_ID,
+                    payload: {
                         ApproverName: oSubstitute.NAME,
                         ClaimID: preApp.PREAPPROVAL_ID,
                         Action: "REVOKE",
                         EmailTitle: `Notification: Revoked Delegated Pre-Approval ${preApp.PREAPPROVAL_ID}`,
                         ReceiverEmail: oSubstitute.EMAIL,
-                        SubmissionDate: new Date().toISOString().split('T')[0],//this one todays date
+                        SubmissionDate: new Date().toISOString().split('T')[0], // Today's date
                         ClaimantName: preApp.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
-                    });
-                } catch (oEmailError) {
-                    console.error(`Removal email notification failed for Claim ${preApp.PREAPPROVAL_ID}`, oEmailError);
-                    aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: preApp.PREAPPROVAL_ID,
-                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                        MESSAGE_TYPE: 'W',
-                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
-                        MESSAGE: oEmailError?.message || "No Message"
-                    });
-                }
-            }
+                    }
+                });
+            });
         }
-
+        // Insert database action logs first
         if (aLogsToInsert.length > 0 && ZLOG) {
             await tx.run(INSERT.into(ZLOG).entries(aLogsToInsert));
+        }
+        // =======================================================================
+        // PROCESS 3: Parallel Async Revoke Email Execution via Promise.allSettled
+        // =======================================================================
+        if (aPendingEmails.length > 0) {
+            const aEmailResults = await Promise.allSettled(
+                aPendingEmails.map(item => sendEmailInternal(item.payload))
+            );
+            const aEmailFailedLogs = [];
+            aEmailResults.forEach((res, idx) => {
+                if (res.status === Constant.EmailStatus.REJECTED) {
+                    const item = aPendingEmails[idx];
+                    const oError = res.reason;
+                    console.error(`Revoke email failed for ${item.type} ${item.recordId}:`, oError);
+                    aEmailFailedLogs.push({
+                        TIMESTAMP: new Date(iBaseTime + (iLogIndexCounter++)),
+                        RECORD_ID: item.recordId,
+                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                        MESSAGE_TYPE: 'W',
+                        STATUS_CODE: String(oError?.status || oError?.statusCode || oError?.code || "500"),
+                        MESSAGE: oError?.message || `Revocation email to ${sSubstituteID} failed.`
+                    });
+                }
+            });
+            // Insert warning logs for failed revoke notifications
+            if (aEmailFailedLogs.length > 0 && ZLOG) {
+                await tx.run(INSERT.into(ZLOG).entries(aEmailFailedLogs));
+            }
         }
     };
 
     async function handleNewAssignments(tx, entities, params) {
         const { sUserID, sSubstituteID, VALID_FROM, VALID_TO, oCurrentUser } = params;
-        const { ZEMP_APPROVER_CLAIM_DETAILS,
+        const {
+            ZEMP_APPROVER_CLAIM_DETAILS,
             ZAPPROVER_DETAILS_CLAIMS,
             ZEMP_APPROVER_REQUEST_DETAILS,
             ZAPPROVER_DETAILS_PREAPPROVAL,
-            ZLOG } = entities;
+            ZLOG
+        } = entities;
         const aLogsToInsert = [];
+        const aPendingEmails = [];
+        const ibaseTime = new Date().getTime();
+        let ilogIndexCounter = 0;
+        // Fetch Substitute employee master info ONCE upfront
+        const oSubstitute = await tx.run(
+            SELECT.one.from('ZEMP_MASTER')
+                .where({ EEID: sSubstituteID })
+                .columns('EMAIL', 'NAME')
+        );
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================
-
         const aMatchingClaims = await tx.run(
             SELECT.from(ZEMP_APPROVER_CLAIM_DETAILS)
                 .where({ APPROVER_ID: sUserID })
@@ -4184,36 +4204,31 @@ module.exports = (srv) => {
                 .and('SUBMITTED_DATE <=', VALID_TO)
                 .columns('CLAIM_ID', 'LEVEL', 'STATUS', 'SUBMITTED_DATE', 'EMPLOYEE_NAME')
         );
-
         if (aMatchingClaims.length > 0) {
             const claimUpdates = aMatchingClaims.map(claim =>
-                UPDATE(ZAPPROVER_DETAILS_CLAIMS)   // write to base table, not the view
+                UPDATE(ZAPPROVER_DETAILS_CLAIMS)
                     .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
                     .where({ CLAIM_ID: claim.CLAIM_ID, LEVEL: claim.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(claimUpdates.map(query => tx.run(query)));
-
             aMatchingClaims.forEach(claim => {
                 aLogsToInsert.push({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: claim.CLAIM_ID,
+                    // Stagger milliseconds + append LEVEL to guarantee primary key uniqueness
+                    TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                    RECORD_ID: `${claim.CLAIM_ID}_${claim.LEVEL}`,
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
+                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
                 });
             });
-
-            const oSubstitute = await tx.run(
-                SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: sSubstituteID })
-                    .columns('EMAIL', 'NAME')
-            );
-
+            // Queue pending claim notifications for parallel execution
             const aPendingClaims = aMatchingClaims.filter(claim => claim.STATUS === Constant.Status.PENDING_APPROVAL);
-            for (const claim of aPendingClaims) {
-                try {
-                    await sendEmailInternal({
+            aPendingClaims.forEach(claim => {
+                aPendingEmails.push({
+                    type: Constant.EmailType.CLAIM,
+                    recordId: claim.CLAIM_ID,
+                    payload: {
                         ApproverName: oSubstitute.NAME,
                         ClaimID: claim.CLAIM_ID,
                         Action: "Pending Approval (Delegated)",
@@ -4222,62 +4237,45 @@ module.exports = (srv) => {
                         SubmissionDate: claim.SUBMITTED_DATE,
                         ClaimantName: claim.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
-                    });
-                } catch (oEmailError) {
-                    console.error(`Email failed for Claim ${claim.CLAIM_ID}`, oEmailError);
-                    aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: claim.CLAIM_ID,
-                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                        MESSAGE_TYPE: 'W',
-                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
-                        MESSAGE: oEmailError?.message || "No Message"
-                    });
-                }
-            }
+                    }
+                });
+            });
         }
         // =======================================================================
         // PROCESS 2: Pre-Approvals — via ZEMP_APPROVER_REQUEST_DETAILS view
         // =======================================================================
-
         const aMatchingPreApprovals = await tx.run(
             SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
                 .where({ APPROVER_ID: sUserID })
                 .and(`(STATUS = '${Constant.Status.PENDING_APPROVAL}' OR STATUS IS NULL OR STATUS = '')`)
-                .and('REQUEST_DATE >=', VALID_FROM)   // NOTE: REQUEST_DATE, not SUBMITTED_DATE
+                .and('REQUEST_DATE >=', VALID_FROM)
                 .and('REQUEST_DATE <=', VALID_TO)
                 .columns('PREAPPROVAL_ID', 'LEVEL', 'STATUS', 'REQUEST_DATE', 'EMPLOYEE_NAME')
         );
-
         if (aMatchingPreApprovals.length > 0) {
             const aPreAppUpdates = aMatchingPreApprovals.map(preApp =>
-                UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)   // write to base table, not the view
+                UPDATE(ZAPPROVER_DETAILS_PREAPPROVAL)
                     .set({ SUBSTITUTE_APPROVER_ID: sSubstituteID })
                     .where({ PREAPPROVAL_ID: preApp.PREAPPROVAL_ID, LEVEL: preApp.LEVEL, APPROVER_ID: sUserID })
             );
             await Promise.all(aPreAppUpdates.map(query => tx.run(query)));
-
             aMatchingPreApprovals.forEach(preApp => {
                 aLogsToInsert.push({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: preApp.PREAPPROVAL_ID,
+                    TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                    RECORD_ID: `${preApp.PREAPPROVAL_ID}_${preApp.LEVEL}`,
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
+                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
                 });
             });
-
-            const oSubstitute = await tx.run(
-                SELECT.one.from('ZEMP_MASTER')
-                    .where({ EEID: sSubstituteID })
-                    .columns('EMAIL', 'NAME')
-            );
-
+            // Queue pending pre-approval notifications for parallel execution
             const aPendingPreApprovals = aMatchingPreApprovals.filter(preApp => preApp.STATUS === Constant.Status.PENDING_APPROVAL);
-            for (const preApp of aPendingPreApprovals) {
-                try {
-                    await sendEmailInternal({
+            aPendingPreApprovals.forEach(preApp => {
+                aPendingEmails.push({
+                    type: Constant.EmailType.PREAPPROVAL,
+                    recordId: preApp.PREAPPROVAL_ID,
+                    payload: {
                         ApproverName: oSubstitute.NAME,
                         ClaimID: preApp.PREAPPROVAL_ID,
                         Action: "Pending Pre-Approval (Delegated)",
@@ -4286,25 +4284,43 @@ module.exports = (srv) => {
                         SubmissionDate: preApp.REQUEST_DATE,
                         ClaimantName: preApp.EMPLOYEE_NAME,
                         RecipientName: oSubstitute.NAME
-                    });
-                } catch (oEmailError) {
-                    console.error(`Email failed for Pre-Approval ${preApp.PREAPPROVAL_ID}`, oEmailError);
-                    aLogsToInsert.push({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: preApp.PREAPPROVAL_ID,
-                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
-                        MESSAGE_TYPE: 'W',
-                        STATUS_CODE: oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500",
-                        MESSAGE: oEmailError?.message || "No Message"
-                    });
-                }
-            }
+                    }
+                });
+            });
         }
-
+        // Write primary database success logs first
         if (aLogsToInsert.length > 0 && ZLOG) {
             await tx.run(INSERT.into(ZLOG).entries(aLogsToInsert));
         }
-    }
+        // =======================================================================
+        // PROCESS 3: Parallel Async Email Execution via Promise.allSettled
+        // =======================================================================
+        if (aPendingEmails.length > 0) {
+            const aEmailResults = await Promise.allSettled(
+                aPendingEmails.map(item => sendEmailInternal(item.payload))
+            );
+            const aEmailFailedLogs = [];
+            aEmailResults.forEach((res, idx) => {
+                if (res.status === Constant.EmailStatus.REJECTED) {
+                    const item = aPendingEmails[idx];
+                    const oError = res.reason;
+                    console.error(`Email failed for ${item.type} ${item.recordId}:`, oError);
+                    aEmailFailedLogs.push({
+                        TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
+                        RECORD_ID: item.recordId,
+                        PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
+                        MESSAGE_TYPE: 'W',
+                        STATUS_CODE: String(oError?.status || oError?.statusCode || oError?.code || "500"),
+                        MESSAGE: oError?.message || `Delegation email to ${sSubstituteID} failed.`
+                    });
+                }
+            });
+            // Insert warning logs for any failed emails without crashing the function
+            if (aEmailFailedLogs.length > 0 && ZLOG) {
+                await tx.run(INSERT.into(ZLOG).entries(aEmailFailedLogs));
+            }
+        }
+    };
 
     srv.on("updateSubstitutionValidTo", async (req) => {
 
@@ -4378,7 +4394,7 @@ module.exports = (srv) => {
 
     srv.on("checkSubstitutionOverlap", async (req) => {
 
-        const {USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,SUBSTITUTE_RULE_ID} = req.data;
+        const { USER_ID, SUBSTITUTE_ID, VALID_FROM, VALID_TO, SUBSTITUTE_RULE_ID } = req.data;
         const tx = cds.tx(req);
         const aRules = await tx.run(
             SELECT.from("ZSUBSTITUTION_RULES")
