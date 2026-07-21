@@ -1398,6 +1398,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZCORPORATE_CARD as projection on ECLAIM.ZCORPORATE_CARD;
 
+    entity ZREQ_ITEM_CCC_PART as projection on ECLAIM.ZREQ_ITEM_CCC_PART;
+    
     action updateSubstitutionValidTo(
             SUBSTITUTE_RULE_ID : String(10),
             USER_ID            : String,

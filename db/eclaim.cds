@@ -1555,3 +1555,13 @@ entity ZCORPORATE_CARD_ADVANCED : managed {
     ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
     CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
 }
+entity ZREQ_ITEM_CCC_PART : managed{
+    key REQUEST_ID          : String @mandatory @Common.Label: 'Request ID';
+    key REQUEST_SUB_ID      : String @mandatory @Common.Label: 'Request Sub ID';
+    key CARD_NO             : String(16)      @mandatory  @Common.Label: 'Credit Card No';
+    STATEMENT_DUE_AMT       : Decimal(16, 2) @Common.Label: 'Statement Due Amount';
+    SERVICE_TAX             : Decimal(16, 2) @Common.Label: 'Service Tax';
+    CASHBACK                : Decimal(16, 2) @Common.Label: 'Cashback';
+    MERCHANT_REFUND_AMT     : Decimal(16, 2) @Common.Label: 'Merchant Refund';
+    MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
+}
