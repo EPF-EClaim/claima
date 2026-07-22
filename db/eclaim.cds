@@ -1567,9 +1567,10 @@ entity ZREQ_ITEM_CCC_PART : managed{
 }
 
 entity ZEMP_DEPENDENT_POLICY : managed {
-    key EMP_ID            : String  @mandatory  @Common.Label: 'Employee ID';
-    key DEP_NATIONAL_ID   : String  @mandatory  @Common.Label: 'Dependent National ID';
-    key POLICY_NUMBER     : String  @mandatory  @Common.Label: 'Policy Number';
-        POLICY_START_DATE : Date    @Common.Label: 'Policy Start Date';
-        POLICY_END_DATE   : Date    @Common.Label: 'Policy End Date';
+    key EMP_ID            : String      @mandatory  @Common.Label: 'Employee ID';
+    key DEP_NATIONAL_ID   : String      @mandatory  @Common.Label: 'Dependent National ID';
+    key RECORD_ID         : String(20)  @mandatory  @Common.Label: 'Record ID';
+    key POLICY_NUMBER     : String      @mandatory  @Common.Label: 'Policy Number';
+        POLICY_START_DATE : Date        @Common.Label: 'Policy Start Date';
+        POLICY_END_DATE   : Date        @Common.Label: 'Policy End Date';
 }
