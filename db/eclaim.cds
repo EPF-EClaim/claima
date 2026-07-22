@@ -565,6 +565,9 @@ entity ZCLAIM_ITEM : managed {
         DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         COURSE_DURATION            : Integer        @Common.Label: 'Course Duration';
+        POLICY_START_DATE          : Date           @Common.Label: 'Policy Start Date';
+        POLICY_END_DATE            : Date           @Common.Label: 'Policy End Date';  
+        DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';              
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -1567,10 +1570,10 @@ entity ZREQ_ITEM_CCC_PART : managed{
 }
 
 entity ZEMP_DEPENDENT_POLICY : managed {
-    key EMP_ID            : String      @mandatory  @Common.Label: 'Employee ID';
-    key DEP_NATIONAL_ID   : String      @mandatory  @Common.Label: 'Dependent National ID';
-    key RECORD_ID         : String(20)  @mandatory  @Common.Label: 'Record ID';
-    key POLICY_NUMBER     : String      @mandatory  @Common.Label: 'Policy Number';
-        POLICY_START_DATE : Date        @Common.Label: 'Policy Start Date';
-        POLICY_END_DATE   : Date        @Common.Label: 'Policy End Date';
+    key EMP_ID                : String      @mandatory  @Common.Label: 'Employee ID';
+    key DEPENDENT_NATIONAL_ID : String      @mandatory  @Common.Label: 'Dependent National ID';
+    key RECORD_ID             : String(20)  @mandatory  @Common.Label: 'Record ID';
+    key POLICY_NUMBER         : String      @mandatory  @Common.Label: 'Policy Number';
+        POLICY_START_DATE     : Date        @Common.Label: 'Policy Start Date';
+        POLICY_END_DATE       : Date        @Common.Label: 'Policy End Date';
 }
