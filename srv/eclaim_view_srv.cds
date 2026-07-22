@@ -78,7 +78,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.JOB_GROUP,
                 PAYMENT_DATE,
                 PROJECT_CODE,
-                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
+                ATTACHMENT3
         };
 
     entity ZEMP_REQUEST_EE_VIEW as
@@ -131,7 +132,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.JOB_GROUP 
+                ZEMP_MASTER.JOB_GROUP,
+                ATTACHMENT3
         };
 
 
@@ -224,7 +226,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TOTAL_TRAVELLER,
                 FARE_TYPE_ID,
                 ROUND_TRIP,
-                INTERNAL_ORDER
+                INTERNAL_ORDER,
+                ATTACHMENT3,
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -492,7 +495,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.STATUS_ID,
                 ZCLAIM_HEADER.ZSTATUS.STATUS_DESC,
                 INTERNAL_ORDER,
-                COURSE_DURATION
+                COURSE_DURATION,
+                ATTACHMENT_FILE_3
         };
 
     entity ZEMP_REQUEST_STATUS            as
