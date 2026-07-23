@@ -250,6 +250,8 @@ entity ZREQUEST_ITEM : managed {
         ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         ATTACHMENT3                : String         @Common.Label: 'Attachment 3';
+        POLICY_YEAR                : String(4)      @Common.Label: 'Year';
+        DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -1580,3 +1582,12 @@ entity ZEMP_DEPENDENT_POLICY : managed {
         POLICY_START_DATE     : Date        @Common.Label: 'Policy Start Date';
         POLICY_END_DATE       : Date        @Common.Label: 'Policy End Date';
 }
+
+entity ZINSURANCE_COMPANY_PROVIDER : managed {
+    key INSURANCE_COMPANY_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Company Provider ID';
+        INSURANCE_COMPANY_PROVIDER_DESC : String     @Common.Label: 'Insurance Company Provider Description';
+        START_DATE                      : Date       @Common.Label: 'Start Date';
+        END_DATE                        : Date       @Common.Label: 'End Date';
+        STATUS                          : String(10) @Common.Label: 'Status';
+}
+
