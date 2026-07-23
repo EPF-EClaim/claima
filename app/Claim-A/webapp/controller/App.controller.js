@@ -394,6 +394,7 @@ sap.ui.define([
 						"mode_of_transfer": null,
 						"travel_alone_family": null,
 						"travel_family_now_later": null,
+						"corporate_cred_card" : false,
 						"descr": {
 							"alternate_cost_center": null,
 							"mode_of_transfer": null,
@@ -472,6 +473,7 @@ sap.ui.define([
 					"mode_of_transfer": null,
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
+					"corporate_cred_card": false,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -695,25 +697,67 @@ sap.ui.define([
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
 					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
-					var aFilterSelectRequestForm = [
-						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
-					];
-					if (aParticipantPARs.length > 0) {
-						var aRequestIdFilters = aParticipantPARs.map(function (oPAR) {
-							return new Filter("REQUEST_ID", FilterOperator.EQ, oPAR.REQUEST_ID);
-						});
 
-						aFilterSelectRequestForm.push(new Filter({
-							filters: aRequestIdFilters,
-							and: false
-						}));
-					} else {
-						aFilterSelectRequestForm.push(
-							new Filter("REQUEST_ID", FilterOperator.EQ, "__NO_ELIGIBLE_PAR__")
+					var aOrFilters = [];
+
+					// Selected claim type
+					aOrFilters.push(
+						new Filter(
+							"CLAIM_TYPE_ID",
+							FilterOperator.EQ,
+							oInputModel.getProperty("/claimtype/type")
+						)
+					);
+
+					// Corporate Credit Card
+					if (Object.values(this._oConstant.TravelClaimType).includes(oInputModel.getProperty("/claimtype/type"))) {
+						aOrFilters.push(
+							new Filter(
+								"CLAIM_TYPE_ID",
+								FilterOperator.EQ,
+								this._oConstant.ClaimType.CORPO_CRED_CARD
+							)
 						);
 					}
-					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
+
+					// Participant PAR Request IDs
+					if (aParticipantPARs.length > 0) {
+						aParticipantPARs.forEach(function (oPAR) {
+							aOrFilters.push(
+								new Filter(
+									"REQUEST_ID",
+									FilterOperator.EQ,
+									oPAR.REQUEST_ID
+								)
+							);
+						});
+					}
+
+					// (Claim Type OR CCC OR Participant Request)
+					var oOrFilter = new Filter({
+						filters: aOrFilters,
+						and: false
+					});
+
+					// Apply mandatory filters
+					var oFinalFilter = new Filter({
+						filters: [
+							oOrFilter,
+							new Filter(
+								"EMP_ID",
+								FilterOperator.EQ,
+								this._oSessionModel.getProperty("/userId")
+							),
+							new Filter(
+								"STATUS",
+								FilterOperator.EQ,
+								this._oConstant.ClaimStatus.APPROVED
+							)
+						],
+						and: true
+					});
+
+					oBindingSelectRequestForm.filter(oFinalFilter);
 				}
 			}
 			else {
@@ -745,6 +789,7 @@ sap.ui.define([
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
+			var sPrefix = oEvent.getParameter("selectedItem").getKey().slice(0, 6);
 			if (oRequestForm) {
 				// populate request form values
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
@@ -754,8 +799,12 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
 				
+				if(sPrefix.includes("CCC")){
+					oInputModel.setProperty("/claimtype/requestform/corporate_cred_card", true)
+				}
+
 				var sRequestId = oRequestForm.getKey();
-				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
+				var aParticipantPARs = await this.x(sRequestId);
 				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
 
 				if (!oParticipantPAR) {
@@ -1001,6 +1050,7 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/descr/mode_of_transfer"));
 			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/descr/travel_alone_family"));
 			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/descr/travel_family_now_later"));
+			oInputModel.setProperty("/claim_header/corporate_cred_card", oInputModel.getProperty("/claimtype/requestform/corporate_cred_card"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
@@ -1462,7 +1512,8 @@ sap.ui.define([
 
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
-			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			//this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			this._applyReqTypeFilters("JKEW Admin");
 			this._openAndPreload(this._oDialogFragment);
 		},
 
@@ -1685,14 +1736,21 @@ sap.ui.define([
 			];
 
 			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
-				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
+				aFilters.push(
+					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE)
+				);
 			}
 
 			if (sUserType !== this._oConstant.Role.JKEW_ADMIN) {
-				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC));
+				aFilters.push(
+					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC)
+				);
 			}
 
-			oBinding.filter(aFilters);
+			oBinding.filter(new Filter({
+				filters: aFilters,
+				and: true
+			}));
 		},
 
 		_loadClaimTypeSelectionData: async function (sReqType) {
@@ -1778,6 +1836,11 @@ sap.ui.define([
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
 						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						Fragment.byId("request", "req_grptype").setEnabled(false);
+						break;
+
+					case this._oConstant.RequestType.CORP_CC:
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 

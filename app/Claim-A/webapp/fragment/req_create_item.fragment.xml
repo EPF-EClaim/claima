@@ -1335,7 +1335,8 @@
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
-                                            visible="{= ${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group' }"
+                                            visible="{= (${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group') &amp;&amp;
+                                                        ${request>/req_header/reqtypeid} !== ${constant>/RequestType/CORP_CC} }"
                                             id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
@@ -1384,7 +1385,8 @@
                         </form:FormContainer>
                     </form:formContainers>
                 </form:Form>
-                <VBox rowGap="0.5rem">
+                <!-- normal request -->
+                <VBox rowGap="0.5rem" visible="{= ${request>/req_header/reqtypeid} !== ${constant>/RequestType/CORP_CC} }">
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
@@ -1568,6 +1570,137 @@
                         </mdc:ValueHelp>
                     </dependents>
                 </VBox>
+            </VBox>
+            <!-- Corporate Credit Card -->
+            <VBox rowGap="0.5rem" visible="{= ${request>/req_header/reqtypeid} === ${constant>/RequestType/CORP_CC} }">
+                <OverflowToolbar height="3rem">
+                    <Title text="{i18n>req_corporate_credit_card}"/>
+                    <ToolbarSpacer />
+                </OverflowToolbar>
+                <table:Table 
+                    id="req_corpo_card_table"
+                    rows="{request>/corpo_cards}"
+                    columnHeaderHeight="3rem"
+                    selectionMode="None"
+                    rowActionCount="{= ${request>/req_header/grptype} === 'Individual' ? 0 : 1 }"
+                    cellClick="onCellClick"
+                    >
+                   <!-- for corporate credit card -->
+                    <table:Column width="25rem">
+                        <Label text="{i18n>req_card_number}"></Label>
+                        <table:template>
+                            <Text text="{request>CARD_NO}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem">
+                        <Label text="{i18n>req_cardholder_name}"></Label>
+                        <table:template>
+                            <Text text="{request>CARDHOLDER_NAME}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/STATMENT_DUE} }">
+                        <Label text="{i18n>req_current_balance}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_current_bal"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>current_balance',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2
+                                    },
+                                    constraints: {
+                                        minimum: 0
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="current_balance"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/SERV_TAX} }">
+                        <Label text="{i18n>req_service_tax}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_serv_tax"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>service_tax',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2
+                                    },
+                                    constraints: {
+                                        minimum: 0
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="service_tax"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" id="merchantRefundColumn" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MERCH_RETURN} }">
+                        <Label text="{i18n>req_merchant_refund}"></Label>
+                        <table:template>
+                            <Text text="{request>merchant_refunds_total}" >
+                                <customData>
+                                    <core:CustomData
+                                            key="field"
+                                            value="merchantRefund"/>
+                                </customData>
+                            </Text>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC}  &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/STATMENT_DUE} }">
+                        <Label text="{i18n>req_adv_amt}"></Label>
+                        <table:template>
+                            <Text text="{request>CARDHOLDER_NAME}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/CASH_BACK} }">
+                        <Label text="{i18n>req_cashback}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_cashback"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>cashback',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2
+                                    },
+                                    constraints: {
+                                        minimum: 0
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="cashback"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                </table:Table>
             </VBox>
         </VBox>
     </VBox>

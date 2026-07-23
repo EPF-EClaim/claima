@@ -8,7 +8,7 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	DateFormat,
-	ApprovalLog) {
+	ApprovalLog,) {
 	"use strict";
 
 	return {
@@ -123,6 +123,14 @@ sap.ui.define([
 				{ $$ownRequest: true, $count: true }
 			);
 
+			const oCCModel = oController.getOwnerComponent().getModel('employee');
+			const oCCListBinding = oCCModel.bindList(
+				"/ZCORPORATE_CARD",
+				null,
+				null,
+				null
+			)
+
 			const oDateTimeFormatter = DateFormat.getDateTimeInstance({
 				pattern: "dd MMM yyyy HH:mm"
 			});
@@ -135,7 +143,8 @@ sap.ui.define([
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				
+				const aCCCtx = await oCCListBinding.requestContexts(0, Infinity);
+
 				const aItems = aCtx.map((ctx) => {
 					const oItem = ctx.getObject();
 					return {
@@ -148,6 +157,15 @@ sap.ui.define([
 						DEPENDENT: 		JSON.parse(oItem.DEPENDENT) || []
 					};
 				});
+
+				const aCCItems = aCCCtx.map((CCctx) => {
+					const oCCItem = CCctx.getObject();
+					return{
+						...oCCItem
+					}
+				});
+
+				oReq.setProperty("/corpo_cards", aCCItems);
 				oReq.setProperty("/req_item_rows", aItems);
 				oReq.setProperty("/list_count", aItems.length);
 
@@ -281,6 +299,15 @@ sap.ui.define([
 			}
 
 			oController._oReqModel.setProperty("/view", sState);
+		},
+		sumColumn: function (aRows, sFieldName) {
+			if (!Array.isArray(aRows)) {
+				return 0;
+			}
+			return aRows.reduce(function (fSum, oRow) {
+				var fValue = parseFloat(oRow[sFieldName]);
+				return fSum + (isNaN(fValue) ? 0 : fValue);
+			}, 0);
 		}
 
 	};

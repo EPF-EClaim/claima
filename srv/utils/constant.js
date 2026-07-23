@@ -26,7 +26,8 @@ const Constant = {
     NumberRange: {
         REQUEST: "NR01",
         CLAIM: "NR02",
-        SUBSTITUTION_RULE: "NR04"        
+        SUBSTITUTION_RULE: "NR04",
+        REQUEST_CCC: "NR03"
     },
     DisbursementStatus: {
         TO_BE_DISBURSED: "01",
@@ -346,7 +347,8 @@ const Constant = {
     }, 
     RequestType: {
         Travel : "RT0001", 
-        Reimbursement : "RT0004"
+        Reimbursement : "RT0004",
+        CORP_CC : "RT0007"
     }, 
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }

@@ -63,10 +63,6 @@
 				<Select
 					selectedKey="{reqDialog>/claimtype}"
 					id="req_claimtype"
-					required="true"
-					forceSelection="false"
-					change=".onSelect_ClaimType"
-					enabled="{= !!${reqDialog>/reqtype}}"
 					items="{
 						path: 'employee>/ZCLAIM_TYPE',
 						sorter: {
@@ -155,7 +151,7 @@
 					</items>
 				</Select>
 				<Label
-					text="{i18n>req_tripstartdate} {i18n>icon_info}"
+					text="{= ${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_billing_cycle_start} : ${i18n>req_tripstartdate} + ' ' +  ${i18n>icon_info} }"
 					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
@@ -173,7 +169,8 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004' ||
+						${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} }"
 					visible="false"
 					minDate="{
 						parts: [
@@ -224,7 +221,7 @@
 					</customData>
 				</DatePicker>
 				<Label
-					text="{i18n>req_tripenddate} {i18n>icon_info}"
+					text="{= ${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_billing_cycle_end} : ${i18n>req_tripenddate} + ' ' +  ${i18n>icon_info} }"
 					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
@@ -242,7 +239,8 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004' ||
+						${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} }"
 					visible="false"
 					minDate="{
 						parts: [
@@ -371,6 +369,48 @@
 						formatter: '.DateUtility.determineMaxDate'
 					}"
 					/>
+
+				<Label text="{i18n>req_corp_reference_no}" />
+				<Select
+					id="req_corpoRefNo"
+					selectedKey="{reqDialog>/reqCorpRefNo}"
+					required="true"
+					visible="false"
+					forceSelection="false"
+					items="{
+						path: 'employee>/ZCORPORATE_CARD',
+						sorter: {
+							path: 'CARD_NO',
+							descending: false
+						},
+						filters: [{
+							path: 'PRINCIPLE',
+							operator: 'EQ',
+							value1: 'true'
+						}]
+					}"
+				>
+					<items>
+						<core:Item
+							key="{employee>CARD_NO}"
+							text="{employee>CARD_NO}"
+						/>
+					</items>
+				</Select>
+
+				<Label
+				text="{i18n>req_corp_cc_payment_due_date}"
+				/>
+				<DatePicker
+					id="req_CorpCCPayDueDate"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{reqDialog>/cccduedate}"
+					textAlign="Begin"
+					required="{= ${reqDialog>/reqtype} === 'RT0007'}"
+					visible="false"
+				/>
 				<Label text="{i18n>req_grptype}" />
 				<Select
 					id="req_grptype"

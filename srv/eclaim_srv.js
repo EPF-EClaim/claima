@@ -472,7 +472,11 @@ module.exports = (srv) => {
 
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
-        const range_id = Constant.NumberRange.REQUEST;
+
+        const isCorpoCC = String(req.data.REQTYPEID) === String(Constant.RequestType.CORP_CC);
+        const range_id = isCorpoCC
+            ? Constant.NumberRange.REQUEST_CCC
+            : Constant.NumberRange.REQUEST;
 
         const row = await tx.run(
             SELECT.one.from('ZNUM_RANGE')
@@ -499,7 +503,7 @@ module.exports = (srv) => {
 
         oUpdateVariables.CURRENT = String(current + 1);
 
-        const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+        const nextNumber = isCorpoCC ? `${prefix}${yy}${String(current).padStart(5, "0")}` : `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(

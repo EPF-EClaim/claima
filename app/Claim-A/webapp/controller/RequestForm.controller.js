@@ -149,10 +149,102 @@ sap.ui.define([
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
+
+				//add a participant set for CCC?
+				if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
+					await this._setParticipantsForCC();
+					await this._loadCorpoCardsForItem(sReqId);
+				}
 			} catch (error) {
 				console.log(error);
 			} finally {
 				BusyIndicator.hide();
+			}
+		},
+
+		async _loadCorpoCardsForItem(sReqId) {
+
+			let aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
+
+			if (!sReqId || aCorpoCards.length === 0) {
+				return;
+			}
+
+			try {
+				const oListBinding = this._oDataModel.bindList(
+					"/ZREQ_ITEM_CCC_PART",
+					null,
+					null,
+					[
+						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "CARD_NO,STATEMENT_DUE_AMT,SERVICE_TAX,CASHBACK,MERCHANT_REFUND_AMT,MERCHANT_REFUND_ARR"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const aSavedParts = aCtx.map((ctx) => ctx.getObject());
+
+				// Sum values per CARD_NO across all matching rows (e.g. multiple sub-items)
+				const mTotalsByCard = {};
+
+				aSavedParts.forEach((oPart) => {
+					const sCardNo = oPart.CARD_NO;
+
+					if (!mTotalsByCard[sCardNo]) {
+						mTotalsByCard[sCardNo] = {
+							current_balance: 0,
+							service_tax: 0,
+							cashback: 0,
+							merchant_refunds_total: 0,
+							merchant_refunds_array: []
+						};
+					}
+
+					mTotalsByCard[sCardNo].current_balance += parseFloat(oPart.STATEMENT_DUE_AMT) || 0;
+					mTotalsByCard[sCardNo].service_tax += parseFloat(oPart.SERVICE_TAX) || 0;
+					mTotalsByCard[sCardNo].cashback += parseFloat(oPart.CASHBACK) || 0;
+					mTotalsByCard[sCardNo].merchant_refunds_total += parseFloat(oPart.MERCHANT_REFUND_AMT) || 0;
+
+					if (oPart.MERCHANT_REFUND_ARR) {
+						try {
+							const aParsed = JSON.parse(oPart.MERCHANT_REFUND_ARR);
+							mTotalsByCard[sCardNo].merchant_refunds_array.push(...aParsed);
+						} catch (e) {
+							console.warn("Failed to parse MERCHANT_REFUND_ARR for card:", sCardNo);
+						}
+					}
+				});
+
+				// Merge summed totals into the base corpo_cards list
+				aCorpoCards = aCorpoCards.map((oCard) => {
+					const oTotals = mTotalsByCard[oCard.CARD_NO];
+					if (oTotals) {
+						const iAdvAmt = Math.max(
+											0,
+											oTotals.current_balance - oTotals.service_tax - oTotals.merchant_refunds_total
+										).toFixed(2);
+						return {
+							...oCard,
+							current_balance: oTotals.current_balance.toFixed(2),
+							service_tax: oTotals.service_tax.toFixed(2),
+							cashback: oTotals.cashback.toFixed(2),
+							merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
+							merchant_refunds: oTotals.merchant_refunds_array,
+							merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
+							advance_amount: iAdvAmt
+						};
+					}
+					return oCard;
+				});
+
+				this._oReqModel.setProperty("/corpo_cards", aCorpoCards);
+
+			} catch (e) {
+				console.error("Load corpo cards failed:", e);
 			}
 		},
 
@@ -389,67 +481,68 @@ sap.ui.define([
 				return;
 			}
 
-			if (!this.oSubmitDialog) {
-				this.oSubmitDialog = new Dialog({
-					title: "Submit Request",
-					type: DialogType.Message,
-					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
-					beginButton: new Button({
-						type: ButtonType.Emphasized,
-						text: Utility.getText("req_btn_confirm"),
-						press: async () => {
-							try {
-								BusyIndicator.show(0);
+			const sSubmitMsg = this._oReqModel.getProperty("/req_header/claimtype") === this._oConstant.ClaimType.CORPO_CRED_CARD ? Utility.getText("req_d_w_ccc_submit") : Utility.getText("req_d_w_submit");
 
-								if (oReqData.req_header.claimtype === Constants.ClaimType.ELAUN_TUKAR &&
-									await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.ELAUN_TUKAR, false) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
-									MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
-									return;
-								}
+			this.oSubmitDialog = new Dialog({
+				title: "Submit Request",
+				type: DialogType.Message,
+				content: [new Label({ text: sSubmitMsg})],
+				beginButton: new Button({
+					type: ButtonType.Emphasized,
+					text: Utility.getText("req_btn_confirm"),
+					press: async () => {
+						try {
+							BusyIndicator.show(0);
 
-								// budget checking
-								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
-								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
-								var bApproversDetermined = true;
-
-								if (oErrorHandling.bCanProceed) {
-
-									// move approver determination function before claim is saved
-									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
-									// else, do not change claim status
-									// update status to PENDING APPROVAL
-									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
-									if (oResponse.Success) {
-										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
-										this._oReqModel.setProperty("/view", 'view');
-
-										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
-										await this._loadRequest(sCurrentReqId);
-									} else {
-										throw new Error(Utility.getText("msg_failed_no_approver"))
-									}
-
-								} else {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
-								}
-							} catch (e) {
-								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
-							} finally {
-								BusyIndicator.hide();
-								this.oSubmitDialog.close();
+							if (oReqData.req_header.claimtype === Constants.ClaimType.ELAUN_TUKAR &&
+								await EligibilityCheck.checkClaimTypeEligibility(this._oDataModel, this._oConstant.ClaimType.ELAUN_TUKAR, false) === Constants.ElaunTukarStatus.NOT_ALLOWED) {
+								MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
+								return;
 							}
-						}
-					}),
-					endButton: new Button({
-						text: "Cancel",
-						press: () => this.oSubmitDialog.close()
-					})
-				});
 
-				this.getView().addDependent(this.oSubmitDialog);
-			}
+							// budget checking
+							var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
+							var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
+							var bApproversDetermined = true;
+
+							if (oErrorHandling.bCanProceed) {
+
+								// move approver determination function before claim is saved
+								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// else, do not change claim status
+								// update status to PENDING APPROVAL
+								const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
+								if (oResponse.Success) {
+									await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
+									this._oReqModel.setProperty("/view", 'view');
+
+									// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
+									await this._loadRequest(sCurrentReqId);
+								} else {
+									throw new Error(Utility.getText("msg_failed_no_approver"))
+								}
+
+							} else {
+								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
+							}
+						} catch (e) {
+							MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
+						} finally {
+							BusyIndicator.hide();
+							this.oSubmitDialog.close();
+						}
+					}
+				}),
+				endButton: new Button({
+					text: "Cancel",
+					press: () => this.oSubmitDialog.close()
+				})
+			});
+
+			this.getView().addDependent(this.oSubmitDialog);
+			
 
 			this.oSubmitDialog.open();
 		},
@@ -568,6 +661,8 @@ sap.ui.define([
 					ALLOCATED_AMOUNT: "",
 					_EDIT_MODE: "Display"
 				}];
+			}else if(this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD){
+				await this._setParticipantsForCC();
 			} else {
 				oReqData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
 			}
@@ -1149,7 +1244,7 @@ sap.ui.define([
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
 				return;
 			}
-
+			
 			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
 			if (parseFloat(fEstAmount) <= parseFloat(0)) {
 				MessageBox.error(Utility.getText("req_d_w_error_amount"))
@@ -1159,6 +1254,10 @@ sap.ui.define([
 			// add tripstartdate from header to item level for eligibility checking
 			if (Object.values(Constants.FrequencyCheckClaimTypeItem).includes(oReqItem.claim_type_item_id)) {
 				oReqItem.trip_start_date = oReqHeader.tripstartdate;
+			}
+
+			if(this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD){
+				await this._setParticipantsForCC();
 			}
 
 			// Eligibility Checking
@@ -1314,6 +1413,10 @@ sap.ui.define([
 					Object.keys(oPayload).forEach(key => aCtx[0].setProperty(key, oPayload[key]));
 
 					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
+					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
+						const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
+						await this._upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards);
+					}
 					await this._oDataModel.submitBatch("itemSave");
 
 					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID)
@@ -1347,6 +1450,11 @@ sap.ui.define([
 							PARTICIPANTS_ID: sPID,
 							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
 						}, { $$updateGroupId: "partCreate" });
+					}
+
+					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
+						const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
+						await this._upsertCorpoCardsForItem(sReqId, sGeneratedSubId, aCorpoCards);
 					}
 
 					if (bHasParticipants) {
@@ -2672,6 +2780,14 @@ sap.ui.define([
 			RequestUtility.populateAllocatedAmount();
 		},
 
+		onInputCCAmount: async function (oEvent){
+			const oCorpoFields = this._oReqModel.getProperty("/corpo_cards") || [];
+			const sField = oEvent.getSource().data("field");
+			const iColSum = PARequestSharedFunction.sumColumn(oCorpoFields, sField);
+
+			this._oReqModel.setProperty('/req_item/est_amount', iColSum);
+		},
+
 		/**
 		 * method to filter the to state selection
 		 * @public
@@ -2859,12 +2975,323 @@ sap.ui.define([
         */
         onDependentSelectionChange: async function (oEvent) {
         
-		const oMultiComboBox = oEvent.getSource();
-		const aSelectedItems = oMultiComboBox.getSelectedItems() || [];
-        const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
+			const oMultiComboBox = oEvent.getSource();
+			const aSelectedItems = oMultiComboBox.getSelectedItems() || [];
+			const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
 
-        await RequestUtility._getEntitledMeterCube(aSelectedKeys);
-        }
+			await RequestUtility._getEntitledMeterCube(aSelectedKeys);
+        },
 
+		onCellClick: function (oEvent) {
+			const sClickedColumnId = oEvent.getParameter("columnId");
+			const sMerchantColumnId = this.byId("merchantRefundColumn").getId();
+
+			const oContext = oEvent.getParameter("rowBindingContext");
+			
+			if (!oContext) {
+				return;
+			}
+
+			const oRow = oContext.getObject();
+
+			// Don't open if the first column is empty
+			if (!oRow.CARD_NO) {
+				return;
+			}
+
+			if (sClickedColumnId === sMerchantColumnId) {
+				this._openMerchantRefundDialog(
+					oEvent.getParameter("rowBindingContext")
+				);
+			}
+		},
+
+		_openMerchantRefundDialog: async function (oContext) {
+			if (!this._oMerchantRefundDialog) {
+				this._oMerchantRefundDialog = await sap.ui.core.Fragment.load({
+					id: this.getView().getId(),
+					name: "claima.fragment.merchantrefund",
+					controller: this
+				});
+
+				this.getView().addDependent(this._oMerchantRefundDialog);
+			}
+
+			this._oMerchantRefundSourceContext = oContext;
+
+			const oRequest = oContext.getObject();
+
+			// Check THIS row's own data, not the shared _oReqModel
+			let aRefunds = oRequest.merchant_refunds;
+
+			if (!aRefunds || aRefunds.length === 0) {
+				aRefunds = [{
+					no: 1,
+					card_number: oRequest.CARD_NO,
+					cardholder_name: oRequest.CARDHOLDER_NAME,
+					merchant_refund_amount: "",
+					claim_type: "",
+					claim_item: "",
+					cost_center: ""
+				}];
+			} else {
+				// Clone so dialog edits don't mutate the row until Save
+				aRefunds = JSON.parse(JSON.stringify(aRefunds));
+			}
+
+			const oRefundModel = new sap.ui.model.json.JSONModel({
+				merchant_refunds: aRefunds
+			});
+
+			this._oMerchantRefundDialog.setModel(oRefundModel, "request");
+
+			this._oMerchantRefundDialog.open();
+		},
+
+		onAddMerchantRefundRow: function () {
+			const oModel = this._oMerchantRefundDialog.getModel("request");
+			const aRefunds = oModel.getProperty("/merchant_refunds");
+
+			aRefunds.push({
+				no: aRefunds.length + 1,
+				card_number: aRefunds[0].card_number,
+				cardholder_name: aRefunds[0].cardholder_name,
+				merchant_refund_amount: "",
+				claim_type: "",
+				claim_item: "",
+				cost_center: ""
+			});
+
+			oModel.setProperty("/merchant_refunds", aRefunds);
+		},
+
+		onDeleteMerchantRefundRow: function (oEvent) {
+			const oModel = this._oMerchantRefundDialog.getModel("request");
+			const aRefunds = oModel.getProperty("/merchant_refunds");
+
+			const oItem = oEvent.getSource().getParent();
+			const sPath = oItem.getBindingContext("request").getPath(); // "/merchant_refunds/2"
+			const iIndex = parseInt(sPath.split("/").pop(), 10);
+
+			aRefunds.splice(iIndex, 1);
+			aRefunds.forEach((oRow, i) => { oRow.no = i + 1; });
+
+			oModel.setProperty("/merchant_refunds", aRefunds);
+		},
+
+		onMerchantRefundSave: function () {
+			const oDialogModel = this._oMerchantRefundDialog.getModel("request");
+			const aRefunds = oDialogModel.getProperty("/merchant_refunds");
+
+			// Write back to the SPECIFIC row's context, not a shared global path
+			this._oMerchantRefundSourceContext.setProperty("merchant_refunds", aRefunds);
+
+			// Group totals by card_number, in case rows span multiple cards
+			const oTotalsByCard = aRefunds.reduce((oAcc, oRefund) => {
+				const sCardNo = oRefund.card_number;
+				const fAmount = parseFloat(oRefund.merchant_refund_amount) || 0;
+
+				oAcc[sCardNo] = (oAcc[sCardNo] || 0) + fAmount;
+				return oAcc;
+			}, {});
+			
+			const aMerchantRefundArr = JSON.stringify(aRefunds);
+
+			// Push each total into the matching cardholder record
+			Object.keys(oTotalsByCard).forEach((sCardNo) => {
+				this._addMerchantRefundTotalToCardholder(sCardNo, oTotalsByCard[sCardNo].toFixed(2), aMerchantRefundArr);
+			});	
+
+			const oCorpoFields = this._oReqModel.getProperty("/corpo_cards") || [];
+			const iColSum = PARequestSharedFunction.sumColumn(oCorpoFields, "merchant_refunds_total");
+			this._oReqModel.setProperty('/req_item/est_amount', iColSum);
+
+			this._oMerchantRefundDialog.close();
+		},
+
+		_addMerchantRefundTotalToCardholder: function (sCardNo, fTotal, aMerchantRefundArr) {
+			const aCardholders = this._oReqModel.getProperty("/corpo_cards");
+
+			const iIndex = aCardholders.findIndex((oCard) => oCard.CARD_NO === sCardNo);
+
+			if (iIndex > -1) {
+				aCardholders[iIndex].merchant_refunds_total = fTotal;
+				aCardholders[iIndex].merchant_refunds_array = aMerchantRefundArr;
+			} else {
+				console.warn(`No cardholder found for CARD_NO: ${sCardNo}`);
+			}
+
+			this._oReqModel.setProperty("/corpo_cards", aCardholders);
+		},
+		loadMerchantRefundDisplay: function () {
+			const aRefundStrings = this._oReqModel.getProperty("/merchant_refund_strings") || [];
+
+			const aTableData = aRefundStrings.map((sText, iIndex) => {
+				return { id: iIndex, text: sText };
+			});
+
+			let oDisplayModel = this.getView().getModel("refundDisplay");
+			if (!oDisplayModel) {
+				oDisplayModel = new sap.ui.model.json.JSONModel();
+				this.getView().setModel(oDisplayModel, "refundDisplay");
+			}
+			oDisplayModel.setProperty("/rows", aTableData);
+		},
+		onMerchantRefundCancel: function () {
+			this._oMerchantRefundDialog.close();
+		},
+
+		onSelect_CCC_ClaimType: function (oEvent) {
+			var sClaimType = oEvent.getParameter("selectedItem").getKey();
+
+			var oClaimTypeSelect = oEvent.getSource();
+			var oRow = oClaimTypeSelect.getParent(); // ColumnListItem
+
+			// Find the Claim Item Select in this row
+			var oClaimItemSelect = oRow.getCells().find(function (oCell) {
+				return oCell.isA("sap.m.Select") &&
+					oCell.getId().includes("req_claimTypeItem");
+			});
+
+			if (!oClaimItemSelect) {
+				return;
+			}
+
+			var oBinding = oClaimItemSelect.getBinding("items");
+
+			if (!oBinding) {
+				return;
+			}
+
+			oBinding.filter([
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType)
+			]);
+
+			// Clear previously selected claim item
+			oClaimItemSelect.setSelectedKey("");
+		},
+		_getMerchantRefundTotal: function (aRefunds) {
+			return aRefunds.reduce((fSum, oRefund) => {
+				const fAmount = parseFloat(oRefund.merchant_refund_amount) || 0;
+				return fSum + fAmount;
+			}, 0);
+		},
+
+		_setParticipantsForCC: function () {
+			const aCorpoDetails = this._oReqModel.getProperty("/corpo_cards");
+			const aCardholderIds = aCorpoDetails.map((oCard) => oCard.CARDHOLDER_ID).filter((sId) => !!sId);
+
+			if (aCardholderIds.length === 0) {
+				return;
+			}
+
+			const oListBinding = this.getView().getModel().bindList("/ZEMP_MASTER");
+
+			const aFilters = aCardholderIds.map((sId) => new Filter("EEID", FilterOperator.EQ, sId));
+			const oCombinedFilter = new Filter({
+				filters: aFilters,
+				and: false
+			});
+
+			oListBinding.filter(oCombinedFilter).requestContexts().then((aContexts) => {
+				const aEmpDataList = aContexts.map((oContext) => oContext.getObject());
+
+				if (aEmpDataList.length > 0) {
+					const aParticipants = aEmpDataList.map((oEmpData) => {
+						return {
+							PARTICIPANTS_ID: oEmpData.EEID || "",
+							PARTICIPANT_NAME: oEmpData.NAME || "",
+							PARTICIPANT_COST_CENTER: oEmpData.CC || "",
+							ALLOCATED_AMOUNT: ""
+						};
+					});
+
+					this._oReqModel.setProperty("/participant", aParticipants);
+				} else {
+					MessageBox.error(Utility.getText("req_d_e_emp_not_found"));
+				}
+			}).catch((oError) => {
+				console.error("Failed to fetch employee data:", oError);
+			});
+		},
+
+		async _upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards) {
+			const sGroup = "upsertCorpoCards";
+			const aList = Array.isArray(aCorpoCards) ? aCorpoCards : [];
+
+			let aExistingCtx = [];
+			try {
+				const oList = this._oDataModel.bindList(
+					"/ZREQ_ITEM_CCC_PART",
+					null,
+					null,
+					[
+						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
+						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
+					],
+					{ $$ownRequest: true }
+				);
+				aExistingCtx = await oList.requestContexts(0, Infinity);
+			} catch (err) {
+				console.error("Load failed:", err);
+			}
+
+			const mExisting = {};
+			aExistingCtx.forEach(oCtx => {
+				const oData = oCtx.getObject();
+				const sKey = `${oData.REQUEST_ID}-${oData.REQUEST_SUB_ID}-${oData.CARD_NO}`;
+				mExisting[sKey] = oCtx;
+			});
+
+			const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_CCC_PART", null, null, null, {
+				$$updateGroupId: sGroup
+			});
+
+			const aProcessedKeys = [];
+
+			aList.forEach((oCard) => {
+				const sCardNo = String(oCard.CARD_NO || "").trim();
+				if (!sCardNo) return;
+
+				const sCurrentKey = `${sReqId}-${sReqSubId}-${sCardNo}`;
+				aProcessedKeys.push(sCurrentKey);
+
+				const oPayload = {
+					STATEMENT_DUE_AMT: parseFloat(oCard.current_balance || 0),
+					SERVICE_TAX: parseFloat(oCard.service_tax || 0),
+					CASHBACK: parseFloat(oCard.cashback || 0),
+					MERCHANT_REFUND_AMT: parseFloat(oCard.merchant_refunds_total || 0),
+					MERCHANT_REFUND_ARR: oCard.merchant_refunds_array || null
+				};
+
+				if (mExisting[sCurrentKey]) {
+					// --- UPDATE CASE ---
+					const oExistingCtx = mExisting[sCurrentKey];
+					Object.keys(oPayload).forEach((sField) => {
+						if (oExistingCtx.getProperty(sField) !== oPayload[sField]) {
+							oExistingCtx.setProperty(sField, oPayload[sField], sGroup);
+						}
+					});
+				} else {
+					// --- CREATE CASE ---
+					oPartList.create({
+						REQUEST_ID: sReqId,
+						REQUEST_SUB_ID: sReqSubId,
+						CARD_NO: sCardNo,
+						...oPayload
+					}, true);
+				}
+			});
+
+			Object.keys(mExisting).forEach(sKey => {
+				if (!aProcessedKeys.includes(sKey)) {
+					mExisting[sKey].delete(sGroup).catch(() => { /* handle silent */ });
+				}
+			});
+
+			if (this._oDataModel.hasPendingChanges(sGroup)) {
+				await this._oDataModel.submitBatch(sGroup);
+			}
+		},
 	});
 });

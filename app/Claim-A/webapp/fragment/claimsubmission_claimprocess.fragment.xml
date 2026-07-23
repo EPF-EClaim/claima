@@ -144,16 +144,15 @@
                     </Select>
 
                     <!-- Email Approval -->
-                    <Label text="{i18n>label_claimprocess_req_emailapprove}" />
+                    <Label text="{i18n>label_claimdetails_input_ccc_switch}" />
                     <Switch
-                        id="switch_claimprocess_req_emailapprove"
+                        id="switch_claimdetails_input_ccc_switch"
                         state="{claimsubmission_input>/req_emailapprove}"
                         customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
-                        change="onSwitch_ClaimProcess_Req_EmailApprove"
                     >
                         <layoutData>
                             <FlexItemData growFactor="1" />

@@ -1,0 +1,225 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+	xmlns:mdcvh="sap.ui.mdc.valuehelp"
+	xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+    >
+
+    <Dialog
+        id="merchantRefundDialog"
+        title="Merchant Refund"
+        contentWidth="90%"
+        contentHeight="60%"
+        draggable="true"
+        resizable="true">
+
+        <content>
+
+            <VBox class="sapUiSmallMarginTop">
+
+                <Table
+                    id="merchantRefundTable"
+                    items="{request>/merchant_refunds}"
+                    width="100%">
+
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="Merchant Refunds" />
+                            <ToolbarSpacer />
+                            <Button
+                                icon="sap-icon://add"
+                                type="Transparent"
+                                tooltip="Add Row"
+                                press=".onAddMerchantRefundRow" 
+                                enabled="{= ${request>/view} === 'list' }"/>
+                        </Toolbar>
+                    </headerToolbar>
+
+                    <columns>
+                        <Column width="4rem">
+                            <Text text="No." />
+                        </Column>
+
+                        <Column width="8rem">
+                            <Text text="Card Number" />
+                        </Column>
+
+                        <Column width="14rem">
+                            <Text text="Cardholder Name" />
+                        </Column>
+
+                        <Column width="12rem">
+                            <Text text="Merchant Refund" />
+                        </Column>
+
+                        <Column width="12rem">
+                            <Text text="Merchant Refund Claim Type" />
+                        </Column>
+
+                        <Column width="12rem">
+                            <Text text="Merchant Refund Claim Item" />
+                        </Column>
+
+                        <Column width="12rem">
+                            <Text text="Merchant Refund Cost Center" />
+                        </Column>
+
+                        <Column width="3rem">
+                            <Text text="" />
+                        </Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+
+                                <Text text="{request>no}" />
+
+                                <Text text="{request>card_number}" />
+
+                                <Text text="{request>cardholder_name}" />
+
+                                <Input
+                                    value="{request>merchant_refund_amount}"
+                                    type="Number"
+                                    placeholder="0.00" 
+                                    enabled="{= ${request>/view} === 'list' }"/>
+
+                                <Select
+                                    selectedKey="{request>claim_type}"
+                                    id="req_claimtype"
+                                    required="true"
+                                    forceSelection="false"
+                                    change=".onSelect_CCC_ClaimType"
+                                    enabled="{= ${request>/view} === 'list' }"
+                                    items="{
+                                        path: 'employee>/ZCLAIM_TYPE',
+                                        sorter: {
+                                            path: 'CLAIM_TYPE_ID',
+                                            descending: false
+                                        },
+                                        filters: [{
+                                            path: 'REQUEST_TYPE',
+                                            operator: 'EQ',
+                                            value1: 'RT0001'
+                                        }],
+                                        parameters:{
+                                            $select: 'CLAIM_TYPE_ID,CLAIM_TYPE_DESC,PROJECT_CLAIM'
+                                        }
+                                    }"
+                                >
+                                    <items>
+                                        <core:Item
+                                            key="{employee>CLAIM_TYPE_ID}"
+                                            text="{employee>CLAIM_TYPE_DESC}"
+                                        />
+                                    </items>
+                                </Select>
+
+                                <Select
+                                    selectedKey="{request>claim_item}"
+                                    id="req_claimTypeItem"
+                                    forceSelection="false"
+                                    enabled="{= ${request>/view} === 'list' }"
+                                    items="{
+                                        path: 'employee>/ZCLAIM_TYPE_ITEM',
+                                        sorter: {
+                                            path: 'CLAIM_TYPE_ITEM_ID',
+                                            descending: false
+                                        }
+                                    }"
+                                    >
+                                    <items>
+                                        <core:Item
+                                            key="{employee>CLAIM_TYPE_ITEM_ID}"
+                                            text="{employee>CLAIM_TYPE_ITEM_DESC}"
+                                        />
+                                    </items>
+                                </Select>
+
+                                <mdc:Field
+                                    id="req_cc"
+                                    value="{request>costcenter}"
+                                    additionalValue="{request>costcenter}"
+                                    display="ValueDescription"
+                                    valueHelp="valuehelp_requestinput_altcc"
+                                    editMode="{= ${request>/view} === 'list' ? 'Editable' : 'ReadOnly'}"
+                                />
+
+                                <Button
+                                    icon="sap-icon://delete"
+                                    type="Transparent"
+                                    tooltip="Remove Row"
+                                    press=".onDeleteMerchantRefundRow" 
+                                    enabled="{= ${request>/view} === 'list' }"/>
+
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                    <dependents>
+                        <mdc:ValueHelp
+                            id="valuehelp_requestinput_altcc"
+                            delegate='\{
+                                "name": "claima/utils/ValueHelpDelegate_altcc",
+                                "payload": \{
+                                    "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                                    "columns": [
+                                        "\{i18n>valuehelp_claiminput_altcc_col_id\}",
+                                        "\{i18n>valuehelp_claiminput_altcc_col_name\}"
+                                    ]
+                                \}
+                            \}'
+                        >
+                            <mdc:typeahead>
+                                <mdcvh:Popover id="valuehelp_requestinput_altcc_pop">
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_requestinput_altcc_pop_MTable"
+                                        keyPath="COST_CENTER_ID"
+                                        descriptionPath="COST_CENTER_DESC"
+                                        caseSensitive="false"
+                                        useAsValueHelp="false"
+                                    >
+                                        <!-- create table via delegate-->
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Popover>
+                            </mdc:typeahead>
+                            <mdc:dialog>
+                                <mdcvh:Dialog
+                                    id="valuehelp_requestinput_altcc_dialog"
+                                    title="{i18n>valuehelp_claiminput_altcc}"
+                                >
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_requestinput_altcc_dialog_MTable"
+                                        keyPath="COST_CENTER_ID"
+                                        descriptionPath="COST_CENTER_DESC"
+                                        caseSensitive="false"
+                                    >
+                                        <!-- create table via delegate-->
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Dialog>
+                            </mdc:dialog>
+                        </mdc:ValueHelp>
+                    </dependents>
+                </Table>
+
+            </VBox>
+
+        </content>
+
+        <beginButton>
+            <Button
+                text="Save"
+                type="Emphasized"
+                press=".onMerchantRefundSave" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="Cancel"
+                press=".onMerchantRefundCancel" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

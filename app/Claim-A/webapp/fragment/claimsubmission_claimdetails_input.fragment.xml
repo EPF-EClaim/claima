@@ -1540,6 +1540,22 @@
                     selected="{claimitem_input>/claim_item/disclaimer}"
                 />
 
+                <!--CCC Switch-->
+                <Label text="{i18n>label_claimdetails_input_disclaimer}"/>
+                <Switch
+                    id="switch_claimprocess_req_emailapprove"
+                    state="{claimsubmission_input>/req_emailapprove}"
+                    customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
+                    customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
+                    visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                    ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                    ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
+                    change="onSwitch_ClaimProcess_Req_EmailApprove"
+                >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
+                </Switch>
 
                 <!-- Remarks -->
                 <Label text="{i18n>label_claimdetails_input_remarks}" />

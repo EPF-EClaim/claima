@@ -26,7 +26,8 @@ sap.ui.define([
             "HANDPHONE": "HANDPHONE",
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
-            "CERAMAH": "CERAMAH"
+            "CERAMAH": "CERAMAH",
+            "CORPO_CRED_CARD" : "CORPO_CRED_CARD"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -96,7 +97,12 @@ sap.ui.define([
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
-            "KEMATIAN": "KEMATIAN"
+            "KEMATIAN": "KEMATIAN",
+            "CASH_BACK" : "CASH_BACK",
+            "STATMENT_DUE" : "STATMENT_DUE",
+            "SERV_TAX" : "SERV_TAX",
+            "MERCH_RETURN" : "MERCH_RETURN",
+            "PERSONAL_EXP" : "PERSONAL_EXP"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -710,6 +716,13 @@ sap.ui.define([
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
+        },
+
+        "TravelClaimType" :{
+            "DLM_NEGARA" : "DLM_NEGARA",
+            "LUAR_NEGARA" : "LUAR_NEGARA",
+            "KURSUS_DLM_NEGARA" : "KURSUS_DLM_NEGARA",
+            "KURSUS_LUAR_NEGARA" : "KURSUS_LUAR_NEGARA"
         }
         
     }
