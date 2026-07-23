@@ -250,6 +250,8 @@ entity ZREQUEST_ITEM : managed {
         ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         ATTACHMENT3                : String         @Common.Label: 'Attachment 3';
+        POLICY_YEAR                : String(4)      @Common.Label: 'Year';
+        DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
