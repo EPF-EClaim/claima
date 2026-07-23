@@ -86,7 +86,8 @@
                     columnHeaderHeight="3rem"
                     selectionMode="None"
                     ariaLabelledBy="title"
-                    fixedColumnCount="2">
+                    fixedColumnCount="2"
+                    cellClick="onCellClick">
                     <table:Column width="10rem">
                         <Label text="{i18n>req_card_number}"></Label>
                         <table:template>
