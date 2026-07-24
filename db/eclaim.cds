@@ -419,6 +419,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_PUSH_BACK_DATE            : Date           @Common.Label: 'Last Push Back Date';
         LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
+        CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -572,7 +573,8 @@ entity ZCLAIM_ITEM : managed {
         POLICY_START_DATE          : Date           @Common.Label: 'Policy Start Date';
         POLICY_END_DATE            : Date           @Common.Label: 'Policy End Date';  
         DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
-        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3';              
+        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3'; 
+        CHARGED_TO_CCC             : Boolean        @Common.Label: 'Charged to CCC';             
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -1583,9 +1585,9 @@ entity ZEMP_DEPENDENT_POLICY : managed {
         POLICY_END_DATE       : Date        @Common.Label: 'Policy End Date';
 }
 
-entity ZINSURANCE_COMPANY_PROVIDER : managed {
-    key INSURANCE_COMPANY_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Company Provider ID';
-        INSURANCE_COMPANY_PROVIDER_DESC : String     @Common.Label: 'Insurance Company Provider Description';
+entity ZINSURANCE_MEDICAL_PROVIDER : managed {
+    key INSURANCE_MEDICAL_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Medical Provider ID';
+        INSURANCE_MEDICAL_PROVIDER_DESC : String     @Common.Label: 'Insurance Medical Provider Description';
         START_DATE                      : Date       @Common.Label: 'Start Date';
         END_DATE                        : Date       @Common.Label: 'End Date';
         STATUS                          : String(10) @Common.Label: 'Status';

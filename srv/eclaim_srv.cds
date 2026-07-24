@@ -1419,4 +1419,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
+    entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
 };
