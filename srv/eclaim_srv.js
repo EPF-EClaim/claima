@@ -473,7 +473,8 @@ module.exports = (srv) => {
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
 
-        const isCorpoCC = String(req.data.REQTYPEID) === String(Constant.RequestType.CORP_CC);
+        const isCorpoCC = String(req.data.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        console.log("req.data.REQTYPEID", req.data)
         const range_id = isCorpoCC
             ? Constant.NumberRange.REQUEST_CCC
             : Constant.NumberRange.REQUEST;

@@ -131,6 +131,37 @@
                         </table:template>
                     </table:Column>
                 </table:Table>
+
+                <!-- Totals summary row -->
+                <HBox justifyContent="End" class="sapUiSmallMarginTop" gap="2rem">
+                    <VBox>
+                        <Label text="Total" design="Bold"/>
+                        <Text text="{request>/corpo_totals/current_balance}" />
+                    </VBox>
+                    <VBox>
+                        <Label text="Service Tax" design="Bold"/>
+                        <Text text="{request>/corpo_totals/service_tax}" />
+                    </VBox>
+                    <VBox>
+                        <Label text="Total Refund" design="Bold"/>
+                        <Text text="{request>/corpo_totals/merchant_refunds_total}" />
+                    </VBox>
+                    <VBox>
+                        <Label text="Cash Back" design="Bold" />
+                        <Text text="{request>/corpo_totals/cashback}" />
+                    </VBox>
+                    <VBox>
+                        <Label text="Total Advanced" design="Bold"/>
+                        <Text text="{request>/corpo_totals/advance_amount}" />
+                    </VBox>
+                </HBox>
+
+                <HBox justifyContent="End" class="sapUiTinyMarginTop">
+                    <VBox>
+                        <Label text="Total Payment Due Amount" design="Bold"/>
+                        <Text text="{request>/corpo_totals/payment_due}" />
+                    </VBox>
+                </HBox>
             </VBox>
         </VBox>
     </VBox>

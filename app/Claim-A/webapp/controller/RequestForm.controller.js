@@ -150,10 +150,11 @@ sap.ui.define([
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
 
-				//add a participant set for CCC?
+				//add a participant set for CCC
 				if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
 					await this._setParticipantsForCC();
 					await this._loadCorpoCardsForItem(sReqId);
+					this._computeCorpoCardTotals();
 				}
 			} catch (error) {
 				console.log(error);
@@ -3292,6 +3293,35 @@ sap.ui.define([
 			if (this._oDataModel.hasPendingChanges(sGroup)) {
 				await this._oDataModel.submitBatch(sGroup);
 			}
+		},
+
+		_computeCorpoCardTotals: function () {
+			const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
+
+			const toNum = (v) => parseFloat(v) || 0;
+
+			const oTotals = aCorpoCards.reduce((acc, oCard) => {
+				acc.current_balance += toNum(oCard.current_balance);
+				acc.service_tax += toNum(oCard.service_tax);
+				acc.merchant_refunds_total += toNum(oCard.merchant_refunds_total);
+				acc.cashback += toNum(oCard.cashback);
+				acc.advance_amount += toNum(oCard.advance_amount);
+				return acc;
+			}, {
+				current_balance: 0,
+				service_tax: 0,
+				merchant_refunds_total: 0,
+				cashback: 0,
+				advance_amount: 0
+			});
+
+			oTotals.payment_due = oTotals.current_balance - oTotals.cashback;
+
+			Object.keys(oTotals).forEach((k) => {
+				oTotals[k] = oTotals[k].toFixed(2);
+			});
+
+			this._oReqModel.setProperty("/corpo_totals", oTotals);
 		},
 	});
 });

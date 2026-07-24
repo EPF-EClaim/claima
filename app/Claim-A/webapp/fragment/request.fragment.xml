@@ -63,6 +63,10 @@
 				<Select
 					selectedKey="{reqDialog>/claimtype}"
 					id="req_claimtype"
+					required="true"
+					forceSelection="false"
+					change=".onSelect_ClaimType"
+					enabled="{= !!${reqDialog>/reqtype}}"
 					items="{
 						path: 'employee>/ZCLAIM_TYPE',
 						sorter: {
