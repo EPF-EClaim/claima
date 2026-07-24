@@ -3038,9 +3038,9 @@ sap.ui.define([
 				// Clone so dialog edits don't mutate the row until Save
 				aRefunds = JSON.parse(JSON.stringify(aRefunds));
 			}
-
 			const oRefundModel = new sap.ui.model.json.JSONModel({
-				merchant_refunds: aRefunds
+				merchant_refunds: aRefunds,
+				view: this._oReqModel.getProperty("/view") // pass current view state into dialog model
 			});
 
 			this._oMerchantRefundDialog.setModel(oRefundModel, "request");

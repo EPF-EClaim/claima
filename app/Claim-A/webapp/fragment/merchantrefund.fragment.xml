@@ -32,7 +32,7 @@
                                 type="Transparent"
                                 tooltip="Add Row"
                                 press=".onAddMerchantRefundRow" 
-                                enabled="{= ${request>/view} === 'list' }"/>
+                                enabled="{= ${request>/view} !== 'view' }"/>
                         </Toolbar>
                     </headerToolbar>
 
@@ -84,7 +84,7 @@
                                     value="{request>merchant_refund_amount}"
                                     type="Number"
                                     placeholder="0.00" 
-                                    enabled="{= ${request>/view} === 'list' }"/>
+                                    enabled="{= ${request>/view} !== 'view' }"/>
 
                                 <Select
                                     selectedKey="{request>claim_type}"
@@ -92,7 +92,7 @@
                                     required="true"
                                     forceSelection="false"
                                     change=".onSelect_CCC_ClaimType"
-                                    enabled="{= ${request>/view} === 'list' }"
+                                    enabled="{= ${request>/view} !== 'view' }"
                                     items="{
                                         path: 'employee>/ZCLAIM_TYPE',
                                         sorter: {
@@ -121,7 +121,7 @@
                                     selectedKey="{request>claim_item}"
                                     id="req_claimTypeItem"
                                     forceSelection="false"
-                                    enabled="{= ${request>/view} === 'list' }"
+                                    enabled="{= ${request>/view} !== 'view' }"
                                     items="{
                                         path: 'employee>/ZCLAIM_TYPE_ITEM',
                                         sorter: {
@@ -144,7 +144,7 @@
                                     additionalValue="{request>costcenter}"
                                     display="ValueDescription"
                                     valueHelp="valuehelp_requestinput_altcc"
-                                    editMode="{= ${request>/view} === 'list' ? 'Editable' : 'ReadOnly'}"
+                                    editMode="{= ${request>/view} !== 'view' ? 'Editable' : 'ReadOnly'}"
                                 />
 
                                 <Button
@@ -152,7 +152,7 @@
                                     type="Transparent"
                                     tooltip="Remove Row"
                                     press=".onDeleteMerchantRefundRow" 
-                                    enabled="{= ${request>/view} === 'list' }"/>
+                                    enabled="{= ${request>/view} !== 'view' }"/>
 
                             </cells>
                         </ColumnListItem>
