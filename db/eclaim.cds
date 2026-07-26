@@ -415,6 +415,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_PUSH_BACK_DATE            : Date           @Common.Label: 'Last Push Back Date';
         LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
+        CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -565,6 +566,7 @@ entity ZCLAIM_ITEM : managed {
         DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         COURSE_DURATION            : Integer        @Common.Label: 'Course Duration';
+        CHARGED_TO_CCC             : Boolean @Common.Label: 'Charged to CCC';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY

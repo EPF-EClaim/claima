@@ -144,9 +144,9 @@
                     </Select>
 
                     <!-- Email Approval -->
-                    <Label text="{i18n>label_claimdetails_input_ccc_switch}" />
+                    <Label text="{i18n>label_claimprocess_req_emailapprove}" />
                     <Switch
-                        id="switch_claimdetails_input_ccc_switch"
+                        id="switch_claimprocess_req_emailapprove"
                         state="{claimsubmission_input>/req_emailapprove}"
                         customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"

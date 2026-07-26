@@ -1540,23 +1540,6 @@
                     selected="{claimitem_input>/claim_item/disclaimer}"
                 />
 
-                <!--CCC Switch-->
-                <Label text="{i18n>label_claimdetails_input_disclaimer}"/>
-                <Switch
-                    id="switch_claimprocess_req_emailapprove"
-                    state="{claimsubmission_input>/req_emailapprove}"
-                    customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
-                    customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
-                    visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
-                                    ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
-                                    ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
-                    change="onSwitch_ClaimProcess_Req_EmailApprove"
-                >
-                    <layoutData>
-                        <FlexItemData growFactor="1" />
-                    </layoutData>
-                </Switch>
-
                 <!-- Remarks -->
                 <Label text="{i18n>label_claimdetails_input_remarks}" />
                 <Input
@@ -1663,6 +1646,26 @@
                         ${claimitem_input>/claim_item/attachment_file_2} !== null
                     }"
                 />
+
+                <!--CCC Switch-->
+                <Label text="{i18n>label_claimdetails_input_ccc_switch}"/>
+                <Switch
+                    id="switch_claimprocess_charged_to_ccc"
+                    state="{claimsubmission_input>/charged_to_ccc}"
+                    customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
+                    customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
+                    visible="{
+                        parts: [
+                            'claimsubmission_input>/claim_header/card_no',
+                            'claimitem_input>/claim_item/claim_type_item_id'
+                        ],
+                        formatter: '.formatCCCSwitchVisibility'
+                    }"
+                >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
+                </Switch>
 
             </f:content>
             <f:dependents>

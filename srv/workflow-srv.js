@@ -33,7 +33,8 @@ const {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
     determineLastApproverLevel,
-    resolveActionDescriptor
+    resolveActionDescriptor,
+    updateCorpoCardAdvance
 } = require('./workflow/action/action-helper');
 const {
     updateUsedEntitlementAmount
@@ -205,6 +206,20 @@ module.exports = (srv) => {
                 console.log("Final approval Start");
                 const oSendClaimBatch = await sendClaimBatch(sId);
                 console.log("Final Approval: ", oSendClaimBatch);
+
+                try {
+                    await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+                } catch (oAdvErr) {
+                    console.error("Failed to update corpo card advance:", oAdvErr);
+                    throw new Error('Error encountered during Corporate Card Advance update');
+                }
+            }
+            // for non final approve
+            try {
+                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+            } catch (oAdvErr) {
+                console.error("Failed to update corpo card advance:", oAdvErr);
+                throw new Error('Error encountered during Corporate Card Advance update');
             }
             bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }

@@ -171,7 +171,8 @@ const Constant = {
         "KEMATIAN": "KEMATIAN",
         "SEWAPETAK": "SEWAPETAK",
         "KEAHLIANKELAB": "S_K.KELAB",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "PERSONAL_EXPENSE": "PERSONAL_EXPENSE"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",

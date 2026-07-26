@@ -379,6 +379,8 @@ sap.ui.define([
 					"cost_center": null,
 					"marriage_category": null,	
 					"project_claim": false,
+					"has_ccc": false,
+					"card_no":null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -474,6 +476,7 @@ sap.ui.define([
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
 					"corporate_cred_card": false,
+					"card_no": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -530,7 +533,7 @@ sap.ui.define([
 				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
-
+			await this._setHasCorporateCard();
 			// set claim items based on selected claim type
 			var oSelectClaimType = this.byId("select_claimprocess_claimtype");
 			var oBindingSelectClaimType = oSelectClaimType.getBinding("items");
@@ -1266,6 +1269,7 @@ sap.ui.define([
 				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
 				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
 				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
+				CARD_NO: oInputModel.getProperty("/claimtype/card_no")
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
@@ -2168,6 +2172,41 @@ sap.ui.define([
 			} catch (oError) {
 				return [];
 			}
-		}
+		},
+
+		async _setHasCorporateCard() {
+			const sUserId = this._oSessionModel.getProperty("/userId");
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			try {
+				const oListBinding = this._oDataModel.bindList(
+					"/ZCORPORATE_CARD",
+					null,
+					null,
+					[
+						new Filter("CARDHOLDER_ID", FilterOperator.EQ, sUserId)
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+
+				if (aCtx.length > 0) {
+					const oCardData = aCtx[0].getObject();
+					oInputModel.setProperty("/claimtype/has_ccc", true);
+					oInputModel.setProperty("/claimtype/card_no", oCardData.CARD_NO);
+				} else {
+					oInputModel.setProperty("/claimtype/has_ccc", false);
+					oInputModel.setProperty("/claimtype/card_no", null);
+				}
+
+			} catch (e) {
+				console.error("Failed to check corporate card ownership:", e);
+				oInputModel.setProperty("/claimtype/has_ccc", false);
+				oInputModel.setProperty("/claimtype/card_no", null);
+			}
+		},
 	});
 });

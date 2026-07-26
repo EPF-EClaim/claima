@@ -352,7 +352,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRAVEL_FAMILY_NOW_LATER,
                 ZFAMILY_TIMING.FAMILY_TIMING_DESC,
                 PROJECT_CODE,
-                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC
+                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
+                CARD_NO
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as

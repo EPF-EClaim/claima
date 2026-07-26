@@ -217,9 +217,162 @@ async function getApproversDetails(sId, oDescriptor) {
     return aApproversDetails;
 
 }
+
+async function updateCorpoCardAdvance(oTx, sId, sStatus) {
+    const aCommitStatuses = [Constant.Status.DRAFT, Constant.Status.PENDING_APPROVAL, Constant.Status.PUSH_BACK];
+    const bIsApproved = sStatus === Constant.Status.APPROVED;
+    const bIsCommit = aCommitStatuses.includes(sStatus);
+
+    if (!bIsApproved && !bIsCommit) {
+        return true;
+    }
+
+    const sPrefix = sId.slice(0,3);
+    console.log("sPrefix",sPrefix)
+    if (sPrefix === Constant.WorkflowType.REQUEST) {
+        const aItemParts = await oTx.run(
+            SELECT.from('ZREQ_ITEM_CCC_PART')
+                .where({ REQUEST_ID: sId })
+        );
+
+        if (!aItemParts || aItemParts.length === 0) return true;
+
+        return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), bIsApproved, bIsCommit);
+
+    } else if (sPrefix === Constant.WorkflowType.CLAIM) {
+        const aClaimItems = await oTx.run(
+            SELECT.from('ZCLAIM_ITEM')
+                .where({ CLAIM_ID: sId, CHARGED_TO_CCC: true })
+        );
+
+        if (!aClaimItems || aClaimItems.length === 0) return true;
+
+        const mAmountByEmp = _sumClaimItemsByEmployee(aClaimItems);
+        const mAmountByCard = await _resolveCardNoForEmployees(oTx, mAmountByEmp);
+
+        return _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bIsCommit);
+
+    } else {
+        console.warn(`Unrecognized ID format, cannot determine Request vs Claim: ${sId}`);
+        return true;
+    }
+}
+
+function _sumRequestPartsByCard(aItemParts) {
+    const mAmountByCard = {};
+    aItemParts.forEach((oPart) => {
+        const sCardNo = oPart.CARD_NO;
+        const fAmount = parseFloat(oPart.STATEMENT_DUE_AMT || 0)
+                       - parseFloat(oPart.CASHBACK || 0);
+
+        mAmountByCard[sCardNo] = (mAmountByCard[sCardNo] || 0) + fAmount;
+    });
+    return mAmountByCard;
+}
+
+function _sumClaimItemsByEmployee(aClaimItems) {
+    const mAmountByEmp = {};
+    aClaimItems.forEach((oItem) => {
+        const sEmpId = oItem.EMP_ID;
+        const fAmount = parseFloat(oItem.AMOUNT || 0);
+
+        mAmountByEmp[sEmpId] = (mAmountByEmp[sEmpId] || 0) + fAmount;
+    });
+    return mAmountByEmp;
+}
+
+async function _resolveCardNoForEmployees(oTx, mAmountByEmp) {
+    const aEmpIds = Object.keys(mAmountByEmp);
+    if (aEmpIds.length === 0) return {};
+
+    const aCards = await oTx.run(
+        SELECT.from('ZCORPORATE_CARD')
+            .where({ CARDHOLDER_ID: aEmpIds })
+    );
+
+    const mAmountByCard = {};
+    aCards.forEach((oCard) => {
+        const fAmount = mAmountByEmp[oCard.CARDHOLDER_ID] || 0;
+        if (fAmount) {
+            mAmountByCard[oCard.CARD_NO] = (mAmountByCard[oCard.CARD_NO] || 0) + fAmount;
+        }
+    });
+
+    return mAmountByCard;
+}
+
+async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bIsCommit) {
+    const aCards = await oTx.run(
+        SELECT.from('ZCORPORATE_CARD')
+            .where({ CARD_NO: Object.keys(mAmountByCard) })
+    );
+
+    const mCardholderByCard = {};
+    aCards.forEach((oCard) => {
+        mCardholderByCard[oCard.CARD_NO] = oCard.CARDHOLDER_ID;
+    });
+
+    for (const sCardNo of Object.keys(mAmountByCard)) {
+        const fAmount = mAmountByCard[sCardNo];
+        const sCardholderId = mCardholderByCard[sCardNo];
+
+        if (!sCardholderId) {
+            console.warn(`No cardholder found for CARD_NO: ${sCardNo}`);
+            continue;
+        }
+
+        const [oExisting] = await oTx.run(
+            SELECT.from('ZCORPORATE_CARD_ADVANCED')
+                .where({ CARD_NO: sCardNo, CARDHOLDER_ID: sCardholderId })
+        );
+
+        let fMonthlyAdvanced = oExisting ? parseFloat(oExisting.MONTHLY_ADVANCED_AMT || 0) : 0;
+        let fCommitOffset = oExisting ? parseFloat(oExisting.COMMIT_OFFSET_AMT || 0) : 0;
+        let fActualOffset = oExisting ? parseFloat(oExisting.ACTUAL_OFFSET_AMT || 0) : 0;
+
+        if (bIsApproved) {
+            fMonthlyAdvanced += fAmount;
+            fActualOffset += fAmount;
+        } else if (bIsCommit) {
+            fCommitOffset += fAmount;
+        }
+
+        const fCurrentBalance = fMonthlyAdvanced - fActualOffset;
+
+        const oPayload = {
+            MONTHLY_ADVANCED_AMT: fMonthlyAdvanced,
+            COMMIT_OFFSET_AMT: fCommitOffset,
+            ACTUAL_OFFSET_AMT: fActualOffset,
+            CURRENT_ADVANCED_BALANCE: fCurrentBalance,
+            MODIFIEDAT: new Date().toISOString(),
+        };
+
+        if (oExisting) {
+            await oTx.run(
+                UPDATE('ZCORPORATE_CARD_ADVANCED')
+                    .set(oPayload)
+                    .where({ CARD_NO: sCardNo, CARDHOLDER_ID: sCardholderId })
+            );
+        } else {
+            await oTx.run(
+                INSERT.into('ZCORPORATE_CARD_ADVANCED').entries({
+                    CARD_NO: sCardNo,
+                    CARDHOLDER_ID: sCardholderId,
+                    STATUS: 'ACTIVE',
+                    CREATEDAT: new Date().toISOString(),
+                    ...oPayload
+                })
+            );
+        }
+    }
+
+    return true;
+}
+
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
     determineLastApproverLevel,
-    resolveActionDescriptor
+    resolveActionDescriptor,
+    updateCorpoCardAdvance
 };

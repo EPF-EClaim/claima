@@ -723,6 +723,32 @@ sap.ui.define([
             "LUAR_NEGARA" : "LUAR_NEGARA",
             "KURSUS_DLM_NEGARA" : "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA" : "KURSUS_LUAR_NEGARA"
+        },
+
+        "TravelClaimItems" : {
+            "FLIGHT_L" : "FLIGHT_L",
+            "HOTEL_L" : "HOTEL_L",
+            "LODGING_L" : "LODGING_L",
+            "MAKAN_L" : "MAKAN_L",
+            "YURAN" : "YURAN",
+            "CASH_REPAY"  : "CASH_REPAY",
+            "DOBI" : "DOBI",
+            "KILOMETER" : "KILOMETER",
+            "TAMBANG" : "TAMBANG",
+            "MISC" : "MISC",
+            "PARKING" : "PARKING",
+            "EXCESS" : "EXCESS",
+            "FLIGHT_O" : "FLIGHT_O",
+            "HOTEL_O" : "HOTEL_O",
+            "LODG_O" : "LODG_O",
+            "MAKAN_O" : "MAKAN_O",
+            "MATAWANG" : "MATAWANG",
+            "PELBAGAI" : "PELBAGAI",
+            "PKN_PANAS" : "PKN_PANAS",
+            "SERVICES" : "SERVICES",
+            "TELEFON" : "TELEFON",
+            "TIPS" : "TIPS",
+            "VISA" : "VISA",
         }
         
     }

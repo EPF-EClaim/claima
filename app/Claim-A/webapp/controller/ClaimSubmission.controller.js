@@ -784,6 +784,7 @@ sap.ui.define([
 				travel_alone_family: o.TRAVEL_TYPE_DESC,
 				travel_family_now_later: o.FAMILY_TIMING_DESC,
 				mode_of_transfer_id: o.MODE_OF_TRANSFER,
+				card_no: o.CARD_NO,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -1149,6 +1150,7 @@ sap.ui.define([
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
 					"mode_of_transfer_id": null,
+					"card_no": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -1632,7 +1634,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items", tempItems.claim_items);
 				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
-			}
+			}	
+			//for CCC personal expense
+			await this._calculateClaimTotal();
 
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
@@ -2593,6 +2597,9 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/round_trip")) {
 				await this.onChange_ClaimDetails_Kilometer();
 			}
+
+			//for CCC personal expense
+			await this._calculateClaimTotal();
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -3016,6 +3023,10 @@ sap.ui.define([
 					"/claim_header/total_claim_amount",
 					nTotal
 				);
+
+				//for CCC personal expense
+				await this._calculateClaimTotal();
+
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -4251,11 +4262,19 @@ sap.ui.define([
 				}
 
 				// Cash Advance Repayment Validation checking
-				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
-					BusyIndicator.hide();
-					return;
-				}
+				var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+				var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+
+				var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+				var bHasCard = !!sCardNo;
+
+				if (!bHasCard && !bIsTravelClaimType) {
+					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
+						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+						BusyIndicator.hide();
+						return;
+					}
+}
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				// CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -5624,6 +5643,42 @@ sap.ui.define([
 				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
-		}
+		},
+		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
+			if (!sCardNo || !sClaimTypeItemId) return false;
+			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		_calculateClaimTotal: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input"); // adjust model name as needed
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+
+			// calculate total excluding "Personal Expense" items
+			var nTotal = aClaimItems
+				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.PERSONAL_EXPENSE)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+			var bHasCard = !!sCardNo;
+
+			if (bIsTravelClaimType && bHasCard) {
+				var nPersonalExpenseAmt = aClaimItems
+					.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXPENSE)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				if (nPersonalExpenseAmt > 0) {
+					var nNewTotal = nTotal - nPersonalExpenseAmt;
+					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
+					return;
+				}
+			}
+
+			// Default: no offset applied
+			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+		},
 	});
 });
