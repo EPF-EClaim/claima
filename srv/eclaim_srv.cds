@@ -1307,7 +1307,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP
+                    ZEMP_MASTER.DEP,
+                    CASH_ADVANCE as CASH_ADVANCE_AMOUNT
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
@@ -1319,7 +1320,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP
+                    ZEMP_MASTER.DEP, 
+                    CASH_ADVANCE_AMOUNT
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
