@@ -579,6 +579,7 @@ entity ZCLAIM_ITEM : managed {
         ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3';
         CHARGED_TO_CCC             : Boolean        @Common.Label: 'Charged to CCC';
         POLICY_YEAR                : String(4)      @Common.Label: 'Policy Year';
+        INSURANCE_MEDICAL_PROVIDER_ID : String(3)   @Common.Label: 'Insurance Medical Provider';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -655,6 +656,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
         ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
                                          on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+         ZINSURANCE_MEDICAL_PROVIDER: Association to ZINSURANCE_MEDICAL_PROVIDER
+                                         on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
 }
 
 entity ZLODGING_CAT : managed {
