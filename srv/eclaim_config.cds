@@ -8278,6 +8278,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with {
     @Core.Computed SUBSTITUTE_RULE_ID;
     VALID_FROM @(Common.Label: 'Valid From');
     VALID_TO   @(Common.Label: 'Valid To');
+    SUBSTITUTE_COMMENT @(Common.FieldControl : #Mandatory);
 }
 
 annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
@@ -8320,10 +8321,22 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver Name'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : SUBSTITUTE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Substitute ID'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitute Name'
+            },             
             {
                 $Type            : 'UI.DataField',
                 Value            : VALID_FROM,
@@ -8335,7 +8348,13 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
                 Value            : VALID_TO,
                 ![@UI.Importance]: #High,
                 Label            : 'Valid To'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_COMMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Comment'
+            }                                      
         ]
     }
 ) {
@@ -8395,4 +8414,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             ]
         }
     );
+    SUBSTITUTE_COMMENT @(
+        Common.Label : 'Comment',
+    )
 };
