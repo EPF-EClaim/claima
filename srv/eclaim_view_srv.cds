@@ -512,7 +512,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.POLICY_YEAR,
                 PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
                 CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
-                NextPolicy.POLICY_NUMBER as NEXT_POLICY_NUMBER                               
+                NextPolicy.POLICY_NUMBER as NEXT_POLICY_NUMBER,
+                ZCLAIM_ITEM.POLICY_START_DATE,
+                ZCLAIM_ITEM.POLICY_END_DATE,
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                              
         };
 
     entity ZEMP_REQUEST_STATUS            as
