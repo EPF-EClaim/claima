@@ -88,7 +88,7 @@ entity ZEMP_MASTER : managed {
         ZDIVISION                     : Association to ZDIVISION
                                             on ZDIVISION.DIVISION = DIVISION;
         ZSTATE_ORIGIN                 : Association to ZSTATE
-                                            on ZSTATE_ORIGIN.STATE_ID  = STATE_OF_ORIGIN;                                             
+                                            on ZSTATE_ORIGIN.STATE_ID = STATE_OF_ORIGIN;
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -333,27 +333,30 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID    : String     @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC  : String     @Common.Label    : 'Claim Type Description';
-        GL_ACCOUNT       : String     @Common.Label    : 'GL Account';
-        START_DATE       : Date       @Common.Label    : 'Start Date';
-        END_DATE         : Date       @Common.Label    : 'End Date';
-        STATUS           : String(10) @Common.Label    : 'Status';
-        REQUEST_TYPE     : String     @Common.Label    : 'Request Type';
-        IND_OR_GROUP     : String(4)  @Common.Label    : 'Individual/Group';
-        PROJECT_CLAIM    : Boolean    @Common.Label    : 'Project Claim';
-        COST_CENTER      : String(9)  @Common.Label    : 'Cost Center';
-        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
-                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
-                                      @assert.integrity: false;
-        ZREQUEST_TYPE    : Association to ZREQUEST_TYPE
-                               on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
-        ZINDIV_GROUP     : Association to ZINDIV_GROUP
-                               on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
-        ZCOST_CENTER     : Association to ZCOST_CENTER
-                               on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZGL_ACCOUNT      : Association to ZGL_ACCOUNT
-                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+    key CLAIM_TYPE_ID          : String     @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC        : String     @Common.Label    : 'Claim Type Description';
+        GL_ACCOUNT             : String     @Common.Label    : 'GL Account';
+        START_DATE             : Date       @Common.Label    : 'Start Date';
+        END_DATE               : Date       @Common.Label    : 'End Date';
+        STATUS                 : String(10) @Common.Label    : 'Status';
+        REQUEST_TYPE           : String     @Common.Label    : 'Request Type';
+        IND_OR_GROUP           : String(4)  @Common.Label    : 'Individual/Group';
+        PROJECT_CLAIM          : Boolean    @Common.Label    : 'Project Claim';
+        COST_CENTER            : String(9)  @Common.Label    : 'Cost Center';
+        CASH_ADVANCE_CAT_ID    : String(10) @Common.Label    : 'Cash Advance Category';
+        ZCLAIM_TYPE_ITEM       : Composition of many ZCLAIM_TYPE_ITEM
+                                     on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
+                                            @assert.integrity: false;
+        ZREQUEST_TYPE          : Association to ZREQUEST_TYPE
+                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
+        ZINDIV_GROUP           : Association to ZINDIV_GROUP
+                                     on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER           : Association to ZCOST_CENTER
+                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZGL_ACCOUNT            : Association to ZGL_ACCOUNT
+                                     on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCASH_ADVANCE_CATEGORY : Association to ZCASH_ADVANCE_CATEGORY
+                                     on ZCASH_ADVANCE_CATEGORY.CASH_ADVANCE_CAT_ID = CASH_ADVANCE_CAT_ID;
 
 }
 
@@ -571,11 +574,11 @@ entity ZCLAIM_ITEM : managed {
         INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
         COURSE_DURATION            : Integer        @Common.Label: 'Course Duration';
         POLICY_START_DATE          : Date           @Common.Label: 'Policy Start Date';
-        POLICY_END_DATE            : Date           @Common.Label: 'Policy End Date';  
+        POLICY_END_DATE            : Date           @Common.Label: 'Policy End Date';
         DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
-        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3'; 
-        CHARGED_TO_CCC             : Boolean        @Common.Label: 'Charged to CCC';             
-        POLICY_YEAR                : String(4)      @Common.Label: 'Policy Year';            
+        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3';
+        CHARGED_TO_CCC             : Boolean        @Common.Label: 'Charged to CCC';
+        POLICY_YEAR                : String(4)      @Common.Label: 'Policy Year';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -1545,36 +1548,37 @@ entity ZCONFIG_VARIABLE : managed {
 }
 
 entity ZCORPORATE_CARD : managed {
-    key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID  : String      @mandatory  @Common.Label: 'Cardholder Employee ID';
-    key PRINCIPLE      : Boolean      @mandatory  @Common.Label: 'Principle';
-    START_DATE         : Date         @Common.Label: 'Start Date';
-    END_DATE           : Date         @Common.Label: 'End Date';
-    CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';
-    STATEMENT_DATE     : Integer      @Common.Label: 'Statement Date (Day)';
-    DUE_DATE           : Integer      @Common.Label: 'Statement Due Date (Day)';
-    EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
-    REMARKS            : String(500)  @Common.Label: 'Remarks';
+    key CARD_NO         : String(16)  @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID   : String      @mandatory  @Common.Label: 'Cardholder Employee ID';
+    key PRINCIPLE       : Boolean     @mandatory  @Common.Label: 'Principle';
+        START_DATE      : Date        @Common.Label: 'Start Date';
+        END_DATE        : Date        @Common.Label: 'End Date';
+        CARDHOLDER_NAME : String(200) @Common.Label: 'Cardholder Name';
+        STATEMENT_DATE  : Integer     @Common.Label: 'Statement Date (Day)';
+        DUE_DATE        : Integer     @Common.Label: 'Statement Due Date (Day)';
+        EXPIRY_DATA     : String(5)   @Common.Label: 'Card Expiry Date (MM/YY)';
+        REMARKS         : String(500) @Common.Label: 'Remarks';
 }
- 
+
 entity ZCORPORATE_CARD_ADVANCED : managed {
-    key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID           : Integer         @mandatory  @Common.Label: 'Cardholder Employee ID';
-    STATUS                      : String          @Common.Label: 'Status';
-    MONTHLY_ADVANCED_AMT        : Decimal(16, 2)  @Common.Label: 'Monthly Advanced Amount';
-    COMMIT_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Commitment Offset Amount';
-    ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
-    CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
+    key CARD_NO                  : String(16)     @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID            : Integer        @mandatory  @Common.Label: 'Cardholder Employee ID';
+        STATUS                   : String         @Common.Label: 'Status';
+        MONTHLY_ADVANCED_AMT     : Decimal(16, 2) @Common.Label: 'Monthly Advanced Amount';
+        COMMIT_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Commitment Offset Amount';
+        ACTUAL_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Actual Offset Amount';
+        CURRENT_ADVANCED_BALANCE : Decimal(16, 2) @Common.Label: 'Current Advanced Balance';
 }
-entity ZREQ_ITEM_CCC_PART : managed{
-    key REQUEST_ID          : String @mandatory @Common.Label: 'Request ID';
-    key REQUEST_SUB_ID      : String @mandatory @Common.Label: 'Request Sub ID';
-    key CARD_NO             : String(16)      @mandatory  @Common.Label: 'Credit Card No';
-    STATEMENT_DUE_AMT       : Decimal(16, 2) @Common.Label: 'Statement Due Amount';
-    SERVICE_TAX             : Decimal(16, 2) @Common.Label: 'Service Tax';
-    CASHBACK                : Decimal(16, 2) @Common.Label: 'Cashback';
-    MERCHANT_REFUND_AMT     : Decimal(16, 2) @Common.Label: 'Merchant Refund';
-    MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
+
+entity ZREQ_ITEM_CCC_PART : managed {
+    key REQUEST_ID          : String         @mandatory  @Common.Label: 'Request ID';
+    key REQUEST_SUB_ID      : String         @mandatory  @Common.Label: 'Request Sub ID';
+    key CARD_NO             : String(16)     @mandatory  @Common.Label: 'Credit Card No';
+        STATEMENT_DUE_AMT   : Decimal(16, 2) @Common.Label: 'Statement Due Amount';
+        SERVICE_TAX         : Decimal(16, 2) @Common.Label: 'Service Tax';
+        CASHBACK            : Decimal(16, 2) @Common.Label: 'Cashback';
+        MERCHANT_REFUND_AMT : Decimal(16, 2) @Common.Label: 'Merchant Refund';
+        MERCHANT_REFUND_ARR : String         @Common.Label: 'Merchant Refund List';
 }
 
 entity ZINSURANCE_MEDICAL_PROVIDER : managed {
@@ -1585,3 +1589,10 @@ entity ZINSURANCE_MEDICAL_PROVIDER : managed {
         STATUS                          : String(10) @Common.Label: 'Status';
 }
 
+entity ZCASH_ADVANCE_CATEGORY : managed {
+    key CASH_ADVANCE_CAT_ID   : String(10)  @mandatory  @Common.Label: 'Cash Advance Category ID';
+        CASH_ADVANCE_CAT_DESC : String      @Common.Label: 'Cash Advance Category Description';
+        START_DATE            : Date        @Common.Label: 'Start Date';
+        END_DATE              : Date        @Common.Label: 'End Date';
+        STATUS                : String(10)  @Common.Label: 'Status';
+}
