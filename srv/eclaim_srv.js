@@ -4386,4 +4386,37 @@ module.exports = (srv) => {
         return false;
     });
 
+    async function getGLAccountByProjectCode(tx, sProjectCode) {
+    if (!sProjectCode) {
+        return null;
+    }
+
+    const oProject = await tx.run(
+        SELECT.one
+            .from('ZPROJECT_HDR')
+            .columns('GL_ACCOUNT')
+            .where({
+                PROJECT_CODE_IO: sProjectCode
+            })
+    );
+
+    return oProject?.GL_ACCOUNT || null;
+}
+
+    srv.on('getGLAccountByProjectCode', async (req) => {
+
+    try {
+
+        const tx = cds.tx(req);
+
+        return await getGLAccountByProjectCode(
+            tx,
+            req.data.sProjectCode
+        );
+
+    } catch (error) {
+        req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+    }
+});
+
 }

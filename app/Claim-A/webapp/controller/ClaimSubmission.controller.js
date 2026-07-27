@@ -1422,8 +1422,26 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 
 				//// get GL account
+				// const oModel = this.getOwnerComponent().getModel();
+				// var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
+				// oInputModel.setProperty("/claim_item/gl_account", glAccount);
+				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
-				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
+
+				var glAccount;
+
+				if (sProjectCode) {
+					glAccount = await Utility.getGLAccountByProjectCode(
+						oModel,
+						sProjectCode
+					);
+				} else {
+					glAccount = await this._getGLAccount(
+						oModel,
+						oInputModel.getProperty("/claim_item/claim_type_id")
+					);
+				}
+
 				oInputModel.setProperty("/claim_item/gl_account", glAccount);
 				//// get cost center
 				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || null;
@@ -4492,6 +4510,7 @@ sap.ui.define([
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
 							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+							console.log("Approver Determination Response:", oResponse);
 							if (oResponse.Success) {
 								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
