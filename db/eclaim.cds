@@ -572,7 +572,8 @@ entity ZCLAIM_ITEM : managed {
         POLICY_START_DATE          : Date           @Common.Label: 'Policy Start Date';
         POLICY_END_DATE            : Date           @Common.Label: 'Policy End Date';  
         DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
-        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3';              
+        ATTACHMENT_FILE_3          : String         @Common.Label: 'Attachment 3';  
+        POLICY_YEAR                : String(4)      @Common.Label: 'Policy Year';            
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -1579,6 +1580,7 @@ entity ZEMP_DEPENDENT_POLICY : managed {
     key DEPENDENT_NATIONAL_ID : String      @mandatory  @Common.Label: 'Dependent National ID';
     key RECORD_ID             : String(20)  @mandatory  @Common.Label: 'Record ID';
     key POLICY_NUMBER         : String      @mandatory  @Common.Label: 'Policy Number';
+    key POLICY_YEAR           : String(4)   @mandatory  @Common.Label: 'Year';
         POLICY_START_DATE     : Date        @Common.Label: 'Policy Start Date';
         POLICY_END_DATE       : Date        @Common.Label: 'Policy End Date';
 }

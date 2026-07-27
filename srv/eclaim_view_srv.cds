@@ -359,7 +359,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
-        projection on ECLAIM.ZCLAIM_ITEM {
+        select from ECLAIM.ZCLAIM_ITEM 
+            left join ECLAIM.ZEMP_DEPENDENT_POLICY as PrevPolicy
+            on PrevPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
+            and PrevPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR - 1
+            left join ECLAIM.ZEMP_DEPENDENT_POLICY as CurrPolicy
+            on CurrPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
+            and CurrPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR
+            left join ECLAIM.ZEMP_DEPENDENT_POLICY as NextPolicy
+            on NextPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
+            and NextPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR + 1
+        {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
                 CLAIM_TYPE_ID,
@@ -442,7 +452,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 NO_OF_DAYS,
                 FAMILY_COUNT,
                 FUNERAL_TRANSPORTATION,
-                createdBy,
+                ZCLAIM_ITEM.createdBy,
                 ACTUAL_AMOUNT,
                 CURRENCY_CODE,
                 CURRENCY_RATE,
@@ -451,7 +461,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZFARE_TYPE.FARE_TYPE_DESC,
                 VEHICLE_CLASS_ID,
                 ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
-                EMP_ID,
+                ZCLAIM_ITEM.EMP_ID,
                 ZEMP_MASTER.NAME,
                 ROUND_TRIP,
                 TRIP_START_TIME,
@@ -472,7 +482,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPARTURE_TIME,
                 ARRIVAL_TIME,
                 DEPENDENT,
-                POLICY_NUMBER,
+                ZCLAIM_ITEM.POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
                 ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
                 ZCLAIM_HEADER.COURSE_CODE,
@@ -496,7 +506,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.ZSTATUS.STATUS_DESC,
                 INTERNAL_ORDER,
                 COURSE_DURATION,
-                ATTACHMENT_FILE_3
+                ATTACHMENT_FILE_3,
+                ZCLAIM_ITEM.POLICY_YEAR,
+                PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
+                CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
+                NextPolicy.POLICY_NUMBER as NEXT_POLICY_NUMBER                
         };
 
     entity ZEMP_REQUEST_STATUS            as

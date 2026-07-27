@@ -3893,10 +3893,10 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) return;
 
-            // Admin can sees their own department only
-            req.query.where({
-                DEP: oEmp.DEP
-            });
+            // Admin can sees their own department only & only where its Non Cash Advance
+            req.query
+            .where({ DEP: oEmp.DEP})
+            .and(`(CASH_ADVANCE_AMOUNT = 0 OR CASH_ADVANCE_AMOUNT IS NULL)`);
         }
     });
 
