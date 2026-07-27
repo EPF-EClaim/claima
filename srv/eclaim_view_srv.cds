@@ -516,7 +516,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.POLICY_START_DATE,
                 ZCLAIM_ITEM.POLICY_END_DATE,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_ID,
-                ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC                            
+                ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
+                ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME                            
         };
 
     entity ZEMP_REQUEST_STATUS            as

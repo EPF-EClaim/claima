@@ -580,6 +580,7 @@ entity ZCLAIM_ITEM : managed {
         CHARGED_TO_CCC             : Boolean        @Common.Label: 'Charged to CCC';
         POLICY_YEAR                : String(4)      @Common.Label: 'Policy Year';
         INSURANCE_MEDICAL_PROVIDER_ID : String(3)   @Common.Label: 'Insurance Medical Provider';
+        INSURANCE_MEDICAL_PROVIDER_NAME: String     @Common.Label: 'Insurance Medical Name';
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
