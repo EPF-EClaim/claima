@@ -302,6 +302,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
         projection on ECLAIM.ZSUBSTITUTION_RULES {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
+                ZEMP_MASTER_USER.NAME as APPROVER_NAME,
+                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME,            
                 *
         };
 
