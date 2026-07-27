@@ -1420,4 +1420,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         ) returns Boolean;
 
     entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
+
+    action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
 };
