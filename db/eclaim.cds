@@ -1577,16 +1577,6 @@ entity ZREQ_ITEM_CCC_PART : managed{
     MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
 }
 
-entity ZEMP_DEPENDENT_POLICY : managed {
-    key EMP_ID                : String      @mandatory  @Common.Label: 'Employee ID';
-    key DEPENDENT_NATIONAL_ID : String      @mandatory  @Common.Label: 'Dependent National ID';
-    key RECORD_ID             : String(20)  @mandatory  @Common.Label: 'Record ID';
-    key POLICY_NUMBER         : String      @mandatory  @Common.Label: 'Policy Number';
-    key POLICY_YEAR           : String(4)   @mandatory  @Common.Label: 'Year';
-        POLICY_START_DATE     : Date        @Common.Label: 'Policy Start Date';
-        POLICY_END_DATE       : Date        @Common.Label: 'Policy End Date';
-}
-
 entity ZINSURANCE_MEDICAL_PROVIDER : managed {
     key INSURANCE_MEDICAL_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Medical Provider ID';
         INSURANCE_MEDICAL_PROVIDER_DESC : String     @Common.Label: 'Insurance Medical Provider Description';
