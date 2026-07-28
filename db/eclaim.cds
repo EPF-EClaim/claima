@@ -142,6 +142,7 @@ entity ZREQUEST_HEADER : managed {
         PUSH_BACK_REASON_ID           : String(3)      @Common.Label: 'Push Back Reason ID';
         PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
         ATTACHMENT3                   : String         @Common.Label: 'Attachment 3';
+        ATTACHMENT4                   : String         @Common.Label: 'Attachment 4';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -254,6 +255,7 @@ entity ZREQUEST_ITEM : managed {
         DEPENDENT_NATIONAL_ID           : String         @Common.Label: 'Dependent National ID';
         INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
         INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Provider Name';
+        ATTACHMENT4                     : String         @Common.Label: 'Attachment 4';
         ZREQUEST_HEADER                 : Association to one ZREQUEST_HEADER
                                               on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT                    : Association to one ZMARITAL_CAT
@@ -585,6 +587,7 @@ entity ZCLAIM_ITEM : managed {
         POLICY_YEAR                     : String(4)      @Common.Label: 'Policy Year';
         INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
         INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Name';
+        ATTACHMENT_FILE_4               : String         @Common.Label: 'Attachment 4';
         ZCLAIM_HEADER                   : Association to ZCLAIM_HEADER
                                               on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY                 : Association to ZCLAIM_CATEGORY
