@@ -7974,17 +7974,47 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Code Material'
             },
+             {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ORIGINAL_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Original Budget Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_IN,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement In Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_OUT,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement Out Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUPPLEMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Supplement Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RETURN,
+                ![@UI.Importance]: #High,
+                Label            : 'Return Amount'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CURRENT_BUDGET,
                 ![@UI.Importance]: #High,
                 Label            : 'Current Budget Amount'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ADJUST_AMOUNT,
-                ![@UI.Importance]: #High,
-                Label            : 'Adjustment Amount'
             },
             {
                 $Type            : 'UI.DataField',
@@ -8013,8 +8043,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         ]
     }
 ){
-    
-    ADJUST_AMOUNT @Common.Label : 'Adjustment Amount';
+
     COMMITMENT @Common.Label : 'Commitment Amount';
     YEAR @Common.Label: 'Effective Date';
     ACTUAL @Common.Label: 'Amount Paid(Actual)';
@@ -8085,6 +8114,29 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: MATERIAL_CODE_DESC,
                     ValueListProperty: 'MATERIAL_CODE_DESC'
+                }
+            ]
+        }
+    );
+
+    PROJECT_CODE            @(
+        Common.Label                   : 'Project Code',
+        Common.Text                    : PROJECT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Project Code Selection',
+            CollectionPath: 'ZPROJECT_HDR',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: PROJECT_CODE,
+                    ValueListProperty: 'PROJECT_CODE_IO'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: PROJECT_DESC,
+                    ValueListProperty: 'PROJECT_DESC'
                 }
             ]
         }
