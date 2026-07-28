@@ -1412,4 +1412,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
+     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
 };
