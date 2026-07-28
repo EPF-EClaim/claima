@@ -1448,4 +1448,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
             and CASH_ADVANCE                > 0    
             and CLAIM_ID                    is null
 
+    type MedicalEntitlementBalance {
+        entitlement : Decimal(16,2);
+        approved    : Decimal(16,2);
+        remaining   : Decimal(16,2);
+        };
+
+    action getRemainingMedicalEntitlement(
+        empId : String)                                                                           returns MedicalEntitlementBalance;
+
 };
