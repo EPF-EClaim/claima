@@ -1137,14 +1137,6 @@ sap.ui.define([
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 			this.calculateNumberOfHours();
 
-			// validate mandatory fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
-
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
 				return;
@@ -1172,6 +1164,14 @@ sap.ui.define([
 			};
 
 			if (!bCanProceed) return;
+
+			// validate mandatory fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			BusyIndicator.show(0);
 
