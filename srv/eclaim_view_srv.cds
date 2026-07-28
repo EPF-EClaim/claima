@@ -228,6 +228,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ROUND_TRIP,
                 INTERNAL_ORDER,
                 ATTACHMENT3,
+                POLICY_YEAR,
+                DEPENDENT_NATIONAL_ID,
+                INSURANCE_MEDICAL_PROVIDER_ID,
+                INSURANCE_MEDICAL_PROVIDER_NAME,
+                ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as

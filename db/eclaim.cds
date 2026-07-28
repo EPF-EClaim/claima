@@ -252,6 +252,8 @@ entity ZREQUEST_ITEM : managed {
         ATTACHMENT3                : String         @Common.Label: 'Attachment 3';
         POLICY_YEAR                : String(4)      @Common.Label: 'Year';
         DEPENDENT_NATIONAL_ID      : String         @Common.Label: 'Dependent National ID';
+        INSURANCE_MEDICAL_PROVIDER_ID : String(3)   @Common.Label: 'Insurance Medical Provider';
+        INSURANCE_MEDICAL_PROVIDER_NAME : String    @Common.Label: 'Insurance Medical Provider Name';
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -313,6 +315,8 @@ entity ZREQUEST_ITEM : managed {
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
         ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
                                          on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+        ZINSURANCE_MEDICAL_PROVIDER: Association to ZINSURANCE_MEDICAL_PROVIDER
+                                         on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
 }
 
 entity ZREQ_ITEM_PART : managed {
