@@ -1425,4 +1425,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    action getPolicyInfo(
+        dependentNationalId : String,
+        policyYear          : String
+    ) returns {
+        previous_policy_number : String;
+        current_policy_number  : String;
+        next_policy_number     : String;
+    };
+
+    action getDependentNationalId(dependentNo : String)                                            returns String;
 };
