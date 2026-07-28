@@ -2893,13 +2893,6 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
-				MessageBox.error(Utility.getText("msg_claiminput_required"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
@@ -2977,6 +2970,14 @@ sap.ui.define([
 
 
 			if (!bCanProceed) return;
+
+			// Validate required fields
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			// Check for existing MataWang
 			if (oInputModel.getProperty("/is_new") &&
