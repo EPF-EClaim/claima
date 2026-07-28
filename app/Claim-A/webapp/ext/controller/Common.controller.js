@@ -105,7 +105,8 @@ sap.ui.define([
 					const oConditions = {
 						FUND_CENTER: [{ operator: "EQ", values: [decodeURIComponent(oArgs.FUND_CENTER || "")] }],
 						COMMITMENT_ITEM: [{ operator: "EQ", values: [decodeURIComponent(oArgs.COMMITMENT_ITEM || "")] }],
-						MATERIAL_GROUP: [{ operator: "EQ", values: [decodeURIComponent(oArgs.MATERIAL_GROUP || "")] }]
+						MATERIAL_GROUP: [{ operator: "EQ", values: [decodeURIComponent(oArgs.MATERIAL_GROUP || "")] }],
+						PROJECT_CODE: [{operator: "EQ",values: [decodeURIComponent(oArgs.PROJECT_CODE || "")]}]
 					};
 
 					oFilterBar.setFilterConditions(oConditions);
@@ -123,11 +124,42 @@ sap.ui.define([
 		 * ============================== */
 		_attachItemPressOnce: function (oTable, fnHandler) {
 
-			if (!oTable || !oTable.attachItemPress) return;
+			if (!oTable) return;
 
-			if (!oTable.__itemPressAttached) {
-				oTable.attachItemPress(fnHandler, this);
-				oTable.__itemPressAttached = true;
+			if (oTable.attachItemPress) {
+				if (!oTable.__itemPressAttached) {
+					oTable.attachItemPress(fnHandler, this);
+					oTable.__itemPressAttached = true;
+				}
+				return;
+			}
+
+			if (oTable.attachCellClick) {
+
+				if (!oTable.__cellClickAttached) {
+
+					oTable.attachCellClick((oEvent) => {
+
+						const iRowIndex = oEvent.getParameter("rowIndex");
+						const oContext = oTable.getContextByIndex(iRowIndex);
+
+						if (!oContext) return;
+
+						fnHandler.call(this, {
+							getParameter: (sName) => {
+								if (sName === "listItem") {
+									return {
+										getBindingContext: () => oContext
+									};
+								}
+								return null;
+							}
+						});
+
+					});
+
+					oTable.__cellClickAttached = true;
+				}
 			}
 		},
 
@@ -145,7 +177,8 @@ sap.ui.define([
 			this.base.getAppComponent().getRouter().navTo("ZEMP_CC_BUDGET_DETAIL", {
 				FUND_CENTER: encodeURIComponent(oData.FUND_CENTER),
 				COMMITMENT_ITEM: encodeURIComponent(oData.COMMITMENT_ITEM),
-				MATERIAL_GROUP: encodeURIComponent(oData.MATERIAL_GROUP || "DEFAULT")
+				MATERIAL_GROUP: encodeURIComponent(oData.MATERIAL_GROUP || "DEFAULT"),
+				PROJECT_CODE: encodeURIComponent(oData.PROJECT_CODE || "")
 			});
 		},
 
