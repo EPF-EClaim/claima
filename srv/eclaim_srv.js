@@ -661,6 +661,23 @@ module.exports = (srv) => {
         return oBudget?.WBS_CODE || null;
     }
 
+    srv.before(['CREATE', 'UPDATE'], 'ZCLAIM_ITEM', async (req) => {
+
+        if (req.data.POLICY_START_DATE) {
+
+            req.data.POLICY_YEAR =
+                new Date(req.data.POLICY_START_DATE)
+                    .getFullYear()
+                    .toString();
+
+            console.log(
+                "POLICY_YEAR:",
+                req.data.POLICY_YEAR
+            );
+        }
+
+    });
+
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
         const tx = cds.tx(req);
         await updateClaimHeaderTotals(req, data.CLAIM_ID, tx);

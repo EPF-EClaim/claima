@@ -96,7 +96,8 @@ sap.ui.define([
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
-            "KEMATIAN": "KEMATIAN"
+            "KEMATIAN": "KEMATIAN",
+            "INSURANCE": "INSURANCE"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -299,7 +300,9 @@ sap.ui.define([
             "COUNTRY": "COUNTRY",
             "PHONE_NO": "PHONE_NO",
             "ALT_CC" : "ALT_CC",
-            "PROJECT_CODE" : "PROJECT_CODE"
+            "PROJECT_CODE" : "PROJECT_CODE",
+            "POLICY_END_DATE" : "POLICY_END_DATE",
+            "POLICY_START_DATE" : "POLICY_START_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -709,6 +712,9 @@ sap.ui.define([
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
+        },
+        "InsuranceMedicalProvider": {
+            "OTHERS": "4",
         }
         
     }

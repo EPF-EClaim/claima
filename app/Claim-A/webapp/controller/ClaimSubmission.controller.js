@@ -619,6 +619,14 @@ sap.ui.define([
 					number_of_travellers: it.TOTAL_TRAVELLER,
 					internal_order: it.INTERNAL_ORDER,
 					course_duration: it.COURSE_DURATION,
+					insurance_medical_provider_id: it.INSURANCE_MEDICAL_PROVIDER_ID,
+					insurance_medical_provider_name: it.INSURANCE_MEDICAL_PROVIDER_NAME,
+					policy_start_date: it.POLICY_START_DATE,
+					policy_end_date:it. POLICY_END_DATE,
+					dependent_national_id: it.DEPENDENT_NATIONAL_ID,
+					previous_policy_number: it.PREVIOUS_POLICY_NUMBER,
+					current_policy_number: it.CURRENT_POLICY_NUMBER,
+					next_policy_number: it.NEXT_POLICY_NUMBER,
 					descr: {},
 				}));
 
@@ -1292,6 +1300,14 @@ sap.ui.define([
 					"tips": null,
 					"number_of_travellers": null,
 					"internal_order": null,
+					"policy_start_date": null,
+					"policy_end_date": null,
+					"dependent_national_id": null,
+					"insurance_medical_provider_id": null,
+					"insurance_medical_provider_name": null,
+					"previous_policy_number": null,
+					"current_policy_number": null,
+					"next_policy_number": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -2474,7 +2490,14 @@ sap.ui.define([
 				combo_dependent: { is_editable: true },
 				to_location: { is_visible: false },
 				from_location: { is_visible: false },
-				marriage_category: { is_visible: false }
+				marriage_category: { is_visible: false },
+				insurance_medical_provider_id: { is_visible: false },
+				insurance_medical_provider_name: { is_visible: false },
+				policy_start_date: { is_visible: false },
+				policy_end_date: { is_visible: false },
+				previous_policy_number: { is_visible: false },
+				current_policy_number: { is_visible: false },
+				next_policy_number: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2679,6 +2702,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//// Nama Pembekal Insuran
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_medical_provider_id", "ZINSURANCE_MEDICAL_PROVIDER");
 
 			var oFilter = this._getDependentFilters();
 
@@ -2785,6 +2810,64 @@ sap.ui.define([
 						filters: [
 							oEmpFilter
 						]
+					})
+
+				case this._oConstant.ClaimTypeItem.INSURANCE:
+
+					var d25YearsAndBelow = DateUtility.today();
+					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
+
+					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
+
+					var oNonChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.SPOUSE
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.ADDITIONAL_SPOUSE
+							)
+						],
+						and: false
+					});
+
+					var oEligibleChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.STUDENT,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.DOB,
+								FilterOperator.GE,
+								s25YearsAndBelow
+							)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oNonChildFilter,
+									oEligibleChildFilter
+								],
+								and: false
+							})
+						],
+						and: true
 					})
 			}
 		},
@@ -3180,7 +3263,12 @@ sap.ui.define([
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration")
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
+					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
+					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
+					INSURANCE_MEDICAL_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_medical_provider_id"),
+					INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name")
 				});
 
 				// to save the attachment inside SF
@@ -5147,7 +5235,11 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"select_claimdetails_input_insurance_medical_provider_id",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date",
+				
 			];
 
 			aControlIds.forEach(id => {
@@ -5276,7 +5368,10 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"fileuploader_claimdetails_input_attachment_file_3",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date"
 			];
 
 			aControlIds.forEach(id => {
@@ -5624,6 +5719,40 @@ sap.ui.define([
 				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
-		}
+		},
+
+		onChange_Dependent: async function (oEvent) {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sDependentNo = oEvent.getSource().getSelectedKey();
+			const oEmployeeModel = this.getView().getModel("employee");
+			const oBinding = oEmployeeModel.bindList(
+				"/ZEMP_DEPENDENT",
+				undefined,
+				undefined,
+				[
+					new sap.ui.model.Filter(
+						"DEPENDENT_NO",
+						sap.ui.model.FilterOperator.EQ,
+						sDependentNo
+					)
+				]
+			);
+
+			const aContexts = await oBinding.requestContexts(0, 1);
+
+			if (aContexts.length > 0) {
+
+				const oDependent = aContexts[0].getObject();
+
+				console.log("Selected Dependent:", oDependent);
+				console.log("National ID:", oDependent.NATIONAL_ID);
+
+				oInputModel.setProperty(
+					"/claim_item/dependent_national_id",
+					oDependent.NATIONAL_ID
+				);
+    }
+}
 	});
 });
