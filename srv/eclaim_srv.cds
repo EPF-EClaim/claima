@@ -1190,6 +1190,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 /* Match with budget */
                 ITEM.GL_ACCOUNT          as COMMITMENT_ITEM,
                 ITEM.MATERIAL_CODE       as MATERIAL_GROUP,
+                HEADER.PROJECT_CODE      as PROJECT_CODE,
 
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
@@ -1216,24 +1217,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
             key FUND_CENTER,
             key COMMITMENT_ITEM,
             key MATERIAL_GROUP,
-
+                PROJECT_CODE,
+                ORIGINAL_BUDGET,
                 CURRENT_BUDGET,
                 VIREMENT_IN,
                 VIREMENT_OUT,
                 SUPPLEMENT,
                 RETURN,
-
-                (
-                    coalesce(
-                        VIREMENT_IN, 0
-                    )+coalesce(
-                        VIREMENT_OUT, 0
-                    )+coalesce(
-                        SUPPLEMENT, 0
-                    )+coalesce(
-                        RETURN, 0
-                    )
-                ) as ADJUST_AMOUNT : Decimal(16, 2),
 
                 COMMITMENT,
                 ACTUAL,
@@ -1243,7 +1233,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                          on  $self.FUND_CENTER     = _Detail.FUND_CENTER
                                          and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
                                          and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
-
+                                         and $self.PROJECT_CODE    = _Detail.PROJECT_CODE
         };
 
     action   updatePEDUEntitleAmount(sRecordId: String,
@@ -1425,4 +1415,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    action getPolicyInfo(
+        dependentNationalId : String,
+        policyYear          : String
+    ) returns {
+        previous_policy_number : String;
+        current_policy_number  : String;
+        next_policy_number     : String;
+    };
+
+    action getDependentNationalId(dependentNo : String)                                            returns String;
 };
