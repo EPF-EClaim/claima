@@ -1447,4 +1447,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
             and STATUS                      = 'STAT05'
             and CASH_ADVANCE                > 0    
             and CLAIM_ID                    is null
+
 };
