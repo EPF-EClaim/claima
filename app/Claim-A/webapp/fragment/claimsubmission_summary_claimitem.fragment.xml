@@ -133,6 +133,18 @@
                     <Text text="{i18n>columntext_claimsummary_attachment3}" />
                 </Column>
 
+                <!-- Attachment 4 -->
+                <Column
+                visible="{=
+                    ${claimsubmission_input>/claim_header/claim_type_id}
+                    ===
+                    ${constant>/ClaimType/MEDICAL}
+                }"
+                >
+                    <Text text="{i18n>columntext_claimsummary_attachment4}" />
+                </Column>
+
+
             </columns>
 
             <items>

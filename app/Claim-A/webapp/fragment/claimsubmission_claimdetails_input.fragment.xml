@@ -1612,7 +1612,7 @@
                     required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/IPAD}}"
                 />
 
-                <!-- Penyata Tahunan -->
+                <!-- Attachment 1 -->
                 <Label
                     text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
                         ? ${i18n>label_insurance_attachment_1}
@@ -1667,7 +1667,7 @@
                         ${claimitem_input>/claim_item/attachment_file_1} !== null
                     }"
                 />
-                <!-- Resit Asal Pembayaran Insuran-->
+                <!-- Attachment 2-->
 				<Label
                     text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
                         ? ${i18n>label_insurance_attachment_2}

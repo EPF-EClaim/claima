@@ -679,7 +679,11 @@ sap.ui.define([
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 				: oReqItem.ROUND_TRIP || false,
-				internal_order			: oReqItem.INTERNAL_ORDER || null
+				internal_order			: oReqItem.INTERNAL_ORDER || null,
+				policy_year: oReqItem.POLICY_YEAR || null,
+				dependent_national_id: oReqItem.DEPENDENT_NATIONAL_ID || null,
+				insurance_medical_provider_id: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
+				insurance_medical_provider_name: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1280,7 +1284,11 @@ sap.ui.define([
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
 					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
 					ROUND_TRIP:					  !!oReqItem.round_trip,
-					INTERNAL_ORDER: 			  oReqItem.internal_order || null
+					INTERNAL_ORDER: 			  oReqItem.internal_order || null,
+					POLICY_YEAR: 				  oReqItem.policy_year || null,
+					DEPENDENT_NATIONAL_ID:		  oReqItem.dependent_national_id || null,
+					INSURANCE_MEDICAL_PROVIDER_ID:oReqItem.insurance_medical_provider_id || null,
+					INSURANCE_MEDICAL_PROVIDER_NAME:oReqItem.insurance_medical_provider_name || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -2277,6 +2285,10 @@ sap.ui.define([
 
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.MED_ADVANCE:
+							this._oReqModel.setProperty("/req_item/cash_advance",true);
+							this._oReqModel.setProperty("/req_item/policy_year",String(new Date().getFullYear()));
+						break;
 						// set visible for the number of family member and traveller when choosing travel with Family Now
 						case Constants.ClaimTypeItem.LOD_TUKAR:
 						case Constants.ClaimTypeItem.MKN_TUKAR:
@@ -2864,7 +2876,25 @@ sap.ui.define([
         const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
 
         await RequestUtility._getEntitledMeterCube(aSelectedKeys);
-        }
+        },
+
+		onChange_Dependent: async function (oEvent) {
+
+			const sDependentNo =oEvent.getSource().getSelectedKey();
+			const oAction =this._oDataModel.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter(
+				"dependentNo",
+				sDependentNo
+			);
+
+			await oAction.execute();
+
+			const sNationalId=
+				oAction.getBoundContext().getObject().value;
+
+			this._oReqModel.setProperty("/req_item/dependent_national_id",sNationalId);
+		}
 
 	});
 });

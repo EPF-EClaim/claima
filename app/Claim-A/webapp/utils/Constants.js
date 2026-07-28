@@ -97,7 +97,8 @@ sap.ui.define([
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
             "KEMATIAN": "KEMATIAN",
-            "INSURANCE": "INSURANCE"
+            "INSURANCE": "INSURANCE",
+            "MED_ADVANCE": "MED_ADVANCE"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",

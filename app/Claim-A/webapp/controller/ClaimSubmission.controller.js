@@ -5724,36 +5724,44 @@ sap.ui.define([
 
 		onChange_Dependent: async function (oEvent) {
 
-			const oInputModel = this.getView().getModel("claimitem_input");
-			const sDependentNo = oEvent.getSource().getSelectedKey();
-			const oEmployeeModel = this.getView().getModel("employee");
-			const oBinding = oEmployeeModel.bindList(
-				"/ZEMP_DEPENDENT",
-				undefined,
-				undefined,
-				[
-					new sap.ui.model.Filter(
-						"DEPENDENT_NO",
-						sap.ui.model.FilterOperator.EQ,
-						sDependentNo
-					)
-				]
+			const oInputModel =
+				this.getView().getModel("claimitem_input");
+
+			const sDependentNo =
+				oEvent.getSource().getSelectedKey();
+
+			const oAction =
+				this.getOwnerComponent()
+					.getModel()
+					.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter(
+				"dependentNo",
+				sDependentNo
 			);
 
-			const aContexts = await oBinding.requestContexts(0, 1);
+			await oAction.execute();
 
-			if (aContexts.length > 0) {
+			const sNationalId =
+				oAction.getBoundContext().getObject().value;
 
-				const oDependent = aContexts[0].getObject();
+			oInputModel.setProperty(
+				"/claim_item/dependent_national_id",
+				sNationalId
+			);
+		},
 
-				console.log("Selected Dependent:", oDependent);
-				console.log("National ID:", oDependent.NATIONAL_ID);
+		_getPolicyInfo: async function (sNationalId, sPolicyYear) {
 
-				oInputModel.setProperty(
-					"/claim_item/dependent_national_id",
-					oDependent.NATIONAL_ID
-				);
-    }
-}
+			const oModel = this.getOwnerComponent().getModel();
+			const oAction = oModel.bindContext("/getPolicyInfo(...)");
+
+			oAction.setParameter("dependentNationalId",sNationalId);
+			oAction.setParameter("policyYear",sPolicyYear);
+
+			await oAction.execute();
+
+			return oAction.getBoundContext().getObject();
+		}
 	});
 });

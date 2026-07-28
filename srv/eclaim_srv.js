@@ -4467,4 +4467,44 @@ module.exports = (srv) => {
         return false;
     });
 
+    srv.on('getPolicyInfo', async (req) => {
+
+        const { dependentNationalId, policyYear } = req.data;
+
+        const oPolicy = await SELECT.one
+            .from('ZEMP_CLAIM_ITEM_VIEW')
+            .where({
+                DEPENDENT_NATIONAL_ID: dependentNationalId,
+                POLICY_YEAR: policyYear
+            });
+
+        if (!oPolicy) {
+            return {
+                previous_policy_number: null,
+                current_policy_number: null,
+                next_policy_number: null
+            };
+        }
+
+        return {
+            previous_policy_number: oPolicy.PREVIOUS_POLICY_NUMBER,
+            current_policy_number: oPolicy.CURRENT_POLICY_NUMBER,
+            next_policy_number: oPolicy.NEXT_POLICY_NUMBER
+        };
+
+    });
+
+    srv.on('getDependentNationalId', async (req) => {
+
+        const { dependentNo } = req.data;
+
+        const oDependent = await SELECT.one
+            .from('ZEMP_DEPENDENT')
+            .where({
+                DEPENDENT_NO: dependentNo
+            });
+
+        return oDependent?.NATIONAL_ID || null;
+    });
+
 }
