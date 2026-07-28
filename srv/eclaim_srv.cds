@@ -1433,7 +1433,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         left join ECLAIM.ZEMP_MASTER as EmpMaster
             on EmpMaster.EEID = RequestHeader.EMP_ID
         {
-            RequestHeader.REQUEST_ID,
+            key RequestHeader.REQUEST_ID,
             RequestHeader.EMP_ID,
             ClaimHeader.CLAIM_ID,
             EmpMaster.NAME,
