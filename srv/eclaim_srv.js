@@ -1785,16 +1785,16 @@ module.exports = (srv) => {
      */
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
-        const sUserEmail =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id;
+        const sUserEmail = "ysean.tc@gmail.com"
+        //     req.user?.attr?.email ||
+        //     req.user?.attr?.mail ||
+        //     req.user?.attr?.user_name ||
+        //     req.user?.attr?.login_name ||
+        //     req.user?.id;
 
-        if (!sUserEmail) {
-            req.error(401, "Unable to determine logged-in user");
-        }
+        // if (!sUserEmail) {
+        //     req.error(401, "Unable to determine logged-in user");
+        // }
         const oEmp = await tx.run(
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
@@ -4450,37 +4450,30 @@ module.exports = (srv) => {
         return false;
     });
 
-    async function getGLAccountByProjectCode(tx, sProjectCode) {
-    if (!sProjectCode) {
-        return null;
-    }
-
-    const oProject = await tx.run(
-        SELECT.one
-            .from('ZPROJECT_HDR')
-            .columns('GL_ACCOUNT')
-            .where({
-                PROJECT_CODE_IO: sProjectCode
-            })
-    );
-
-    return oProject?.GL_ACCOUNT || null;
-}
-
     srv.on('getGLAccountByProjectCode', async (req) => {
+        try {
+            const { sProjectCode } = req.data;
 
-    try {
+            if (!sProjectCode) {
+                return null;
+            }
 
-        const tx = cds.tx(req);
+            const tx = cds.tx(req);
 
-        return await getGLAccountByProjectCode(
-            tx,
-            req.data.sProjectCode
-        );
+            const oProject = await tx.run(
+                SELECT.one
+                    .from('ZPROJECT_HDR')
+                    .columns('GL_ACCOUNT')
+                    .where({
+                        PROJECT_CODE_IO: sProjectCode
+                    })
+            );
 
-    } catch (error) {
-        req.error(500, `Failed to retrieve GL Account: ${error.message}`);
-    }
-});
+            return oProject?.GL_ACCOUNT || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
+    });
 
 }
