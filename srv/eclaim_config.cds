@@ -8043,7 +8043,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         ]
     }
 ){
-    
+
     COMMITMENT @Common.Label : 'Commitment Amount';
     YEAR @Common.Label: 'Effective Date';
     ACTUAL @Common.Label: 'Amount Paid(Actual)';
