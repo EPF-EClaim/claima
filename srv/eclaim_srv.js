@@ -4507,4 +4507,30 @@ module.exports = (srv) => {
         return oDependent?.NATIONAL_ID || null;
     });
 
+    srv.on('getGLAccountByProjectCode', async (req) => {
+        try {
+            const { sProjectCode } = req.data;
+
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const tx = cds.tx(req);
+
+            const oProject = await tx.run(
+                SELECT.one
+                    .from('ZPROJECT_HDR')
+                    .columns('GL_ACCOUNT')
+                    .where({
+                        PROJECT_CODE_IO: sProjectCode
+                    })
+            );
+
+            return oProject?.GL_ACCOUNT || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
+    });
+
 }

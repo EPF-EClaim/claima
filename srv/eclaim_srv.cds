@@ -1425,4 +1425,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
     };
 
     action getDependentNationalId(dependentNo : String)                                            returns String;
+     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
 };
