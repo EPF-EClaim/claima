@@ -1457,4 +1457,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action getRemainingMedicalEntitlement(
         empId : String)                                                                           returns MedicalEntitlementBalance;
 
+    action updateMedicalUsedAmount(sRecordId: String,
+                                   sStatus: String) returns Response;   
+
+    action clearMedicalEntitlement() returns String;
+
+    function getMedicalReminderEmail() returns array of reminders;                                   
+
 };
