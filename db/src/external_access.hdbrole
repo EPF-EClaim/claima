@@ -36,7 +36,12 @@
         "name": "ECLAIM_ZSTATE",
         "type": "TABLE",
         "privileges": ["SELECT"]
-      }                                 
+      },
+      {
+        "name": "ECLAIM_ZROLEHIERARCHY",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      }                                   
     ]
   }
 }
