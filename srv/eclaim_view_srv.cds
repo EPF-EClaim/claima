@@ -1025,6 +1025,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 // With the addition of these fields, the view now filters only approved records that have not yet been sent to SF.
                 ZSTATUS.STATUS_DESC,
                 ZREQUEST_ITEM.SEND_TO_SF,
+                ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID
         }
 
         where
