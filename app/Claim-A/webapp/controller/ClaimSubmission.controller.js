@@ -1314,6 +1314,7 @@ sap.ui.define([
 					"next_policy_number": null,
 					"attachment_file_3": null,
 					"attachment_file_4": null,
+					"policy_year": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -5828,31 +5829,49 @@ sap.ui.define([
 
 		onChange_Dependent: async function (oEvent) {
 
-			const oInputModel =
-				this.getView().getModel("claimitem_input");
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sDependentNo =oEvent.getSource().getSelectedKey();
+			const oAction =this.getOwnerComponent().getModel().bindContext("/getDependentNationalId(...)");
 
-			const sDependentNo =
-				oEvent.getSource().getSelectedKey();
-
-			const oAction =
-				this.getOwnerComponent()
-					.getModel()
-					.bindContext("/getDependentNationalId(...)");
-
-			oAction.setParameter(
-				"dependentNo",
-				sDependentNo
-			);
+			oAction.setParameter("dependentNo",sDependentNo);
 
 			await oAction.execute();
 
-			const sNationalId =
-				oAction.getBoundContext().getObject().value;
+			const sNationalId =oAction.getBoundContext().getObject().value;
 
 			oInputModel.setProperty(
 				"/claim_item/dependent_national_id",
 				sNationalId
 			);
+
+			const sPolicyYear =
+				oInputModel.getProperty(
+					"/claim_item/policy_year"
+				);
+
+			if (sNationalId && sPolicyYear) {
+
+				const oPolicyInfo =
+					await this._getPolicyInfo(
+						sNationalId,
+						sPolicyYear
+					);
+
+				oInputModel.setProperty(
+					"/claim_item/previous_policy_number",
+					oPolicyInfo.previous_policy_number
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/current_policy_number",
+					oPolicyInfo.current_policy_number
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/next_policy_number",
+					oPolicyInfo.next_policy_number
+				);
+			}
 		},
 
 		_getPolicyInfo: async function (sNationalId, sPolicyYear) {
