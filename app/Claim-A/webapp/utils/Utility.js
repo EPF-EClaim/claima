@@ -684,6 +684,27 @@ sap.ui.define([
                     
                     break;
             }
+        },
+
+        getGLAccountByProjectCode: async function (oModel, sProjectCode) {
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const oFunction = oModel.bindContext("/getGLAccountByProjectCode(...)");
+            oFunction.setParameter("sProjectCode", sProjectCode);
+
+            try {
+                await oFunction.execute();
+
+                const oContext = oFunction.getBoundContext();
+                const oResult = oContext.getObject();
+
+                return oResult?.value || oResult || null;
+
+            } catch (oError) {
+                return null;
+            }
         }
 
     };

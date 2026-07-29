@@ -7976,15 +7976,45 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CURRENT_BUDGET,
+                Value            : PROJECT_CODE,
                 ![@UI.Importance]: #High,
-                Label            : 'Current Budget Amount'
+                Label            : 'Project Code'
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : ADJUST_AMOUNT,
+                Value            : ORIGINAL_BUDGET,
                 ![@UI.Importance]: #High,
-                Label            : 'Adjustment Amount'
+                Label            : 'Original Budget Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_IN,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement In Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_OUT,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement Out Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUPPLEMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Supplement Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RETURN,
+                ![@UI.Importance]: #High,
+                Label            : 'Return Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Budget Amount'
             },
             {
                 $Type            : 'UI.DataField',
@@ -8013,8 +8043,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         ]
     }
 ){
-    
-    ADJUST_AMOUNT @Common.Label : 'Adjustment Amount';
+
     COMMITMENT @Common.Label : 'Commitment Amount';
     YEAR @Common.Label: 'Effective Date';
     ACTUAL @Common.Label: 'Amount Paid(Actual)';
@@ -8085,6 +8114,28 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: MATERIAL_CODE_DESC,
                     ValueListProperty: 'MATERIAL_CODE_DESC'
+                }
+            ]
+        }
+    );
+    PROJECT_CODE            @(
+        Common.Label                   : 'Project Code',
+        Common.Text                    : PROJECT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Project Code Selection',
+            CollectionPath: 'ZPROJECT_HDR',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: PROJECT_CODE,
+                    ValueListProperty: 'PROJECT_CODE_IO'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: PROJECT_DESC,
+                    ValueListProperty: 'PROJECT_DESC'
                 }
             ]
         }
@@ -8278,6 +8329,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with {
     @Core.Computed SUBSTITUTE_RULE_ID;
     VALID_FROM @(Common.Label: 'Valid From');
     VALID_TO   @(Common.Label: 'Valid To');
+    SUBSTITUTE_COMMENT @(Common.FieldControl : #Mandatory);
 }
 
 annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
@@ -8320,10 +8372,22 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver Name'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : SUBSTITUTE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Substitute ID'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitute Name'
+            },             
             {
                 $Type            : 'UI.DataField',
                 Value            : VALID_FROM,
@@ -8335,7 +8399,13 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
                 Value            : VALID_TO,
                 ![@UI.Importance]: #High,
                 Label            : 'Valid To'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_COMMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Comment'
+            }                                      
         ]
     }
 ) {
@@ -8395,4 +8465,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             ]
         }
     );
+    SUBSTITUTE_COMMENT @(
+        Common.Label : 'Comment',
+    )
 };
