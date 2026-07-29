@@ -180,7 +180,7 @@
 
                                 <!-- Insurance Medical Provider -->
                                 <form:FormElement
-                                    label="Insurance Medical Provider"
+                                    label="{i18n>req_insurance_medical_provider}"
                                     visible="false"
                                     id="i_insurance_medical_provider">
 
@@ -213,6 +213,22 @@
                                             </items>
 
                                         </Select>
+
+                                    </form:fields>
+
+                                </form:FormElement>
+
+                                <form:FormElement
+                                    label="{i18n>req_insurance_medical_provider_name}"
+                                    id="i_insurance_medical_provider_name"
+                                    visible="{= ${request>/req_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}}">
+
+                                    <form:fields>
+
+                                        <Input
+                                            value="{request>/req_item/insurance_medical_provider_name}"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }" />
 
                                     </form:fields>
 
@@ -300,9 +316,13 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 1 -->
-                                <form:FormElement label="{i18n>req_attach1}"
-                                                visible="false"
-                                                id="i_attachment_1">
+                                <form:FormElement 
+                                        label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                ? ${i18n>label_insurance_attachment_1}
+                                                : ${i18n>req_attach1}
+                                            }"
+                                        visible="false"
+                                        id="i_attachment_1">
                                 <form:fields>
                                     <unified:FileUploader
                                         change=".onImportChange1"
@@ -369,7 +389,11 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 2 -->
-                                <form:FormElement label="{i18n>req_attach2}"
+                                <form:FormElement 
+                                            label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                ? ${i18n>label_insurance_attachment_1}
+                                                : ${i18n>req_attach1}
+                                            }"
                                             visible="false"
                                             id="i_attachment_2" >
                                     <form:fields>
@@ -405,6 +429,100 @@
                                                 <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
                                             </layoutData>
                                         </Button>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 3 -->
+                                <form:FormElement label="{i18n>req_attach3}"
+                                                visible="false"
+                                                id="i_attachment_3">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange3"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="true"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc3}"
+                                        id="i_attachment_3_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment3_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc3_filename}"
+                                        visible="{= !!${request>/req_item/doc3_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc3')"
+                                            visible="{= !!${request>/req_item/doc3_filename} &amp;&amp; ${request>/view} !== 'view'}" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 4 -->
+                                <form:FormElement label="{i18n>req_attach4}"
+                                                visible="false"
+                                                id="i_attachment_4">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange4"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="true"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc4}"
+                                        id="i_attachment_4_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment4_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc4_filename}"
+                                        visible="{= !!${request>/req_item/doc4_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc4')"
+                                            visible="{= !!${request>/req_item/doc4_filename} &amp;&amp; ${request>/view} !== 'view'}" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
                                     </form:fields>
                                 </form:FormElement>
 

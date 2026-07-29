@@ -165,7 +165,8 @@ sap.ui.define([
                     CostCenter: oRow.ALTERNATE_COST_CENTER || oRow.COST_CENTER,
                     GLAccount: oRow.GL_ACCOUNT,
                     MaterialCode: oRow.MATERIAL_CODE,
-                    InternalOrder: oRow.INTERNAL_ORDER
+                    InternalOrder: oRow.INTERNAL_ORDER,
+                    CashAdvanceCatID: oRow.CASH_ADVANCE_CAT_ID
                 }));
 
                 //Call CDS batch action ONCE

@@ -161,6 +161,8 @@ sap.ui.define([
                     amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
                     attachment_file_1: it.ATTACHMENT_FILE_1,
                     attachment_file_2: it.ATTACHMENT_FILE_2,
+                    attachment_file_3: it.ATTACHMENT_FILE_3,
+                    attachment_file_4: it.ATTACHMENT_FILE_4,
                     bill_no: it.BILL_NO,
                     bill_date: it.BILL_DATE,
                     claim_category: it.CLAIM_CATEGORY,
@@ -293,6 +295,8 @@ sap.ui.define([
                     vehicle_class_id: null,
                     attachment_file_1: null,
                     attachment_file_2: null,
+                    attachment_file_3: null,
+                    attachment_file_4: null,
                 }));
 
                 oClaimInputModel.getProperty("/claim_items").forEach((item, i) => {
@@ -321,6 +325,8 @@ sap.ui.define([
                 altcostcenter: o.ALTERNATE_COST_CENTER || "",
                 doc1: o.ATTACHMENT1 || "",
                 doc2: o.ATTACHMENT2 || "",
+                doc3: o.ATTACHMENT3 || "",
+                doc4: o.ATTACHMENT4 || "",
                 comment: o.REMARK || "",
                 eventdetail1: o.EVENT_FIELD1 || "",
                 eventdetail2: o.EVENT_FIELD2 || "",

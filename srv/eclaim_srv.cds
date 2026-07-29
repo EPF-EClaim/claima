@@ -1411,9 +1411,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
-    entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
-
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
+    entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
 
     action getPolicyInfo(
         dependentNationalId : String,
@@ -1425,6 +1425,36 @@ service eclaim_srv @(requires: 'authenticated-user') {
     };
 
     action getDependentNationalId(dependentNo : String)                                            returns String;
-     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
+    entity ZEMP_APPROVED_PREAPPROVAL     as
+        select from ECLAIM.ZREQUEST_HEADER as RequestHeader
+        left join ECLAIM.ZCLAIM_HEADER as ClaimHeader
+            on ClaimHeader.REQUEST_ID = RequestHeader.REQUEST_ID
+        left join ECLAIM.ZEMP_MASTER as EmpMaster
+            on EmpMaster.EEID = RequestHeader.EMP_ID
+        {
+            key RequestHeader.REQUEST_ID,
+            RequestHeader.EMP_ID,
+            ClaimHeader.CLAIM_ID,
+            EmpMaster.NAME,
+            EmpMaster.EMAIL,
+            RequestHeader.LAST_APPROVED_DATE
+        }
+
+        where
+                REQUEST_TYPE_ID             = 'RT0005'
+            and RequestHeader.CLAIM_TYPE_ID = 'MEDICAL'
+            and STATUS                      = 'STAT05'
+            and CASH_ADVANCE                > 0    
+            and CLAIM_ID                    is null
+
+    type MedicalEntitlementBalance {
+        entitlement : Decimal(16,2);
+        approved    : Decimal(16,2);
+        remaining   : Decimal(16,2);
+        };
+
+    action getRemainingMedicalEntitlement(
+        empId : String)                                                                           returns MedicalEntitlementBalance;
 
 };

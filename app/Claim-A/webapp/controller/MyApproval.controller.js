@@ -244,7 +244,7 @@ sap.ui.define([
                         "TRIP_START_DATE", "TRIP_END_DATE", "EVENT_START_DATE", "EVENT_END_DATE",
                         "OBJECTIVE_PURPOSE", "TYPE_OF_TRANSPORTATION", "ALTERNATE_COST_CENTER",
                         "LOCATION", "COST_CENTER", "CASH_ADVANCE", "PREAPPROVAL_AMOUNT",
-                        "ATTACHMENT1", "ATTACHMENT2", "STATUS", "STATUS_DESC", "CLAIM_TYPE_ID",
+                        "ATTACHMENT1", "ATTACHMENT2",  "ATTACHMENT3",  "ATTACHMENT4", "STATUS", "STATUS_DESC", "CLAIM_TYPE_ID",
                         "EVENT_FIELD1", "EVENT_FIELD2", "EVENT_FIELD3", "EVENT_FIELD4"
                     ]
                 }
@@ -349,7 +349,9 @@ sap.ui.define([
                 reqamt: o.PREAPPROVAL_AMOUNT || 0, // will be recalculated from items
                 claimtype: o.CLAIM_TYPE_ID || "",
                 claimtypedesc: o.CLAIM_TYPE_DESC || "",
-                reqdate: o.REQUEST_DATE
+                reqdate: o.REQUEST_DATE,
+                doc3: o.ATTACHMENT3 || "",
+                doc4: o.ATTACHMENT4 || "",
             };
         },
 
@@ -687,6 +689,8 @@ sap.ui.define([
                     study_levels_id: it.STUDY_LEVELS_ID,
                     travel_days_id: it.TRAVEL_DAYS_ID,
                     vehicle_class_id: it.VEHICLE_CLASS_ID,
+                    attachment_file_3: it.ATTACHMENT_FILE_3,
+                    attachment_file_4: it.ATTACHMENT_FILE_4,
                     descr: {},
                 }));
 
@@ -737,6 +741,8 @@ sap.ui.define([
                     vehicle_class_id: null,
                     attachment_file_1: null,
                     attachment_file_2: null,
+                    attachment_file_3: null,
+                    attachment_file_4: null
                 }));
 
                 // assign description based on claim item index
