@@ -3092,7 +3092,7 @@ module.exports = (srv) => {
             ZLOG
         } = srv.entities;
 
-        const aPayloads = req.data.payload;
+        const { payload: aPayloads, comment: sComment } = req.data;
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
 
@@ -3236,7 +3236,20 @@ module.exports = (srv) => {
                     oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} attempted reassignment for record ${ID} (Level ${LEVEL}), but no match found for current approver ${APPROVER_ID}.`;
                 }
 
-                return { iRowsAffected, oLog: oLogEntry, sSubstituteID, sOldSubstituteID };
+                return {
+                    iRowsAffected,
+                    oLog: oLogEntry,
+                    oCommentLog: (iRowsAffected > 0 && sComment) ? {
+                        TIMESTAMP: new Date(),
+                        RECORD_ID: ID,
+                        PROGRAM: 'REASSIGN_APPROVER',
+                        MESSAGE_TYPE: 'A',
+                        STATUS_CODE: '200',
+                        MESSAGE: `Approver Reassigned with Comment: ${sComment}`
+                    } : null,
+                    sSubstituteID,
+                    sOldSubstituteID
+                };
             });
 
             const aResults = await Promise.all(aUpdatePromises);
@@ -3245,11 +3258,17 @@ module.exports = (srv) => {
             const aLogsToInsert = [];
             const aErrorMessages = [];
             const aSuccessfulPayloads = [];
+            const oCommentLoggedIds = new Set();
 
             aResults.forEach((oResult, index) => {
                 if (oResult) {
                     iSuccessCount += oResult.iRowsAffected;
                     aLogsToInsert.push(oResult.oLog);
+
+                    if (oResult.oCommentLog &&!oCommentLoggedIds.has(oResult.oCommentLog.RECORD_ID)) {
+                        aLogsToInsert.push(oResult.oCommentLog);
+                        oCommentLoggedIds.add(oResult.oCommentLog.RECORD_ID);
+                    }
 
                     if (oResult.iRowsAffected > 0) {
                         aSuccessfulPayloads.push({

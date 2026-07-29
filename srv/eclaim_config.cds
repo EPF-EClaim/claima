@@ -8210,7 +8210,8 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
 annotate service.ZEMP_PENDING_LIST with @(
     Capabilities.DeleteRestrictions: {Deletable: false},
     Capabilities.SearchRestrictions: {Searchable: false},
-    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC]},
+    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC,CASH_ADVANCE_AMOUNT,DEP]},
+    Capabilities.SortRestrictions:   {NonSortableProperties: [CASH_ADVANCE_AMOUNT,DEP]}, 
     UI                             : {
 
         HeaderInfo: {
@@ -8249,11 +8250,18 @@ annotate service.ZEMP_PENDING_LIST with @(
                 Value            : SUBMITTED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Submitted Date'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MESSAGE,
+                ![@UI.Importance]: #High,
+                Label            : 'Message'
+            }            
         ]
     }
 ) {
     ID @Common.Label: 'ID';
+    MESSAGE @Common.Label: 'Comment';
     CLAIM_TYPE_ID @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
