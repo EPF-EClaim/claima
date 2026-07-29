@@ -3105,6 +3105,19 @@ module.exports = (srv) => {
             return req.error(400, "Payload array is empty or missing.");
         }
 
+        // Check duplicate Approver ID
+        const oSeenApproverIDs = new Set();
+        for (const oItem of aPayloads) {
+            // Use NEW_APPROVER_ID if present, otherwise fall back to OLD_APPROVER_ID
+            const sApproverID = (oItem.NEW_APPROVER_ID || oItem.APPROVER_ID || "").toString().trim();
+            if (sApproverID) {
+                if (oSeenApproverIDs.has(sApproverID)) {
+                    return req.error(400, `Duplicate Approver ID ${sApproverID} found. Each row must have a unique approver.`);
+                }
+                oSeenApproverIDs.add(sApproverID);
+            }
+        }
+
         try {
             for (const oItem of aPayloads) {
                 const sApproverID = oItem.APPROVER_ID;
@@ -3900,8 +3913,8 @@ module.exports = (srv) => {
 
             // Admin can sees their own department only & only where its Non Cash Advance
             req.query
-            .where({ DEP: oEmp.DEP})
-            .and(`(CASH_ADVANCE_AMOUNT = 0 OR CASH_ADVANCE_AMOUNT IS NULL)`);
+                .where({ DEP: oEmp.DEP })
+                .and(`(CASH_ADVANCE_AMOUNT = 0 OR CASH_ADVANCE_AMOUNT IS NULL)`);
         }
     });
 
@@ -3910,38 +3923,53 @@ module.exports = (srv) => {
         if (VALID_FROM === undefined && VALID_TO === undefined) return;
         const tx = cds.tx(req);
         const sRuleId = req.keys?.SUBSTITUTE_RULE_ID || req.data?.SUBSTITUTE_RULE_ID || (req.params && req.params[0]?.SUBSTITUTE_RULE_ID);
+
+        let oExisting = {};
         if (!sRuleId) return;
-        const oExisting = await tx.run(
+        oExisting = await tx.run(
             SELECT.one.from(ZSUBSTITUTION_RULES_CONFIG).where({ SUBSTITUTE_RULE_ID: sRuleId })
         );
         if (oExisting) {
             req.context._oldRecord = oExisting; // Store it safely in context
-        }
-        const sValidFrom = oExisting.VALID_FROM;
-        const sValidTo = VALID_TO;
-        let sErrorMessage = '';
-        if (sValidFrom && sValidTo && new Date(sValidTo) < new Date(sValidFrom)) {
-            sErrorMessage = 'The Valid To Date cannot be earlier than the Valid From Date.';
-        }
-        if (sErrorMessage) {
-            req.error({
-                code: 'MASS_EDIT_VALIDATION',
-                message: sErrorMessage
-            });
+        };
+
+        // Merge: Use payload value if provided; otherwise fallback to existing DB value
+        const sFinalValidFrom = VALID_FROM !== undefined ? VALID_FROM : oExisting.VALID_FROM;
+        const sFinalValidTo = VALID_TO !== undefined ? VALID_TO : oExisting.VALID_TO;
+
+        // Validate only if BOTH dates are present (neither empty nor null)
+        if (sFinalValidFrom && sFinalValidTo) {
+            const dFrom = new Date(sFinalValidFrom);
+            const dTo = new Date(sFinalValidTo);
+            if (dTo < dFrom) {
+                return req.error({
+                    code: 'MASS_EDIT_VALIDATION',
+                    message: 'The Valid To Date cannot be earlier than the Valid From Date.'
+                });
+            }
         }
     });
 
     srv.after('UPDATE', ['ZSUBSTITUTION_RULES', 'ZSUBSTITUTION_RULES_CONFIG'], async (data, req) => {
 
-        const { SUBSTITUTE_RULE_ID, VALID_TO } = data;
-        if (!SUBSTITUTE_RULE_ID || !VALID_TO) return;
+        const { SUBSTITUTE_RULE_ID, VALID_TO, VALID_FROM } = data;
+        if (!SUBSTITUTE_RULE_ID) return;
 
         //Get the original value from the database (passed forward from your before hook)
         const sOldValidToStr = req.context._oldRecord?.VALID_TO;
+        const sOldValidFromStr = req.context._oldRecord?.VALID_FROM;
         const sUserID = req.context._oldRecord?.USER_ID;
         const sSubstituteID = req.context._oldRecord?.SUBSTITUTE_ID;
 
-        if (!sOldValidToStr || sOldValidToStr === VALID_TO) return;
+        // Ensure we have current values (fallback to old ones if omitted in partial UPDATE)
+        const sNewValidFrom = VALID_FROM || sOldValidFromStr;
+        const sNewValidTo = VALID_TO || sOldValidToStr;
+
+        // Check if either date actually changed
+        const bValidFromChanged = sOldValidFromStr && sNewValidFrom !== sOldValidFromStr;
+        const bValidToChanged = sOldValidToStr && sNewValidTo !== sOldValidToStr;
+
+        if (!bValidFromChanged && !bValidToChanged) return;
 
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
@@ -3953,29 +3981,65 @@ module.exports = (srv) => {
                 PROGRAM: 'SUBSTITUTION_RULE_UPDATE',
                 MESSAGE_TYPE: 'S',
                 STATUS_CODE: '200',
-                MESSAGE: `User ${oCurrentUser.EEID} updated VALID_TO for Rule ${SUBSTITUTE_RULE_ID} from ${sOldValidToStr} to ${VALID_TO}.`
+                MESSAGE: `User ${oCurrentUser?.EEID || sUserID} updated Rule ${SUBSTITUTE_RULE_ID}. ` +
+                    `VALID_FROM: [${sOldValidFromStr} -> ${sNewValidFrom}], ` +
+                    `VALID_TO: [${sOldValidToStr} -> ${sNewValidTo}].`
             };
 
             await tx.run(
                 INSERT.into('ZLOG').entries(oLogEntry)
             );
 
-            if (VALID_TO > sOldValidToStr) {
-                console.log(">>> Extension detected. Processing new assignments...");
-                // Pass the original validation start as oldDate to only look at the expanded window gap
-                await handleNewAssignments(tx, srv.entities, {
-                    sUserID, sSubstituteID,
-                    VALID_FROM: sOldValidToStr, // Start from the old limit to find new matching records
-                    VALID_TO, oCurrentUser
-                });
-            } else if (VALID_TO < sOldValidToStr) {
-                console.log(">>> Shortening detected. Processing de-delegations...");
-                await handleDeDelegations(tx, srv.entities, {
-                    sUserID, sSubstituteID,
-                    VALID_FROM: VALID_TO, // Look into items trapped between the new earlier limit...
-                    VALID_TO: sOldValidToStr, // ...and the old higher limit
-                    oCurrentUser
-                });
+            // =======================================================================
+            // 1. EVALUATE VALID_TO CHANGES
+            // =======================================================================
+            if (bValidToChanged) {
+                if (sNewValidTo > sOldValidToStr) {
+                    console.log(">>> Extension detected on VALID_TO. Processing new assignments...");
+                    await handleNewAssignments(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sOldValidToStr, // Target newly expanded upper window
+                        VALID_TO: sNewValidTo,
+                        oCurrentUser
+                    });
+                } else if (sNewValidTo < sOldValidToStr) {
+                    console.log(">>> Shortening detected on VALID_TO. Processing de-delegations...");
+                    await handleDeDelegations(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sNewValidTo,   // Target removed upper window
+                        VALID_TO: sOldValidToStr,
+                        oCurrentUser
+                    });
+                }
+            }
+
+            // =======================================================================
+            // 2. EVALUATE VALID_FROM CHANGES
+            // =======================================================================
+            if (bValidFromChanged) {
+                if (sNewValidFrom < sOldValidFromStr) {
+                    console.log(">>> Extension detected on VALID_FROM (started earlier). Processing new assignments...");
+                    await handleNewAssignments(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sNewValidFrom,   // Target newly expanded lower window
+                        VALID_TO: sOldValidFromStr,
+                        oCurrentUser
+                    });
+                } else if (sNewValidFrom > sOldValidFromStr) {
+                    console.log(">>> Shortening detected on VALID_FROM (started later). Processing de-delegations...");
+
+                    // Subtract 1 day from sNewValidFrom for the upper bound
+                    let dNewValidFrom = new Date(sNewValidFrom);
+                    dNewValidFrom.setDate(dNewValidFrom.getDate() - 1);
+                    let sDeDelegateToDate = dNewValidFrom.toISOString().split('T')[0];
+
+                    await handleDeDelegations(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sOldValidFromStr, // Target removed lower window
+                        VALID_TO: sDeDelegateToDate, // Targets up to (newValidFrom - 1 day) sNewValidFrom,
+                        oCurrentUser
+                    });
+                }
             }
 
         } catch (oError) {
@@ -4389,6 +4453,32 @@ module.exports = (srv) => {
         }
 
         return false;
+    });
+
+    srv.on('getGLAccountByProjectCode', async (req) => {
+        try {
+            const { sProjectCode } = req.data;
+
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const tx = cds.tx(req);
+
+            const oProject = await tx.run(
+                SELECT.one
+                    .from('ZPROJECT_HDR')
+                    .columns('GL_ACCOUNT')
+                    .where({
+                        PROJECT_CODE_IO: sProjectCode
+                    })
+            );
+
+            return oProject?.GL_ACCOUNT || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
     });
 
 }
