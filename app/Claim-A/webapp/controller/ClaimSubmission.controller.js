@@ -630,6 +630,7 @@ sap.ui.define([
 					next_policy_number: it.NEXT_POLICY_NUMBER,
 					attachment_file_3: it.ATTACHMENT_FILE_3,
 					attachment_file_4: it.ATTACHMENT_FILE_4,
+					policy_year:it.POLICY_YEAR,
 					descr: {},
 				}));
 
@@ -3321,7 +3322,7 @@ sap.ui.define([
 					INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name"),
 					ATTACHMENT_FILE_3: oInputModel.getProperty("/claim_item/attachment_file_3"),
 					ATTACHMENT_FILE_4: oInputModel.getProperty("/claim_item/attachment_file_4"),
-					POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_start_date")? new Date(oInputModel.getProperty("/claim_item/policy_start_date")).getFullYear().toString(): null
+					POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_year")
 				});
 				// to save the attachment inside SF
 				var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
@@ -4898,7 +4899,8 @@ sap.ui.define([
 						EXCLUDE_TIPS: claim_item.exclude_tips,
 						TOTAL_TRAVELLER: claim_item.number_of_travellers,
 						ATTACHMENT_FILE_3: claim_item.attachment_file_3,
-						ATTACHMENT_FILE_4: claim_item.attachment_file_4
+						ATTACHMENT_FILE_4: claim_item.attachment_file_4,
+						POLICY_YEAR: claim_item.policy_year
 					});
 
 					if (i >= itemCountDb) {
@@ -5839,10 +5841,7 @@ sap.ui.define([
 
 			const sNationalId =oAction.getBoundContext().getObject().value;
 
-			oInputModel.setProperty(
-				"/claim_item/dependent_national_id",
-				sNationalId
-			);
+			oInputModel.setProperty("/claim_item/dependent_national_id",sNationalId);
 
 			const sPolicyYear =
 				oInputModel.getProperty(
@@ -5850,7 +5849,6 @@ sap.ui.define([
 				);
 
 			if (sNationalId && sPolicyYear) {
-
 				const oPolicyInfo =
 					await this._getPolicyInfo(
 						sNationalId,
@@ -5874,17 +5872,15 @@ sap.ui.define([
 			}
 		},
 
-		_getPolicyInfo: async function (sNationalId, sPolicyYear) {
+		onChange_PolicyStartDate: function (oEvent) {
 
-			const oModel = this.getOwnerComponent().getModel();
-			const oAction = oModel.bindContext("/getPolicyInfo(...)");
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const dPolicyStartDate = oEvent.getSource().getDateValue();
+			const sPolicyYear = dPolicyStartDate
+				? dPolicyStartDate.getFullYear().toString()
+				: null;
 
-			oAction.setParameter("dependentNationalId",sNationalId);
-			oAction.setParameter("policyYear",sPolicyYear);
-
-			await oAction.execute();
-
-			return oAction.getBoundContext().getObject();
+			oInputModel.setProperty("/claim_item/policy_year",sPolicyYear);
 		}
 	});
 });

@@ -190,6 +190,7 @@
                     displayFormat="dd-MMM-yyyy"
                     visible="{claimitem_property>/policy_start_date/is_visible}"
                     required="true"
+                    change= ".onChange_PolicyStartDate"
                 />
 
                 <!-- Policy End Date -->
@@ -677,7 +678,17 @@
 						${claimitem_input>/claim_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}
 					}"
 				/>
+                <!-- Past Year Policy Display -->
+                <Label text="Past Year Policy" />
+                <Text text="{claimitem_input>/claim_item/previous_policy_number}" />
 
+                 <!-- Curent Year Policy Display -->
+                <Label text="Current Year Policy" />
+                <Text text="{claimitem_input>/claim_item/current_policy_number}" />
+
+                 <!-- Next Year Policy Display -->
+                <Label text="Future Year Policy" />
+                <Text text="{claimitem_input>/claim_item/next_policy_number}" />
 				<!-- Date of Purchase of Insurance 
 				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
 				<DatePicker
