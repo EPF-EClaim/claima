@@ -10,6 +10,7 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
+const UpdateMedical = require('./utils/UpdateMedical');
 
 module.exports = (srv) => {
 
@@ -4542,49 +4543,188 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('getRemainingMedicalEntitlement',async (req) => {
+    srv.on('getRemainingMedicalEntitlement', async (req) => {
 
-            const tx = cds.tx(req);
-            const { empId } = req.data;
+        const tx = cds.tx(req);
+        const { empId } = req.data;
 
-            const oEmployee = await tx.run(
-                SELECT.one
-                    .from('ZEMP_MASTER')
-                    .columns('MEDICAL_INSURANCE_ENTITLEMENT')
-                    .where({
-                        EEID: empId
-                    })
+        const oEmployee = await tx.run(
+            SELECT.one
+                .from('ZEMP_MASTER')
+                .columns('MEDICAL_INSURANCE_ENTITLEMENT')
+                .where({
+                    EEID: empId
+                })
+        );
+
+        const fEntitlement =
+            Number(
+                oEmployee?.MEDICAL_INSURANCE_ENTITLEMENT || 0
             );
 
-            const fEntitlement =
-                Number(
-                    oEmployee?.MEDICAL_INSURANCE_ENTITLEMENT || 0
-                );
-
-            const oApprovedClaims = await tx.run(
-                SELECT.one`
+        const oApprovedClaims = await tx.run(
+            SELECT.one`
                 SUM(FINAL_AMOUNT_TO_RECEIVE) as TOTAL
             `
-                    .from('ZCLAIM_HEADER')
-                    .where({
-                        EMP_ID: empId,
-                        CLAIM_TYPE_ID: Constant.ClaimType.MEDICAL,
-                        STATUS_ID: Constant.Status.APPROVED
-                    })
+                .from('ZCLAIM_HEADER')
+                .where({
+                    EMP_ID: empId,
+                    CLAIM_TYPE_ID: Constant.ClaimType.MEDICAL,
+                    STATUS_ID: Constant.Status.APPROVED
+                })
+        );
+
+        const fApprovedClaims =
+            Number(
+                oApprovedClaims?.TOTAL || 0
             );
 
-            const fApprovedClaims =
-                Number(
-                    oApprovedClaims?.TOTAL || 0
-                );
-
-            return {
-                entitlement: fEntitlement,
-                approved: fApprovedClaims,
-                remaining:
-                    fEntitlement - fApprovedClaims
-            };
-        }
+        return {
+            entitlement: fEntitlement,
+            approved: fApprovedClaims,
+            remaining:
+                fEntitlement - fApprovedClaims
+        };
+    }
     );
 
+    /**
+        * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updateMedicalUsedAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateMedical.updateUsedMedicalAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });
+
+    /**
+        * Clear MEDICAL_INSURANCE_ENTITLEMENT in ZEMP_MASTER table every year (Job Scheduler)
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('clearMedicalEntitlement', async (req) => {
+        console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
+        try {
+            const currentYear = new Date().getFullYear().toString(); // confirm when the job will be run???
+            const iTotalUpdated = await cds.tx(async (tx) => {
+                // 1. Fetch records that need to be reset
+                const aEntitlementRecords = await tx.run(
+                    SELECT.from(ZEMP_MASTER)
+                        .columns(
+                            Constant.EntitiesFields.EEID,
+                            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                        )
+                        .where({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
+                                [Constant.ComparisonOperators.NotEquals]: null,
+                                [Constant.ComparisonOperators.GreaterThan]: 0
+                            }
+                        })
+                );
+                // If no records need to be reset, exit early
+                if (!aEntitlementRecords || aEntitlementRecords.length === 0) {
+                    return 0;
+                }
+                // 2. Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
+                const aHistoryEntries = aEntitlementRecords.map(item => ({
+                    YEAR: currentYear,
+                    EMP_ID: item[Constant.EntitiesFields.EEID],
+                    MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
+                }));
+                // 3. UPSERT history records (Inserts new entries or updates existing ones for current year)
+                await tx.run(
+                    UPSERT.into(ZEMP_MEDICAL_ENT_HISTORY).entries(aHistoryEntries)
+                );
+                // 4. Perform the mass update to reset entitlement
+                const updateCount = await tx.run(
+                    UPDATE(ZEMP_MASTER)
+                        .set({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: 0
+                        })
+                        .where({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
+                                [Constant.ComparisonOperators.NotEquals]: null,
+                                [Constant.ComparisonOperators.GreaterThan]: 0
+                            }
+                        })
+                );
+                return updateCount;
+            });
+            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iTotalUpdated}`);
+            return `Successfully archived and reset medical entitlement for ${iTotalUpdated} records.`;
+        } catch (error) {
+            console.error(
+                '[JOB ERROR] Annual entitlement reset failed:', error
+            );
+            return req.error(500, `Job execution failed: ${error.message}`);
+        }
+    });
+
+    /**
+        * Function for sending email reminder when no Claim Submission done 
+        * 30 days after the PAR approved
+        * returns a list of reminders for claimants who have not submitted their claim
+        * @public
+        * @returns {Array} aResult - Array of reminder objects
+        */
+    srv.on('getMedicalReminderEmail', async (req) => {
+        //LAST_APPROVED_DATE 30 days before the Current Date
+        //Claim Type Medical - Claim Item Medical Insurance Advance
+        //select pre-approval request where no Claim Submission done yet
+        const today = new Date();
+        const baseline = new Date();
+        baseline.setDate(baseline.getDate() - 30);
+
+        const sTodayDate = today.toISOString().slice(0, 10);
+        const sBaselineDate = baseline.toISOString().slice(0, 10);
+
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, ZEMP_APPROVED_PREAPPROVAL } = srv.entities;
+        const tx = cds.tx(req);
+
+        let aResult = [];
+
+        const aRequest = await tx.run(
+            SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
+                .where('LAST_APPROVED_DATE <=', sBaselineDate)
+        );
+
+        for (var oRequest of aRequest) {
+            try {
+
+                ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario, sAgingDay));
+                aResult.push({
+                    empName: oRequest.NAME,
+                    empEmail: oRequest.EMAIL,
+                    //ccEmail: sCCEmail,
+                    //tripEndDate: new Date(oRequest.TRIP_END_DATE).toISOString().slice(0, 10),
+                    //scenario: sScenario,
+                    //milestone: sAgingDay
+                })
+
+            } catch (error) {
+                console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
+        }
+
+        if (aResult.length === 0) {
+            req.info('No reminders available');
+            return [];
+        }
+        return aResult;
+    });
 }
