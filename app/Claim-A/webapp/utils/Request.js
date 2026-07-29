@@ -21,6 +21,8 @@ sap.ui.define([
       altcostcenter  : oData.ALTERNATE_COST_CENTER  || "",
       doc1           : oData.ATTACHMENT1            || "",
       doc2           : oData.ATTACHMENT2            || "",
+      doc3           : oData.ATTACHMENT3            || "",
+      doc4           : oData.ATTACHMENT4            || "",
       comment        : oData.REMARK                 || "",
       eventdetail1   : oData.EVENT_FIELD1           || "",
       eventdetail2   : oData.EVENT_FIELD2           || "",

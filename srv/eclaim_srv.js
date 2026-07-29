@@ -661,23 +661,6 @@ module.exports = (srv) => {
         return oBudget?.WBS_CODE || null;
     }
 
-    srv.before(['CREATE', 'UPDATE'], 'ZCLAIM_ITEM', async (req) => {
-
-        if (req.data.POLICY_START_DATE) {
-
-            req.data.POLICY_YEAR =
-                new Date(req.data.POLICY_START_DATE)
-                    .getFullYear()
-                    .toString();
-
-            console.log(
-                "POLICY_YEAR:",
-                req.data.POLICY_YEAR
-            );
-        }
-
-    });
-
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
         const tx = cds.tx(req);
         await updateClaimHeaderTotals(req, data.CLAIM_ID, tx);
@@ -4532,5 +4515,50 @@ module.exports = (srv) => {
 
         return oDependent?.NATIONAL_ID || null;
     });
+
+    srv.on('getRemainingMedicalEntitlement',async (req) => {
+
+            const tx = cds.tx(req);
+            const { empId } = req.data;
+
+            const oEmployee = await tx.run(
+                SELECT.one
+                    .from('ZEMP_MASTER')
+                    .columns('MEDICAL_INSURANCE_ENTITLEMENT')
+                    .where({
+                        EEID: empId
+                    })
+            );
+
+            const fEntitlement =
+                Number(
+                    oEmployee?.MEDICAL_INSURANCE_ENTITLEMENT || 0
+                );
+
+            const oApprovedClaims = await tx.run(
+                SELECT.one`
+                SUM(FINAL_AMOUNT_TO_RECEIVE) as TOTAL
+            `
+                    .from('ZCLAIM_HEADER')
+                    .where({
+                        EMP_ID: empId,
+                        CLAIM_TYPE_ID: Constant.ClaimType.MEDICAL,
+                        STATUS_ID: Constant.Status.APPROVED
+                    })
+            );
+
+            const fApprovedClaims =
+                Number(
+                    oApprovedClaims?.TOTAL || 0
+                );
+
+            return {
+                entitlement: fEntitlement,
+                approved: fApprovedClaims,
+                remaining:
+                    fEntitlement - fApprovedClaims
+            };
+        }
+    );
 
 }

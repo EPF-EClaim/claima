@@ -1721,6 +1721,114 @@
                     }"
                 />
 
+                <!-- Attachment 3-->
+				<Label
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                        ? ${i18n>label_insurance_attachment_3}
+                        : ${i18n>label_claimdetails_input_attachment_file_3}
+                    }"
+                />
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_3"
+                    name="fileUploaderClaimDetailsInputAttachment3"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'3')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                    required="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                              &amp;&amp;
+                              ${claimitem_input>/claim_item/attachment_file_3} === null}"
+                />
+                <Label
+                    id="label_claimdetails_input_attachment_file_3"
+                    text="{i18n>label_claimdetails_input_attachment_file_3}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_3} !== null
+                    }"
+                />
+
+                <Link
+                    id="link_claimdetails_input_attachment_file_3"
+                    press="onView_Claim_Attachment('child','3')"
+                    text="{claimitem_input>/claim_item/attachment_file_3}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_3} !== null }"
+                />
+                <!-- Attachment 3 delete button -->
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment('attachment_file_3')"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_3} !== null
+                    }"
+                />
+
+                <!-- Attachment 4-->
+				<Label
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                        ? ${i18n>label_insurance_attachment_4}
+                        : ${i18n>label_claimdetails_input_attachment_file_4}
+                    }"
+                />
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_4"
+                    name="fileUploaderClaimDetailsInputAttachment4"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'4')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                    required="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                              &amp;&amp;
+                              ${claimitem_input>/claim_item/attachment_file_4} === null}"
+                />
+                <Label
+                    id="label_claimdetails_input_attachment_file_4"
+                    text="{i18n>label_claimdetails_input_attachment_file_4}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_4} !== null
+                    }"
+                />
+
+                <Link
+                    id="link_claimdetails_input_attachment_file_4"
+                    press="onView_Claim_Attachment('child','4')"
+                    text="{claimitem_input>/claim_item/attachment_file_4}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_4} !== null }"
+                />
+                <!-- Attachment 4 delete button -->
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment('attachment_file_4')"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_4} !== null
+                    }"
+                />
+
             </f:content>
             <f:dependents>
                 <!-- Value Help for Country -->

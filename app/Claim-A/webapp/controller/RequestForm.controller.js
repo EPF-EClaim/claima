@@ -146,6 +146,7 @@ sap.ui.define([
 			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
+				await RequestUtility.getRemainingMedicalEntitlement(this,this._oReqModel.getProperty("/req_header/empid"));
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
@@ -680,10 +681,12 @@ sap.ui.define([
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 				: oReqItem.ROUND_TRIP || false,
 				internal_order			: oReqItem.INTERNAL_ORDER || null,
-				policy_year: oReqItem.POLICY_YEAR || null,
-				dependent_national_id: oReqItem.DEPENDENT_NATIONAL_ID || null,
+				policy_year				: oReqItem.POLICY_YEAR || null,
+				dependent_national_id	: oReqItem.DEPENDENT_NATIONAL_ID || null,
 				insurance_medical_provider_id: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
-				insurance_medical_provider_name: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null
+				insurance_medical_provider_name: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null,
+				doc3_filename			: oReqItem.ATTACHMENT3 || "",
+				doc4_filename			: oReqItem.ATTACHMENT4 || "",
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1189,6 +1192,14 @@ sap.ui.define([
 					const sAttachment2Binary = await Attachment.getFileAsBinary(oReqItem.doc2);
 					sAttachment2_SFID = await Attachment.postAttachment(oReqItem.doc2.name, sAttachment2Binary, sEmpId);
 				}
+				if (oReqItem.doc3) {
+					const sAttachment3Binary = await Attachment.getFileAsBinary(oReqItem.doc3);
+					sAttachment3_SFID = await Attachment.postAttachment(oReqItem.doc3.name, sAttachment3Binary, sEmpId);
+				}
+				if (oReqItem.doc2) {
+					const sAttachment4Binary = await Attachment.getFileAsBinary(oReqItem.doc4);
+					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
+				}
 
 				if (oReqItem.cash_advance) {
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
@@ -1293,6 +1304,8 @@ sap.ui.define([
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
+				if (sAttachment3_SFID) oPayload.ATTACHMENT3 = `${sAttachment3_SFID} - ${oReqItem.doc3.name}`;
+				if (sAttachment4_SFID) oPayload.ATTACHMENT4 = `${sAttachment4_SFID} - ${oReqItem.doc4.name}`;
 				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
@@ -1311,6 +1324,20 @@ sap.ui.define([
 						oReqItem.doc2_delete = null;
 					}
 
+					if (oReqItem.doc3_delete) {
+						var sSFID = oReqItem.doc3_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT3 = null;
+						oReqItem.doc3_delete = null;
+					}
+
+					if (oReqItem.doc4_delete) {
+						var sSFID = oReqItem.doc4_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT4 = null;
+						oReqItem.doc4_delete = null;
+					}
+
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
@@ -1324,7 +1351,7 @@ sap.ui.define([
 					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
 					await this._oDataModel.submitBatch("itemSave");
 
-					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID,sAttachment3_SFID, sAttachment4_SFID)
 
 				} else {
 					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1339,7 +1366,7 @@ sap.ui.define([
 					}
 
 					// upload Child MDF
-					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID, sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID, sAttachment2_SFID, sAttachment3_SFID, sAttachment4_SFID)
 
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
@@ -1390,6 +1417,18 @@ sap.ui.define([
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc2 = oEvent.getParameters("files").files[0];
 			if(oData.doc2_delete) oData.doc2_delete = null;
+		},
+
+		onImportChange3(oEvent) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc3 = oEvent.getParameters("files").files[0];
+			if(oData.doc3_delete) oData.doc3_delete = null;
+		},
+
+		onImportChange4(oEvent) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc4 = oEvent.getParameters("files").files[0];
+			if(oData.doc4_delete) oData.doc4_delete = null;
 		},
 
 		async _upsertParticipantsForItem(sReqId, sReqSubId, aParticipants) {
@@ -1913,6 +1952,8 @@ sap.ui.define([
 					{ label: "Category/Purpose (Mobile) Desc", property: "MOBILE_CATEGORY_PURPOSE_DESC", type: "string" },
 					{ label: "Attachment 1", property: "ATTACHMENT 1", type: "string" },
 					{ label: "Attachment 2", property: "ATTACHMENT 2", type: "string" },
+					{ label: "Attachment 3", property: "ATTACHMENT 3", type: "string" },
+					{ label: "Attachment 4", property: "ATTACHMENT 4", type: "string" },
 					{ label: "Start Date", property: "START DATE", type: "date" },
 					{ label: "End Date", property: "END DATE", type: "date" },
 					{ label: "Vehicle Ownership ID", property: "VEHICLE OWNERSHIP_ID", type: "string" },
@@ -2383,7 +2424,9 @@ sap.ui.define([
 				"i_currency_code",
 				"i_currency_rate",
 				"i_type_of_prof_body",
-				"i_no_of_traveler"
+				"i_no_of_traveler",
+				"i_attachment_3",
+				"i_attachment_4"
 			];
 
 			aControlIds.forEach(id => {
