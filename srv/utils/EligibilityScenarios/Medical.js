@@ -17,9 +17,15 @@ module.exports = {
         var oRule;
 
         //Filter rules based on claimant's employee type
-        aRules = aRules.filter(function (rule) {
-            return (rule.ROLE_ID == oEmp.ROLE);
-        });
+        const bHasSpecificRole = aRules.some(
+            rule => rule.ROLE_ID === oEmp.ROLE
+        );
+
+        aRules = aRules.filter(rule =>
+            bHasSpecificRole
+                ? rule.ROLE_ID === oEmp.ROLE
+                : rule.ROLE_ID === Constant.Wildcard.All
+        );
 
         oRule = aRules[0];
 
@@ -57,12 +63,13 @@ module.exports = {
             if (iIndex === -1) { return; }
 
             //Valid to claim for policy year before current year, current year, and next year
-            iClaimPolicyYear = oPayload.CheckFields[iIndex].value;
+            iClaimPolicyYear = Number(oPayload.CheckFields[iIndex].value);
+            iPolicyYear = iClaimPolicyYear;
 
             const iCurrentYear = new Date().getFullYear();
             const aAllowedYears = [iCurrentYear - 1, iCurrentYear, iCurrentYear + 1];
 
-            if (!aAllowedYears.includes(iClaimPolicyYear)) {
+            if (!aAllowedYears.includes(Number(iClaimPolicyYear))) {
                 throw new Error(`Policy Start Date must be within ${iCurrentYear - 1}, ${iCurrentYear}, or ${iCurrentYear + 1}.`);
             }
 
