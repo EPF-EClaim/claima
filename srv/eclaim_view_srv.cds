@@ -79,7 +79,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PAYMENT_DATE,
                 PROJECT_CODE,
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
-                ATTACHMENT3
+                ATTACHMENT3,
+                ATTACHMENT4,
         };
 
     entity ZEMP_REQUEST_EE_VIEW as
@@ -133,7 +134,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
-                ATTACHMENT3
+                ATTACHMENT3,
+                ATTACHMENT4
         };
 
 
@@ -232,7 +234,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPENDENT_NATIONAL_ID,
                 INSURANCE_MEDICAL_PROVIDER_ID,
                 INSURANCE_MEDICAL_PROVIDER_NAME,
-                ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC
+                ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
+                ATTACHMENT4
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -522,7 +525,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.POLICY_END_DATE,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_ID,
                 ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
-                ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME                            
+                ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME,
+                ZCLAIM_ITEM.ATTACHMENT_FILE_4,
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                       
         };
 
     entity ZEMP_REQUEST_STATUS            as
