@@ -30,146 +30,86 @@ module.exports = (srv) => {
         }
     }),
 
-        srv.on('batchCreateCostCenter', async (req) => {
-            const { ZCOST_CENTER } = srv.entities;
-            try {
-                const { costcenters } = req.data;
-                if (!costcenters || costcenters.length === 0) {
-                    throw new Error('No Data Sent')
-                }
-                const tx = cds.tx(req);
-                const results = await tx.run(
-                    UPSERT(costcenters).into(ZCOST_CENTER)
-                );
-                return 'Records updated';
-            } catch (error) {
-                req.error(400, `Fail creating record: ${error.message}`);
+    srv.on('batchCreateCostCenter', async (req) => {
+        const { ZCOST_CENTER } = srv.entities;
+        try {
+            const { costcenters } = req.data;
+            if (!costcenters || costcenters.length === 0) {
+                throw new Error('No Data Sent')
             }
-        }),
-
-        srv.on('batchCreateDependent', async (req) => {
-            const { ZEMP_DEPENDENT } = srv.entities;
-            try {
-                const { dependents } = req.data;
-                if (!dependents || dependents.length === 0) {
-                    throw new Error('No Data Sent')
-                }
-                const tx = cds.tx(req);
-                const results = await tx.run(
-                    UPSERT(dependents).into(ZEMP_DEPENDENT)
-                );
-                return 'Records updated';
-            } catch (error) {
-                req.error(400, `Fail creating record: ${error.message}`);
-            }
-        }),
-
-        srv.on('getUserType', async (req) => {
             const tx = cds.tx(req);
-            const { ZDEPARTMENT } = srv.entities;
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+            const results = await tx.run(
+                UPSERT(costcenters).into(ZCOST_CENTER)
+            );
+            return 'Records updated';
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    }),
 
-            let sOrigin = null;
-            try {
-                const authHeader = req.http?.req?.headers?.authorization ?? '';
-                const token = authHeader.split(' ')[1];
-                if (token) {
-                    const oToken = JSON.parse(
-                        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-                    );
-                    sOrigin = oToken.origin;
-                }
-            } catch (e) {
-                console.log("Token parsing failed:", e.message);
+    srv.on('batchCreateDependent', async (req) => {
+        const { ZEMP_DEPENDENT } = srv.entities;
+        try {
+            const { dependents } = req.data;
+            if (!dependents || dependents.length === 0) {
+                throw new Error('No Data Sent')
             }
+            const tx = cds.tx(req);
+            const results = await tx.run(
+                UPSERT(dependents).into(ZEMP_DEPENDENT)
+            );
+            return 'Records updated';
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    }),
 
-            const oRoles = {
-                isClaimant: req.user.is('Claimant'),
-                isApprover: req.user.is('Approver'),
-                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
-            };
+    srv.on('getUserType', async (req) => {
+        const tx = cds.tx(req);
+        const { ZDEPARTMENT } = srv.entities;
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            let sDeptDesc = "UNKNOWN";
-            if (oEmp.DEP) {
-                const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
-                sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+        let sOrigin = null;
+        try {
+            const authHeader = req.http?.req?.headers?.authorization ?? '';
+            const token = authHeader.split(' ')[1];
+            if (token) {
+                const oToken = JSON.parse(
+                    Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+                );
+                sOrigin = oToken.origin;
             }
+        } catch (e) {
+            console.log("Token parsing failed:", e.message);
+        }
 
-            return {
-                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
-                userType: oEmp.USER_TYPE || "UNKNOWN",
-                costcenters: oEmp.CC || "UNKNOWN",
-                userId: oEmp.EEID || "UNKNOWN",
-                name: oEmp.NAME || "UNKNOWN",
-                position: oEmp.POSITION_NAME || "UNKNOWN",
-                origin: sOrigin,
-                grade: oEmp.GRADE || "UNKNOWN",
-                department: sDeptDesc,
-                roles: oRoles
-            };
-        });
+        const oRoles = {
+            isClaimant: req.user.is('Claimant'),
+            isApprover: req.user.is('Approver'),
+            isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+            isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+            isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+        };
 
-    // srv.on('getUserType', async (req) => {
-    //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-    //     const emailFromToken =
-    //         req.user?.attr?.email ||
-    //         req.user?.attr?.mail ||
-    //         req.user?.attr?.user_name ||
-    //         req.user?.attr?.login_name ||
-    //         req.user?.id ||
-    //         "";
+        let sDeptDesc = "UNKNOWN";
+        if (oEmp.DEP) {
+            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
+            sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+        }
 
-    //     let sOrigin = null;
-
-    //     try {
-    //         const authHeader = req.http?.req?.headers?.authorization ?? '';
-    //         const token = authHeader.split(' ')[1];
-    //         if (token) {
-    //             const oToken = JSON.parse(
-    //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-    //             );
-    //             sOrigin = oToken.origin;
-    //         }
-    //     } catch (e) {
-    //         console.log("Token parsing failed:", e.message);
-    //     }
-
-    //     const email = String(emailFromToken).trim().toLowerCase();
-    //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-    //     //no record maintained in ZEMP_MASTER table
-    //     if (!result) {
-    //         return {
-    //             id: email,
-    //             userType: "UNKNOWN",
-    //             costcenters: "UNKNOWN",
-    //             userId: "UNKNOWN",
-    //             name: "UNKNOWN",
-    //             position: "UNKNOWN",
-    //             origin: sOrigin,
-    //             grade: "UNKNOWN",
-    //             department: "UNKNOWN"
-    //         };
-    //     }
-
-    //     let dept = null;
-    //     if (result.DEP) {
-    //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
-    //     }
-
-    //     return {
-    //         id: email,
-    //         userType: result?.USER_TYPE || "UNKNOWN",
-    //         costcenters: result?.CC || "UNKNOWN",
-    //         userId: result?.EEID || "UNKNOWN",
-    //         name: result?.NAME || "UNKNOWN",
-    //         position: result?.POSITION_NAME || "UNKNOWN",
-    //         origin: sOrigin,
-    //         grade: result?.GRADE || "UNKNOWN",
-    //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
-    //     };
-    // });
+        return {
+            id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
+            userType: oEmp.USER_TYPE || "UNKNOWN",
+            costcenters: oEmp.CC || "UNKNOWN",
+            userId: oEmp.EEID || "UNKNOWN",
+            name: oEmp.NAME || "UNKNOWN",
+            position: oEmp.POSITION_NAME || "UNKNOWN",
+            origin: sOrigin,
+            grade: oEmp.GRADE || "UNKNOWN",
+            department: sDeptDesc,
+            roles: oRoles
+        };
+    });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -4473,6 +4413,35 @@ module.exports = (srv) => {
 
         } catch (error) {
             req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
+    });
+
+    srv.on('batchUpsertCompanyInfo', async (req) => {
+        try {
+            const { entityName, data } = req.data;
+            const tx = cds.tx(req);
+            const sTargetEntity = srv.entities[entityName];
+            const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
+
+            if (!entityName) {
+                throw new Error ('Entity name parameter is missing')
+            }
+
+            if (!data || data.length === 0) {
+                throw new Error ('No data sent');
+            }
+
+            if (!sTargetEntity) {
+                throw new Error (`Entity '${entityName}' not found in service`);
+            }
+            
+            await tx.run(
+                UPSERT(oRecords).into(sTargetEntity)
+            );
+
+            return `Records successfully updated for ${entityName}`;
+        } catch (error) {
+            req.error(400, `Failed creating record for ${req.data.entityName || 'unknown'}: ${error.message}`);
         }
     });
 
