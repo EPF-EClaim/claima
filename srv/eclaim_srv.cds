@@ -1427,15 +1427,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
-    action getPolicyInfo(
-        dependentNationalId : String,
-        policyYear          : String
-    ) returns {
-        previous_policy_number : String;
-        current_policy_number  : String;
-        next_policy_number     : String;
-    };
-
     action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
@@ -1476,7 +1467,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getMedicalReminderEmail() returns array of reminders;   
 
-     
     entity ZLATEST_LOG                   as
         select from ECLAIM.ZLOG {
             key RECORD_ID,
@@ -1504,32 +1494,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
      entity ZDIVISION as projection on ECLAIM.ZDIVISION;        
 
      entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
-
-     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
-
-     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
-
-     
-    entity ZLATEST_LOG                   as
-        select from ECLAIM.ZLOG {
-            key RECORD_ID,
-            key max(TIMESTAMP) as LOG_TIMESTAMP : Timestamp
-        }
-        where MESSAGE_TYPE = 'A'
-        group by
-            RECORD_ID;
-
-    entity ZLATEST_LOG_DETAILS           as
-        select from ECLAIM.ZLOG as Log
-        inner join ZLATEST_LOG as Latest
-            on  Log.RECORD_ID = Latest.RECORD_ID
-            and Log.TIMESTAMP = Latest.LOG_TIMESTAMP
-        {
-            key Log.RECORD_ID,
-            key Log.TIMESTAMP,
-            Log.MESSAGE,
-            Log.MESSAGE_TYPE,
-            Log.STATUS_CODE
-        };
 
 };
