@@ -4503,53 +4503,6 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('batchUpsertCompanyInfo', async (req) => {
-        try {
-            const { entityName, data } = req.data;
-            const tx = cds.tx(req);
-            const sTargetEntity = srv.entities[entityName];
-            const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
-
-            if (!entityName) {
-                throw new Error ('Entity name parameter is missing')
-            }
-
-            if (!data || data.length === 0) {
-                throw new Error ('No data sent');
-            }
-
-            if (!sTargetEntity) {
-                throw new Error (`Entity '${entityName}' not found in service`);
-            }
-            
-            await tx.run(
-                UPSERT(oRecords).into(sTargetEntity)
-            );
-
-            return `Records successfully updated for ${entityName}`;
-        } catch (error) {
-            req.error(400, `Failed creating record for ${req.data.entityName || 'unknown'}: ${error.message}`);
-        }
-    });
-
-    //this is for list report which will be filter by department for GA
-    srv.before('READ', 'ZEMP_APPROVER_LIST_VH', async (req) => {
-
-        //for GA, show their department only. for JKEW show all
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const oEmp = await SELECT.one
-                .from('ZEMP_MASTER')
-                .where({ EMAIL: req.user.id });
-
-            if (!oEmp || !oEmp.DEP) return;
-
-            // Admin can sees their own department only
-            req.query.where({
-                DEP: oEmp.DEP
-            });
-        }
-    });
-
 
     srv.on('getDependentNationalId', async (req) => {
 
@@ -4562,6 +4515,32 @@ module.exports = (srv) => {
             });
 
         return oDependent?.NATIONAL_ID || null;
+    });
+
+    srv.on('getGLAccountByProjectCode', async (req) => {
+        try {
+            const { sProjectCode } = req.data;
+
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const tx = cds.tx(req);
+
+            const oProject = await tx.run(
+                SELECT.one
+                    .from('ZPROJECT_HDR')
+                    .columns('GL_ACCOUNT')
+                    .where({
+                        PROJECT_CODE_IO: sProjectCode
+                    })
+            );
+
+            return oProject?.GL_ACCOUNT || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
     });
 
     srv.on('getRemainingMedicalEntitlement', async (req) => {
@@ -4748,4 +4727,53 @@ module.exports = (srv) => {
         }
         return aResult;
     });
+=========
+    srv.on('batchUpsertCompanyInfo', async (req) => {
+        try {
+            const { entityName, data } = req.data;
+            const tx = cds.tx(req);
+            const sTargetEntity = srv.entities[entityName];
+            const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
+
+            if (!entityName) {
+                throw new Error ('Entity name parameter is missing')
+            }
+
+            if (!data || data.length === 0) {
+                throw new Error ('No data sent');
+            }
+
+            if (!sTargetEntity) {
+                throw new Error (`Entity '${entityName}' not found in service`);
+            }
+            
+            await tx.run(
+                UPSERT(oRecords).into(sTargetEntity)
+            );
+
+            return `Records successfully updated for ${entityName}`;
+        } catch (error) {
+            req.error(400, `Failed creating record for ${req.data.entityName || 'unknown'}: ${error.message}`);
+        }
+    });
+
+    //this is for list report which will be filter by department for GA
+    srv.before('READ', 'ZEMP_APPROVER_LIST_VH', async (req) => {
+
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+
+            if (!oEmp || !oEmp.DEP) return;
+
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
+        }
+    });
+
+>>>>>>>>> Temporary merge branch 2
 }
