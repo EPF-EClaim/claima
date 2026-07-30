@@ -8,7 +8,7 @@ sap.ui.define([
     "claima/utils/ReassignUtility",
     "claima/utils/Utility",
     "sap/ui/core/BusyIndicator",
-    "claima/utils/Constants",
+    "claima/utils/Constants"
 ], function (Fragment, Filter, FilterOperator, MessageToast, MessageBox, Element, ReassignUtility, Utility, BusyIndicator, Constants) {
     "use strict";
     var oApproverFragment = null;
@@ -25,7 +25,8 @@ sap.ui.define([
             var oControllerMapping = {
                 onSaveApprovers: oApproverPopupModule.onSaveApprovers,
                 onCloseDialog: oApproverPopupModule.onCloseDialog,
-                onApproverValueHelpRequest: oApproverPopupModule.onApproverValueHelpRequest
+                onApproverValueHelpRequest: oApproverPopupModule.onApproverValueHelpRequest,
+                onCommentLiveChange: oApproverPopupModule.onCommentLiveChange
             };
             var fnApplyTableFilter = function () {
                 var oTable = Fragment.byId(oView.getId(), "popupTable");
@@ -67,25 +68,73 @@ sap.ui.define([
                 if (oApproverFragment) { oApproverFragment.close(); }
                 return;
             }
+            // 1. Reverted back to standard OData property check: at least one row has NEW_APPROVER_ID
+            var bHasAtLeastOneNewApprover = aItems.some(function (oItem) {
+                var oContext = oItem.getBindingContext();
+                if (!oContext) return false;
+                var sNewApproverId = oContext.getProperty("NEW_APPROVER_ID");
+                return sNewApproverId && sNewApproverId.trim() !== "";
+            });
+            if (!bHasAtLeastOneNewApprover) {
+                MessageBox.error(
+                    Utility.getText("msg_at_least_one_approver_required") ||
+                    "Please select a new approver for at least one item before saving."
+                );
+                return;
+            }
+            // 2. Mandatory Comment Check
+            var oCommentTextArea = Fragment.byId(oView.getId(), "commentTextArea");
+            var sComment = oCommentTextArea ? oCommentTextArea.getValue().trim() : "";
+            if (!sComment) {
+                if (oCommentTextArea) {
+                    oCommentTextArea.setValueState("Error");
+                    oCommentTextArea.setValueStateText(Utility.getText("msg_comment_required") || "Comment is required");
+                }
+                MessageBox.error(Utility.getText("msg_comment_required") || "Please enter a comment before saving.");
+                return;
+            } else if (oCommentTextArea) {
+                oCommentTextArea.setValueState("None");
+            }
             BusyIndicator.show(0);
-            ReassignUtility.saveApproverData(aItems, oModel).then(function () {
-                if (oModel && oModel.hasPendingChanges("manualGroup")) {
-                    var oResetPromise = oModel.resetChanges("manualGroup");
-                    if (oResetPromise && typeof oResetPromise.catch === "function") {
-                        oResetPromise.catch(function () { });
-                    }
+            ReassignUtility.saveApproverData(aItems, oModel, sComment).then(function () {
+                if (oCommentTextArea) {
+                    oCommentTextArea.setValue("");
+                    oCommentTextArea.setValueState("None");
                 }
 
+                // 1. FIRST: Reset all dirty/pending changes on the popup table contexts so UI5 allows refreshing
                 if (oTable) {
                     var oBinding = oTable.getBinding("items");
-                    if (oBinding) {
-                        oBinding.refresh();
+                    if (oBinding && typeof oBinding.resetChanges === "function") {
+                        oBinding.resetChanges();
                     }
+                }
+                // 2. Also reset model pending changes if using a custom group ID
+                if (oModel && typeof oModel.hasPendingChanges === "function" && oModel.hasPendingChanges()) {
+                    if (typeof oModel.resetChanges === "function") {
+                        oModel.resetChanges();
+                    }
+                }
+                // 3. NOW: Refresh the main page table/filterbar (it will work now without throwing the error)
+                var oFilterBar = Element.registry.filter(function (oControl) {
+                    return oControl.isA("sap.ui.comp.filterbar.FilterBar") ||
+                        oControl.isA("sap.ui.mdc.FilterBar") ||
+                        oControl.isA("sap.fe.macros.filterbar.FilterBarAPI");
+                })[0];
+                if (oFilterBar) {
+                    if (typeof oFilterBar.search === "function") {
+                        oFilterBar.search();
+                    } else if (typeof oFilterBar.fireSearch === "function") {
+                        oFilterBar.fireSearch();
+                    }
+                } else if (oModel && typeof oModel.refresh === "function") {
+                    oModel.refresh("$auto");
                 }
                 BusyIndicator.hide();
                 MessageToast.show(Utility.getText("msg_approver_save_success"));
                 if (oApproverFragment) { oApproverFragment.close(); }
             }).catch(function (oError) {
+                
                 BusyIndicator.hide();
 
                 var sMsg = "";
@@ -107,6 +156,16 @@ sap.ui.define([
         onCloseDialog: function (oEvent) {
             var oSource = oEvent.getSource();
             var oModel = oSource.getModel();
+            var oView = Element.registry.filter(function (oEl) {
+                return oEl.isA("sap.ui.core.mvc.View");
+            })[0];
+            if (oView) {
+                var oCommentTextArea = Fragment.byId(oView.getId(), "commentTextArea");
+                if (oCommentTextArea) {
+                    oCommentTextArea.setValue("");
+                    oCommentTextArea.setValueState("None");
+                }
+            }
             if (oModel && oModel.hasPendingChanges("manualGroup")) {
                 var oResetPromise = oModel.resetChanges("manualGroup");
                 if (oResetPromise && typeof oResetPromise.catch === "function") {
@@ -115,6 +174,12 @@ sap.ui.define([
             }
             if (oApproverFragment) {
                 oApproverFragment.close();
+            }
+        },
+        onCommentLiveChange: function (oEvent) {
+            var oTextArea = oEvent.getSource();
+            if (oTextArea.getValue().trim()) {
+                oTextArea.setValueState("None");
             }
         },
         onApproverValueHelpRequest: function (oEvent) {
@@ -136,7 +201,7 @@ sap.ui.define([
                 // var sSeqRaw = oBindingContext.getProperty("GRADE_SEQUENCE");
                 // if (sSeqRaw) {
                 //     iCurrentSeq = parseInt(sSeqRaw, 10);
-                // }
+                // }               
             }
             var oModel = oInput.getModel();
             if (oApproverPopupModule._oApproverVHDialog) {

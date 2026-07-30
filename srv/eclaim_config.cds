@@ -8362,7 +8362,8 @@ annotate service.ZEMP_CC_BUDGET_DETAIL with @(
 annotate service.ZEMP_PENDING_LIST with @(
     Capabilities.DeleteRestrictions: {Deletable: false},
     Capabilities.SearchRestrictions: {Searchable: false},
-    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC]},
+    Capabilities.FilterRestrictions: {NonFilterableProperties: [STATUS_DESC, CLAIM_TYPE_DESC,CASH_ADVANCE_AMOUNT,DEP]},
+    Capabilities.SortRestrictions:   {NonSortableProperties: [CASH_ADVANCE_AMOUNT,DEP]}, 
     UI                             : {
 
         HeaderInfo: {
@@ -8401,11 +8402,18 @@ annotate service.ZEMP_PENDING_LIST with @(
                 Value            : SUBMITTED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Submitted Date'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MESSAGE,
+                ![@UI.Importance]: #High,
+                Label            : 'Message'
+            }            
         ]
     }
 ) {
     ID @Common.Label: 'ID';
+    MESSAGE @Common.Label: 'Comment';
     CLAIM_TYPE_ID @(
         Common.ValueListWithFixedValues: true,
         Common.ValueList               : {
@@ -8473,8 +8481,6 @@ annotate service.ZEMP_SUBSTITUTE_VH with @(UI.SelectionFields: [
     ROLE;
     @UI.hidden: true
     DEP;
-    @UI.hidden: true
-    SELECTED_APPROVER;
 };
 
 annotate service.ZSUBSTITUTION_RULES_CONFIG with {
@@ -8596,11 +8602,6 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             Label         : 'Substitute Selection',
             CollectionPath: 'ZEMP_SUBSTITUTE_VH',
             Parameters    : [
-                {
-                    $Type            : 'Common.ValueListParameterIn',
-                    LocalDataProperty: USER_ID,
-                    ValueListProperty: 'SELECTED_APPROVER'
-                },
                 {
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: SUBSTITUTE_ID,
