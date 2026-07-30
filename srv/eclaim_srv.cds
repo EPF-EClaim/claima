@@ -1495,4 +1495,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.STATUS_CODE
         };
 
+     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+
+     entity ZDIVISION as projection on ECLAIM.ZDIVISION;        
+
 };
