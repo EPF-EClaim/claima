@@ -1615,14 +1615,6 @@ entity ZEMP_MEDICAL_ENT_HISTORY : managed {
         MEDICAL_INSURANCE_ENTITLEMENT : Decimal(7, 2) @Common.Label: 'Medical Insurance Entitlement';
 }
 
-entity ZCASH_ADVANCE_CATEGORY : managed {
-    key CASH_ADVANCE_CAT_ID   : String(10)  @mandatory  @Common.Label: 'Cash Advance Category ID';
-        CASH_ADVANCE_CAT_DESC : String      @Common.Label: 'Cash Advance Category Description';
-        START_DATE            : Date        @Common.Label: 'Start Date';
-        END_DATE              : Date        @Common.Label: 'End Date';
-        STATUS                : String(10)  @Common.Label: 'Status';
-}
-
 entity ZPOSITION : managed {
     key POSITION_ID   : String(10)  @mandatory  @Common.Label: 'Position ID';
     key START_DATE    : Date        @mandatory  @Common.Label: 'Start Date';
