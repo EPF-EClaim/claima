@@ -328,7 +328,9 @@ const Constant = {
         "AUTO": "AUTO",
         "ELAUN_PINDAH_VERIFIER" : "ELAUN_PINDAH_VERIFIER",
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER",
-        "PROJECT_OWNER" : "PROJECT_OWNER"
+        "PROJECT_OWNER" : "PROJECT_OWNER",
+        "CCC_APPROVER1" : "CCC_APPROVER1",
+        "CCC_APPROVER2" : "CCC_APPROVER2"
     }, 
     Status: {
         DRAFT : "STAT01", 

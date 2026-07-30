@@ -121,7 +121,7 @@
                                     selectedKey="{request>claim_item}"
                                     id="req_claimTypeItem"
                                     forceSelection="false"
-                                    enabled="{= ${request>/view} !== 'view' }"
+                                    enabled="{= ${request>/view} !== 'view' &amp;&amp; !!${request>claim_type} }"
                                     items="{
                                         path: 'employee>/ZCLAIM_TYPE_ITEM',
                                         sorter: {

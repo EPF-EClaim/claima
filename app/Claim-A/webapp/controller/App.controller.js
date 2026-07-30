@@ -1047,6 +1047,7 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			oInputModel.setProperty("/claim_header/card_advance_amount", oInputModel.getProperty("/claimtype/card_advance"));
 			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
 			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
 			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
@@ -1269,7 +1270,7 @@ sap.ui.define([
 				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
 				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
 				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
-				CARD_NO: oInputModel.getProperty("/claimtype/card_no")
+				CARD_NO: oInputModel.getProperty("/claim_header/card_no")
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
@@ -2196,16 +2197,19 @@ sap.ui.define([
 				if (aCtx.length > 0) {
 					const oCardData = aCtx[0].getObject();
 					oInputModel.setProperty("/claimtype/has_ccc", true);
-					oInputModel.setProperty("/claimtype/card_no", oCardData.CARD_NO);
+					oInputModel.setProperty("/claim_header/card_no", oCardData.CARD_NO);
+            		oInputModel.setProperty("/claimtype/card_advance", await Utility.getMonthlyAdvanceAmount(oCardData.CARD_NO, sUserId));
 				} else {
 					oInputModel.setProperty("/claimtype/has_ccc", false);
-					oInputModel.setProperty("/claimtype/card_no", null);
+					oInputModel.setProperty("/claim_header/card_no", null);
+					oInputModel.setProperty("/claimtype/card_advance", null);
 				}
 
 			} catch (e) {
 				console.error("Failed to check corporate card ownership:", e);
 				oInputModel.setProperty("/claimtype/has_ccc", false);
-				oInputModel.setProperty("/claimtype/card_no", null);
+				oInputModel.setProperty("/claim_header/card_no", null);
+				oInputModel.setProperty("/claimtype/card_advance", null);
 			}
 		},
 	});

@@ -1610,9 +1610,6 @@
                                     formatOptions: {
                                         minFractionDigits: 2,
                                         maxFractionDigits: 2
-                                    },
-                                    constraints: {
-                                        minimum: 0
                                     }
                                 }"
                                 enabled="{= ${request>/view} !== 'view' }"
@@ -1666,12 +1663,6 @@
                             </Text>
                         </table:template>
                     </table:Column>
-                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC}  &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/STATMENT_DUE} }">
-                        <Label text="{i18n>req_adv_amt}"></Label>
-                        <table:template>
-                            <Text text="{request>CARDHOLDER_NAME}" />
-                        </table:template>
-                    </table:Column>
                     <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/CASH_BACK} }">
                         <Label text="{i18n>req_cashback}"></Label>
                         <table:template>
@@ -1684,9 +1675,6 @@
                                     formatOptions: {
                                         minFractionDigits: 2,
                                         maxFractionDigits: 2
-                                    },
-                                    constraints: {
-                                        minimum: 0
                                     }
                                 }"
                                 enabled="{= ${request>/view} !== 'view' }"

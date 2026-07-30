@@ -1414,4 +1414,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
      action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
+
 };

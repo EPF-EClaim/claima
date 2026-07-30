@@ -188,8 +188,6 @@ sap.ui.define([
 
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const aSavedParts = aCtx.map((ctx) => ctx.getObject());
-
-				// Sum values per CARD_NO across all matching rows (e.g. multiple sub-items)
 				const mTotalsByCard = {};
 
 				aSavedParts.forEach((oPart) => {
@@ -1011,12 +1009,22 @@ sap.ui.define([
 					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
 				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID" });
 
-				const [aPartCtx, aItemCtx] = await Promise.all([
+				const oCorpoCardPartList = this._oDataModel.bindList("/ZREQ_ITEM_CCC_PART", null, null, [
+					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
+					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
+				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID,CARD_NO" });
+
+				const [aPartCtx, aItemCtx, aCorpoCardPartCtx] = await Promise.all([
 					oPartList.requestContexts(0, 500).catch(e => isNotFound(e) ? [] : Promise.reject(e)),
-					oItemList.requestContexts(0, 1).catch(e => isNotFound(e) ? [] : Promise.reject(e))
+					oItemList.requestContexts(0, 1).catch(e => isNotFound(e) ? [] : Promise.reject(e)),
+					oCorpoCardPartList.requestContexts(0, 500).catch(e => isNotFound(e) ? [] : Promise.reject(e))
 				]);
 
 				aPartCtx.forEach(ctx => {
+					ctx.delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
+				});
+
+				aCorpoCardPartCtx.forEach(ctx => {
 					ctx.delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
 				});
 
@@ -1238,10 +1246,21 @@ sap.ui.define([
 				return;
 			}
 			
-			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
-			if (parseFloat(fEstAmount) <= parseFloat(0)) {
-				MessageBox.error(Utility.getText("req_d_w_error_amount"))
-				return;
+			var sReqTypeId = this._oReqModel.getProperty('/req_header/reqtypeid');
+			var bIsCorpoCC = String(sReqTypeId) === String(this._oConstant.RequestType.CORP_CC);
+
+			if (bIsCorpoCC) {
+				var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
+				if (parseFloat(fEstAmount) == parseFloat(0)) {
+					MessageBox.error(Utility.getText("req_d_w_error_amount_ccc"))
+					return;
+				}
+			}else{
+				var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
+				if (parseFloat(fEstAmount) <= parseFloat(0)) {
+					MessageBox.error(Utility.getText("req_d_w_error_amount"))
+					return;
+				}
 			}
 
 			// add tripstartdate from header to item level for eligibility checking
@@ -1416,7 +1435,8 @@ sap.ui.define([
 					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
 					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
 						const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
-						await this._upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards);
+						const sClaimTypeItemId = this._oReqModel.getProperty("/req_item/claim_type_item_id");
+						await this._upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards, sClaimTypeItemId);
 					}
 					await this._oDataModel.submitBatch("itemSave");
 
@@ -1455,7 +1475,8 @@ sap.ui.define([
 
 					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
 						const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
-						await this._upsertCorpoCardsForItem(sReqId, sGeneratedSubId, aCorpoCards);
+						const sClaimTypeItemId = this._oReqModel.getProperty("/req_item/claim_type_item_id");
+						await this._upsertCorpoCardsForItem(sReqId, sGeneratedSubId, aCorpoCards, sClaimTypeItemId);
 					}
 
 					if (bHasParticipants) {
@@ -3000,6 +3021,11 @@ sap.ui.define([
 				return;
 			}
 
+			const sViewMode = this.getView().getModel("request").getProperty("/view");
+			if (sViewMode === "list") {
+				return;
+			}
+
 			if (sClickedColumnId === sMerchantColumnId) {
 				this._openMerchantRefundDialog(
 					oEvent.getParameter("rowBindingContext")
@@ -3216,7 +3242,7 @@ sap.ui.define([
 			});
 		},
 
-		async _upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards) {
+		async _upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards, sClaimTypeItemId) {
 			const sGroup = "upsertCorpoCards";
 			const aList = Array.isArray(aCorpoCards) ? aCorpoCards : [];
 
@@ -3257,12 +3283,17 @@ sap.ui.define([
 				const sCurrentKey = `${sReqId}-${sReqSubId}-${sCardNo}`;
 				aProcessedKeys.push(sCurrentKey);
 
+				const bIsStatementDue = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.STATMENT_DUE);
+				const bIsServiceTax = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.SERV_TAX);
+				const bIsCashback = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.CASH_BACK);
+				const bIsMerchantRefund = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.MERCH_RETURN);
+
 				const oPayload = {
-					STATEMENT_DUE_AMT: parseFloat(oCard.current_balance || 0),
-					SERVICE_TAX: parseFloat(oCard.service_tax || 0),
-					CASHBACK: parseFloat(oCard.cashback || 0),
-					MERCHANT_REFUND_AMT: parseFloat(oCard.merchant_refunds_total || 0),
-					MERCHANT_REFUND_ARR: oCard.merchant_refunds_array || null
+					STATEMENT_DUE_AMT: bIsStatementDue ? parseFloat(oCard.current_balance || 0) : 0,
+					SERVICE_TAX: bIsServiceTax ? parseFloat(oCard.service_tax || 0) : 0,
+					CASHBACK: bIsCashback ? parseFloat(oCard.cashback || 0) : 0,
+					MERCHANT_REFUND_AMT: bIsMerchantRefund ? parseFloat(oCard.merchant_refunds_total || 0) : 0,
+					MERCHANT_REFUND_ARR: bIsMerchantRefund ? (oCard.merchant_refunds_array || null) : null
 				};
 
 				if (mExisting[sCurrentKey]) {
@@ -3315,7 +3346,7 @@ sap.ui.define([
 				advance_amount: 0
 			});
 
-			oTotals.payment_due = oTotals.current_balance - oTotals.cashback;
+			oTotals.payment_due = oTotals.current_balance + oTotals.cashback;
 
 			Object.keys(oTotals).forEach((k) => {
 				oTotals[k] = oTotals[k].toFixed(2);

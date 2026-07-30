@@ -4481,4 +4481,100 @@ module.exports = (srv) => {
         }
     });
 
+    async function notifyCardholderOfAdvance(data, req, sEventType) {
+        try {
+            const advanceAmount = Number(data.MONTHLY_ADVANCED_AMT);
+            if (!(advanceAmount > 0)) {
+                return; // no advance amount in this payload, or it's zero/negative
+            }
+    
+            const tx = cds.tx(req);
+            const sCardholderId = data.CARDHOLDER_ID;
+            if (!sCardholderId) {
+                console.warn(`[CCC_ADVANCE_EMAIL] Missing CARDHOLDER_ID on Card ${data.CARD_NO}, skipping notification`);
+                return;
+            }
+    
+            const oCardholder = await tx.run(
+                SELECT.one.from(Constant.Entities.ZEMP_MASTER)
+                    .where({ EEID: String(sCardholderId) })
+                    .columns('EEID', 'NAME', 'EMAIL')
+            );
+    
+            if (!oCardholder || !oCardholder.EMAIL) {
+                console.warn(`[CCC_ADVANCE_EMAIL] No email found for cardholder ${sCardholderId}, skipping notification for Card ${data.CARD_NO}`);
+                return;
+            }
+    
+            await sendEmailInternal({
+                ApproverName: oCardholder.NAME,
+                ClaimID: data.CARD_NO,
+                Action: Constant.ApprovalEmailAction.ACTION_NOTIFY,
+                EmailTitle: `Corporate Credit Card Advance Updated: ${data.CARD_NO}`,
+                ReceiverEmail: oCardholder.EMAIL,
+                SubmissionDate: new Date().toISOString().split('T')[0],
+                ClaimantName: oCardholder.NAME,
+                RecipientName: oCardholder.NAME,
+                ClaimType: 'Corporate Credit Card Advance'
+            });
+    
+            console.log(`[CCC_ADVANCE_EMAIL] Advance notification (${sEventType}) sent for Card ${data.CARD_NO} to cardholder ${sCardholderId} (${oCardholder.EMAIL})`);
+    
+        } catch (oError) {
+            console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification (${sEventType}) for Card ${data.CARD_NO}`, oError);
+            try {
+                await cds.tx(req).run(
+                    INSERT.into(Constant.Entities.ZLOG).entries({
+                        TIMESTAMP: new Date(),
+                        RECORD_ID: String(data.CARD_NO || '').slice(0, 20),
+                        PROGRAM: 'CCC_ADVANCE_EMAIL',
+                        MESSAGE_TYPE: 'W',
+                        STATUS_CODE: String(oError?.status || oError?.statusCode || oError?.code || "500"),
+                        MESSAGE: oError?.message || "No Message"
+                    })
+                );
+            } catch (oLogError) {
+                console.error('[CCC_ADVANCE_EMAIL] Failed to write background log', oLogError);
+            }
+        }
+    }
+ 
+    srv.after('CREATE', 'ZCORPORATE_CARD_ADVANCED', async (data, req) => {
+        const aRows = Array.isArray(data) ? data : [data];
+        for (const oRow of aRows) {
+            await notifyCardholderOfAdvance(oRow, req, 'CREATE');
+        }
+    });
+    
+    srv.after('UPDATE', 'ZCORPORATE_CARD_ADVANCED', async (data, req) => {
+        const aRows = Array.isArray(data) ? data : [data];
+        for (const oRow of aRows) {
+            await notifyCardholderOfAdvance(oRow, req, 'UPDATE');
+        }
+    });
+
+    srv.on('getMonthlyAdvanceAmount', async (req) => {
+        const { sCardNo, sCardholderId } = req.data;
+        if (!sCardNo || !sCardholderId) return 0.00;
+    
+        try {
+            const oCardAdvance = await SELECT
+                .one
+                .from('ZCORPORATE_CARD_ADVANCED')
+                .columns('MONTHLY_ADVANCED_AMT')
+                .where({
+                    CARD_NO: sCardNo,
+                    CARDHOLDER_ID: sCardholderId
+                });
+    
+            return oCardAdvance ? (parseFloat(oCardAdvance.MONTHLY_ADVANCED_AMT) || 0.00) : 0.00;
+    
+        } catch (error) {
+            req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
+        }
+    });
+ 
+
+
+
 }

@@ -139,6 +139,8 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                     case Constant.Role.MED_APPROVER:
                     case Constant.Role.ELAUN_PINDAH_VERIFIER:
                     case Constant.Role.WILAYAH_ASAL_VERIFIER:
+                    case Constant.Role.CCC_APPROVER1:
+                    case Constant.Role.CCC_APPROVER2:
                         // Possible multiple approvers retrieved from ZCONSTANTS table
                         aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
                         console.log("aConstantValues", aConstantValues)
