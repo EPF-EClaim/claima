@@ -30,146 +30,86 @@ module.exports = (srv) => {
         }
     }),
 
-        srv.on('batchCreateCostCenter', async (req) => {
-            const { ZCOST_CENTER } = srv.entities;
-            try {
-                const { costcenters } = req.data;
-                if (!costcenters || costcenters.length === 0) {
-                    throw new Error('No Data Sent')
-                }
-                const tx = cds.tx(req);
-                const results = await tx.run(
-                    UPSERT(costcenters).into(ZCOST_CENTER)
-                );
-                return 'Records updated';
-            } catch (error) {
-                req.error(400, `Fail creating record: ${error.message}`);
+    srv.on('batchCreateCostCenter', async (req) => {
+        const { ZCOST_CENTER } = srv.entities;
+        try {
+            const { costcenters } = req.data;
+            if (!costcenters || costcenters.length === 0) {
+                throw new Error('No Data Sent')
             }
-        }),
-
-        srv.on('batchCreateDependent', async (req) => {
-            const { ZEMP_DEPENDENT } = srv.entities;
-            try {
-                const { dependents } = req.data;
-                if (!dependents || dependents.length === 0) {
-                    throw new Error('No Data Sent')
-                }
-                const tx = cds.tx(req);
-                const results = await tx.run(
-                    UPSERT(dependents).into(ZEMP_DEPENDENT)
-                );
-                return 'Records updated';
-            } catch (error) {
-                req.error(400, `Fail creating record: ${error.message}`);
-            }
-        }),
-
-        srv.on('getUserType', async (req) => {
             const tx = cds.tx(req);
-            const { ZDEPARTMENT } = srv.entities;
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+            const results = await tx.run(
+                UPSERT(costcenters).into(ZCOST_CENTER)
+            );
+            return 'Records updated';
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    }),
 
-            let sOrigin = null;
-            try {
-                const authHeader = req.http?.req?.headers?.authorization ?? '';
-                const token = authHeader.split(' ')[1];
-                if (token) {
-                    const oToken = JSON.parse(
-                        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-                    );
-                    sOrigin = oToken.origin;
-                }
-            } catch (e) {
-                console.log("Token parsing failed:", e.message);
+    srv.on('batchCreateDependent', async (req) => {
+        const { ZEMP_DEPENDENT } = srv.entities;
+        try {
+            const { dependents } = req.data;
+            if (!dependents || dependents.length === 0) {
+                throw new Error('No Data Sent')
             }
+            const tx = cds.tx(req);
+            const results = await tx.run(
+                UPSERT(dependents).into(ZEMP_DEPENDENT)
+            );
+            return 'Records updated';
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    }),
 
-            const oRoles = {
-                isClaimant: req.user.is('Claimant'),
-                isApprover: req.user.is('Approver'),
-                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
-            };
+    srv.on('getUserType', async (req) => {
+        const tx = cds.tx(req);
+        const { ZDEPARTMENT } = srv.entities;
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            let sDeptDesc = "UNKNOWN";
-            if (oEmp.DEP) {
-                const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
-                sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+        let sOrigin = null;
+        try {
+            const authHeader = req.http?.req?.headers?.authorization ?? '';
+            const token = authHeader.split(' ')[1];
+            if (token) {
+                const oToken = JSON.parse(
+                    Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+                );
+                sOrigin = oToken.origin;
             }
+        } catch (e) {
+            console.log("Token parsing failed:", e.message);
+        }
 
-            return {
-                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
-                userType: oEmp.USER_TYPE || "UNKNOWN",
-                costcenters: oEmp.CC || "UNKNOWN",
-                userId: oEmp.EEID || "UNKNOWN",
-                name: oEmp.NAME || "UNKNOWN",
-                position: oEmp.POSITION_NAME || "UNKNOWN",
-                origin: sOrigin,
-                grade: oEmp.GRADE || "UNKNOWN",
-                department: sDeptDesc,
-                roles: oRoles
-            };
-        });
+        const oRoles = {
+            isClaimant: req.user.is('Claimant'),
+            isApprover: req.user.is('Approver'),
+            isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+            isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+            isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+        };
 
-    // srv.on('getUserType', async (req) => {
-    //     const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
-    //     const emailFromToken =
-    //         req.user?.attr?.email ||
-    //         req.user?.attr?.mail ||
-    //         req.user?.attr?.user_name ||
-    //         req.user?.attr?.login_name ||
-    //         req.user?.id ||
-    //         "";
+        let sDeptDesc = "UNKNOWN";
+        if (oEmp.DEP) {
+            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
+            sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+        }
 
-    //     let sOrigin = null;
-
-    //     try {
-    //         const authHeader = req.http?.req?.headers?.authorization ?? '';
-    //         const token = authHeader.split(' ')[1];
-    //         if (token) {
-    //             const oToken = JSON.parse(
-    //                 Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-    //             );
-    //             sOrigin = oToken.origin;
-    //         }
-    //     } catch (e) {
-    //         console.log("Token parsing failed:", e.message);
-    //     }
-
-    //     const email = String(emailFromToken).trim().toLowerCase();
-    //     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-    //     //no record maintained in ZEMP_MASTER table
-    //     if (!result) {
-    //         return {
-    //             id: email,
-    //             userType: "UNKNOWN",
-    //             costcenters: "UNKNOWN",
-    //             userId: "UNKNOWN",
-    //             name: "UNKNOWN",
-    //             position: "UNKNOWN",
-    //             origin: sOrigin,
-    //             grade: "UNKNOWN",
-    //             department: "UNKNOWN"
-    //         };
-    //     }
-
-    //     let dept = null;
-    //     if (result.DEP) {
-    //         dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
-    //     }
-
-    //     return {
-    //         id: email,
-    //         userType: result?.USER_TYPE || "UNKNOWN",
-    //         costcenters: result?.CC || "UNKNOWN",
-    //         userId: result?.EEID || "UNKNOWN",
-    //         name: result?.NAME || "UNKNOWN",
-    //         position: result?.POSITION_NAME || "UNKNOWN",
-    //         origin: sOrigin,
-    //         grade: result?.GRADE || "UNKNOWN",
-    //         department: dept?.DEPARTMENT_DESC || "UNKNOWN"
-    //     };
-    // });
+        return {
+            id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
+            userType: oEmp.USER_TYPE || "UNKNOWN",
+            costcenters: oEmp.CC || "UNKNOWN",
+            userId: oEmp.EEID || "UNKNOWN",
+            name: oEmp.NAME || "UNKNOWN",
+            position: oEmp.POSITION_NAME || "UNKNOWN",
+            origin: sOrigin,
+            grade: oEmp.GRADE || "UNKNOWN",
+            department: sDeptDesc,
+            roles: oRoles
+        };
+    });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -3144,6 +3084,19 @@ module.exports = (srv) => {
             return req.error(400, "Payload array is empty or missing.");
         }
 
+        // Check duplicate Approver ID
+        const oSeenApproverIDs = new Set();
+        for (const oItem of aPayloads) {
+            // Use NEW_APPROVER_ID if present, otherwise fall back to OLD_APPROVER_ID
+            const sApproverID = (oItem.NEW_APPROVER_ID || oItem.APPROVER_ID || "").toString().trim();
+            if (sApproverID) {
+                if (oSeenApproverIDs.has(sApproverID)) {
+                    return req.error(400, `Duplicate Approver ID ${sApproverID} found. Each row must have a unique approver.`);
+                }
+                oSeenApproverIDs.add(sApproverID);
+            }
+        }
+
         try {
             for (const oItem of aPayloads) {
                 const sApproverID = oItem.APPROVER_ID;
@@ -3937,10 +3890,10 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) return;
 
-            // Admin can sees their own department only
-            req.query.where({
-                DEP: oEmp.DEP
-            });
+            // Admin can sees their own department only & only where its Non Cash Advance
+            req.query
+                .where({ DEP: oEmp.DEP })
+                .and(`(CASH_ADVANCE_AMOUNT = 0 OR CASH_ADVANCE_AMOUNT IS NULL)`);
         }
     });
 
@@ -3949,38 +3902,53 @@ module.exports = (srv) => {
         if (VALID_FROM === undefined && VALID_TO === undefined) return;
         const tx = cds.tx(req);
         const sRuleId = req.keys?.SUBSTITUTE_RULE_ID || req.data?.SUBSTITUTE_RULE_ID || (req.params && req.params[0]?.SUBSTITUTE_RULE_ID);
+
+        let oExisting = {};
         if (!sRuleId) return;
-        const oExisting = await tx.run(
+        oExisting = await tx.run(
             SELECT.one.from(ZSUBSTITUTION_RULES_CONFIG).where({ SUBSTITUTE_RULE_ID: sRuleId })
         );
         if (oExisting) {
             req.context._oldRecord = oExisting; // Store it safely in context
-        }
-        const sValidFrom = oExisting.VALID_FROM;
-        const sValidTo = VALID_TO;
-        let sErrorMessage = '';
-        if (sValidFrom && sValidTo && new Date(sValidTo) < new Date(sValidFrom)) {
-            sErrorMessage = 'The Valid To Date cannot be earlier than the Valid From Date.';
-        }
-        if (sErrorMessage) {
-            req.error({
-                code: 'MASS_EDIT_VALIDATION',
-                message: sErrorMessage
-            });
+        };
+
+        // Merge: Use payload value if provided; otherwise fallback to existing DB value
+        const sFinalValidFrom = VALID_FROM !== undefined ? VALID_FROM : oExisting.VALID_FROM;
+        const sFinalValidTo = VALID_TO !== undefined ? VALID_TO : oExisting.VALID_TO;
+
+        // Validate only if BOTH dates are present (neither empty nor null)
+        if (sFinalValidFrom && sFinalValidTo) {
+            const dFrom = new Date(sFinalValidFrom);
+            const dTo = new Date(sFinalValidTo);
+            if (dTo < dFrom) {
+                return req.error({
+                    code: 'MASS_EDIT_VALIDATION',
+                    message: 'The Valid To Date cannot be earlier than the Valid From Date.'
+                });
+            }
         }
     });
 
     srv.after('UPDATE', ['ZSUBSTITUTION_RULES', 'ZSUBSTITUTION_RULES_CONFIG'], async (data, req) => {
 
-        const { SUBSTITUTE_RULE_ID, VALID_TO } = data;
-        if (!SUBSTITUTE_RULE_ID || !VALID_TO) return;
+        const { SUBSTITUTE_RULE_ID, VALID_TO, VALID_FROM } = data;
+        if (!SUBSTITUTE_RULE_ID) return;
 
         //Get the original value from the database (passed forward from your before hook)
         const sOldValidToStr = req.context._oldRecord?.VALID_TO;
+        const sOldValidFromStr = req.context._oldRecord?.VALID_FROM;
         const sUserID = req.context._oldRecord?.USER_ID;
         const sSubstituteID = req.context._oldRecord?.SUBSTITUTE_ID;
 
-        if (!sOldValidToStr || sOldValidToStr === VALID_TO) return;
+        // Ensure we have current values (fallback to old ones if omitted in partial UPDATE)
+        const sNewValidFrom = VALID_FROM || sOldValidFromStr;
+        const sNewValidTo = VALID_TO || sOldValidToStr;
+
+        // Check if either date actually changed
+        const bValidFromChanged = sOldValidFromStr && sNewValidFrom !== sOldValidFromStr;
+        const bValidToChanged = sOldValidToStr && sNewValidTo !== sOldValidToStr;
+
+        if (!bValidFromChanged && !bValidToChanged) return;
 
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
@@ -3992,29 +3960,65 @@ module.exports = (srv) => {
                 PROGRAM: 'SUBSTITUTION_RULE_UPDATE',
                 MESSAGE_TYPE: 'S',
                 STATUS_CODE: '200',
-                MESSAGE: `User ${oCurrentUser.EEID} updated VALID_TO for Rule ${SUBSTITUTE_RULE_ID} from ${sOldValidToStr} to ${VALID_TO}.`
+                MESSAGE: `User ${oCurrentUser?.EEID || sUserID} updated Rule ${SUBSTITUTE_RULE_ID}. ` +
+                    `VALID_FROM: [${sOldValidFromStr} -> ${sNewValidFrom}], ` +
+                    `VALID_TO: [${sOldValidToStr} -> ${sNewValidTo}].`
             };
 
             await tx.run(
                 INSERT.into('ZLOG').entries(oLogEntry)
             );
 
-            if (VALID_TO > sOldValidToStr) {
-                console.log(">>> Extension detected. Processing new assignments...");
-                // Pass the original validation start as oldDate to only look at the expanded window gap
-                await handleNewAssignments(tx, srv.entities, {
-                    sUserID, sSubstituteID,
-                    VALID_FROM: sOldValidToStr, // Start from the old limit to find new matching records
-                    VALID_TO, oCurrentUser
-                });
-            } else if (VALID_TO < sOldValidToStr) {
-                console.log(">>> Shortening detected. Processing de-delegations...");
-                await handleDeDelegations(tx, srv.entities, {
-                    sUserID, sSubstituteID,
-                    VALID_FROM: VALID_TO, // Look into items trapped between the new earlier limit...
-                    VALID_TO: sOldValidToStr, // ...and the old higher limit
-                    oCurrentUser
-                });
+            // =======================================================================
+            // 1. EVALUATE VALID_TO CHANGES
+            // =======================================================================
+            if (bValidToChanged) {
+                if (sNewValidTo > sOldValidToStr) {
+                    console.log(">>> Extension detected on VALID_TO. Processing new assignments...");
+                    await handleNewAssignments(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sOldValidToStr, // Target newly expanded upper window
+                        VALID_TO: sNewValidTo,
+                        oCurrentUser
+                    });
+                } else if (sNewValidTo < sOldValidToStr) {
+                    console.log(">>> Shortening detected on VALID_TO. Processing de-delegations...");
+                    await handleDeDelegations(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sNewValidTo,   // Target removed upper window
+                        VALID_TO: sOldValidToStr,
+                        oCurrentUser
+                    });
+                }
+            }
+
+            // =======================================================================
+            // 2. EVALUATE VALID_FROM CHANGES
+            // =======================================================================
+            if (bValidFromChanged) {
+                if (sNewValidFrom < sOldValidFromStr) {
+                    console.log(">>> Extension detected on VALID_FROM (started earlier). Processing new assignments...");
+                    await handleNewAssignments(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sNewValidFrom,   // Target newly expanded lower window
+                        VALID_TO: sOldValidFromStr,
+                        oCurrentUser
+                    });
+                } else if (sNewValidFrom > sOldValidFromStr) {
+                    console.log(">>> Shortening detected on VALID_FROM (started later). Processing de-delegations...");
+
+                    // Subtract 1 day from sNewValidFrom for the upper bound
+                    let dNewValidFrom = new Date(sNewValidFrom);
+                    dNewValidFrom.setDate(dNewValidFrom.getDate() - 1);
+                    let sDeDelegateToDate = dNewValidFrom.toISOString().split('T')[0];
+
+                    await handleDeDelegations(tx, srv.entities, {
+                        sUserID, sSubstituteID,
+                        VALID_FROM: sOldValidFromStr, // Target removed lower window
+                        VALID_TO: sDeDelegateToDate, // Targets up to (newValidFrom - 1 day) sNewValidFrom,
+                        oCurrentUser
+                    });
+                }
             }
 
         } catch (oError) {
@@ -4428,6 +4432,61 @@ module.exports = (srv) => {
         }
 
         return false;
+    });
+
+    srv.on('getGLAccountByProjectCode', async (req) => {
+        try {
+            const { sProjectCode } = req.data;
+
+            if (!sProjectCode) {
+                return null;
+            }
+
+            const tx = cds.tx(req);
+
+            const oProject = await tx.run(
+                SELECT.one
+                    .from('ZPROJECT_HDR')
+                    .columns('GL_ACCOUNT')
+                    .where({
+                        PROJECT_CODE_IO: sProjectCode
+                    })
+            );
+
+            return oProject?.GL_ACCOUNT || null;
+
+        } catch (error) {
+            req.error(500, `Failed to retrieve GL Account: ${error.message}`);
+        }
+    });
+
+    srv.on('batchUpsertCompanyInfo', async (req) => {
+        try {
+            const { entityName, data } = req.data;
+            const tx = cds.tx(req);
+            const sTargetEntity = srv.entities[entityName];
+            const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
+
+            if (!entityName) {
+                throw new Error ('Entity name parameter is missing')
+            }
+
+            if (!data || data.length === 0) {
+                throw new Error ('No data sent');
+            }
+
+            if (!sTargetEntity) {
+                throw new Error (`Entity '${entityName}' not found in service`);
+            }
+            
+            await tx.run(
+                UPSERT(oRecords).into(sTargetEntity)
+            );
+
+            return `Records successfully updated for ${entityName}`;
+        } catch (error) {
+            req.error(400, `Failed creating record for ${req.data.entityName || 'unknown'}: ${error.message}`);
+        }
     });
 
 }

@@ -1452,6 +1452,7 @@ entity ZSUBSTITUTION_RULES : managed {
     key SUBSTITUTE_ID      : String      @mandatory  @Common.Label: 'Substitute ID';
     key VALID_FROM         : Date        @mandatory  @Common.Label: 'Valid From';
     key VALID_TO           : Date        @mandatory  @Common.Label: 'Valid To';
+        SUBSTITUTE_COMMENT : String(255) @Common.Label: 'Substitute Comment';
         ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
                                  on ZEMP_MASTER_USER.EEID = USER_ID;
         ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER
@@ -1564,4 +1565,12 @@ entity ZREQ_ITEM_CCC_PART : managed{
     CASHBACK                : Decimal(16, 2) @Common.Label: 'Cashback';
     MERCHANT_REFUND_AMT     : Decimal(16, 2) @Common.Label: 'Merchant Refund';
     MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
+}
+
+entity ZCASH_ADVANCE_CATEGORY : managed {
+    key CASH_ADVANCE_CAT_ID   : String(10)  @mandatory  @Common.Label: 'Cash Advance Category ID';
+        CASH_ADVANCE_CAT_DESC : String      @Common.Label: 'Cash Advance Category Description';
+        START_DATE            : Date        @Common.Label: 'Start Date';
+        END_DATE              : Date        @Common.Label: 'End Date';
+        STATUS                : String(10)  @Common.Label: 'Status';
 }

@@ -61,6 +61,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                                       returns Response;
 
+    action   batchUpsertCompanyInfo(entityName: String, data: LargeString)                               returns Response;
+
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
 
     action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
@@ -1272,6 +1274,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
         projection on ECLAIM.ZSUBSTITUTION_RULES {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
+                ZEMP_MASTER_USER.NAME as APPROVER_NAME,
+                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME,
                 *
         };
 
@@ -1580,96 +1584,55 @@ service eclaim_srv @(requires: 'authenticated-user') {
     view ZAPPROVER_REQUEST_PIVOT as
         select from ZEMP_APPROVER_REQUEST_DETAILS {
             key PREAPPROVAL_ID,
-                max(case
-                        when LEVEL = 1
-                             then APPROVER_ID
-                    end) as APPROVER1      : String,
-                max(case
-                        when LEVEL = 1
-                             then APPROVER_NAME
-                    end) as APPROVER1_NAME : String,
-                max(case
-                        when LEVEL = 2
-                             then APPROVER_ID
-                    end) as APPROVER2      : String,
-                max(case
-                        when LEVEL = 2
-                             then APPROVER_NAME
-                    end) as APPROVER2_NAME : String,
-                max(case
-                        when LEVEL = 3
-                             then APPROVER_ID
-                    end) as APPROVER3      : String,
-                max(case
-                        when LEVEL = 3
-                             then APPROVER_NAME
-                    end) as APPROVER3_NAME : String,
-                max(case
-                        when LEVEL = 4
-                             then APPROVER_ID
-                    end) as APPROVER4      : String,
-                max(case
-                        when LEVEL = 4
-                             then APPROVER_NAME
-                    end) as APPROVER4_NAME : String,
-                max(case
-                        when LEVEL = 5
-                             then APPROVER_ID
-                    end) as APPROVER5      : String,
-                max(case
-                        when LEVEL = 5
-                             then APPROVER_NAME
-                    end) as APPROVER5_NAME : String
+
+            max(case when LEVEL = 1 then APPROVER_ID end)       as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)     as APPROVER1_NAME : String,
+            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end) as APPROVER1_TS   : Timestamp,
+
+            max(case when LEVEL = 2 then APPROVER_ID end)       as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)     as APPROVER2_NAME : String,
+            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end) as APPROVER2_TS   : Timestamp,
+
+            max(case when LEVEL = 3 then APPROVER_ID end)       as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)     as APPROVER3_NAME : String,
+            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end) as APPROVER3_TS   : Timestamp,
+
+            max(case when LEVEL = 4 then APPROVER_ID end)       as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)     as APPROVER4_NAME : String,
+            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end) as APPROVER4_TS   : Timestamp,
+
+            max(case when LEVEL = 5 then APPROVER_ID end)       as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)     as APPROVER5_NAME : String,
+            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end) as APPROVER5_TS   : Timestamp
         }
-        group by
-            PREAPPROVAL_ID;
+        group by PREAPPROVAL_ID;
+
 
     view ZAPPROVER_CLAIM_PIVOT as
         select from ZEMP_APPROVER_CLAIM_DETAILS {
             key CLAIM_ID,
-                max(case
-                        when LEVEL = 1
-                             then APPROVER_ID
-                    end) as APPROVER1      : String,
-                max(case
-                        when LEVEL = 1
-                             then APPROVER_NAME
-                    end) as APPROVER1_NAME : String,
-                max(case
-                        when LEVEL = 2
-                             then APPROVER_ID
-                    end) as APPROVER2      : String,
-                max(case
-                        when LEVEL = 2
-                             then APPROVER_NAME
-                    end) as APPROVER2_NAME : String,
-                max(case
-                        when LEVEL = 3
-                             then APPROVER_ID
-                    end) as APPROVER3      : String,
-                max(case
-                        when LEVEL = 3
-                             then APPROVER_NAME
-                    end) as APPROVER3_NAME : String,
-                max(case
-                        when LEVEL = 4
-                             then APPROVER_ID
-                    end) as APPROVER4      : String,
-                max(case
-                        when LEVEL = 4
-                             then APPROVER_NAME
-                    end) as APPROVER4_NAME : String,
-                max(case
-                        when LEVEL = 5
-                             then APPROVER_ID
-                    end) as APPROVER5      : String,
-                max(case
-                        when LEVEL = 5
-                             then APPROVER_NAME
-                    end) as APPROVER5_NAME : String
+
+            max(case when LEVEL = 1 then APPROVER_ID end)        as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)      as APPROVER1_NAME : String,
+            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end)  as APPROVER1_TS   : Timestamp,
+
+            max(case when LEVEL = 2 then APPROVER_ID end)        as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)      as APPROVER2_NAME : String,
+            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end)  as APPROVER2_TS   : Timestamp,
+
+            max(case when LEVEL = 3 then APPROVER_ID end)        as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)      as APPROVER3_NAME : String,
+            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end)  as APPROVER3_TS   : Timestamp,
+
+            max(case when LEVEL = 4 then APPROVER_ID end)        as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)      as APPROVER4_NAME : String,
+            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end)  as APPROVER4_TS   : Timestamp,
+
+            max(case when LEVEL = 5 then APPROVER_ID end)        as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)      as APPROVER5_NAME : String,
+            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end)  as APPROVER5_TS   : Timestamp
         }
-        group by
-            CLAIM_ID;
+        group by CLAIM_ID;
 
     entity ZEMP_REQUEST_REPORT_SUMMARY   as
         select from ECLAIM.ZREQUEST_HEADER as HEADER
@@ -1707,14 +1670,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 LAST_PUSH_BACK_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
@@ -1792,14 +1760,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.MATERIAL_CODE,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 LAST_PUSH_BACK_DATE,
                 SUBMITTED_DATE,
                 LAST_APPROVED_DATE,
@@ -1898,14 +1871,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 LOCATION,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 ZEMP_MASTER.UNIT_SECTION,
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
@@ -2029,14 +2007,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZREQUEST_HEADER.REQUEST_DATE,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 ZEMP_MASTER.UNIT_SECTION,
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
@@ -2096,33 +2079,55 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.ZBRANCH.BRANCH_DESC
         };
 
-    entity ZEMP_CASHADVANCE_REPORT       as
-        projection on ECLAIM.ZREQUEST_HEADER {
-            key REQUEST_ID,
-            key ZCLAIM_HEADER.CLAIM_ID,
-                EMP_ID,
-                CLAIM_TYPE_ID,
-                OBJECTIVE_PURPOSE,
-                STATUS,
-                ZSTATUS.STATUS_DESC               as REQUEST_STATUS_DESC,
-                TRIP_START_DATE,
-                TRIP_END_DATE,
-                LAST_APPROVED_DATE,
-                CASH_ADVANCE,
-                ZCLAIM_HEADER.SUBMITTED_DATE,
-                ZCLAIM_HEADER.STATUS_ID,
-                ZCLAIM_HEADER.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
-                ZEMP_MASTER.NAME,
-                ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.DEP,
-                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-                ZEMP_MASTER.UNIT_SECTION,
-                createdBy,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
-                CASH_ADVANCE_DATE                 as PAYMENT_DATE
-        }
-        where
-            ZREQUEST_HEADER.CASH_ADVANCE > 0;
+    entity ZCASH_REPAYMENT_SUM as
+        select from ZCLAIM_ITEM
+    {
+        key CLAIM_ID,
+        sum(AMOUNT) as CASH_REPAYMENT_AMOUNT : Decimal(16,2)
+    }
+    where CLAIM_TYPE_ITEM_ID = 'CASH_REPAY'
+    group by CLAIM_ID;
+
+    entity ZEMP_CASHADVANCE_REPORT as
+        select from ECLAIM.ZREQUEST_HEADER as RH
+            left join ECLAIM.ZCLAIM_HEADER as CH
+                on CH.REQUEST_ID = RH.REQUEST_ID
+
+            left join ZCASH_REPAYMENT_SUM as CR
+                on CR.CLAIM_ID = CH.CLAIM_ID
+    {
+        key RH.REQUEST_ID,
+        key CH.CLAIM_ID,
+
+        RH.EMP_ID,
+        RH.CLAIM_TYPE_ID,
+        RH.OBJECTIVE_PURPOSE,
+        RH.STATUS,
+        RH.ZSTATUS.STATUS_DESC as REQUEST_STATUS_DESC,
+
+        RH.TRIP_START_DATE,
+        RH.TRIP_END_DATE,
+        RH.LAST_APPROVED_DATE,
+        RH.CASH_ADVANCE,
+
+        CH.SUBMITTED_DATE,
+        CH.STATUS_ID,
+        CH.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
+
+        RH.ZEMP_MASTER.NAME,
+        RH.ZEMP_MASTER.GRADE,
+        RH.ZEMP_MASTER.DEP,
+        RH.ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+        RH.ZEMP_MASTER.UNIT_SECTION,
+        RH.createdBy,
+        RH.ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+
+        RH.CASH_ADVANCE_DATE as PAYMENT_DATE,
+        coalesce(CH.FINAL_AMOUNT_TO_RECEIVE, 0) as FINAL_AMOUNT_TO_RECEIVE : Decimal(16,2),
+
+        coalesce(CR.CASH_REPAYMENT_AMOUNT, 0) as CASH_REPAYMENT_AMOUNT : Decimal(16,2)
+    }
+    where RH.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
@@ -2172,6 +2177,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 /* Match with budget */
                 ITEM.GL_ACCOUNT          as COMMITMENT_ITEM,
                 ITEM.MATERIAL_CODE       as MATERIAL_GROUP,
+                HEADER.PROJECT_CODE      as PROJECT_CODE,
 
                 /* Claim info */
                 HEADER.SUBMITTED_DATE,
@@ -2198,24 +2204,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
             key FUND_CENTER,
             key COMMITMENT_ITEM,
             key MATERIAL_GROUP,
-
+                PROJECT_CODE,
+                ORIGINAL_BUDGET,
                 CURRENT_BUDGET,
                 VIREMENT_IN,
                 VIREMENT_OUT,
                 SUPPLEMENT,
                 RETURN,
-
-                (
-                    coalesce(
-                        VIREMENT_IN, 0
-                    )+coalesce(
-                        VIREMENT_OUT, 0
-                    )+coalesce(
-                        SUPPLEMENT, 0
-                    )+coalesce(
-                        RETURN, 0
-                    )
-                ) as ADJUST_AMOUNT : Decimal(16, 2),
 
                 COMMITMENT,
                 ACTUAL,
@@ -2225,6 +2220,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                          on  $self.FUND_CENTER     = _Detail.FUND_CENTER
                                          and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
                                          and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
+                                         and $self.PROJECT_CODE    = _Detail.PROJECT_CODE
 
         };
 
@@ -2297,7 +2293,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP
+                    ZEMP_MASTER.DEP,
+                    CASH_ADVANCE as CASH_ADVANCE_AMOUNT
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
@@ -2309,7 +2306,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                     ZSTATUS.STATUS_DESC as STATUS_DESC,
                     SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP
+                    ZEMP_MASTER.DEP, 
+                    CASH_ADVANCE_AMOUNT
             }
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
@@ -2406,5 +2404,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
         VALID_TO           : Date,
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
+
+     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
+     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
 };

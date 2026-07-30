@@ -4894,6 +4894,12 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER1_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 1 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER2,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 ID'
@@ -4903,6 +4909,12 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 Value            : APPROVER2_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 2 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -4918,6 +4930,12 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER3_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 3 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER4,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 4 ID'
@@ -4930,6 +4948,12 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER4_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 4 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER5,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 ID'
@@ -4939,6 +4963,12 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 Value            : APPROVER5_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 5 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -5089,6 +5119,11 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
     APPROVER3            @(Common.Label: 'Approver 3 ID');
     APPROVER4            @(Common.Label: 'Approver 4 ID');
     APPROVER5            @(Common.Label: 'Approver 5 ID');
+    APPROVER1_TS         @(Common.Label: 'Approver 1 Approval Date');
+    APPROVER2_TS         @(Common.Label: 'Approver 2 Approval Date');
+    APPROVER3_TS         @(Common.Label: 'Approver 3 Approval Date');
+    APPROVER4_TS         @(Common.Label: 'Approver 4 Approval Date');
+    APPROVER5_TS         @(Common.Label: 'Approver 5 Approval Date');
     UNIT_SECTION         @(Common.Label: 'Branch');
     BRANCH_DESC          @(Common.Label: 'Branch Description');
     COURSE_ID            @(
@@ -5401,6 +5436,12 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER1_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 1 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER2,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 ID'
@@ -5410,6 +5451,12 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 Value            : APPROVER2_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 2 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -5425,6 +5472,12 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER3_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 3 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER4,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 4 ID'
@@ -5437,6 +5490,12 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER4_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 4 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER5,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 ID'
@@ -5446,6 +5505,12 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 Value            : APPROVER5_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 5 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6167,6 +6232,11 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
     APPROVER3            @(Common.Label: 'Approver 3 ID');
     APPROVER4            @(Common.Label: 'Approver 4 ID');
     APPROVER5            @(Common.Label: 'Approver 5 ID');
+    APPROVER1_TS         @(Common.Label: 'Approver 1 Approval Date');
+    APPROVER2_TS         @(Common.Label: 'Approver 2 Approval Date');
+    APPROVER3_TS         @(Common.Label: 'Approver 3 Approval Date');
+    APPROVER4_TS         @(Common.Label: 'Approver 4 Approval Date');
+    APPROVER5_TS         @(Common.Label: 'Approver 5 Approval Date');
     UNIT_SECTION         @(Common.Label: 'Branch');
     BRANCH_DESC          @(Common.Label: 'Branch Description');
 
@@ -6467,6 +6537,12 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER1_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 1 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER2,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 ID'
@@ -6476,6 +6552,12 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 Value            : APPROVER2_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 2 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6491,6 +6573,12 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER3_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 3 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER4,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 4 ID'
@@ -6503,6 +6591,12 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER4_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 4 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER5,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 ID'
@@ -6512,6 +6606,12 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 Value            : APPROVER5_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 5 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6952,6 +7052,11 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
     APPROVER3            @(Common.Label: 'Approver 3 ID');
     APPROVER4            @(Common.Label: 'Approver 4 ID');
     APPROVER5            @(Common.Label: 'Approver 5 ID');
+    APPROVER1_TS         @(Common.Label: 'Approver 1 Approval Date');
+    APPROVER2_TS         @(Common.Label: 'Approver 2 Approval Date');
+    APPROVER3_TS         @(Common.Label: 'Approver 3 Approval Date');
+    APPROVER4_TS         @(Common.Label: 'Approver 4 Approval Date');
+    APPROVER5_TS         @(Common.Label: 'Approver 5 Approval Date');
     UNIT_SECTION         @(Common.Label: 'Branch');
     BRANCH_DESC          @(Common.Label: 'Branch Description');
 
@@ -7286,6 +7391,12 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER1_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 1 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER2,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 ID'
@@ -7295,6 +7406,12 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 Value            : APPROVER2_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 2 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER2_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 2 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7310,6 +7427,12 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER3_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 3 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER4,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 4 ID'
@@ -7322,6 +7445,12 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER4_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 4 Approval Date'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : APPROVER5,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 ID'
@@ -7331,6 +7460,12 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 Value            : APPROVER5_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Approver 5 Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : APPROVER5_TS,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver 5 Approval Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7501,6 +7636,11 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
     APPROVER3            @(Common.Label: 'Approver 3 ID');
     APPROVER4            @(Common.Label: 'Approver 4 ID');
     APPROVER5            @(Common.Label: 'Approver 5 ID');
+    APPROVER1_TS         @(Common.Label: 'Approver 1 Approval Date');
+    APPROVER2_TS         @(Common.Label: 'Approver 2 Approval Date');
+    APPROVER3_TS         @(Common.Label: 'Approver 3 Approval Date');
+    APPROVER4_TS         @(Common.Label: 'Approver 4 Approval Date');
+    APPROVER5_TS         @(Common.Label: 'Approver 5 Approval Date');
     DAYS_APPROVED        @(Common.Label: 'Approval Duration (Days)');
     UNIT_SECTION         @(Common.Label: 'Branch');
     BRANCH_DESC          @(Common.Label: 'Branch Description');
@@ -7814,6 +7954,18 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
                 Value            : CLAIM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Amount To Receive'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_REPAYMENT_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Repayment Amount'
             }
         ]
     }
@@ -7976,15 +8128,45 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : CURRENT_BUDGET,
+                Value            : PROJECT_CODE,
                 ![@UI.Importance]: #High,
-                Label            : 'Current Budget Amount'
+                Label            : 'Project Code'
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : ADJUST_AMOUNT,
+                Value            : ORIGINAL_BUDGET,
                 ![@UI.Importance]: #High,
-                Label            : 'Adjustment Amount'
+                Label            : 'Original Budget Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_IN,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement In Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_OUT,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement Out Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUPPLEMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Supplement Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RETURN,
+                ![@UI.Importance]: #High,
+                Label            : 'Return Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Budget Amount'
             },
             {
                 $Type            : 'UI.DataField',
@@ -8013,8 +8195,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
         ]
     }
 ){
-    
-    ADJUST_AMOUNT @Common.Label : 'Adjustment Amount';
+
     COMMITMENT @Common.Label : 'Commitment Amount';
     YEAR @Common.Label: 'Effective Date';
     ACTUAL @Common.Label: 'Amount Paid(Actual)';
@@ -8085,6 +8266,28 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: MATERIAL_CODE_DESC,
                     ValueListProperty: 'MATERIAL_CODE_DESC'
+                }
+            ]
+        }
+    );
+    PROJECT_CODE            @(
+        Common.Label                   : 'Project Code',
+        Common.Text                    : PROJECT_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Project Code Selection',
+            CollectionPath: 'ZPROJECT_HDR',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: PROJECT_CODE,
+                    ValueListProperty: 'PROJECT_CODE_IO'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: PROJECT_DESC,
+                    ValueListProperty: 'PROJECT_DESC'
                 }
             ]
         }
@@ -8278,6 +8481,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with {
     @Core.Computed SUBSTITUTE_RULE_ID;
     VALID_FROM @(Common.Label: 'Valid From');
     VALID_TO   @(Common.Label: 'Valid To');
+    SUBSTITUTE_COMMENT @(Common.FieldControl : #Mandatory);
 }
 
 annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
@@ -8320,10 +8524,22 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : APPROVER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Approver Name'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : SUBSTITUTE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Substitute ID'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Substitute Name'
+            },             
             {
                 $Type            : 'UI.DataField',
                 Value            : VALID_FROM,
@@ -8335,7 +8551,13 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
                 Value            : VALID_TO,
                 ![@UI.Importance]: #High,
                 Label            : 'Valid To'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSTITUTE_COMMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Comment'
+            }                                      
         ]
     }
 ) {
@@ -8395,4 +8617,7 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             ]
         }
     );
+    SUBSTITUTE_COMMENT @(
+        Common.Label : 'Comment',
+    )
 };

@@ -417,6 +417,9 @@ sap.ui.define([
                 if (_oSideNavigation && _sKey) {
                     _oSideNavigation.setSelectedKey(_sKey);
                 }
+
+                //clear all message
+                sap.ui.getCore().getMessageManager().removeAllMessages();
             },
 
             _onBeforeRouteMatched: function (oEvent) {

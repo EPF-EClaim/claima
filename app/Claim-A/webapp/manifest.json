@@ -921,12 +921,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "VALID_TO"
+                                            "visibleFields": "VALID_FROM,VALID_TO,SUBSTITUTE_COMMENT"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO"
+                                            "creationFields": "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO,SUBSTITUTE_COMMENT"
                                         }
                                     }
                                 }
@@ -4911,7 +4911,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "enableExport": true,
                                         "selectionMode": "SingleSelectMaster",
                                         "sort": true
@@ -4933,11 +4933,10 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "enableExport": true,
                                         "selectionMode": "SingleSelectMaster",
                                         "sort": true
-
                                     }
                                 }
                             },

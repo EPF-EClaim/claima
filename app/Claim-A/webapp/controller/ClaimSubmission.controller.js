@@ -1448,7 +1448,21 @@ sap.ui.define([
 
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
-				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
+
+				var glAccount;
+
+				if (sProjectCode) {
+					glAccount = await Utility.getGLAccountByProjectCode(
+						oModel,
+						sProjectCode
+					);
+				} else {
+					glAccount = await this._getGLAccount(
+						oModel,
+						oInputModel.getProperty("/claim_item/claim_type_id")
+					);
+				}
+
 				oInputModel.setProperty("/claim_item/gl_account", glAccount);
 				//// get cost center
 				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center") || null;
@@ -2917,13 +2931,6 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
-				MessageBox.error(Utility.getText("msg_claiminput_required"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 			if (!bCanProceed) {
@@ -3002,6 +3009,14 @@ sap.ui.define([
 
 
 			if (!bCanProceed) return;
+
+			// Validate required fields
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			// Check for existing MataWang
 			if (oInputModel.getProperty("/is_new") &&
