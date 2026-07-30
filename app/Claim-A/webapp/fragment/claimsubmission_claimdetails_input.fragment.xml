@@ -678,17 +678,40 @@
 						${claimitem_input>/claim_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}
 					}"
 				/>
-                <!-- Past Year Policy Display -->
-                <Label text="Past Year Policy" />
-                <Text text="{claimitem_input>/claim_item/previous_policy_number}" />
+                
+                <!-- Past Year Policy -->
+                <Label
+                    id="label_past_year_policy"
+                    text="Past Year Policy"
+                    visible="false" />
 
-                 <!-- Curent Year Policy Display -->
-                <Label text="Current Year Policy" />
-                <Text text="{claimitem_input>/claim_item/current_policy_number}" />
+                <Text
+                    id="text_past_year_policy"
+                    text="{claimitem_input>/claim_item/previous_policy_number}"
+                    visible="false" />
 
-                 <!-- Next Year Policy Display -->
-                <Label text="Future Year Policy" />
-                <Text text="{claimitem_input>/claim_item/next_policy_number}" />
+                <!-- Current Year Policy -->
+                <Label
+                    id="label_current_year_policy"
+                    text="Current Year Policy"
+                    visible="false" />
+
+                <Text
+                    id="text_current_year_policy"
+                    text="{claimitem_input>/claim_item/current_policy_number}"
+                    visible="false" />
+
+                <!-- Future Year Policy -->
+                <Label
+                    id="label_future_year_policy"
+                    text="Future Year Policy"
+                    visible="false" />
+
+                <Text
+                    id="text_future_year_policy"
+                    text="{claimitem_input>/claim_item/next_policy_number}"
+                    visible="false" />
+
 				<!-- Date of Purchase of Insurance 
 				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
 				<DatePicker
@@ -1625,7 +1648,9 @@
 
                 <!-- Attachment 1 -->
                 <Label
-                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY} 
                         ? ${i18n>label_insurance_attachment_1}
                         : ${i18n>label_claimdetails_input_attachment_file_1}
                     }"
@@ -1680,7 +1705,9 @@
                 />
                 <!-- Attachment 2-->
 				<Label
-                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} || 
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY} 
                         ? ${i18n>label_insurance_attachment_2}
                         : ${i18n>label_claimdetails_input_attachment_file_2}
                     }"
@@ -1699,7 +1726,9 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                    required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_2} === null}"
                 />
@@ -1734,10 +1763,7 @@
 
                 <!-- Attachment 3-->
 				<Label
-                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
-                        ? ${i18n>label_insurance_attachment_3}
-                        : ${i18n>label_claimdetails_input_attachment_file_3}
-                    }"
+                    text="{i18n>label_insurance_attachment_3}"
                 />
                 <u:FileUploader
                     id="fileuploader_claimdetails_input_attachment_file_3"
@@ -1753,13 +1779,15 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                    required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_3} === null}"
                 />
                 <Label
                     id="label_claimdetails_input_attachment_file_3"
-                    text="{i18n>label_claimdetails_input_attachment_file_3}"
+                    text="{i18n>label_insurance_attachment_3}"
                     visible="{=
                         ${claimsubmission_input>/view_only} &amp;&amp;
                         ${claimitem_input>/claim_item/attachment_file_3} !== null
@@ -1788,10 +1816,7 @@
 
                 <!-- Attachment 4-->
 				<Label
-                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
-                        ? ${i18n>label_insurance_attachment_4}
-                        : ${i18n>label_claimdetails_input_attachment_file_4}
-                    }"
+                    text="{i18n>label_insurance_attachment_4}"
                 />
                 <u:FileUploader
                     id="fileuploader_claimdetails_input_attachment_file_4"
@@ -1807,13 +1832,15 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE}
+                    required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_4} === null}"
                 />
                 <Label
                     id="label_claimdetails_input_attachment_file_4"
-                    text="{i18n>label_claimdetails_input_attachment_file_4}"
+                    text="{i18n>label_insurance_attachment_4}"
                     visible="{=
                         ${claimsubmission_input>/view_only} &amp;&amp;
                         ${claimitem_input>/claim_item/attachment_file_4} !== null

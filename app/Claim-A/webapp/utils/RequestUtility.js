@@ -663,40 +663,25 @@ sap.ui.define([
 
 		},
 
-       getRemainingMedicalEntitlement: async function (oController,sEmpId) {
+        getRemainingMedicalEntitlement: async function (oController, sEmpId) {
 
-    const oFunction =
-        oController._oDataModel.bindContext(
-            "/getRemainingMedicalEntitlement(...)"
-        );
+            const oFunction =oController._oDataModel.bindContext("/getRemainingMedicalEntitlement(...)");
 
-    oFunction.setParameter(
-    "empId",
-    sEmpId
-);
+            oFunction.setParameter("empId",sEmpId);
 
-    try {
+            try {
 
-        await oFunction.execute();
+                await oFunction.execute();
 
-        const oResult =
-            oFunction.getBoundContext().getObject();
+                const oResult = oFunction.getBoundContext().getObject();
 
-        oController._oReqModel.setProperty(
-            "/req_header/medical_remaining",
-            oResult.remaining || 0
-        );
+                oController._oReqModel.setProperty("/req_header/medical_remaining",oResult.remaining || 0);
 
-    } catch (oError) {
+            } catch (oError) {
 
-        console.error(oError);
-
-        oController._oReqModel.setProperty(
-            "/req_header/medical_remaining",
-            0
-        );
-    }
-}
+                oController._oReqModel.setProperty("/req_header/medical_remaining",0);
+            }
+        }
 
     };
 });

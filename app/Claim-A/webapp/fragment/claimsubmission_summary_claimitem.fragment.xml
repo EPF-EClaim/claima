@@ -212,22 +212,12 @@
                         <Link
                             press="onView_Claim_Attachment('child_t',null, $event)"
                             text="{claimsubmission_input>attachment_file_3}"
-                            visible="{=
-                                ${claimsubmission_input>descr/claim_type_item_id}
-                                ===
-                                ${constant>/ClaimTypeItem/INSURANCE}
-                            }"
                         />
 
                         <!-- Attachment 4 -->
                         <Link
                             press="onView_Claim_Attachment('child_t',null, $event)"
                             text="{claimsubmission_input>attachment_file_4}"
-                            visible="{=
-                                ${claimsubmission_input>descr/claim_type_item_id}
-                                ===
-                                ${constant>/ClaimTypeItem/INSURANCE}
-                            }"
                         />
                     </cells>
                 </ColumnListItem>

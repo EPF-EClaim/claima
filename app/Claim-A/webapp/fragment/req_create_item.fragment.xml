@@ -391,8 +391,8 @@
                                 <!-- Attachment 2 -->
                                 <form:FormElement 
                                             label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
-                                                ? ${i18n>label_insurance_attachment_1}
-                                                : ${i18n>req_attach1}
+                                                ? ${i18n>label_insurance_attachment_2}
+                                                : ${i18n>req_attach2}
                                             }"
                                             visible="false"
                                             id="i_attachment_2" >
@@ -400,6 +400,10 @@
                                         <unified:FileUploader
                                             change=".onImportChange2"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            required="{= 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                        &amp;&amp; !${request>/req_item/doc2_filename}
+                                                    }"
                                             maximumFileSize='5.0'
 					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
@@ -433,7 +437,7 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 3 -->
-                                <form:FormElement label="{i18n>req_attach3}"
+                                <form:FormElement label="{i18n>req_label_insurance_attachment_3}"
                                                 visible="false"
                                                 id="i_attachment_3">
                                 <form:fields>
@@ -480,14 +484,14 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 4 -->
-                                <form:FormElement label="{i18n>req_attach4}"
+                                <form:FormElement label="{i18n>req_label_insurance_attachment_4}"
                                                 visible="false"
                                                 id="i_attachment_4">
                                 <form:fields>
                                     <unified:FileUploader
                                         change=".onImportChange4"
                                         enabled="{= ${request>/view} !== 'view' }"
-                                        required="true"
+                                        required="false"
                                         maximumFileSize="5.0"
                                         mimeType="application/pdf,image/png,image/jpeg"
                                         placeholder="{i18n>req_attachment_format}"

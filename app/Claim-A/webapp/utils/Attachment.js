@@ -261,15 +261,13 @@ sap.ui.define([
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
 							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
-						break;
 
 					if (sTarget === "attachment_file_3") {
 							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
 							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
-						break;
-						
+	
 					if (sTarget === "attachment_file_4") {
 							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
@@ -291,6 +289,7 @@ sap.ui.define([
 						}
 						if (sTarget === "doc3") {
 							this._oView.byId("i_attachment_3_file")?.clear();
+							this._oView.byId("i_attachment_3_file").setRequired(true);
 							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
 								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}

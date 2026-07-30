@@ -773,46 +773,25 @@ sap.ui.define([
 			}
 		},
 
-		getRemainingMedicalEntitlement: async function (
-    sEmpId
-) {
+		getRemainingMedicalEntitlement: async function (sEmpId) {
 
-    const oSubmissionModel =
-        this._oView.getModel("claimsubmission_input");
+			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oFunction =this._oOwnerComponent.getModel().bindContext("/getRemainingMedicalEntitlement(...)");
 
-    const oFunction =
-        this._oOwnerComponent
-            .getModel()
-            .bindContext(
-                "/getRemainingMedicalEntitlement(...)"
-            );
+			oFunction.setParameter("empId",sEmpId);
 
-    oFunction.setParameter(
-        "empId",
-        sEmpId
-    );
+			try {
 
-    try {
+				await oFunction.execute();
 
-        await oFunction.execute();
+				const oResult =oFunction.getBoundContext().getObject();
 
-        const oResult =
-            oFunction.getBoundContext().getObject();
+				oSubmissionModel.setProperty("/claim_header/medical_remaining",oResult.remaining || 0);
 
-        oSubmissionModel.setProperty(
-            "/claim_header/medical_remaining",
-            oResult.remaining || 0
-        );
+			} catch (oError) {
 
-    } catch (oError) {
-
-        oSubmissionModel.setProperty(
-            "/claim_header/medical_remaining",
-            0
-        );
-
-        console.error(oError);
-    }
+				oSubmissionModel.setProperty("/claim_header/medical_remaining",0);
+			}
 
 		}
 	}

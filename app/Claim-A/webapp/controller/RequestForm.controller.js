@@ -214,6 +214,14 @@ sap.ui.define([
 				this.byId("i_attachment_1_file").setRequired(false);
 			}
 
+			if (bEdit && this._oReqModel.getProperty("/req_item/doc2_filename")) {
+				this.byId("i_attachment_2_file").setRequired(false);
+			}
+
+			if (bEdit && this._oReqModel.getProperty("/req_item/doc3_filename")) {
+				this.byId("i_attachment_3_file").setRequired(false);
+			}
+
 			PARequestSharedFunction.determineFooterButton(this);
 		},
 
@@ -1196,7 +1204,7 @@ sap.ui.define([
 			BusyIndicator.show(0);
 
 			try {
-				let sAttachment1_SFID, sAttachment2_SFID;
+				let sAttachment1_SFID, sAttachment2_SFID, sAttachment3_SFID, sAttachment4_SFID ;
 				if (oReqItem.doc1) {
 					const sAttachment1Binary = await Attachment.getFileAsBinary(oReqItem.doc1);
 					sAttachment1_SFID = await Attachment.postAttachment(oReqItem.doc1.name, sAttachment1Binary, sEmpId);
@@ -1209,7 +1217,7 @@ sap.ui.define([
 					const sAttachment3Binary = await Attachment.getFileAsBinary(oReqItem.doc3);
 					sAttachment3_SFID = await Attachment.postAttachment(oReqItem.doc3.name, sAttachment3Binary, sEmpId);
 				}
-				if (oReqItem.doc2) {
+				if (oReqItem.doc4) {
 					const sAttachment4Binary = await Attachment.getFileAsBinary(oReqItem.doc4);
 					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
 				}
