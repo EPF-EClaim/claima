@@ -607,7 +607,9 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
+        const nCashAdvanceAmount = Number(headerResult.CASH_ADVANCE_AMOUNT) || 0;
+        const nCardAdvanceAmount = Number(headerResult.CCC_ADV_AMT) || 0;
+        const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount - nCardAdvanceAmount) || 0;
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -4566,15 +4568,14 @@ module.exports = (srv) => {
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
                 });
+ 
+            console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
     
             return oCardAdvance ? (parseFloat(oCardAdvance.MONTHLY_ADVANCED_AMT) || 0.00) : 0.00;
     
         } catch (error) {
+            console.error('[getMonthlyAdvanceAmount] Query failed:', error);
             req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
         }
     });
- 
-
-
-
 }

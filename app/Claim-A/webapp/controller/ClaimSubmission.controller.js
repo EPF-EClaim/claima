@@ -785,6 +785,7 @@ sap.ui.define([
 				travel_family_now_later: o.FAMILY_TIMING_DESC,
 				mode_of_transfer_id: o.MODE_OF_TRANSFER,
 				card_no: o.CARD_NO,
+				card_advance_amount: o.CCC_ADV_AMT,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -1627,13 +1628,15 @@ sap.ui.define([
 
 			// calculate new total
 			var nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			if(oInputModel.getProperty("/claim_header/cash_advance_amount") > 0){
-				var iCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount"));
-				var nNewTotal =  nTotal - iCashAdvAmt;
+			var nCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0;
+			var nCardAdvAmt = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
+
+			if (nCashAdvAmt > 0 || nCardAdvAmt > 0) {
+				var nNewTotal = nTotal - nCashAdvAmt - nCardAdvAmt;
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 
-			}else{	
+			} else {
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 				oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
 			}
@@ -4370,6 +4373,7 @@ sap.ui.define([
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+					CARD_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2),
 					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
 				});
 
@@ -5665,12 +5669,14 @@ sap.ui.define([
 		},
 
 		_calculateClaimTotal: function () {
-			var oInputModel = this.getView().getModel("claimsubmission_input"); // adjust model name as needed
+			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
 
-			// calculate total excluding "Personal Expense" items
+			var nCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0;
+			var nCardAdvAmt = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
+
 			var nTotal = aClaimItems
 				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.PERSONAL_EXPENSE)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
@@ -5684,16 +5690,17 @@ sap.ui.define([
 					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
 				if (nPersonalExpenseAmt > 0) {
-					var nNewTotal = nTotal - nPersonalExpenseAmt;
+					var nNewTotal = nTotal - nPersonalExpenseAmt - nCashAdvAmt - nCardAdvAmt;
 					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 					return;
 				}
 			}
 
-			// Default: no offset applied
+			// Default: subtract cash advance / corporate card advance, if any
+			var nFinal = nTotal - nCashAdvAmt - nCardAdvAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
 	});
 });

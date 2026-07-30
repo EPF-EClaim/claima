@@ -353,7 +353,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZFAMILY_TIMING.FAMILY_TIMING_DESC,
                 PROJECT_CODE,
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
-                CARD_NO
+                CARD_NO,
+                CCC_ADV_AMT
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as

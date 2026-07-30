@@ -1270,7 +1270,8 @@ sap.ui.define([
 				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
 				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
 				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
-				CARD_NO: oInputModel.getProperty("/claim_header/card_no")
+				CARD_NO: oInputModel.getProperty("/claim_header/card_no"),
+				CCC_ADV_AMT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2)
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
