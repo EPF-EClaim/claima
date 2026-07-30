@@ -2909,6 +2909,33 @@ module.exports = (srv) => {
         } = srv.entities;
 
         const tx = cds.tx(req);
+
+        // ============================================================
+        // Validate USER_ID and SUBSTITUTE_ID exist in ZEMP_MASTER first
+        // ============================================================
+        const aEmployeeIds = [...new Set([USER_ID, SUBSTITUTE_ID])];
+
+        const aEmployees = await tx.run(
+            SELECT.from('ZEMP_MASTER')
+                .where({ EEID: { in: aEmployeeIds } })
+                .columns('EEID', 'EMAIL', 'NAME')
+        );
+
+        const oEmployeeById = {};
+        aEmployees.forEach(oEmp => {
+            oEmployeeById[oEmp.EEID] = oEmp;
+        });
+
+        const aInvalidEmployeeIds = aEmployeeIds.filter(sEmployeeId => !oEmployeeById[sEmployeeId]);
+
+        if (aInvalidEmployeeIds.length > 0) {
+            return req.error({
+                code: 'INVALID_EMPLOYEE',
+                message: `Invalid employee ID: ${aInvalidEmployeeIds.join(', ')}. Please select a valid employee from the value help.`,
+                status: 400
+            });
+        }
+
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
         const aLogsToInsert = [];
         const aPendingEmailsToAsyncSend = [];
@@ -3811,6 +3838,15 @@ module.exports = (srv) => {
         //     });
         // }
 
+        if (USER_ID === SUBSTITUTE_ID) {
+            return req.error({
+                code: 'INVALID_COMBINATION',
+                message: 'Substitute ID cannot be same as Approver ID',
+                target: 'SUBSTITUTE_ID',
+                status: 400
+            });
+        }
+
         if (new Date(VALID_TO) < new Date(VALID_FROM)) {
             return req.error({
                 code: 'INVALID_DATE_RANGE',
@@ -3963,8 +3999,9 @@ module.exports = (srv) => {
             const dTo = new Date(sFinalValidTo);
             if (dTo < dFrom) {
                 return req.error({
-                    code: 'MASS_EDIT_VALIDATION',
-                    message: 'The Valid To Date cannot be earlier than the Valid From Date.'
+                    code: 400,
+                    message: 'The Valid To Date cannot be earlier than the Valid From Date.',
+                    target: 'VALID_TO'
                 });
             }
         }
@@ -4517,6 +4554,6 @@ module.exports = (srv) => {
                 DEP: oEmp.DEP
             });
         }
-    });  
+    });
 
 }
