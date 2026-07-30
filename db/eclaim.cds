@@ -1566,3 +1566,11 @@ entity ZREQ_ITEM_CCC_PART : managed{
     MERCHANT_REFUND_AMT     : Decimal(16, 2) @Common.Label: 'Merchant Refund';
     MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
 }
+
+entity ZCASH_ADVANCE_CATEGORY : managed {
+    key CASH_ADVANCE_CAT_ID   : String(10)  @mandatory  @Common.Label: 'Cash Advance Category ID';
+        CASH_ADVANCE_CAT_DESC : String      @Common.Label: 'Cash Advance Category Description';
+        START_DATE            : Date        @Common.Label: 'Start Date';
+        END_DATE              : Date        @Common.Label: 'End Date';
+        STATUS                : String(10)  @Common.Label: 'Status';
+}

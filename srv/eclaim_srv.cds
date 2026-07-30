@@ -61,6 +61,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                                       returns Response;
 
+    action   batchUpsertCompanyInfo(entityName: String, data: LargeString)                               returns Response;
+
     action   budgetchecking(budget: many budgetdata)                                                     returns many BudgetResult;
 
     action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
@@ -1414,5 +1416,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         ) returns Boolean;
 
      action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+
+     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
 };
