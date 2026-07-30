@@ -294,17 +294,26 @@
 #       "exclude_tips": true
 # }
 
-POST http://localhost:4004/odata/v4/EmployeeSrv/reassignApprover
+# POST http://localhost:4004/odata/v4/EmployeeSrv/reassignApprover
+# Content-Type: application/json
+# Authorization: Basic alice
+
+# {
+#     "payload": [
+#         {
+#             "ID": "CLM26000002706",
+#             "LEVEL": 1,
+#             "APPROVER_ID": "010310",
+#             "NEW_APPROVER_ID": "904897"
+#         }
+#     ]
+# }
+
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpsertCompanyInfo
 Content-Type: application/json
 Authorization: Basic alice
-
+ 
 {
-    "payload": [
-        {
-            "ID": "CLM26000002706",
-            "LEVEL": 1,
-            "APPROVER_ID": "010310",
-            "NEW_APPROVER_ID": "904897"
-        }
-    ]
+    "entityName": "ZCASH_ADVANCE_CATEGORY",
+    "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
 }
