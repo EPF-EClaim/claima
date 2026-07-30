@@ -1474,7 +1474,34 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action clearMedicalEntitlement() returns String;
 
-    function getMedicalReminderEmail() returns array of reminders;         
+    function getMedicalReminderEmail() returns array of reminders;   
+
+     
+    entity ZLATEST_LOG                   as
+        select from ECLAIM.ZLOG {
+            key RECORD_ID,
+            key max(TIMESTAMP) as LOG_TIMESTAMP : Timestamp
+        }
+        where MESSAGE_TYPE = 'A'
+        group by
+            RECORD_ID;
+
+    entity ZLATEST_LOG_DETAILS           as
+        select from ECLAIM.ZLOG as Log
+        inner join ZLATEST_LOG as Latest
+            on  Log.RECORD_ID = Latest.RECORD_ID
+            and Log.TIMESTAMP = Latest.LOG_TIMESTAMP
+        {
+            key Log.RECORD_ID,
+            key Log.TIMESTAMP,
+            Log.MESSAGE,
+            Log.MESSAGE_TYPE,
+            Log.STATUS_CODE
+        };
+
+     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+
+     entity ZDIVISION as projection on ECLAIM.ZDIVISION;        
 
      entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
