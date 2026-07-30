@@ -1267,7 +1267,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
         REQUEST_DATE    : Date;
     }
 
-    action   reassignApprover(payload: many ReassignmentPayload)                                         returns Boolean;
+    action   reassignApprover(payload: many ReassignmentPayload,
+                              comment: String)                                         returns Boolean;
 
     entity ZCONFIG_VARIABLE              as projection on ECLAIM.ZCONFIG_VARIABLE;
 
@@ -1295,32 +1296,40 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 DEP
         };
 
-    entity ZEMP_PENDING_LIST             as
-            select from ECLAIM.ZREQUEST_HEADER as request {
-                key REQUEST_ID          as ID,
-                    EMP_ID,
-                    CLAIM_TYPE_ID,
-                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                    ZSTATUS.STATUS_DESC as STATUS_DESC,
-                    SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP,
-                    CASH_ADVANCE as CASH_ADVANCE_AMOUNT
-            }
-            where
-                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+    entity ZEMP_PENDING_LIST as
+
+        select from ECLAIM.ZREQUEST_HEADER as request
+            left join ZLATEST_LOG_DETAILS as Log
+                on Log.RECORD_ID = request.REQUEST_ID
+        {
+            key request.REQUEST_ID          as ID,
+                request.EMP_ID,
+                request.CLAIM_TYPE_ID,
+                request.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                request.ZSTATUS.STATUS_DESC as STATUS_DESC,
+                request.SUBMITTED_DATE,
+                request.ZEMP_MASTER.DEP,
+                request.CASH_ADVANCE        as CASH_ADVANCE_AMOUNT,
+
+                Log.MESSAGE
+        }
+        where request.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
         union all
-            select from ECLAIM.ZCLAIM_HEADER as claim {
-                key CLAIM_ID            as ID,
-                    EMP_ID,
-                    CLAIM_TYPE_ID,
-                    ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                    ZSTATUS.STATUS_DESC as STATUS_DESC,
-                    SUBMITTED_DATE,
-                    ZEMP_MASTER.DEP, 
-                    CASH_ADVANCE_AMOUNT
-            }
-            where
-                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+        select from ECLAIM.ZCLAIM_HEADER as claim
+            left join ZLATEST_LOG_DETAILS as Log
+                on Log.RECORD_ID = claim.CLAIM_ID
+        {
+            key claim.CLAIM_ID             as ID,
+                claim.EMP_ID,
+                claim.CLAIM_TYPE_ID,
+                claim.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                claim.ZSTATUS.STATUS_DESC  as STATUS_DESC,
+                claim.SUBMITTED_DATE,
+                claim.ZEMP_MASTER.DEP,
+                claim.CASH_ADVANCE_AMOUNT,
+                Log.MESSAGE
+        }
+        where claim.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
     entity ZEMP_PENDING_LIST_APPROVER    as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
@@ -1422,5 +1431,28 @@ service eclaim_srv @(requires: 'authenticated-user') {
      entity ZPOSITION as projection on ECLAIM.ZPOSITION;
 
      entity ZDIVISION as projection on ECLAIM.ZDIVISION;
+
+     
+    entity ZLATEST_LOG                   as
+        select from ECLAIM.ZLOG {
+            key RECORD_ID,
+            key max(TIMESTAMP) as LOG_TIMESTAMP : Timestamp
+        }
+        where MESSAGE_TYPE = 'A'
+        group by
+            RECORD_ID;
+
+    entity ZLATEST_LOG_DETAILS           as
+        select from ECLAIM.ZLOG as Log
+        inner join ZLATEST_LOG as Latest
+            on  Log.RECORD_ID = Latest.RECORD_ID
+            and Log.TIMESTAMP = Latest.LOG_TIMESTAMP
+        {
+            key Log.RECORD_ID,
+            key Log.TIMESTAMP,
+            Log.MESSAGE,
+            Log.MESSAGE_TYPE,
+            Log.STATUS_CODE
+        };
 
 };

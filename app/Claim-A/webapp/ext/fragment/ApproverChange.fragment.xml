@@ -47,6 +47,25 @@
                     </ColumnListItem>
                 </items>
             </Table>
+            <!-- Comment Field-->
+            <VBox
+                class="sapUiSmallMarginTop sapUiSmallMarginBeginEnd sapUiSmallMarginBottom"
+            >
+                <Label
+                    text="Comment"
+                    required="true"
+                    class="sapUiTinyMarginBottom"
+                />
+                <TextArea
+                    id="commentTextArea"
+                    width="100%"
+                    rows="3"
+                    maxLength="1000"
+                    growing="true"
+                    growingMaxLines="5"
+                    liveChange=".onCommentLiveChange"
+                />
+            </VBox>
         </content>
         <beginButton>
             <Button
