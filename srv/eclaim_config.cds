@@ -8481,8 +8481,6 @@ annotate service.ZEMP_SUBSTITUTE_VH with @(UI.SelectionFields: [
     ROLE;
     @UI.hidden: true
     DEP;
-    @UI.hidden: true
-    SELECTED_APPROVER;
 };
 
 annotate service.ZSUBSTITUTION_RULES_CONFIG with {
@@ -8604,11 +8602,6 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
             Label         : 'Substitute Selection',
             CollectionPath: 'ZEMP_SUBSTITUTE_VH',
             Parameters    : [
-                {
-                    $Type            : 'Common.ValueListParameterIn',
-                    LocalDataProperty: USER_ID,
-                    ValueListProperty: 'SELECTED_APPROVER'
-                },
                 {
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: SUBSTITUTE_ID,

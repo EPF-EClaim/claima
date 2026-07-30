@@ -2386,8 +2386,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             EMAIL,
             ROLE,
             DEP,
-            GRADE,
-            virtual null as SELECTED_APPROVER : String
+            GRADE
         };
 
  
