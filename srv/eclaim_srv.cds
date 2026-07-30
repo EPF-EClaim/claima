@@ -684,14 +684,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 LAST_PUSH_BACK_DATE,
                 LAST_APPROVED_DATE,
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
@@ -769,14 +774,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.MATERIAL_CODE,
                 PIVOT.APPROVER1,
                 PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
                 PIVOT.APPROVER2,
                 PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
                 PIVOT.APPROVER3,
                 PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
                 PIVOT.APPROVER4,
                 PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
                 PIVOT.APPROVER5,
                 PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
                 LAST_PUSH_BACK_DATE,
                 SUBMITTED_DATE,
                 LAST_APPROVED_DATE,
@@ -1094,25 +1104,30 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZEMP_CASHADVANCE_REPORT as
         select from ECLAIM.ZREQUEST_HEADER as RH
+            left join ECLAIM.ZCLAIM_HEADER as CH
+                on CH.REQUEST_ID = RH.REQUEST_ID
+
             left join ZCASH_REPAYMENT_SUM as CR
-                on  CR.REQUEST_ID = RH.REQUEST_ID
-                and CR.CLAIM_ID   = RH.ZCLAIM_HEADER.CLAIM_ID
+                on CR.CLAIM_ID = CH.CLAIM_ID
     {
         key RH.REQUEST_ID,
-        key RH.ZCLAIM_HEADER.CLAIM_ID,
+        key CH.CLAIM_ID,
 
         RH.EMP_ID,
         RH.CLAIM_TYPE_ID,
         RH.OBJECTIVE_PURPOSE,
         RH.STATUS,
-        RH.ZSTATUS.STATUS_DESC               as REQUEST_STATUS_DESC,
+        RH.ZSTATUS.STATUS_DESC as REQUEST_STATUS_DESC,
+
         RH.TRIP_START_DATE,
         RH.TRIP_END_DATE,
         RH.LAST_APPROVED_DATE,
         RH.CASH_ADVANCE,
-        RH.ZCLAIM_HEADER.SUBMITTED_DATE,
-        RH.ZCLAIM_HEADER.STATUS_ID,
-        RH.ZCLAIM_HEADER.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
+
+        CH.SUBMITTED_DATE,
+        CH.STATUS_ID,
+        CH.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
+
         RH.ZEMP_MASTER.NAME,
         RH.ZEMP_MASTER.GRADE,
         RH.ZEMP_MASTER.DEP,
@@ -1120,9 +1135,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
         RH.ZEMP_MASTER.UNIT_SECTION,
         RH.createdBy,
         RH.ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
-        RH.CASH_ADVANCE_DATE                 as PAYMENT_DATE,
-        RH.ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE,
-        CR.CASH_REPAYMENT_AMOUNT
+
+        RH.CASH_ADVANCE_DATE as PAYMENT_DATE,
+        coalesce(CH.FINAL_AMOUNT_TO_RECEIVE, 0) as FINAL_AMOUNT_TO_RECEIVE : Decimal(16,2),
+
+        coalesce(CR.CASH_REPAYMENT_AMOUNT, 0) as CASH_REPAYMENT_AMOUNT : Decimal(16,2)
     }
     where RH.CASH_ADVANCE > 0;
 
