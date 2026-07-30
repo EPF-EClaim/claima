@@ -1415,8 +1415,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
-     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+    action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
-     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+
+    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
 
 };
