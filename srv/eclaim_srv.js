@@ -3175,10 +3175,34 @@ module.exports = (srv) => {
                 }
             }
 
+            // Get all approver IDs involved
+            const aEmployeeIds = [
+                ...new Set(
+                    aPayloads.flatMap(oItem => [
+                        oItem.APPROVER_ID,
+                        oItem.NEW_APPROVER_ID
+                    ]).filter(Boolean)
+                )
+            ];
+            // Get names once
+            const aEmployees = await tx.run(
+                SELECT.from('ZEMP_MASTER')
+
+                    .where({ EEID: { in: aEmployeeIds } })
+                    .columns('EEID', 'NAME')
+            );
+
+            const oEmployeeMap = {};
+            aEmployees.forEach(oEmp => {
+                oEmployeeMap[oEmp.EEID] = oEmp.NAME;
+            });            
+
             const aUpdatePromises = aPayloads.map(async (oItem) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID, REQUEST_DATE } = oItem;
                 let sSubstituteID = null;
                 let sOldSubstituteID = null;
+                const sApproverName = oEmployeeMap[APPROVER_ID] || '';
+                const sNewApproverName = oEmployeeMap[NEW_APPROVER_ID] || '';
 
                 let oLogEntry = {
                     TIMESTAMP: new Date(),
@@ -3253,9 +3277,9 @@ module.exports = (srv) => {
                     oLogEntry.MESSAGE_TYPE = 'S';
                     oLogEntry.STATUS_CODE = '200';
                     if (sSubstituteID) {
-                        oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to new approver ${NEW_APPROVER_ID} (Delegated to Substitute ${sSubstituteID}).`;
+                        oLogEntry.MESSAGE = `Level ${LEVEL} approver ${sApproverName} (${APPROVER_ID}) has been reassigned to approver ${sNewApproverName} (${NEW_APPROVER_ID}) by user ${oCurrentUser.NAME} (${oCurrentUser.EEID}). (Delegated to Substitute ${sSubstituteID}).`;
                     } else {
-                        oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to new approver ${NEW_APPROVER_ID}.`;
+                        oLogEntry.MESSAGE = `Level ${LEVEL} approver ${sApproverName} (${APPROVER_ID}) has been reassigned to approver ${sNewApproverName} (${NEW_APPROVER_ID}) by user ${oCurrentUser.NAME} (${oCurrentUser.EEID})`;
                     }
                 } else {
                     oLogEntry.MESSAGE_TYPE = 'W';
