@@ -2893,6 +2893,33 @@ module.exports = (srv) => {
         } = srv.entities;
 
         const tx = cds.tx(req);
+
+        // ============================================================
+        // Validate USER_ID and SUBSTITUTE_ID exist in ZEMP_MASTER first
+        // ============================================================
+        const aEmployeeIds = [...new Set([USER_ID, SUBSTITUTE_ID])];
+
+        const aEmployees = await tx.run(
+            SELECT.from('ZEMP_MASTER')
+                .where({ EEID: { in: aEmployeeIds } })
+                .columns('EEID', 'EMAIL', 'NAME')
+        );
+
+        const oEmployeeById = {};
+        aEmployees.forEach(oEmp => {
+            oEmployeeById[oEmp.EEID] = oEmp;
+        });
+
+        const aInvalidEmployeeIds = aEmployeeIds.filter(sEmployeeId => !oEmployeeById[sEmployeeId]);
+
+        if (aInvalidEmployeeIds.length > 0) {
+            return req.error({
+                code: 'INVALID_EMPLOYEE',
+                message: `Invalid employee ID: ${aInvalidEmployeeIds.join(', ')}. Please select a valid employee from the value help.`,
+                status: 400
+            });
+        }
+
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
         const aLogsToInsert = [];
         const aPendingEmailsToAsyncSend = [];
@@ -3076,7 +3103,7 @@ module.exports = (srv) => {
             ZLOG
         } = srv.entities;
 
-        const aPayloads = req.data.payload;
+        const { payload: aPayloads, comment: sComment } = req.data;
         const tx = cds.tx(req);
         const oCurrentUser = await getLoggedInEmployee(tx, req, srv.entities);
 
@@ -3132,10 +3159,34 @@ module.exports = (srv) => {
                 }
             }
 
+            // Get all approver IDs involved
+            const aEmployeeIds = [
+                ...new Set(
+                    aPayloads.flatMap(oItem => [
+                        oItem.APPROVER_ID,
+                        oItem.NEW_APPROVER_ID
+                    ]).filter(Boolean)
+                )
+            ];
+            // Get names once
+            const aEmployees = await tx.run(
+                SELECT.from('ZEMP_MASTER')
+
+                    .where({ EEID: { in: aEmployeeIds } })
+                    .columns('EEID', 'NAME')
+            );
+
+            const oEmployeeMap = {};
+            aEmployees.forEach(oEmp => {
+                oEmployeeMap[oEmp.EEID] = oEmp.NAME;
+            });            
+
             const aUpdatePromises = aPayloads.map(async (oItem) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID, REQUEST_DATE } = oItem;
                 let sSubstituteID = null;
                 let sOldSubstituteID = null;
+                const sApproverName = oEmployeeMap[APPROVER_ID] || '';
+                const sNewApproverName = oEmployeeMap[NEW_APPROVER_ID] || '';
 
                 let oLogEntry = {
                     TIMESTAMP: new Date(),
@@ -3210,9 +3261,9 @@ module.exports = (srv) => {
                     oLogEntry.MESSAGE_TYPE = 'S';
                     oLogEntry.STATUS_CODE = '200';
                     if (sSubstituteID) {
-                        oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to new approver ${NEW_APPROVER_ID} (Delegated to Substitute ${sSubstituteID}).`;
+                        oLogEntry.MESSAGE = `Level ${LEVEL} approver ${sApproverName} (${APPROVER_ID}) has been reassigned to approver ${sNewApproverName} (${NEW_APPROVER_ID}) by user ${oCurrentUser.NAME} (${oCurrentUser.EEID}). (Delegated to Substitute ${sSubstituteID}).`;
                     } else {
-                        oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} successfully reassigned record ${ID} (Level ${LEVEL}) from approver ${APPROVER_ID} to new approver ${NEW_APPROVER_ID}.`;
+                        oLogEntry.MESSAGE = `Level ${LEVEL} approver ${sApproverName} (${APPROVER_ID}) has been reassigned to approver ${sNewApproverName} (${NEW_APPROVER_ID}) by user ${oCurrentUser.NAME} (${oCurrentUser.EEID})`;
                     }
                 } else {
                     oLogEntry.MESSAGE_TYPE = 'W';
@@ -3220,7 +3271,20 @@ module.exports = (srv) => {
                     oLogEntry.MESSAGE = `User ${oCurrentUser.EEID} attempted reassignment for record ${ID} (Level ${LEVEL}), but no match found for current approver ${APPROVER_ID}.`;
                 }
 
-                return { iRowsAffected, oLog: oLogEntry, sSubstituteID, sOldSubstituteID };
+                return {
+                    iRowsAffected,
+                    oLog: oLogEntry,
+                    oCommentLog: (iRowsAffected > 0 && sComment) ? {
+                        TIMESTAMP: new Date(),
+                        RECORD_ID: ID,
+                        PROGRAM: 'REASSIGN_APPROVER',
+                        MESSAGE_TYPE: 'A',
+                        STATUS_CODE: '200',
+                        MESSAGE: `Approver Reassigned with Comment: ${sComment}`
+                    } : null,
+                    sSubstituteID,
+                    sOldSubstituteID
+                };
             });
 
             const aResults = await Promise.all(aUpdatePromises);
@@ -3229,11 +3293,17 @@ module.exports = (srv) => {
             const aLogsToInsert = [];
             const aErrorMessages = [];
             const aSuccessfulPayloads = [];
+            const oCommentLoggedIds = new Set();
 
             aResults.forEach((oResult, index) => {
                 if (oResult) {
                     iSuccessCount += oResult.iRowsAffected;
                     aLogsToInsert.push(oResult.oLog);
+
+                    if (oResult.oCommentLog && !oCommentLoggedIds.has(oResult.oCommentLog.RECORD_ID)) {
+                        aLogsToInsert.push(oResult.oCommentLog);
+                        oCommentLoggedIds.add(oResult.oCommentLog.RECORD_ID);
+                    }
 
                     if (oResult.iRowsAffected > 0) {
                         aSuccessfulPayloads.push({
@@ -3583,19 +3653,19 @@ module.exports = (srv) => {
 
     srv.before('READ', 'ZEMP_APPROVER_VH', async (req) => {
 
-        //for GA, show their department only. for JKEW show all
-        // if (req.user.is(Constant.Admin.Admin_CC)) {
-        //     const oEmp = await SELECT.one
-        //         .from('ZEMP_MASTER')
-        //         .where({ EMAIL: req.user.id });
+        // for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
 
-        //     if (!oEmp || !oEmp.DEP) return;
+            if (!oEmp || !oEmp.DEP) return;
 
-        //     // Admin can sees their own department only
-        //     req.query.where({
-        //         DEP: oEmp.DEP
-        //     });
-        // }
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
+        }
     });
 
     function getFilterValue(where, fieldName) {
@@ -3640,80 +3710,86 @@ module.exports = (srv) => {
         }
         removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
         removeFilterField(req.query.SELECT.where, 'USER_ID');
-        // if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
-        //     const oCurrentUser = await SELECT.one
-        //         .from('ZEMP_MASTER')
-        //         .where({ EMAIL: req.user.id });
-        //     // If we can find their department, apply it as a filter constraint
-        //     if (oCurrentUser && oCurrentUser.DEP) {
-        //         const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
-        //         if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-        //             req.query.SELECT.where = [
-        //                 '(', ...req.query.SELECT.where, ')',
-        //                 'and',
-        //                 ...oDeptFilter
-        //             ];
-        //         } else {
-        //             req.query.SELECT.where = oDeptFilter;
-        //         }
-        //     }
-        //     return;
-        // }
+        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
+            const oCurrentUser = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+            // If we can find their department, apply it as a filter constraint
+            if (oCurrentUser && oCurrentUser.DEP) {
+                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
+                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                    req.query.SELECT.where = [
+                        '(', ...req.query.SELECT.where, ')',
+                        'and',
+                        ...oDeptFilter
+                    ];
+                } else {
+                    req.query.SELECT.where = oDeptFilter;
+                }
+            }
+            return;
+        }
         const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
         //commented out this one just in case later will need to filter by grade/department
-        // if (oApproverData) {
-        //     let iCurrentSeq = 0;
-        //     if (oApproverData.GRADE) {
-        //         const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-        //             LOW_VALUE: oApproverData.GRADE,
-        //             VARIABLE_NAME: 'PERSONAL_GRADE'
-        //         });
-        //         if (oConfig && oConfig.SEQUENCE_NO) {
-        //             iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
-        //         }
-        //     }
+        if (oApproverData) {
+            //     let iCurrentSeq = 0;
+            //     if (oApproverData.GRADE) {
+            //         const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
+            //             LOW_VALUE: oApproverData.GRADE,
+            //             VARIABLE_NAME: 'PERSONAL_GRADE'
+            //         });
+            //         if (oConfig && oConfig.SEQUENCE_NO) {
+            //             iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
+            //         }
+            //     }
 
-        //     // Fetch all grade strings that match or exceed the current sequence rank
-        //     const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
-        //         VARIABLE_NAME: 'PERSONAL_GRADE',
-        //         SEQUENCE_NO: { '>=': iCurrentSeq }
-        //     });
+            //     // Fetch all grade strings that match or exceed the current sequence rank
+            //     const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
+            //         VARIABLE_NAME: 'PERSONAL_GRADE',
+            //         SEQUENCE_NO: { '>=': iCurrentSeq }
+            //     });
 
-        //     const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
+            //     const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
 
-        //     let oGradeFilter = [];
-        //     if (aAllowedGradeValues.length > 0) {
-        //         aAllowedGradeValues.forEach((sGrade, index) => {
-        //             oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
-        //             if (index < aAllowedGradeValues.length - 1) {
-        //                 oGradeFilter.push('or');
-        //             }
-        //         });
-        //         if (aAllowedGradeValues.length > 1) {
-        //             oGradeFilter = ['(', ...oGradeFilter, ')'];
-        //         }
-        //     } else {
-        //         oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
-        //     }
+            //     let oGradeFilter = [];
+            //     if (aAllowedGradeValues.length > 0) {
+            //         aAllowedGradeValues.forEach((sGrade, index) => {
+            //             oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
+            //             if (index < aAllowedGradeValues.length - 1) {
+            //                 oGradeFilter.push('or');
+            //             }
+            //         });
+            //         if (aAllowedGradeValues.length > 1) {
+            //             oGradeFilter = ['(', ...oGradeFilter, ')'];
+            //         }
+            //     } else {
+            //         oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
+            //     }
 
-        //     const oTargetFilters = [
-        //         { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-        //         'and',
-        //         ...oGradeFilter,
-        //         'and',
-        //         { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-        //     ];
+            const oTargetFilters = [
+                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
+                'and',
+                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
+            ];
 
-        //     if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-        //         req.query.SELECT.where = [
-        //             '(', ...req.query.SELECT.where, ')',
-        //             'and',
-        //             '(', ...oTargetFilters, ')'
-        //         ];
-        //     } else {
-        //         req.query.SELECT.where = oTargetFilters;
-        //     }
-        // }
+            //     const oTargetFilters = [
+            //         { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
+            //         'and',
+            //         ...oGradeFilter,
+            //         'and',
+            //         { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
+            //     ];        
+
+            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
+                req.query.SELECT.where = [
+                    '(', ...req.query.SELECT.where, ')',
+                    'and',
+                    '(', ...oTargetFilters, ')'
+                ];
+            } else {
+                req.query.SELECT.where = oTargetFilters;
+            }
+        }
     });
 
     const { ZNUM_RANGE, ZSUBSTITUTION_RULES_CONFIG } = srv.entities;
@@ -3769,6 +3845,15 @@ module.exports = (srv) => {
         //         status: 400
         //     });
         // }
+
+        if (USER_ID === SUBSTITUTE_ID) {
+            return req.error({
+                code: 'INVALID_COMBINATION',
+                message: 'Substitute ID cannot be same as Approver ID',
+                target: 'SUBSTITUTE_ID',
+                status: 400
+            });
+        }
 
         if (new Date(VALID_TO) < new Date(VALID_FROM)) {
             return req.error({
@@ -3922,8 +4007,9 @@ module.exports = (srv) => {
             const dTo = new Date(sFinalValidTo);
             if (dTo < dFrom) {
                 return req.error({
-                    code: 'MASS_EDIT_VALIDATION',
-                    message: 'The Valid To Date cannot be earlier than the Valid From Date.'
+                    code: 400,
+                    message: 'The Valid To Date cannot be earlier than the Valid From Date.',
+                    target: 'VALID_TO'
                 });
             }
         }
@@ -4486,6 +4572,24 @@ module.exports = (srv) => {
             return `Records successfully updated for ${entityName}`;
         } catch (error) {
             req.error(400, `Failed creating record for ${req.data.entityName || 'unknown'}: ${error.message}`);
+        }
+    });
+
+    //this is for list report which will be filter by department for GA
+    srv.before('READ', 'ZEMP_APPROVER_LIST_VH', async (req) => {
+
+        //for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
+                .from('ZEMP_MASTER')
+                .where({ EMAIL: req.user.id });
+
+            if (!oEmp || !oEmp.DEP) return;
+
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
         }
     });
 
