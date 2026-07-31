@@ -144,24 +144,6 @@ module.exports = {
             return iExistingPolicyYear === iPolicyYear;
         });
 
-        // aSamePolicyYearItems = aExistingItems.filter(oItem => {
-        //     const vExistingPolicyValue = oItem[sPolicyField];
-
-        //     if (!vExistingPolicyValue) {
-        //         return false;
-        //     }
-
-        //     let iExistingPolicyYear;
-
-        //     if (sPolicyField === Constant.EntitiesFields.POLICY_START_DATE) {
-        //         iExistingPolicyYear = new Date(vExistingPolicyValue).getFullYear();
-        //     } else {
-        //         iExistingPolicyYear = Number(vExistingPolicyValue);
-        //     }
-
-        //     return iExistingPolicyYear === iPolicyYear;
-        // });
-
         if (aSamePolicyYearItems.length > 0) {
             const bDuplicateInCurrentRecord = aSamePolicyYearItems.some(
                 oItem => oItem[sHeaderField] === oPayload.RecordId
