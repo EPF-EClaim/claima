@@ -34,7 +34,8 @@ const {
     verifyCorrectApproverForAction,
     determineLastApproverLevel,
     resolveActionDescriptor,
-    updateCorpoCardAdvance
+    updateCorpoCardAdvance,
+    notifyCardholdersOfRequestApproval
 } = require('./workflow/action/action-helper');
 const {
     updateUsedEntitlementAmount

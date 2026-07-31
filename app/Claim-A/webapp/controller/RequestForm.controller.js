@@ -588,15 +588,25 @@ sap.ui.define([
 			}
 		},
 
-		onCancelItem() {
+		async onCancelItem() {
 			const oData = this._oReqModel.getData();
 			const sReqId = String(oData.req_header.reqid || "").trim();
 			this._oReqModel.setProperty('/req_item', {});
 			this._oReqModel.setProperty('/view', "view");
-
-			PARequestSharedFunction._getItemList(this, sReqId);
+		
+			await PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
+		
+			// _getItemList() resets /corpo_cards back to the bare card identity
+			// list (no amount fields) - re-merge the aggregate totals so the
+			// Corporate Credit Card Summary doesn't appear blank after cancel.
+			// _getItemList() must be awaited above, or this merge runs in a
+			// race and gets silently overwritten once _getItemList resolves.
+			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
+				await this._loadCorpoCardsForItem(sReqId);
+				this._computeCorpoCardTotals();
+			}
 		},
 
 		onSaveHeaderPress: async function () {
@@ -786,6 +796,10 @@ sap.ui.define([
 				round_trip 				: oReqItem.ROUND_TRIP || false,
 				internal_order			: oReqItem.INTERNAL_ORDER || null
 			});
+
+			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
+				this._loadCorpoCardsForEditItem(sReqId, sReqSubId);
+			}
 
 			const sState = this._oReqModel.getProperty("/view");
 			if (sState != this._oConstant.PARMode.APPROVER) {
@@ -3374,6 +3388,65 @@ sap.ui.define([
 			});
 
 			this._oReqModel.setProperty("/corpo_totals", oTotals);
+		},
+
+		async _loadCorpoCardsForEditItem(sReqId, sReqSubId) {
+			const aBaseCards = this._oReqModel.getProperty("/corpo_cards") || [];
+ 
+			if (!sReqId || !sReqSubId || aBaseCards.length === 0) {
+				return;
+			}
+ 
+			try {
+				const oListBinding = this._oDataModel.bindList(
+					"/ZREQ_ITEM_CCC_PART",
+					null,
+					null,
+					[
+						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
+						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "CARD_NO,STATEMENT_DUE_AMT,SERVICE_TAX,CASHBACK,MERCHANT_REFUND_AMT,MERCHANT_REFUND_ARR"
+					}
+				);
+ 
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const mPartsByCard = {};
+				aCtx.forEach((ctx) => {
+					const oPart = ctx.getObject();
+					mPartsByCard[oPart.CARD_NO] = oPart;
+				});
+ 
+				const aItemCards = aBaseCards.map((oCard) => {
+					const oPart = mPartsByCard[oCard.CARD_NO];
+					let aRefundArr = [];
+					if (oPart?.MERCHANT_REFUND_ARR) {
+						try {
+							aRefundArr = JSON.parse(oPart.MERCHANT_REFUND_ARR);
+						} catch (e) {
+							console.warn("Failed to parse MERCHANT_REFUND_ARR for card:", oCard.CARD_NO);
+						}
+					}
+ 
+					return {
+						...oCard,
+						current_balance: parseFloat(oPart?.STATEMENT_DUE_AMT) || 0,
+						service_tax: parseFloat(oPart?.SERVICE_TAX) || 0,
+						cashback: parseFloat(oPart?.CASHBACK) || 0,
+						merchant_refunds_total: parseFloat(oPart?.MERCHANT_REFUND_AMT) || 0,
+						merchant_refunds: aRefundArr,
+						merchant_refunds_array: JSON.stringify(aRefundArr)
+					};
+				});
+ 
+				this._oReqModel.setProperty("/corpo_cards", aItemCards);
+ 
+			} catch (e) {
+				console.error("Load corpo cards for edit item failed:", e);
+			}
 		},
 	});
 });

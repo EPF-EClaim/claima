@@ -423,7 +423,7 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                     ClaimType: 'Corporate Credit Card Advance',
                     TripStartDate: oRequest?.TRIP_START_DATE || null,
                     TripEndDate: oRequest?.TRIP_END_DATE || null,
-                    AdvanceAmount: fAdvanceAmount
+                    CardAdvanceAmt: fAdvanceAmount
                 });
  
                 console.log(`[CCC_ADVANCE_EMAIL] Advance notification sent for Request ${sRequestId} to cardholder ${oAdvance.CARDHOLDER_ID} (${oCardholder.EMAIL})`);
