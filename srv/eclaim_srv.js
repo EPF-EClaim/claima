@@ -3625,127 +3625,20 @@ module.exports = (srv) => {
         }
     });
 
-    function getFilterValue(where, fieldName) {
-        if (!where || !Array.isArray(where)) return null;
-        for (let i = 0; i < where.length; i++) {
-            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
-                if ((where[i + 1] === '=' || where[i + 1] === 'eq') && where[i + 2]) {
-                    return where[i + 2].val !== undefined ? where[i + 2].val : where[i + 2];
-                }
-            }
-            if (Array.isArray(where[i])) {
-                const val = getFilterValue(where[i], fieldName);
-                if (val) return val;
-            }
-        }
-        return null;
-    }
-    // Function to recursively strip out the virtual 'SELECTED_APPROVER' parameter
-    // so the database doesn't look for a non-existent database column.
-    function removeFilterField(where, fieldName) {
-        if (!where || !Array.isArray(where)) return;
-        for (let i = where.length - 1; i >= 0; i--) {
-            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
-                // Remove the field ref, the operator (=), and the value
-                where.splice(i, 3);
-                // Clean up trailing 'and' / 'or' operators left over around it
-                if (where[i] === 'and' || where[i] === 'or') where.splice(i, 1);
-                else if (i > 0 && (where[i - 1] === 'and' || where[i - 1] === 'or')) where.splice(i - 1, 1);
-            } else if (Array.isArray(where[i])) {
-                removeFilterField(where[i], fieldName);
-            }
-        }
-    }
-
     srv.before('READ', 'ZEMP_SUBSTITUTE_VH', async (req) => {
-        const oWhereClause = req.query && req.query.SELECT && req.query.SELECT.where;
-        let sSelectedApproverID = getFilterValue(oWhereClause, 'SELECTED_APPROVER') || getFilterValue(oWhereClause, 'USER_ID');
-        if (!sSelectedApproverID && req._ && req._.req && req._.req.query && req._.req.query.$filter) {
-            const sRawFilter = req._.req.query.$filter;
-            const oMatch = sRawFilter.match(/(?:SELECTED_APPROVER|USER_ID)\s+(?:eq|=)\s+['"]([^'"]+)['"]/);
-            if (oMatch) sSelectedApproverID = oMatch[1];
-        }
-        removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
-        removeFilterField(req.query.SELECT.where, 'USER_ID');
-        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
-            const oCurrentUser = await SELECT.one
+
+        // for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
                 .from('ZEMP_MASTER')
                 .where({ EMAIL: req.user.id });
-            // If we can find their department, apply it as a filter constraint
-            if (oCurrentUser && oCurrentUser.DEP) {
-                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
-                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                    req.query.SELECT.where = [
-                        '(', ...req.query.SELECT.where, ')',
-                        'and',
-                        ...oDeptFilter
-                    ];
-                } else {
-                    req.query.SELECT.where = oDeptFilter;
-                }
-            }
-            return;
-        }
-        const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
-        //commented out this one just in case later will need to filter by grade/department
-        if (oApproverData) {
-            //     let iCurrentSeq = 0;
-            //     if (oApproverData.GRADE) {
-            //         const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-            //             LOW_VALUE: oApproverData.GRADE,
-            //             VARIABLE_NAME: 'PERSONAL_GRADE'
-            //         });
-            //         if (oConfig && oConfig.SEQUENCE_NO) {
-            //             iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
-            //         }
-            //     }
 
-            //     // Fetch all grade strings that match or exceed the current sequence rank
-            //     const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
-            //         VARIABLE_NAME: 'PERSONAL_GRADE',
-            //         SEQUENCE_NO: { '>=': iCurrentSeq }
-            //     });
+            if (!oEmp || !oEmp.DEP) return;
 
-            //     const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
-
-            //     let oGradeFilter = [];
-            //     if (aAllowedGradeValues.length > 0) {
-            //         aAllowedGradeValues.forEach((sGrade, index) => {
-            //             oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
-            //             if (index < aAllowedGradeValues.length - 1) {
-            //                 oGradeFilter.push('or');
-            //             }
-            //         });
-            //         if (aAllowedGradeValues.length > 1) {
-            //             oGradeFilter = ['(', ...oGradeFilter, ')'];
-            //         }
-            //     } else {
-            //         oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
-            //     }
-
-            const oTargetFilters = [
-                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-                'and',
-                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-            ];
-
-            //     const oTargetFilters = [
-            //         { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-            //         'and',
-            //         ...oGradeFilter,
-            //         'and',
-            //         { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-            //     ];        
-
-            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                req.query.SELECT.where = [
-                    '(', ...req.query.SELECT.where, ')',
-                    'and',
-                    '(', ...oTargetFilters, ')'
-                ];
-            } else {
-                req.query.SELECT.where = oTargetFilters;
-            }
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
         }
     });
 
