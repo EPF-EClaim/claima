@@ -31,86 +31,86 @@ module.exports = (srv) => {
         }
     }),
 
-    srv.on('batchCreateCostCenter', async (req) => {
-        const { ZCOST_CENTER } = srv.entities;
-        try {
-            const { costcenters } = req.data;
-            if (!costcenters || costcenters.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(costcenters).into(ZCOST_CENTER)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('batchCreateDependent', async (req) => {
-        const { ZEMP_DEPENDENT } = srv.entities;
-        try {
-            const { dependents } = req.data;
-            if (!dependents || dependents.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(dependents).into(ZEMP_DEPENDENT)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('getUserType', async (req) => {
-        const tx = cds.tx(req);
-        const { ZDEPARTMENT } = srv.entities;
-        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-        let sOrigin = null;
-        try {
-            const authHeader = req.http?.req?.headers?.authorization ?? '';
-            const token = authHeader.split(' ')[1];
-            if (token) {
-                const oToken = JSON.parse(
-                    Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+        srv.on('batchCreateCostCenter', async (req) => {
+            const { ZCOST_CENTER } = srv.entities;
+            try {
+                const { costcenters } = req.data;
+                if (!costcenters || costcenters.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(costcenters).into(ZCOST_CENTER)
                 );
-                sOrigin = oToken.origin;
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
             }
-        } catch (e) {
-            console.log("Token parsing failed:", e.message);
-        }
+        }),
 
-        const oRoles = {
-            isClaimant: req.user.is('Claimant'),
-            isApprover: req.user.is('Approver'),
-            isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-            isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-            isAdminCC: req.user.is(Constant.Admin.Admin_CC)
-        };
+        srv.on('batchCreateDependent', async (req) => {
+            const { ZEMP_DEPENDENT } = srv.entities;
+            try {
+                const { dependents } = req.data;
+                if (!dependents || dependents.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(dependents).into(ZEMP_DEPENDENT)
+                );
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
+            }
+        }),
 
-        let sDeptDesc = "UNKNOWN";
-        if (oEmp.DEP) {
-            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
-            sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
-        }
+        srv.on('getUserType', async (req) => {
+            const tx = cds.tx(req);
+            const { ZDEPARTMENT } = srv.entities;
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        return {
-            id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
-            userType: oEmp.USER_TYPE || "UNKNOWN",
-            costcenters: oEmp.CC || "UNKNOWN",
-            userId: oEmp.EEID || "UNKNOWN",
-            name: oEmp.NAME || "UNKNOWN",
-            position: oEmp.POSITION_NAME || "UNKNOWN",
-            origin: sOrigin,
-            grade: oEmp.GRADE || "UNKNOWN",
-            department: sDeptDesc,
-            roles: oRoles
-        };
-    });
+            let sOrigin = null;
+            try {
+                const authHeader = req.http?.req?.headers?.authorization ?? '';
+                const token = authHeader.split(' ')[1];
+                if (token) {
+                    const oToken = JSON.parse(
+                        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+                    );
+                    sOrigin = oToken.origin;
+                }
+            } catch (e) {
+                console.log("Token parsing failed:", e.message);
+            }
+
+            const oRoles = {
+                isClaimant: req.user.is('Claimant'),
+                isApprover: req.user.is('Approver'),
+                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+            };
+
+            let sDeptDesc = "UNKNOWN";
+            if (oEmp.DEP) {
+                const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
+                sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+            }
+
+            return {
+                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
+                userType: oEmp.USER_TYPE || "UNKNOWN",
+                costcenters: oEmp.CC || "UNKNOWN",
+                userId: oEmp.EEID || "UNKNOWN",
+                name: oEmp.NAME || "UNKNOWN",
+                position: oEmp.POSITION_NAME || "UNKNOWN",
+                origin: sOrigin,
+                grade: oEmp.GRADE || "UNKNOWN",
+                department: sDeptDesc,
+                roles: oRoles
+            };
+        });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -1726,7 +1726,7 @@ module.exports = (srv) => {
      */
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
-        const sUserEmail = 
+        const sUserEmail =
             req.user?.attr?.email ||
             req.user?.attr?.mail ||
             req.user?.attr?.user_name ||
@@ -3136,7 +3136,7 @@ module.exports = (srv) => {
             const oEmployeeMap = {};
             aEmployees.forEach(oEmp => {
                 oEmployeeMap[oEmp.EEID] = oEmp.NAME;
-            });            
+            });
 
             const aUpdatePromises = aPayloads.map(async (oItem) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID, REQUEST_DATE } = oItem;
@@ -4593,8 +4593,9 @@ module.exports = (srv) => {
         console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
         try {
             const currentYear = new Date().getFullYear().toString(); // confirm when the job will be run???
-            const iTotalUpdated = await cds.tx(async (tx) => {
-                // 1. Fetch records that need to be reset
+
+            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => {
+                // Fetch records that need to be reset
                 const aEntitlementRecords = await tx.run(
                     SELECT.from(ZEMP_MASTER)
                         .columns(
@@ -4608,22 +4609,31 @@ module.exports = (srv) => {
                             }
                         })
                 );
-                // If no records need to be reset, exit early
-                if (!aEntitlementRecords || aEntitlementRecords.length === 0) {
-                    return 0;
-                }
-                // 2. Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
-                const aHistoryEntries = aEntitlementRecords.map(item => ({
+
+                // Keep all
+                const aAllEmployees = await tx.run(
+                    SELECT.from(ZEMP_MASTER).columns(
+                        Constant.EntitiesFields.EEID,
+                        Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    )
+                );
+
+                // Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
+                const aHistoryEntries = aAllEmployees.map(item => ({
                     YEAR: currentYear,
                     EMP_ID: item[Constant.EntitiesFields.EEID],
                     MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
                 }));
-                // 3. UPSERT history records (Inserts new entries or updates existing ones for current year)
+
+                const iHistoryCount = aHistoryEntries.length;
+
+                // UPSERT history records (Inserts new entries or updates existing ones for current year)
                 await tx.run(
                     UPSERT.into(ZEMP_MEDICAL_ENT_HISTORY).entries(aHistoryEntries)
                 );
-                // 4. Perform the mass update to reset entitlement
-                const updateCount = await tx.run(
+
+                // Perform the mass update to reset entitlement
+                const iUpdateCount = await tx.run(
                     UPDATE(ZEMP_MASTER)
                         .set({
                             [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: 0
@@ -4635,10 +4645,13 @@ module.exports = (srv) => {
                             }
                         })
                 );
-                return updateCount;
+                return {
+                    iUpdateCount,
+                    iHistoryCount
+                };
             });
-            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iTotalUpdated}`);
-            return `Successfully archived and reset medical entitlement for ${iTotalUpdated} records.`;
+            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
+            return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
         } catch (error) {
             console.error(
                 '[JOB ERROR] Annual entitlement reset failed:', error
@@ -4710,17 +4723,17 @@ module.exports = (srv) => {
             const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
 
             if (!entityName) {
-                throw new Error ('Entity name parameter is missing')
+                throw new Error('Entity name parameter is missing')
             }
 
             if (!data || data.length === 0) {
-                throw new Error ('No data sent');
+                throw new Error('No data sent');
             }
 
             if (!sTargetEntity) {
-                throw new Error (`Entity '${entityName}' not found in service`);
+                throw new Error(`Entity '${entityName}' not found in service`);
             }
-            
+
             await tx.run(
                 UPSERT(oRecords).into(sTargetEntity)
             );
