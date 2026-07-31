@@ -7,7 +7,10 @@ sap.ui.define([
   "use strict";
 
   // ---- Pure helpers (no UI) ----
-  function _mapHeader(oData) {
+ function _mapHeader(oData) {
+    const bIsCorpoCC = oData.CLAIM_TYPE_ID === Constants.ClaimType.CORPO_CRED_CARD;
+    const fReqAmt = Number(oData.PREAPPROVAL_AMOUNT) || 0;
+ 
     return {
       purpose        : oData.OBJECTIVE_PURPOSE      || "",
       reqtype        : oData.REQUEST_TYPE_DESC      || "",
@@ -31,7 +34,7 @@ sap.ui.define([
       reqstatus_id   : oData.STATUS_ID              || "",
       costcenter     : oData.COST_CENTER            || "",
       cashadvamt     : oData.CASH_ADVANCE           || 0,
-      reqamt         : oData.PREAPPROVAL_AMOUNT     || 0,
+      reqamt         : (bIsCorpoCC && fReqAmt < 0) ? 0 : fReqAmt,
       claimtype      : oData.CLAIM_TYPE_ID          || "",
       claimtypedesc  : oData.CLAIM_TYPE_DESC        || "",
       reqdate        : oData.REQUEST_DATE

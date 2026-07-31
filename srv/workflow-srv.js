@@ -206,12 +206,17 @@ module.exports = (srv) => {
                 console.log("Final approval Start");
                 const oSendClaimBatch = await sendClaimBatch(sId);
                 console.log("Final Approval: ", oSendClaimBatch);
-
+            
                 try {
                     await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
                 } catch (oAdvErr) {
                     console.error("Failed to update corpo card advance:", oAdvErr);
                     throw new Error('Error encountered during Corporate Card Advance update');
+                }
+            
+                // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
+                if (sAction === Constant.Status.APPROVED && sId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
+                    await notifyCardholdersOfRequestApproval(oTx, sId);
                 }
             }
             // for non final approve

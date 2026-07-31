@@ -625,7 +625,13 @@ module.exports = (srv) => {
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-
+    
+        const oHeaderResult = await tx.run(
+            SELECT.one.from('ZREQUEST_HEADER')
+                .where({ REQUEST_ID: sRequestId })
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+        );
+    
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -634,10 +640,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-
-        const totalEstAmount = result.TotalEstAmount || 0;
+    
+        let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-
+    
+        const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        if (bIsCorpoCC && totalEstAmount < 0) {
+            totalEstAmount = 0;
+        }
+    
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -4480,78 +4491,6 @@ module.exports = (srv) => {
 
         } catch (error) {
             req.error(500, `Failed to retrieve GL Account: ${error.message}`);
-        }
-    });
-
-    async function notifyCardholderOfAdvance(data, req, sEventType) {
-        try {
-            const advanceAmount = Number(data.MONTHLY_ADVANCED_AMT);
-            if (!(advanceAmount > 0)) {
-                return; // no advance amount in this payload, or it's zero/negative
-            }
-    
-            const tx = cds.tx(req);
-            const sCardholderId = data.CARDHOLDER_ID;
-            if (!sCardholderId) {
-                console.warn(`[CCC_ADVANCE_EMAIL] Missing CARDHOLDER_ID on Card ${data.CARD_NO}, skipping notification`);
-                return;
-            }
-    
-            const oCardholder = await tx.run(
-                SELECT.one.from(Constant.Entities.ZEMP_MASTER)
-                    .where({ EEID: String(sCardholderId) })
-                    .columns('EEID', 'NAME', 'EMAIL')
-            );
-    
-            if (!oCardholder || !oCardholder.EMAIL) {
-                console.warn(`[CCC_ADVANCE_EMAIL] No email found for cardholder ${sCardholderId}, skipping notification for Card ${data.CARD_NO}`);
-                return;
-            }
-    
-            await sendEmailInternal({
-                ApproverName: oCardholder.NAME,
-                ClaimID: data.CARD_NO,
-                Action: Constant.ApprovalEmailAction.ACTION_NOTIFY,
-                EmailTitle: `Corporate Credit Card Advance Updated: ${data.CARD_NO}`,
-                ReceiverEmail: oCardholder.EMAIL,
-                SubmissionDate: new Date().toISOString().split('T')[0],
-                ClaimantName: oCardholder.NAME,
-                RecipientName: oCardholder.NAME,
-                ClaimType: 'Corporate Credit Card Advance'
-            });
-    
-            console.log(`[CCC_ADVANCE_EMAIL] Advance notification (${sEventType}) sent for Card ${data.CARD_NO} to cardholder ${sCardholderId} (${oCardholder.EMAIL})`);
-    
-        } catch (oError) {
-            console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification (${sEventType}) for Card ${data.CARD_NO}`, oError);
-            try {
-                await cds.tx(req).run(
-                    INSERT.into(Constant.Entities.ZLOG).entries({
-                        TIMESTAMP: new Date(),
-                        RECORD_ID: String(data.CARD_NO || '').slice(0, 20),
-                        PROGRAM: 'CCC_ADVANCE_EMAIL',
-                        MESSAGE_TYPE: 'W',
-                        STATUS_CODE: String(oError?.status || oError?.statusCode || oError?.code || "500"),
-                        MESSAGE: oError?.message || "No Message"
-                    })
-                );
-            } catch (oLogError) {
-                console.error('[CCC_ADVANCE_EMAIL] Failed to write background log', oLogError);
-            }
-        }
-    }
- 
-    srv.after('CREATE', 'ZCORPORATE_CARD_ADVANCED', async (data, req) => {
-        const aRows = Array.isArray(data) ? data : [data];
-        for (const oRow of aRows) {
-            await notifyCardholderOfAdvance(oRow, req, 'CREATE');
-        }
-    });
-    
-    srv.after('UPDATE', 'ZCORPORATE_CARD_ADVANCED', async (data, req) => {
-        const aRows = Array.isArray(data) ? data : [data];
-        for (const oRow of aRows) {
-            await notifyCardholderOfAdvance(oRow, req, 'UPDATE');
         }
     });
 

@@ -369,10 +369,94 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bI
     return true;
 }
 
+async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
+    try {
+        const oRequest = await oTx.run(
+            SELECT.one.from('ZREQUEST_HEADER')
+                .where({ REQUEST_ID: sRequestId })
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID', 'TRIP_START_DATE', 'TRIP_END_DATE')
+        );
+ 
+        if (!oRequest || String(oRequest.REQUEST_TYPE_ID) !== String(Constant.RequestType.CORP_CC)) {
+            return; // not a Corporate Credit Card request - nothing to notify
+        }
+ 
+        const aItemParts = await oTx.run(
+            SELECT.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sRequestId })
+        );
+ 
+        if (!aItemParts || aItemParts.length === 0) return;
+ 
+        const aCardNos = [...new Set(aItemParts.map((oPart) => oPart.CARD_NO).filter(Boolean))];
+        if (aCardNos.length === 0) return;
+ 
+        const aAdvances = await oTx.run(
+            SELECT.from('ZCORPORATE_CARD_ADVANCED')
+                .where({ CARD_NO: aCardNos })
+        );
+ 
+        for (const oAdvance of aAdvances) {
+            const fAdvanceAmount = Number(oAdvance.MONTHLY_ADVANCED_AMT) || 0;
+            if (fAdvanceAmount <= 0) continue;
+ 
+            const oCardholder = await oTx.run(
+                SELECT.one.from(Constant.Entities.ZEMP_MASTER)
+                    .where({ EEID: String(oAdvance.CARDHOLDER_ID) })
+                    .columns('EEID', 'NAME', 'EMAIL')
+            );
+ 
+            if (!oCardholder || !oCardholder.EMAIL) {
+                console.warn(`[CCC_ADVANCE_EMAIL] No email found for cardholder ${oAdvance.CARDHOLDER_ID}, skipping notification for Card ${oAdvance.CARD_NO}`);
+                continue;
+            }
+ 
+            try {
+                await sendEmailInternal({
+                    ApproverName: oCardholder.NAME,
+                    ClaimID: oAdvance.CARD_NO,
+                    Action: Constant.ApprovalEmailAction.ACTION_NOTIFY,
+                    EmailTitle: `Corporate Credit Card Advance Approved: ${sRequestId}`,
+                    ReceiverEmail: oCardholder.EMAIL,
+                    SubmissionDate: new Date().toISOString().split('T')[0],
+                    ClaimantName: oCardholder.NAME,
+                    RecipientName: oCardholder.NAME,
+                    ClaimType: 'Corporate Credit Card Advance',
+                    TripStartDate: oRequest?.TRIP_START_DATE || null,
+                    TripEndDate: oRequest?.TRIP_END_DATE || null,
+                    AdvanceAmount: fAdvanceAmount
+                });
+ 
+                console.log(`[CCC_ADVANCE_EMAIL] Advance notification sent for Request ${sRequestId} to cardholder ${oAdvance.CARDHOLDER_ID} (${oCardholder.EMAIL})`);
+ 
+            } catch (oEmailError) {
+                console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification for Request ${sRequestId}, cardholder ${oAdvance.CARDHOLDER_ID}`, oEmailError);
+                try {
+                    await oTx.run(
+                        INSERT.into(Constant.Entities.ZLOG).entries({
+                            TIMESTAMP: new Date(),
+                            RECORD_ID: String(sRequestId || '').slice(0, 20),
+                            PROGRAM: 'CCC_ADVANCE_EMAIL',
+                            MESSAGE_TYPE: 'W',
+                            STATUS_CODE: String(oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || "500"),
+                            MESSAGE: oEmailError?.message || "No Message"
+                        })
+                    );
+                } catch (oLogError) {
+                    console.error('[CCC_ADVANCE_EMAIL] Failed to write background log', oLogError);
+                }
+            }
+        }
+ 
+    } catch (oError) {
+        console.error(`[CCC_ADVANCE_EMAIL] Failed processing cardholder advance notifications for Request ${sRequestId}`, oError);
+    }
+}
+
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
     determineLastApproverLevel,
     resolveActionDescriptor,
-    updateCorpoCardAdvance
+    updateCorpoCardAdvance,
+    notifyCardholdersOfRequestApproval
 };

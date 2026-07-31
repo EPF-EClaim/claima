@@ -662,6 +662,17 @@ sap.ui.define([
 				}];
 			}else if(this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD){
 				await this._setParticipantsForCC();
+				
+				const aResetCards = (oReqData.corpo_cards || []).map((oCard) => ({
+					...oCard,
+					current_balance: 0,
+					service_tax: 0,
+					cashback: 0,
+					merchant_refunds_total: 0,
+					merchant_refunds: [],
+					merchant_refunds_array: "[]"
+				}));
+				oReqData.corpo_cards = aResetCards;
 			} else {
 				oReqData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
 			}
@@ -976,11 +987,15 @@ sap.ui.define([
 				}, { fReqTotal: 0, fCashTotal: 0 });
 
 				const oRound2 = (n) => Math.round(n * 100) / 100;
-
+ 
 				const oHeader = this._oReqModel.getProperty("/req_header") || {};
-				oHeader.reqamt = oRound2(oTotals.fReqTotal);
+				var sClaimTypeId = this._oReqModel.getProperty('/req_header/claimtype');
+				var bIsCorpoCC = String(sClaimTypeId) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
+				
+				var fReqAmt = oRound2(oTotals.fReqTotal);
+				oHeader.reqamt = (bIsCorpoCC && fReqAmt < 0) ? 0 : fReqAmt;
 				oHeader.cashadvamt = oRound2(oTotals.fCashTotal);
-
+				
 				this._oReqModel.setProperty("/req_header", oHeader);
 				oTable.clearSelection();
 
@@ -3347,7 +3362,13 @@ sap.ui.define([
 			});
 
 			oTotals.payment_due = oTotals.current_balance + oTotals.cashback;
-
+ 
+			var sClaimTypeId = this._oReqModel.getProperty('/req_header/claimtype');
+			var bIsCorpoCC = String(sClaimTypeId) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
+			if (bIsCorpoCC && oTotals.payment_due < 0) {
+				oTotals.payment_due = 0;
+			}
+			
 			Object.keys(oTotals).forEach((k) => {
 				oTotals[k] = oTotals[k].toFixed(2);
 			});
