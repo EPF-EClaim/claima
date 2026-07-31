@@ -1427,6 +1427,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
      entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
+     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+
+     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
+
      
     entity ZLATEST_LOG                   as
         select from ECLAIM.ZLOG {
