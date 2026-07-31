@@ -1518,8 +1518,7 @@ sap.ui.define([
 
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
-			//this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
-			this._applyReqTypeFilters("JKEW Admin");
+			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
 			this._openAndPreload(this._oDialogFragment);
 		},
 
