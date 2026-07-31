@@ -217,6 +217,11 @@ async function getApproversDetails(sId, oDescriptor) {
     return aApproversDetails;
 
 }
+
+async function setLog (oTx, oEntity) {
+    
+}
+
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
