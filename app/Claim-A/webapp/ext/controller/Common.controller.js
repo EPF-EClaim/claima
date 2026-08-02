@@ -117,6 +117,18 @@ sap.ui.define([
 					}, 400);
 				}, 800);
 			}
+
+			if (sRouteName === "ZEMP_PENDING_LIST") {
+
+				this._reportTimer = setTimeout(() => {
+					if (currentToken !== this._navToken) return;
+
+					const oTable = fnGetInnerTable();
+					if (!oTable) return;
+
+					this._attachItemPressOnce(oTable, this._onPendingListRowPress);
+				}, 800);
+			}
 		},
 
 		/* ==============================
@@ -195,6 +207,23 @@ sap.ui.define([
 
 			this.base.getAppComponent().getRouter().navTo("ClaimSubmission", {
 				claim_id: encodeURIComponent(String(oData.CLAIM_ID))
+			});
+		},
+
+		_onPendingListRowPress: function (oEvent) {
+
+			const oItem = oEvent.getParameter("listItem");
+			if (!oItem) return;
+
+			const oContext = oItem.getBindingContext();
+			if (!oContext) return;
+
+			sap.ui.require([
+				"claima/ext/controller/ApproverPopup"
+			], function (ApproverPopup) {
+
+				ApproverPopup.onClickChangeApprover([oContext]);
+
 			});
 		}
 

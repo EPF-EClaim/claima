@@ -259,6 +259,7 @@ sap.ui.define([
 				}
 				const oOwnerDetail = await this._getFormFragment("claimant_detail");
 				await this._replaceContentAt(oPage, 0, oOwnerDetail);
+				await ApprovalLog.getApprovalLogHistory(this._oApprovalLogModel, this._oDataModel, sReqId);
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 3, oApproval);
 			} else {
