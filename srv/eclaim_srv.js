@@ -4577,7 +4577,7 @@ module.exports = (srv) => {
         let aResult = [];
 
         const aRequest = await tx.run(
-            SELECT.from(ZEMP_APPROVER_REQUEST_DETAILS)
+            SELECT.from(ZEMP_APPROVED_PREAPPROVAL)
                 .where('LAST_APPROVED_DATE <=', sBaselineDate)
         );
 

@@ -14,7 +14,7 @@ module.exports = {
         let sHeaderField;
         let sHeaderTable;
         let sAmountField;
-        let sItemTable;        
+        let sItemTable;
 
         bIsClaim = false;
 
@@ -63,7 +63,12 @@ module.exports = {
 
         if (bIsClaim) {
             const iCashAdvanceAmount = Number(oHeader?.[Constant.EntitiesFields.CASH_ADVANCE_AMOUNT] || 0);
-            const iTotalClaimAmount = Number(oHeader?.[Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT] || 0);
+            let iTotalClaimAmount = Number(oHeader?.[Constant.EntitiesFields.TOTAL_CLAIM_AMOUNT] || 0);
+
+            //if there is repayment, minus from the total claim
+            if (iTotalCashRepayment !== 0) {
+                iTotalClaimAmount -= iTotalCashRepayment;
+            }
 
             if (iCashAdvanceAmount < iTotalClaimAmount) {
                 iAdjustmentAmount = iTotalClaimAmount - iCashAdvanceAmount;
@@ -77,7 +82,7 @@ module.exports = {
         const oEmpMaster = await tx.run(
             SELECT.one
                 .from(Constant.Entities.ZEMP_MASTER)
-                .where({ EEID : sEmpId })
+                .where({ EEID: sEmpId })
         );
 
         if (!oEmpMaster) {
@@ -89,9 +94,9 @@ module.exports = {
         let iNewAmount = iCurrentUtilizedAmount;
 
         if (sStatus === Constant.Status.PENDING_APPROVAL) {
-            iNewAmount = Math.max( 0, iCurrentUtilizedAmount + iAdjustmentAmount );
-        } else if ( sStatus === Constant.Status.REJECTED || sStatus === Constant.Status.PUSH_BACK ) {
-            iNewAmount = Math.max( 0, iCurrentUtilizedAmount - iAdjustmentAmount );
+            iNewAmount = Math.max(0, iCurrentUtilizedAmount + iAdjustmentAmount);
+        } else if (sStatus === Constant.Status.REJECTED || sStatus === Constant.Status.PUSH_BACK) {
+            iNewAmount = Math.max(0, iCurrentUtilizedAmount - iAdjustmentAmount);
         } else {
             return;
         }

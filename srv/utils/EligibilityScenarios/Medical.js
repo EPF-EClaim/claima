@@ -16,6 +16,11 @@ module.exports = {
     onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
         var oRule;
 
+        // Skip eligibility check for Cash Repay
+        if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.CASH_REPAY) {
+            return oPayload;
+        }
+
         //Filter rules based on claimant's employee type
         const bHasSpecificRole = aRules.some(
             rule => rule.ROLE_ID === oEmp.ROLE
