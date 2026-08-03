@@ -8,7 +8,8 @@ xmlns:table2="sap.ui.mdc.table"
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
     xmlns:table="sap.ui.table"
-    xmlns:mdc="sap.ui.mdc" >
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:rowmodes="sap.ui.table.rowmodes" >
     <VBox 
         id="req_approval_log" 
         backgroundDesign="Solid"
@@ -27,6 +28,9 @@ xmlns:table2="sap.ui.mdc.table"
                 selectionMode="None"
                 ariaLabelledBy="title"
                 width="auto">
+                <table:rowMode>
+                    <rowmodes:Fixed rowCount="5" />
+                </table:rowMode>
                 <table:Column  width="5rem">
                     <Label text="{i18n>appr_level}"></Label>
                     <table:template>
@@ -64,6 +68,20 @@ xmlns:table2="sap.ui.mdc.table"
                     </table:template>
                 </table:Column>
             </table:Table>
+        </VBox>
+        <VBox
+            visible="{= !!${approval_log>/historyText}}">
+            <OverflowToolbar style="Clear">
+                <Title text="{i18n>appr_history_title}"/>
+            </OverflowToolbar>
+
+            <TextArea
+                value="{approval_log>/historyText}"
+                rows="6"
+                width="100%"
+                enabled="false"
+                growing="true"
+                class="sapUiSmallMarginTop"/>
         </VBox>
     </VBox>
 </core:FragmentDefinition>
