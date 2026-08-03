@@ -1423,11 +1423,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
-     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+    action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
     function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
 
-     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+
+    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
 
      entity ZPOSITION as projection on ECLAIM.ZPOSITION;
 

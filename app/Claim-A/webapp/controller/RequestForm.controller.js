@@ -347,6 +347,7 @@ sap.ui.define([
 						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
 					}
 				}
+				await ApprovalLog.getApprovalLogHistory(this._oApprovalLogModel, this._oDataModel, sReqId);
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
 			} else {
