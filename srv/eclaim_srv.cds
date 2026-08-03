@@ -597,56 +597,55 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    view ZAPPROVER_REQUEST_PIVOT as
+     entity ZAPPROVER_REQUEST_PIVOT as
         select from ZEMP_APPROVER_REQUEST_DETAILS {
             key PREAPPROVAL_ID,
 
             max(case when LEVEL = 1 then APPROVER_ID end)       as APPROVER1      : String,
             max(case when LEVEL = 1 then APPROVER_NAME end)     as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end) as APPROVER1_TS   : Timestamp,
+            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end) as APPROVER1_TS   : String,
 
             max(case when LEVEL = 2 then APPROVER_ID end)       as APPROVER2      : String,
             max(case when LEVEL = 2 then APPROVER_NAME end)     as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end) as APPROVER2_TS   : Timestamp,
+            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end) as APPROVER2_TS   : String,
 
             max(case when LEVEL = 3 then APPROVER_ID end)       as APPROVER3      : String,
             max(case when LEVEL = 3 then APPROVER_NAME end)     as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end) as APPROVER3_TS   : Timestamp,
+            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end) as APPROVER3_TS   : String,
 
             max(case when LEVEL = 4 then APPROVER_ID end)       as APPROVER4      : String,
             max(case when LEVEL = 4 then APPROVER_NAME end)     as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end) as APPROVER4_TS   : Timestamp,
+            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end) as APPROVER4_TS   : String,
 
             max(case when LEVEL = 5 then APPROVER_ID end)       as APPROVER5      : String,
             max(case when LEVEL = 5 then APPROVER_NAME end)     as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end) as APPROVER5_TS   : Timestamp
+            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end) as APPROVER5_TS   : String
         }
         group by PREAPPROVAL_ID;
 
-
-    view ZAPPROVER_CLAIM_PIVOT as
+    entity ZAPPROVER_CLAIM_PIVOT as
         select from ZEMP_APPROVER_CLAIM_DETAILS {
             key CLAIM_ID,
 
             max(case when LEVEL = 1 then APPROVER_ID end)        as APPROVER1      : String,
             max(case when LEVEL = 1 then APPROVER_NAME end)      as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end)  as APPROVER1_TS   : Timestamp,
+            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end)  as APPROVER1_TS   : String,
 
             max(case when LEVEL = 2 then APPROVER_ID end)        as APPROVER2      : String,
             max(case when LEVEL = 2 then APPROVER_NAME end)      as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end)  as APPROVER2_TS   : Timestamp,
+            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end)  as APPROVER2_TS   : String,
 
             max(case when LEVEL = 3 then APPROVER_ID end)        as APPROVER3      : String,
             max(case when LEVEL = 3 then APPROVER_NAME end)      as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end)  as APPROVER3_TS   : Timestamp,
+            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end)  as APPROVER3_TS   : String,
 
             max(case when LEVEL = 4 then APPROVER_ID end)        as APPROVER4      : String,
             max(case when LEVEL = 4 then APPROVER_NAME end)      as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end)  as APPROVER4_TS   : Timestamp,
+            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end)  as APPROVER4_TS   : String,
 
             max(case when LEVEL = 5 then APPROVER_ID end)        as APPROVER5      : String,
             max(case when LEVEL = 5 then APPROVER_NAME end)      as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end)  as APPROVER5_TS   : Timestamp
+            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end)  as APPROVER5_TS   : String
         }
         group by CLAIM_ID;
 
@@ -1426,15 +1425,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
-    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
-
-    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
-
-     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
-
-     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
-
-     
     action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
