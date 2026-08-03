@@ -1519,6 +1519,7 @@ sap.ui.define([
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			//this._applyReqTypeFilters(this._oConstant.Role.JKEW_ADMIN);
 			this._openAndPreload(this._oDialogFragment);
 		},
 
@@ -1746,7 +1747,7 @@ sap.ui.define([
 				);
 			}
 
-			if (sUserType !== this._oConstant.Role.JKEW_ADMIN) {
+			if (sUserType !== this._oConstant.Role.JKEW_ADMIN && sUserType !== this._oConstant.Role.CCC_ADMIN) {
 				aFilters.push(
 					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC)
 				);

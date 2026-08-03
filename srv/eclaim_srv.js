@@ -88,7 +88,8 @@ module.exports = (srv) => {
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC),
+                isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
 
             let sDeptDesc = "UNKNOWN";
@@ -1744,11 +1745,7 @@ module.exports = (srv) => {
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
         const sUserEmail =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id;
+            "dick.soon.yong@my.ey.com"
 
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");

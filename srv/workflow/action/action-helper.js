@@ -4,6 +4,7 @@ const { Constant } = require("../../utils/constant");
 const { constants } = require('@sap/xssec');
 const { fn } = cds;
 const { sendFinalApproveLog } = require("../determination/determination-helper");
+const { sendEmailInternal } = require("../../utils/EmailHelper");
 
 
 const aApproverActions = {
@@ -302,6 +303,7 @@ async function _resolveCardNoForEmployees(oTx, mAmountByEmp) {
 }
 
 async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bIsCommit) {
+    console.log("Starintg apply corpo card advance");
     const aCards = await oTx.run(
         SELECT.from('ZCORPORATE_CARD')
             .where({ CARD_NO: Object.keys(mAmountByCard) })
@@ -364,12 +366,15 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bI
                 })
             );
         }
+
+        console.log("Completed apply corpo card advance");
     }
 
     return true;
 }
 
 async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
+    console.log("Starintg apply cardholder email");
     try {
         const oRequest = await oTx.run(
             SELECT.one.from('ZREQUEST_HEADER')
@@ -387,35 +392,74 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
  
         if (!aItemParts || aItemParts.length === 0) return;
  
-        const aCardNos = [...new Set(aItemParts.map((oPart) => oPart.CARD_NO).filter(Boolean))];
-        if (aCardNos.length === 0) return;
+        // Sum THIS request's own amounts per card - Advance Amount = Current
+        // Balance (STATEMENT_DUE_AMT) - Service Tax - Merchant Refund - rather
+        // than reading the persisted running balance off ZCORPORATE_CARD_ADVANCED.
+        const mTotalsByCard = {};
+        aItemParts.forEach((oPart) => {
+            const sCardNo = oPart.CARD_NO;
+            if (!mTotalsByCard[sCardNo]) {
+                mTotalsByCard[sCardNo] = { currentBalance: 0, serviceTax: 0, merchantRefund: 0 };
+            }
+            mTotalsByCard[sCardNo].currentBalance += Number(oPart.STATEMENT_DUE_AMT) || 0;
+            mTotalsByCard[sCardNo].serviceTax += Number(oPart.SERVICE_TAX) || 0;
+            mTotalsByCard[sCardNo].merchantRefund += Number(oPart.MERCHANT_REFUND_AMT) || 0;
+        });
  
-        const aAdvances = await oTx.run(
-            SELECT.from('ZCORPORATE_CARD_ADVANCED')
-                .where({ CARD_NO: aCardNos })
+        const aCardNos = Object.keys(mTotalsByCard);
+        if (aCardNos.length === 0) return;
+        console.log("aCardNos", aCardNos);
+ 
+        // Resolve cardholder(s) for each card from ZCORPORATE_CARD (a card can
+        // have more than one cardholder - e.g. principal + supplementary)
+        const aCardholderRows = await oTx.run(
+            SELECT.from('ZCORPORATE_CARD')
+                .where({ CARD_NO: { in: aCardNos } })
+                .columns('CARD_NO', 'CARDHOLDER_ID')
         );
  
-        for (const oAdvance of aAdvances) {
-            const fAdvanceAmount = Number(oAdvance.MONTHLY_ADVANCED_AMT) || 0;
-            if (fAdvanceAmount <= 0) continue;
+        console.log("aCardholderRows", aCardholderRows);
+ 
+        const aFoundCardNos = new Set(aCardholderRows.map((oRow) => oRow.CARD_NO));
+        aCardNos.forEach((sCardNo) => {
+            if (!aFoundCardNos.has(sCardNo)) {
+                console.warn(`[CCC_ADVANCE_EMAIL] Card ${sCardNo} has no matching row in ZCORPORATE_CARD, no cardholder to notify`);
+            }
+        });
+ 
+        for (const oCardRow of aCardholderRows) {
+            const oTotals = mTotalsByCard[oCardRow.CARD_NO];
+            if (!oTotals) {
+                console.log(`[CCC_ADVANCE_EMAIL] No item totals found for Card ${oCardRow.CARD_NO}, skipping`);
+                continue;
+            }
+ 
+            const fAdvanceAmount = oTotals.currentBalance - oTotals.serviceTax - oTotals.merchantRefund;
+            console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} / Cardholder ${oCardRow.CARDHOLDER_ID}: currentBalance=${oTotals.currentBalance} serviceTax=${oTotals.serviceTax} merchantRefund=${oTotals.merchantRefund} -> fAdvanceAmount=${fAdvanceAmount}`);
+ 
+            // Only notify when THIS request's own advance amount is positive
+            if (!(fAdvanceAmount > 0)) {
+                console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} advance amount ${fAdvanceAmount} is not positive, skipping notification`);
+                continue;
+            }
  
             const oCardholder = await oTx.run(
                 SELECT.one.from(Constant.Entities.ZEMP_MASTER)
-                    .where({ EEID: String(oAdvance.CARDHOLDER_ID) })
+                    .where({ EEID: String(oCardRow.CARDHOLDER_ID) })
                     .columns('EEID', 'NAME', 'EMAIL')
             );
  
             if (!oCardholder || !oCardholder.EMAIL) {
-                console.warn(`[CCC_ADVANCE_EMAIL] No email found for cardholder ${oAdvance.CARDHOLDER_ID}, skipping notification for Card ${oAdvance.CARD_NO}`);
+                console.warn(`[CCC_ADVANCE_EMAIL] No email found for cardholder ${oCardRow.CARDHOLDER_ID}, skipping notification for Card ${oCardRow.CARD_NO}`);
                 continue;
             }
  
             try {
-                await sendEmailInternal({
+                const oEmailPayload = {
                     ApproverName: oCardholder.NAME,
-                    ClaimID: oAdvance.CARD_NO,
+                    ClaimID: sRequestId,
                     Action: Constant.ApprovalEmailAction.ACTION_NOTIFY,
-                    EmailTitle: `Corporate Credit Card Advance Approved: ${sRequestId}`,
+                    EmailTitle: `Corporate Credit Card Settlement - Submission of Claims`,
                     ReceiverEmail: oCardholder.EMAIL,
                     SubmissionDate: new Date().toISOString().split('T')[0],
                     ClaimantName: oCardholder.NAME,
@@ -423,13 +467,17 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                     ClaimType: 'Corporate Credit Card Advance',
                     TripStartDate: oRequest?.TRIP_START_DATE || null,
                     TripEndDate: oRequest?.TRIP_END_DATE || null,
-                    CardAdvanceAmt: fAdvanceAmount
-                });
+                    CardAdvanceAmt: String(fAdvanceAmount)
+                };
  
-                console.log(`[CCC_ADVANCE_EMAIL] Advance notification sent for Request ${sRequestId} to cardholder ${oAdvance.CARDHOLDER_ID} (${oCardholder.EMAIL})`);
+                console.log(`[CCC_ADVANCE_EMAIL] Email payload for cardholder ${oCardRow.CARDHOLDER_ID}:`, oEmailPayload);
+ 
+                await sendEmailInternal(oEmailPayload);
+ 
+                console.log(`[CCC_ADVANCE_EMAIL] Advance notification sent for Request ${sRequestId} to cardholder ${oCardRow.CARDHOLDER_ID} (${oCardholder.EMAIL})`);
  
             } catch (oEmailError) {
-                console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification for Request ${sRequestId}, cardholder ${oAdvance.CARDHOLDER_ID}`, oEmailError);
+                console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification for Request ${sRequestId}, cardholder ${oCardRow.CARDHOLDER_ID}`, oEmailError);
                 try {
                     await oTx.run(
                         INSERT.into(Constant.Entities.ZLOG).entries({
@@ -445,11 +493,95 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                     console.error('[CCC_ADVANCE_EMAIL] Failed to write background log', oLogError);
                 }
             }
+            console.log("Completed cardholder email");
         }
  
     } catch (oError) {
         console.error(`[CCC_ADVANCE_EMAIL] Failed processing cardholder advance notifications for Request ${sRequestId}`, oError);
     }
+}
+
+async function notifyCCCMakerOfApproval(oTx, sRequestId) {
+    console.log("Starintg email CCC maker");
+    try {
+        const oRequest = await oTx.run(
+            SELECT.one.from('ZREQUEST_HEADER')
+                .where({ REQUEST_ID: sRequestId })
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+        );
+ 
+        if (!oRequest || String(oRequest.REQUEST_TYPE_ID) !== String(Constant.RequestType.CORP_CC)) {
+            return; // not a Corporate Credit Card request - nothing to notify
+        }
+ 
+        const oConstantRec = await oTx.run(
+            SELECT.one.from(Constant.Entities.ZCONSTANTS)
+                .columns(Constant.EntitiesFields.VALUE)
+                .where({ ID: Constant.ConstantId.CCC_MAKER })
+        );
+ 
+        const sMakerEmpId = oConstantRec?.VALUE;
+        if (!sMakerEmpId) {
+            console.warn(`[CCC_MAKER_EMAIL] No CCC_MAKER configured in ZCONSTANTS, skipping notification for Request ${sRequestId}`);
+            return;
+        }
+ 
+        const oMaker = await oTx.run(
+            SELECT.one.from(Constant.Entities.ZEMP_MASTER)
+                .where({ EEID: String(sMakerEmpId) })
+                .columns('EEID', 'NAME', 'EMAIL')
+        );
+ 
+        if (!oMaker || !oMaker.EMAIL) {
+            console.warn(`[CCC_MAKER_EMAIL] No email found for CCC_MAKER ${sMakerEmpId}, skipping notification for Request ${sRequestId}`);
+            return;
+        }
+        // Total advance amount across all cards/items on this request:
+        // Advance Amount = Current Balance (STATEMENT_DUE_AMT) - Service Tax - Merchant Refund
+        const aItemParts = await oTx.run(
+            SELECT.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sRequestId })
+        );
+
+        const fRequestAdvanceAmount = (aItemParts || []).reduce((fSum, oPart) => {
+            const fCurrentBalance = Number(oPart.STATEMENT_DUE_AMT) || 0;
+            const fServiceTax = Number(oPart.SERVICE_TAX) || 0;
+            const fMerchantRefund = Number(oPart.MERCHANT_REFUND_AMT) || 0;
+            return fSum + (fCurrentBalance - fServiceTax - fMerchantRefund);
+        }, 0);
+ 
+        await sendEmailInternal({
+            ApproverName: oMaker.NAME,
+            ClaimID: sRequestId,
+            Action: Constant.ApprovalEmailAction.ACTION_APPROVED_TRANSFER,
+            EmailTitle: `Corporate Credit Card Request Approved: ${sRequestId}`,
+            ReceiverEmail: oMaker.EMAIL,
+            SubmissionDate: new Date().toISOString().split('T')[0],
+            ClaimantName: oMaker.NAME,
+            RecipientName: oMaker.NAME,
+            ClaimType: 'Corporate Credit Card Request',
+            CardAdvanceAmt: String(fRequestAdvanceAmount)
+        });
+ 
+        console.log(`[CCC_MAKER_EMAIL] Approved Transfer notification sent for Request ${sRequestId} to CCC_MAKER ${sMakerEmpId} (${oMaker.EMAIL})`);
+ 
+    } catch (oError) {
+        console.error(`[CCC_MAKER_EMAIL] Failed to send CCC_MAKER notification for Request ${sRequestId}`, oError);
+        try {
+            await oTx.run(
+                INSERT.into(Constant.Entities.ZLOG).entries({
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: String(sRequestId || '').slice(0, 20),
+                    PROGRAM: 'CCC_MAKER_EMAIL',
+                    MESSAGE_TYPE: 'W',
+                    STATUS_CODE: String(oError?.status || oError?.statusCode || oError?.code || "500"),
+                    MESSAGE: oError?.message || "No Message"
+                })
+            );
+        } catch (oLogError) {
+            console.error('[CCC_MAKER_EMAIL] Failed to write background log', oLogError);
+        }
+    }
+    console.log("Completed email CCC maker");
 }
 
 module.exports = {
@@ -458,5 +590,6 @@ module.exports = {
     determineLastApproverLevel,
     resolveActionDescriptor,
     updateCorpoCardAdvance,
-    notifyCardholdersOfRequestApproval
+    notifyCardholdersOfRequestApproval,
+    notifyCCCMakerOfApproval
 };

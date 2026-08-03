@@ -326,7 +326,8 @@ sap.ui.define([
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
             "SUPER_ADMIN": "Super Admin",
-            "HEADOFDEP": "HOD"
+            "HEADOFDEP": "HOD",
+            "CCC_ADMIN" : "CCC Admin"
         },
         "User_Type": {
             "CASH_FI": "CASH_FI",

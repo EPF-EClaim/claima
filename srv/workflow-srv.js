@@ -35,7 +35,8 @@ const {
     determineLastApproverLevel,
     resolveActionDescriptor,
     updateCorpoCardAdvance,
-    notifyCardholdersOfRequestApproval
+    notifyCardholdersOfRequestApproval,
+    notifyCCCMakerOfApproval
 } = require('./workflow/action/action-helper');
 const {
     updateUsedEntitlementAmount
@@ -217,17 +218,21 @@ module.exports = (srv) => {
             
                 // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
                 if (sAction === Constant.Status.APPROVED && sId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
+                    console.log("Sending final approve CCC email")
                     await notifyCardholdersOfRequestApproval(oTx, sId);
+                    await notifyCCCMakerOfApproval(oTx, sId);
                 }
+            }else{
+                // for non final approve
+                try {
+                    await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+                } catch (oAdvErr) {
+                    console.error("Failed to update corpo card advance:", oAdvErr);
+                    throw new Error('Error encountered during Corporate Card Advance update');
+                }
+                bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
+
             }
-            // for non final approve
-            try {
-                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
-            } catch (oAdvErr) {
-                console.error("Failed to update corpo card advance:", oAdvErr);
-                throw new Error('Error encountered during Corporate Card Advance update');
-            }
-            bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }
         else {
             const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)

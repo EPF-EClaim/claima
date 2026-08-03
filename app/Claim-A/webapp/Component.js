@@ -123,7 +123,8 @@ sap.ui.define([
                     oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);
                     oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
                     oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
-
+                    oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
+                    
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
                         oRoleModel.setProperty("/Admin_role", true);
@@ -135,6 +136,9 @@ sap.ui.define([
                         oRoleModel.setProperty("/DTD_JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                    } else if (oUserRoles.isCCCAdmin) {
+                        oSessionModel.setProperty("/userType", "CCC Admin");
                         oRoleModel.setProperty("/Admin_role", true);
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
