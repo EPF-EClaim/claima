@@ -37,7 +37,7 @@ entity ZEMP_MASTER : managed {
         EFFECTIVE_DATE                : Date          @Common.Label: 'Effective Date';
         UPDATED_DATE                  : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
-        JOB_GRADE                     : String(3)     @Common.Label: 'Job Grade';
+        JOB_GRADE                     : String(4)     @Common.Label: 'Job Grade';
         DIVISION                      : String(10)    @Common.Label: 'Division';
         HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
         HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
@@ -429,6 +429,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
         CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
+        CCC_ADV_AMT                    : Decimal(16,2) @Common.Label: 'Corporate Credit Card Advance Amount';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -1574,7 +1575,7 @@ entity ZCORPORATE_CARD : managed {
 
 entity ZCORPORATE_CARD_ADVANCED : managed {
     key CARD_NO                  : String(16)     @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID            : Integer        @mandatory  @Common.Label: 'Cardholder Employee ID';
+    key CARDHOLDER_ID            : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
         STATUS                   : String         @Common.Label: 'Status';
         MONTHLY_ADVANCED_AMT     : Decimal(16, 2) @Common.Label: 'Monthly Advanced Amount';
         COMMIT_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Commitment Offset Amount';
