@@ -406,6 +406,7 @@ sap.ui.define([
 					);
 
 				}
+				this._calculateClaimTotal();
 			}
 		},
 		onSelectCountry: async function(oEvent){
@@ -1595,6 +1596,7 @@ sap.ui.define([
 			BusyIndicator.hide();
 		},
 
+		
 		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1626,23 +1628,7 @@ sap.ui.define([
 					(oInputModel.getProperty("/claim_items/" + i + "/claim_id") ?? "") + ('' + '00' + (i + 1)).slice(-3)
 				);
 			});
-
-			// calculate new total
-			var nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			var nCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0;
-			var nCardAdvAmt = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
-
-			if (nCashAdvAmt > 0 || nCardAdvAmt > 0) {
-				var nNewTotal = nTotal - nCashAdvAmt - nCardAdvAmt;
-				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
-
-			} else {
-				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
-			}
-			
-
+		
 			///Check to recalculate Mata Wang if it is required
 			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
 			// update to database
@@ -1653,9 +1639,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
 			}	
-			//for CCC personal expense
+			// recalculate total_claim_amount / final_amount_to_receive
 			await this._calculateClaimTotal();
-
+		
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
@@ -3033,19 +3019,7 @@ sap.ui.define([
 				}
 				///Check to recalculate Mata Wang if it is required
 				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
-
-				const nTotal = oClaimSubmissionModel
-					.getProperty("/claim_items")
-					.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
-
-				oClaimSubmissionModel.setProperty(
-					"/claim_header/total_claim_amount",
-					nTotal
-				);
-
-				//for CCC personal expense
-				await this._calculateClaimTotal();
-
+ 				
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -4199,12 +4173,19 @@ sap.ui.define([
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+ 
+			// Reload the claim from the backend FIRST, so _afterLoadFragments()
+			// below recalculates totals from fresh data exactly once, instead
+			// of calculating once here (on stale in-memory data) and then
+			// having _loadClaimById overwrite it again right after.
+			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+ 
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
 			await this._afterLoadFragments();
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
-
+ 
 				// approver view changes
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					if (this.byId("button_claimdetails_input_return").getVisible()) {
@@ -4212,19 +4193,19 @@ sap.ui.define([
 					}
 					this._setAllControlsEditable(true);
 				}
-
+ 
 				// clear fileuploader fields
 				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
 					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
 				}
-
+ 
 				oPage.removeContent(oClaimItemFragment);
-
+ 
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
 				let sFooterMode;
-
+ 
 				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
 					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
 				}
@@ -4237,13 +4218,10 @@ sap.ui.define([
 				else {
 					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
 				}
-
+ 
 				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-
+ 
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 			}
 		},
 
@@ -5674,32 +5652,41 @@ sap.ui.define([
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
-
+ 
 			var nCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0;
 			var nCardAdvAmt = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
-
+ 
+			// Personal Expense and Cash Repayment items are excluded from the
+			// reimbursable total (not paid out normally) - both get the same
+			// treatment.
+			var aExcludedTypeIds = [
+				this._oConstant.ClaimTypeItem.PERSONAL_EXP,
+				this._oConstant.ClaimTypeItem.CASH_REPAY
+			];
+ 
 			var nTotal = aClaimItems
-				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.PERSONAL_EXPENSE)
+				.filter((it) => !aExcludedTypeIds.includes(it.claim_type_item_id))
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-
+ 
 			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
 			var bHasCard = !!sCardNo;
-
+ 
 			if (bIsTravelClaimType && bHasCard) {
-				var nPersonalExpenseAmt = aClaimItems
-					.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXPENSE)
+				var nExcludedAmt = aClaimItems
+					.filter((it) => aExcludedTypeIds.includes(it.claim_type_item_id))
 					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-
-				if (nPersonalExpenseAmt > 0) {
-					var nNewTotal = nTotal - nPersonalExpenseAmt - nCashAdvAmt - nCardAdvAmt;
+ 
+				if (nExcludedAmt > 0) {
+					// nTotal already excludes these items - do not subtract nExcludedAmt again
+					var nNewTotal = nTotal - nCashAdvAmt - nCardAdvAmt;
 					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 					return;
 				}
 			}
-
+ 
 			// Default: subtract cash advance / corporate card advance, if any
-			var nFinal = nTotal - nCashAdvAmt - nCardAdvAmt;
+			var nFinal = nTotal + nCashAdvAmt + nCardAdvAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},

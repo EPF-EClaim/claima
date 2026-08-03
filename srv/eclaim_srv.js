@@ -536,22 +536,32 @@ module.exports = (srv) => {
 
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
-
-        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
-
+ 
+        const headerResult = await tx.run(
+            SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
+        );
+ 
+        // Personal Expense and Cash Repayment items are excluded from the
+        // reimbursable total - they aren't paid out normally, mirroring the
+        // frontend's _calculateClaimTotal() exclusion logic.
+        const aExcludedClaimTypeItemIds = ['PERSONAL_EXP', 'CASH_REPAY'];
+ 
         const result = await tx.run(
             SELECT.one`
                 SUM(AMOUNT) as TotalClaimAmount
             `
                 .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId })
+                .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: { 'not in': aExcludedClaimTypeItemIds } })
         );
-
+ 
         const totalClaimAmount = result.TotalClaimAmount || 0;
-        const nCashAdvanceAmount = Number(headerResult.CASH_ADVANCE_AMOUNT) || 0;
-        const nCardAdvanceAmount = Number(headerResult.CCC_ADV_AMT) || 0;
+ 
+        // Never subtract a negative advance - that would effectively ADD it
+        // to the final amount instead of reducing it.
+        const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
+        const nCardAdvanceAmount = Math.max(0, Number(headerResult.CCC_ADV_AMT) || 0);
         const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount - nCardAdvanceAmount) || 0;
-
+ 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
@@ -560,7 +570,6 @@ module.exports = (srv) => {
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
-
         console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
     }
 
