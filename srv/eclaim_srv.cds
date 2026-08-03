@@ -1458,4 +1458,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.STATUS_CODE
         };
 
+    action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
+
+
 };

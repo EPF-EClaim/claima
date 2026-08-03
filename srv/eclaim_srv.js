@@ -4522,5 +4522,27 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('deleteItemCascade', async (req) => {
+        const { sReqId, sReqSubId } = req.data;
+    
+        if (!sReqId || !sReqSubId) {
+            req.error(400, 'sReqId and sReqSubId are required');
+            return;
+        }
+    
+        const tx = cds.tx(req);
+    
+        try {
+            await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+    
+            return true;
+    
+        } catch (error) {
+            console.error('[deleteItemCascade] Failed:', error);
+            req.error(500, `Failed to delete item: ${error.message}`);
+        }
+    });
 
 }

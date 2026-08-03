@@ -1013,58 +1013,31 @@ sap.ui.define([
 				
 				this._oReqModel.setProperty("/req_header", oHeader);
 				oTable.clearSelection();
-
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
+				
+				// Refresh the Corporate Credit Card Summary - deleting an item
+				// changes what's in ZREQ_ITEM_CCC_PART, but /corpo_cards and
+				// /corpo_totals aren't recalculated by anything above.
+				if (bIsCorpoCC && aSuccessIdx.length > 0) {
+					const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+					if (sReqId) {
+						await this._loadCorpoCardsForItem(sReqId);
+						this._computeCorpoCardTotals();
+					}
+				}
+				
+				} finally {
+					BusyIndicator.hide();
+				}
+			},
 
 		async _deleteItemCascade(sReqId, sReqSubId) {
-			const sGroup = "deleteItemCascade";
-
-			const cast = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
-			const isNotFound = (e) => [404].includes(e?.status || e?.statusCode || e?.httpStatus || e?.cause?.status || e?.cause?.statusCode);
-
-			const vReq = cast(sReqId);
-			const vSub = cast(sReqSubId);
-
 			try {
-				const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, [
-					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
-					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
-				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID" });
-
-				const oItemList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
-					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
-					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
-				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID" });
-
-				const oCorpoCardPartList = this._oDataModel.bindList("/ZREQ_ITEM_CCC_PART", null, null, [
-					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
-					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
-				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID,CARD_NO" });
-
-				const [aPartCtx, aItemCtx, aCorpoCardPartCtx] = await Promise.all([
-					oPartList.requestContexts(0, 500).catch(e => isNotFound(e) ? [] : Promise.reject(e)),
-					oItemList.requestContexts(0, 1).catch(e => isNotFound(e) ? [] : Promise.reject(e)),
-					oCorpoCardPartList.requestContexts(0, 500).catch(e => isNotFound(e) ? [] : Promise.reject(e))
-				]);
-
-				aPartCtx.forEach(ctx => {
-					ctx.delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
-				});
-
-				aCorpoCardPartCtx.forEach(ctx => {
-					ctx.delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
-				});
-
-				if (aItemCtx && aItemCtx.length > 0) {
-					aItemCtx[0].delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
-				}
-
-				await this._oDataModel.submitBatch(sGroup);
+				const oAction = this._oDataModel.bindContext("/deleteItemCascade(...)");
+				oAction.setParameter("sReqId", sReqId);
+				oAction.setParameter("sReqSubId", sReqSubId);
+				await oAction.execute();
 				return true;
-
+		
 			} catch (e) {
 				console.error("Delete item cascade failed:", e);
 				throw e;
