@@ -218,10 +218,6 @@ async function getApproversDetails(sId, oDescriptor) {
 
 }
 
-async function setLog (oTx, oEntity) {
-    
-}
-
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
