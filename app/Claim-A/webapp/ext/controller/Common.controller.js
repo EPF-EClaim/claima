@@ -11,6 +11,10 @@ sap.ui.define([
 		_reportTimer: null,
 		_detailTimer: null,
 		_searchTimer: null,
+		_sCurrentRouteName: null,
+		_oAttachedTable: null,
+		_fnAttachedItemPress: null,
+		_fnAttachedCellClick: null,
 
 		override: {
 
@@ -47,12 +51,15 @@ sap.ui.define([
 		_onRouteMatched: function (oEvent) {
 
 			const sRouteName = oEvent.getParameter("name");
+			this._sCurrentRouteName = sRouteName;
 			this._navToken = (this._navToken || 0) + 1;
 			const currentToken = this._navToken;
 
 			clearTimeout(this._reportTimer);
 			clearTimeout(this._detailTimer);
 			clearTimeout(this._searchTimer);
+
+			this._detachRowPress();
 
 			const oView = this.base.getView();
 
@@ -106,7 +113,7 @@ sap.ui.define([
 						FUND_CENTER: [{ operator: "EQ", values: [decodeURIComponent(oArgs.FUND_CENTER || "")] }],
 						COMMITMENT_ITEM: [{ operator: "EQ", values: [decodeURIComponent(oArgs.COMMITMENT_ITEM || "")] }],
 						MATERIAL_GROUP: [{ operator: "EQ", values: [decodeURIComponent(oArgs.MATERIAL_GROUP || "")] }],
-						PROJECT_CODE: [{operator: "EQ",values: [decodeURIComponent(oArgs.PROJECT_CODE || "")]}]
+						PROJECT_CODE: [{ operator: "EQ", values: [decodeURIComponent(oArgs.PROJECT_CODE || "")] }]
 					};
 
 					oFilterBar.setFilterConditions(oConditions);
@@ -139,10 +146,9 @@ sap.ui.define([
 			if (!oTable) return;
 
 			if (oTable.attachItemPress) {
-				if (!oTable.__itemPressAttached) {
-					oTable.attachItemPress(fnHandler, this);
-					oTable.__itemPressAttached = true;
-				}
+				this._oAttachedTable = oTable;
+				this._fnAttachedItemPress = fnHandler;
+				oTable.attachItemPress(fnHandler, this);
 				return;
 			}
 
@@ -210,7 +216,29 @@ sap.ui.define([
 			});
 		},
 
+		_detachRowPress: function () {
+			if (!this._oAttachedTable) {
+				return;
+			}
+
+			if (this._fnAttachedItemPress && this._oAttachedTable.detachItemPress) {
+				this._oAttachedTable.detachItemPress(this._fnAttachedItemPress, this);
+			}
+
+			if (this._fnAttachedCellClick && this._oAttachedTable.detachCellClick) {
+				this._oAttachedTable.detachCellClick(this._fnAttachedCellClick, this);
+			}
+
+			this._oAttachedTable = null;
+			this._fnAttachedItemPress = null;
+			this._fnAttachedCellClick = null;
+		},
+		
 		_onPendingListRowPress: function (oEvent) {
+
+			if (this._sCurrentRouteName !== "ZEMP_PENDING_LIST") {
+				return;
+			}
 
 			const oItem = oEvent.getParameter("listItem");
 			if (!oItem) return;
