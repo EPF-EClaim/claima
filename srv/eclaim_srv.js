@@ -4655,4 +4655,47 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getApprovalLogHistory', async (req) => {
+        try {
+            const { sRecordId } = req.data;
+            const tx = cds.tx(req);
+            const { ZLOG } = srv.entities;
+
+            const aLogs = await tx.run(
+                SELECT.from(ZLOG)
+                    .where({
+                        RECORD_ID: { like: `%${sRecordId}%` }
+                    })
+                    .orderBy({ TIMESTAMP: 'asc' })
+            );
+
+            const oFormatter = new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+
+            const sHistoryText = aLogs
+                .filter(oLog => oLog.MESSAGE)
+                .map(oLog => {
+                    const sTimestamp = oFormatter
+                        .format(new Date(oLog.TIMESTAMP))
+                        .replace(',', '');
+
+                    return `${sTimestamp} - ${oLog.MESSAGE}`;
+                })
+                .join('\n');
+
+            return sHistoryText;
+
+        } catch (error) {
+            req.error(error);
+        }
+    });
+
+
 }
