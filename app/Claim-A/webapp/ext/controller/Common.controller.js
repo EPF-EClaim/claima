@@ -52,14 +52,25 @@ sap.ui.define([
 
 			const sRouteName = oEvent.getParameter("name");
 			this._sCurrentRouteName = sRouteName;
+
+			if (
+				this._oPendingTable &&
+				this._fnPendingCellClick &&
+				this._oPendingTable.detachCellClick
+			) {
+				this._oPendingTable.detachCellClick(
+					this._fnPendingCellClick
+				);
+				this._oPendingTable = null;
+				this._fnPendingCellClick = null;
+			}
+
 			this._navToken = (this._navToken || 0) + 1;
 			const currentToken = this._navToken;
 
 			clearTimeout(this._reportTimer);
 			clearTimeout(this._detailTimer);
 			clearTimeout(this._searchTimer);
-
-			this._detachRowPress();
 
 			const oView = this.base.getView();
 
@@ -133,7 +144,47 @@ sap.ui.define([
 					const oTable = fnGetInnerTable();
 					if (!oTable) return;
 
-					this._attachItemPressOnce(oTable, this._onPendingListRowPress);
+					// Detach previous pending list cell click handler first
+					if (this._oPendingTable && this._fnPendingCellClick && this._oPendingTable.detachCellClick) {
+						this._oPendingTable.detachCellClick(this._fnPendingCellClick);
+					}
+
+					this._oPendingTable = oTable;
+
+					this._fnPendingCellClick = (oEvent) => {
+
+						// Extra safety: only allow popup in ZEMP_PENDING_LIST
+						if (this._sCurrentRouteName !== "ZEMP_PENDING_LIST") {
+							return;
+						}
+
+						const iRowIndex = oEvent.getParameter("rowIndex");
+
+						// Ignore header click / invalid row
+						if (iRowIndex < 0) {
+							return;
+						}
+
+						const oContext = oTable.getContextByIndex(iRowIndex);
+
+						if (!oContext) {
+							return;
+						}
+
+						this._onPendingListRowPress({
+							getParameter: function (sName) {
+								if (sName === "listItem") {
+									return {
+										getBindingContext: function () {
+											return oContext;
+										}
+									};
+								}
+								return null;
+							}
+						});
+					};
+					oTable.attachCellClick(this._fnPendingCellClick);
 				}, 800);
 			}
 		},
@@ -233,7 +284,7 @@ sap.ui.define([
 			this._fnAttachedItemPress = null;
 			this._fnAttachedCellClick = null;
 		},
-		
+
 		_onPendingListRowPress: function (oEvent) {
 
 			if (this._sCurrentRouteName !== "ZEMP_PENDING_LIST") {
