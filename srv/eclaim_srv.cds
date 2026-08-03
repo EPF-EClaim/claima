@@ -1475,7 +1475,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getMedicalReminderEmail() returns array of reminders;                                   
 
-     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+
+    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
 
      entity ZPOSITION as projection on ECLAIM.ZPOSITION;
 
