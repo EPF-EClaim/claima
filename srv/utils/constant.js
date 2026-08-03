@@ -536,6 +536,11 @@ const Constant = {
     EmailType: {
         CLAIM: "CLAIM",
         PREAPPROVAL: "PREAPPROVAL"
+    },
+    UIAction: {
+        APPROVE     : "approved",
+        REJECT      : "rejected",
+        PUSHBACK    : "pushed back"
     }
 
 };

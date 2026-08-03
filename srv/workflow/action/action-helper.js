@@ -584,6 +584,7 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId) {
     console.log("Completed email CCC maker");
 }
 
+
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,

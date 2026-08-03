@@ -115,6 +115,16 @@ module.exports = (srv) => {
         // check if workflow found and approvers determined, change bStatus to true
         if (oWorkflowContext && aApproversContext.length) {
             bStatus = true;
+            
+            await oTx.run(INSERT.into("ZLOG").entries({
+                // Stagger milliseconds + append LEVEL to guarantee primary key uniqueness
+                TIMESTAMP: new Date(),
+                RECORD_ID: `${sId}`,
+                PROGRAM: 'WORKFLOW',
+                MESSAGE_TYPE: 'A',
+                STATUS_CODE: '200',
+                MESSAGE: `${sId} is submitted.`
+            }));
         }
 
         return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started', aApproversContextNew[0].LEVEL === 0 ? true : false);
@@ -243,6 +253,40 @@ module.exports = (srv) => {
             throw new Error('Error encountered during Email Notification');
         }
         console.log("Approver Action Status: ", bStatus);
+
+        const mActionText = {
+            APPROVE  : "approved",
+            REJECT   : "rejected",
+            PUSHBACK : "pushed back"
+        };
+
+        if (bStatus) {
+            const oUser = await oTx.run(
+                SELECT.one
+                    .from('ZEMP_MASTER')
+                    .where({ EEID: sUserId })
+                    .columns('EEID', 'NAME')
+            );
+
+            const sActionText = Constant.UIAction[oActionDescriptor.approverActionValue] ?? oActionDescriptor.approverActionValue?.toLowerCase();
+            const sCommentText = sComments
+                ? ` with comment: ${sComments}`
+                : '';
+
+            const sMessage = `${sId} is ${sActionText} by ${oUser?.NAME ?? sUserId}${sCommentText}.`;
+
+            await oTx.run(
+                INSERT.into("ZLOG").entries({
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: sId,
+                    PROGRAM: 'WORKFLOW',
+                    MESSAGE_TYPE: 'A',
+                    STATUS_CODE: Constant.StatusCode.SUCCESS,
+                    MESSAGE: sMessage
+                })
+            );
+        }
+
         return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Approver Process Completed');
     })
 }
