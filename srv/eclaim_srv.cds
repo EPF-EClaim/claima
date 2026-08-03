@@ -597,55 +597,55 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-     entity ZAPPROVER_REQUEST_PIVOT as
+     view ZAPPROVER_REQUEST_PIVOT as
         select from ZEMP_APPROVER_REQUEST_DETAILS {
             key PREAPPROVAL_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)       as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)     as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end) as APPROVER1_TS   : String,
+            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
+            max(case when LEVEL = 1 then cast(PROCESS_TIMESTAMP as String) end) as APPROVER1_TS : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)       as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)     as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end) as APPROVER2_TS   : String,
+            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
+            max(case when LEVEL = 2 then cast(PROCESS_TIMESTAMP as String) end) as APPROVER2_TS   : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)       as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)     as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end) as APPROVER3_TS   : String,
+            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
+            max(case when LEVEL = 3 then cast(PROCESS_TIMESTAMP as String) end) as APPROVER3_TS   : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)       as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)     as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end) as APPROVER4_TS   : String,
+            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
+            max(case when LEVEL = 4 then cast(PROCESS_TIMESTAMP as String) end) as APPROVER4_TS   : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)       as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)     as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end) as APPROVER5_TS   : String
+            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
+            max(case when LEVEL = 5 then cast(PROCESS_TIMESTAMP as String) end) as APPROVER5_TS   : String
         }
         group by PREAPPROVAL_ID;
 
-    entity ZAPPROVER_CLAIM_PIVOT as
+    view ZAPPROVER_CLAIM_PIVOT as
         select from ZEMP_APPROVER_CLAIM_DETAILS {
             key CLAIM_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)        as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)      as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end)  as APPROVER1_TS   : String,
+            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
+            max(case when LEVEL = 1 then cast(PROCESS_TIMESTAMP as String) end)  as APPROVER1_TS   : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)        as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)      as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end)  as APPROVER2_TS   : String,
+            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
+            max(case when LEVEL = 2 then cast(PROCESS_TIMESTAMP as String) end)  as APPROVER2_TS   : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)        as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)      as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end)  as APPROVER3_TS   : String,
+            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
+            max(case when LEVEL = 3 then cast(PROCESS_TIMESTAMP as String) end)  as APPROVER3_TS   : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)        as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)      as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end)  as APPROVER4_TS   : String,
+            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
+            max(case when LEVEL = 4 then cast(PROCESS_TIMESTAMP as String) end)  as APPROVER4_TS   : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)        as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)      as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end)  as APPROVER5_TS   : String
+            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
+            max(case when LEVEL = 5 then cast(PROCESS_TIMESTAMP as String) end)  as APPROVER5_TS   : String
         }
         group by CLAIM_ID;
 
