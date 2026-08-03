@@ -30,86 +30,86 @@ module.exports = (srv) => {
         }
     }),
 
-    srv.on('batchCreateCostCenter', async (req) => {
-        const { ZCOST_CENTER } = srv.entities;
-        try {
-            const { costcenters } = req.data;
-            if (!costcenters || costcenters.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(costcenters).into(ZCOST_CENTER)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('batchCreateDependent', async (req) => {
-        const { ZEMP_DEPENDENT } = srv.entities;
-        try {
-            const { dependents } = req.data;
-            if (!dependents || dependents.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(dependents).into(ZEMP_DEPENDENT)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('getUserType', async (req) => {
-        const tx = cds.tx(req);
-        const { ZDEPARTMENT } = srv.entities;
-        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-        let sOrigin = null;
-        try {
-            const authHeader = req.http?.req?.headers?.authorization ?? '';
-            const token = authHeader.split(' ')[1];
-            if (token) {
-                const oToken = JSON.parse(
-                    Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+        srv.on('batchCreateCostCenter', async (req) => {
+            const { ZCOST_CENTER } = srv.entities;
+            try {
+                const { costcenters } = req.data;
+                if (!costcenters || costcenters.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(costcenters).into(ZCOST_CENTER)
                 );
-                sOrigin = oToken.origin;
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
             }
-        } catch (e) {
-            console.log("Token parsing failed:", e.message);
-        }
+        }),
 
-        const oRoles = {
-            isClaimant: req.user.is('Claimant'),
-            isApprover: req.user.is('Approver'),
-            isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-            isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-            isAdminCC: req.user.is(Constant.Admin.Admin_CC)
-        };
+        srv.on('batchCreateDependent', async (req) => {
+            const { ZEMP_DEPENDENT } = srv.entities;
+            try {
+                const { dependents } = req.data;
+                if (!dependents || dependents.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(dependents).into(ZEMP_DEPENDENT)
+                );
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
+            }
+        }),
 
-        let sDeptDesc = "UNKNOWN";
-        if (oEmp.DEP) {
-            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
-            sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
-        }
+        srv.on('getUserType', async (req) => {
+            const tx = cds.tx(req);
+            const { ZDEPARTMENT } = srv.entities;
+            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-        return {
-            id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
-            userType: oEmp.USER_TYPE || "UNKNOWN",
-            costcenters: oEmp.CC || "UNKNOWN",
-            userId: oEmp.EEID || "UNKNOWN",
-            name: oEmp.NAME || "UNKNOWN",
-            position: oEmp.POSITION_NAME || "UNKNOWN",
-            origin: sOrigin,
-            grade: oEmp.GRADE || "UNKNOWN",
-            department: sDeptDesc,
-            roles: oRoles
-        };
-    });
+            let sOrigin = null;
+            try {
+                const authHeader = req.http?.req?.headers?.authorization ?? '';
+                const token = authHeader.split(' ')[1];
+                if (token) {
+                    const oToken = JSON.parse(
+                        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+                    );
+                    sOrigin = oToken.origin;
+                }
+            } catch (e) {
+                console.log("Token parsing failed:", e.message);
+            }
+
+            const oRoles = {
+                isClaimant: req.user.is('Claimant'),
+                isApprover: req.user.is('Approver'),
+                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+            };
+
+            let sDeptDesc = "UNKNOWN";
+            if (oEmp.DEP) {
+                const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: oEmp.DEP });
+                sDeptDesc = dept?.DEPARTMENT_DESC || "UNKNOWN";
+            }
+
+            return {
+                id: oEmp.EMAIL || oEmp.email || "UNKNOWN",
+                userType: oEmp.USER_TYPE || "UNKNOWN",
+                costcenters: oEmp.CC || "UNKNOWN",
+                userId: oEmp.EEID || "UNKNOWN",
+                name: oEmp.NAME || "UNKNOWN",
+                position: oEmp.POSITION_NAME || "UNKNOWN",
+                origin: sOrigin,
+                grade: oEmp.GRADE || "UNKNOWN",
+                department: sDeptDesc,
+                roles: oRoles
+            };
+        });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
@@ -3135,7 +3135,7 @@ module.exports = (srv) => {
             const oEmployeeMap = {};
             aEmployees.forEach(oEmp => {
                 oEmployeeMap[oEmp.EEID] = oEmp.NAME;
-            });            
+            });
 
             const aUpdatePromises = aPayloads.map(async (oItem) => {
                 const { APPROVER_ID, ID, LEVEL, NEW_APPROVER_ID, REQUEST_DATE } = oItem;
@@ -3624,127 +3624,20 @@ module.exports = (srv) => {
         }
     });
 
-    function getFilterValue(where, fieldName) {
-        if (!where || !Array.isArray(where)) return null;
-        for (let i = 0; i < where.length; i++) {
-            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
-                if ((where[i + 1] === '=' || where[i + 1] === 'eq') && where[i + 2]) {
-                    return where[i + 2].val !== undefined ? where[i + 2].val : where[i + 2];
-                }
-            }
-            if (Array.isArray(where[i])) {
-                const val = getFilterValue(where[i], fieldName);
-                if (val) return val;
-            }
-        }
-        return null;
-    }
-    // Function to recursively strip out the virtual 'SELECTED_APPROVER' parameter
-    // so the database doesn't look for a non-existent database column.
-    function removeFilterField(where, fieldName) {
-        if (!where || !Array.isArray(where)) return;
-        for (let i = where.length - 1; i >= 0; i--) {
-            if (where[i] && where[i].ref && where[i].ref[0] === fieldName) {
-                // Remove the field ref, the operator (=), and the value
-                where.splice(i, 3);
-                // Clean up trailing 'and' / 'or' operators left over around it
-                if (where[i] === 'and' || where[i] === 'or') where.splice(i, 1);
-                else if (i > 0 && (where[i - 1] === 'and' || where[i - 1] === 'or')) where.splice(i - 1, 1);
-            } else if (Array.isArray(where[i])) {
-                removeFilterField(where[i], fieldName);
-            }
-        }
-    }
-
     srv.before('READ', 'ZEMP_SUBSTITUTE_VH', async (req) => {
-        const oWhereClause = req.query && req.query.SELECT && req.query.SELECT.where;
-        let sSelectedApproverID = getFilterValue(oWhereClause, 'SELECTED_APPROVER') || getFilterValue(oWhereClause, 'USER_ID');
-        if (!sSelectedApproverID && req._ && req._.req && req._.req.query && req._.req.query.$filter) {
-            const sRawFilter = req._.req.query.$filter;
-            const oMatch = sRawFilter.match(/(?:SELECTED_APPROVER|USER_ID)\s+(?:eq|=)\s+['"]([^'"]+)['"]/);
-            if (oMatch) sSelectedApproverID = oMatch[1];
-        }
-        removeFilterField(req.query.SELECT.where, 'SELECTED_APPROVER');
-        removeFilterField(req.query.SELECT.where, 'USER_ID');
-        if (!sSelectedApproverID || sSelectedApproverID.trim() === "" || sSelectedApproverID === 'FORCE_EMPTY_RESULT') {
-            const oCurrentUser = await SELECT.one
+
+        // for GA, show their department only. for JKEW show all
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            const oEmp = await SELECT.one
                 .from('ZEMP_MASTER')
                 .where({ EMAIL: req.user.id });
-            // If we can find their department, apply it as a filter constraint
-            if (oCurrentUser && oCurrentUser.DEP) {
-                const oDeptFilter = [{ ref: ['DEP'] }, '=', { val: oCurrentUser.DEP }];
-                if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                    req.query.SELECT.where = [
-                        '(', ...req.query.SELECT.where, ')',
-                        'and',
-                        ...oDeptFilter
-                    ];
-                } else {
-                    req.query.SELECT.where = oDeptFilter;
-                }
-            }
-            return;
-        }
-        const oApproverData = await SELECT.one.from('ZEMP_MASTER').where({ EEID: sSelectedApproverID });
-        //commented out this one just in case later will need to filter by grade/department
-        if (oApproverData) {
-            //     let iCurrentSeq = 0;
-            //     if (oApproverData.GRADE) {
-            //         const oConfig = await SELECT.one.from('ZCONFIG_VARIABLE').where({
-            //             LOW_VALUE: oApproverData.GRADE,
-            //             VARIABLE_NAME: 'PERSONAL_GRADE'
-            //         });
-            //         if (oConfig && oConfig.SEQUENCE_NO) {
-            //             iCurrentSeq = parseInt(oConfig.SEQUENCE_NO, 10);
-            //         }
-            //     }
 
-            //     // Fetch all grade strings that match or exceed the current sequence rank
-            //     const aValidConfigGrades = await SELECT.from('ZCONFIG_VARIABLE').where({
-            //         VARIABLE_NAME: 'PERSONAL_GRADE',
-            //         SEQUENCE_NO: { '>=': iCurrentSeq }
-            //     });
+            if (!oEmp || !oEmp.DEP) return;
 
-            //     const aAllowedGradeValues = aValidConfigGrades.map(cfg => cfg.LOW_VALUE);
-
-            //     let oGradeFilter = [];
-            //     if (aAllowedGradeValues.length > 0) {
-            //         aAllowedGradeValues.forEach((sGrade, index) => {
-            //             oGradeFilter.push({ ref: ['GRADE'] }, '=', { val: sGrade });
-            //             if (index < aAllowedGradeValues.length - 1) {
-            //                 oGradeFilter.push('or');
-            //             }
-            //         });
-            //         if (aAllowedGradeValues.length > 1) {
-            //             oGradeFilter = ['(', ...oGradeFilter, ')'];
-            //         }
-            //     } else {
-            //         oGradeFilter = [{ ref: ['GRADE'] }, '=', { val: '' }];
-            //     }
-
-            const oTargetFilters = [
-                { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-                'and',
-                { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-            ];
-
-            //     const oTargetFilters = [
-            //         { ref: ['DEP'] }, '=', { val: oApproverData.DEP },
-            //         'and',
-            //         ...oGradeFilter,
-            //         'and',
-            //         { ref: ['EEID'] }, '!=', { val: sSelectedApproverID }
-            //     ];        
-
-            if (req.query.SELECT.where && req.query.SELECT.where.length > 0) {
-                req.query.SELECT.where = [
-                    '(', ...req.query.SELECT.where, ')',
-                    'and',
-                    '(', ...oTargetFilters, ')'
-                ];
-            } else {
-                req.query.SELECT.where = oTargetFilters;
-            }
+            // Admin can sees their own department only
+            req.query.where({
+                DEP: oEmp.DEP
+            });
         }
     });
 
@@ -4510,17 +4403,17 @@ module.exports = (srv) => {
             const oRecords = typeof data === 'string' ? JSON.parse(data) : data;
 
             if (!entityName) {
-                throw new Error ('Entity name parameter is missing')
+                throw new Error('Entity name parameter is missing')
             }
 
             if (!data || data.length === 0) {
-                throw new Error ('No data sent');
+                throw new Error('No data sent');
             }
 
             if (!sTargetEntity) {
-                throw new Error (`Entity '${entityName}' not found in service`);
+                throw new Error(`Entity '${entityName}' not found in service`);
             }
-            
+
             await tx.run(
                 UPSERT(oRecords).into(sTargetEntity)
             );
@@ -4548,5 +4441,48 @@ module.exports = (srv) => {
             });
         }
     });
+
+    srv.on('getApprovalLogHistory', async (req) => {
+        try {
+            const { sRecordId } = req.data;
+            const tx = cds.tx(req);
+            const { ZLOG } = srv.entities;
+
+            const aLogs = await tx.run(
+                SELECT.from(ZLOG)
+                    .where({
+                        RECORD_ID: { like: `%${sRecordId}%` }
+                    })
+                    .orderBy({ TIMESTAMP: 'asc' })
+            );
+
+            const oFormatter = new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+
+            const sHistoryText = aLogs
+                .filter(oLog => oLog.MESSAGE)
+                .map(oLog => {
+                    const sTimestamp = oFormatter
+                        .format(new Date(oLog.TIMESTAMP))
+                        .replace(',', '');
+
+                    return `${sTimestamp} - ${oLog.MESSAGE}`;
+                })
+                .join('\n');
+
+            return sHistoryText;
+
+        } catch (error) {
+            req.error(error);
+        }
+    });
+
 
 }

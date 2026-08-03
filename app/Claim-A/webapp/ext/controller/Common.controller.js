@@ -11,6 +11,10 @@ sap.ui.define([
 		_reportTimer: null,
 		_detailTimer: null,
 		_searchTimer: null,
+		_sCurrentRouteName: null,
+		_oAttachedTable: null,
+		_fnAttachedItemPress: null,
+		_fnAttachedCellClick: null,
 
 		override: {
 
@@ -47,6 +51,20 @@ sap.ui.define([
 		_onRouteMatched: function (oEvent) {
 
 			const sRouteName = oEvent.getParameter("name");
+			this._sCurrentRouteName = sRouteName;
+
+			if (
+				this._oPendingTable &&
+				this._fnPendingCellClick &&
+				this._oPendingTable.detachCellClick
+			) {
+				this._oPendingTable.detachCellClick(
+					this._fnPendingCellClick
+				);
+				this._oPendingTable = null;
+				this._fnPendingCellClick = null;
+			}
+
 			this._navToken = (this._navToken || 0) + 1;
 			const currentToken = this._navToken;
 
@@ -106,7 +124,7 @@ sap.ui.define([
 						FUND_CENTER: [{ operator: "EQ", values: [decodeURIComponent(oArgs.FUND_CENTER || "")] }],
 						COMMITMENT_ITEM: [{ operator: "EQ", values: [decodeURIComponent(oArgs.COMMITMENT_ITEM || "")] }],
 						MATERIAL_GROUP: [{ operator: "EQ", values: [decodeURIComponent(oArgs.MATERIAL_GROUP || "")] }],
-						PROJECT_CODE: [{operator: "EQ",values: [decodeURIComponent(oArgs.PROJECT_CODE || "")]}]
+						PROJECT_CODE: [{ operator: "EQ", values: [decodeURIComponent(oArgs.PROJECT_CODE || "")] }]
 					};
 
 					oFilterBar.setFilterConditions(oConditions);
@@ -115,6 +133,58 @@ sap.ui.define([
 						if (currentToken !== this._navToken) return;
 						oFilterBar.fireSearch();
 					}, 400);
+				}, 800);
+			}
+
+			if (sRouteName === "ZEMP_PENDING_LIST") {
+
+				this._reportTimer = setTimeout(() => {
+					if (currentToken !== this._navToken) return;
+
+					const oTable = fnGetInnerTable();
+					if (!oTable) return;
+
+					// Detach previous pending list cell click handler first
+					if (this._oPendingTable && this._fnPendingCellClick && this._oPendingTable.detachCellClick) {
+						this._oPendingTable.detachCellClick(this._fnPendingCellClick);
+					}
+
+					this._oPendingTable = oTable;
+
+					this._fnPendingCellClick = (oEvent) => {
+
+						// Extra safety: only allow popup in ZEMP_PENDING_LIST
+						if (this._sCurrentRouteName !== "ZEMP_PENDING_LIST") {
+							return;
+						}
+
+						const iRowIndex = oEvent.getParameter("rowIndex");
+
+						// Ignore header click / invalid row
+						if (iRowIndex < 0) {
+							return;
+						}
+
+						const oContext = oTable.getContextByIndex(iRowIndex);
+
+						if (!oContext) {
+							return;
+						}
+
+						this._onPendingListRowPress({
+							getParameter: function (sName) {
+								if (sName === "listItem") {
+									return {
+										getBindingContext: function () {
+											return oContext;
+										}
+									};
+								}
+								return null;
+							}
+						});
+					};
+					oTable.attachCellClick(this._fnPendingCellClick);
 				}, 800);
 			}
 		},
@@ -127,10 +197,9 @@ sap.ui.define([
 			if (!oTable) return;
 
 			if (oTable.attachItemPress) {
-				if (!oTable.__itemPressAttached) {
-					oTable.attachItemPress(fnHandler, this);
-					oTable.__itemPressAttached = true;
-				}
+				this._oAttachedTable = oTable;
+				this._fnAttachedItemPress = fnHandler;
+				oTable.attachItemPress(fnHandler, this);
 				return;
 			}
 
@@ -195,6 +264,45 @@ sap.ui.define([
 
 			this.base.getAppComponent().getRouter().navTo("ClaimSubmission", {
 				claim_id: encodeURIComponent(String(oData.CLAIM_ID))
+			});
+		},
+
+		_detachRowPress: function () {
+			if (!this._oAttachedTable) {
+				return;
+			}
+
+			if (this._fnAttachedItemPress && this._oAttachedTable.detachItemPress) {
+				this._oAttachedTable.detachItemPress(this._fnAttachedItemPress, this);
+			}
+
+			if (this._fnAttachedCellClick && this._oAttachedTable.detachCellClick) {
+				this._oAttachedTable.detachCellClick(this._fnAttachedCellClick, this);
+			}
+
+			this._oAttachedTable = null;
+			this._fnAttachedItemPress = null;
+			this._fnAttachedCellClick = null;
+		},
+
+		_onPendingListRowPress: function (oEvent) {
+
+			if (this._sCurrentRouteName !== "ZEMP_PENDING_LIST") {
+				return;
+			}
+
+			const oItem = oEvent.getParameter("listItem");
+			if (!oItem) return;
+
+			const oContext = oItem.getBindingContext();
+			if (!oContext) return;
+
+			sap.ui.require([
+				"claima/ext/controller/ApproverPopup"
+			], function (ApproverPopup) {
+
+				ApproverPopup.onClickChangeApprover([oContext]);
+
 			});
 		}
 

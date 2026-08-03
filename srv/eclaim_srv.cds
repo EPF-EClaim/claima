@@ -1395,8 +1395,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             EMAIL,
             ROLE,
             DEP,
-            GRADE,
-            virtual null as SELECTED_APPROVER : String
+            GRADE
         };
 
  
@@ -1427,6 +1426,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+
+    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
+
+     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+
+     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
+
+     
     action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as

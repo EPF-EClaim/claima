@@ -217,6 +217,7 @@ async function getApproversDetails(sId, oDescriptor) {
     return aApproversDetails;
 
 }
+
 module.exports = {
     updateApproverDetailsTable,
     verifyCorrectApproverForAction,
