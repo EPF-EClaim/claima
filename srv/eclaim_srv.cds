@@ -1466,6 +1466,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getMedicalReminderEmail() returns array of reminders;   
 
+    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+
+    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
+
+     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+
+     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
+
+     
     entity ZLATEST_LOG                   as
         select from ECLAIM.ZLOG {
             key RECORD_ID,
@@ -1487,11 +1496,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.MESSAGE_TYPE,
             Log.STATUS_CODE
         };
-
-     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
-
-     entity ZDIVISION as projection on ECLAIM.ZDIVISION;        
-
-     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
 };

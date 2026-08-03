@@ -66,6 +66,24 @@ sap.ui.define([
 				oApprovalLogModel.setProperty("/approval", []);
 				return [];
 			}
+		},
+
+		getApprovalLogHistory: async function (oApprovalLogModel, oDataModel, sRecordId) {
+
+			const oFunction = oDataModel.bindContext("/getApprovalLogHistory(...)");
+            oFunction.setParameter("sRecordId", sRecordId);
+          
+            try {
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+				oApprovalLogModel.setProperty("/historyText", oResult.value);
+
+			} catch (oError) {
+				return null;
+			}
 		}
 	}
 });
