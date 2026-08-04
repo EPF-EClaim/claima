@@ -4335,8 +4335,6 @@ sap.ui.define([
 					ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
 					STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-					TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
 					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
@@ -4357,9 +4355,7 @@ sap.ui.define([
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
-					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
+					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code")
 				});
 
 				//// addon for new claim
