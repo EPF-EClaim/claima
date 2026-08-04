@@ -115,13 +115,13 @@ annotate service.ZREQUEST_TYPE with @(
 annotate service.ZCORPORATE_CARD with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Capabilities.SortRestrictions  : {Sortable: true},
-    Common.SemanticKey             : [CARD_NO, CARDHOLDER_ID, PRINCIPLE],
+    Common.SemanticKey             : [CARD_NO],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
+    odata.draft.enabled,
 
     UI                             : {
         CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
