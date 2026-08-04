@@ -429,7 +429,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
         CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
-        CCC_ADV_AMT                    : Decimal(16,2) @Common.Label: 'Corporate Credit Card Advance Amount';
+        CCC_ADV_AMT                    : Decimal(16,2)  @Common.Label: 'Corporate Credit Card Advance Amount';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
