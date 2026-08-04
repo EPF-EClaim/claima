@@ -96,6 +96,14 @@ module.exports = (srv) => {
             }
             //   If successful, update Header table with approved status and timestamp
             await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.APPROVED, oTx);
+        } else {
+            // Normal flow - the request/claim is now pending approver action.
+            try {
+                await updateCorpoCardAdvance(oTx, sId, Constant.Status.PENDING_APPROVAL);
+            } catch (oAdvErr) {
+                console.error("Failed to update corpo card advance (pending approval):", oAdvErr);
+                throw new Error('Error encountered during Corporate Card Advance update');
+            }
         }
 
         //5. Notify claimant/approver
@@ -214,7 +222,7 @@ module.exports = (srv) => {
             )
         ) {
             //trigger final approval process to send batch claim to IS 
-            if(oLastLevelApproverStatus.ISLASTLEVEL){
+            if(sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL){
                 console.log("Final approval Start");
                 const oSendClaimBatch = await sendClaimBatch(sId);
                 console.log("Final Approval: ", oSendClaimBatch);

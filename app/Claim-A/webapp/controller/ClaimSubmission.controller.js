@@ -3184,7 +3184,8 @@ sap.ui.define([
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration")
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					CHARGED_TO_CCC: oInputModel.getProperty("/claim_item/charged_to_ccc")
 				});
 
 				// to save the attachment inside SF

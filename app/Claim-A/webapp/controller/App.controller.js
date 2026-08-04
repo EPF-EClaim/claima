@@ -690,7 +690,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/category", oClaimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 				oInputModel.setProperty("/claimtype/descr/category", oClaimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC"));
 				this._onSelect_ClaimProcess_Category();
-
+ 
 				// set Request Form selection based on selected claim type item
 				if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
 					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
@@ -700,21 +700,23 @@ sap.ui.define([
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
 					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
-
-					var aOrFilters = [];
-
+ 
+					// (a)/(b): matches based on claim type - these require the
+					// current user to be the request's original requestor (EMP_ID)
+					var aOwnClaimTypeFilters = [];
+ 
 					// Selected claim type
-					aOrFilters.push(
+					aOwnClaimTypeFilters.push(
 						new Filter(
 							"CLAIM_TYPE_ID",
 							FilterOperator.EQ,
 							oInputModel.getProperty("/claimtype/type")
 						)
 					);
-
+ 
 					// Corporate Credit Card
 					if (Object.values(this._oConstant.TravelClaimType).includes(oInputModel.getProperty("/claimtype/type"))) {
-						aOrFilters.push(
+						aOwnClaimTypeFilters.push(
 							new Filter(
 								"CLAIM_TYPE_ID",
 								FilterOperator.EQ,
@@ -722,35 +724,57 @@ sap.ui.define([
 							)
 						);
 					}
-
-					// Participant PAR Request IDs
-					if (aParticipantPARs.length > 0) {
-						aParticipantPARs.forEach(function (oPAR) {
-							aOrFilters.push(
-								new Filter(
-									"REQUEST_ID",
-									FilterOperator.EQ,
-									oPAR.REQUEST_ID
-								)
-							);
-						});
-					}
-
-					// (Claim Type OR CCC OR Participant Request)
-					var oOrFilter = new Filter({
-						filters: aOrFilters,
+ 
+					var oOwnClaimTypeOrFilter = new Filter({
+						filters: aOwnClaimTypeFilters,
 						and: false
 					});
-
-					// Apply mandatory filters
-					var oFinalFilter = new Filter({
+ 
+					var oOwnRequestorFilter = new Filter({
 						filters: [
-							oOrFilter,
+							oOwnClaimTypeOrFilter,
 							new Filter(
 								"EMP_ID",
 								FilterOperator.EQ,
 								this._oSessionModel.getProperty("/userId")
-							),
+							)
+						],
+						and: true
+					});
+ 
+					// (c): matches based on the current user being a PARTICIPANT
+					// on the request - _getParticipantPreApprovalRecords() already
+					// scopes results to PARTICIPANTS_ID = current user, so this
+					// alone is sufficient proof of legitimate access. It must NOT
+					// also require EMP_ID = current user, or a cardholder who
+					// isn't the request's original creator would be excluded -
+					// exactly defeating the point of matching on participation.
+					var aFinalOrGroups = [oOwnRequestorFilter];
+ 
+					if (aParticipantPARs.length > 0) {
+						var aParticipantReqFilters = aParticipantPARs.map(function (oPAR) {
+							return new Filter(
+								"REQUEST_ID",
+								FilterOperator.EQ,
+								oPAR.REQUEST_ID
+							);
+						});
+ 
+						aFinalOrGroups.push(new Filter({
+							filters: aParticipantReqFilters,
+							and: false
+						}));
+					}
+ 
+					var oCombinedOrFilter = new Filter({
+						filters: aFinalOrGroups,
+						and: false
+					});
+ 
+					// Apply mandatory filters
+					var oFinalFilter = new Filter({
+						filters: [
+							oCombinedOrFilter,
 							new Filter(
 								"STATUS",
 								FilterOperator.EQ,
@@ -759,7 +783,7 @@ sap.ui.define([
 						],
 						and: true
 					});
-
+ 
 					oBindingSelectRequestForm.filter(oFinalFilter);
 				}
 			}
@@ -2136,26 +2160,36 @@ sap.ui.define([
 		_getParticipantPreApprovalRecords: async function (sRequestId) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oEmployeeModel = this.getView().getModel("employee_view");
-
+ 
 			var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
 			var sClaimTypeId = oInputModel.getProperty("/claimtype/type");
 			if (!sParticipantId || !sClaimTypeId) {
 				return [];
 			}
-
+ 
 			try {
+				var aClaimTypeIds = [sClaimTypeId];
+				if (Object.values(this._oConstant.TravelClaimType).includes(sClaimTypeId)) {
+					aClaimTypeIds.push(this._oConstant.ClaimType.CORPO_CRED_CARD);
+				}
+ 
 				var aFilters = [
 					new Filter("PARTICIPANTS_ID", FilterOperator.EQ, sParticipantId),
-					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
+					new Filter({
+						filters: aClaimTypeIds.map(function (sId) {
+							return new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sId);
+						}),
+						and: false
+					}),
 					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
 				];
-
+ 
 				if (sRequestId) {
 					aFilters.push(
 						new Filter("REQUEST_ID", FilterOperator.EQ, sRequestId)
 					);
 				}
-
+ 
 				var oListBinding = oEmployeeModel.bindList(
 					"/ZPARTICIPANT_PREAPPROVED_AMOUNT",
 					null,
@@ -2165,9 +2199,9 @@ sap.ui.define([
 						$select: "REQUEST_ID,PARTICIPANTS_ID,CLAIM_TYPE_ID,STATUS,PREAPPROVED_AMOUNT"
 					}
 				);
-
+ 
 				var aContexts = await oListBinding.requestContexts(0, 100);
-
+ 
 				return aContexts.map(function (oContext) {
 					return oContext.getObject();
 				});

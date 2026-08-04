@@ -220,44 +220,58 @@ async function getApproversDetails(sId, oDescriptor) {
 }
 
 async function updateCorpoCardAdvance(oTx, sId, sStatus) {
-    const aCommitStatuses = [Constant.Status.DRAFT, Constant.Status.PENDING_APPROVAL, Constant.Status.PUSH_BACK];
+    console.log("Start Update Corpo Card Advance");
     const bIsApproved = sStatus === Constant.Status.APPROVED;
-    const bIsCommit = aCommitStatuses.includes(sStatus);
-
-    if (!bIsApproved && !bIsCommit) {
+    const bIsPushBack = sStatus === Constant.Status.PUSH_BACK;
+    const bIsRejected = sStatus === Constant.Status.REJECTED;
+    const bIsPendingApproval = sStatus === Constant.Status.PENDING_APPROVAL;
+ 
+    if (!bIsApproved && !bIsPushBack && !bIsRejected && !bIsPendingApproval) {
         return true;
     }
-
+ 
     const sPrefix = sId.slice(0,3);
     console.log("sPrefix",sPrefix)
-    if (sPrefix === Constant.WorkflowType.REQUEST) {
+    const bIsRequest = sPrefix === Constant.WorkflowType.REQUEST;
+ 
+    // Requests only care about approval (establishes the monthly advance).
+    // Push back / rejected / pending approval commit-offset tracking is
+    // claim-settlement specific and doesn't apply to requests.
+    if (bIsRequest && !bIsApproved) {
+        return true;
+    }
+ 
+    if (bIsRequest) {
+        console.log("Update Corpo Card Advance REQUEST");
         const aItemParts = await oTx.run(
             SELECT.from('ZREQ_ITEM_CCC_PART')
                 .where({ REQUEST_ID: sId })
         );
-
+ 
         if (!aItemParts || aItemParts.length === 0) return true;
-
-        return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), bIsApproved, bIsCommit);
-
+ 
+        return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), { bIsApproved, bIsPushBack: false, bIsRejected: false, bIsPendingApproval: false, bIsRequest: true });
+ 
     } else if (sPrefix === Constant.WorkflowType.CLAIM) {
+        console.log("Update Corpo Card Advance CLAIM");
         const aClaimItems = await oTx.run(
             SELECT.from('ZCLAIM_ITEM')
                 .where({ CLAIM_ID: sId, CHARGED_TO_CCC: true })
         );
-
+ 
         if (!aClaimItems || aClaimItems.length === 0) return true;
-
+ 
         const mAmountByEmp = _sumClaimItemsByEmployee(aClaimItems);
         const mAmountByCard = await _resolveCardNoForEmployees(oTx, mAmountByEmp);
-
-        return _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bIsCommit);
-
+ 
+        return _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest: false });
+ 
     } else {
         console.warn(`Unrecognized ID format, cannot determine Request vs Claim: ${sId}`);
         return true;
     }
 }
+
 
 function _sumRequestPartsByCard(aItemParts) {
     const mAmountByCard = {};
@@ -302,45 +316,56 @@ async function _resolveCardNoForEmployees(oTx, mAmountByEmp) {
     return mAmountByCard;
 }
 
-async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bIsCommit) {
+async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest }) {
     console.log("Starintg apply corpo card advance");
     const aCards = await oTx.run(
         SELECT.from('ZCORPORATE_CARD')
             .where({ CARD_NO: Object.keys(mAmountByCard) })
     );
-
+ 
     const mCardholderByCard = {};
     aCards.forEach((oCard) => {
         mCardholderByCard[oCard.CARD_NO] = oCard.CARDHOLDER_ID;
     });
-
+ 
     for (const sCardNo of Object.keys(mAmountByCard)) {
         const fAmount = mAmountByCard[sCardNo];
         const sCardholderId = mCardholderByCard[sCardNo];
-
+ 
         if (!sCardholderId) {
             console.warn(`No cardholder found for CARD_NO: ${sCardNo}`);
             continue;
         }
-
+ 
         const [oExisting] = await oTx.run(
             SELECT.from('ZCORPORATE_CARD_ADVANCED')
                 .where({ CARD_NO: sCardNo, CARDHOLDER_ID: sCardholderId })
         );
-
+ 
         let fMonthlyAdvanced = oExisting ? parseFloat(oExisting.MONTHLY_ADVANCED_AMT || 0) : 0;
         let fCommitOffset = oExisting ? parseFloat(oExisting.COMMIT_OFFSET_AMT || 0) : 0;
         let fActualOffset = oExisting ? parseFloat(oExisting.ACTUAL_OFFSET_AMT || 0) : 0;
-
+ 
         if (bIsApproved) {
-            fMonthlyAdvanced += fAmount;
-            fActualOffset += fAmount;
-        } else if (bIsCommit) {
+            if (bIsRequest) {
+                // A Corporate Credit Card request being approved establishes/
+                // increases the cardholder's monthly advance.
+                fMonthlyAdvanced += fAmount;
+            } else {
+                // A claim settlement being approved offsets against the
+                // existing advance - it does not create additional advance.
+                fActualOffset += fAmount;
+            }
+        } else if (bIsPushBack || bIsPendingApproval) {
             fCommitOffset += fAmount;
+        } else if (bIsRejected) {
+            fCommitOffset -= fAmount;
         }
-
-        const fCurrentBalance = fMonthlyAdvanced - fActualOffset;
-
+ 
+        const fCurrentBalance = fMonthlyAdvanced < 0
+                                ? fMonthlyAdvanced + fActualOffset
+                                : fMonthlyAdvanced - fActualOffset;
+ 
         const oPayload = {
             MONTHLY_ADVANCED_AMT: fMonthlyAdvanced,
             COMMIT_OFFSET_AMT: fCommitOffset,
@@ -348,7 +373,7 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bI
             CURRENT_ADVANCED_BALANCE: fCurrentBalance,
             MODIFIEDAT: new Date().toISOString(),
         };
-
+ 
         if (oExisting) {
             await oTx.run(
                 UPDATE('ZCORPORATE_CARD_ADVANCED')
@@ -366,10 +391,10 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, bIsApproved, bI
                 })
             );
         }
-
+ 
         console.log("Completed apply corpo card advance");
     }
-
+ 
     return true;
 }
 

@@ -1651,7 +1651,7 @@
                 <Label text="{i18n>label_claimdetails_input_ccc_switch}"/>
                 <Switch
                     id="switch_claimprocess_charged_to_ccc"
-                    state="{claimsubmission_input>/charged_to_ccc}"
+                    state="{claimitem_input>/claim_item/charged_to_ccc}"
                     customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                     customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
                     visible="{
