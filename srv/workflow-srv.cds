@@ -12,7 +12,8 @@ type ApproverActionRequest {
 service workflow {
 
     action startWorkflow(
-        id : String
+        id : String,
+        currentStatus: String
     ) returns{
         Success             : Boolean;
         DocumentID          : String;

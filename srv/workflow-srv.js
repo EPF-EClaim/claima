@@ -46,7 +46,7 @@ module.exports = (srv) => {
 
     srv.on('startWorkflow', async req => {
         const oTx = cds.tx(req)
-        const { id : sId } = req.data
+        const { id : sId, currentStatus : sCurrentStatus } = req.data
         let bStatus = false;    // default to false, will be set to true
         let sStatus = '';
         let aReturn = [];
@@ -112,6 +112,8 @@ module.exports = (srv) => {
         // check if workflow found and approvers determined, change bStatus to true
         if (oWorkflowContext && aApproversContext.length) {
             bStatus = true;
+            console.log(sCurrentStatus)
+            const sSubmitText = sCurrentStatus === Constant.Status.PUSH_BACK ? "resubmitted" : "submitted";
             
             await oTx.run(INSERT.into("ZLOG").entries({
                 TIMESTAMP: new Date(),
@@ -119,7 +121,7 @@ module.exports = (srv) => {
                 PROGRAM: 'WORKFLOW',
                 MESSAGE_TYPE: 'A',
                 STATUS_CODE: '200',
-                MESSAGE: `${sId} is submitted.`
+                MESSAGE: `${sId} is ${sSubmitText}.`
             }));
         }
 
