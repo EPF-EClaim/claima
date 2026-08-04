@@ -2527,6 +2527,7 @@ sap.ui.define([
 			if (sMode === this._oConstant.PARMode.APPROVE) {
 
 				try {
+					BusyIndicator.show(0);
 
 					// 1. Approve + get payloads from util
 					const oPayload = {
@@ -2542,8 +2543,12 @@ sap.ui.define([
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
+					window.location.reload(true);
+
 				} catch (e) {
 					MessageBox.error(e.message);
+				} finally {
+					BusyIndicator.hide();
 				}
 			}
 		},
@@ -2596,6 +2601,8 @@ sap.ui.define([
 					this._sendBackDialog.close();
 				}
 
+				window.location.reload(true);
+
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
 			} finally {
@@ -2630,6 +2637,8 @@ sap.ui.define([
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				this._rejectDialog && this._rejectDialog.close();
+
+				window.location.reload(true);
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));
