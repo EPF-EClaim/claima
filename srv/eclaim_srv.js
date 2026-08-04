@@ -4479,29 +4479,18 @@ module.exports = (srv) => {
 
     /**
         * Clear MEDICAL_INSURANCE_ENTITLEMENT in ZEMP_MASTER table every year (Job Scheduler)
+        * Job schedule to run on early of the year
         * @public
         * @returns {Integer} number of records updated in header table
         */
     srv.on('clearMedicalEntitlement', async (req) => {
         console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
         try {
-            const currentYear = new Date().getFullYear().toString(); // confirm when the job will be run???
+            const { ZEMP_MEDICAL_ENT_HISTORY } = srv.entities;
+            
+            const iPreviousYear = new Date().getFullYear() - 1;
 
-            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => {
-                // Fetch records that need to be reset
-                const aEntitlementRecords = await tx.run(
-                    SELECT.from(ZEMP_MASTER)
-                        .columns(
-                            Constant.EntitiesFields.EEID,
-                            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
-                        )
-                        .where({
-                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
-                                [Constant.ComparisonOperators.NotEquals]: null,
-                                [Constant.ComparisonOperators.GreaterThan]: 0
-                            }
-                        })
-                );
+            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => { 
 
                 // Keep all
                 const aAllEmployees = await tx.run(
@@ -4513,7 +4502,7 @@ module.exports = (srv) => {
 
                 // Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
                 const aHistoryEntries = aAllEmployees.map(item => ({
-                    YEAR: currentYear,
+                    YEAR: iPreviousYear,
                     EMP_ID: item[Constant.EntitiesFields.EEID],
                     MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
                 }));
@@ -4522,7 +4511,7 @@ module.exports = (srv) => {
 
                 // UPSERT history records (Inserts new entries or updates existing ones for current year)
                 await tx.run(
-                    UPSERT.into(ZEMP_MEDICAL_ENT_HISTORY).entries(aHistoryEntries)
+                    UPSERT(aHistoryEntries).into(ZEMP_MEDICAL_ENT_HISTORY)
                 );
 
                 // Perform the mass update to reset entitlement
@@ -4533,7 +4522,6 @@ module.exports = (srv) => {
                         })
                         .where({
                             [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
-                                [Constant.ComparisonOperators.NotEquals]: null,
                                 [Constant.ComparisonOperators.GreaterThan]: 0
                             }
                         })
@@ -4546,9 +4534,7 @@ module.exports = (srv) => {
             console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
             return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
         } catch (error) {
-            console.error(
-                '[JOB ERROR] Annual entitlement reset failed:', error
-            );
+            console.error('[JOB ERROR] Annual entitlement reset failed:', error);
             return req.error(500, `Job execution failed: ${error.message}`);
         }
     });

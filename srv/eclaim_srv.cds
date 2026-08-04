@@ -1505,5 +1505,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.MESSAGE_TYPE,
             Log.STATUS_CODE
         };
+    
+    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
 };
