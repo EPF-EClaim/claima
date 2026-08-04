@@ -2059,10 +2059,6 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					setTimeout(() => {
-						this._fnGoToDashboard();
-					}, 400);
-
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
 					setTimeout(() => {
@@ -2125,9 +2121,7 @@ sap.ui.define([
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
+				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
@@ -2180,12 +2174,7 @@ sap.ui.define([
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
-
-
-
+				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
