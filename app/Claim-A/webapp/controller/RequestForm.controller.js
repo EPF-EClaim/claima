@@ -420,7 +420,8 @@ sap.ui.define([
 									// else, do not change claim status
 									// update status to PENDING APPROVAL
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
+									const sCurrentStatus = String(this._oReqModel.getProperty("/req_header/reqstatusid") || "").trim();
+									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId, sCurrentStatus);
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
