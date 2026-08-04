@@ -4216,6 +4216,9 @@ sap.ui.define([
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
+				// Reload when item cancellation
+				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+
 				let sFooterMode;
 
 				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
@@ -4234,9 +4237,6 @@ sap.ui.define([
 				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
 
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 			}
 		},
 
