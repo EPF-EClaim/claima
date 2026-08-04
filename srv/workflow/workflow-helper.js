@@ -131,17 +131,21 @@ async function retrieveRoleRank(sRole) {
     return await cds.run(sQuery)
 }
 async function retrieveItems(sId, oDescriptor) {
+    const aColumns = [
+        Constant.EntitiesFields.CLAIM_TYPE_ID,
+        Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
+        Constant.EntitiesFields.GL_ACCOUNT,
+        oDescriptor.entityAmount,
+        Constant.EntitiesFields.MATERIAL_CODE
+    ];
+
+    if (sId?.startsWith('REQ')) {
+        aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
+    }
 
     let oQuery = SELECT
         .from(oDescriptor.entityItem)
-        .columns(
-            Constant.EntitiesFields.CLAIM_TYPE_ID,
-            Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
-            Constant.EntitiesFields.GL_ACCOUNT,
-            oDescriptor.entityAmount,
-            Constant.EntitiesFields.MATERIAL_CODE,
-            Constant.EntitiesFields.CASH_ADVANCE
-        )
+        .columns(...aColumns)
         .where({ [oDescriptor.idField]: sId });
 
     if (sId?.startsWith('REQ')) {
@@ -152,10 +156,7 @@ async function retrieveItems(sId, oDescriptor) {
         oQuery.where`CLAIM_TYPE_ITEM_ID <> 'CASH_REPAYMENT'`;
     }
 
-    const aItems = await cds.run(oQuery);
-    console.log(aItems);
-
-    return aItems;
+    return await cds.run(oQuery);
 }
 async function retrieveBudgetContext(sId, oDescriptor, sAction) {
 
