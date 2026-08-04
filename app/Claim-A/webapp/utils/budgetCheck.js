@@ -78,7 +78,9 @@ sap.ui.define([
 										: oHeader.costcenter.split(" - ")[0];
 					var sInternalCode	= oHeader.projectcode || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 
-					var aPayload = aItemRows.map(row => {
+					var aPayload = aItemRows
+					.filter(row => row.CASH_ADVANCE !== true) 
+					.map(row => {
 						return {
 							"YEAR": sYear,
 							"INTERNAL_ORDER": sInternalCode,
