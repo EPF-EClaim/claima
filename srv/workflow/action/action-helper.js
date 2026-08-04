@@ -539,26 +539,31 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId) {
             return; // not a Corporate Credit Card request - nothing to notify
         }
  
-        const oConstantRec = await oTx.run(
-            SELECT.one.from(Constant.Entities.ZCONSTANTS)
+        const aConstantRecs = await oTx.run(
+            SELECT.from(Constant.Entities.ZCONSTANTS)
                 .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.CCC_MAKER })
         );
  
-        const sMakerEmpId = oConstantRec?.VALUE;
-        if (!sMakerEmpId) {
+        const aMakerEmpIds = (aConstantRecs || [])
+            .map(oRec => oRec?.VALUE)
+            .filter(sVal => !!sVal);
+
+        if (aMakerEmpIds.length === 0) {
             console.warn(`[CCC_MAKER_EMAIL] No CCC_MAKER configured in ZCONSTANTS, skipping notification for Request ${sRequestId}`);
             return;
         }
  
-        const oMaker = await oTx.run(
-            SELECT.one.from(Constant.Entities.ZEMP_MASTER)
-                .where({ EEID: String(sMakerEmpId) })
+        const aMakers = await oTx.run(
+            SELECT.from(Constant.Entities.ZEMP_MASTER)
+                .where({ EEID: aMakerEmpIds })
                 .columns('EEID', 'NAME', 'EMAIL')
         );
  
-        if (!oMaker || !oMaker.EMAIL) {
-            console.warn(`[CCC_MAKER_EMAIL] No email found for CCC_MAKER ${sMakerEmpId}, skipping notification for Request ${sRequestId}`);
+        const aMakersWithEmail = (aMakers || []).filter(oMaker => !!oMaker.EMAIL);
+
+        if (aMakersWithEmail.length === 0) {
+            console.warn(`[CCC_MAKER_EMAIL] No email found for any configured CCC_MAKER (${aMakerEmpIds.join(', ')}), skipping notification for Request ${sRequestId}`);
             return;
         }
         // Total advance amount across all cards/items on this request:
@@ -574,20 +579,22 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId) {
             return fSum + (fCurrentBalance - fServiceTax - fMerchantRefund);
         }, 0);
  
-        await sendEmailInternal({
-            ApproverName: oMaker.NAME,
-            ClaimID: sRequestId,
-            Action: Constant.ApprovalEmailAction.ACTION_APPROVED_TRANSFER,
-            EmailTitle: `Corporate Credit Card Request Approved: ${sRequestId}`,
-            ReceiverEmail: oMaker.EMAIL,
-            SubmissionDate: new Date().toISOString().split('T')[0],
-            ClaimantName: oMaker.NAME,
-            RecipientName: oMaker.NAME,
-            ClaimType: 'Corporate Credit Card Request',
-            CardAdvanceAmt: String(fRequestAdvanceAmount)
-        });
- 
-        console.log(`[CCC_MAKER_EMAIL] Approved Transfer notification sent for Request ${sRequestId} to CCC_MAKER ${sMakerEmpId} (${oMaker.EMAIL})`);
+        for (const oMaker of aMakersWithEmail) {
+            await sendEmailInternal({
+                ApproverName: oMaker.NAME,
+                ClaimID: sRequestId,
+                Action: Constant.ApprovalEmailAction.ACTION_APPROVED_TRANSFER,
+                EmailTitle: `Corporate Credit Card Request Approved: ${sRequestId}`,
+                ReceiverEmail: oMaker.EMAIL,
+                SubmissionDate: new Date().toISOString().split('T')[0],
+                ClaimantName: oMaker.NAME,
+                RecipientName: oMaker.NAME,
+                ClaimType: 'Corporate Credit Card Request',
+                CardAdvanceAmt: String(fRequestAdvanceAmount)
+            });
+
+            console.log(`[CCC_MAKER_EMAIL] Approved Transfer notification sent for Request ${sRequestId} to CCC_MAKER ${oMaker.EEID} (${oMaker.EMAIL})`);
+        }
  
     } catch (oError) {
         console.error(`[CCC_MAKER_EMAIL] Failed to send CCC_MAKER notification for Request ${sRequestId}`, oError);
