@@ -2101,10 +2101,6 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					setTimeout(() => {
-						this._fnGoToDashboard();
-					}, 400);
-
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
 					setTimeout(() => {
@@ -2167,9 +2163,7 @@ sap.ui.define([
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
+				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
@@ -2222,12 +2216,7 @@ sap.ui.define([
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
-
-
-
+				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
@@ -4466,7 +4455,7 @@ sap.ui.define([
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
 								if (oResponse.Success) {
 									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
@@ -4571,7 +4560,7 @@ sap.ui.define([
 							// instead, jump to catch statement with error no approver found
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
 							if (oResponse.Success) {
 								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {

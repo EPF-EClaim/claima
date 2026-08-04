@@ -429,7 +429,8 @@ sap.ui.define([
 									// else, do not change claim status
 									// update status to PENDING APPROVAL
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
+									const sCurrentStatus = String(this._oReqModel.getProperty("/req_header/reqstatusid") || "").trim();
+									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId, sCurrentStatus);
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
@@ -2569,11 +2570,6 @@ sap.ui.define([
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
-					// 3. Navigate back after small delay
-					setTimeout(() => {
-						this._oRouter.navTo("Dashboard", {}, true);
-					}, 400);
-
 				} catch (e) {
 					MessageBox.error(e.message);
 				}
@@ -2628,11 +2624,6 @@ sap.ui.define([
 					this._sendBackDialog.close();
 				}
 
-				// 4) Navigate back
-				setTimeout(() => {
-					this._oRouter.navTo("Dashboard", {}, true);
-				}, 400);
-
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
 			} finally {
@@ -2667,8 +2658,6 @@ sap.ui.define([
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				this._rejectDialog && this._rejectDialog.close();
-
-				setTimeout(() => this._oRouter.navTo("Dashboard", {}, true), 400);
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));

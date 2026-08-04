@@ -73,6 +73,7 @@ sap.ui.define([
 					location:       oData.LOCATION || "",
 					grptype:        oData.IND_OR_GROUP_DESC || "",
 					transport:      oData.TYPE_OF_TRANSPORTATION || "",
+					reqstatusid: 	oData.STATUS || "",
 					reqstatus:      oData.STATUS_DESC || "",
 					paymentdate:	oData.PAYMENT_DATE || "",
 					costcenter:     oData.COST_CENTER && oData.COST_CENTER_DESC ? `${oData.COST_CENTER} - ${oData.COST_CENTER_DESC}` : "",
