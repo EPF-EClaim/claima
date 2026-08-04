@@ -377,8 +377,8 @@ sap.ui.define([
 						var sUserId = this._oSessionModel.getProperty("/userId");
 						if (sUserId) {
 							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
-								oApproval.APPROVER_ID === sUserId ||
-								oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+								(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
+								oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
 							);
 							if (iItemIndex !== -1) {
 								oClaimSubmissionModel.setProperty("/is_approver", true);
