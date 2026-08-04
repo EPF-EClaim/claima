@@ -172,7 +172,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] ?? Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
     if(!aItemsContext.length) {
-        return null;
+        return aBudgetContexts;
     }
     for(const oItemContext of aItemsContext) {
         
