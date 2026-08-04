@@ -2052,9 +2052,7 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					setTimeout(() => {
-						this._fnGoToDashboard();
-					}, 400);
+					window.location.reload(true);
 
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
@@ -2118,9 +2116,9 @@ sap.ui.define([
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
+				
+				window.location.reload(true);
+				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
@@ -2173,12 +2171,9 @@ sap.ui.define([
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
-				setTimeout(() => {
-					this._fnGoToDashboard();
-				}, 400);
-
-
-
+				
+				window.location.reload(true);
+				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
@@ -4324,8 +4319,6 @@ sap.ui.define([
 					ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
 					STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-					TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
 					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
@@ -4399,7 +4392,7 @@ sap.ui.define([
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
 								if (oResponse.Success) {
 									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
@@ -4504,7 +4497,7 @@ sap.ui.define([
 							// instead, jump to catch statement with error no approver found
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"));
+							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
 							if (oResponse.Success) {
 								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {

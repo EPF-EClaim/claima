@@ -146,8 +146,7 @@ sap.ui.define([
                         oSessionModel.setProperty("/userType", "Claimant");
                     }
 
-                    this._fnRolesLoaded(); 
-                    MessageToast.show('Email: ' + sEmail);
+                    this._fnRolesLoaded();
 
                     if (this.getModel()) {
                         this.getModel().refresh();
