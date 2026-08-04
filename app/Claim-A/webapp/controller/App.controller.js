@@ -807,7 +807,7 @@ sap.ui.define([
 				}
 
 				var sRequestId = oRequestForm.getKey();
-				var aParticipantPARs = await this.x(sRequestId);
+				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
 				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
 
 				if (!oParticipantPAR) {
