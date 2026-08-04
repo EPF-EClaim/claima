@@ -419,10 +419,10 @@ sap.ui.define([
 
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
-								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
+								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
 
-								if (oErrorHandling.bCanProceed) {
+								if (oBudgetCheckHandling.bCanProceed) {
 
 									// move approver determination function before claim is saved
 									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -455,7 +455,7 @@ sap.ui.define([
 									}
 
 								} else {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
+									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oBudgetCheckHandling.aClaimTypeItem));
 								}
 							} catch (e) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
@@ -1280,7 +1280,7 @@ sap.ui.define([
 					TO_STATE_ID:                  oReqItem.to_state || null,
 					TO_LOCATION:                  oReqItem.to_location || null,
 					TO_LOCATION_OFFICE:           oReqItem.to_location_office || null,
-					COST_CENTER:                  oReqItem.COST_CENTER || null,
+					COST_CENTER:                  oReqItem.cost_center || null,
 					GL_ACCOUNT:                   oReqItem.gl_account || null,
 					MATERIAL_CODE:                oReqItem.material_code || null,
 					START_DATE:                   oReqItem.start_date || null,

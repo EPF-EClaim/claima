@@ -131,23 +131,32 @@ async function retrieveRoleRank(sRole) {
     return await cds.run(sQuery)
 }
 async function retrieveItems(sId, oDescriptor) {
-    
-    const aItems = await cds.run(
-        SELECT
-            .from(oDescriptor.entityItem)
-            .columns(   Constant.EntitiesFields.CLAIM_TYPE_ID,
-                        Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
-                        //Constant.EntitiesFields.COST_CENTER,
-                        //Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                        Constant.EntitiesFields.GL_ACCOUNT,
-                        oDescriptor.entityAmount,
-                        Constant.EntitiesFields.MATERIAL_CODE
-            )
-            .where( { [oDescriptor.idField]:sId })
-    );
-    //console.log('[workflow-determination/fetchItemsForWorkflow] aItems:', aItems)
-   
-    return aItems;
+    const aColumns = [
+        Constant.EntitiesFields.CLAIM_TYPE_ID,
+        Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
+        Constant.EntitiesFields.GL_ACCOUNT,
+        oDescriptor.entityAmount,
+        Constant.EntitiesFields.MATERIAL_CODE
+    ];
+
+    if (sId?.startsWith('REQ')) {
+        aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
+    }
+
+    let oQuery = SELECT
+        .from(oDescriptor.entityItem)
+        .columns(...aColumns)
+        .where({ [oDescriptor.idField]: sId });
+
+    if (sId?.startsWith('REQ')) {
+        oQuery.where({ CASH_ADVANCE: false });
+    }
+
+    if (sId?.startsWith('CLM')) {
+        oQuery.where`CLAIM_TYPE_ITEM_ID <> 'CASH_REPAYMENT'`;
+    }
+
+    return await cds.run(oQuery);
 }
 async function retrieveBudgetContext(sId, oDescriptor, sAction) {
 
