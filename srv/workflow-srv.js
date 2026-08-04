@@ -114,7 +114,6 @@ module.exports = (srv) => {
             bStatus = true;
             
             await oTx.run(INSERT.into("ZLOG").entries({
-                // Stagger milliseconds + append LEVEL to guarantee primary key uniqueness
                 TIMESTAMP: new Date(),
                 RECORD_ID: `${sId}`,
                 PROGRAM: 'WORKFLOW',
