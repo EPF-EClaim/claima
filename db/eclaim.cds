@@ -1539,8 +1539,8 @@ entity ZCONFIG_VARIABLE : managed {
 
 entity ZCORPORATE_CARD : managed {
     key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID  : String      @mandatory  @Common.Label: 'Cardholder Employee ID';
-    key PRINCIPLE      : Boolean      @mandatory  @Common.Label: 'Principle';
+    key CARDHOLDER_ID  : String       @mandatory  @Common.Label: 'Cardholder Employee ID';
+    PRINCIPLE          : Boolean      @Common.Label: 'Principle';
     START_DATE         : Date         @Common.Label: 'Start Date';
     END_DATE           : Date         @Common.Label: 'End Date';
     CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';

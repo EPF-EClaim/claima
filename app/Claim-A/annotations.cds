@@ -253,7 +253,7 @@ annotate eclaim_srv.ZCORPORATE_CARD with @(
         },
         {
             $Type : 'UI.DataField',
-            Value : EXPIRY_DATE,
+            Value : EXPIRY_DATA,
             Label : 'Expiry Date',
             @UI.Importance : #High,
         },
