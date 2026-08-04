@@ -4173,15 +4173,8 @@ sap.ui.define([
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
- 
-			// Reload the claim from the backend FIRST, so _afterLoadFragments()
-			// below recalculates totals from fresh data exactly once, instead
-			// of calculating once here (on stale in-memory data) and then
-			// having _loadClaimById overwrite it again right after.
-			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
- 
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			await this._afterLoadFragments();
+			await this._afterLoadFragments(true);
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
@@ -4222,6 +4215,8 @@ sap.ui.define([
 				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
  
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+ 
+				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 			}
 		},
 
@@ -4352,7 +4347,7 @@ sap.ui.define([
 					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					CARD_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2),
+					CCC_ADV_AMT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2),
 					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
 				});
 
@@ -5653,8 +5648,8 @@ sap.ui.define([
 			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
  
-			var nCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0;
-			var nCardAdvAmt = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
+			var nCashAdvAmt = Math.max(0, Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+			var nCardAdvAmt = Math.abs(Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0);
  
 			// Personal Expense and Cash Repayment items are excluded from the
 			// reimbursable total (not paid out normally) - both get the same
@@ -5686,7 +5681,7 @@ sap.ui.define([
 			}
  
 			// Default: subtract cash advance / corporate card advance, if any
-			var nFinal = nTotal + nCashAdvAmt + nCardAdvAmt;
+			var nFinal = nTotal - nCashAdvAmt - nCardAdvAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},

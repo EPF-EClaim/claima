@@ -1519,7 +1519,7 @@ sap.ui.define([
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
-			//this._applyReqTypeFilters(this._oConstant.Role.JKEW_ADMIN);
+			//this._applyReqTypeFilters(this._oConstant.Role.CCC_ADMIN);
 			this._openAndPreload(this._oDialogFragment);
 		},
 

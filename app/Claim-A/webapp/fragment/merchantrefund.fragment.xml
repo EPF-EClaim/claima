@@ -211,7 +211,8 @@
             <Button
                 text="Save"
                 type="Emphasized"
-                press=".onMerchantRefundSave" />
+                press=".onMerchantRefundSave" 
+                visible="{= ${request>/view} !== 'view' }" />
         </beginButton>
 
         <endButton>

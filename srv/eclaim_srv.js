@@ -546,6 +546,12 @@ module.exports = (srv) => {
         // frontend's _calculateClaimTotal() exclusion logic.
         const aExcludedClaimTypeItemIds = ['PERSONAL_EXP', 'CASH_REPAY'];
  
+        const aAllItems = await tx.run(
+            SELECT.from('ZCLAIM_ITEM')
+                .columns('CLAIM_SUB_ID', 'AMOUNT', 'CLAIM_TYPE_ITEM_ID')
+                .where({ CLAIM_ID: sClaimId })
+        );
+ 
         const result = await tx.run(
             SELECT.one`
                 SUM(AMOUNT) as TotalClaimAmount
@@ -555,11 +561,8 @@ module.exports = (srv) => {
         );
  
         const totalClaimAmount = result.TotalClaimAmount || 0;
- 
-        // Never subtract a negative advance - that would effectively ADD it
-        // to the final amount instead of reducing it.
-        const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
-        const nCardAdvanceAmount = Math.max(0, Number(headerResult.CCC_ADV_AMT) || 0);
+         const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
+        const nCardAdvanceAmount = Math.abs(Number(headerResult.CCC_ADV_AMT) || 0);
         const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount - nCardAdvanceAmount) || 0;
  
         await tx.run(

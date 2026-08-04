@@ -576,6 +576,11 @@ sap.ui.define([
 			if (oCreate) {
 				this._showItemList(sReqId);
 				this._oReqModel.setProperty('/req_item', {});
+		
+				if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD && sReqId) {
+					await this._loadCorpoCardsForItem(sReqId);
+					this._computeCorpoCardTotals();
+				}
 			} else {
 				PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 				await this._removeByLocalId("approval_log");
@@ -698,7 +703,7 @@ sap.ui.define([
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 
-		_openItemFromList(oEvent, bEdit) {
+		async _openItemFromList(oEvent, bEdit) {
 			const oTable = this.byId("req_item_table");
 
 			let oCtx = null;
@@ -799,7 +804,7 @@ sap.ui.define([
 			});
 
 			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
-				this._loadCorpoCardsForEditItem(sReqId, sReqSubId);
+				await this._loadCorpoCardsForEditItem(sReqId, sReqSubId);
 			}
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -3207,25 +3212,26 @@ sap.ui.define([
 			}, 0);
 		},
 
-		_setParticipantsForCC: function () {
+		async _setParticipantsForCC() {
 			const aCorpoDetails = this._oReqModel.getProperty("/corpo_cards");
 			const aCardholderIds = aCorpoDetails.map((oCard) => oCard.CARDHOLDER_ID).filter((sId) => !!sId);
-
+		
 			if (aCardholderIds.length === 0) {
 				return;
 			}
-
+		
 			const oListBinding = this.getView().getModel().bindList("/ZEMP_MASTER");
-
+		
 			const aFilters = aCardholderIds.map((sId) => new Filter("EEID", FilterOperator.EQ, sId));
 			const oCombinedFilter = new Filter({
 				filters: aFilters,
 				and: false
 			});
-
-			oListBinding.filter(oCombinedFilter).requestContexts().then((aContexts) => {
+		
+			try {
+				const aContexts = await oListBinding.filter(oCombinedFilter).requestContexts();
 				const aEmpDataList = aContexts.map((oContext) => oContext.getObject());
-
+		
 				if (aEmpDataList.length > 0) {
 					const aParticipants = aEmpDataList.map((oEmpData) => {
 						return {
@@ -3235,14 +3241,14 @@ sap.ui.define([
 							ALLOCATED_AMOUNT: ""
 						};
 					});
-
+		
 					this._oReqModel.setProperty("/participant", aParticipants);
 				} else {
 					MessageBox.error(Utility.getText("req_d_e_emp_not_found"));
 				}
-			}).catch((oError) => {
+			} catch (oError) {
 				console.error("Failed to fetch employee data:", oError);
-			});
+			}
 		},
 
 		async _upsertCorpoCardsForItem(sReqId, sReqSubId, aCorpoCards, sClaimTypeItemId) {
