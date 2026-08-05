@@ -8126,7 +8126,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Code Material'
             },
-            {
+             {
                 $Type            : 'UI.DataField',
                 Value            : PROJECT_CODE,
                 ![@UI.Importance]: #High,
@@ -8270,6 +8270,7 @@ annotate service.ZEMP_CC_BUDGET_REPORT with @(
             ]
         }
     );
+
     PROJECT_CODE            @(
         Common.Label                   : 'Project Code',
         Common.Text                    : PROJECT_DESC,
