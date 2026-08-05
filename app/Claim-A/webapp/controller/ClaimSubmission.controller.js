@@ -373,8 +373,8 @@ sap.ui.define([
 							var sUserId = this._oSessionModel.getProperty("/userId");
 							if (sUserId) {
 								let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
-									oApproval.APPROVER_ID === sUserId ||
-									oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+									(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
+									oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
 								);
 								if (iItemIndex !== -1) {
 									oClaimSubmissionModel.setProperty("/is_approver", true);
@@ -2649,12 +2649,13 @@ sap.ui.define([
 
 		_setClaimDetailSelection: function (oModel) {
 			// filter by submission type
+			var oFilterSubsmissionType;
 			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
 				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
 				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
 			) {
 				// filter items by claim header submission type + cash repayment
-				var oFilterSubsmissionType = new Filter({
+				oFilterSubsmissionType = new Filter({
 					filters: [
 						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
 						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CASH_REPAYMENT),
@@ -2666,17 +2667,27 @@ sap.ui.define([
 				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
 			}
 
-			// set dropdown for claim items
+			// 1. Define the base filters
+			var aFilters = [
+				new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
+				oFilterSubsmissionType,
+				// ensure status is active
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+			];
+
+			// 2. Conditionally add the CASH_REPAYMENT filter
+			// Using Number() or parseFloat() ensures the check works whether the model stores it as a string "0" or number 0
+			var fCashAdvanceAmount = oModel.getProperty("/claim_header/cash_advance_amount");
+			if (Number(fCashAdvanceAmount) === 0) {
+				aFilters.push(new Filter('CLAIM_TYPE_ITEM_ID', FilterOperator.NE, this._oConstant.ClaimTypeItem.CASH_REPAY));
+			}
+
+			// 3. Set dropdown for claim items using the dynamic filter array
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
-					oFilterSubsmissionType,
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				],
+				filters: aFilters,
 				sorter: [
 					new Sorter('CLAIM_TYPE_ITEM_DESC'),
 					new Sorter('CLAIM_TYPE_ITEM_ID')
@@ -2694,6 +2705,7 @@ sap.ui.define([
 					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
 				})
 			});
+			
 			// claim detail selection values
 			this._setClaimDetailSelectionMaster();
 		},
@@ -4262,6 +4274,9 @@ sap.ui.define([
 
 			await this._afterLoadFragments();
 
+			// Reload when item cancellation
+			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+
 			let sFooterMode;
 
 			if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
@@ -4277,13 +4292,7 @@ sap.ui.define([
 				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
 			}
 
-			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-			this._setEnabledToolbarFooter();
-
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-			// Reload when item cancellation
-			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 
 			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
