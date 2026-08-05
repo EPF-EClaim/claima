@@ -61,15 +61,15 @@ sap.ui.define([
             return oResponse
         },
 
-        onApproverDetermination: async function (oModel, sId){
+        onApproverDetermination: async function (oModel, sId, sCurrentStatus){
 			// claim header
 
             // Call CAP action to update header table
 
             let oResponse = null;
             const oAction = oModel.bindContext("/startWorkflow(...)");
-            oAction.setParameter("id", sId,);
-            
+            oAction.setParameter("id", sId);
+            oAction.setParameter("currentStatus", sCurrentStatus)
 
             try {
                 await oAction.execute();
