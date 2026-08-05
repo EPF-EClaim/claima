@@ -718,9 +718,7 @@ sap.ui.define([
          */
         getRemainingMedicalEntitlement: async function (oModel, sEmpId, sPropertyPath) {
 
-            const oFunction = this._oOwnerComponent
-                .getModel()
-                .bindContext("/getRemainingMedicalEntitlement(...)");
+            const oFunction = this._oOwnerComponent.getModel().bindContext("/getRemainingMedicalEntitlement(...)");
 
             oFunction.setParameter("empId", sEmpId);
 
@@ -730,19 +728,11 @@ sap.ui.define([
 
                 const oResult = oFunction.getBoundContext().getObject();
 
-                console.log("Medical Result:", oResult);
-
-                oModel.setProperty(
-                    sPropertyPath,
-                    oResult.remaining || 0
-                );
+                oModel.setProperty(sPropertyPath,oResult.remaining || 0);
                 
             } catch (oError) {
 
-                oModel.setProperty(
-                    sPropertyPath,
-                    0
-                );
+                oModel.setProperty(sPropertyPath,0);
             }
         }
 
