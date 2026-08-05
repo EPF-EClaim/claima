@@ -345,13 +345,13 @@
                                 <tnt:NavigationListItem
                                     key="ZCORPORATE_CARD"
                                     text="{i18n>corporateCard}"
-                                    visible="{roleModel>/DTDAdmin_role}"
+                                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
                                 />  
                                 <tnt:NavigationListItem
                                     key="ZCORPORATE_CARD_ADVANCED"
                                     text="{i18n>corporateCardAdv}"
-                                    visible="{roleModel>/DTDAdmin_role}"
-                                />  
+                                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem

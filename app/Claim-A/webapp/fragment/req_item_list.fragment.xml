@@ -135,23 +135,23 @@
                 <!-- Totals summary row -->
                 <HBox justifyContent="End" class="sapUiSmallMarginTop" gap="2rem">
                     <VBox>
-                        <Label text="Total" design="Bold"/>
+                        <Label text="Total Current Statement Balance " design="Bold"/>
                         <Text text="{request>/corpo_totals/current_balance}" />
                     </VBox>
                     <VBox>
-                        <Label text="Service Tax" design="Bold"/>
+                        <Label text="Total Service Tax" design="Bold"/>
                         <Text text="{request>/corpo_totals/service_tax}" />
                     </VBox>
                     <VBox>
-                        <Label text="Total Refund" design="Bold"/>
+                        <Label text="Total Merchant Refund" design="Bold"/>
                         <Text text="{request>/corpo_totals/merchant_refunds_total}" />
                     </VBox>
                     <VBox>
-                        <Label text="Cash Back" design="Bold" />
+                        <Label text="Total Cash Back" design="Bold" />
                         <Text text="{request>/corpo_totals/cashback}" />
                     </VBox>
                     <VBox>
-                        <Label text="Total Advanced" design="Bold"/>
+                        <Label text="Total Advanced Amount" design="Bold"/>
                         <Text text="{request>/corpo_totals/advance_amount}" />
                     </VBox>
                 </HBox>

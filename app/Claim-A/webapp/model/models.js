@@ -57,10 +57,12 @@ sap.ui.define([
                     isApprover: false,
                     isDTDAdmin: false,
                     isAdminCC: false,
-                    isAdminSystem: false, 
+                    isAdminSystem: false,
+                    isCCCAdmin: false, 
                     DTDAdmin_role: false, 
                     DTD_JKEW_role: false,
-                    Admin_role: false
+                    Admin_role: false,
+                    CCC_Admin: false
                 });
                 return oRoleModel;
             }, 
