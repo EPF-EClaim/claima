@@ -126,6 +126,7 @@
                                             selectedKey="{request>/req_item/dependent}" 
                                             forceSelection="false"
                                             change=".onChange_Dependent"
+                                            required="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}}"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',

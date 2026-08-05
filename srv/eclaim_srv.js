@@ -4415,45 +4415,97 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const { empId } = req.data;
 
+        console.log("empId:", empId);
+
         const oEmployee = await tx.run(
             SELECT.one
-                .from('ZEMP_MASTER')
-                .columns('MEDICAL_INSURANCE_ENTITLEMENT')
+                .from(Constant.Entities.ZEMP_MASTER)
+                .columns(
+                    Constant.EntitiesFields.EEID,
+                    Constant.EntitiesFields.ROLE,
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                )
                 .where({
-                    EEID: empId
+                    [Constant.EntitiesFields.EEID]: empId
                 })
         );
 
-        const fEntitlement =
-            Number(
-                oEmployee?.MEDICAL_INSURANCE_ENTITLEMENT || 0
-            );
+        console.log("oEmployee:", JSON.stringify(oEmployee, null, 2));
 
-        const oApprovedClaims = await tx.run(
-            SELECT.one`
-                SUM(FINAL_AMOUNT_TO_RECEIVE) as TOTAL
-            `
-                .from('ZCLAIM_HEADER')
+        if (!oEmployee) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        const sEmployeeRole = oEmployee[Constant.EntitiesFields.ROLE];
+
+        const aRules = await tx.run(
+            SELECT.from(Constant.Entities.ZELIGIBILITY_RULE)
                 .where({
-                    EMP_ID: empId,
-                    CLAIM_TYPE_ID: Constant.ClaimType.MEDICAL,
-                    STATUS_ID: Constant.Status.APPROVED
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]:
+                        Constant.ClaimType.MEDICAL
                 })
         );
 
-        const fApprovedClaims =
-            Number(
-                oApprovedClaims?.TOTAL || 0
-            );
+        const bHasSpecificRole = aRules.some(
+            rule => rule.ROLE_ID === sEmployeeRole
+        );
+
+        const aFilteredRules = aRules.filter(rule =>
+            bHasSpecificRole
+                ? rule.ROLE_ID === sEmployeeRole
+                : rule.ROLE_ID === Constant.Wildcard.All
+        );
+
+        const oRule = aFilteredRules[0];
+
+        console.log("Selected Rule:", oRule);
+
+        if (!oRule) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
+            return {
+                entitlement: Constant.UnlimitedAmount,
+                approved: parseFloat(
+                    oEmployee[
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    ] || 0
+                ),
+                remaining: Constant.UnlimitedAmount
+            };
+        }
+
+        const fEligibleAmount = parseFloat(
+            oRule.ELIGIBLE_AMOUNT || 0
+        );
+
+        const fConsumedAmount = parseFloat(
+            oEmployee[
+            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+            ] || 0
+        );
+
+        const fRemaining = fEligibleAmount - fConsumedAmount;
+
+        console.log("fEligibleAmount:", fEligibleAmount);
+        console.log("fConsumedAmount:", fConsumedAmount);
+        console.log("fRemaining:", fRemaining);
 
         return {
-            entitlement: fEntitlement,
-            approved: fApprovedClaims,
-            remaining:
-                fEntitlement - fApprovedClaims
+            entitlement: fEligibleAmount,
+            approved: fConsumedAmount,
+            remaining: Math.max(0, fRemaining)
         };
-    }
-    );
+    });
 
     /**
         * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject

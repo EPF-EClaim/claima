@@ -775,10 +775,10 @@ sap.ui.define([
 
 		getRemainingMedicalEntitlement: async function (sEmpId) {
 
-			const oSubmissionModel = this._oView.getModel("claimsubmission_input");
+			const oSubmissionModel =this._oView.getModel("claimsubmission_input");
 			const oFunction =this._oOwnerComponent.getModel().bindContext("/getRemainingMedicalEntitlement(...)");
 
-			oFunction.setParameter("empId",sEmpId);
+			oFunction.setParameter("empId", sEmpId);
 
 			try {
 
@@ -792,7 +792,6 @@ sap.ui.define([
 
 				oSubmissionModel.setProperty("/claim_header/medical_remaining",0);
 			}
-
 		}
 	}
 });
