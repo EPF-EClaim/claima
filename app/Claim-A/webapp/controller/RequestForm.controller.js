@@ -410,17 +410,18 @@ sap.ui.define([
 
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
-								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
+								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
 
-								if (oErrorHandling.bCanProceed) {
+								if (oBudgetCheckHandling.bCanProceed) {
 
 									// move approver determination function before claim is saved
 									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 									// else, do not change claim status
 									// update status to PENDING APPROVAL
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId);
+									const sCurrentStatus = String(this._oReqModel.getProperty("/req_header/reqstatusid") || "").trim();
+									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId, sCurrentStatus);
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
@@ -433,7 +434,7 @@ sap.ui.define([
 									}
 
 								} else {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
+									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oBudgetCheckHandling.aClaimTypeItem));
 								}
 							} catch (e) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
@@ -1244,7 +1245,7 @@ sap.ui.define([
 					TO_STATE_ID:                  oReqItem.to_state || null,
 					TO_LOCATION:                  oReqItem.to_location || null,
 					TO_LOCATION_OFFICE:           oReqItem.to_location_office || null,
-					COST_CENTER:                  oReqItem.COST_CENTER || null,
+					COST_CENTER:                  oReqItem.cost_center || null,
 					GL_ACCOUNT:                   oReqItem.gl_account || null,
 					MATERIAL_CODE:                oReqItem.material_code || null,
 					START_DATE:                   oReqItem.start_date || null,
@@ -2526,6 +2527,7 @@ sap.ui.define([
 			if (sMode === this._oConstant.PARMode.APPROVE) {
 
 				try {
+					BusyIndicator.show(0);
 
 					// 1. Approve + get payloads from util
 					const oPayload = {
@@ -2541,13 +2543,12 @@ sap.ui.define([
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
-					// 3. Navigate back after small delay
-					setTimeout(() => {
-						this._oRouter.navTo("Dashboard", {}, true);
-					}, 400);
+					window.location.reload(true);
 
 				} catch (e) {
 					MessageBox.error(e.message);
+				} finally {
+					BusyIndicator.hide();
 				}
 			}
 		},
@@ -2600,10 +2601,7 @@ sap.ui.define([
 					this._sendBackDialog.close();
 				}
 
-				// 4) Navigate back
-				setTimeout(() => {
-					this._oRouter.navTo("Dashboard", {}, true);
-				}, 400);
+				window.location.reload(true);
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
@@ -2640,7 +2638,7 @@ sap.ui.define([
 
 				this._rejectDialog && this._rejectDialog.close();
 
-				setTimeout(() => this._oRouter.navTo("Dashboard", {}, true), 400);
+				window.location.reload(true);
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));
