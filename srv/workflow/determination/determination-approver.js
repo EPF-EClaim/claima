@@ -220,15 +220,18 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             if(Object.values(Constant.SpecialMultipleConstantApproverList).includes(aWorkflowApprStep[iIndex])){
                 aConstantValues = await retrieveFromConstantTable(oTx, aWorkflowApprStep[iIndex]);
                 const aOtherConstantAppr = aConstantValues.filter(item => item.VALUE !== oApprover.EEID);
-                oSubstituteDetails = await retrieveEmployeeDetails(aOtherConstantAppr[0].VALUE);
-                console.log("aWorkflowApprStep[iIndex]" , aWorkflowApprStep[iIndex]);
-                console.log("aConstantValues", aConstantValues);
-                console.log("aOtherConstantAppr", aOtherConstantAppr);
-                console.log("oSubstituteDetails", oSubstituteDetails);
-                if(oSubstituteDetails){
-                    sSubstitute_eeid = oSubstituteDetails.EEID;
-                    sSubstitute_name = oSubstituteDetails.NAME;
-                    sSubstitute_email = oSubstituteDetails.EMAIL;
+                //possible that the approver dont have the substitute. skip if cannot find substitute
+                if (aOtherConstantAppr.length > 0) {
+                    oSubstituteDetails = await retrieveEmployeeDetails(aOtherConstantAppr[0].VALUE);
+                    console.log("aWorkflowApprStep[iIndex]", aWorkflowApprStep[iIndex]);
+                    console.log("aConstantValues", aConstantValues);
+                    console.log("aOtherConstantAppr", aOtherConstantAppr);
+                    console.log("oSubstituteDetails", oSubstituteDetails);
+                    if (oSubstituteDetails) {
+                        sSubstitute_eeid = oSubstituteDetails.EEID;
+                        sSubstitute_name = oSubstituteDetails.NAME;
+                        sSubstitute_email = oSubstituteDetails.EMAIL;
+                    }
                 }
             }
             else{

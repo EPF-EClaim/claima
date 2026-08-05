@@ -23,7 +23,8 @@ async function fetchHeaderForWorkflow(sId, oDescriptor) {
         Constant.EntitiesFields.COST_CENTER,
         Constant.EntitiesFields.ALTERNATE_COST_CENTER,
         Constant.EntitiesFields.TRIP_START_DATE,
-        Constant.EntitiesFields.CLAIM_TYPE_ID
+        Constant.EntitiesFields.CLAIM_TYPE_ID,
+        Constant.EntitiesFields.EMP_ID
     ];
 
     // header tables are ZCLAIM_HEADER and ZREQUEST_HEADER
