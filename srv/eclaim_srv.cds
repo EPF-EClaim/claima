@@ -603,23 +603,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
             max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
             max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER1_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
 
             max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
             max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER2_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
 
             max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
             max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER3_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
 
             max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
             max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER4_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
 
             max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
             max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER5_TS : String
+            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
         }
         group by PREAPPROVAL_ID;
 
@@ -629,23 +629,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
             max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
             max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER1_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
 
             max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
             max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER2_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
 
             max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
             max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER3_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
 
             max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
             max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER4_TS : String,
+            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
 
             max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
             max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'DD MON YYYY HH12:MI:SS AM') as APPROVER5_TS : String
+            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
         }
         group by CLAIM_ID;
 
@@ -1505,6 +1505,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.STATUS_CODE
         };
     
+    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
+
     entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
 };
