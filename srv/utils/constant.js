@@ -45,7 +45,8 @@ const Constant = {
     Admin: {
         Admin_System: "Admin_System",
         DTD_Admin: "DTD_Admin",
-        Admin_CC: "Admin_CC"
+        Admin_CC: "Admin_CC",
+        CCC_Admin : "CCC_Admin"
     },
 
     WorkflowType: {
