@@ -1762,7 +1762,7 @@ module.exports = (srv) => {
             req.user?.attr?.user_name ||
             req.user?.attr?.login_name ||
             req.user?.id;
-
+            
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");
         }

@@ -239,7 +239,7 @@ module.exports = (srv) => {
                 if (sAction === Constant.Status.APPROVED && sId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
                     console.log("Sending final approve CCC email")
                     await notifyCardholdersOfRequestApproval(oTx, sId);
-                    await notifyCCCMakerOfApproval(oTx, sId);
+                    await notifyCCCMakerOfApproval(oTx, sId, sUserId);
                 }
             }else{
                 // for non final approve

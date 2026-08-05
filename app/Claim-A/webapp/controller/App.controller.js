@@ -1542,8 +1542,8 @@ sap.ui.define([
 
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
-			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
-			//this._applyReqTypeFilters(this._oConstant.Role.CCC_ADMIN);
+			//this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			this._applyReqTypeFilters();
 			this._openAndPreload(this._oDialogFragment);
 		},
 
@@ -1752,7 +1752,7 @@ sap.ui.define([
 			this._handleProjectCodeVisibility(oEvent);
 		},
 
-		_applyReqTypeFilters: function (sUserType) {
+		_applyReqTypeFilters: function () {
 			var oSelect = Fragment.byId("request", "req_reqtype");
 
 			var oBinding = oSelect.getBinding("items");
@@ -1765,13 +1765,13 @@ sap.ui.define([
 				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE)
 			];
 
-			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
+			if (!this._oRoleModel.getProperty("/isAdminCC")) {
 				aFilters.push(
 					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE)
 				);
 			}
 
-			if (sUserType !== this._oConstant.Role.JKEW_ADMIN && sUserType !== this._oConstant.Role.CCC_ADMIN) {
+			if (!this._oRoleModel.getProperty("/isAdminSystem") && !this._oRoleModel.getProperty("/isCCCAdmin")) {
 				aFilters.push(
 					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC)
 				);

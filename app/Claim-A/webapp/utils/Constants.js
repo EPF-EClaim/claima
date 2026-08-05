@@ -751,6 +751,20 @@ sap.ui.define([
             "TELEFON" : "TELEFON",
             "TIPS" : "TIPS",
             "VISA" : "VISA",
+        },
+        "StatementDueInfo" : {
+            "GL_CODE" : "214229",
+            "MATERIAL_CODE" : "NA"
+        },
+        "CashBackInfo" : {
+            "GL_CODE" : "690003",
+            "MATERIAL_CODE" : "NA",
+            "COST_CENTER" : "100050505"
+        },
+        "ServiceTaxInfo" : {
+            "GL_CODE" : "721001",
+            "MATERIAL_CODE" : "721001006",
+            "COST_CENTER" : "100050505"
         }
         
     }

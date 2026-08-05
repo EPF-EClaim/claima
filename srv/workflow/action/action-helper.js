@@ -483,7 +483,7 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                 const oEmailPayload = {
                     ApproverName: oCardholder.NAME,
                     ClaimID: sRequestId,
-                    Action: Constant.ApprovalEmailAction.ACTION_NOTIFY,
+                    Action: Constant.ApprovalEmailAction.ACTION_NOTIFY_CARDHOLDER,
                     EmailTitle: `Corporate Credit Card Settlement - Submission of Claims`,
                     ReceiverEmail: oCardholder.EMAIL,
                     SubmissionDate: new Date().toISOString().split('T')[0],
@@ -526,18 +526,30 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
     }
 }
 
-async function notifyCCCMakerOfApproval(oTx, sRequestId) {
+async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
     console.log("Starintg email CCC maker");
     try {
         const oRequest = await oTx.run(
             SELECT.one.from('ZREQUEST_HEADER')
                 .where({ REQUEST_ID: sRequestId })
-                .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID', 'EMP_ID')
         );
  
         if (!oRequest || String(oRequest.REQUEST_TYPE_ID) !== String(Constant.RequestType.CORP_CC)) {
             return; // not a Corporate Credit Card request - nothing to notify
         }
+
+        // ApproverName = the current logged-in user performing this final
+        // approval action. ClaimantName = the person who originally raised
+        // the request. Neither is the CCC_MAKER - the maker is only the
+        // email recipient.
+        const [oApprover, oClaimant] = await Promise.all([
+            sApproverId ? oTx.run(SELECT.one.from(Constant.Entities.ZEMP_MASTER).where({ EEID: sApproverId }).columns('EEID', 'NAME')) : null,
+            oTx.run(SELECT.one.from(Constant.Entities.ZEMP_MASTER).where({ EEID: oRequest.EMP_ID }).columns('EEID', 'NAME'))
+        ]);
+
+        const sApproverName = oApprover?.NAME || sApproverId || '';
+        const sClaimantName = oClaimant?.NAME || oRequest.EMP_ID || '';
  
         const aConstantRecs = await oTx.run(
             SELECT.from(Constant.Entities.ZCONSTANTS)
@@ -581,13 +593,13 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId) {
  
         for (const oMaker of aMakersWithEmail) {
             await sendEmailInternal({
-                ApproverName: oMaker.NAME,
+                ApproverName: sApproverName,
                 ClaimID: sRequestId,
                 Action: Constant.ApprovalEmailAction.ACTION_APPROVED_TRANSFER,
                 EmailTitle: `Corporate Credit Card Request Approved: ${sRequestId}`,
                 ReceiverEmail: oMaker.EMAIL,
                 SubmissionDate: new Date().toISOString().split('T')[0],
-                ClaimantName: oMaker.NAME,
+                ClaimantName: sClaimantName,
                 RecipientName: oMaker.NAME,
                 ClaimType: 'Corporate Credit Card Request',
                 CardAdvanceAmt: String(fRequestAdvanceAmount)
