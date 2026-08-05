@@ -4735,5 +4735,28 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Retrieve policy information for selected dependent.
+     * Policy lookup and year filtering 
+     * @private
+     */
+    srv.on("getPolicyInfo", async (req) => {
+
+        const { ZCLAIM_ITEM } = cds.entities;
+        const { dependentNationalId } = req.data;
+
+        const aRows = await SELECT.from(ZCLAIM_ITEM)
+            .where({
+                DEPENDENT_NATIONAL_ID: dependentNationalId
+            })
+            .columns(
+                "POLICY_YEAR",
+                "POLICY_NUMBER"
+            );
+
+        return {
+            policies: aRows
+        };
+    });
 
 }

@@ -1725,8 +1725,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_2} === null}"
                 />
@@ -1778,8 +1777,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}) 
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_3} === null}"
                 />
@@ -1831,8 +1829,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_4} === null}"
                 />

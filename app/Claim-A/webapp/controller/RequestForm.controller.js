@@ -146,7 +146,18 @@ sap.ui.define([
 			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
-				await RequestUtility.getRemainingMedicalEntitlement(this,this._oReqModel.getProperty("/req_header/empid"));
+
+				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
+
+				if (sClaimType === this._oConstant.ClaimType.MEDICAL) {
+
+					await Utility.getRemainingMedicalEntitlement(
+						this._oReqModel,
+						this._oReqModel.getProperty("/req_header/empid"),
+						"/req_header/medical_remaining"
+					);
+				}
+
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
@@ -2017,7 +2028,9 @@ sap.ui.define([
 					{ label: "Lodging Category ID", property: "LODGING CATEGORY", type: "string" },
 					{ label: "Lodging Category Desc", property: "LODGING_CATEGORY_DESC", type: "string" },
 					{ label: "Estimated Participants", property: "ESTIMATED PARTICIPANTS", type: "string" },
-					{ label: "Cash Advance (Yes/No)", property: "CASH ADVANCE", type: "string" }
+					{ label: "Cash Advance (Yes/No)", property: "CASH ADVANCE", type: "string" },
+					{ label: "Insurance Medical Provider ID", property: " INSURANCE_MEDICAL_PROVIDER_ID", type: "string" },
+					{ label: "Insurance Medical Provider Name", property: "INSURANCE_MEDICAL_PROVIDER_NAME", type: "string" }
 				];
 
 				const itemsLabels = itemsColumns.map(c => c.label);
