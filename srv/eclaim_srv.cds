@@ -305,7 +305,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
                 ZEMP_MASTER_USER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME,
+                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME,            
                 *
         };
 
@@ -597,56 +597,55 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    view ZAPPROVER_REQUEST_PIVOT as
+     view ZAPPROVER_REQUEST_PIVOT as
         select from ZEMP_APPROVER_REQUEST_DETAILS {
             key PREAPPROVAL_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)       as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)     as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end) as APPROVER1_TS   : Timestamp,
+            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)       as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)     as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end) as APPROVER2_TS   : Timestamp,
+            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)       as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)     as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end) as APPROVER3_TS   : Timestamp,
+            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)       as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)     as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end) as APPROVER4_TS   : Timestamp,
+            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)       as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)     as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end) as APPROVER5_TS   : Timestamp
+            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
         }
         group by PREAPPROVAL_ID;
-
 
     view ZAPPROVER_CLAIM_PIVOT as
         select from ZEMP_APPROVER_CLAIM_DETAILS {
             key CLAIM_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)        as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)      as APPROVER1_NAME : String,
-            max(case when LEVEL = 1 then PROCESS_TIMESTAMP end)  as APPROVER1_TS   : Timestamp,
+            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
+            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)        as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)      as APPROVER2_NAME : String,
-            max(case when LEVEL = 2 then PROCESS_TIMESTAMP end)  as APPROVER2_TS   : Timestamp,
+            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
+            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)        as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)      as APPROVER3_NAME : String,
-            max(case when LEVEL = 3 then PROCESS_TIMESTAMP end)  as APPROVER3_TS   : Timestamp,
+            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
+            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)        as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)      as APPROVER4_NAME : String,
-            max(case when LEVEL = 4 then PROCESS_TIMESTAMP end)  as APPROVER4_TS   : Timestamp,
+            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
+            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)        as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)      as APPROVER5_NAME : String,
-            max(case when LEVEL = 5 then PROCESS_TIMESTAMP end)  as APPROVER5_TS   : Timestamp
+            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
+            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
+            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
         }
         group by CLAIM_ID;
 
@@ -1237,7 +1236,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                          and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
                                          and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
                                          and $self.PROJECT_CODE    = _Detail.PROJECT_CODE
-
         };
 
     action   updatePEDUEntitleAmount(sRecordId: String,
@@ -1423,9 +1421,51 @@ service eclaim_srv @(requires: 'authenticated-user') {
         SUBSTITUTE_RULE_ID : String
         ) returns Boolean;
 
+    entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
+
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
     function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
+
+    action getDependentNationalId(dependentNo : String)                                            returns String;
+
+    entity ZEMP_APPROVED_PREAPPROVAL     as
+        select from ECLAIM.ZREQUEST_HEADER as RequestHeader
+        left join ECLAIM.ZCLAIM_HEADER as ClaimHeader
+            on ClaimHeader.REQUEST_ID = RequestHeader.REQUEST_ID
+        left join ECLAIM.ZEMP_MASTER as EmpMaster
+            on EmpMaster.EEID = RequestHeader.EMP_ID
+        {
+            key RequestHeader.REQUEST_ID,
+            RequestHeader.EMP_ID,
+            ClaimHeader.CLAIM_ID,
+            EmpMaster.NAME,
+            EmpMaster.EMAIL,
+            RequestHeader.LAST_APPROVED_DATE
+        }
+
+        where
+                REQUEST_TYPE_ID             = 'RT0005'
+            and RequestHeader.CLAIM_TYPE_ID = 'MEDICAL'
+            and STATUS                      = 'STAT05'
+            and CASH_ADVANCE                > 0    
+            and CLAIM_ID                    is null;
+
+    type MedicalEntitlementBalance {
+        entitlement : Decimal(16,2);
+        approved    : Decimal(16,2);
+        remaining   : Decimal(16,2);
+        };
+
+    action getRemainingMedicalEntitlement(
+        empId : String)                                                                           returns MedicalEntitlementBalance;
+
+    action updateMedicalUsedAmount(sRecordId: String,
+                                   sStatus: String) returns Response;   
+
+    action clearMedicalEntitlement() returns String;
+
+    function getMedicalReminderEmail() returns array of reminders;   
 
     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
@@ -1460,5 +1500,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
 
+
+    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
 };

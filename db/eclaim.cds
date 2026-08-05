@@ -37,7 +37,7 @@ entity ZEMP_MASTER : managed {
         EFFECTIVE_DATE                : Date          @Common.Label: 'Effective Date';
         UPDATED_DATE                  : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
-        JOB_GRADE                     : String(3)     @Common.Label: 'Job Grade';
+        JOB_GRADE                     : String(4)     @Common.Label: 'Job Grade';
         DIVISION                      : String(10)    @Common.Label: 'Division';
         HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
         HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
@@ -88,7 +88,7 @@ entity ZEMP_MASTER : managed {
         ZDIVISION                     : Association to ZDIVISION
                                             on ZDIVISION.DIVISION = DIVISION;
         ZSTATE_ORIGIN                 : Association to ZSTATE
-                                            on ZSTATE_ORIGIN.STATE_ID  = STATE_OF_ORIGIN;                                             
+                                            on ZSTATE_ORIGIN.STATE_ID = STATE_OF_ORIGIN;
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -141,6 +141,8 @@ entity ZREQUEST_HEADER : managed {
         LAST_PUSH_BACK_TIME           : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID           : String(3)      @Common.Label: 'Push Back Reason ID';
         PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
+        ATTACHMENT3                   : String         @Common.Label: 'Attachment 3';
+        ATTACHMENT4                   : String         @Common.Label: 'Attachment 4';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -176,139 +178,147 @@ entity ZREQUEST_HEADER : managed {
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID                 : String         @mandatory  @Common.Label: 'Pre-Approval ID';
-    key REQUEST_SUB_ID             : String         @mandatory  @Common.Label: 'Pre-Approval Sub ID';
-        EMP_ID                     : String         @Common.Label: 'Employee ID';
-        CLAIM_TYPE_ITEM_ID         : String         @Common.Label: 'Claim Item';
-        CLAIM_TYPE_ID              : String         @Common.Label: 'Claim Type';
-        EST_AMOUNT                 : Decimal(16, 2) @Common.Label: 'Estimated Amount';
-        EST_NO_PARTICIPANT         : Integer        @Common.Label: 'Estimated Number of Participant';
-        CASH_ADVANCE               : Boolean        @Common.Label: 'Cash Advance (Yes/No)';
-        START_DATE                 : Date           @Common.Label: 'Start Date';
-        END_DATE                   : Date           @Common.Label: 'End Date';
-        REMARK                     : String         @Common.Label: 'Remark';
-        SEND_TO_SF                 : Boolean        @Common.Label: 'Send to SF';
-        LOCATION                   : String         @Common.Label: 'Location';
-        DECLARE_CLUB_MEMBERSHIP    : Boolean        @Common.Label: 'Declare Club Membership';
-        KWSP_SPORTS_REPRESENTATION : String(2)      @Common.Label: 'KWSP Sports Representation';
-        SPORTS_CLAIM_DISCLAIMER    : Boolean        @Common.Label: 'Sports Claim Disclaimer';
-        VEHICLE_OWNERSHIP_ID       : String(2)      @Common.Label: 'Vehicle Ownership ID';
-        MODE_OF_TRANSFER           : String(2)      @Common.Label: 'Mode of Transfer';
-        TRANSFER_DATE              : Date           @Common.Label: 'Transfer Date';
-        NO_OF_DAYS                 : Integer        @Common.Label: 'Number of Days';
-        MARRIAGE_CATEGORY          : String(2)      @Common.Label: 'Marriage Category';
-        FAMILY_COUNT               : Integer        @Common.Label: 'Family Count';
-        COST_CENTER                : String         @Common.Label: 'Cost Center';
-        GL_ACCOUNT                 : String(6)      @Common.Label: 'GL Account';
-        MATERIAL_CODE              : String         @Common.Label: 'Material Code';
-        COURSE_TITLE               : String         @Common.Label: 'Course Title';
-        ATTACHMENT1                : String         @Common.Label: 'Attachment 1';
-        ATTACHMENT2                : String         @Common.Label: 'Attachment 2';
-        PURPOSE                    : String         @Common.Label: 'Purpose';
-        MOBILE_CATEGORY_PURPOSE_ID : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
-        KILOMETER                  : Decimal(6, 2)  @Common.Label: 'Kilometer';
-        RATE_PER_KM                : String(10)     @Common.Label: 'Rate Per Kilometer';
-        FLIGHT_CLASS               : String         @Common.Label: 'Flight Class';
-        LOCATION_TYPE              : String(6)      @Common.Label: 'Location Type';
-        COUNTRY                    : String(3)      @Common.Label: 'Country';
-        FROM_STATE_ID              : String(4)      @Common.Label: 'From State'; //office distance
-        TO_STATE_ID                : String(4)      @Common.Label: 'To State'; //office distance
-        TO_LOCATION                : String         @Common.Label: 'To Location'; //free text
-        TO_LOCATION_OFFICE         : String(10)     @Common.Label: 'To Location (Office)'; //office distance
-        FROM_LOCATION              : String         @Common.Label: 'From Location'; //free text
-        FROM_LOCATION_OFFICE       : String(10)     @Common.Label: 'From Location (Office)'; //office distance
-        TOLL                       : Decimal(16, 2) @Common.Label: 'Toll';
-        VEHICLE_TYPE               : String(2)      @Common.Label: 'Vehicle Type';
-        DEPARTURE_TIME             : Timestamp      @Common.Label: 'Departure Time';
-        ARRIVAL_TIME               : Timestamp      @Common.Label: 'Arrival Time';
-        REGION                     : String(2)      @Common.Label: 'Region';
-        ROOM_TYPE                  : String(2)      @Common.Label: 'Room Type';
-        LODGING_CATEGORY           : String(2)      @Common.Label: 'Lodging Category';
-        AREA                       : String(6)      @Common.Label: 'Area';
-        START_TIME                 : Time           @Common.Label: 'Start Time';
-        END_TIME                   : Time           @Common.Label: 'End Time';
-        DEPENDENT                  : String         @Common.Label: 'Dependent';
-        METER_CUBE_ENTITLED        : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
-        METER_CUBE_ACTUAL          : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
-        FARE_TYPE_ID               : String(2)      @Common.Label: 'Fare Type ID';
-        VEHICLE_CLASS_ID           : String(2)      @Common.Label: 'Vehicle Class ID';
-        TRIP_START_DATE            : Date           @Common.Label: 'Trip Start Date';
-        TRIP_END_DATE              : Date           @Common.Label: 'Trip End Date';
-        TRIP_START_TIME            : Time           @Common.Label: 'Trip Start Time ';
-        TRIP_END_TIME              : Time           @Common.Label: 'Trip End Time';
-        TRAVEL_DURATION_DAY        : Decimal(3, 1)  @Common.Label: 'Travel Duration Day';
-        TRAVEL_DURATION_HOUR       : Decimal(4, 1)  @Common.Label: 'Travel Duration Hour';
-        ENTITLED_BREAKFAST         : Integer        @Common.Label: 'Entitled Breakfast';
-        ENTITLED_LUNCH             : Integer        @Common.Label: 'Entitled Lunch';
-        ENTITLED_DINNER            : Integer        @Common.Label: 'Entitled Dinner';
-        DAILY_ALLOWANCE            : Integer        @Common.Label: 'Daily Allowance';
-        CURRENCY_CODE              : String         @Common.Label: 'Currency Code';
-        CURRENCY_RATE              : Decimal(6, 2)  @Common.Label: 'Currency Rate';
-        TYPE_OF_PROFESSIONAL_BODY  : String(3)      @Common.Label: 'Type of Professional Body';
-        TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
-        ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
-        INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
-        ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
-                                         on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
-        ZMARITAL_CAT               : Association to one ZMARITAL_CAT
-                                         on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
-        ZVEHICLE_OWNERSHIP         : Association to one ZVEHICLE_OWNERSHIP
-                                         on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
-        ZREQ_ITEM_PART             : Composition of many ZREQ_ITEM_PART
-                                         on  ZREQ_ITEM_PART.REQUEST_ID     = REQUEST_ID
-                                         and ZREQ_ITEM_PART.REQUEST_SUB_ID = REQUEST_SUB_ID;
-        ZCLAIM_TYPE                : Association to one ZCLAIM_TYPE
-                                         on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-        ZCLAIM_TYPE_ITEM           : Association to one ZCLAIM_TYPE_ITEM
-                                         on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
-                                         and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
-        ZMOBILE_CATEGORY_PURPOSE   : Association to ZMOBILE_CATEGORY_PURPOSE
-                                         on ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_ID = MOBILE_CATEGORY_PURPOSE_ID;
-        ZFLIGHT_CLASS              : Association to ZFLIGHT_CLASS
-                                         on ZFLIGHT_CLASS.FLIGHT_CLASS_ID = FLIGHT_CLASS;
-        ZLOC_TYPE                  : Association to ZLOC_TYPE
-                                         on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
-        ZSTATE                     : Association to ZSTATE
-                                         on  ZSTATE.COUNTRY_ID = COUNTRY
-                                         and ZSTATE.STATE_ID   = FROM_STATE_ID;
-        ZTOSTATE                   : Association to ZSTATE
-                                         on  ZTOSTATE.COUNTRY_ID = COUNTRY
-                                         and ZTOSTATE.STATE_ID   = TO_STATE_ID;
-        ZCOUNTRY                   : Association to ZCOUNTRY
-                                         on ZCOUNTRY.COUNTRY_ID = COUNTRY;
-        ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
-                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
-        ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
-                                         on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
-        ZREGION                    : Association to ZREGION
-                                         on ZREGION.REGION_ID = REGION;
-        ZROOM_TYPE                 : Association to ZROOM_TYPE
-                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE;
-        ZLODGING_CAT               : Association to ZLODGING_CAT
-                                         on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
-        ZAREA                      : Association to one ZAREA
-                                         on ZAREA.AREA_ID = AREA;
-        ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
-        ZSPORTS_REPRESENTATION     : Association to ZSPORTS_REPRESENTATION
-                                         on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
-        ZFARE_TYPE                 : Association to ZFARE_TYPE
-                                         on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
-        ZVEHICLE_CLASS             : Association to ZVEHICLE_CLASS
-                                         on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
-        ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
-                                         on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
-        ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
-                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
-        ZCURRENCY                  : Association to ZCURRENCY
-                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
-        ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
-                                         on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
-        ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
-                                         on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+    key REQUEST_ID                      : String         @mandatory  @Common.Label: 'Pre-Approval ID';
+    key REQUEST_SUB_ID                  : String         @mandatory  @Common.Label: 'Pre-Approval Sub ID';
+        EMP_ID                          : String         @Common.Label: 'Employee ID';
+        CLAIM_TYPE_ITEM_ID              : String         @Common.Label: 'Claim Item';
+        CLAIM_TYPE_ID                   : String         @Common.Label: 'Claim Type';
+        EST_AMOUNT                      : Decimal(16, 2) @Common.Label: 'Estimated Amount';
+        EST_NO_PARTICIPANT              : Integer        @Common.Label: 'Estimated Number of Participant';
+        CASH_ADVANCE                    : Boolean        @Common.Label: 'Cash Advance (Yes/No)';
+        START_DATE                      : Date           @Common.Label: 'Start Date';
+        END_DATE                        : Date           @Common.Label: 'End Date';
+        REMARK                          : String         @Common.Label: 'Remark';
+        SEND_TO_SF                      : Boolean        @Common.Label: 'Send to SF';
+        LOCATION                        : String         @Common.Label: 'Location';
+        DECLARE_CLUB_MEMBERSHIP         : Boolean        @Common.Label: 'Declare Club Membership';
+        KWSP_SPORTS_REPRESENTATION      : String(2)      @Common.Label: 'KWSP Sports Representation';
+        SPORTS_CLAIM_DISCLAIMER         : Boolean        @Common.Label: 'Sports Claim Disclaimer';
+        VEHICLE_OWNERSHIP_ID            : String(2)      @Common.Label: 'Vehicle Ownership ID';
+        MODE_OF_TRANSFER                : String(2)      @Common.Label: 'Mode of Transfer';
+        TRANSFER_DATE                   : Date           @Common.Label: 'Transfer Date';
+        NO_OF_DAYS                      : Integer        @Common.Label: 'Number of Days';
+        MARRIAGE_CATEGORY               : String(2)      @Common.Label: 'Marriage Category';
+        FAMILY_COUNT                    : Integer        @Common.Label: 'Family Count';
+        COST_CENTER                     : String         @Common.Label: 'Cost Center';
+        GL_ACCOUNT                      : String(6)      @Common.Label: 'GL Account';
+        MATERIAL_CODE                   : String         @Common.Label: 'Material Code';
+        COURSE_TITLE                    : String         @Common.Label: 'Course Title';
+        ATTACHMENT1                     : String         @Common.Label: 'Attachment 1';
+        ATTACHMENT2                     : String         @Common.Label: 'Attachment 2';
+        PURPOSE                         : String         @Common.Label: 'Purpose';
+        MOBILE_CATEGORY_PURPOSE_ID      : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
+        KILOMETER                       : Decimal(6, 2)  @Common.Label: 'Kilometer';
+        RATE_PER_KM                     : String(10)     @Common.Label: 'Rate Per Kilometer';
+        FLIGHT_CLASS                    : String         @Common.Label: 'Flight Class';
+        LOCATION_TYPE                   : String(6)      @Common.Label: 'Location Type';
+        COUNTRY                         : String(3)      @Common.Label: 'Country';
+        FROM_STATE_ID                   : String(4)      @Common.Label: 'From State'; //office distance
+        TO_STATE_ID                     : String(4)      @Common.Label: 'To State'; //office distance
+        TO_LOCATION                     : String         @Common.Label: 'To Location'; //free text
+        TO_LOCATION_OFFICE              : String(10)     @Common.Label: 'To Location (Office)'; //office distance
+        FROM_LOCATION                   : String         @Common.Label: 'From Location'; //free text
+        FROM_LOCATION_OFFICE            : String(10)     @Common.Label: 'From Location (Office)'; //office distance
+        TOLL                            : Decimal(16, 2) @Common.Label: 'Toll';
+        VEHICLE_TYPE                    : String(2)      @Common.Label: 'Vehicle Type';
+        DEPARTURE_TIME                  : Timestamp      @Common.Label: 'Departure Time';
+        ARRIVAL_TIME                    : Timestamp      @Common.Label: 'Arrival Time';
+        REGION                          : String(2)      @Common.Label: 'Region';
+        ROOM_TYPE                       : String(2)      @Common.Label: 'Room Type';
+        LODGING_CATEGORY                : String(2)      @Common.Label: 'Lodging Category';
+        AREA                            : String(6)      @Common.Label: 'Area';
+        START_TIME                      : Time           @Common.Label: 'Start Time';
+        END_TIME                        : Time           @Common.Label: 'End Time';
+        DEPENDENT                       : String         @Common.Label: 'Dependent';
+        METER_CUBE_ENTITLED             : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
+        METER_CUBE_ACTUAL               : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
+        FARE_TYPE_ID                    : String(2)      @Common.Label: 'Fare Type ID';
+        VEHICLE_CLASS_ID                : String(2)      @Common.Label: 'Vehicle Class ID';
+        TRIP_START_DATE                 : Date           @Common.Label: 'Trip Start Date';
+        TRIP_END_DATE                   : Date           @Common.Label: 'Trip End Date';
+        TRIP_START_TIME                 : Time           @Common.Label: 'Trip Start Time ';
+        TRIP_END_TIME                   : Time           @Common.Label: 'Trip End Time';
+        TRAVEL_DURATION_DAY             : Decimal(3, 1)  @Common.Label: 'Travel Duration Day';
+        TRAVEL_DURATION_HOUR            : Decimal(4, 1)  @Common.Label: 'Travel Duration Hour';
+        ENTITLED_BREAKFAST              : Integer        @Common.Label: 'Entitled Breakfast';
+        ENTITLED_LUNCH                  : Integer        @Common.Label: 'Entitled Lunch';
+        ENTITLED_DINNER                 : Integer        @Common.Label: 'Entitled Dinner';
+        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        CURRENCY_CODE                   : String         @Common.Label: 'Currency Code';
+        CURRENCY_RATE                   : Decimal(6, 2)  @Common.Label: 'Currency Rate';
+        TYPE_OF_PROFESSIONAL_BODY       : String(3)      @Common.Label: 'Type of Professional Body';
+        TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';
+        ROUND_TRIP                      : Boolean        @Common.Label: 'Round Trip';
+        INTERNAL_ORDER                  : String         @Common.Label: 'Internal Order';
+        ATTACHMENT3                     : String         @Common.Label: 'Attachment 3';
+        POLICY_YEAR                     : String(4)      @Common.Label: 'Year';
+        DEPENDENT_NATIONAL_ID           : String         @Common.Label: 'Dependent National ID';
+        INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
+        INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Provider Name';
+        ATTACHMENT4                     : String         @Common.Label: 'Attachment 4';
+        ZREQUEST_HEADER                 : Association to one ZREQUEST_HEADER
+                                              on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
+        ZMARITAL_CAT                    : Association to one ZMARITAL_CAT
+                                              on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
+        ZVEHICLE_OWNERSHIP              : Association to one ZVEHICLE_OWNERSHIP
+                                              on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
+        ZREQ_ITEM_PART                  : Composition of many ZREQ_ITEM_PART
+                                              on  ZREQ_ITEM_PART.REQUEST_ID     = REQUEST_ID
+                                              and ZREQ_ITEM_PART.REQUEST_SUB_ID = REQUEST_SUB_ID;
+        ZCLAIM_TYPE                     : Association to one ZCLAIM_TYPE
+                                              on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+        ZCLAIM_TYPE_ITEM                : Association to one ZCLAIM_TYPE_ITEM
+                                              on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                              and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
+        ZMOBILE_CATEGORY_PURPOSE        : Association to ZMOBILE_CATEGORY_PURPOSE
+                                              on ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_ID = MOBILE_CATEGORY_PURPOSE_ID;
+        ZFLIGHT_CLASS                   : Association to ZFLIGHT_CLASS
+                                              on ZFLIGHT_CLASS.FLIGHT_CLASS_ID = FLIGHT_CLASS;
+        ZLOC_TYPE                       : Association to ZLOC_TYPE
+                                              on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
+        ZSTATE                          : Association to ZSTATE
+                                              on  ZSTATE.COUNTRY_ID = COUNTRY
+                                              and ZSTATE.STATE_ID   = FROM_STATE_ID;
+        ZTOSTATE                        : Association to ZSTATE
+                                              on  ZTOSTATE.COUNTRY_ID = COUNTRY
+                                              and ZTOSTATE.STATE_ID   = TO_STATE_ID;
+        ZCOUNTRY                        : Association to ZCOUNTRY
+                                              on ZCOUNTRY.COUNTRY_ID = COUNTRY;
+        ZOFFICE_DISTANCE                : Association to ZOFFICE_DISTANCE
+                                              on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
+                                              and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                              and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
+                                              and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
+        ZVEHICLE_TYPE                   : Association to one ZVEHICLE_TYPE
+                                              on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
+        ZREGION                         : Association to ZREGION
+                                              on ZREGION.REGION_ID = REGION;
+        ZROOM_TYPE                      : Association to ZROOM_TYPE
+                                              on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE;
+        ZLODGING_CAT                    : Association to ZLODGING_CAT
+                                              on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
+        ZAREA                           : Association to one ZAREA
+                                              on ZAREA.AREA_ID = AREA;
+        ZEMP_DEPENDENT                  : Association to ZEMP_DEPENDENT
+                                              on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
+        ZSPORTS_REPRESENTATION          : Association to ZSPORTS_REPRESENTATION
+                                              on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
+        ZFARE_TYPE                      : Association to ZFARE_TYPE
+                                              on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
+        ZVEHICLE_CLASS                  : Association to ZVEHICLE_CLASS
+                                              on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
+        ZGL_ACCOUNT                     : Association to ZGL_ACCOUNT
+                                              on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZTRANSFER_MODE                  : Association to ZTRANSFER_MODE
+                                              on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
+        ZCURRENCY                       : Association to ZCURRENCY
+                                              on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
+        ZPROFESIONAL_BODY               : Association to ZPROFESIONAL_BODY
+                                              on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
+        ZINTERNAL_ORDER                 : Association to ZINTERNAL_ORDER
+                                              on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+        ZINSURANCE_MEDICAL_PROVIDER     : Association to ZINSURANCE_MEDICAL_PROVIDER
+                                              on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -329,27 +339,30 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID    : String     @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC  : String     @Common.Label    : 'Claim Type Description';
-        GL_ACCOUNT       : String     @Common.Label    : 'GL Account';
-        START_DATE       : Date       @Common.Label    : 'Start Date';
-        END_DATE         : Date       @Common.Label    : 'End Date';
-        STATUS           : String(10) @Common.Label    : 'Status';
-        REQUEST_TYPE     : String     @Common.Label    : 'Request Type';
-        IND_OR_GROUP     : String(4)  @Common.Label    : 'Individual/Group';
-        PROJECT_CLAIM    : Boolean    @Common.Label    : 'Project Claim';
-        COST_CENTER      : String(9)  @Common.Label    : 'Cost Center';
-        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
-                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
-                                      @assert.integrity: false;
-        ZREQUEST_TYPE    : Association to ZREQUEST_TYPE
-                               on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
-        ZINDIV_GROUP     : Association to ZINDIV_GROUP
-                               on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
-        ZCOST_CENTER     : Association to ZCOST_CENTER
-                               on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZGL_ACCOUNT      : Association to ZGL_ACCOUNT
-                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+    key CLAIM_TYPE_ID          : String     @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC        : String     @Common.Label    : 'Claim Type Description';
+        GL_ACCOUNT             : String     @Common.Label    : 'GL Account';
+        START_DATE             : Date       @Common.Label    : 'Start Date';
+        END_DATE               : Date       @Common.Label    : 'End Date';
+        STATUS                 : String(10) @Common.Label    : 'Status';
+        REQUEST_TYPE           : String     @Common.Label    : 'Request Type';
+        IND_OR_GROUP           : String(4)  @Common.Label    : 'Individual/Group';
+        PROJECT_CLAIM          : Boolean    @Common.Label    : 'Project Claim';
+        COST_CENTER            : String(9)  @Common.Label    : 'Cost Center';
+        CASH_ADVANCE_CAT_ID    : String(10) @Common.Label    : 'Cash Advance Category';
+        ZCLAIM_TYPE_ITEM       : Composition of many ZCLAIM_TYPE_ITEM
+                                     on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
+                                            @assert.integrity: false;
+        ZREQUEST_TYPE          : Association to ZREQUEST_TYPE
+                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
+        ZINDIV_GROUP           : Association to ZINDIV_GROUP
+                                     on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER           : Association to ZCOST_CENTER
+                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZGL_ACCOUNT            : Association to ZGL_ACCOUNT
+                                     on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCASH_ADVANCE_CATEGORY : Association to ZCASH_ADVANCE_CATEGORY
+                                     on ZCASH_ADVANCE_CATEGORY.CASH_ADVANCE_CAT_ID = CASH_ADVANCE_CAT_ID;
 
 }
 
@@ -416,7 +429,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_PUSH_BACK_TIME            : Time           @Common.Label: 'Last Push Back Time';
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
         CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
-        CCC_ADV_AMT                    : Decimal(16,2) @Common.Label: 'Corporate Credit Card Advance Amount';
+        CCC_ADV_AMT                    : Decimal(16,2)  @Common.Label: 'Corporate Credit Card Advance Amount';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -460,190 +473,200 @@ entity ZCLAIM_HEADER : managed {
 }
 
 entity ZCLAIM_ITEM : managed {
-    key CLAIM_ID                   : String         @mandatory  @Common.Label: 'Claim ID';
-    key CLAIM_SUB_ID               : String         @mandatory  @Common.Label: 'Claim Sub ID';
-        EMP_ID                     : String         @Common.Label: 'Employee ID';
-        CLAIM_TYPE_ID              : String         @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_ITEM_ID         : String         @Common.Label: 'Claim Type Item ID';
-        PERCENTAGE_COMPENSATION    : Decimal(5, 2)  @Common.Label: '% Compensation';
-        ACCOUNT_NO                 : String(255)    @Common.Label: 'Account No';
-        AMOUNT                     : Decimal(16, 2) @Common.Label: 'Amount';
-        ATTACHMENT_FILE_1          : String         @Common.Label: 'Attachment 1';
-        ATTACHMENT_FILE_2          : String         @Common.Label: 'Attachment 2';
-        BILL_NO                    : String         @Common.Label: 'Bill No';
-        BILL_DATE                  : Date           @Common.Label: 'Bill Date';
-        CLAIM_CATEGORY             : String         @Common.Label: 'Claim Category';
-        COUNTRY                    : String(3)      @Common.Label: 'Country';
-        DISCLAIMER                 : Boolean        @Common.Label: 'Disclaimer: - installment, entertainment subs, games, roaming, storage, any other personal usage';
-        START_DATE                 : Date           @Common.Label: 'Start Date';
-        END_DATE                   : Date           @Common.Label: 'End Date';
-        START_TIME                 : Time           @Common.Label: 'Start Time';
-        END_TIME                   : Time           @Common.Label: 'End Time';
-        FLIGHT_CLASS               : String         @Common.Label: 'Flight Class';
-        FROM_LOCATION              : String         @Common.Label: 'From Location'; //free text
-        FROM_LOCATION_OFFICE       : String(10)     @Common.Label: 'From Location Office'; //office distance
-        KM                         : Decimal(6, 2)  @Common.Label: 'Kilometer';
-        LOCATION                   : String         @Common.Label: 'Location';
-        LOCATION_TYPE              : String(6)      @Common.Label: 'Location Type';
-        ROUND_TRIP                 : Boolean        @Common.Label: 'Round Trip';
-        LODGING_CATEGORY           : String(2)      @Common.Label: 'Lodging Category';
-        LODGING_ADDRESS            : String         @Common.Label: 'Lodging Address';
-        MARRIAGE_CATEGORY          : String(2)      @Common.Label: 'Marriage Category';
-        AREA                       : String(6)      @Common.Label: 'Area';
-        NO_OF_FAMILY_MEMBER        : Integer        @Common.Label: 'Number of Family Member';
-        PARKING                    : Decimal        @Common.Label: 'Parking';
-        PHONE_NO                   : String         @Common.Label: 'Phone No';
-        RATE_PER_KM                : String(10)     @Common.Label: 'Rate per Kilometer';
-        RECEIPT_DATE               : Date           @Common.Label: 'Receipt Date';
-        RECEIPT_NUMBER             : String         @Common.Label: 'Receipt Number';
-        REMARK                     : String         @Common.Label: 'Remark';
-        ROOM_TYPE                  : String(2)      @Common.Label: 'Room Type';
-        REGION                     : String(2)      @Common.Label: 'Semenanjung Or Sabah Sarawak';
-        FROM_STATE_ID              : String(4)      @Common.Label: 'From State ID'; //office distance
-        TO_STATE_ID                : String(4)      @Common.Label: 'To State ID'; //office distance
-        TO_LOCATION                : String         @Common.Label: 'To Location'; //free text
-        TO_LOCATION_OFFICE         : String(10)     @Common.Label: 'To Location Office'; //office distance
-        TOLL                       : Decimal(16, 2) @Common.Label: 'Toll';
-        TOTAL_EXP_AMOUNT           : Decimal(16, 2) @Common.Label: 'Total Expenses Amount';
-        VEHICLE_TYPE               : String(2)      @Common.Label: 'Vehicle Type';
-        VEHICLE_FARE               : Boolean        @Common.Label: 'Vehicle (Tambang)';
-        TRIP_START_DATE            : Date           @Common.Label: 'Trip Start Date';
-        TRIP_START_TIME            : Time           @Common.Label: 'Trip Start Time';
-        TRIP_END_DATE              : Date           @Common.Label: 'Trip End Date';
-        TRIP_END_TIME              : Time           @Common.Label: 'Trip End Time';
-        EVENT_START_DATE           : Date           @Common.Label: 'Event Start Date';
-        EVENT_END_DATE             : Date           @Common.Label: 'Event End Date';
-        TRAVEL_DURATION_DAY        : Decimal(3, 1)  @Common.Label: 'Travel Duration (Days)';
-        TRAVEL_DURATION_HOUR       : Decimal(4, 1)  @Common.Label: 'Travel Duration (Hour)';
-        PROVIDED_BREAKFAST         : String         @Common.Label: 'Provided Breakfast';
-        PROVIDED_LUNCH             : String         @Common.Label: 'Provided Lunch';
-        PROVIDED_DINNER            : String         @Common.Label: 'Provided Dinner';
-        ENTITLED_BREAKFAST         : String         @Common.Label: 'Entitled Breakfast';
-        ENTITLED_LUNCH             : String         @Common.Label: 'Entitled Lunch';
-        ENTITLED_DINNER            : String         @Common.Label: 'Entitled Dinner';
-        ANGGOTA_ID                 : String         @Common.Label: 'Anggota ID';
-        ANGGOTA_NAME               : String         @Common.Label: 'Anggota Name';
-        DEPENDENT_NAME             : String         @Common.Label: 'Depedent Name';
-        TYPE_OF_PROFESSIONAL_BODY  : String(3)      @Common.Label: 'Type of Professional Body';
-        DISCLAIMER_GALAKAN         : Boolean        @Common.Label: 'Disclaimer: Dengan kelulusan ini, saya megesahkan tuntutan elaun galakan sijil profesional ini adalah berkaitan dengan bidang tugas anggota.';
-        VEHICLE_OWNERSHIP_ID       : String(2)      @Common.Label: 'Vehicle Ownership ID (Sendiri/Pejabat)';
-        MODE_OF_TRANSFER           : String(2)      @Common.Label: 'Mode of Transfer';
-        TRANSFER_DATE              : Date           @Common.Label: 'Tarikh Pindah';
-        NO_OF_DAYS                 : Integer        @Common.Label: 'Number of Days';
-        FAMILY_COUNT               : Integer        @Common.Label: 'Number of Family Member (Per Head)';
-        FUNERAL_TRANSPORTATION     : String(2)      @Common.Label: 'Kemudahan Membawa Jenazah';
-        COST_CENTER                : String         @Common.Label: 'Cost Center';
-        GL_ACCOUNT                 : String(6)      @Common.Label: 'GL Account';
-        MATERIAL_CODE              : String         @Common.Label: 'Material Code';
-        COURSE_TITLE               : String         @Common.Label: 'Course Title';
-        PURPOSE                    : String         @Common.Label: 'Purpose';
-        MOBILE_CATEGORY_PURPOSE_ID : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
-        STUDY_LEVELS_ID            : String(2)      @Common.Label: 'Level of Studies';
-        ACTUAL_AMOUNT              : Decimal(16, 2) @Common.Label: 'Actual Amount';
-        FARE_TYPE_ID               : String(2)      @Common.Label: 'Type of Fare';
-        VEHICLE_CLASS_ID           : String(2)      @Common.Label: 'Vehicle Class';
-        NEED_FOREIGN_CURRENCY      : Boolean        @Common.Label: 'Need Foreign Currency?';
-        CURRENCY_CODE              : String         @Common.Label: 'Currency Code';
-        CURRENCY_RATE              : Decimal(16, 4) @Common.Label: 'Currency Rate';
-        CURRENCY_AMOUNT            : Decimal(16, 2) @Common.Label: 'Currency Amount';
-        REQUEST_APPROVAL_AMOUNT    : Decimal(16, 2) @Common.Label: 'Request Approved Amount';
-        DEPARTURE_TIME             : Timestamp      @Common.Label: 'Departure Time';
-        ARRIVAL_TIME               : Timestamp      @Common.Label: 'Arrival Time';
-        DEPENDENT                  : String         @Common.Label: 'Dependent';
-        POLICY_NUMBER              : String         @Common.Label: 'Policy Number';
-        INSURANCE_PROVIDER_ID      : String(3)      @Common.Label: 'ID Pembekal Insuran';
-        INSURANCE_PROVIDER_NAME    : String         @Common.Label: 'Name Pembekal Insuran';
-        INSURANCE_PACKAGE_ID       : String(2)      @Common.Label: 'Insurance Package';
-        INSURANCE_PURCHASE_DATE    : Date           @Common.Label: 'Date of Purchase of Insurance';
-        INSURANCE_CERT_START_DATE  : Date           @Common.Label: 'Insurance Period of Certificate Start Date';
-        INSURANCE_CERT_END_DATE    : Date           @Common.Label: 'Insurance Period of Certificate End Date';
-        TRAVEL_DAYS_ID             : String(2)      @Common.Label: 'Number of Days Category (Travel Insurance)';
-        METER_CUBE_ENTITLED        : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
-        METER_CUBE_ACTUAL          : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
-        DAILY_ALLOWANCE            : Integer        @Common.Label: 'Daily Allowance';
-        TIPS                       : Integer        @Common.Label: 'Tips';
-        EXCLUDE_TIPS               : Boolean        @Common.Label: 'Exclude Tips';
-        TOTAL_TRAVELLER            : Integer        @Common.Label: 'Total Traveller';
-        DEPENDENT_TYPE_ID          : String(2)      @Common.Label: 'Dependent Type ID';
-        INTERNAL_ORDER             : String         @Common.Label: 'Internal Order';
-        COURSE_DURATION            : Integer        @Common.Label: 'Course Duration';
-        CHARGED_TO_CCC             : Boolean @Common.Label: 'Charged to CCC';
-        ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
-                                         on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
-        ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
-                                         on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CLAIM_CATEGORY;
-        ZLODGING_CAT               : Association to ZLODGING_CAT
-                                         on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
-        ZCLAIM_TYPE_ITEM           : Association to one ZCLAIM_TYPE_ITEM
-                                         on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
-                                         and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
-        ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
-                                         on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
-        ZROOM_TYPE                 : Association to one ZROOM_TYPE
-                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE;
-        ZFLIGHT_CLASS              : Association to one ZFLIGHT_CLASS
-                                         on ZFLIGHT_CLASS.FLIGHT_CLASS_ID = FLIGHT_CLASS;
-        ZREGION                    : Association to one ZREGION
-                                         on ZREGION.REGION_ID = REGION;
-        ZAREA                      : Association to one ZAREA
-                                         on ZAREA.AREA_ID = AREA;
-        ZMARITAL_CAT               : Association to one ZMARITAL_CAT
-                                         on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
-        ZLOC_TYPE                  : Association to one ZLOC_TYPE
-                                         on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
-        ZCOUNTRY                   : Association to ZCOUNTRY
-                                         on ZCOUNTRY.COUNTRY_ID = COUNTRY;
-        ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
-                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
-        ZCOSTCENTER                : Association to ZCOST_CENTER
-                                         on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
-        ZSTATE                     : Association to ZSTATE
-                                         on  ZSTATE.COUNTRY_ID = COUNTRY
-                                         and ZSTATE.STATE_ID   = FROM_STATE_ID;
-        ZTOSTATE                   : Association to ZSTATE
-                                         on  ZTOSTATE.COUNTRY_ID = COUNTRY
-                                         and ZTOSTATE.STATE_ID   = TO_STATE_ID;
-        ZVEHICLE_OWNERSHIP         : Association to one ZVEHICLE_OWNERSHIP
-                                         on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
-        ZMOBILE_CATEGORY_PURPOSE   : Association to ZMOBILE_CATEGORY_PURPOSE
-                                         on ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_ID = MOBILE_CATEGORY_PURPOSE_ID;
-        ZSTUDY_LEVELS              : Association to ZSTUDY_LEVELS
-                                         on ZSTUDY_LEVELS.STUDY_LEVELS_ID = STUDY_LEVELS_ID;
-        ZVEHICLE_CLASS             : Association to ZVEHICLE_CLASS
-                                         on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
-        ZINSURANCE_PROVIDER        : Association to ZINSURANCE_PROVIDER
-                                         on ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_ID = INSURANCE_PROVIDER_ID;
-        ZINSURANCE_PACKAGE         : Association to ZINSURANCE_PACKAGE
-                                         on ZINSURANCE_PACKAGE.INSURANCE_PACKAGE_ID = INSURANCE_PACKAGE_ID;
-        ZCLAIM_TYPE                : Association to ZCLAIM_TYPE
-                                         on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-        ZTRAVEL_DAYS               : Association to ZTRAVEL_DAYS
-                                         on ZTRAVEL_DAYS.TRAVEL_DAYS_ID = TRAVEL_DAYS_ID;
-        ZEMP_MASTER                : Association to one ZEMP_MASTER
-                                         on ZEMP_MASTER.EEID = EMP_ID;
-        ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
-                                         on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
-        ZFARE_TYPE                 : Association to ZFARE_TYPE
-                                         on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
-        ZMATERIAL_GROUP            : Association to ZMATERIAL_GROUP
-                                         on ZMATERIAL_GROUP.MATERIAL_CODE_ID = MATERIAL_CODE;
-        ZTRANSPORT_PASSING         : Association to ZTRANSPORT_PASSING
-                                         on ZTRANSPORT_PASSING.TRANSPORT_PASSING_ID = FUNERAL_TRANSPORTATION;
-        ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
-                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
-        ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
-                                         on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
-        ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
-                                         on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
-        ZCURRENCY                  : Association to ZCURRENCY
-                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
-        ZEMP_DEPENDENT_TYPE        : Association to ZEMP_DEPENDENT_TYPE
-                                         on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
-        ZINTERNAL_ORDER            : Association to ZINTERNAL_ORDER
-                                         on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+    key CLAIM_ID                        : String         @mandatory  @Common.Label: 'Claim ID';
+    key CLAIM_SUB_ID                    : String         @mandatory  @Common.Label: 'Claim Sub ID';
+        EMP_ID                          : String         @Common.Label: 'Employee ID';
+        CLAIM_TYPE_ID                   : String         @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_ITEM_ID              : String         @Common.Label: 'Claim Type Item ID';
+        PERCENTAGE_COMPENSATION         : Decimal(5, 2)  @Common.Label: '% Compensation';
+        ACCOUNT_NO                      : String(255)    @Common.Label: 'Account No';
+        AMOUNT                          : Decimal(16, 2) @Common.Label: 'Amount';
+        ATTACHMENT_FILE_1               : String         @Common.Label: 'Attachment 1';
+        ATTACHMENT_FILE_2               : String         @Common.Label: 'Attachment 2';
+        BILL_NO                         : String         @Common.Label: 'Bill No';
+        BILL_DATE                       : Date           @Common.Label: 'Bill Date';
+        CLAIM_CATEGORY                  : String         @Common.Label: 'Claim Category';
+        COUNTRY                         : String(3)      @Common.Label: 'Country';
+        DISCLAIMER                      : Boolean        @Common.Label: 'Disclaimer: - installment, entertainment subs, games, roaming, storage, any other personal usage';
+        START_DATE                      : Date           @Common.Label: 'Start Date';
+        END_DATE                        : Date           @Common.Label: 'End Date';
+        START_TIME                      : Time           @Common.Label: 'Start Time';
+        END_TIME                        : Time           @Common.Label: 'End Time';
+        FLIGHT_CLASS                    : String         @Common.Label: 'Flight Class';
+        FROM_LOCATION                   : String         @Common.Label: 'From Location'; //free text
+        FROM_LOCATION_OFFICE            : String(10)     @Common.Label: 'From Location Office'; //office distance
+        KM                              : Decimal(6, 2)  @Common.Label: 'Kilometer';
+        LOCATION                        : String         @Common.Label: 'Location';
+        LOCATION_TYPE                   : String(6)      @Common.Label: 'Location Type';
+        ROUND_TRIP                      : Boolean        @Common.Label: 'Round Trip';
+        LODGING_CATEGORY                : String(2)      @Common.Label: 'Lodging Category';
+        LODGING_ADDRESS                 : String         @Common.Label: 'Lodging Address';
+        MARRIAGE_CATEGORY               : String(2)      @Common.Label: 'Marriage Category';
+        AREA                            : String(6)      @Common.Label: 'Area';
+        NO_OF_FAMILY_MEMBER             : Integer        @Common.Label: 'Number of Family Member';
+        PARKING                         : Decimal        @Common.Label: 'Parking';
+        PHONE_NO                        : String         @Common.Label: 'Phone No';
+        RATE_PER_KM                     : String(10)     @Common.Label: 'Rate per Kilometer';
+        RECEIPT_DATE                    : Date           @Common.Label: 'Receipt Date';
+        RECEIPT_NUMBER                  : String         @Common.Label: 'Receipt Number';
+        REMARK                          : String         @Common.Label: 'Remark';
+        ROOM_TYPE                       : String(2)      @Common.Label: 'Room Type';
+        REGION                          : String(2)      @Common.Label: 'Semenanjung Or Sabah Sarawak';
+        FROM_STATE_ID                   : String(4)      @Common.Label: 'From State ID'; //office distance
+        TO_STATE_ID                     : String(4)      @Common.Label: 'To State ID'; //office distance
+        TO_LOCATION                     : String         @Common.Label: 'To Location'; //free text
+        TO_LOCATION_OFFICE              : String(10)     @Common.Label: 'To Location Office'; //office distance
+        TOLL                            : Decimal(16, 2) @Common.Label: 'Toll';
+        TOTAL_EXP_AMOUNT                : Decimal(16, 2) @Common.Label: 'Total Expenses Amount';
+        VEHICLE_TYPE                    : String(2)      @Common.Label: 'Vehicle Type';
+        VEHICLE_FARE                    : Boolean        @Common.Label: 'Vehicle (Tambang)';
+        TRIP_START_DATE                 : Date           @Common.Label: 'Trip Start Date';
+        TRIP_START_TIME                 : Time           @Common.Label: 'Trip Start Time';
+        TRIP_END_DATE                   : Date           @Common.Label: 'Trip End Date';
+        TRIP_END_TIME                   : Time           @Common.Label: 'Trip End Time';
+        EVENT_START_DATE                : Date           @Common.Label: 'Event Start Date';
+        EVENT_END_DATE                  : Date           @Common.Label: 'Event End Date';
+        TRAVEL_DURATION_DAY             : Decimal(3, 1)  @Common.Label: 'Travel Duration (Days)';
+        TRAVEL_DURATION_HOUR            : Decimal(4, 1)  @Common.Label: 'Travel Duration (Hour)';
+        PROVIDED_BREAKFAST              : String         @Common.Label: 'Provided Breakfast';
+        PROVIDED_LUNCH                  : String         @Common.Label: 'Provided Lunch';
+        PROVIDED_DINNER                 : String         @Common.Label: 'Provided Dinner';
+        ENTITLED_BREAKFAST              : String         @Common.Label: 'Entitled Breakfast';
+        ENTITLED_LUNCH                  : String         @Common.Label: 'Entitled Lunch';
+        ENTITLED_DINNER                 : String         @Common.Label: 'Entitled Dinner';
+        ANGGOTA_ID                      : String         @Common.Label: 'Anggota ID';
+        ANGGOTA_NAME                    : String         @Common.Label: 'Anggota Name';
+        DEPENDENT_NAME                  : String         @Common.Label: 'Depedent Name';
+        TYPE_OF_PROFESSIONAL_BODY       : String(3)      @Common.Label: 'Type of Professional Body';
+        DISCLAIMER_GALAKAN              : Boolean        @Common.Label: 'Disclaimer: Dengan kelulusan ini, saya megesahkan tuntutan elaun galakan sijil profesional ini adalah berkaitan dengan bidang tugas anggota.';
+        VEHICLE_OWNERSHIP_ID            : String(2)      @Common.Label: 'Vehicle Ownership ID (Sendiri/Pejabat)';
+        MODE_OF_TRANSFER                : String(2)      @Common.Label: 'Mode of Transfer';
+        TRANSFER_DATE                   : Date           @Common.Label: 'Tarikh Pindah';
+        NO_OF_DAYS                      : Integer        @Common.Label: 'Number of Days';
+        FAMILY_COUNT                    : Integer        @Common.Label: 'Number of Family Member (Per Head)';
+        FUNERAL_TRANSPORTATION          : String(2)      @Common.Label: 'Kemudahan Membawa Jenazah';
+        COST_CENTER                     : String         @Common.Label: 'Cost Center';
+        GL_ACCOUNT                      : String(6)      @Common.Label: 'GL Account';
+        MATERIAL_CODE                   : String         @Common.Label: 'Material Code';
+        COURSE_TITLE                    : String         @Common.Label: 'Course Title';
+        PURPOSE                         : String         @Common.Label: 'Purpose';
+        MOBILE_CATEGORY_PURPOSE_ID      : String(2)      @Common.Label: 'Category/Purpose (Mobile)';
+        STUDY_LEVELS_ID                 : String(2)      @Common.Label: 'Level of Studies';
+        ACTUAL_AMOUNT                   : Decimal(16, 2) @Common.Label: 'Actual Amount';
+        FARE_TYPE_ID                    : String(2)      @Common.Label: 'Type of Fare';
+        VEHICLE_CLASS_ID                : String(2)      @Common.Label: 'Vehicle Class';
+        NEED_FOREIGN_CURRENCY           : Boolean        @Common.Label: 'Need Foreign Currency?';
+        CURRENCY_CODE                   : String         @Common.Label: 'Currency Code';
+        CURRENCY_RATE                   : Decimal(16, 4) @Common.Label: 'Currency Rate';
+        CURRENCY_AMOUNT                 : Decimal(16, 2) @Common.Label: 'Currency Amount';
+        REQUEST_APPROVAL_AMOUNT         : Decimal(16, 2) @Common.Label: 'Request Approved Amount';
+        DEPARTURE_TIME                  : Timestamp      @Common.Label: 'Departure Time';
+        ARRIVAL_TIME                    : Timestamp      @Common.Label: 'Arrival Time';
+        DEPENDENT                       : String         @Common.Label: 'Dependent';
+        POLICY_NUMBER                   : String         @Common.Label: 'Policy Number';
+        INSURANCE_PROVIDER_ID           : String(3)      @Common.Label: 'ID Pembekal Insuran';
+        INSURANCE_PROVIDER_NAME         : String         @Common.Label: 'Name Pembekal Insuran';
+        INSURANCE_PACKAGE_ID            : String(2)      @Common.Label: 'Insurance Package';
+        INSURANCE_PURCHASE_DATE         : Date           @Common.Label: 'Date of Purchase of Insurance';
+        INSURANCE_CERT_START_DATE       : Date           @Common.Label: 'Insurance Period of Certificate Start Date';
+        INSURANCE_CERT_END_DATE         : Date           @Common.Label: 'Insurance Period of Certificate End Date';
+        TRAVEL_DAYS_ID                  : String(2)      @Common.Label: 'Number of Days Category (Travel Insurance)';
+        METER_CUBE_ENTITLED             : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
+        METER_CUBE_ACTUAL               : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
+        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        TIPS                            : Integer        @Common.Label: 'Tips';
+        EXCLUDE_TIPS                    : Boolean        @Common.Label: 'Exclude Tips';
+        TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';
+        DEPENDENT_TYPE_ID               : String(2)      @Common.Label: 'Dependent Type ID';
+        INTERNAL_ORDER                  : String         @Common.Label: 'Internal Order';
+        COURSE_DURATION                 : Integer        @Common.Label: 'Course Duration';
+        POLICY_START_DATE               : Date           @Common.Label: 'Policy Start Date';
+        POLICY_END_DATE                 : Date           @Common.Label: 'Policy End Date';
+        DEPENDENT_NATIONAL_ID           : String         @Common.Label: 'Dependent National ID';
+        ATTACHMENT_FILE_3               : String         @Common.Label: 'Attachment 3';
+        CHARGED_TO_CCC                  : Boolean        @Common.Label: 'Charged to CCC';
+        POLICY_YEAR                     : String(4)      @Common.Label: 'Policy Year';
+        INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
+        INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Name';
+        ATTACHMENT_FILE_4               : String         @Common.Label: 'Attachment 4';
+        ZCLAIM_HEADER                   : Association to ZCLAIM_HEADER
+                                              on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
+        ZCLAIM_CATEGORY                 : Association to ZCLAIM_CATEGORY
+                                              on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CLAIM_CATEGORY;
+        ZLODGING_CAT                    : Association to ZLODGING_CAT
+                                              on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
+        ZCLAIM_TYPE_ITEM                : Association to one ZCLAIM_TYPE_ITEM
+                                              on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                              and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
+        ZVEHICLE_TYPE                   : Association to one ZVEHICLE_TYPE
+                                              on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
+        ZROOM_TYPE                      : Association to one ZROOM_TYPE
+                                              on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE;
+        ZFLIGHT_CLASS                   : Association to one ZFLIGHT_CLASS
+                                              on ZFLIGHT_CLASS.FLIGHT_CLASS_ID = FLIGHT_CLASS;
+        ZREGION                         : Association to one ZREGION
+                                              on ZREGION.REGION_ID = REGION;
+        ZAREA                           : Association to one ZAREA
+                                              on ZAREA.AREA_ID = AREA;
+        ZMARITAL_CAT                    : Association to one ZMARITAL_CAT
+                                              on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
+        ZLOC_TYPE                       : Association to one ZLOC_TYPE
+                                              on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
+        ZCOUNTRY                        : Association to ZCOUNTRY
+                                              on ZCOUNTRY.COUNTRY_ID = COUNTRY;
+        ZOFFICE_DISTANCE                : Association to ZOFFICE_DISTANCE
+                                              on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
+                                              and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                              and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
+                                              and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
+        ZCOSTCENTER                     : Association to ZCOST_CENTER
+                                              on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
+        ZSTATE                          : Association to ZSTATE
+                                              on  ZSTATE.COUNTRY_ID = COUNTRY
+                                              and ZSTATE.STATE_ID   = FROM_STATE_ID;
+        ZTOSTATE                        : Association to ZSTATE
+                                              on  ZTOSTATE.COUNTRY_ID = COUNTRY
+                                              and ZTOSTATE.STATE_ID   = TO_STATE_ID;
+        ZVEHICLE_OWNERSHIP              : Association to one ZVEHICLE_OWNERSHIP
+                                              on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
+        ZMOBILE_CATEGORY_PURPOSE        : Association to ZMOBILE_CATEGORY_PURPOSE
+                                              on ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_ID = MOBILE_CATEGORY_PURPOSE_ID;
+        ZSTUDY_LEVELS                   : Association to ZSTUDY_LEVELS
+                                              on ZSTUDY_LEVELS.STUDY_LEVELS_ID = STUDY_LEVELS_ID;
+        ZVEHICLE_CLASS                  : Association to ZVEHICLE_CLASS
+                                              on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
+        ZINSURANCE_PROVIDER             : Association to ZINSURANCE_PROVIDER
+                                              on ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_ID = INSURANCE_PROVIDER_ID;
+        ZINSURANCE_PACKAGE              : Association to ZINSURANCE_PACKAGE
+                                              on ZINSURANCE_PACKAGE.INSURANCE_PACKAGE_ID = INSURANCE_PACKAGE_ID;
+        ZCLAIM_TYPE                     : Association to ZCLAIM_TYPE
+                                              on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+        ZTRAVEL_DAYS                    : Association to ZTRAVEL_DAYS
+                                              on ZTRAVEL_DAYS.TRAVEL_DAYS_ID = TRAVEL_DAYS_ID;
+        ZEMP_MASTER                     : Association to one ZEMP_MASTER
+                                              on ZEMP_MASTER.EEID = EMP_ID;
+        ZEMP_DEPENDENT                  : Association to ZEMP_DEPENDENT
+                                              on ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT;
+        ZFARE_TYPE                      : Association to ZFARE_TYPE
+                                              on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
+        ZMATERIAL_GROUP                 : Association to ZMATERIAL_GROUP
+                                              on ZMATERIAL_GROUP.MATERIAL_CODE_ID = MATERIAL_CODE;
+        ZTRANSPORT_PASSING              : Association to ZTRANSPORT_PASSING
+                                              on ZTRANSPORT_PASSING.TRANSPORT_PASSING_ID = FUNERAL_TRANSPORTATION;
+        ZTRANSFER_MODE                  : Association to ZTRANSFER_MODE
+                                              on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
+        ZPROFESIONAL_BODY               : Association to ZPROFESIONAL_BODY
+                                              on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
+        ZGL_ACCOUNT                     : Association to ZGL_ACCOUNT
+                                              on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCURRENCY                       : Association to ZCURRENCY
+                                              on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
+        ZEMP_DEPENDENT_TYPE             : Association to ZEMP_DEPENDENT_TYPE
+                                              on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
+        ZINTERNAL_ORDER                 : Association to ZINTERNAL_ORDER
+                                              on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+        ZINSURANCE_MEDICAL_PROVIDER     : Association to ZINSURANCE_MEDICAL_PROVIDER
+                                              on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
 }
 
 entity ZLODGING_CAT : managed {
@@ -1549,7 +1572,7 @@ entity ZCORPORATE_CARD : managed {
     EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
     REMARKS            : String(500)  @Common.Label: 'Remarks';
 }
- 
+
 entity ZCORPORATE_CARD_ADVANCED : managed {
     key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
     key CARDHOLDER_ID           : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
@@ -1559,15 +1582,24 @@ entity ZCORPORATE_CARD_ADVANCED : managed {
     ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
     CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
 }
-entity ZREQ_ITEM_CCC_PART : managed{
-    key REQUEST_ID          : String @mandatory @Common.Label: 'Request ID';
-    key REQUEST_SUB_ID      : String @mandatory @Common.Label: 'Request Sub ID';
-    key CARD_NO             : String(16)      @mandatory  @Common.Label: 'Credit Card No';
-    STATEMENT_DUE_AMT       : Decimal(16, 2) @Common.Label: 'Statement Due Amount';
-    SERVICE_TAX             : Decimal(16, 2) @Common.Label: 'Service Tax';
-    CASHBACK                : Decimal(16, 2) @Common.Label: 'Cashback';
-    MERCHANT_REFUND_AMT     : Decimal(16, 2) @Common.Label: 'Merchant Refund';
-    MERCHANT_REFUND_ARR     : String @Common.Label: 'Merchant Refund List';
+
+entity ZREQ_ITEM_CCC_PART : managed {
+    key REQUEST_ID          : String         @mandatory  @Common.Label: 'Request ID';
+    key REQUEST_SUB_ID      : String         @mandatory  @Common.Label: 'Request Sub ID';
+    key CARD_NO             : String(16)     @mandatory  @Common.Label: 'Credit Card No';
+        STATEMENT_DUE_AMT   : Decimal(16, 2) @Common.Label: 'Statement Due Amount';
+        SERVICE_TAX         : Decimal(16, 2) @Common.Label: 'Service Tax';
+        CASHBACK            : Decimal(16, 2) @Common.Label: 'Cashback';
+        MERCHANT_REFUND_AMT : Decimal(16, 2) @Common.Label: 'Merchant Refund';
+        MERCHANT_REFUND_ARR : String         @Common.Label: 'Merchant Refund List';
+}
+
+entity ZINSURANCE_MEDICAL_PROVIDER : managed {
+    key INSURANCE_MEDICAL_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Medical Provider ID';
+        INSURANCE_MEDICAL_PROVIDER_DESC : String     @Common.Label: 'Insurance Medical Provider Description';
+        START_DATE                      : Date       @Common.Label: 'Start Date';
+        END_DATE                        : Date       @Common.Label: 'End Date';
+        STATUS                          : String(10) @Common.Label: 'Status';
 }
 
 entity ZCASH_ADVANCE_CATEGORY : managed {
@@ -1576,6 +1608,12 @@ entity ZCASH_ADVANCE_CATEGORY : managed {
         START_DATE            : Date        @Common.Label: 'Start Date';
         END_DATE              : Date        @Common.Label: 'End Date';
         STATUS                : String(10)  @Common.Label: 'Status';
+}
+
+entity ZEMP_MEDICAL_ENT_HISTORY : managed {
+    key YEAR                          : String(4)     @mandatory  @Common.Label: 'Year';
+    key EMP_ID                        : String        @mandatory  @Common.Label: 'Employee ID';
+        MEDICAL_INSURANCE_ENTITLEMENT : Decimal(7, 2) @Common.Label: 'Medical Insurance Entitlement';
 }
 
 entity ZPOSITION : managed {
