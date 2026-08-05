@@ -1592,6 +1592,9 @@ entity ZREQ_ITEM_CCC_PART : managed {
         CASHBACK            : Decimal(16, 2) @Common.Label: 'Cashback';
         MERCHANT_REFUND_AMT : Decimal(16, 2) @Common.Label: 'Merchant Refund';
         MERCHANT_REFUND_ARR : String         @Common.Label: 'Merchant Refund List';
+        GL_CODE             : String         @Common.Label: 'GL Code';
+        MATERIAL_CODE       : String         @Common.Label: 'Material Code';
+        COST_CENTER         : String         @Common.Label: 'Cost Center';
 }
 
 entity ZINSURANCE_MEDICAL_PROVIDER : managed {
