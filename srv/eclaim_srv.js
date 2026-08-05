@@ -544,7 +544,7 @@ module.exports = (srv) => {
         // Personal Expense and Cash Repayment items are excluded from the
         // reimbursable total - they aren't paid out normally, mirroring the
         // frontend's _calculateClaimTotal() exclusion logic.
-        const aExcludedClaimTypeItemIds = ['PERSONAL_EXP', 'CASH_REPAY'];
+        const aExcludedClaimTypeItemIds = ['CASH_REPAY'];
  
         const aAllItems = await tx.run(
             SELECT.from('ZCLAIM_ITEM')
@@ -1762,7 +1762,7 @@ module.exports = (srv) => {
             req.user?.attr?.user_name ||
             req.user?.attr?.login_name ||
             req.user?.id;
-            
+
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");
         }

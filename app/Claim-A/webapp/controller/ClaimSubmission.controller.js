@@ -3180,7 +3180,9 @@ sap.ui.define([
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
-					CHARGED_TO_CCC: oInputModel.getProperty("/claim_item/charged_to_ccc")
+					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP)
+									? true
+									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
 				});
 
 				// to save the attachment inside SF
@@ -5649,7 +5651,6 @@ sap.ui.define([
 			// reimbursable total (not paid out normally) - both get the same
 			// treatment.
 			var aExcludedTypeIds = [
-				this._oConstant.ClaimTypeItem.PERSONAL_EXP,
 				this._oConstant.ClaimTypeItem.CASH_REPAY
 			];
  
