@@ -272,16 +272,27 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
     }
 }
 
-
 function _sumRequestPartsByCard(aItemParts) {
-    const mAmountByCard = {};
+    const mTotalsByCard = {};
     aItemParts.forEach((oPart) => {
         const sCardNo = oPart.CARD_NO;
-        const fAmount = parseFloat(oPart.STATEMENT_DUE_AMT || 0)
-                       - parseFloat(oPart.CASHBACK || 0);
-
-        mAmountByCard[sCardNo] = (mAmountByCard[sCardNo] || 0) + fAmount;
+        if (!mTotalsByCard[sCardNo]) {
+            mTotalsByCard[sCardNo] = { currentBalance: 0, serviceTax: 0, merchantRefund: 0 };
+        }
+        mTotalsByCard[sCardNo].currentBalance += parseFloat(oPart.STATEMENT_DUE_AMT || 0);
+        mTotalsByCard[sCardNo].serviceTax += parseFloat(oPart.SERVICE_TAX || 0);
+        mTotalsByCard[sCardNo].merchantRefund += parseFloat(oPart.MERCHANT_REFUND_AMT || 0);
     });
+
+    const mAmountByCard = {};
+    Object.keys(mTotalsByCard).forEach((sCardNo) => {
+        const oTotals = mTotalsByCard[sCardNo];
+        const fAmount = oTotals.currentBalance < 0
+            ? oTotals.currentBalance + oTotals.serviceTax - oTotals.merchantRefund
+            : oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
+        mAmountByCard[sCardNo] = Math.max(0, fAmount);
+    });
+
     return mAmountByCard;
 }
 
@@ -362,9 +373,13 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
             fCommitOffset -= fAmount;
         }
  
-        const fCurrentBalance = fMonthlyAdvanced < 0
+        if(bIsRequest){
+            var fCurrentBalance = 0;
+        }else{
+            var fCurrentBalance = fMonthlyAdvanced < 0
                                 ? fMonthlyAdvanced + fActualOffset
                                 : fMonthlyAdvanced - fActualOffset;
+        }
  
         const oPayload = {
             MONTHLY_ADVANCED_AMT: fMonthlyAdvanced,
@@ -459,7 +474,9 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                 continue;
             }
  
-            const fAdvanceAmount = oTotals.currentBalance - oTotals.serviceTax - oTotals.merchantRefund;
+            const fAdvanceAmount = oTotals.currentBalance < 0
+                                    ? oTotals.currentBalance + oTotals.serviceTax - oTotals.merchantRefund
+                                    : oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
             console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} / Cardholder ${oCardRow.CARDHOLDER_ID}: currentBalance=${oTotals.currentBalance} serviceTax=${oTotals.serviceTax} merchantRefund=${oTotals.merchantRefund} -> fAdvanceAmount=${fAdvanceAmount}`);
  
             // Only notify when THIS request's own advance amount is positive
@@ -584,12 +601,16 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
             SELECT.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sRequestId })
         );
 
-        const fRequestAdvanceAmount = (aItemParts || []).reduce((fSum, oPart) => {
-            const fCurrentBalance = Number(oPart.STATEMENT_DUE_AMT) || 0;
-            const fServiceTax = Number(oPart.SERVICE_TAX) || 0;
-            const fMerchantRefund = Number(oPart.MERCHANT_REFUND_AMT) || 0;
-            return fSum + (fCurrentBalance - fServiceTax - fMerchantRefund);
-        }, 0);
+        const oRequestTotals = (aItemParts || []).reduce((oAcc, oPart) => {
+            oAcc.currentBalance += Number(oPart.STATEMENT_DUE_AMT) || 0;
+            oAcc.serviceTax += Number(oPart.SERVICE_TAX) || 0;
+            oAcc.merchantRefund += Number(oPart.MERCHANT_REFUND_AMT) || 0;
+            return oAcc;
+        }, { currentBalance: 0, serviceTax: 0, merchantRefund: 0 });
+
+        const fRequestAdvanceAmount = oRequestTotals.currentBalance < 0
+            ? oRequestTotals.currentBalance + oRequestTotals.serviceTax - oRequestTotals.merchantRefund
+            : oRequestTotals.currentBalance - oRequestTotals.serviceTax + oRequestTotals.merchantRefund;
  
         for (const oMaker of aMakersWithEmail) {
             await sendEmailInternal({

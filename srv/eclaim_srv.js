@@ -4434,7 +4434,7 @@ module.exports = (srv) => {
             const oCardAdvance = await SELECT
                 .one
                 .from('ZCORPORATE_CARD_ADVANCED')
-                .columns('MONTHLY_ADVANCED_AMT')
+                .columns('CURRENT_ADVANCED_BALANCE')
                 .where({
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
@@ -4442,7 +4442,7 @@ module.exports = (srv) => {
  
             console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
     
-            return oCardAdvance ? (parseFloat(oCardAdvance.MONTHLY_ADVANCED_AMT) || 0.00) : 0.00;
+            return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
     
         } catch (error) {
             console.error('[getMonthlyAdvanceAmount] Query failed:', error);

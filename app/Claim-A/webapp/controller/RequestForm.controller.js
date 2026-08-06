@@ -172,6 +172,57 @@ sap.ui.define([
 			}
 
 			try {
+				// Fetch each card's validity window + PRINCIPLE flag from the
+				// card master, to filter out cards outside their valid date
+				// range and sort principal cards first.
+				const aCardNos = [...new Set(aCorpoCards.map((oCard) => oCard.CARD_NO).filter((sCardNo) => !!sCardNo))];
+				const mCardMasterByCardNo = {};
+
+				if (aCardNos.length > 0) {
+					try {
+						const oCardMasterList = this._oDataModel.bindList(
+							"/ZCORPORATE_CARD",
+							null,
+							null,
+							new Filter({
+								filters: aCardNos.map((sCardNo) => new Filter("CARD_NO", FilterOperator.EQ, sCardNo)),
+								and: false
+							}),
+							{ $$ownRequest: true, $select: "CARD_NO,START_DATE,END_DATE,PRINCIPLE" }
+						);
+						const aCardMasterCtx = await oCardMasterList.requestContexts(0, Infinity);
+						aCardMasterCtx.forEach((ctx) => {
+							const oCardMaster = ctx.getObject();
+							mCardMasterByCardNo[oCardMaster.CARD_NO] = oCardMaster;
+						});
+					} catch (e) {
+						console.error("Failed to load card master validity/principle info:", e);
+					}
+				}
+
+				// Only keep cards currently within their validity window
+				// (START_DATE <= today <= END_DATE). A missing START_DATE/
+				// END_DATE on the master record is treated as no restriction
+				// on that side, so cards without dates set aren't wrongly
+				// excluded.
+				const dToday = new Date();
+				dToday.setHours(0, 0, 0, 0);
+
+				aCorpoCards = aCorpoCards.filter((oCard) => {
+					const oCardMaster = mCardMasterByCardNo[oCard.CARD_NO];
+					if (!oCardMaster) return true;
+
+					const dStart = oCardMaster.START_DATE ? new Date(oCardMaster.START_DATE) : null;
+					const dEnd = oCardMaster.END_DATE ? new Date(oCardMaster.END_DATE) : null;
+
+					if (dStart) dStart.setHours(0, 0, 0, 0);
+					if (dEnd) dEnd.setHours(0, 0, 0, 0);
+
+					if (dStart && dToday < dStart) return false;
+					if (dEnd && dToday > dEnd) return false;
+					return true;
+				});
+
 				const oListBinding = this._oDataModel.bindList(
 					"/ZREQ_ITEM_CCC_PART",
 					null,
@@ -220,24 +271,38 @@ sap.ui.define([
 
 				// Merge summed totals into the base corpo_cards list
 				aCorpoCards = aCorpoCards.map((oCard) => {
-					const oTotals = mTotalsByCard[oCard.CARD_NO];
-					if (oTotals) {
-						const iAdvAmt = Math.max(
-											0,
-											oTotals.current_balance - oTotals.service_tax - oTotals.merchant_refunds_total
-										).toFixed(2);
-						return {
-							...oCard,
-							current_balance: oTotals.current_balance.toFixed(2),
-							service_tax: oTotals.service_tax.toFixed(2),
-							cashback: oTotals.cashback.toFixed(2),
-							merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
-							merchant_refunds: oTotals.merchant_refunds_array,
-							merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
-							advance_amount: iAdvAmt
-						};
-					}
-					return oCard;
+					const oTotals = mTotalsByCard[oCard.CARD_NO] || {
+						current_balance: 0,
+						service_tax: 0,
+						cashback: 0,
+						merchant_refunds_total: 0,
+						merchant_refunds_array: []
+					};
+
+					const iAdvAmt = Math.max(
+                    0,
+                    oTotals.current_balance < 0
+                        ? oTotals.current_balance + oTotals.service_tax - oTotals.merchant_refunds_total
+                        : oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
+                	).toFixed(2);
+					
+					return {
+						...oCard,
+						current_balance: oTotals.current_balance.toFixed(2),
+						service_tax: oTotals.service_tax.toFixed(2),
+						cashback: oTotals.cashback.toFixed(2),
+						merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
+						merchant_refunds: oTotals.merchant_refunds_array,
+						merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
+						advance_amount: iAdvAmt
+					};
+				});
+
+				// Sort principal cardholders first
+				aCorpoCards.sort((oA, oB) => {
+					const bPrincipleA = !!(mCardMasterByCardNo[oA.CARD_NO]?.PRINCIPLE);
+					const bPrincipleB = !!(mCardMasterByCardNo[oB.CARD_NO]?.PRINCIPLE);
+					return (bPrincipleB ? 1 : 0) - (bPrincipleA ? 1 : 0);
 				});
 
 				this._oReqModel.setProperty("/corpo_cards", aCorpoCards);
@@ -2939,7 +3004,8 @@ sap.ui.define([
 			});
 
 			// set attachment 1 field to be required (mandatory)
-			this.byId("i_attachment_1_file").setRequired(true);
+			var bIsCorpoCCReset = String(this._oReqModel.getProperty("/req_header/claimtype")) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
+			this.byId("i_attachment_1_file").setRequired(!bIsCorpoCCReset);
 
 		},
 
@@ -3253,6 +3319,106 @@ sap.ui.define([
 			const sGroup = "upsertCorpoCards";
 			const aList = Array.isArray(aCorpoCards) ? aCorpoCards : [];
 
+			const bIsStatementDue = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.STATMENT_DUE);
+			const bIsServiceTax = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.SERV_TAX);
+			const bIsCashback = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.CASH_BACK);
+			const bIsMerchantRefund = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.MERCH_RETURN);
+
+			// Statement Due needs each cardholder's own cost center from ZEMP_MASTER -
+			// batch-fetch once up front instead of one query per card.
+			let mCostCenterByCardholder = {};
+			if (bIsStatementDue) {
+				const aCardholderIds = [...new Set(aList.map(oCard => oCard.CARDHOLDER_ID).filter(sId => !!sId))];
+				if (aCardholderIds.length > 0) {
+					try {
+						const oEmpList = this._oDataModel.bindList(
+							"/ZEMP_MASTER",
+							null,
+							null,
+							new Filter({
+								filters: aCardholderIds.map((sId) => new Filter("EEID", FilterOperator.EQ, sId)),
+								and: false
+							}),
+							{ $$ownRequest: true, $select: "EEID,CC" }
+						);
+						const aEmpCtx = await oEmpList.requestContexts(0, Infinity);
+						aEmpCtx.forEach((ctx) => {
+							const oEmp = ctx.getObject();
+							mCostCenterByCardholder[oEmp.EEID] = oEmp.CC;
+						});
+					} catch (e) {
+						console.error("Failed to load cardholder cost centers:", e);
+					}
+				}
+			}
+
+			// Merchant Refund's GL_CODE/MATERIAL_CODE come from real lookups, not
+			// the raw claim_type/claim_item codes - GL_CODE from ZCLAIM_TYPE.GL_ACCOUNT
+			// (keyed by CLAIM_TYPE_ID), MATERIAL_CODE from ZCLAIM_TYPE_ITEM.MATERIAL_CODE
+			// (keyed by CLAIM_TYPE_ID + CLAIM_TYPE_ITEM_ID). Batch-fetch every distinct
+			// combination across all cards' refund entries up front.
+			let mGlAccountByClaimType = {};
+			let mMaterialCodeByClaimTypeItem = {};
+			if (bIsMerchantRefund) {
+				const aAllRefunds = aList.flatMap(oCard => Array.isArray(oCard.merchant_refunds) ? oCard.merchant_refunds : []);
+				const aClaimTypeIds = [...new Set(aAllRefunds.map(r => r.claim_type).filter(Boolean))];
+				const aClaimTypeItemPairs = [...new Map(
+					aAllRefunds
+						.filter(r => r.claim_type && r.claim_item)
+						.map(r => [`${r.claim_type}::${r.claim_item}`, { claim_type: r.claim_type, claim_item: r.claim_item }])
+				).values()];
+
+				if (aClaimTypeIds.length > 0) {
+					try {
+						const oTypeList = this._oDataModel.bindList(
+							"/ZCLAIM_TYPE",
+							null,
+							null,
+							new Filter({
+								filters: aClaimTypeIds.map(sId => new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sId)),
+								and: false
+							}),
+							{ $$ownRequest: true, $select: "CLAIM_TYPE_ID,GL_ACCOUNT" }
+						);
+						const aTypeCtx = await oTypeList.requestContexts(0, Infinity);
+						aTypeCtx.forEach(ctx => {
+							const oT = ctx.getObject();
+							mGlAccountByClaimType[oT.CLAIM_TYPE_ID] = oT.GL_ACCOUNT;
+						});
+					} catch (e) {
+						console.error("Failed to load GL accounts for merchant refund claim types:", e);
+					}
+				}
+
+				if (aClaimTypeItemPairs.length > 0) {
+					try {
+						const oItemList = this._oDataModel.bindList(
+							"/ZCLAIM_TYPE_ITEM",
+							null,
+							null,
+							new Filter({
+								filters: aClaimTypeItemPairs.map(oPair => new Filter({
+									filters: [
+										new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oPair.claim_type),
+										new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oPair.claim_item)
+									],
+									and: true
+								})),
+								and: false
+							}),
+							{ $$ownRequest: true, $select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,MATERIAL_CODE" }
+						);
+						const aItemCtx = await oItemList.requestContexts(0, Infinity);
+						aItemCtx.forEach(ctx => {
+							const oI = ctx.getObject();
+							mMaterialCodeByClaimTypeItem[`${oI.CLAIM_TYPE_ID}::${oI.CLAIM_TYPE_ITEM_ID}`] = oI.MATERIAL_CODE;
+						});
+					} catch (e) {
+						console.error("Failed to load material codes for merchant refund claim items:", e);
+					}
+				}
+			}
+
 			let aExistingCtx = [];
 			try {
 				const oList = this._oDataModel.bindList(
@@ -3290,21 +3456,48 @@ sap.ui.define([
 				const sCurrentKey = `${sReqId}-${sReqSubId}-${sCardNo}`;
 				aProcessedKeys.push(sCurrentKey);
 
-				const bIsStatementDue = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.STATMENT_DUE);
-				const bIsServiceTax = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.SERV_TAX);
-				const bIsCashback = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.CASH_BACK);
-				const bIsMerchantRefund = String(sClaimTypeItemId) === String(this._oConstant.ClaimTypeItem.MERCH_RETURN);
+				let sGlCode = null;
+				let sMaterialCode = null;
+				let sCostCenter = null;
+				let sMerchantRefundArr = null;
+
+				if (bIsStatementDue) {
+					sGlCode = this._oConstant.StatementDueInfo.GL_CODE;
+					sMaterialCode = this._oConstant.StatementDueInfo.MATERIAL_CODE;
+					sCostCenter = mCostCenterByCardholder[oCard.CARDHOLDER_ID] || null;
+				} else if (bIsCashback) {
+					sGlCode = this._oConstant.CashBackInfo.GL_CODE;
+					sMaterialCode = this._oConstant.CashBackInfo.MATERIAL_CODE;
+					sCostCenter = this._oConstant.CashBackInfo.COST_CENTER;
+				} else if (bIsServiceTax) {
+					sGlCode = this._oConstant.ServiceTaxInfo.GL_CODE;
+					sMaterialCode = this._oConstant.ServiceTaxInfo.MATERIAL_CODE;
+					sCostCenter = this._oConstant.ServiceTaxInfo.COST_CENTER;
+				} else if (bIsMerchantRefund) {
+					const aRefunds = Array.isArray(oCard.merchant_refunds) ? oCard.merchant_refunds : [];
+					const aEnrichedRefunds = aRefunds.map((oRefund) => ({
+						...oRefund,
+						GL_CODE: mGlAccountByClaimType[oRefund.claim_type] || null,
+						MATERIAL_CODE: mMaterialCodeByClaimTypeItem[`${oRefund.claim_type}::${oRefund.claim_item}`] || null,
+						COST_CENTER: oRefund.cost_center || null
+					}));
+					sMerchantRefundArr = aEnrichedRefunds.length > 0
+						? JSON.stringify(aEnrichedRefunds)
+						: (oCard.merchant_refunds_array || null);
+				}
 
 				const oPayload = {
 					STATEMENT_DUE_AMT: bIsStatementDue ? parseFloat(oCard.current_balance || 0) : 0,
 					SERVICE_TAX: bIsServiceTax ? parseFloat(oCard.service_tax || 0) : 0,
 					CASHBACK: bIsCashback ? parseFloat(oCard.cashback || 0) : 0,
 					MERCHANT_REFUND_AMT: bIsMerchantRefund ? parseFloat(oCard.merchant_refunds_total || 0) : 0,
-					MERCHANT_REFUND_ARR: bIsMerchantRefund ? (oCard.merchant_refunds_array || null) : null
+					MERCHANT_REFUND_ARR: bIsMerchantRefund ? sMerchantRefundArr : null,
+					GL_CODE: sGlCode,
+					MATERIAL_CODE: sMaterialCode,
+					COST_CENTER: sCostCenter
 				};
 
 				if (mExisting[sCurrentKey]) {
-					// --- UPDATE CASE ---
 					const oExistingCtx = mExisting[sCurrentKey];
 					Object.keys(oPayload).forEach((sField) => {
 						if (oExistingCtx.getProperty(sField) !== oPayload[sField]) {
@@ -3312,7 +3505,6 @@ sap.ui.define([
 						}
 					});
 				} else {
-					// --- CREATE CASE ---
 					oPartList.create({
 						REQUEST_ID: sReqId,
 						REQUEST_SUB_ID: sReqSubId,
@@ -3353,7 +3545,7 @@ sap.ui.define([
 				advance_amount: 0
 			});
 
-			oTotals.payment_due = oTotals.current_balance + oTotals.cashback;
+			oTotals.payment_due = oTotals.current_balance - oTotals.cashback;
  
 			var sClaimTypeId = this._oReqModel.getProperty('/req_header/claimtype');
 			var bIsCorpoCC = String(sClaimTypeId) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);

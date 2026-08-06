@@ -143,6 +143,7 @@ entity ZREQUEST_HEADER : managed {
         PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
         ATTACHMENT3                   : String         @Common.Label: 'Attachment 3';
         ATTACHMENT4                   : String         @Common.Label: 'Attachment 4';
+        PAYMENT_DUE_DATE              : Date           @Common.Label: 'Payment Due Date';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE

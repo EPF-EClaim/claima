@@ -81,11 +81,21 @@
                                 <Text text="{request>cardholder_name}" />
 
                                 <Input
-                                    value="{request>merchant_refund_amount}"
-                                    type="Number"
                                     placeholder="0.00" 
-                                    enabled="{= ${request>/view} !== 'view' }"/>
-
+                                    value="{
+                                        path: 'request>merchant_refund_amount',
+                                        type: 'sap.ui.model.type.Float',
+                                        formatOptions: {
+                                            minFractionDigits: 2,
+                                            maxFractionDigits: 2
+                                        },
+                                        constraints: {
+                                            minimum: 0
+                                        }
+                                    }" 
+                                    enabled="{= ${request>/view} !== 'view' }"
+                                />
+                                    
                                 <Select
                                     selectedKey="{request>claim_type}"
                                     id="req_claimtype"
@@ -140,7 +150,7 @@
 
                                 <mdc:Field
                                     id="req_cc"
-                                    value="{request>costcenter}"
+                                    value="{request>cost_center}"
                                     additionalValue="{request>costcenter}"
                                     display="ValueDescription"
                                     valueHelp="valuehelp_requestinput_altcc"

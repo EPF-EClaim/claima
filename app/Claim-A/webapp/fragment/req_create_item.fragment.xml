@@ -48,7 +48,7 @@
                             <form:formElements>
 
                                 <!-- Claim Type -->
-                                <form:FormElement label="{i18n>req_i_claim_type}" >
+                                <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_i_claim_type_ccc} : ${i18n>req_i_claim_type} }" >
                                     <form:fields>
                                         <Text 
                                             id="i_claim_type"
@@ -57,7 +57,7 @@
                                 </form:FormElement>
 
                                 <!-- Claim Type Item -->
-                                <form:FormElement label="{i18n>req_i_claim_type_item}">
+                                <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_i_claim_type_item_ccc} : ${i18n>req_i_claim_type_item} }">
                                     <form:fields>
                                         <Select 
                                             id="i_claim_type_item"
@@ -255,7 +255,7 @@
                                     <unified:FileUploader
                                         change=".onImportChange1"
                                         enabled="{= ${request>/view} !== 'view' }"
-                                        required="true"
+                                        required="{= ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD} }"
                                         maximumFileSize="5.0"
                                         mimeType="application/pdf,image/png,image/jpeg"
                                         placeholder="{i18n>req_attachment_format}"
@@ -1675,6 +1675,9 @@
                                     formatOptions: {
                                         minFractionDigits: 2,
                                         maxFractionDigits: 2
+                                    },
+                                    constraints: {
+                                            minimum: 0
                                     }
                                 }"
                                 enabled="{= ${request>/view} !== 'view' }"

@@ -92,8 +92,8 @@ sap.ui.define([
 					transferfamilynowlater: 	oData.TRAVEL_FAMILY_NOW_LATER || "",
 					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || "",
 					projectcode:    oData.PROJECT_CODE || "",
-					projectdesc:    oData.PROJECT_DESC || ""
-
+					projectdesc:    oData.PROJECT_DESC || "",
+					cccduedate : 	oData.PAYMENT_DUE_DATE || ""
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
@@ -305,10 +305,11 @@ sap.ui.define([
 			if (!Array.isArray(aRows)) {
 				return 0;
 			}
-			return aRows.reduce(function (fSum, oRow) {
+			var fSum = aRows.reduce(function (fSum, oRow) {
 				var fValue = parseFloat(oRow[sFieldName]);
 				return fSum + (isNaN(fValue) ? 0 : fValue);
 			}, 0);
+			return Math.round(fSum * 100) / 100;
 		}
 
 	};
