@@ -81,6 +81,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 ATTACHMENT3,
                 ATTACHMENT4,
+                PAYMENT_DUE_DATE
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
