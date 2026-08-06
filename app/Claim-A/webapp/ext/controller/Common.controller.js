@@ -100,6 +100,205 @@ sap.ui.define([
 				}, 800);
 			}
 
+			if (sRouteName === "ZSUBSTITUTION_RULES_CONFIG") {
+
+				console.log("Entered ZSUBSTITUTION_RULES_CONFIG");
+
+				setTimeout(() => {
+
+					const oView = this.base && this.base.getView && this.base.getView();
+
+					if (!oView) {
+						return;
+					}
+
+					const aTables = oView.findAggregatedObjects(true, function (oControl) {
+						return oControl &&
+							oControl.isA &&
+							oControl.isA("sap.ui.table.Table");
+					});
+
+					const oTable = aTables[0];
+
+					if (!oTable) {
+						return;
+					}
+
+					if (oTable._bEditOnCellClickAttachedV6) {
+						console.log("attachCellClick handler already attached V6");
+						return;
+					}
+
+					oTable._bEditOnCellClickAttachedV6 = true;
+
+					const fnWait = function (iMilliseconds) {
+						return new Promise(function (resolve) {
+							setTimeout(resolve, iMilliseconds);
+						});
+					};
+
+					const fnFindEditButton = function () {
+						const aButtons = oView.findAggregatedObjects(true, function (oControl) {
+							return oControl &&
+								oControl.isA &&
+								oControl.isA("sap.m.Button");
+						});
+
+						return aButtons.find(function (oButton) {
+							const sId = oButton.getId && oButton.getId();
+							const sText = oButton.getText && oButton.getText();
+
+							return oButton.getVisible &&
+								oButton.getVisible() &&
+								oButton.getEnabled &&
+								oButton.getEnabled() &&
+								(
+									(sText && sText === "Edit") ||
+									(sId && sId.includes("StandardAction::MassEdit")) ||
+									(sId && sId.includes("MassEdit")) ||
+									(sId && sId.includes("Edit"))
+								);
+						});
+					};
+
+					const fnClearAllSelections = async function () {
+
+						console.log("ENTER fnClearAllSelections");
+
+						const oBinding = oTable.getBinding("rows");
+
+						if (!oBinding) {
+							console.log("Rows binding not found");
+							return;
+						}
+
+						/*
+						 * Best way for OData V4:
+						 * Clear selection from header context.
+						 * This clears the binding-level selection state, including old selected contexts
+						 * that may not be visible anymore.
+						 */
+						const oHeaderContext = oBinding.getHeaderContext && oBinding.getHeaderContext();
+
+						if (oHeaderContext && oHeaderContext.setSelected) {
+							await Promise.resolve(oHeaderContext.setSelected(false));
+							console.log("Header context selection cleared");
+						} else {
+							console.log("Header context setSelected not available");
+						}
+
+						/*
+						 * Extra fallback:
+						 * Also clear currently visible contexts.
+						 */
+						let aContexts = [];
+
+						if (oBinding.getCurrentContexts) {
+							aContexts = oBinding.getCurrentContexts();
+						} else if (oBinding.getContexts) {
+							aContexts = oBinding.getContexts(0, oTable.getVisibleRowCount && oTable.getVisibleRowCount());
+						}
+
+						console.log("Visible contexts found for fallback clear:", aContexts.length);
+
+						for (let i = 0; i < aContexts.length; i++) {
+							const oContext = aContexts[i];
+
+							if (oContext && oContext.setSelected) {
+								await Promise.resolve(oContext.setSelected(false));
+								console.log("Visible context deselected:", oContext.getPath && oContext.getPath());
+							}
+						}
+					};
+
+					const fnOpenStandardEditPopup = async function (oContext) {
+
+						console.log("ENTER fnOpenStandardEditPopup V6");
+
+						if (oTable._bOpeningStandardEditPopup) {
+							console.log("Edit popup already opening, skip duplicate click");
+							return;
+						}
+
+						oTable._bOpeningStandardEditPopup = true;
+
+						try {
+							if (!oContext) {
+								console.log("No context passed");
+								return;
+							}
+
+							console.log("Target context path:", oContext.getPath && oContext.getPath());
+
+							/*
+							 * Clear all old selections first.
+							 * This prevents "Multiple contexts selected".
+							 */
+							await fnClearAllSelections();
+
+							await fnWait(500);
+
+							/*
+							 * Select only clicked row.
+							 * Do NOT use oTable.setSelectedIndex().
+							 */
+							if (oContext.setSelected) {
+								await Promise.resolve(oContext.setSelected(true));
+								console.log("Target row selected");
+							} else {
+								console.log("oContext.setSelected is not available");
+								return;
+							}
+
+							await fnWait(700);
+
+							const oEditButton = fnFindEditButton();
+
+							if (!oEditButton) {
+								console.log("No enabled Edit button found");
+								return;
+							}
+
+							console.log("Firing Edit button:", oEditButton.getId && oEditButton.getId());
+
+							oEditButton.firePress();
+
+							console.log("Edit button fired");
+
+						} catch (oError) {
+							console.error("Error opening standard edit popup:", oError);
+						} finally {
+							setTimeout(function () {
+								oTable._bOpeningStandardEditPopup = false;
+								console.log("Edit popup opening lock released");
+							}, 1000);
+						}
+					};
+
+					oTable.attachCellClick(async (oEvent) => {
+						try {
+							const iRowIndex = oEvent.getParameter("rowIndex");
+
+							if (iRowIndex === undefined || iRowIndex === null || iRowIndex < 0) {
+								return;
+							}
+
+							const oContext = oTable.getContextByIndex(iRowIndex);
+
+							if (!oContext) {
+								return;
+							}
+
+							await fnOpenStandardEditPopup(oContext);
+
+						} catch (oError) {
+							console.error("Error opening standard edit popup:", oError);
+						}
+
+					});
+				}, 1500);
+			}
+
 			/* =========================
 			 * DETAIL PAGE
 			 * ========================= */
