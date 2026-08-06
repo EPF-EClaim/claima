@@ -201,9 +201,16 @@ module.exports = {
             return;
         }
 
+        const iCurrentClaimItemAmount = Number(oPayload.CheckFields[iIndex].value || 0);
         const iTotalClaimAmount =
-            parseFloat(oCurrentRecordItemData.fTotalAmount || 0) +
-            parseFloat(oPayload.CheckFields[iIndex].value || 0);
+            Number(oCurrentRecordItemData.fTotalAmount || 0) +
+            iCurrentClaimItemAmount;
+
+        const iNetClaimAmount = await this._getNetClaimAmountForEntitlement(
+            oPayload,
+            iTotalClaimAmount,
+            tx
+        );
 
         const oEntitlementUsed = await tx.run(
             SELECT.one
@@ -213,8 +220,8 @@ module.exports = {
         );
 
         const iTotalClaimedAmount =
-            iTotalClaimAmount +
-            parseFloat(oEntitlementUsed?.MEDICAL_INSURANCE_ENTITLEMENT || 0);
+            Number(oEntitlementUsed?.MEDICAL_INSURANCE_ENTITLEMENT || 0) +
+            iNetClaimAmount;
 
         let bResult = false;
 
@@ -261,5 +268,50 @@ module.exports = {
         );
 
         return oCurrentData;
+    },
+
+    _getLinkedCashAdvanceAmount: async function (oPayload, tx) {
+
+        const bIsClaimSubmission =
+            oPayload.RecordId.substring(0, 3) === Constant.WorkflowType.CLAIM;
+
+        if (!bIsClaimSubmission) {
+            return 0;
+        }
+
+        const oClaimHeader = await tx.run(
+            SELECT.one
+                .from(Constant.Entities.ZCLAIM_HEADER)
+                .columns(Constant.EntitiesFields.CASH_ADVANCE_AMOUNT)
+                .where({
+                    [Constant.EntitiesFields.CLAIMID]: oPayload.RecordId
+                })
+        );
+
+        return Number(
+            oClaimHeader?.[Constant.EntitiesFields.CASH_ADVANCE_AMOUNT] || 0
+        );
+    },
+
+    _getNetClaimAmountForEntitlement: async function (oPayload, iTotalClaimAmount, tx) {
+        const bIsClaimSubmission = oPayload.RecordId.substring(0, 3) === Constant.WorkflowType.CLAIM;
+
+        if (!bIsClaimSubmission) {
+            return iTotalClaimAmount;
+        }
+
+        const iLinkedCashAdvanceAmount =
+            await this._getLinkedCashAdvanceAmount(oPayload, tx);
+
+        if (iLinkedCashAdvanceAmount <= 0) {
+            return iTotalClaimAmount;
+        }
+
+        const iNetClaimAmount = Math.max(
+            iTotalClaimAmount - iLinkedCashAdvanceAmount,
+            0
+        );
+
+        return iNetClaimAmount;
     }
 };
