@@ -250,7 +250,7 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
  
         if (!aItemParts || aItemParts.length === 0) return true;
  
-        return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), { bIsApproved, bIsPushBack: false, bIsRejected: false, bIsPendingApproval: false, bIsRequest: true });
+        return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), { bIsApproved, bIsPushBack: false, bIsRejected: false, bIsPendingApproval: false, bIsRequest: true }, _sumMerchantRefundByCard(aItemParts));
  
     } else if (sPrefix === Constant.WorkflowType.CLAIM) {
         console.log("Update Corpo Card Advance CLAIM");
@@ -327,7 +327,7 @@ async function _resolveCardNoForEmployees(oTx, mAmountByEmp) {
     return mAmountByCard;
 }
 
-async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest }) {
+async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest }, mMerchantRefundByCard = {}) {
     console.log("Starintg apply corpo card advance");
     const aCards = await oTx.run(
         SELECT.from('ZCORPORATE_CARD')
@@ -362,9 +362,15 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
                 // A Corporate Credit Card request being approved establishes/
                 // increases the cardholder's monthly advance.
                 fMonthlyAdvanced += fAmount;
+
+                // This cardholder's merchant refund, on request approval,
+                // gets added to both COMMIT_OFFSET_AMT and ACTUAL_OFFSET_AMT.
+                const fMerchantRefund = mMerchantRefundByCard[sCardNo] || 0;
+                if (fMerchantRefund) {
+                    fCommitOffset += fMerchantRefund;
+                    fActualOffset += fMerchantRefund;
+                }
             } else {
-                // A claim settlement being approved offsets against the
-                // existing advance - it does not create additional advance.
                 fActualOffset += fAmount;
             }
         } else if (bIsPushBack || bIsPendingApproval) {
@@ -372,14 +378,9 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
         } else if (bIsRejected) {
             fCommitOffset -= fAmount;
         }
- 
-        if(bIsRequest){
-            var fCurrentBalance = 0;
-        }else{
-            var fCurrentBalance = fMonthlyAdvanced < 0
-                                ? fMonthlyAdvanced + fActualOffset
-                                : fMonthlyAdvanced - fActualOffset;
-        }
+
+        // CURRENT_ADVANCED_BALANCE = MONTHLY_ADVANCED_AMT - ACTUAL_OFFSET_AMT
+        const fCurrentBalance = fMonthlyAdvanced - fActualOffset;
  
         const oPayload = {
             MONTHLY_ADVANCED_AMT: fMonthlyAdvanced,
@@ -647,6 +648,15 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
         }
     }
     console.log("Completed email CCC maker");
+}
+
+function _sumMerchantRefundByCard(aItemParts) {
+    const mMerchantRefundByCard = {};
+    aItemParts.forEach((oPart) => {
+        const sCardNo = oPart.CARD_NO;
+        mMerchantRefundByCard[sCardNo] = (mMerchantRefundByCard[sCardNo] || 0) + (parseFloat(oPart.MERCHANT_REFUND_AMT) || 0);
+    });
+    return mMerchantRefundByCard;
 }
 
 
