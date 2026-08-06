@@ -490,7 +490,15 @@ sap.ui.define([
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
-				await ClaimUtility.getRemainingMedicalEntitlement(oHeader.emp_id);
+
+				if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL) {
+					await Utility.getRemainingMedicalEntitlement(
+						oClaimSubmissionModel,
+						oHeader.emp_id,
+						"/claim_header/medical_remaining"
+					);
+				}
+
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
 
 				// set view-only
@@ -624,14 +632,14 @@ sap.ui.define([
 					insurance_medical_provider_id: it.INSURANCE_MEDICAL_PROVIDER_ID,
 					insurance_medical_provider_name: it.INSURANCE_MEDICAL_PROVIDER_NAME,
 					policy_start_date: it.POLICY_START_DATE,
-					policy_end_date:it. POLICY_END_DATE,
+					policy_end_date: it.POLICY_END_DATE,
 					dependent_national_id: it.DEPENDENT_NATIONAL_ID,
 					previous_policy_number: it.PREVIOUS_POLICY_NUMBER,
 					current_policy_number: it.CURRENT_POLICY_NUMBER,
 					next_policy_number: it.NEXT_POLICY_NUMBER,
 					attachment_file_3: it.ATTACHMENT_FILE_3,
 					attachment_file_4: it.ATTACHMENT_FILE_4,
-					policy_year:it.POLICY_YEAR,
+					policy_year: it.POLICY_YEAR,
 					descr: {},
 				}));
 
@@ -2028,6 +2036,10 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_entitled_meter_cube"), property: "entitled_meter_cube", field: "input_claimdetails_meter_cube", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_3"), property: "attachment_file_3", field: "fileuploader_claimdetails_input_attachment_file_3", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_4"), property: "attachment_file_4", field: "fileuploader_claimdetails_input_attachment_file_4", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_start_date"), property: "policy_start_date", field: "datepicker_claimdetails_input_insurance_policy_start_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_end_date"), property: "policy_end_date", field: "datepicker_claimdetails_input_insurance_policy_end_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_id"), property: "insurance_medical_provider_id", field: "select_claimdetails_input_insurance_medical_provider_id", type: "descr", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_name"), property: "insurance_medical_provider_name", field: "input_claimdetails_input_insurance_medical_provider_name", width: 30 }
 
 			];
 
@@ -2847,13 +2859,6 @@ sap.ui.define([
 						and: true
 					})
 
-				default:
-					return new Filter({
-						filters: [
-							oEmpFilter
-						]
-					})
-
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
 				case this._oConstant.ClaimTypeItem.CASH_REPAY: 	
@@ -2911,6 +2916,13 @@ sap.ui.define([
 							})
 						],
 						and: true
+					})
+
+				default:
+					return new Filter({
+						filters: [
+							oEmpFilter
+						]
 					})
 			}
 		},
@@ -3196,254 +3208,256 @@ sap.ui.define([
 			return true;
 		},
 
-			_saveClaimItem: async function () {
-				// get input model
-				var oInputModel = this.getView().getModel("claimitem_input");
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		_saveClaimItem: async function () {
+			// get input model
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-				var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
+			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
 
-				try {
-					BusyIndicator.show(0);
-					var oModel = this.getOwnerComponent().getModel();
-					var oListBinding = null;
+			try {
+				BusyIndicator.show(0);
+				var oModel = this.getOwnerComponent().getModel();
+				var oListBinding = null;
 
-					// Ensure Internal Order is populated before save
-					if (!oInputModel.getProperty("/claim_item/internal_order")) {
-						var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-						var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
+				// Ensure Internal Order is populated before save
+				if (!oInputModel.getProperty("/claim_item/internal_order")) {
+					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+					var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
 
-						oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-					}
+					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
+				}
 
-					// set body for update
-					var oBody = new JSONModel({
-						CLAIM_ID: oInputModel.getProperty("/claim_item/claim_id"),
-						CLAIM_SUB_ID: oInputModel.getProperty("/claim_item/claim_sub_id"),
-						CLAIM_TYPE_ITEM_ID: oInputModel.getProperty("/claim_item/claim_type_item_id"),
-						PERCENTAGE_COMPENSATION: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation"))).toFixed(2),
-						ACCOUNT_NO: oInputModel.getProperty("/claim_item/account_no"),
-						AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/amount"))).toFixed(2),
-						ATTACHMENT_FILE_1: oInputModel.getProperty("/claim_item/attachment_file_1"),
-						ATTACHMENT_FILE_2: oInputModel.getProperty("/claim_item/attachment_file_2"),
-						BILL_NO: oInputModel.getProperty("/claim_item/bill_no"),
-						BILL_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/bill_date")),
-						CLAIM_CATEGORY: oInputModel.getProperty("/claim_item/claim_category"),
-						COUNTRY: oInputModel.getProperty("/claim_item/country"),
-						DISCLAIMER: oInputModel.getProperty("/claim_item/disclaimer"),
-						START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/start_date")),
-						END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/end_date")),
-						START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/start_time")),
-						END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/end_time")),
-						FLIGHT_CLASS: oInputModel.getProperty("/claim_item/flight_class"),
-						FROM_LOCATION: oInputModel.getProperty("/claim_item/from_location"),
-						FROM_LOCATION_OFFICE: oInputModel.getProperty("/claim_item/from_location_office"),
-						KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/km"))).toFixed(2),
-						LOCATION: oInputModel.getProperty("/claim_item/location"),
-						LOCATION_TYPE: oInputModel.getProperty("/claim_item/location_type"),
-						LODGING_CATEGORY: oInputModel.getProperty("/claim_item/lodging_category"),
-						LODGING_ADDRESS: oInputModel.getProperty("/claim_item/lodging_address"),
-						MARRIAGE_CATEGORY: oInputModel.getProperty("/claim_item/marriage_category"),
-						AREA: oInputModel.getProperty("/claim_item/area"),
-						NO_OF_FAMILY_MEMBER: oInputModel.getProperty("/claim_item/no_of_family_member"),
-						PARKING: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/parking"))),
-						PHONE_NO: oInputModel.getProperty("/claim_item/phone_no"),
-						RATE_PER_KM: oInputModel.getProperty("/claim_item/descr/rate_per_km"),
-						RECEIPT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/receipt_date")),
-						RECEIPT_NUMBER: oInputModel.getProperty("/claim_item/receipt_number"),
-						REMARK: oInputModel.getProperty("/claim_item/remark"),
-						ROOM_TYPE: oInputModel.getProperty("/claim_item/room_type"),
-						REGION: oInputModel.getProperty("/claim_item/region"),
-						FROM_STATE_ID: oInputModel.getProperty("/claim_item/from_state_id"),
-						TO_STATE_ID: oInputModel.getProperty("/claim_item/to_state_id"),
-						TO_LOCATION: oInputModel.getProperty("/claim_item/to_location"),
-						TO_LOCATION_OFFICE: oInputModel.getProperty("/claim_item/to_location_office"),
-						TOLL: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/toll"))).toFixed(2),
-						TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/total_exp_amount"))).toFixed(2),
-						VEHICLE_TYPE: oInputModel.getProperty("/claim_item/vehicle_type"),
-						VEHICLE_FARE: oInputModel.getProperty("/claim_item/vehicle_fare"),
-						TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_start_date")),
-						TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_end_date")),
-						EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_start_date")),
-						EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_end_date")),
-						TRAVEL_DURATION_DAY: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day"))).toFixed(1),
-						TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))).toFixed(1),
-						PROVIDED_BREAKFAST: oInputModel.getProperty("/claim_item/provided_breakfast")?.toString(),
-						PROVIDED_LUNCH: oInputModel.getProperty("/claim_item/provided_lunch")?.toString(),
-						PROVIDED_DINNER: oInputModel.getProperty("/claim_item/provided_dinner")?.toString(),
-						ENTITLED_BREAKFAST: oInputModel.getProperty("/claim_item/entitled_breakfast")?.toString(),
-						ENTITLED_LUNCH: oInputModel.getProperty("/claim_item/entitled_lunch")?.toString(),
-						ENTITLED_DINNER: oInputModel.getProperty("/claim_item/entitled_dinner")?.toString(),
-						ANGGOTA_ID: oInputModel.getProperty("/claim_item/anggota_id"),
-						ANGGOTA_NAME: oInputModel.getProperty("/claim_item/anggota_name"),
-						DEPENDENT_NAME: oInputModel.getProperty("/claim_item/dependent_name"),
-						TYPE_OF_PROFESSIONAL_BODY: oInputModel.getProperty("/claim_item/type_of_professional_body"),
-						DISCLAIMER_GALAKAN: oInputModel.getProperty("/claim_item/disclaimer_galakan"),
-						TRANSFER_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/transfer_date")),
-						NO_OF_DAYS: oInputModel.getProperty("/claim_item/no_of_days"),
-						FAMILY_COUNT: oInputModel.getProperty("/claim_item/family_count"),
-						FUNERAL_TRANSPORTATION: oInputModel.getProperty("/claim_item/funeral_transportation"),
-						ROUND_TRIP: oInputModel.getProperty("/claim_item/round_trip"),
-						TRIP_END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_end_time")),
-						TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
-						COST_CENTER: oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center"),
-						GL_ACCOUNT: oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account"),
-						MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
-						VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
-						ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
-						ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
-						CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
-						COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
-						CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
-						CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
-						CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(4),
-						DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
-						DEPENDENT: sDependentList,
-						EMP_ID: this._oSessionModel.getProperty("/userId"),
-						FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
-						INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
-						INSURANCE_CERT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_start_date")),
-						INSURANCE_PACKAGE_ID: oInputModel.getProperty("/claim_item/insurance_package_id"),
-						INSURANCE_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_provider_id"),
-						INSURANCE_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_provider_name"),
-						INSURANCE_PURCHASE_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_purchase_date")),
-						METER_CUBE_ACTUAL: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_actual"))).toFixed(2),
-						METER_CUBE_ENTITLED: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_entitled"))).toFixed(2),
-						MOBILE_CATEGORY_PURPOSE_ID: oInputModel.getProperty("/claim_item/mobile_category_purpose_id"),
-						NEED_FOREIGN_CURRENCY: oInputModel.getProperty("/claim_item/need_foreign_currency"),
-						POLICY_NUMBER: oInputModel.getProperty("/claim_item/policy_number"),
-						PURPOSE: oInputModel.getProperty("/claim_item/purpose"),
-						REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
-						STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
-						TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-						VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
-						DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
-						TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
-						EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
-						TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
-						DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
-						INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
-						COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
-						POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
-						POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
-						DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
-						INSURANCE_MEDICAL_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_medical_provider_id"),
-						INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name"),
-						ATTACHMENT_FILE_3: oInputModel.getProperty("/claim_item/attachment_file_3"),
-						ATTACHMENT_FILE_4: oInputModel.getProperty("/claim_item/attachment_file_4"),
-						POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_year")
+				// set body for update
+				var oBody = new JSONModel({
+					CLAIM_ID: oInputModel.getProperty("/claim_item/claim_id"),
+					CLAIM_SUB_ID: oInputModel.getProperty("/claim_item/claim_sub_id"),
+					CLAIM_TYPE_ITEM_ID: oInputModel.getProperty("/claim_item/claim_type_item_id"),
+					PERCENTAGE_COMPENSATION: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation"))).toFixed(2),
+					ACCOUNT_NO: oInputModel.getProperty("/claim_item/account_no"),
+					AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/amount"))).toFixed(2),
+					ATTACHMENT_FILE_1: oInputModel.getProperty("/claim_item/attachment_file_1"),
+					ATTACHMENT_FILE_2: oInputModel.getProperty("/claim_item/attachment_file_2"),
+					BILL_NO: oInputModel.getProperty("/claim_item/bill_no"),
+					BILL_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/bill_date")),
+					CLAIM_CATEGORY: oInputModel.getProperty("/claim_item/claim_category"),
+					COUNTRY: oInputModel.getProperty("/claim_item/country"),
+					DISCLAIMER: oInputModel.getProperty("/claim_item/disclaimer"),
+					START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/start_date")),
+					END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/end_date")),
+					START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/start_time")),
+					END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/end_time")),
+					FLIGHT_CLASS: oInputModel.getProperty("/claim_item/flight_class"),
+					FROM_LOCATION: oInputModel.getProperty("/claim_item/from_location"),
+					FROM_LOCATION_OFFICE: oInputModel.getProperty("/claim_item/from_location_office"),
+					KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/km"))).toFixed(2),
+					LOCATION: oInputModel.getProperty("/claim_item/location"),
+					LOCATION_TYPE: oInputModel.getProperty("/claim_item/location_type"),
+					LODGING_CATEGORY: oInputModel.getProperty("/claim_item/lodging_category"),
+					LODGING_ADDRESS: oInputModel.getProperty("/claim_item/lodging_address"),
+					MARRIAGE_CATEGORY: oInputModel.getProperty("/claim_item/marriage_category"),
+					AREA: oInputModel.getProperty("/claim_item/area"),
+					NO_OF_FAMILY_MEMBER: oInputModel.getProperty("/claim_item/no_of_family_member"),
+					PARKING: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/parking"))),
+					PHONE_NO: oInputModel.getProperty("/claim_item/phone_no"),
+					RATE_PER_KM: oInputModel.getProperty("/claim_item/descr/rate_per_km"),
+					RECEIPT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/receipt_date")),
+					RECEIPT_NUMBER: oInputModel.getProperty("/claim_item/receipt_number"),
+					REMARK: oInputModel.getProperty("/claim_item/remark"),
+					ROOM_TYPE: oInputModel.getProperty("/claim_item/room_type"),
+					REGION: oInputModel.getProperty("/claim_item/region"),
+					FROM_STATE_ID: oInputModel.getProperty("/claim_item/from_state_id"),
+					TO_STATE_ID: oInputModel.getProperty("/claim_item/to_state_id"),
+					TO_LOCATION: oInputModel.getProperty("/claim_item/to_location"),
+					TO_LOCATION_OFFICE: oInputModel.getProperty("/claim_item/to_location_office"),
+					TOLL: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/toll"))).toFixed(2),
+					TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/total_exp_amount"))).toFixed(2),
+					VEHICLE_TYPE: oInputModel.getProperty("/claim_item/vehicle_type"),
+					VEHICLE_FARE: oInputModel.getProperty("/claim_item/vehicle_fare"),
+					TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_start_date")),
+					TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/trip_end_date")),
+					EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_start_date")),
+					EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/event_end_date")),
+					TRAVEL_DURATION_DAY: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day"))).toFixed(1),
+					TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))).toFixed(1),
+					PROVIDED_BREAKFAST: oInputModel.getProperty("/claim_item/provided_breakfast")?.toString(),
+					PROVIDED_LUNCH: oInputModel.getProperty("/claim_item/provided_lunch")?.toString(),
+					PROVIDED_DINNER: oInputModel.getProperty("/claim_item/provided_dinner")?.toString(),
+					ENTITLED_BREAKFAST: oInputModel.getProperty("/claim_item/entitled_breakfast")?.toString(),
+					ENTITLED_LUNCH: oInputModel.getProperty("/claim_item/entitled_lunch")?.toString(),
+					ENTITLED_DINNER: oInputModel.getProperty("/claim_item/entitled_dinner")?.toString(),
+					ANGGOTA_ID: oInputModel.getProperty("/claim_item/anggota_id"),
+					ANGGOTA_NAME: oInputModel.getProperty("/claim_item/anggota_name"),
+					DEPENDENT_NAME: oInputModel.getProperty("/claim_item/dependent_name"),
+					TYPE_OF_PROFESSIONAL_BODY: oInputModel.getProperty("/claim_item/type_of_professional_body"),
+					DISCLAIMER_GALAKAN: oInputModel.getProperty("/claim_item/disclaimer_galakan"),
+					TRANSFER_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/transfer_date")),
+					NO_OF_DAYS: oInputModel.getProperty("/claim_item/no_of_days"),
+					FAMILY_COUNT: oInputModel.getProperty("/claim_item/family_count"),
+					FUNERAL_TRANSPORTATION: oInputModel.getProperty("/claim_item/funeral_transportation"),
+					ROUND_TRIP: oInputModel.getProperty("/claim_item/round_trip"),
+					TRIP_END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_end_time")),
+					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
+					COST_CENTER: oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center"),
+					GL_ACCOUNT: oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account"),
+					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
+					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
+					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
+					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
+					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
+					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
+					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
+					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
+					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(4),
+					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time") ? new Date(oInputModel.getProperty("/claim_item/departure_time")).toISOString() : null,
+					DEPENDENT: sDependentList,
+					EMP_ID: this._oSessionModel.getProperty("/userId"),
+					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
+					INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
+					INSURANCE_CERT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_start_date")),
+					INSURANCE_PACKAGE_ID: oInputModel.getProperty("/claim_item/insurance_package_id"),
+					INSURANCE_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_provider_id"),
+					INSURANCE_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_provider_name"),
+					INSURANCE_PURCHASE_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/insurance_purchase_date")),
+					METER_CUBE_ACTUAL: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_actual"))).toFixed(2),
+					METER_CUBE_ENTITLED: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/meter_cube_entitled"))).toFixed(2),
+					MOBILE_CATEGORY_PURPOSE_ID: oInputModel.getProperty("/claim_item/mobile_category_purpose_id"),
+					NEED_FOREIGN_CURRENCY: oInputModel.getProperty("/claim_item/need_foreign_currency"),
+					POLICY_NUMBER: oInputModel.getProperty("/claim_item/policy_number"),
+					PURPOSE: oInputModel.getProperty("/claim_item/purpose"),
+					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
+					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
+					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
+					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
+					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
+					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
+					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
+					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
+					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
+					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
+					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
+					INSURANCE_MEDICAL_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_medical_provider_id"),
+					INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name"),
+					ATTACHMENT_FILE_3: oInputModel.getProperty("/claim_item/attachment_file_3"),
+					ATTACHMENT_FILE_4: oInputModel.getProperty("/claim_item/attachment_file_4"),
+					POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_year")
+				});
+				// to save the attachment inside SF
+				var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
+				var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+				var sAttachment3_SFID = oInputModel.getProperty("/claim_item/attachment_file_3")?.split(" - ")[0];
+				var sAttachment4_SFID = oInputModel.getProperty("/claim_item/attachment_file_4")?.split(" - ")[0];
+
+				if (oInputModel.getProperty("/claim_item/is_new")) {
+					// create new item
+					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
+					var oContext = oListBinding.create(oBody.getData());
+					await oContext.created().then(async () => {
+						// post MDF for item attachments
+						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2") || oInputModel.getProperty("/claim_item/attachment_file_3") || oInputModel.getProperty("/claim_item/attachment_file_4" )) {
+							await Attachment.postMDFChild(
+								oInputModel.getProperty("/claim_item/claim_id"),
+								oInputModel.getProperty("/claim_item/claim_sub_id"),
+								sAttachment1_SFID,
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID,
+							)
+						}
+
+						MessageToast.show(Utility.getText("msg_claimsubmission_creation_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					});
-					// to save the attachment inside SF
-					var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
-					var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
-					var sAttachment3_SFID = oInputModel.getProperty("/claim_item/attachment_file_3")?.split(" - ")[0];
-					var sAttachment4_SFID = oInputModel.getProperty("/claim_item/attachment_file_4")?.split(" - ")[0];
+				}
+				else {
+					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
+						[
+							new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_item/claim_id") }),
+							new Filter({ path: "CLAIM_SUB_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_item/claim_sub_id") })
+						],
+						{
+							$$ownRequest: true,
+							$$groupId: "$auto",
+							$$updateGroupId: "$auto"
+						}
+					);
 
-					if (oInputModel.getProperty("/claim_item/is_new")) {
-						// create new item
-						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
-						var oContext = oListBinding.create(oBody.getData());
-						await oContext.created().then(async () => {
-							// post MDF for item attachments
-							if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2") || oInputModel.getProperty("/claim_item/attachment_file_3") || oInputModel.getProperty("/claim_item/attachment_file_4" )) {
-								await Attachment.postMDFChild(
-									oInputModel.getProperty("/claim_item/claim_id"),
-									oInputModel.getProperty("/claim_item/claim_sub_id"),
-									sAttachment1_SFID,
-									sAttachment2_SFID,
-									sAttachment3_SFID,
-									sAttachment4_SFID,
-								)
-							}
+					var aCtx = await oListBinding.requestContexts(0, 1);
+					var oCtx = aCtx[0];
 
-							MessageToast.show(Utility.getText("msg_claimsubmission_creation_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
-						});
+					if (!oCtx) {
+						throw new Error("Claim item not found in database");
 					}
 					else {
-						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
-							[
-								new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_item/claim_id") }),
-								new Filter({ path: "CLAIM_SUB_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_item/claim_sub_id") })
-							],
-							{
-								$$ownRequest: true,
-								$$groupId: "$auto",
-								$$updateGroupId: "$auto"
-							}
-						);
+						// get existing attachment file values
+						var oAttachmentFile1 = oCtx.getProperty("ATTACHMENT_FILE_1");
+						var oAttachmentFile2 = oCtx.getProperty("ATTACHMENT_FILE_2");
+						var oAttachmentFile3 = oCtx.getProperty("ATTACHMENT_FILE_3");
+						var oAttachmentFile4 = oCtx.getProperty("ATTACHMENT_FILE_4");
 
-						var aCtx = await oListBinding.requestContexts(0, 1);
-						var oCtx = aCtx[0];
-
-						if (!oCtx) {
-							throw new Error("Claim item not found in database");
+						for (const [key, value] of Object.entries(oBody.getData())) {
+							oCtx.setProperty(key, value);
 						}
-						else {
-							// get existing attachment file values
-							var oAttachmentFile1 = oCtx.getProperty("ATTACHMENT_FILE_1");
-							var oAttachmentFile2 = oCtx.getProperty("ATTACHMENT_FILE_2");
-							var oAttachmentFile3 = oCtx.getProperty("ATTACHMENT_FILE_3");
-							var oAttachmentFile4 = oCtx.getProperty("ATTACHMENT_FILE_4");
-
-							for (const [key, value] of Object.entries(oBody.getData())) {
-								oCtx.setProperty(key, value);
-							}
-							// Delete attachment from SF during save when previously marked for deletion
-							if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
-								const sSFID = oInputModel.getProperty("/claim_item/attachment_file_1_delete")?.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_1", null);
-							}
-							// Delete Attachment 2 from SF during save
-							if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
-								const sSFID = oInputModel.getProperty("/claim_item/attachment_file_2_delete")?.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_2", null);
-							}
-							// Delete Attachment 3 from SF during save
-							if (oInputModel.getProperty("/claim_item/attachment_file_3_delete")) {
-								const sSFID = oInputModel.getProperty("/claim_item/attachment_file_3_delete")?.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_3", null);
-							}
-							// Delete Attachment 4 from SF during save
-							if (oInputModel.getProperty("/claim_item/attachment_file_4_delete")) {
-								const sSFID = oInputModel.getProperty("/claim_item/attachment_file_4_delete")?.split(" - ")[0];
-								await Attachment.deleteAttachment(sSFID);
-								oCtx.setProperty("ATTACHMENT_FILE_4", null);
-							}
-
-							await oModel.submitBatch("$auto");
-
-							// post MDF for item attachments
-							if (
-								(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== oAttachmentFile1) ||
-								(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2) ||
-								(oInputModel.getProperty("/claim_item/attachment_file_3") && oInputModel.getProperty("/claim_item/attachment_file_3") !== oAttachmentFile3) ||
-								(oInputModel.getProperty("/claim_item/attachment_file_4") && oInputModel.getProperty("/claim_item/attachment_file_4") !== oAttachmentFile4)
-							) {
-								await Attachment.postMDFChild(
-									oInputModel.getProperty("/claim_item/claim_id"),
-									oInputModel.getProperty("/claim_item/claim_sub_id"),
-									sAttachment1_SFID,
-									sAttachment2_SFID,
-									sAttachment3_SFID,
-									sAttachment4_SFID
-								)
-							}
-							Attachment._mDeleteAttachments = {};
-							MessageToast.show(Utility.getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
+						// Delete attachment from SF during save when previously marked for deletion
+						if (oInputModel.getProperty("/claim_item/attachment_file_1_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_1_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_1", null);
 						}
+						// Delete Attachment 2 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_2_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_2_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_2", null);
+						}
+						// Delete Attachment 3 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_3_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_3_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_3", null);
+						}
+						// Delete Attachment 4 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_4_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_4_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_4", null);
+						}
+
+						await oModel.submitBatch("$auto");
+
+						// post MDF for item attachments
+						if (
+							(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== oAttachmentFile1) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_3") && oInputModel.getProperty("/claim_item/attachment_file_3") !== oAttachmentFile3) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_4") && oInputModel.getProperty("/claim_item/attachment_file_4") !== oAttachmentFile4)
+						) {
+							await Attachment.postMDFChild(
+								oInputModel.getProperty("/claim_item/claim_id"),
+								oInputModel.getProperty("/claim_item/claim_sub_id"),
+								sAttachment1_SFID,
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID
+							)
+						}
+						Attachment._mDeleteAttachments = {};
+						MessageToast.show(Utility.getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					}
-
-					return true;
-				} catch (e) {
-					MessageBox.error(e.message);
-					return false;
-				} finally {
-					BusyIndicator.hide();
 				}
-			},
+
+				return true;
+			} 
+			catch (e) {
+				MessageBox.error(e.message);
+				return false;
+			} 
+			finally {
+				BusyIndicator.hide();
+			}
+		},
 
 		onChange_ClaimDetails_Input_Attachment: function (oEvent, fieldNumber) {
 			// check if file can be uploaded
@@ -5845,9 +5859,7 @@ sap.ui.define([
 			const oInputModel = this.getView().getModel("claimitem_input");
 			const sDependentNo = oEvent.getSource().getSelectedKey();
 
-			const oAction = this.getOwnerComponent()
-				.getModel()
-				.bindContext("/getDependentNationalId(...)");
+			const oAction = this._oModel.bindContext("/getDependentNationalId(...)");
 
 			oAction.setParameter("dependentNo", sDependentNo);
 
@@ -5875,65 +5887,63 @@ sap.ui.define([
 		_refreshPolicyInfo: async function () {
 
 			const oInputModel = this.getView().getModel("claimitem_input");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
 			const sNationalId = oInputModel.getProperty("/claim_item/dependent_national_id");
 
 			if (!sNationalId) {
 				return;
 			}
 
-			const iCurrentYear = new Date().getFullYear();
+			try {
 
-			const oListBinding = oModel.bindList(
-				"/ZEMP_CLAIM_ITEM_VIEW",
-				null,
-				null,
-				[
-					new Filter(
-						"DEPENDENT_NATIONAL_ID",
-						FilterOperator.EQ,
-						sNationalId
-					)
-				],
-				{
-					$$ownRequest: true
-				}
-			);
+				const oAction = this._oModel.bindContext("/getPolicyInfo(...)");
 
-			const aCtx = await oListBinding.requestContexts(0, 100);
-			const aRows = aCtx.map(oCtx => oCtx.getObject());
-			const oPrevious = aRows.find(
-				r => Number(r.POLICY_YEAR) === iCurrentYear - 1
-			);
+				oAction.setParameter(
+					"dependentNationalId",
+					sNationalId
+				);
 
-			const oCurrent = aRows.find(
-				r => Number(r.POLICY_YEAR) === iCurrentYear
-			);
+				await oAction.execute();
 
-			const oNext = aRows.find(
-				r => Number(r.POLICY_YEAR) === iCurrentYear + 1
-			);
+				const oResult = oAction.getBoundContext().getObject();
+				const aPolicies = oResult.policies || [];
+				const iCurrentYear = new Date().getFullYear();
 
-			oInputModel.setProperty(
-				"/claim_item/previous_policy_number",
-				oPrevious
-					? `${oPrevious.POLICY_YEAR} - ${oPrevious.POLICY_NUMBER}`
-					: null
-			);
+				const oPrevious = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear - 1
+				);
 
-			oInputModel.setProperty(
-				"/claim_item/current_policy_number",
-				oCurrent
-					? `${oCurrent.POLICY_YEAR} - ${oCurrent.POLICY_NUMBER}`
-					: null
-			);
+				const oCurrent = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear
+				);
 
-			oInputModel.setProperty(
-				"/claim_item/next_policy_number",
-				oNext
-					? `${oNext.POLICY_YEAR} - ${oNext.POLICY_NUMBER}`
-					: null
-			);
+				const oNext = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear + 1
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/previous_policy_number",
+					oPrevious
+						? `${oPrevious.POLICY_YEAR} - ${oPrevious.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/current_policy_number",
+					oCurrent
+						? `${oCurrent.POLICY_YEAR} - ${oCurrent.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/next_policy_number",
+					oNext
+						? `${oNext.POLICY_YEAR} - ${oNext.POLICY_NUMBER}`
+						: null
+				);
+
+			} catch (error) {
+
+			}
 		}
 	});
 });

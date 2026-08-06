@@ -660,28 +660,8 @@ sap.ui.define([
 						]
 					})
             }
-
-		},
-
-        getRemainingMedicalEntitlement: async function (oController, sEmpId) {
-
-            const oFunction =oController._oDataModel.bindContext("/getRemainingMedicalEntitlement(...)");
-
-            oFunction.setParameter("empId",sEmpId);
-
-            try {
-
-                await oFunction.execute();
-
-                const oResult = oFunction.getBoundContext().getObject();
-
-                oController._oReqModel.setProperty("/req_header/medical_remaining",oResult.remaining || 0);
-
-            } catch (oError) {
-
-                oController._oReqModel.setProperty("/req_header/medical_remaining",0);
-            }
-        }
+        
+		}
 
     };
 });

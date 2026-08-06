@@ -1649,8 +1649,7 @@
                 <!-- Attachment 1 -->
                 <Label
                     text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY} 
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
                         ? ${i18n>label_insurance_attachment_1}
                         : ${i18n>label_claimdetails_input_attachment_file_1}
                     }"
@@ -1706,8 +1705,7 @@
                 <!-- Attachment 2-->
 				<Label
                     text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} || 
-                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY} 
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} 
                         ? ${i18n>label_insurance_attachment_2}
                         : ${i18n>label_claimdetails_input_attachment_file_2}
                     }"
@@ -1727,8 +1725,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_2} === null}"
                 />
@@ -1780,8 +1777,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}) 
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_3} === null}"
                 />
@@ -1833,8 +1829,7 @@
                     style="Emphasized"
                     visible="false"
                     required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/CASH_REPAY})
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
                               &amp;&amp;
                               ${claimitem_input>/claim_item/attachment_file_4} === null}"
                 />
