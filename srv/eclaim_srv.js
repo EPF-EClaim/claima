@@ -4469,6 +4469,7 @@ module.exports = (srv) => {
             );
 
             const oFormatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Kuala_Lumpur',
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
