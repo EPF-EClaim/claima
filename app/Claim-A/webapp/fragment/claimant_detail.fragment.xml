@@ -1,0 +1,52 @@
+<core:FragmentDefinition 
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    <VBox 
+        id="claimant_detail" 
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin">
+        <VBox>
+            <OverflowToolbar
+                style="Clear">
+                <Title text="{owner_detail>/owner_detail_title}"/>
+            </OverflowToolbar>
+            <f:Form id="OwnerForm" editable="false">
+                <f:layout>
+                    <f:ResponsiveGridLayout columnsL="2" columnsM="2" />
+                </f:layout>
+                <f:formContainers>
+                    <f:FormContainer>
+                        <f:formElements>
+                            <f:FormElement label="{owner_detail>/owner_name_label}">
+                                <f:fields>
+                                    <Text text="{owner_detail>/owner_name}" />
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>owner_grade}">
+                                <f:fields>
+                                    <Text text="{owner_detail>/owner_grade}" />
+                                </f:fields>
+                            </f:FormElement>
+                        </f:formElements>
+                    </f:FormContainer>
+
+                    <f:FormContainer>
+                        <f:formElements>
+                            <f:FormElement label="{i18n>owner_department}">
+                                <f:fields>
+                                    <Text text="{owner_detail>/owner_department}" />
+                                </f:fields>
+                            </f:FormElement>
+                            <f:FormElement label="{i18n>owner_position}">
+                                <f:fields>
+                                    <Text text="{owner_detail>/owner_position}" />
+                                </f:fields>
+                            </f:FormElement>
+                        </f:formElements>
+                    </f:FormContainer>
+                </f:formContainers>
+            </f:Form>
+        </VBox>
+    </VBox>
+</core:FragmentDefinition>

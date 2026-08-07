@@ -58,8 +58,6 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 				_oReq.setProperty("/claim_header_list", []);
 				_oReq.setProperty("/claim_header_count", 0);
-			} finally {
-				BusyIndicator.hide();
 			}
 		},
 

@@ -32,33 +32,14 @@
   "private": true,
   "cds": {
     "build": {
-      "target": "gen",
-      "tasks": [
-        {
-          "for": "hana",
-          "src": "db",
-          "options": {
-            "deploy": [
-              {
-                "src": "cfg/ECLAIM_EXTERNAL_ACCESS.hdbrole",
-                "target": "src/ECLAIM_EXTERNAL_ACCESS.hdbrole"
-              },
-              {
-                "src": "cfg/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole",
-                "target": "src/ECLAIM_EXTERNAL_ACCESS_G#.hdbrole"
-              }
-            ]
-          }
-        }
-      ]
-  },
-  "server": {
-    "index": true,
-    "body_parser": {
-      "limit": "10mb"
-    }
-  },
- 
+      "target": "gen"
+    },
+    "server": {
+      "index": true,
+      "body_parser": {
+        "limit": "10mb"
+      }
+    },
     "log": {
       "levels": {
         "auth": "debug"
@@ -69,7 +50,7 @@
       "bypass_draft": true
     },
     "hana": {
-      "deploy-format": "hdbtable"
+      "deploy-format": "flat"
     },
     "requires": {
       "IS_Conn": { 

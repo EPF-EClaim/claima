@@ -1576,7 +1576,7 @@ entity ZCORPORATE_CARD : managed {
 
 entity ZCORPORATE_CARD_ADVANCED : managed {
     key CARD_NO                  : String(16)     @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID            : Integer        @mandatory  @Common.Label: 'Cardholder Employee ID';
+    key CARDHOLDER_ID            : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
         STATUS                   : String         @Common.Label: 'Status';
         MONTHLY_ADVANCED_AMT     : Decimal(16, 2) @Common.Label: 'Monthly Advanced Amount';
         COMMIT_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Commitment Offset Amount';
