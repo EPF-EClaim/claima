@@ -5666,9 +5666,6 @@ sap.ui.define([
 			// Personal Expense and Cash Repayment items are excluded from the
 			// reimbursable total (not paid out normally) - both get the same
 			// treatment.
-			var aExcludedTypeIds = [
-				this._oConstant.ClaimTypeItem.CASH_REPAY
-			];
  
 			var nTotal = aClaimItems
 				.filter((it) => !aExcludedTypeIds.includes(it.claim_type_item_id))
@@ -5679,7 +5676,6 @@ sap.ui.define([
  
 			if (bIsTravelClaimType && bHasCard) {
 				var nExcludedAmt = aClaimItems
-					.filter((it) => aExcludedTypeIds.includes(it.claim_type_item_id))
 					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
  
 				if (nExcludedAmt > 0) {

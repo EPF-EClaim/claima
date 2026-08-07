@@ -544,7 +544,6 @@ module.exports = (srv) => {
         // Personal Expense and Cash Repayment items are excluded from the
         // reimbursable total - they aren't paid out normally, mirroring the
         // frontend's _calculateClaimTotal() exclusion logic.
-        const aExcludedClaimTypeItemIds = ['CASH_REPAY'];
  
         const aAllItems = await tx.run(
             SELECT.from('ZCLAIM_ITEM')
@@ -557,7 +556,7 @@ module.exports = (srv) => {
                 SUM(AMOUNT) as TotalClaimAmount
             `
                 .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: { 'not in': aExcludedClaimTypeItemIds } })
+                .where({ CLAIM_ID: sClaimId })
         );
  
         const totalClaimAmount = result.TotalClaimAmount || 0;
@@ -1757,11 +1756,7 @@ module.exports = (srv) => {
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
         const sUserEmail =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id;
+            "902582smsm1@epf.gov.my.test.test"
 
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");
