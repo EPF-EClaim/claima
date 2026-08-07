@@ -55,7 +55,7 @@ xmlns:table2="sap.ui.mdc.table"
                         <Text text="{approval_log>STATUS_DESC}" />
                     </table:template>
                 </table:Column>
-                <table:Column  width="10rem">
+                <table:Column  width="15rem">
                     <Label text="{i18n>appr_timestamp}"></Label>
                     <table:template>
                         <Text text="{approval_log>PROCESS_TIMESTAMP}" />
