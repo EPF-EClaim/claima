@@ -520,6 +520,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.INTERNAL_ORDER,
                 ZCLAIM_ITEM.COURSE_DURATION,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_3,
+                ZCLAIM_ITEM.CHARGED_TO_CCC,
                 ZCLAIM_ITEM.POLICY_YEAR,
                 PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
                 CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
