@@ -118,6 +118,7 @@ sap.ui.define([
 			const bDTDAdmin = this._oRoleModel.getProperty("/isDTDAdmin"),
 				bAdminSystem = this._oRoleModel.getProperty("/isAdminSystem"),
 				bAdminCC = this._oRoleModel.getProperty("/isAdminCC"),
+				bAdminCCC = this._oRoleModel.getProperty("/isCCCAdmin"),
 				bClaimant = this._oRoleModel.getProperty("/isClaimant"),
 				bApprover = this._oRoleModel.getProperty("/isApprover");
 
@@ -231,7 +232,7 @@ sap.ui.define([
 				default:
 					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
-						if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						if (bDTDAdmin || bAdminSystem || bAdminCC || bAdminCCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
 								oKey = sEmpMasterDTD;
 							} else if (bDTDAdmin && oKey === sEmpDep) {
