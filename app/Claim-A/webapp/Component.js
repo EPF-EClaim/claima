@@ -124,7 +124,7 @@ sap.ui.define([
                     oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
                     oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
                     oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
-                    
+
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
                         oRoleModel.setProperty("/Admin_role", true);
@@ -433,7 +433,8 @@ sap.ui.define([
                 this._oRolesLoadedPromise.then(function () {
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
-                                  oRoleModel.getProperty("/isAdminCC");
+                                  oRoleModel.getProperty("/isAdminCC") || 
+                                  oRoleModel.getProperty("/isCCCAdmin") ;
                     // restriction for manual url change to Analytics and Configuration without admin role
                     if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");
