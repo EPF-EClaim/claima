@@ -13,6 +13,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     };
 
     @odata.singleton
+    entity CCCFeatureControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
+    };
+
+    @odata.singleton
     entity BudgetControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;

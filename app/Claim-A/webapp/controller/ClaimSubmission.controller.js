@@ -5668,7 +5668,6 @@ sap.ui.define([
 			// treatment.
  
 			var nTotal = aClaimItems
-				.filter((it) => !aExcludedTypeIds.includes(it.claim_type_item_id))
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
  
 			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];

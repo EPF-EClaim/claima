@@ -281,9 +281,7 @@ sap.ui.define([
 
 					const iAdvAmt = Math.max(
                     0,
-                    oTotals.current_balance < 0
-                        ? oTotals.current_balance + oTotals.service_tax - oTotals.merchant_refunds_total
-                        : oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
+                    	oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
                 	).toFixed(2);
 					
 					return {
@@ -3558,6 +3556,10 @@ sap.ui.define([
 			});
 
 			this._oReqModel.setProperty("/corpo_totals", oTotals);
+
+			if (bIsCorpoCC) {
+				this._oReqModel.setProperty("/req_header/reqamt", oTotals.payment_due);
+			}
 		},
 
 		async _loadCorpoCardsForEditItem(sReqId, sReqSubId) {

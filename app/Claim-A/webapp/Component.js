@@ -125,25 +125,41 @@ sap.ui.define([
                     oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
                     oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
 
+                    // userType is a single display label - priority order
+                    // determines which one shows when a user has multiple roles.
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/DTD_JKEW_role", true);
-                        oRoleModel.setProperty("/DTDAdmin_role", true);
                     } else if (oUserRoles.isAdminSystem) {
                         oSessionModel.setProperty("/userType", "JKEW Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/DTD_JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
                     } else if (oUserRoles.isCCCAdmin) {
                         oSessionModel.setProperty("/userType", "CCC Admin");
-                        oRoleModel.setProperty("/CCC_Admin", true);
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
                     } else {
                         oSessionModel.setProperty("/userType", "Claimant");
+                    }
+
+                    // Role-visibility flags are independent - a user can hold
+                    // multiple admin roles at once (e.g. Admin_CC AND
+                    // CCC_Admin), so each flag must be set on its own
+                    // condition rather than an else-if chain that stops at
+                    // the first match and silently skips the rest.
+                    if (oUserRoles.isDTDAdmin) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                        oRoleModel.setProperty("/DTDAdmin_role", true);
+                    }
+                    if (oUserRoles.isAdminSystem) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                    }
+                    if (oUserRoles.isAdminCC) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                    }
+                    if (oUserRoles.isCCCAdmin) {
+                        oRoleModel.setProperty("/CCC_Admin", true);
                     }
 
                     this._fnRolesLoaded();

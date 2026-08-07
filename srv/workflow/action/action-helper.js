@@ -475,9 +475,7 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                 continue;
             }
  
-            const fAdvanceAmount = oTotals.currentBalance < 0
-                                    ? oTotals.currentBalance + oTotals.serviceTax - oTotals.merchantRefund
-                                    : oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
+            const fAdvanceAmount = oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
             console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} / Cardholder ${oCardRow.CARDHOLDER_ID}: currentBalance=${oTotals.currentBalance} serviceTax=${oTotals.serviceTax} merchantRefund=${oTotals.merchantRefund} -> fAdvanceAmount=${fAdvanceAmount}`);
  
             // Only notify when THIS request's own advance amount is positive
@@ -609,9 +607,7 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
             return oAcc;
         }, { currentBalance: 0, serviceTax: 0, merchantRefund: 0 });
 
-        const fRequestAdvanceAmount = oRequestTotals.currentBalance < 0
-            ? oRequestTotals.currentBalance + oRequestTotals.serviceTax - oRequestTotals.merchantRefund
-            : oRequestTotals.currentBalance - oRequestTotals.serviceTax + oRequestTotals.merchantRefund;
+        const fRequestAdvanceAmount = oRequestTotals.currentBalance - oRequestTotals.serviceTax + oRequestTotals.merchantRefund;
  
         for (const oMaker of aMakersWithEmail) {
             await sendEmailInternal({

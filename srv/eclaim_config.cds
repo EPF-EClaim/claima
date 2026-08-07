@@ -124,9 +124,9 @@ annotate service.ZCORPORATE_CARD with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Corporate Card - ZCORPORATE_CARD',

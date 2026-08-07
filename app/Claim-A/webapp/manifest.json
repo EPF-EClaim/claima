@@ -5581,7 +5581,7 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "visible": "{= ${/CCCFeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"

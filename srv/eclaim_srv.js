@@ -4560,4 +4560,15 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('READ', 'CCCFeatureControl', async (req) => {
+        let operationHidden = true;
+        if (req.user.is(Constant.Admin.DTD_Admin) || req.user.is(Constant.Admin.CCC_Admin)) {
+            operationHidden = false;
+        }
+
+        return {
+            operationHidden: operationHidden,
+            operationEnabled: !operationHidden,
+        }
+    });
 }

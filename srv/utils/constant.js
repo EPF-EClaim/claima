@@ -545,7 +545,11 @@ const Constant = {
         APPROVE     : "approved",
         REJECT      : "rejected",
         PUSHBACK    : "pushed back"
-    }
+    },
+    StatementDueInfo: {
+        GL_CODE: "214229",
+        MATERIAL_CODE: "NA"
+    },
 
 };
 
