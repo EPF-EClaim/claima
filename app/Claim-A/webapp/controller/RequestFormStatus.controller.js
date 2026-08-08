@@ -73,6 +73,51 @@ sap.ui.define([
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
+				// For Corporate Credit Card requests, compute Total Payment Due
+				// Amount fresh from ZREQ_ITEM_CCC_PART (STATEMENT_DUE_AMT +
+				// CASHBACK, summed across every card/item) instead of using
+				// PREAPPROVAL_AMOUNT. Batched into one query for the whole list
+				// rather than one request per row.
+				const aCorpoCCRequestIds = oContextItems
+					.filter((it) => String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC))
+					.map((it) => it.REQUEST_ID);
+
+				if (aCorpoCCRequestIds.length > 0) {
+					try {
+						const oPartListBinding = this._oDataModel.bindList(
+							"/ZREQ_ITEM_CCC_PART",
+							null,
+							null,
+							new Filter({
+								filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
+								and: false
+							}),
+							{
+								$$ownRequest: true,
+								$select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
+							}
+						);
+						const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
+
+						const mTotalByRequestId = {};
+						aPartCtx.forEach((ctx) => {
+							const oPart = ctx.getObject();
+							const sReqId = oPart.REQUEST_ID;
+							mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
+								+ (Number(oPart.STATEMENT_DUE_AMT) || 0)
+								- (Number(oPart.CASHBACK) || 0);
+						});
+
+						oContextItems.forEach((it) => {
+							if (String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC)) {
+								it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it.REQUEST_ID] || 0) * 100) / 100;
+							}
+						});
+					} catch (e) {
+						console.error("Failed to compute Total Payment Due Amount for CCC requests:", e);
+					}
+				}
+
 				oReqStatusModel.setProperty("/req_header_list", oContextItems);
 				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
 
@@ -83,6 +128,13 @@ sap.ui.define([
 				oReqStatusModel.setProperty("/req_header_count", 0);
 				return [];
 			}
+		},
+
+		formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+			var fAmount = (String(sRequestTypeId) === String(this._oConstant.RequestType.CORP_CC))
+				? fTotalPaymentDueAmount
+				: fPreapprovalAmount;
+			return (Number(fAmount) || 0).toFixed(2);
 		},
 
 		async openItemFromList(oEvent) {

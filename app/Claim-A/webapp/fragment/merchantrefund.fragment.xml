@@ -50,19 +50,19 @@
                         </Column>
 
                         <Column width="12rem">
-                            <Text text="Merchant Refund" />
+                            <Label text="Merchant Refund" required="true" />
                         </Column>
 
                         <Column width="12rem">
-                            <Text text="Merchant Refund Claim Type" />
+                            <Label text="Merchant Refund Claim Type" required="true" />
                         </Column>
 
                         <Column width="12rem">
-                            <Text text="Merchant Refund Claim Item" />
+                            <Label text="Merchant Refund Claim Item" required="true" />
                         </Column>
 
                         <Column width="12rem">
-                            <Text text="Merchant Refund Cost Center" />
+                            <Label text="Merchant Refund Cost Center" required="true" />
                         </Column>
 
                         <Column width="3rem">
@@ -94,6 +94,7 @@
                                         }
                                     }" 
                                     enabled="{= ${request>/view} !== 'view' }"
+                                    required="true"
                                 />
                                     
                                 <Select
@@ -130,6 +131,7 @@
                                 <Select
                                     selectedKey="{request>claim_item}"
                                     id="req_claimTypeItem"
+                                    required="true"
                                     forceSelection="false"
                                     enabled="{= ${request>/view} !== 'view' &amp;&amp; !!${request>claim_type} }"
                                     items="{
@@ -153,6 +155,7 @@
                                     value="{request>cost_center}"
                                     additionalValue="{request>costcenter}"
                                     display="ValueDescription"
+                                    required="true"
                                     valueHelp="valuehelp_requestinput_altcc"
                                     editMode="{= ${request>/view} !== 'view' ? 'Editable' : 'ReadOnly'}"
                                 />

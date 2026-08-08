@@ -286,6 +286,7 @@ sap.ui.define([
 					
 					return {
 						...oCard,
+						PRINCIPLE: !!(mCardMasterByCardNo[oCard.CARD_NO]?.PRINCIPLE),
 						current_balance: oTotals.current_balance.toFixed(2),
 						service_tax: oTotals.service_tax.toFixed(2),
 						cashback: oTotals.cashback.toFixed(2),
@@ -3179,6 +3180,19 @@ sap.ui.define([
 		onMerchantRefundSave: function () {
 			const oDialogModel = this._oMerchantRefundDialog.getModel("request");
 			const aRefunds = oDialogModel.getProperty("/merchant_refunds");
+
+			// Block save if any row is missing a required field
+			const bHasIncompleteRow = aRefunds.some((oRefund) => {
+				return !oRefund.merchant_refund_amount ||
+					!oRefund.claim_type ||
+					!oRefund.claim_item ||
+					!oRefund.cost_center;
+			});
+
+			if (bHasIncompleteRow) {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
+				return;
+			}
 
 			// Write back to the SPECIFIC row's context, not a shared global path
 			this._oMerchantRefundSourceContext.setProperty("merchant_refunds", aRefunds);

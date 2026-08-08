@@ -801,7 +801,7 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     // amount - not the principal-card override, which is specific to the
     // item lines above.
     const fTotalPaymentDueAmount = (aItemParts || []).reduce((fSum, oPart) => {
-        return fSum + (Number(oPart.STATEMENT_DUE_AMT) || 0) + (Number(oPart.CASHBACK) || 0);
+        return fSum + (Number(oPart.STATEMENT_DUE_AMT) || 0) - (Number(oPart.CASHBACK) || 0);
     }, 0);
 
     const oFinalPayload = {

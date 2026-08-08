@@ -1680,7 +1680,7 @@
                                             minimum: 0
                                     }
                                 }"
-                                enabled="{= ${request>/view} !== 'view' }"
+                                enabled="{= ${request>/view} !== 'view' &amp;&amp; ${request>PRINCIPLE} }"
                                 change=".onInputCCAmount"
                             >
                                 <customData>
