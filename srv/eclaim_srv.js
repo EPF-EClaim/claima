@@ -536,34 +536,36 @@ module.exports = (srv) => {
 
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
- 
+    
         const headerResult = await tx.run(
             SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
         );
- 
-        // Personal Expense and Cash Repayment items are excluded from the
-        // reimbursable total - they aren't paid out normally, mirroring the
-        // frontend's _calculateClaimTotal() exclusion logic.
- 
+    
+        // Items charged to CCC are excluded from the reimbursable total,
+        // since those get settled via the corporate card advance offset
+        // instead. Mirrors the frontend's _calculateClaimTotal() exclusion
+        // logic.
         const aAllItems = await tx.run(
             SELECT.from('ZCLAIM_ITEM')
                 .columns('CLAIM_SUB_ID', 'AMOUNT', 'CLAIM_TYPE_ITEM_ID')
                 .where({ CLAIM_ID: sClaimId })
         );
- 
+
         const result = await tx.run(
             SELECT.one`
                 SUM(AMOUNT) as TotalClaimAmount
             `
                 .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId })
+                .where(
+                    'CLAIM_ID =', sClaimId,
+                    'and (CHARGED_TO_CCC = false or CHARGED_TO_CCC is null)'
+                )
         );
- 
+
         const totalClaimAmount = result.TotalClaimAmount || 0;
-         const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
-        const nCardAdvanceAmount = Math.abs(Number(headerResult.CCC_ADV_AMT) || 0);
-        const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount - nCardAdvanceAmount) || 0;
- 
+        const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
+        const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount) || 0;
+    
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({

@@ -550,6 +550,15 @@ const Constant = {
         GL_CODE: "214229",
         MATERIAL_CODE: "NA"
     },
+    BankingConstantIds: [
+        'EPF_BANK_ACCT_NUMBER',
+        'HSBC_VENDOR_ID',
+        'HSBC_BANK_ACCT_NUMBER',
+        'HSBC_BIC_CODE',
+        'HSBC_VENDOR_NAME',
+        'ID_TYPE',
+        'REGISTRATION_NO'
+    ],
 
 };
 

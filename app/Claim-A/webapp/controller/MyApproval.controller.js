@@ -691,7 +691,9 @@ sap.ui.define([
                 }));
 
                 // Derive totals from items (just in case)
-                const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+                const nTotal = aItems
+                    .filter((it) => !it.charged_to_ccc)
+                    .reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
                 // Only overwrite header totals if header had null/0 (tweak to your preference)
                 if (!oHeader.total_claim_amount) {

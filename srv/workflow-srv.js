@@ -36,7 +36,8 @@ const {
     resolveActionDescriptor,
     updateCorpoCardAdvance,
     notifyCardholdersOfRequestApproval,
-    notifyCCCMakerOfApproval
+    notifyCCCMakerOfApproval,
+    buildFinalApprovalPayloadForCCC
 } = require('./workflow/action/action-helper');
 const {
     updateUsedEntitlementAmount
@@ -240,6 +241,10 @@ module.exports = (srv) => {
                     console.log("Sending final approve CCC email")
                     await notifyCardholdersOfRequestApproval(oTx, sId);
                     await notifyCCCMakerOfApproval(oTx, sId, sUserId);
+
+                    const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sId);
+                    console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
+
                 }
             }else{
                 // for non final approve

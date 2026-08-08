@@ -407,6 +407,7 @@ sap.ui.define([
 
 				}
 				this._calculateClaimTotal();
+				this._calculateCardAdvanceAmount();
 			}
 		},
 		onSelectCountry: async function(oEvent){
@@ -515,6 +516,7 @@ sap.ui.define([
 					claim_id: it.CLAIM_ID,
 					claim_sub_id: it.CLAIM_SUB_ID,
 					claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
+					charged_to_ccc: !!it.CHARGED_TO_CCC,
 					percentage_compensation: it.PERCENTAGE_COMPENSATION,
 					account_no: it.ACCOUNT_NO,
 					amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
@@ -625,9 +627,12 @@ sap.ui.define([
 				}));
 
 				// Only overwrite header totals if header had null/0 (tweak to your preference)
+				// Only overwrite header totals if header had null/0 (tweak to your preference)
 				if (!oHeader.total_claim_amount) {
 					// Derive totals from items (just in case)
-					const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+					const nTotal = aItems
+						.filter((it) => !it.charged_to_ccc)
+						.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
 					oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);
 				}
@@ -1297,6 +1302,7 @@ sap.ui.define([
 					"tips": null,
 					"number_of_travellers": null,
 					"internal_order": null,
+					"charged_to_ccc": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1587,7 +1593,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 
 				// calculate new total
-				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+				const nTotal = oInputModel.getProperty("/claim_items")
+					.filter((it) => !it.charged_to_ccc)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			}
 			oInputModel.setProperty(addrIndex + "/is_new", true);
@@ -1641,6 +1649,7 @@ sap.ui.define([
 			}	
 			// recalculate total_claim_amount / final_amount_to_receive
 			await this._calculateClaimTotal();
+			this._calculateCardAdvanceAmount();
 		
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
@@ -2599,6 +2608,7 @@ sap.ui.define([
 
 			//for CCC personal expense
 			await this._calculateClaimTotal();
+			await this._calculateCardAdvanceAmount();
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -5659,37 +5669,51 @@ sap.ui.define([
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
- 
+
 			var nCashAdvAmt = Math.max(0, Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0);
-			var nCardAdvAmt = Math.abs(Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0);
- 
-			// Personal Expense and Cash Repayment items are excluded from the
-			// reimbursable total (not paid out normally) - both get the same
-			// treatment.
- 
+
+			// Items charged to CCC are excluded from the reimbursable total,
+			// since those get settled via the corporate card advance offset
+			// instead.
 			var nTotal = aClaimItems
+				.filter((it) => !it.charged_to_ccc)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
- 
+
 			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
 			var bHasCard = !!sCardNo;
- 
+
 			if (bIsTravelClaimType && bHasCard) {
 				var nExcludedAmt = aClaimItems
+					.filter((it) => it.charged_to_ccc)
 					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
- 
+
 				if (nExcludedAmt > 0) {
 					// nTotal already excludes these items - do not subtract nExcludedAmt again
-					var nNewTotal = nTotal - nCashAdvAmt - nCardAdvAmt;
+					var nNewTotal = nTotal - nCashAdvAmt;
 					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 					return;
 				}
 			}
- 
-			// Default: subtract cash advance / corporate card advance, if any
-			var nFinal = nTotal - nCashAdvAmt - nCardAdvAmt;
+
+			// Default: subtract cash advance, if any
+			var nFinal = nTotal - nCashAdvAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
+		},
+
+		_calculateCardAdvanceAmount: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
+
+			var nChargedToCccAmount = aClaimItems
+				.filter((it) => it.charged_to_ccc)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			var nCardAdvanceAmount = nOriginalCardAdvanceAmount - nChargedToCccAmount;
+
+			oInputModel.setProperty("/claim_header/card_advance_amount", nCardAdvanceAmount);
 		},
 	});
 });
