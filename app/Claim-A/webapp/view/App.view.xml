@@ -64,16 +64,16 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myrequest"
-                        text="{i18n>nav_preappstatus}"
-                        icon="sap-icon://activity-items"
+                        key="myreport"
+                        text="{i18n>nav_claimstatus}"
+                        icon="sap-icon://document-text"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myreport"
-                        text="{i18n>nav_claimstatus}"
-                        icon="sap-icon://document-text"
+                        key="myrequest"
+                        text="{i18n>nav_preappstatus}"
+                        icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
@@ -92,16 +92,11 @@
                         enabled="true"
                         expanded="false"
                     />
-                    <!-- <tnt:NavigationListItem
-                        key="analytics"
-                        text="{i18n>nav_analytics}"
-                        icon="sap-icon://business-objects-experience"
-                        enabled="true"
-                        expanded="false"
-                    /> -->
 
-                    <tnt:NavigationListGroup text="{i18n>nav_analytics}" expanded="false" 
-                     visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
+                    <tnt:NavigationListGroup 
+                        text="{i18n>nav_analytics}" 
+                        expanded="false" 
+                        visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"
@@ -152,8 +147,10 @@
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>    
 
-                    <tnt:NavigationListGroup text="{i18n>nav_reroute}" expanded="false"
-                    visible="{= ${roleModel>/DTD_JKEW_role} || ${roleModel>/Admin_role} }"
+                    <tnt:NavigationListGroup 
+                        text="{i18n>nav_reroute}" 
+                        expanded="false"
+                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://add-contact"
@@ -171,13 +168,17 @@
                         </tnt:NavigationListItem>                        
                     </tnt:NavigationListGroup>                                                               
 
-                    <tnt:NavigationListGroup text="Configuration" expanded="false">
+                    <tnt:NavigationListGroup 
+                        text="Configuration" 
+                        expanded="false"
+                        visible="{= ${roleModel>/Admin_role}}">
+
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
-                            visible="{roleModel>/Admin_role}"
+                            visible="{= ${roleModel>/Admin_role}}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -330,7 +331,7 @@
                                 <tnt:NavigationListItem
                                     key="ZBUDGET"
                                     text="{i18n>budget_data}"
-                                    visible="{roleModel>/Admin_role}"
+                                    visible="{= ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"
@@ -409,7 +410,7 @@
                             icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
-                            visible="{roleModel>/DTD_JKEW_role}"
+                            visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role}}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -420,7 +421,7 @@
                                 <tnt:NavigationListItem
                                     key="ZEMP_CA_PAYMENT"
                                     text="{i18n>cashadv}"
-                                    visible="{roleModel>/DTD_JKEW_role}"
+                                    visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROOM_TYPE"

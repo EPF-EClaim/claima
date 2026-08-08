@@ -69,14 +69,6 @@ sap.ui.define([
 			this._oReqModel = this.getOwnerComponent().getModel('request');
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
-			this.isFclEnabled = function () {
-				return false;
-			};
-			this.updateUIStateForView = function () {
-			};
-			this.calculateLayout = function () {
-				 return "OneColumn";
-			};
 
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
@@ -97,13 +89,6 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-		},
-		onCollapseExpandPress: function () {
-			var oModel = this.getView().getModel();
-			var oNavigationList = this.byId("navigationList");
-			var bExpanded = oNavigationList.getExpanded();
-
-			oNavigationList.setExpanded(!bExpanded);
 		},
 
 		onNavItemPress: function (oEvent) {
@@ -129,12 +114,6 @@ sap.ui.define([
 				sNumRangeDTD = this._oConstant.Configuration.ZNUM_RANGE_DTD,
 				sBudget = this._oConstant.Configuration.ZBUDGET;
 
-			// Make sure userType is available
-			// const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
-			// if (!bClaimant || !bApprover) {
-			// 	MessageToast.show("Please wait… loading your access.");
-			// 	return;
-			// }
 
 			switch (oKey) {
 				case "nav_claimsubmission":
@@ -149,18 +128,6 @@ sap.ui.define([
 				case "mysubstitution":
 					this._oRouter.navTo("ManageSub");
 					break;
-				// Start Aiman Salim 10/02/2026 - Added for analytics
-				// case "analytics":
-				// 	if (bDTDAdmin || bAdminSystem || bAdminCC) {
-				// 		HashChanger.getInstance().replaceHash("");
-				// 		this._oRouter.navTo("Analytics");
-				// 	} else {
-				// 		var message = Utility.getText("msg_unauthorized_role");
-				// 		MessageBox.error(message);
-				// 	}
-				// 	break;
-				// End 	 Aiman Salim 10/02/2026 - Added for analytics
-				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "req_summary":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
@@ -218,18 +185,13 @@ sap.ui.define([
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
 					break;
-				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
 					this._oRouter.navTo("MyApproval");
 					break;
-				//End Aiman Salim 08/03/2026 - Added for MyApproval
-				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
 					this._oRouter.navTo("Dashboard");
 					break;
-				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
-					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
 						if (bDTDAdmin || bAdminSystem || bAdminCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
