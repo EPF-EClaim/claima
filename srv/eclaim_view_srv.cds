@@ -550,7 +550,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_4,
-                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                       
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID,
+                ZCLAIM_ITEM.CHARGED_TO_CCC                        
         };
 
     entity ZEMP_REQUEST_STATUS            as
