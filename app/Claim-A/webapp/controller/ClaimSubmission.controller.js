@@ -793,6 +793,7 @@ sap.ui.define([
 				mode_of_transfer_id: o.MODE_OF_TRANSFER,
 				card_no: o.CARD_NO,
 				card_advance_amount: o.CCC_ADV_AMT,
+				original_card_advance_amount: o.CCC_ADV_AMT,
 				descr: {
 					submission_type: null,
 					alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -2305,7 +2306,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/location_type", "");
 
 				// get material code from claim item
-				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
+				var materialCode = claimItem.data("MATERIAL_CODE");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
@@ -2567,7 +2568,7 @@ sap.ui.define([
 			}
 
 			}
-			this._setClaimDetailSelection(oClaimSubmissionModel);
+			await this._setClaimDetailSelection(oClaimSubmissionModel);
 
 			// approver view changes
 			if (oClaimSubmissionModel.getProperty("/view_only")) {
@@ -2611,7 +2612,7 @@ sap.ui.define([
 			await this._calculateCardAdvanceAmount();
 		},
 
-		_setClaimDetailSelection: function (oModel) {
+		_setClaimDetailSelection: async function (oModel) {
 			// filter by submission type
 			var oFilterSubsmissionType;
 			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
@@ -2631,7 +2632,10 @@ sap.ui.define([
 				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
 			}
 
-			// 1. Define the base filters
+			// 1. Define the base filters - CLAIM_TYPE_ITEM_ID exclusions are
+			// handled separately below, in plain JavaScript, rather than as
+			// OData filters (the dynamic filter/binding approach proved
+			// unreliable for this specific dropdown).
 			var aFilters = [
 				new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
 				oFilterSubsmissionType,
@@ -2641,35 +2645,64 @@ sap.ui.define([
 				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 			];
 
-			// 2. Conditionally add the CASH_REPAYMENT filter
+			// 2. Determine which CLAIM_TYPE_ITEM_IDs to exclude.
+			var aExcludedClaimTypeItemIds = [];
+
 			// Using Number() or parseFloat() ensures the check works whether the model stores it as a string "0" or number 0
 			var fCashAdvanceAmount = oModel.getProperty("/claim_header/cash_advance_amount");
 			if (Number(fCashAdvanceAmount) === 0) {
-				aFilters.push(new Filter('CLAIM_TYPE_ITEM_ID', FilterOperator.NE, this._oConstant.ClaimTypeItem.CASH_REPAY));
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.CASH_REPAY);
 			}
 
-			// 3. Set dropdown for claim items using the dynamic filter array
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
-				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: aFilters,
-				sorter: [
-					new Sorter('CLAIM_TYPE_ITEM_DESC'),
-					new Sorter('CLAIM_TYPE_ITEM_ID')
-				],
-				parameters: {
-					$expand: {
-						"ZSUBMISSION_TYPE": {
-							$select: "SUBMISSION_TYPE_DESC"
-						}
-					},
-					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
+			// POTONGAN_ELAUN and PERSONAL_EXPENSE are only shown to users
+			// who have a corporate credit card assigned.
+			var sCardNoForFilter = oModel.getProperty("/claim_header/card_no");
+			if (!sCardNoForFilter) {
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.POTONGAN_ELAUN);
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.PERSONAL_EXP);
+			}
+
+			// 3. Fetch every matching row (base filters only), then remove
+			// the excluded CLAIM_TYPE_ITEM_IDs in plain JavaScript, and
+			// populate the Select control directly.
+			var oClaimItemSelect = this.byId("select_claimdetails_input_claimitem");
+			var oEmployeeModel = this.getView().getModel("employee");
+			var oListBinding = oEmployeeModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, aFilters, {
+				$$ownRequest: true,
+				$expand: {
+					"ZSUBMISSION_TYPE": {
+						$select: "SUBMISSION_TYPE_DESC"
+					}
 				},
-				template: new Item({
-					key: "{employee>CLAIM_TYPE_ITEM_ID}",
-					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
-				})
+				$select: "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC,SUBMISSION_TYPE,MATERIAL_CODE"
 			});
-			
+
+			try {
+				var aContexts = await oListBinding.requestContexts(0, Infinity);
+				var aItems = aContexts
+					.map(function (ctx) { return ctx.getObject(); })
+					.filter(function (oRow) { return !aExcludedClaimTypeItemIds.includes(oRow.CLAIM_TYPE_ITEM_ID); })
+					.sort(function (a, b) {
+						if (a.CLAIM_TYPE_ITEM_DESC !== b.CLAIM_TYPE_ITEM_DESC) {
+							return a.CLAIM_TYPE_ITEM_DESC < b.CLAIM_TYPE_ITEM_DESC ? -1 : 1;
+						}
+						return a.CLAIM_TYPE_ITEM_ID < b.CLAIM_TYPE_ITEM_ID ? -1 : 1;
+					});
+
+				oClaimItemSelect.unbindAggregation("items");
+				oClaimItemSelect.removeAllItems();
+				aItems.forEach(function (oRow) {
+					var oItem = new Item({
+						key: oRow.CLAIM_TYPE_ITEM_ID,
+						text: oRow.CLAIM_TYPE_ITEM_DESC
+					});
+					oItem.data("MATERIAL_CODE", oRow.MATERIAL_CODE);
+					oClaimItemSelect.addItem(oItem);
+				});
+			} catch (e) {
+				console.error("Failed to load claim type items:", e);
+			}
+
 			// claim detail selection values
 			this._setClaimDetailSelectionMaster();
 		},
@@ -3202,7 +3235,8 @@ sap.ui.define([
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
-					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP)
+					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
+									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? true
 									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
 				});
@@ -4219,6 +4253,7 @@ sap.ui.define([
 				});
 				// Reload when item cancellation
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				this._calculateCardAdvanceAmount();
 
 				let sFooterMode;
  
@@ -4241,6 +4276,7 @@ sap.ui.define([
 
 				// Reload when item cancellation
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				this._calculateCardAdvanceAmount();
 			}
 		},
 
@@ -4266,7 +4302,18 @@ sap.ui.define([
 				}
 
 				// Total Claim Amount Validation checking
-				if (aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)) {
+				var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+				var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+
+				var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+				var bHasCard = !!sCardNo;
+				var bTravelWithCard = bHasCard && bIsTravelClaimType;
+
+				var nTotalClaimAmount = oInputModel.getProperty("/claim_header/total_claim_amount");
+				if (aItems.length > 0 && (
+					isNaN(nTotalClaimAmount) ||
+					(bTravelWithCard ? nTotalClaimAmount < 0 : nTotalClaimAmount <= 0)
+				)) {
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
 					BusyIndicator.hide();
 					return;
@@ -4278,19 +4325,31 @@ sap.ui.define([
 				}
 
 				// Cash Advance Repayment Validation checking
-				var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
-				var sCardNo = oInputModel.getProperty("/claim_header/card_no");
-
-				var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
-				var bHasCard = !!sCardNo;
-
 				if (!bHasCard && !bIsTravelClaimType) {
 					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
 						BusyIndicator.hide();
 						return;
 					}
-}
+		}
+
+				// Travel claim with a corporate credit card - final amount to
+				// receive can be 0 but not negative, on submit.
+				if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCard && bIsTravelClaimType) {
+					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
+						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+						BusyIndicator.hide();
+						return;
+					}
+				}
+
+				// Corporate Credit Card Advance Validation checking
+				if (oAction === this._oConstant.Claim_Action.SUBMIT &&
+					Number(oInputModel.getProperty("/claim_header/card_advance_amount")) < 0) {
+					MessageBox.error(Utility.getText("msg_error_negative_card_advance"));
+					BusyIndicator.hide();
+					return;
+				}
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				// CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -5679,6 +5738,13 @@ sap.ui.define([
 				.filter((it) => !it.charged_to_ccc)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
+			// POTONGAN_ELAUN items are actively deducted from Final Amount to
+			// Receive, on top of already being excluded from the reimbursable
+			// total above (since they're always charged_to_ccc = true).
+			var nPotonganElaunAmt = aClaimItems
+				.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
 			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
 			var bHasCard = !!sCardNo;
 
@@ -5689,15 +5755,15 @@ sap.ui.define([
 
 				if (nExcludedAmt > 0) {
 					// nTotal already excludes these items - do not subtract nExcludedAmt again
-					var nNewTotal = nTotal - nCashAdvAmt;
+					var nNewTotal = nTotal - nCashAdvAmt - nPotonganElaunAmt;
 					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 					return;
 				}
 			}
 
-			// Default: subtract cash advance, if any
-			var nFinal = nTotal - nCashAdvAmt;
+			// Default: subtract cash advance and POTONGAN_ELAUN deduction, if any
+			var nFinal = nTotal - nCashAdvAmt - nPotonganElaunAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
@@ -5705,7 +5771,7 @@ sap.ui.define([
 		_calculateCardAdvanceAmount: function () {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
-			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/card_advance_amount")) || 0;
+			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
 
 			var nChargedToCccAmount = aClaimItems
 				.filter((it) => it.charged_to_ccc)

@@ -102,7 +102,8 @@ sap.ui.define([
             "STATMENT_DUE" : "STATMENT_DUE",
             "SERV_TAX" : "SERV_TAX",
             "MERCH_RETURN" : "MERCH_RETURN",
-            "PERSONAL_EXP" : "PERSONAL_EXPENSE"
+            "PERSONAL_EXP" : "PERSONAL_EXPENSE",
+            "POTONGAN_ELAUN" : "POTONGAN_ELAUN"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",

@@ -536,11 +536,11 @@ module.exports = (srv) => {
 
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
-    
+
         const headerResult = await tx.run(
             SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
         );
-    
+
         // Items charged to CCC are excluded from the reimbursable total,
         // since those get settled via the corporate card advance offset
         // instead. Mirrors the frontend's _calculateClaimTotal() exclusion
@@ -564,8 +564,22 @@ module.exports = (srv) => {
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
         const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
-        const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount) || 0;
-    
+
+        // POTONGAN_ELAUN items are actively deducted from Final Amount to
+        // Receive, on top of already being excluded from the reimbursable
+        // total above (since they're always CHARGED_TO_CCC = true). Mirrors
+        // the frontend's _calculateClaimTotal() deduction logic.
+        const potonganElaunResult = await tx.run(
+            SELECT.one`
+                SUM(AMOUNT) as PotonganElaunAmount
+            `
+                .from('ZCLAIM_ITEM')
+                .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: 'POTONGAN_ELAUN' })
+        );
+        const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
+
+        const finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0;
+
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
