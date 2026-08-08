@@ -192,6 +192,83 @@ module.exports = {
             }
         }
 
+        // For Pre Approval Request:
+        // Also check if same dependent already has same policy year in Claim Submission with Approved or Pending Approval status.
+        // This prevents employee from creating PAR/Cash Advance when policy already exists in CLM.
+        const bIsClaimSubmission = oPayload.RecordId.substring(0, 3) === Constant.WorkflowType.CLAIM;
+
+        if (!bIsClaimSubmission) {
+            const aClaimItemConditions = {
+                [Constant.EntitiesFields.DEPENDENT_NATIONAL_ID]: sDependentNationalId
+            };
+
+            const sClaimItemWhereClause =
+                BuildSelectWhereConditions.buildWhereCondition(aClaimItemConditions);
+
+            const aExistingClaimItems = await tx.run(
+                SELECT.from(Constant.Entities.ZCLAIM_ITEM)
+                    .columns(
+                        Constant.EntitiesFields.CLAIMID,
+                        Constant.EntitiesFields.CLAIM_SUB_ID,
+                        Constant.EntitiesFields.POLICY_YEAR
+                    )
+                    .where(`${sClaimItemWhereClause}`)
+            );
+
+            const aSamePolicyYearClaimItems = aExistingClaimItems.filter(oItem => {
+                const vExistingPolicyValue =
+                    oItem[Constant.EntitiesFields.POLICY_YEAR];
+
+                if (!vExistingPolicyValue) {
+                    return false;
+                }
+
+                const iExistingPolicyYear = Number(vExistingPolicyValue);
+
+                return iExistingPolicyYear === iPolicyYear;
+            });
+
+            if (aSamePolicyYearClaimItems.length > 0) {
+                const aClaimIds = [
+                    ...new Set(
+                        aSamePolicyYearClaimItems
+                            .map(oItem => oItem[Constant.EntitiesFields.CLAIMID])
+                            .filter(Boolean)
+                    )
+                ];
+
+                if (aClaimIds.length > 0) {
+                    const aClaimStatus = [
+                        Constant.Status.APPROVED,
+                        Constant.Status.PENDING_APPROVAL
+                    ];
+
+                    const aClaimHeaderConditions = {
+                        [Constant.EntitiesFields.CLAIMID]: { in: aClaimIds },
+                        [Constant.EntitiesFields.CLAIM_STATUS]: { in: aClaimStatus }
+                    };
+
+                    const sClaimHeaderWhereClause =
+                        BuildSelectWhereConditions.buildWhereCondition(aClaimHeaderConditions);
+
+                    const aExistingClaimHeaders = await tx.run(
+                        SELECT.from(Constant.Entities.ZCLAIM_HEADER)
+                            .columns(
+                                Constant.EntitiesFields.CLAIMID,
+                                Constant.EntitiesFields.CLAIM_STATUS
+                            )
+                            .where(`${sClaimHeaderWhereClause}`)
+                    );
+
+                    if (aExistingClaimHeaders.length > 0) {
+                        throw new Error(
+                            "This dependent already has an approved or pending claim with the same policy year. You cannot create a Pre Approval Request for the same dependent and policy year."
+                        );
+                    }
+                }
+            }
+        }
+
         //Check if the total claim + used is more than the Eligible Amount
         iIndex = oPayload.CheckFields.findIndex(
             field => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT
