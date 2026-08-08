@@ -490,6 +490,15 @@ sap.ui.define([
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
+
+				if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL) {
+					await Utility.getRemainingMedicalEntitlement(
+						oClaimSubmissionModel,
+						oHeader.emp_id,
+						"/claim_header/medical_remaining"
+					);
+				}
+
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
 
 				// set view-only
@@ -620,6 +629,17 @@ sap.ui.define([
 					number_of_travellers: it.TOTAL_TRAVELLER,
 					internal_order: it.INTERNAL_ORDER,
 					course_duration: it.COURSE_DURATION,
+					insurance_medical_provider_id: it.INSURANCE_MEDICAL_PROVIDER_ID,
+					insurance_medical_provider_name: it.INSURANCE_MEDICAL_PROVIDER_NAME,
+					policy_start_date: it.POLICY_START_DATE,
+					policy_end_date: it.POLICY_END_DATE,
+					dependent_national_id: it.DEPENDENT_NATIONAL_ID,
+					previous_policy_number: it.PREVIOUS_POLICY_NUMBER,
+					current_policy_number: it.CURRENT_POLICY_NUMBER,
+					next_policy_number: it.NEXT_POLICY_NUMBER,
+					attachment_file_3: it.ATTACHMENT_FILE_3,
+					attachment_file_4: it.ATTACHMENT_FILE_4,
+					policy_year: it.POLICY_YEAR,
 					descr: {},
 				}));
 
@@ -671,7 +691,8 @@ sap.ui.define([
 					mode_of_transfer: it.TRANSFER_MODE_DESC,
 					travel_alone_family: it.TRAVEL_TYPE_DESC,
 					travel_family_now_later: it.FAMILY_TIMING_DESC,
-					
+					attachment_file_3: null,
+					attachment_file_4: null
 				}));
 
 				// assign description based on claim item index
@@ -1293,6 +1314,17 @@ sap.ui.define([
 					"tips": null,
 					"number_of_travellers": null,
 					"internal_order": null,
+					"policy_start_date": null,
+					"policy_end_date": null,
+					"dependent_national_id": null,
+					"insurance_medical_provider_id": null,
+					"insurance_medical_provider_name": null,
+					"previous_policy_number": null,
+					"current_policy_number": null,
+					"next_policy_number": null,
+					"attachment_file_3": null,
+					"attachment_file_4": null,
+					"policy_year": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1326,6 +1358,8 @@ sap.ui.define([
 						"vehicle_class_id": null,
 						"attachment_file_1": null,
 						"attachment_file_2": null,
+						"attachment_file_3": null,
+						"attachment_file_4": null,
 					},
 					"eligible_amount": null,
 					"no_of_hours": null
@@ -1336,6 +1370,14 @@ sap.ui.define([
 						"fileContent": null
 					},
 					"attachment2": {
+						"fileName": null,
+						"fileContent": null
+					},
+					"attachment3": {
+						"fileName": null,
+						"fileContent": null
+					},
+					"attachment4": {
 						"fileName": null,
 						"fileContent": null
 					}
@@ -1992,6 +2034,12 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_marriagecategory"), property: "marriage_category", field: "select_claimdetails__input_marriagecategory", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_actual_meter_cube"), property: "actual_meter_cube", field: "input_claimdetails_meter_cube_actual", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_entitled_meter_cube"), property: "entitled_meter_cube", field: "input_claimdetails_meter_cube", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_attachment_file_3"), property: "attachment_file_3", field: "fileuploader_claimdetails_input_attachment_file_3", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_attachment_file_4"), property: "attachment_file_4", field: "fileuploader_claimdetails_input_attachment_file_4", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_start_date"), property: "policy_start_date", field: "datepicker_claimdetails_input_insurance_policy_start_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_end_date"), property: "policy_end_date", field: "datepicker_claimdetails_input_insurance_policy_end_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_id"), property: "insurance_medical_provider_id", field: "select_claimdetails_input_insurance_medical_provider_id", type: "descr", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_name"), property: "insurance_medical_provider_name", field: "input_claimdetails_input_insurance_medical_provider_name", width: 30 }
 
 			];
 
@@ -2484,7 +2532,14 @@ sap.ui.define([
 				combo_dependent: { is_editable: true },
 				to_location: { is_visible: false },
 				from_location: { is_visible: false },
-				marriage_category: { is_visible: false }
+				marriage_category: { is_visible: false },
+				insurance_medical_provider_id: { is_visible: false },
+				insurance_medical_provider_name: { is_visible: false },
+				policy_start_date: { is_visible: false },
+				policy_end_date: { is_visible: false },
+				previous_policy_number: { is_visible: false },
+				current_policy_number: { is_visible: false },
+				next_policy_number: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2701,6 +2756,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//// Nama Pembekal Insuran
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_medical_provider_id", "ZINSURANCE_MEDICAL_PROVIDER");
 
 			var oFilter = this._getDependentFilters();
 
@@ -2798,6 +2855,65 @@ sap.ui.define([
 						filters: [
 							oEmpFilter,
 							oDependentRuleFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.INSURANCE:
+				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
+				case this._oConstant.ClaimTypeItem.CASH_REPAY: 	
+					var d25YearsAndBelow = DateUtility.today();
+					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
+
+					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
+
+					var oNonChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.SPOUSE
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.ADDITIONAL_SPOUSE
+							)
+						],
+						and: false
+					});
+
+					var oEligibleChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.STUDENT,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.DOB,
+								FilterOperator.GE,
+								s25YearsAndBelow
+							)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oNonChildFilter,
+									oEligibleChildFilter
+								],
+								and: false
+							})
 						],
 						and: true
 					})
@@ -3007,6 +3123,22 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
+			// upload Attachment 3
+			const bUploadAttachment3 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment3",
+				"/claim_item/attachment_file_3"
+			);
+			if (!bUploadAttachment3) return; // stop processing if upload fails for attachment 3
+
+			// upload Attachment 4
+			const bUploadAttachment4 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment4",
+				"/claim_item/attachment_file_4"
+			);
+			if (!bUploadAttachment4) return; // stop processing if upload fails for attachment 4
+
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -3203,12 +3335,21 @@ sap.ui.define([
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration")
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
+					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
+					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
+					INSURANCE_MEDICAL_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_medical_provider_id"),
+					INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name"),
+					ATTACHMENT_FILE_3: oInputModel.getProperty("/claim_item/attachment_file_3"),
+					ATTACHMENT_FILE_4: oInputModel.getProperty("/claim_item/attachment_file_4"),
+					POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_year")
 				});
-
 				// to save the attachment inside SF
 				var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
-                var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+				var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+				var sAttachment3_SFID = oInputModel.getProperty("/claim_item/attachment_file_3")?.split(" - ")[0];
+				var sAttachment4_SFID = oInputModel.getProperty("/claim_item/attachment_file_4")?.split(" - ")[0];
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
@@ -3216,12 +3357,14 @@ sap.ui.define([
 					var oContext = oListBinding.create(oBody.getData());
 					await oContext.created().then(async () => {
 						// post MDF for item attachments
-						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2")) {
+						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2") || oInputModel.getProperty("/claim_item/attachment_file_3") || oInputModel.getProperty("/claim_item/attachment_file_4" )) {
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
 								sAttachment1_SFID,
-								sAttachment2_SFID
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID,
 							)
 						}
 
@@ -3251,6 +3394,8 @@ sap.ui.define([
 						// get existing attachment file values
 						var oAttachmentFile1 = oCtx.getProperty("ATTACHMENT_FILE_1");
 						var oAttachmentFile2 = oCtx.getProperty("ATTACHMENT_FILE_2");
+						var oAttachmentFile3 = oCtx.getProperty("ATTACHMENT_FILE_3");
+						var oAttachmentFile4 = oCtx.getProperty("ATTACHMENT_FILE_4");
 
 						for (const [key, value] of Object.entries(oBody.getData())) {
 							oCtx.setProperty(key, value);
@@ -3267,19 +3412,35 @@ sap.ui.define([
 							await Attachment.deleteAttachment(sSFID);
 							oCtx.setProperty("ATTACHMENT_FILE_2", null);
 						}
+						// Delete Attachment 3 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_3_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_3_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_3", null);
+						}
+						// Delete Attachment 4 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_4_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_4_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_4", null);
+						}
 
 						await oModel.submitBatch("$auto");
 
 						// post MDF for item attachments
 						if (
 							(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== oAttachmentFile1) ||
-							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2)
+							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_3") && oInputModel.getProperty("/claim_item/attachment_file_3") !== oAttachmentFile3) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_4") && oInputModel.getProperty("/claim_item/attachment_file_4") !== oAttachmentFile4)
 						) {
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
 								sAttachment1_SFID,
-								sAttachment2_SFID
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID
 							)
 						}
 						Attachment._mDeleteAttachments = {};
@@ -3288,10 +3449,12 @@ sap.ui.define([
 				}
 
 				return true;
-			} catch (e) {
+			} 
+			catch (e) {
 				MessageBox.error(e.message);
 				return false;
-			} finally {
+			} 
+			finally {
 				BusyIndicator.hide();
 			}
 		},
@@ -4421,6 +4584,20 @@ sap.ui.define([
 										}
 									}
 
+									// update Medical entitlement usage if claim type is Medical
+									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL) {
+										const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										try {
+											await oAction.execute();
+										} catch (oError) {
+											MessageBox.error(oError.message);
+										} finally {
+											BusyIndicator.hide();
+										}
+									}									
+
 									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 										var submittedDate = this._getJsonDate(new Date());
@@ -4525,6 +4702,20 @@ sap.ui.define([
 										BusyIndicator.hide();
 									}
 								}
+
+								// update Medical entitlement usage if claim type is Medical
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL) {
+									const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									try {
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
+									}
+								}								
 
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
@@ -4726,6 +4917,9 @@ sap.ui.define([
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
 						TOTAL_TRAVELLER: claim_item.number_of_travellers,
+						ATTACHMENT_FILE_3: claim_item.attachment_file_3,
+						ATTACHMENT_FILE_4: claim_item.attachment_file_4,
+						POLICY_YEAR: claim_item.policy_year
 					});
 
 					if (i >= itemCountDb) {
@@ -5166,7 +5360,18 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"select_claimdetails_input_insurance_medical_provider_id",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date",
+				"fileuploader_claimdetails_input_attachment_file_3",
+				"fileuploader_claimdetails_input_attachment_file_4",
+				"label_past_year_policy",
+				"text_past_year_policy",
+				"label_current_year_policy",
+				"text_current_year_policy",
+				"label_future_year_policy",
+				"text_future_year_policy"
 			];
 
 			aControlIds.forEach(id => {
@@ -5295,7 +5500,11 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"fileuploader_claimdetails_input_attachment_file_3",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date",
+				"fileuploader_claimdetails_input_attachment_file_4"
 			];
 
 			aControlIds.forEach(id => {
@@ -5642,6 +5851,98 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.KEMATIAN) {
 				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
+			}
+		},
+
+		onChange_Dependent: async function (oEvent) {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sDependentNo = oEvent.getSource().getSelectedKey();
+
+			const oAction = this._oModel.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter("dependentNo", sDependentNo);
+
+			await oAction.execute();
+
+			const sNationalId = oAction.getBoundContext().getObject().value;
+
+			oInputModel.setProperty("/claim_item/dependent_national_id",sNationalId);
+
+			await this._refreshPolicyInfo();
+		},
+
+		onChange_PolicyStartDate: async function (oEvent) {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const dPolicyStartDate = oEvent.getSource().getDateValue();
+			const sPolicyYear = dPolicyStartDate
+				? dPolicyStartDate.getFullYear().toString()
+				: null;
+
+			oInputModel.setProperty("/claim_item/policy_year",sPolicyYear);
+			await this._refreshPolicyInfo();
+		},
+
+		_refreshPolicyInfo: async function () {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sNationalId = oInputModel.getProperty("/claim_item/dependent_national_id");
+
+			if (!sNationalId) {
+				return;
+			}
+
+			try {
+
+				const oAction = this._oModel.bindContext("/getPolicyInfo(...)");
+
+				oAction.setParameter(
+					"dependentNationalId",
+					sNationalId
+				);
+
+				await oAction.execute();
+
+				const oResult = oAction.getBoundContext().getObject();
+				const aPolicies = oResult.policies || [];
+				const iCurrentYear = new Date().getFullYear();
+
+				const oPrevious = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear - 1
+				);
+
+				const oCurrent = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear
+				);
+
+				const oNext = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear + 1
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/previous_policy_number",
+					oPrevious
+						? `${oPrevious.POLICY_YEAR} - ${oPrevious.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/current_policy_number",
+					oCurrent
+						? `${oCurrent.POLICY_YEAR} - ${oCurrent.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/next_policy_number",
+					oNext
+						? `${oNext.POLICY_YEAR} - ${oNext.POLICY_NUMBER}`
+						: null
+				);
+
+			} catch (error) {
+
 			}
 		}
 	});

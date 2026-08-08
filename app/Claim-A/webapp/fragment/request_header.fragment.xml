@@ -141,6 +141,27 @@
                                         }}" 
                                     textDirection="RTL"></Text></form:fields>
                             </form:FormElement>
+                            <form:FormElement
+                                label="Remaining Medical Entitlement"
+                                visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL} }">
+
+                                <form:fields>
+
+                                    <Text
+                                        text="{
+                                            path: 'request>/req_header/medical_remaining',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2,
+                                                groupingEnabled: true
+                                            }
+                                        }"
+                                        textDirection="RTL" />
+
+                                </form:fields>
+
+                            </form:FormElement>
                             <form:FormElement label="{i18n>req_rtype}"><form:fields><Text text="{request>/req_header/reqtype}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_attach1}"><form:fields><Link id="attachment1" press="onDocLinkPress" text="{request>/req_header/doc1}"/></form:fields></form:FormElement>

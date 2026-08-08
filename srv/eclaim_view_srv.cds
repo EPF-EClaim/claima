@@ -16,6 +16,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         MaterialCode         : String;
         CashAdvanceAmount    : Decimal(15, 2);
         InternalOrder        : String;
+        CashAdvanceCatID     : String(10);
     }
 
 

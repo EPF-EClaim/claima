@@ -325,6 +325,27 @@
                     textAlign="End"
                 />
 
+                <!-- Remaining Medical Entitlement -->
+                <Label
+                    text="{i18n>label_remaining_medical_entitlement}"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} }"
+                />
+
+                <Text
+                    id="text_claimsummary_claimheader_remaining_entitlement"
+                    text="{
+                        path: 'claimsubmission_input>/claim_header/medical_remaining',
+                        type: 'FloatType',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2,
+                            preserveDecimals: false
+                        }
+                    }"
+                    textAlign="End"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} }"
+                />
+
                 <!-- Cash Advance (MYR) -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_amtcashadvance}"

@@ -1425,6 +1425,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    action getPolicyInfo(
+        dependentNationalId : String,
+        policyYear          : String
+    ) returns {
+        previous_policy_number : String;
+        current_policy_number  : String;
+        next_policy_number     : String;
+    };
+
     action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
@@ -1463,7 +1472,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action clearMedicalEntitlement() returns String;
 
-    function getMedicalReminderEmail() returns array of reminders;   
+    function getMedicalReminderEmail() returns array of reminders;                                   
 
     entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
 
@@ -1495,7 +1504,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.MESSAGE_TYPE,
             Log.STATUS_CODE
         };
-
+    
     entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
 };

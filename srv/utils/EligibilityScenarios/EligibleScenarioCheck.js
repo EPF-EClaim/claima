@@ -20,6 +20,7 @@ const SewaPetak = require("./SewaPetak");
 const KeahlianKelab = require("./KeahlianKelab");
 const TravelInsurance = require("./TravelInsurance");
 const PostEducation = require("./PostEducation");
+const Medical = require("./Medical");
 
 module.exports = {
   /**
@@ -308,6 +309,15 @@ module.exports = {
             tx
           );
           break;
+
+        case Constant.ClaimType.MEDICAL:
+          oReturnPayload = await Medical.onEligibleCheck(
+            aPayload[i],
+            aEmpData[0],
+            aFilteredEligibility,
+            tx
+          );
+          break;          
 
         default:
           oReturnPayload = aPayload[i];

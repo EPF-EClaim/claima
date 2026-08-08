@@ -612,6 +612,47 @@ sap.ui.define([
 						and: true
 					})
 
+                case Constants.ClaimType.MEDICAL:
+
+                    var d25YearsAndBelow = DateUtility.today();
+                    d25YearsAndBelow.setFullYear(
+                        d25YearsAndBelow.getFullYear() - 25
+                    );
+
+                    var s25YearsAndBelow =
+                        d25YearsAndBelow.toLocaleDateString("en-CA");
+
+                    var oNonChildFilter = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.SPOUSE),
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.ADDITIONAL_SPOUSE)
+                        ],
+                        and: false
+                    });
+
+                    var oEligibleChildFilter = new Filter({
+                        filters: [
+                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.CHILD),
+                            new Filter(Constants.EntitiesFields.STUDENT,FilterOperator.EQ,true),
+                            new Filter(Constants.EntitiesFields.DOB,FilterOperator.GE,s25YearsAndBelow)
+                        ],
+                        and: true
+                    });
+
+                    return new Filter({
+                        filters: [
+                            oEmpFilter,
+                            new Filter({
+                                filters: [
+                                    oNonChildFilter,
+                                    oEligibleChildFilter
+                                ],
+                                and: false
+                            })
+                        ],
+                        and: true
+                    })
+
                 default:
                     return new Filter({
 						filters: [
@@ -619,8 +660,8 @@ sap.ui.define([
 						]
 					})
             }
-
-		}
         
+		}
+
     };
 });
