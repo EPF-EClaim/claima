@@ -1,7 +1,7 @@
 _schema-version: 3.3.0
 ID: claima-backend
 version: 1.0.0
-description: "A simple CAP project."
+description: "EPF eClaim Application"
 parameters:
   enable-parallel-deployments: true
   deploy_mode: html5-repo
