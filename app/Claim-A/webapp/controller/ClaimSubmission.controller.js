@@ -3197,9 +3197,15 @@ sap.ui.define([
 					ROUND_TRIP: oInputModel.getProperty("/claim_item/round_trip"),
 					TRIP_END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_end_time")),
 					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
-					COST_CENTER: oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center"),
-					GL_ACCOUNT: oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account"),
-					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
+					COST_CENTER: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP)
+									? null
+									: (oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center")),
+					GL_ACCOUNT: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP)
+									? this._oConstant.StatementDueInfo.GL_CODE
+									: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account")),
+					MATERIAL_CODE: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP)
+									? null
+									: oInputModel.getProperty("/claim_item/material_code"),					
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
 					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
@@ -4766,9 +4772,9 @@ sap.ui.define([
 						ROUND_TRIP: claim_item.round_trip,
 						TRIP_END_TIME: DateUtility.getHanaTime(claim_item.trip_end_time),
 						TRIP_START_TIME: DateUtility.getHanaTime(claim_item.trip_start_time),
-						COST_CENTER: claim_item.cost_center,
-						GL_ACCOUNT: claim_item.gl_account,
-						MATERIAL_CODE: claim_item.material_code,
+						COST_CENTER: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? null : claim_item.cost_center,
+						GL_ACCOUNT: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? this._oConstant.StatementDueInfo.GL_CODE : claim_item.gl_account,
+						MATERIAL_CODE: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? null : claim_item.material_code,						
 						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
 						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
 						ARRIVAL_TIME: claim_item.arrival_time ? new Date(claim_item.arrival_time).toISOString() : null,
@@ -5770,6 +5776,11 @@ sap.ui.define([
 
 		_calculateCardAdvanceAmount: function () {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (oInputModel.getProperty("/view_only")) {
+				return;
+			}
+
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
 

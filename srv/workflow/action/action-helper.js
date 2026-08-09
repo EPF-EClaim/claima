@@ -287,9 +287,7 @@ function _sumRequestPartsByCard(aItemParts) {
     const mAmountByCard = {};
     Object.keys(mTotalsByCard).forEach((sCardNo) => {
         const oTotals = mTotalsByCard[sCardNo];
-        const fAmount = oTotals.currentBalance < 0
-            ? oTotals.currentBalance + oTotals.serviceTax - oTotals.merchantRefund
-            : oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
+        const fAmount = oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
         mAmountByCard[sCardNo] = Math.max(0, fAmount);
     });
 
@@ -365,11 +363,11 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
 
                 // This cardholder's merchant refund, on request approval,
                 // gets added to both COMMIT_OFFSET_AMT and ACTUAL_OFFSET_AMT.
-                const fMerchantRefund = mMerchantRefundByCard[sCardNo] || 0;
-                if (fMerchantRefund) {
-                    fCommitOffset += fMerchantRefund;
-                    fActualOffset += fMerchantRefund;
-                }
+                // const fMerchantRefund = mMerchantRefundByCard[sCardNo] || 0;
+                // if (fMerchantRefund) {
+                //     fCommitOffset += fMerchantRefund;
+                //     fActualOffset += fMerchantRefund;
+                // }
             } else {
                 fActualOffset += fAmount;
             }

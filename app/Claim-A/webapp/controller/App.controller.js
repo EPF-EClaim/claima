@@ -2233,13 +2233,18 @@ sap.ui.define([
 
 				if (aCtx.length > 0) {
 					const oCardData = aCtx[0].getObject();
+					const fMonthlyAdvance = await Utility.getMonthlyAdvanceAmount(oCardData.CARD_NO, sUserId);
 					oInputModel.setProperty("/claimtype/has_ccc", true);
 					oInputModel.setProperty("/claim_header/card_no", oCardData.CARD_NO);
-            		oInputModel.setProperty("/claimtype/card_advance", await Utility.getMonthlyAdvanceAmount(oCardData.CARD_NO, sUserId));
+					oInputModel.setProperty("/claimtype/card_advance", fMonthlyAdvance);
+					oInputModel.setProperty("/claim_header/card_advance_amount", fMonthlyAdvance);
+					oInputModel.setProperty("/claim_header/original_card_advance_amount", fMonthlyAdvance);
 				} else {
 					oInputModel.setProperty("/claimtype/has_ccc", false);
 					oInputModel.setProperty("/claim_header/card_no", null);
 					oInputModel.setProperty("/claimtype/card_advance", null);
+					oInputModel.setProperty("/claim_header/card_advance_amount", null);
+					oInputModel.setProperty("/claim_header/original_card_advance_amount", null);
 				}
 
 			} catch (e) {

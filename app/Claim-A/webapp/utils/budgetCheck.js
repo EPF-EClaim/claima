@@ -108,7 +108,8 @@ sap.ui.define([
 					var sCommitmentItem	= await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
 
 					var aPayload = aItemRows
-					.filter(row => row.claim_type_item_id !== oController._oConstant.ClaimTypeItem.CASH_REPAY) 
+					.filter(row => row.claim_type_item_id !== oController._oConstant.ClaimTypeItem.CASH_REPAY)
+					.filter(row => row.claim_type_item_id !== oController._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 					.map(row => {
 						return {
 							"YEAR": sYear,
