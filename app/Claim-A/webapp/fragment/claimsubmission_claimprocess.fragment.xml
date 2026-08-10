@@ -152,8 +152,8 @@
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
-                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
-                        enabled="{= ${claimsubmission_input>/claimtype/item} !== ${constant>/ClaimTypeItem/MED_ADVANCE} }"
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) &amp;&amp; 
+                                        ${claimsubmission_input>/claimtype/type} !== ${constant>/ClaimType/MEDICAL}}" 
                         change="onSwitch_ClaimProcess_Req_EmailApprove"
                     >
                         <layoutData>
