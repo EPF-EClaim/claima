@@ -99,6 +99,9 @@ sap.ui.define([
                             oContext.setProperty("EVENT_END_DATE",
                                 DateUtility.getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
                             );
+                            oContext.setProperty("PAYMENT_DUE_DATE",
+                                DateUtility.getHanaDate(oInputModel.getProperty("/req_header/cccduedate"))
+                            );
 
                             var oProject = this._oView.byId("select_request_project_code");
 
