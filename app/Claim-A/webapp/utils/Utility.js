@@ -81,7 +81,6 @@ sap.ui.define([
             return this._oOwnerComponent.getModel("i18n").getResourceBundle().getText(sKey, aArgs);
         },
 
-        
         openClaimTypeFilterDialog: async function (oController, sModelName, sListPath) {
             var oModel = oController.getView().getModel(sModelName);
             var aList = oModel.getProperty(sListPath) || [];

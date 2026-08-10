@@ -4520,10 +4520,6 @@ sap.ui.define([
 									}
 								}
 
-								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-									var submittedDate = this._getJsonDate(new Date());
-									oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-								}
 								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							} else {
 								throw new Error(Utility.getText("msg_failed_no_approver"))
