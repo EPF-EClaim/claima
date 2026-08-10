@@ -542,10 +542,11 @@ sap.ui.define([
 				// ensure status is active
 				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("CLAIM_TYPE_ID", FilterOperator.NE, this._oConstant.ClaimType.CORPO_CRED_CARD)
 			];
 			oBindingSelectClaimType.filter(aFilterSelectClaimType);
-		},
+			},
 
 		_getEmpDataDescr: async function (oModel) {
 			// cost center
