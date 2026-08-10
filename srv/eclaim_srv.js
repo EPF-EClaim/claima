@@ -285,6 +285,74 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * batch create budget records from IFAMS Modern
+     * This particular service will not calculate the original budget with the virements, supplement and return for the current budget
+     * as these value will be directly reflect from IFMAS Modern (S/4 HANA)
+     */
+    srv.on('batchCreateBudgetIFAMSModern', async (req) => {
+        const { ZBUDGET } = srv.entities;
+        let results = [];
+        try {
+            const { budget } = req.data;
+            if (!budget || budget.length === 0) throw new Error('No Data Sent');
+
+            const tx = cds.tx(req);
+        
+            for (const row of budget) {
+                const key = {
+                    YEAR: row.YEAR,
+                    INTERNAL_ORDER: row.INTERNAL_ORDER,
+                    COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                    FUND_CENTER: row.FUND_CENTER,
+                    MATERIAL_GROUP: row.MATERIAL_GROUP
+                };
+
+                const existing = await tx.read(ZBUDGET)
+                    .where(key)
+                    .limit(1);
+
+                const isExisting = existing.length > 0;
+
+                const upsertPayload = { ...row };
+
+                const originalBudget = Number(row.ORIGINAL_BUDGET) || 0;
+                const virementIn = Number(row.VIREMENT_IN) || 0;
+                const virementOut = Number(row.VIREMENT_OUT) || 0;    // -ve value
+                const supplement = Number(row.SUPPLEMENT) || 0;
+                const returnValue = Number(row.RETURN) || 0;          // -ve value
+
+                const consumed = isExisting
+                    ? Number(existing[0].CONSUMED) || 0
+                    : Number(row.CONSUMED) || 0;
+
+                const totalBudget = originalBudget + virementIn + virementOut + supplement + returnValue;
+                const totalBudgetBalance = totalBudget + consumed;
+
+                upsertPayload.CURRENT_BUDGET = totalBudget.toFixed(2);
+                upsertPayload.BUDGET_BALANCE = totalBudgetBalance.toFixed(2);
+
+                await tx.run(
+                    UPSERT.into(ZBUDGET).entries(upsertPayload)
+                );
+
+                results.push({
+                    status: isExisting ? "record updated" : "record inserted",
+                    year: row.YEAR,
+                    internalorder: row.INTERNAL_ORDER,
+                    commitment_item: row.COMMITMENT_ITEM,
+                    fund_center: row.FUND_CENTER,
+                    materialgroup: row.MATERIAL_GROUP,
+                    currentBudget: upsertPayload.CURRENT_BUDGET,
+                    budgetBalance: upsertPayload.BUDGET_BALANCE
+                });
+            }
+            return { results };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    });
+
     srv.on('budgetchecking', async (req) => {
         const { ZBUDGET } = srv.entities;
         const { budget } = req.data;

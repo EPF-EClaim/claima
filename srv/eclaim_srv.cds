@@ -339,6 +339,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateBudget(budget: many ZBUDGET)                                                     returns BudgetProcessResult;
 
+    action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
+
     entity ZROLEHIERARCHY                as projection on ECLAIM.ZROLEHIERARCHY;
     entity ZCONSTANTS                    as projection on ECLAIM.ZCONSTANTS;
 

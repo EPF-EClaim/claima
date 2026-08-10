@@ -25,43 +25,31 @@
 
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-# Content-Type: application/json
-# Authorization: Basic alice
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudgetIFAMSModern
+Content-Type: application/json
+Authorization: Basic alice
  
-#    {
-#     "budget": [
-#         {
-#             "COMMITMENT_ITEM": "710010",
-#             "FUND_CENTER": "100010100",
-#             "INTERNAL_ORDER": "1",
-#             "MATERIAL_GROUP": "710010901",
-#             "ORIGINAL_BUDGET": "20.00",
-#             "RETURN": "10.00",
-#             "SUPPLEMENT": "10.00",
-#             "VIREMENT_IN": "10.00",
-#             "VIREMENT_OUT": "10.00",
-#             "YEAR": "2026",
-#             "HasActiveEntity": false,
-#             "HasDraftEntity": false,
-#             "IsActiveEntity": true
-#         }, 
-#         {
-#             "COMMITMENT_ITEM": "710010",
-#             "FUND_CENTER": "100010101",
-#             "INTERNAL_ORDER": "1",
-#             "MATERIAL_GROUP": "710010901",
-#             "ORIGINAL_BUDGET": "10.00",
-#             "RETURN": "10.00",
-#             "SUPPLEMENT": "10.00",
-#             "VIREMENT_IN": "10.00",
-#             "VIREMENT_OUT": "0.00",
-#             "YEAR": "2026",
-#             "HasActiveEntity": false,
-#             "HasDraftEntity": false,
-#             "IsActiveEntity": true
-#         }
-#     ]
-# }
+{
+    "budget": [
+        {
+            "BUDGET_BALANCE": "20.00",
+            "CONSUMED": "-20.00",
+            "ACTUAL": "-20.00",
+            "COMMITMENT": "0.00",
+            "CURRENT_BUDGET": "0.00",
+            "YEAR": "2026",
+            "INTERNAL_ORDER": "NA",
+            "COMMITMENT_ITEM": "103201",
+            "FUND_CENTER": "100010100",
+            "MATERIAL_GROUP": "710010901",
+            "ORIGINAL_BUDGET": "20.00",
+            "RETURN": "-20.00",
+            "SUPPLEMENT": "20.00",
+            "VIREMENT_IN": "20.00",
+            "VIREMENT_OUT": "-20.00"
+        }
+    ]
+}
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -309,11 +297,11 @@
 #     ]
 # }
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpsertCompanyInfo
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpsertCompanyInfo
+# Content-Type: application/json
+# Authorization: Basic alice
  
-{
-    "entityName": "ZCASH_ADVANCE_CATEGORY",
-    "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
-}
+# {
+#     "entityName": "ZCASH_ADVANCE_CATEGORY",
+#     "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
+# }
