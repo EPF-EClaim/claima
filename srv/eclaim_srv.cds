@@ -1509,4 +1509,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
+    action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
+
 };
