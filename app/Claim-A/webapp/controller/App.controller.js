@@ -70,6 +70,15 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
+			this.isFclEnabled = function () {
+				return false;
+			};
+			this.updateUIStateForView = function () {
+			};
+			this.calculateLayout = function () {
+				return "OneColumn";
+			};
+	
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
 			// declare claim utility
@@ -175,8 +184,8 @@ sap.ui.define([
 					break;
 				case "cc_budgetreport":
 					if (bAdminSystem || bAdminCC) {
-					HashChanger.getInstance().replaceHash("");
-					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
@@ -339,7 +348,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
-					"marriage_category": null,	
+					"marriage_category": null,
 					"project_claim": false,
 					"requestform": {
 						"request_id": null,
@@ -578,7 +587,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
-				 var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
+				var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimTypeData.CLAIM_TYPE_DESC);
 				// get cost center from claim type
@@ -619,7 +628,7 @@ sap.ui.define([
 			} else {
 				// reset claim type description
 				oInputModel.setProperty("/claimtype/descr/type", null);
-				
+
 				// reset project claim flag
 				oInputModel.setProperty("/claimtype/project_claim", false);
 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -715,7 +724,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				
+
 				var sRequestId = oRequestForm.getKey();
 				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
 				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
@@ -754,7 +763,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/preapproved_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
- 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
+				oInputModel.setProperty("/claimtype/requestform/project_code", null);
 				oInputModel.setProperty("/claimtype/requestform/project_desc", null);
 
 			}
@@ -993,7 +1002,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", null);
 				oInputModel.setProperty("/claim_header/descr/course_code", null);
 			}
-			
+
 			//// project code values
 			if (oInputModel.getProperty("/claimtype/project_claim")) {
 
@@ -1004,7 +1013,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
 
 			} else {
-				
+
 				oInputModel.setProperty("/claim_header/project_code", null);
 				oInputModel.setProperty("/claim_header/descr/project_code", null);
 			}
@@ -1406,14 +1415,14 @@ sap.ui.define([
 
 				this.getView().addDependent(this._oDialogFragment);
 
-				var oRequestDialogModel = new JSONModel({ 
-					reqid: "", 
-					grptype: "IND", 
-					altcostcenter: "",	
+				var oRequestDialogModel = new JSONModel({
+					reqid: "",
+					grptype: "IND",
+					altcostcenter: "",
 					project_claim: false,
 					project_code: null,
 					project_desc: null
-				 });
+				});
 				this._oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this._oDialogFragment.attachAfterClose(() => {
