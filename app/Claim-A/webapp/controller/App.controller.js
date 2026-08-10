@@ -69,15 +69,16 @@ sap.ui.define([
 			this._oReqModel = this.getOwnerComponent().getModel('request');
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
+
 			this.isFclEnabled = function () {
 				return false;
 			};
 			this.updateUIStateForView = function () {
 			};
 			this.calculateLayout = function () {
-				 return "OneColumn";
+				return "OneColumn";
 			};
-
+	
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
 			// declare claim utility
@@ -97,13 +98,6 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-		},
-		onCollapseExpandPress: function () {
-			var oModel = this.getView().getModel();
-			var oNavigationList = this.byId("navigationList");
-			var bExpanded = oNavigationList.getExpanded();
-
-			oNavigationList.setExpanded(!bExpanded);
 		},
 
 		onNavItemPress: function (oEvent) {
@@ -130,12 +124,6 @@ sap.ui.define([
 				sNumRangeDTD = this._oConstant.Configuration.ZNUM_RANGE_DTD,
 				sBudget = this._oConstant.Configuration.ZBUDGET;
 
-			// Make sure userType is available
-			// const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
-			// if (!bClaimant || !bApprover) {
-			// 	MessageToast.show("Please wait… loading your access.");
-			// 	return;
-			// }
 
 			switch (oKey) {
 				case "nav_claimsubmission":
@@ -150,18 +138,6 @@ sap.ui.define([
 				case "mysubstitution":
 					this._oRouter.navTo("ManageSub");
 					break;
-				// Start Aiman Salim 10/02/2026 - Added for analytics
-				// case "analytics":
-				// 	if (bDTDAdmin || bAdminSystem || bAdminCC) {
-				// 		HashChanger.getInstance().replaceHash("");
-				// 		this._oRouter.navTo("Analytics");
-				// 	} else {
-				// 		var message = Utility.getText("msg_unauthorized_role");
-				// 		MessageBox.error(message);
-				// 	}
-				// 	break;
-				// End 	 Aiman Salim 10/02/2026 - Added for analytics
-				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "req_summary":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
@@ -209,8 +185,8 @@ sap.ui.define([
 					break;
 				case "cc_budgetreport":
 					if (bAdminSystem || bAdminCC) {
-					HashChanger.getInstance().replaceHash("");
-					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
@@ -219,18 +195,13 @@ sap.ui.define([
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
 					break;
-				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
 					this._oRouter.navTo("MyApproval");
 					break;
-				//End Aiman Salim 08/03/2026 - Added for MyApproval
-				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
 					this._oRouter.navTo("Dashboard");
 					break;
-				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
-					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
 						if (bDTDAdmin || bAdminSystem || bAdminCC || bAdminCCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
@@ -378,7 +349,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
-					"marriage_category": null,	
+					"marriage_category": null,
 					"project_claim": false,
 					"has_ccc": false,
 					"card_no":null,
@@ -623,7 +594,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
-				 var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
+				var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimTypeData.CLAIM_TYPE_DESC);
 				// get cost center from claim type
@@ -664,7 +635,7 @@ sap.ui.define([
 			} else {
 				// reset claim type description
 				oInputModel.setProperty("/claimtype/descr/type", null);
-				
+
 				// reset project claim flag
 				oInputModel.setProperty("/claimtype/project_claim", false);
 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -870,7 +841,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/preapproved_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
- 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
+				oInputModel.setProperty("/claimtype/requestform/project_code", null);
 				oInputModel.setProperty("/claimtype/requestform/project_desc", null);
 
 			}
@@ -1111,7 +1082,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", null);
 				oInputModel.setProperty("/claim_header/descr/course_code", null);
 			}
-			
+
 			//// project code values
 			if (oInputModel.getProperty("/claimtype/project_claim")) {
 
@@ -1122,7 +1093,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
 
 			} else {
-				
+
 				oInputModel.setProperty("/claim_header/project_code", null);
 				oInputModel.setProperty("/claim_header/descr/project_code", null);
 			}
@@ -1526,14 +1497,14 @@ sap.ui.define([
 
 				this.getView().addDependent(this._oDialogFragment);
 
-				var oRequestDialogModel = new JSONModel({ 
-					reqid: "", 
-					grptype: "IND", 
-					altcostcenter: "",	
+				var oRequestDialogModel = new JSONModel({
+					reqid: "",
+					grptype: "IND",
+					altcostcenter: "",
 					project_claim: false,
 					project_code: null,
 					project_desc: null
-				 });
+				});
 				this._oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this._oDialogFragment.attachAfterClose(() => {

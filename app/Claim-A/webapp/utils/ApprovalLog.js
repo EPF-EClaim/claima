@@ -52,9 +52,32 @@ sap.ui.define([
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
-				if(submission_type == Constants.WorkflowType.CLAIM){
-					if(sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH || sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL){
-						a[0].LEVEL = Constants.SpecialApprover.VERIFIER
+
+				const oFormatter = new Intl.DateTimeFormat('en-GB', {
+					timeZone: 'Asia/Kuala_Lumpur',
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit',
+					hour12: true
+				});
+
+				a.forEach((item) => {
+					if (item.PROCESS_TIMESTAMP) {
+						item.PROCESS_TIMESTAMP = oFormatter
+							.format(new Date(item.PROCESS_TIMESTAMP))
+							.replace(',', '');
+					}
+				});
+
+				if (submission_type == Constants.WorkflowType.CLAIM) {
+					if (
+						sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH ||
+						sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL
+					) {
+						a[0].LEVEL = Constants.SpecialApprover.VERIFIER;
 					}
 				}
 

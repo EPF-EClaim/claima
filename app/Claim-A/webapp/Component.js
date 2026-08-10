@@ -129,12 +129,16 @@ sap.ui.define([
                     // determines which one shows when a user has multiple roles.
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTDAdmin_role", true);
                     } else if (oUserRoles.isAdminSystem) {
                         oSessionModel.setProperty("/userType", "JKEW Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
-                    } else if (oUserRoles.isCCCAdmin) {
-                        oSessionModel.setProperty("/userType", "CCC Admin");
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/GA_role", true);
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
                     } else {

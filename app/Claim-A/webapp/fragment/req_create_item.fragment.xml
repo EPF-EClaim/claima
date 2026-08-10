@@ -1362,13 +1362,11 @@
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TAMBANG}  || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}  ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TAMBANG}  ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}    ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}   ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}    ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}    ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O} ) 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O})
                                                     }"
                                             id="i_cash_adv" >
                                     <form:fields>

@@ -60,6 +60,11 @@ module.exports = {
 
         // change Date time field based on Status
         switch (sStatus) {
+
+            case Constant.Status.PENDING_APPROVAL:
+             sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
+             break;
+
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_APPROVED_TIME;
@@ -118,10 +123,134 @@ module.exports = {
         * @returns {Integer} number of records updated
         */
     updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
-        return iResult = await tx.run(
+        const iResult = await tx.run(
             UPDATE(sHeaderTable)
                 .set(oToUpdateFields)
                 .where(oWhereConditions));
+
+        if (sHeaderTable === 'ZREQUEST_HEADER' || sHeaderTable === Constant.Entities.ZREQUEST_HEADER) {
+        
+            // Extract the ID and Status from the objects passed into the function
+            const sRequestId = oWhereConditions.REQUEST_ID; 
+            const sStatus = oToUpdateFields.STATUS;
+
+            await this.handlePostHeaderUpdate(sRequestId, sStatus, tx);
+
+        }
+
+        // Return the original update result (number of affected rows)
+        return iResult;
+    },
+
+    /**
+     * Post-update logic for ZREQUEST_HEADER
+     * Call this function immediately after updating the header table manually.
+     */
+    handlePostHeaderUpdate: async function (sRequestId, sStatus, tx) {
+        if (!sRequestId) return;
+
+        // 1. Single Read for Header Data
+        const oHeader = await tx.run(
+            SELECT.one.from('ZREQUEST_HEADER').where({ REQUEST_ID: sRequestId })
+        );
+
+        if (!oHeader) return;
+
+        // 2. Perform the Item Update (Project Code -> Internal Order)
+        if (oHeader.PROJECT_CODE) {
+            const sCurrentYear = String(new Date().getFullYear());
+            const oBudget = await tx.run(
+                SELECT.one
+                    .from('ZBUDGET')
+                    .columns('WBS_CODE')
+                    .where({
+                        PROJECT_CODE: sProjectCode,
+                        YEAR: sCurrentYear
+                    })
+            );
+            await tx.run(
+                UPDATE('ZREQUEST_ITEM')
+                    .set({ INTERNAL_ORDER: oBudget?.WBS_CODE })
+                    .where({ REQUEST_ID: sRequestId })
+            );
+        }
+
+        // 3. Handle the Approval Logic
+        if (sStatus === Constant.Status.APPROVED) {
+            
+            // Spawn background task using the transaction's user context
+            cds.spawn({ user: tx.context?.user }, async (spawnTx) => {
+                try {
+                    switch (oHeader.CLAIM_TYPE_ID) {
+                        case Constant.ClaimType.HANDPHONE:
+                            const aReqItem = await spawnTx.run(
+                                SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({ REQUEST_ID: sRequestId })
+                            );
+
+                            const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
+                            const aParticipantData = await spawnTx.run(
+                                SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
+                                    REQUEST_ID: sRequestId,
+                                    REQUEST_SUB_ID: { in: aReqSubId }
+                                })
+                            );
+
+                            // Use Promise.all for inserting inside loops
+                            const insertPromises = aParticipantData.map(participant => {
+                                const aPartReqItem = aReqItem.find(item => item.REQUEST_SUB_ID === participant.REQUEST_SUB_ID);
+                                if (aPartReqItem) {
+                                    return spawnTx.run(
+                                        INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
+                                            EMP_ID: participant.PARTICIPANTS_ID,
+                                            CLAIM_TYPE_ID: aPartReqItem.CLAIM_TYPE_ID,
+                                            START_DATE: aPartReqItem.START_DATE,
+                                            END_DATE: aPartReqItem.END_DATE,
+                                            ELIGIBLE_AMOUNT: participant.ALLOCATED_AMOUNT
+                                        })
+                                    );
+                                }
+                            });
+                            await Promise.all(insertPromises);
+                            break;
+
+                        default:
+                            const oCashAdvanceItem = await spawnTx.run(
+                                SELECT.one.from('ZREQUEST_ITEM').where({
+                                    REQUEST_ID: sRequestId,
+                                    CASH_ADVANCE: true
+                                })
+                            );
+
+                            if (!oCashAdvanceItem) return;
+
+                            const oExistingCashAdvRecords = await spawnTx.run(
+                                SELECT.one.from('ZEMP_CA_PAYMENT').where({
+                                    REQUEST_ID: sRequestId,
+                                    EMP_ID: oHeader.EMP_ID
+                                })
+                            );
+
+                            if (oExistingCashAdvRecords) return;
+
+                            let dDate = new Date(oHeader.TRIP_START_DATE);
+                            dDate.setDate(dDate.getDate() - 14);
+                            const sDisbursementDate = dDate.toISOString().split('T')[0];
+
+                            await spawnTx.run(
+                                INSERT.into('ZEMP_CA_PAYMENT').entries({
+                                    REQUEST_ID: sRequestId,
+                                    EMP_ID: oHeader.EMP_ID,
+                                    DISBURSEMENT_DATE: sDisbursementDate,
+                                    DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
+                                })
+                            );
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`Background task failed for Request ID ${sRequestId}: ${error.message}`);
+                }
+            });
+        }
     }
 
 };

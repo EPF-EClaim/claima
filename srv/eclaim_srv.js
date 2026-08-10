@@ -2932,6 +2932,12 @@ module.exports = (srv) => {
                     .where({ EEID: SUBSTITUTE_ID })
                     .columns('EMAIL', 'NAME')
             );
+            // Fetch Approver info ONCE upfront
+            const oApprover = await tx.run(
+                SELECT.one.from('ZEMP_MASTER')
+                    .where({ EEID: USER_ID })
+                    .columns('EMAIL', 'NAME')
+            );            
             const ibaseTime = new Date().getTime();
             let ilogIndexCounter = 0;
             // =======================================================================
@@ -2963,7 +2969,7 @@ module.exports = (srv) => {
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
-                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                        MESSAGE: `${oCurrentUser.NAME} delegated approval for Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) from ${oApprover.NAME} to ${oSubstitute.NAME}.`
                     });
                 });
                 // Queue pending claim emails for parallel background execution
@@ -3013,7 +3019,7 @@ module.exports = (srv) => {
                         PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                         MESSAGE_TYPE: 'S',
                         STATUS_CODE: '200',
-                        MESSAGE: `User ${oCurrentUser.EEID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${SUBSTITUTE_ID} instead of ${USER_ID}.`
+                        MESSAGE: `${oCurrentUser.NAME} delegated approval for Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) from ${oApprover.NAME} to ${oSubstitute.NAME}.`
                     });
                 });
                 // Queue pending pre-approval emails for parallel background execution
@@ -4178,6 +4184,12 @@ module.exports = (srv) => {
                 .where({ EEID: sSubstituteID })
                 .columns('EMAIL', 'NAME')
         );
+        // Fetch Approver employee master info ONCE upfront
+        const oApprover = await tx.run(
+            SELECT.one.from('ZEMP_MASTER')
+                .where({ EEID: sUserID })
+                .columns('EMAIL', 'NAME')
+        );        
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================
@@ -4204,7 +4216,7 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} mapped substitution rule. Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
+                    MESSAGE: `${oCurrentUser.NAME} delegated approval for Claim ${claim.CLAIM_ID} (Level ${claim.LEVEL}) from ${oApprover.NAME} to ${oSubstitute.NAME}.`
                 });
             });
             // Queue pending claim notifications for parallel execution
@@ -4251,7 +4263,7 @@ module.exports = (srv) => {
                     PROGRAM: 'SUBSTITUTION_RULE_TRIGGER',
                     MESSAGE_TYPE: 'S',
                     STATUS_CODE: '200',
-                    MESSAGE: `User ${oCurrentUser?.EEID || sUserID} mapped substitution rule. Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) assigned to substitute ${sSubstituteID} instead of ${sUserID}.`
+                    MESSAGE: `${oCurrentUser.NAME} delegated approval for Pre-Approval ${preApp.PREAPPROVAL_ID} (Level ${preApp.LEVEL}) from ${oApprover.NAME} to ${oSubstitute.NAME}.`
                 });
             });
             // Queue pending pre-approval notifications for parallel execution
@@ -4526,6 +4538,7 @@ module.exports = (srv) => {
             );
 
             const oFormatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Kuala_Lumpur',
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
