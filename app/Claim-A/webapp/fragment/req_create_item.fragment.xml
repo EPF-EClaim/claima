@@ -1365,7 +1365,7 @@
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}    ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}   ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}    ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O} )
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O})
                                                     }"
                                             id="i_cash_adv" >
                                     <form:fields>
