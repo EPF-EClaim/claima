@@ -59,8 +59,9 @@ sap.ui.define([
                     isAdminCC: false,
                     isAdminSystem: false, 
                     DTDAdmin_role: false, 
-                    DTD_JKEW_role: false,
-                    Admin_role: false
+                    JKEW_role: false,
+                    Admin_role: false,
+                    GA_role: false
                 });
                 return oRoleModel;
             }, 
