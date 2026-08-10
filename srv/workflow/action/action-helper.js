@@ -363,11 +363,11 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
 
                 // This cardholder's merchant refund, on request approval,
                 // gets added to both COMMIT_OFFSET_AMT and ACTUAL_OFFSET_AMT.
-                // const fMerchantRefund = mMerchantRefundByCard[sCardNo] || 0;
-                // if (fMerchantRefund) {
-                //     fCommitOffset += fMerchantRefund;
-                //     fActualOffset += fMerchantRefund;
-                // }
+                const fMerchantRefund = mMerchantRefundByCard[sCardNo] || 0;
+                if (fMerchantRefund) {
+                    fCommitOffset += fMerchantRefund;
+                    fActualOffset += fMerchantRefund;
+                }
             } else {
                 fActualOffset += fAmount;
             }
