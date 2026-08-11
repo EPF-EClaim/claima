@@ -735,7 +735,6 @@ sap.ui.define([
             "YURAN" : "YURAN",
             "CASH_REPAY"  : "CASH_REPAY",
             "DOBI" : "DOBI",
-            "KILOMETER" : "KILOMETER",
             "TAMBANG" : "TAMBANG",
             "MISC" : "MISC",
             "PARKING" : "PARKING",
