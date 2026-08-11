@@ -8624,6 +8624,8 @@ annotate service.ZEMP_APPROVER_LIST_VH with @(UI.SelectionFields: [
 ]) {
     @UI.hidden: true
     DEP;
+    @UI.hidden: true
+    NAME_SEARCH;
 };
 
 annotate service.ZEMP_APPROVER_VH with @(UI.SelectionFields: [
