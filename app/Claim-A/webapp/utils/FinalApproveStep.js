@@ -166,7 +166,6 @@ sap.ui.define([
                     GLAccount: oRow.GL_ACCOUNT,
                     MaterialCode: oRow.MATERIAL_CODE,
                     InternalOrder: oRow.INTERNAL_ORDER,
-                    CashAdvanceCatID: oRow.CASH_ADVANCE_CAT_ID
                 }));
 
                 //Call CDS batch action ONCE
