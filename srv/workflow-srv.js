@@ -103,9 +103,12 @@ module.exports = (srv) => {
         //Else, send email to approver 1 to inform approver that claim is awaiting approver action
         if(aApproversContextNew[0].LEVEL == 0) {
             sStatus = await sendEmailToClaimant(sId, aApproversContextNew[0].APPROVER_ID, oDescriptor, Constant.ApprovalEmailAction.ACTION_APPROVE);
+            const oSendClaimResponse = await sendClaimBatch(sId);
+            console.log("Final Approval: ", oSendClaimResponse );
         }
         else {
             sStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY);
+            await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.PENDING_APPROVAL, oTx);
         }
         if(!sStatus) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification', false);

@@ -1282,7 +1282,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 emp.NAME        as NAME,
                 emp.DEP         as DEP,
                 emp.GRADE       as GRADE,
-                cfg.SEQUENCE_NO as GRADE_SEQUENCE
+                cfg.SEQUENCE_NO as GRADE_SEQUENCE,
+                cast(upper(emp.NAME) as String) as NAME_SEARCH
         };
 
     @cds.autoexpose

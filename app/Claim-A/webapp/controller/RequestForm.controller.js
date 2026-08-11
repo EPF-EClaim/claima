@@ -444,7 +444,6 @@ sap.ui.define([
 									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId, sCurrentStatus);
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
 
 										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL) {

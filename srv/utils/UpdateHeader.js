@@ -60,6 +60,11 @@ module.exports = {
 
         // change Date time field based on Status
         switch (sStatus) {
+
+            case Constant.Status.PENDING_APPROVAL:
+             sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
+             break;
+
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_APPROVED_TIME;
