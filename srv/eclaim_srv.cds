@@ -659,10 +659,29 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 REQUEST_TYPE_ID,
                 ZREQUEST_TYPE.REQUEST_TYPE_DESC,
                 CASH_ADVANCE_DATE,
+
                 COST_CENTER,
                 ZCOST_CENTER.COST_CENTER_DESC,
+
                 ALTERNATE_COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                        then ALTERNATE_COST_CENTER
+                        else COST_CENTER
+                    end as String(50)
+                ) as CHARGING_COST_CENTER,
+
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                        then COSTCENTER.COST_CENTER_DESC
+                        else ZCOST_CENTER.COST_CENTER_DESC
+                    end as String(255)
+                ) as CHARGING_COST_CENTER_DESC,
+
                 PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
@@ -726,10 +745,29 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 REQUEST_TYPE_ID,
                 ZREQUEST_TYPE.REQUEST_TYPE_DESC,
                 CASH_ADVANCE_DATE,
+
                 COST_CENTER,
                 ZCOST_CENTER.COST_CENTER_DESC,
+
                 ALTERNATE_COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
+                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                        then ALTERNATE_COST_CENTER
+                        else COST_CENTER
+                    end as String(50)
+                ) as CHARGING_COST_CENTER,
+
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                        then COSTCENTER.COST_CENTER_DESC
+                        else ZCOST_CENTER.COST_CENTER_DESC
+                    end as String(255)
+                ) as CHARGING_COST_CENTER_DESC,
+                
                 PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
@@ -847,252 +885,305 @@ service eclaim_srv @(requires: 'authenticated-user') {
         };
 
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY     as
+    entity ZEMP_CLAIM_REPORT_SUMMARY as
         select from ECLAIM.ZCLAIM_HEADER as HEADER
         left join ZAPPROVER_CLAIM_PIVOT as PIVOT
             on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
-        {
-            key HEADER.CLAIM_ID,
-                EMP_ID,
-                ZREQUEST_HEADER.REQUEST_ID,
-                ZREQUEST_HEADER.REQUEST_DATE,
-                CLAIM_TYPE_ID,
-                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE.GL_ACCOUNT,
-                ZEMP_MASTER.NAME,
-                ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.DEP,
-                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-                ZEMP_MASTER.POSITION_NAME,
-                SUBMISSION_TYPE,
-                ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
-                SUBMITTED_DATE,
-                ZREQUEST_HEADER.CASH_ADVANCE_DATE,
-                LAST_APPROVED_DATE,
-                PAYMENT_DATE,
-                STATUS_ID,
-                ZSTATUS.STATUS_DESC,
-                COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC,
-                ALTERNATE_COST_CENTER,
-                FINAL_AMOUNT_TO_RECEIVE,
-                ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
-                TOTAL_CLAIM_AMOUNT,
-                CASH_ADVANCE_AMOUNT,
-                PURPOSE,
-                COMMENT,
-                TRIP_START_DATE,
-                TRIP_END_DATE,
-                LOCATION,
-                PIVOT.APPROVER1,
-                PIVOT.APPROVER1_NAME,
-                PIVOT.APPROVER1_TS,
-                PIVOT.APPROVER2,
-                PIVOT.APPROVER2_NAME,
-                PIVOT.APPROVER2_TS,
-                PIVOT.APPROVER3,
-                PIVOT.APPROVER3_NAME,
-                PIVOT.APPROVER3_TS,
-                PIVOT.APPROVER4,
-                PIVOT.APPROVER4_NAME,
-                PIVOT.APPROVER4_TS,
-                PIVOT.APPROVER5,
-                PIVOT.APPROVER5_NAME,
-                PIVOT.APPROVER5_TS,
-                ZEMP_MASTER.UNIT_SECTION,
-                ZTRAIN_COURSE_PART.COURSE_ID,
-                ZTRAIN_COURSE_PART.COURSE_DESC,
-                ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_PUSH_BACK_DATE,
-                createdBy,
-                // Calculate the difference between Submitted and Last Approved date
-                days_between(
-                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
-                )                             as DAYS_APPROVED : Integer,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
-        };
+    {
+        key HEADER.CLAIM_ID,
+            EMP_ID,
+            ZREQUEST_HEADER.REQUEST_ID,
+            ZREQUEST_HEADER.REQUEST_DATE,
+            CLAIM_TYPE_ID,
+            ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+            ZCLAIM_TYPE.GL_ACCOUNT,
+            ZEMP_MASTER.NAME,
+            ZEMP_MASTER.GRADE,
+            ZEMP_MASTER.DEP,
+            ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+            ZEMP_MASTER.POSITION_NAME,
+            SUBMISSION_TYPE,
+            ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+            SUBMITTED_DATE,
+            ZREQUEST_HEADER.CASH_ADVANCE_DATE,
+            LAST_APPROVED_DATE,
+            PAYMENT_DATE,
+            STATUS_ID,
+            ZSTATUS.STATUS_DESC,
 
-    entity ZEMP_CLAIM_REPORT_DETAILS     as
+            COST_CENTER,
+            COSTCENTER.COST_CENTER_DESC,
+
+            ALTERNATE_COST_CENTER,
+            ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+
+            cast(
+                case
+                    when ALTERNATE_COST_CENTER is not null
+                        and ALTERNATE_COST_CENTER <> ''
+                    then ALTERNATE_COST_CENTER
+                    else COST_CENTER
+                end as String
+            ) as CHARGING_COST_CENTER,
+
+            cast(
+                case
+                    when ALTERNATE_COST_CENTER is not null
+                        and ALTERNATE_COST_CENTER <> ''
+                    then ZCOST_CENTER.COST_CENTER_DESC
+                    else COSTCENTER.COST_CENTER_DESC
+                end as String
+            ) as CHARGING_COST_CENTER_DESC,
+
+            FINAL_AMOUNT_TO_RECEIVE,
+            TOTAL_CLAIM_AMOUNT,
+            CASH_ADVANCE_AMOUNT,
+            PURPOSE,
+            COMMENT,
+            TRIP_START_DATE,
+            TRIP_END_DATE,
+            LOCATION,
+
+            PIVOT.APPROVER1,
+            PIVOT.APPROVER1_NAME,
+            PIVOT.APPROVER1_TS,
+
+            PIVOT.APPROVER2,
+            PIVOT.APPROVER2_NAME,
+            PIVOT.APPROVER2_TS,
+
+            PIVOT.APPROVER3,
+            PIVOT.APPROVER3_NAME,
+            PIVOT.APPROVER3_TS,
+
+            PIVOT.APPROVER4,
+            PIVOT.APPROVER4_NAME,
+            PIVOT.APPROVER4_TS,
+
+            PIVOT.APPROVER5,
+            PIVOT.APPROVER5_NAME,
+            PIVOT.APPROVER5_TS,
+
+            ZEMP_MASTER.UNIT_SECTION,
+            ZTRAIN_COURSE_PART.COURSE_ID,
+            ZTRAIN_COURSE_PART.COURSE_DESC,
+            ZTRAIN_COURSE_PART.SESSION_NUMBER,
+
+            LAST_PUSH_BACK_DATE,
+            createdBy,
+
+            days_between(
+                HEADER.SUBMITTED_DATE,
+                HEADER.LAST_APPROVED_DATE
+            ) as DAYS_APPROVED : Integer,
+
+            ZEMP_MASTER.ZBRANCH.BRANCH_DESC
+    };
+
+    entity ZEMP_CLAIM_REPORT_DETAILS as
         select from ECLAIM.ZCLAIM_HEADER as HEADER
         left join ZAPPROVER_CLAIM_PIVOT as PIVOT
             on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
-        {
-            key HEADER.CLAIM_ID,
-            key ZCLAIM_ITEM.CLAIM_SUB_ID,
-                EMP_ID,
-                ZEMP_MASTER.NAME,
-                ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.DEP,
-                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-                ZEMP_MASTER.POSITION_NAME,
-                SUBMISSION_TYPE,
-                ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
-                SUBMITTED_DATE,
-                LAST_APPROVED_DATE,
-                ZREQUEST_HEADER.CASH_ADVANCE_DATE,
-                PAYMENT_DATE,
-                STATUS_ID,
-                ZSTATUS.STATUS_DESC,
-                COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC,
-                ALTERNATE_COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC                                as ALT_COST_CENTER_DESC,
-                TOTAL_CLAIM_AMOUNT,
-                CASH_ADVANCE_AMOUNT,
-                FINAL_AMOUNT_TO_RECEIVE,
-                PURPOSE,
-                LOCATION,
-                CLAIM_TYPE_ID,
-                TRIP_START_DATE                                              as TRIP_START_DATE_HEADER,
-                TRIP_END_DATE                                                as TRIP_END_DATE_HEADER,
-                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
-                ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-                ZCLAIM_ITEM.REMARK,
-                ZCLAIM_ITEM.TRIP_START_DATE,
-                ZCLAIM_ITEM.TRIP_START_TIME,
-                ZCLAIM_ITEM.TRIP_END_DATE,
-                ZCLAIM_ITEM.TRIP_END_TIME,
-                ZCLAIM_ITEM.LOCATION                                         as LOCATION_ITEM,
-                ZCLAIM_ITEM.PERCENTAGE_COMPENSATION,
-                ZCLAIM_ITEM.ACCOUNT_NO,
-                ZCLAIM_ITEM.AMOUNT,
-                ZCLAIM_ITEM.BILL_DATE,
-                ZCLAIM_ITEM.BILL_NO,
-                ZCLAIM_ITEM.CLAIM_CATEGORY,
-                ZCLAIM_ITEM.COUNTRY,
-                ZCLAIM_ITEM.DISCLAIMER,
-                ZCLAIM_ITEM.END_DATE,
-                ZCLAIM_ITEM.END_TIME,
-                ZCLAIM_ITEM.FLIGHT_CLASS,
-                ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
-                ZCLAIM_ITEM.FROM_LOCATION,
-                ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
-                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
-                ZCLAIM_ITEM.KM,
-                ZCLAIM_ITEM.LOCATION_TYPE,
-                ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
-                ZCLAIM_ITEM.LODGING_ADDRESS,
-                ZCLAIM_ITEM.LODGING_CATEGORY,
-                ZCLAIM_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
-                ZCLAIM_ITEM.MARRIAGE_CATEGORY,
-                ZCLAIM_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
-                ZCLAIM_ITEM.AREA,
-                ZCLAIM_ITEM.ZAREA.AREA_DESC,
-                ZCLAIM_ITEM.NO_OF_FAMILY_MEMBER,
-                ZCLAIM_ITEM.PARKING,
-                ZCLAIM_ITEM.PHONE_NO,
-                ZCLAIM_ITEM.RATE_PER_KM,
-                ZCLAIM_ITEM.RECEIPT_DATE,
-                ZCLAIM_ITEM.RECEIPT_NUMBER,
-                ZCLAIM_ITEM.ROOM_TYPE,
-                ZCLAIM_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
-                ZCLAIM_ITEM.REGION,
-                ZCLAIM_ITEM.ZREGION.REGION_DESC,
-                ZCLAIM_ITEM.START_DATE,
-                ZCLAIM_ITEM.START_TIME,
-                ZCLAIM_ITEM.TO_LOCATION,
-                ZCLAIM_ITEM.TO_LOCATION_OFFICE,
-                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
-                ZCLAIM_ITEM.TOLL,
-                ZCLAIM_ITEM.TOTAL_EXP_AMOUNT,
-                ZCLAIM_ITEM.VEHICLE_TYPE,
-                ZCLAIM_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
-                ZCLAIM_ITEM.VEHICLE_FARE,
-                ZCLAIM_ITEM.EVENT_START_DATE,
-                ZCLAIM_ITEM.EVENT_END_DATE,
-                ZCLAIM_ITEM.TRAVEL_DURATION_DAY,
-                ZCLAIM_ITEM.TRAVEL_DURATION_HOUR,
-                ZCLAIM_ITEM.PROVIDED_BREAKFAST,
-                ZCLAIM_ITEM.PROVIDED_LUNCH,
-                ZCLAIM_ITEM.PROVIDED_DINNER,
-                ZCLAIM_ITEM.ENTITLED_BREAKFAST,
-                ZCLAIM_ITEM.ENTITLED_LUNCH,
-                ZCLAIM_ITEM.ENTITLED_DINNER,
-                ZCLAIM_ITEM.ANGGOTA_ID,
-                ZCLAIM_ITEM.ANGGOTA_NAME,
-                ZCLAIM_ITEM.DEPENDENT_NAME,
-                ZCLAIM_ITEM.FROM_STATE_ID,
-                ZCLAIM_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
-                ZCLAIM_ITEM.TO_STATE_ID,
-                ZCLAIM_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
-                ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                ZREQUEST_HEADER.REQUEST_ID,
-                ZREQUEST_HEADER.REQUEST_DATE,
-                PIVOT.APPROVER1,
-                PIVOT.APPROVER1_NAME,
-                PIVOT.APPROVER1_TS,
-                PIVOT.APPROVER2,
-                PIVOT.APPROVER2_NAME,
-                PIVOT.APPROVER2_TS,
-                PIVOT.APPROVER3,
-                PIVOT.APPROVER3_NAME,
-                PIVOT.APPROVER3_TS,
-                PIVOT.APPROVER4,
-                PIVOT.APPROVER4_NAME,
-                PIVOT.APPROVER4_TS,
-                PIVOT.APPROVER5,
-                PIVOT.APPROVER5_NAME,
-                PIVOT.APPROVER5_TS,
-                ZEMP_MASTER.UNIT_SECTION,
-                ZTRAIN_COURSE_PART.COURSE_ID,
-                ZTRAIN_COURSE_PART.COURSE_DESC,
-                ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_PUSH_BACK_DATE,
-                createdBy,
-                ZCLAIM_ITEM.ROUND_TRIP,
-                ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
-                ZCLAIM_ITEM.ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC,
-                ZCLAIM_ITEM.DISCLAIMER_GALAKAN,
-                ZCLAIM_ITEM.TRANSFER_DATE,
-                ZCLAIM_ITEM.NO_OF_DAYS,
-                ZCLAIM_ITEM.FAMILY_COUNT,
-                ZCLAIM_ITEM.FUNERAL_TRANSPORTATION,
-                ZCLAIM_ITEM.ZTRANSPORT_PASSING.TRANSPORT_PASSING_DESC,
-                ZCLAIM_ITEM.COURSE_TITLE,
-                ZCLAIM_ITEM.ACTUAL_AMOUNT,
-                ZCLAIM_ITEM.NEED_FOREIGN_CURRENCY,
-                ZCLAIM_ITEM.CURRENCY_CODE,
-                ZCLAIM_ITEM.ZCURRENCY.CURRENCY_DESC,
-                ZCLAIM_ITEM.CURRENCY_RATE,
-                ZCLAIM_ITEM.CURRENCY_AMOUNT,
-                ZCLAIM_ITEM.REQUEST_APPROVAL_AMOUNT,
-                ZCLAIM_ITEM.DEPARTURE_TIME,
-                ZCLAIM_ITEM.ARRIVAL_TIME,
-                ZCLAIM_ITEM.DEPENDENT,
-                ZCLAIM_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
-                ZCLAIM_ITEM.POLICY_NUMBER,
-                ZCLAIM_ITEM.INSURANCE_PROVIDER_ID,
-                ZCLAIM_ITEM.ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
-                ZCLAIM_ITEM.INSURANCE_PROVIDER_NAME,
-                ZCLAIM_ITEM.INSURANCE_PURCHASE_DATE,
-                ZCLAIM_ITEM.INSURANCE_CERT_START_DATE,
-                ZCLAIM_ITEM.INSURANCE_CERT_END_DATE,
-                ZCLAIM_ITEM.TRAVEL_DAYS_ID,
-                ZCLAIM_ITEM.ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
-                ZCLAIM_ITEM.METER_CUBE_ENTITLED,
-                ZCLAIM_ITEM.METER_CUBE_ACTUAL,
-                ZCLAIM_ITEM.INSURANCE_PACKAGE_ID,
-                ZCLAIM_ITEM.ZINSURANCE_PACKAGE.ZINSURANCE_PACKAGE_DESC,
-                ZCLAIM_ITEM.FARE_TYPE_ID,
-                ZCLAIM_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
-                ZCLAIM_ITEM.VEHICLE_CLASS_ID,
-                ZCLAIM_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
-                ZCLAIM_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
-                ZCLAIM_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
-                ZCLAIM_ITEM.STUDY_LEVELS_ID,
-                ZCLAIM_ITEM.ZSTUDY_LEVELS.STUDY_LEVELS_DESC,
-                ZCLAIM_ITEM.MODE_OF_TRANSFER,
-                ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
-                ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
-                ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
-                // Calculate the difference between Submitted and Last Approved date
-                days_between(
-                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
-                )                                                            as DAYS_APPROVED : Integer,
-                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
-        };
+    {
+        key HEADER.CLAIM_ID,
+        key ZCLAIM_ITEM.CLAIM_SUB_ID,
+            EMP_ID,
+            ZEMP_MASTER.NAME,
+            ZEMP_MASTER.GRADE,
+            ZEMP_MASTER.DEP,
+            ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+            ZEMP_MASTER.POSITION_NAME,
+            SUBMISSION_TYPE,
+            ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+            SUBMITTED_DATE,
+            LAST_APPROVED_DATE,
+            ZREQUEST_HEADER.CASH_ADVANCE_DATE,
+            PAYMENT_DATE,
+            STATUS_ID,
+            ZSTATUS.STATUS_DESC,
+
+            COST_CENTER,
+            COSTCENTER.COST_CENTER_DESC,
+
+            ALTERNATE_COST_CENTER,
+            ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+
+            cast(
+                case
+                    when ALTERNATE_COST_CENTER is not null
+                    then ALTERNATE_COST_CENTER
+                    else COST_CENTER
+                end as String(50)
+            ) as CHARGING_COST_CENTER,
+
+            cast(
+                case
+                    when ALTERNATE_COST_CENTER is not null
+                    then ZCOST_CENTER.COST_CENTER_DESC
+                    else COSTCENTER.COST_CENTER_DESC
+                end as String(255)
+            ) as CHARGING_COST_CENTER_DESC,
+
+            TOTAL_CLAIM_AMOUNT,
+            CASH_ADVANCE_AMOUNT,
+            FINAL_AMOUNT_TO_RECEIVE,
+            PURPOSE,
+            LOCATION,
+            CLAIM_TYPE_ID,
+            TRIP_START_DATE as TRIP_START_DATE_HEADER,
+            TRIP_END_DATE as TRIP_END_DATE_HEADER,
+            ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+            ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
+            ZCLAIM_ITEM.REMARK,
+            ZCLAIM_ITEM.TRIP_START_DATE,
+            ZCLAIM_ITEM.TRIP_START_TIME,
+            ZCLAIM_ITEM.TRIP_END_DATE,
+            ZCLAIM_ITEM.TRIP_END_TIME,
+            ZCLAIM_ITEM.LOCATION as LOCATION_ITEM,
+            ZCLAIM_ITEM.PERCENTAGE_COMPENSATION,
+            ZCLAIM_ITEM.ACCOUNT_NO,
+            ZCLAIM_ITEM.AMOUNT,
+            ZCLAIM_ITEM.BILL_DATE,
+            ZCLAIM_ITEM.BILL_NO,
+            ZCLAIM_ITEM.CLAIM_CATEGORY,
+            ZCLAIM_ITEM.COUNTRY,
+            ZCLAIM_ITEM.DISCLAIMER,
+            ZCLAIM_ITEM.END_DATE,
+            ZCLAIM_ITEM.END_TIME,
+            ZCLAIM_ITEM.FLIGHT_CLASS,
+            ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
+            ZCLAIM_ITEM.FROM_LOCATION,
+            ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
+            ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+            ZCLAIM_ITEM.KM,
+            ZCLAIM_ITEM.LOCATION_TYPE,
+            ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
+            ZCLAIM_ITEM.LODGING_ADDRESS,
+            ZCLAIM_ITEM.LODGING_CATEGORY,
+            ZCLAIM_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
+            ZCLAIM_ITEM.MARRIAGE_CATEGORY,
+            ZCLAIM_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
+            ZCLAIM_ITEM.AREA,
+            ZCLAIM_ITEM.ZAREA.AREA_DESC,
+            ZCLAIM_ITEM.NO_OF_FAMILY_MEMBER,
+            ZCLAIM_ITEM.PARKING,
+            ZCLAIM_ITEM.PHONE_NO,
+            ZCLAIM_ITEM.RATE_PER_KM,
+            ZCLAIM_ITEM.RECEIPT_DATE,
+            ZCLAIM_ITEM.RECEIPT_NUMBER,
+            ZCLAIM_ITEM.ROOM_TYPE,
+            ZCLAIM_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
+            ZCLAIM_ITEM.REGION,
+            ZCLAIM_ITEM.ZREGION.REGION_DESC,
+            ZCLAIM_ITEM.START_DATE,
+            ZCLAIM_ITEM.START_TIME,
+            ZCLAIM_ITEM.TO_LOCATION,
+            ZCLAIM_ITEM.TO_LOCATION_OFFICE,
+            ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+            ZCLAIM_ITEM.TOLL,
+            ZCLAIM_ITEM.TOTAL_EXP_AMOUNT,
+            ZCLAIM_ITEM.VEHICLE_TYPE,
+            ZCLAIM_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
+            ZCLAIM_ITEM.VEHICLE_FARE,
+            ZCLAIM_ITEM.EVENT_START_DATE,
+            ZCLAIM_ITEM.EVENT_END_DATE,
+            ZCLAIM_ITEM.TRAVEL_DURATION_DAY,
+            ZCLAIM_ITEM.TRAVEL_DURATION_HOUR,
+            ZCLAIM_ITEM.PROVIDED_BREAKFAST,
+            ZCLAIM_ITEM.PROVIDED_LUNCH,
+            ZCLAIM_ITEM.PROVIDED_DINNER,
+            ZCLAIM_ITEM.ENTITLED_BREAKFAST,
+            ZCLAIM_ITEM.ENTITLED_LUNCH,
+            ZCLAIM_ITEM.ENTITLED_DINNER,
+            ZCLAIM_ITEM.ANGGOTA_ID,
+            ZCLAIM_ITEM.ANGGOTA_NAME,
+            ZCLAIM_ITEM.DEPENDENT_NAME,
+            ZCLAIM_ITEM.FROM_STATE_ID,
+            ZCLAIM_ITEM.ZSTATE.STATE_DESC as FROM_STATE_DESC,
+            ZCLAIM_ITEM.TO_STATE_ID,
+            ZCLAIM_ITEM.ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+            ZCLAIM_ITEM.GL_ACCOUNT,
+            ZCLAIM_ITEM.MATERIAL_CODE,
+            ZREQUEST_HEADER.REQUEST_ID,
+            ZREQUEST_HEADER.REQUEST_DATE,
+
+            PIVOT.APPROVER1,
+            PIVOT.APPROVER1_NAME,
+            PIVOT.APPROVER1_TS,
+            PIVOT.APPROVER2,
+            PIVOT.APPROVER2_NAME,
+            PIVOT.APPROVER2_TS,
+            PIVOT.APPROVER3,
+            PIVOT.APPROVER3_NAME,
+            PIVOT.APPROVER3_TS,
+            PIVOT.APPROVER4,
+            PIVOT.APPROVER4_NAME,
+            PIVOT.APPROVER4_TS,
+            PIVOT.APPROVER5,
+            PIVOT.APPROVER5_NAME,
+            PIVOT.APPROVER5_TS,
+
+            ZEMP_MASTER.UNIT_SECTION,
+            ZTRAIN_COURSE_PART.COURSE_ID,
+            ZTRAIN_COURSE_PART.COURSE_DESC,
+            ZTRAIN_COURSE_PART.SESSION_NUMBER,
+            LAST_PUSH_BACK_DATE,
+            createdBy,
+            ZCLAIM_ITEM.ROUND_TRIP,
+            ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
+            ZCLAIM_ITEM.ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC,
+            ZCLAIM_ITEM.DISCLAIMER_GALAKAN,
+            ZCLAIM_ITEM.TRANSFER_DATE,
+            ZCLAIM_ITEM.NO_OF_DAYS,
+            ZCLAIM_ITEM.FAMILY_COUNT,
+            ZCLAIM_ITEM.FUNERAL_TRANSPORTATION,
+            ZCLAIM_ITEM.ZTRANSPORT_PASSING.TRANSPORT_PASSING_DESC,
+            ZCLAIM_ITEM.COURSE_TITLE,
+            ZCLAIM_ITEM.ACTUAL_AMOUNT,
+            ZCLAIM_ITEM.NEED_FOREIGN_CURRENCY,
+            ZCLAIM_ITEM.CURRENCY_CODE,
+            ZCLAIM_ITEM.ZCURRENCY.CURRENCY_DESC,
+            ZCLAIM_ITEM.CURRENCY_RATE,
+            ZCLAIM_ITEM.CURRENCY_AMOUNT,
+            ZCLAIM_ITEM.REQUEST_APPROVAL_AMOUNT,
+            ZCLAIM_ITEM.DEPARTURE_TIME,
+            ZCLAIM_ITEM.ARRIVAL_TIME,
+            ZCLAIM_ITEM.DEPENDENT,
+            ZCLAIM_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
+            ZCLAIM_ITEM.POLICY_NUMBER,
+            ZCLAIM_ITEM.INSURANCE_PROVIDER_ID,
+            ZCLAIM_ITEM.ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
+            ZCLAIM_ITEM.INSURANCE_PROVIDER_NAME,
+            ZCLAIM_ITEM.INSURANCE_PURCHASE_DATE,
+            ZCLAIM_ITEM.INSURANCE_CERT_START_DATE,
+            ZCLAIM_ITEM.INSURANCE_CERT_END_DATE,
+            ZCLAIM_ITEM.TRAVEL_DAYS_ID,
+            ZCLAIM_ITEM.ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
+            ZCLAIM_ITEM.METER_CUBE_ENTITLED,
+            ZCLAIM_ITEM.METER_CUBE_ACTUAL,
+            ZCLAIM_ITEM.INSURANCE_PACKAGE_ID,
+            ZCLAIM_ITEM.ZINSURANCE_PACKAGE.ZINSURANCE_PACKAGE_DESC,
+            ZCLAIM_ITEM.FARE_TYPE_ID,
+            ZCLAIM_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
+            ZCLAIM_ITEM.VEHICLE_CLASS_ID,
+            ZCLAIM_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
+            ZCLAIM_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
+            ZCLAIM_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
+            ZCLAIM_ITEM.STUDY_LEVELS_ID,
+            ZCLAIM_ITEM.ZSTUDY_LEVELS.STUDY_LEVELS_DESC,
+            ZCLAIM_ITEM.MODE_OF_TRANSFER,
+            ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+            ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
+            ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
+
+            days_between(
+                HEADER.SUBMITTED_DATE,
+                HEADER.LAST_APPROVED_DATE
+            ) as DAYS_APPROVED : Integer,
+
+            ZEMP_MASTER.ZBRANCH.BRANCH_DESC
+    };
 
     entity ZCASH_REPAYMENT_SUM as
         select from ZCLAIM_ITEM
