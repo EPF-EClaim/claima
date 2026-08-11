@@ -1867,7 +1867,7 @@ sap.ui.define([
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {
-			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment"];
+			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment","req_CorpCCPayDueDate","req_corpoRefNo"];
 			aHeaderControlIds.forEach(id => {
 				const c = this._resolveControl(id, "request");
 				if (c && typeof c.setVisible === "function") {
