@@ -549,7 +549,7 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           oItem.MATERIAL_CODE,
                     INTERNAL_ORDER:          null,
-                    CashAdvanceCatID:        oItem.CASH_ADVANCE_CAT_ID
+                    CASH_ADVANCE_CAT_ID:        oItem.CASH_ADVANCE_CAT_ID
                 }));
         }else{ 
             sData = 
@@ -567,7 +567,7 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
                     INTERNAL_ORDER:          oItem.INTERNAL_ORDER,
-                    CashAdvanceCatID:        oItem.CASH_ADVANCE_CAT_ID
+                    CASH_ADVANCE_CAT_ID:        oItem.CASH_ADVANCE_CAT_ID
                 }));
         }
 
