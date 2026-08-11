@@ -188,10 +188,28 @@
                         }
                     }"
                     displayFormat="dd-MMM-yyyy"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_START_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"                    
                     visible="{claimitem_property>/policy_start_date/is_visible}"
                     required="true"
                     change= ".onChange_PolicyStartDate"
-                />
+                >
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/POLICY_START_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/POLICY_START_DATE/customMinDateError}" />						
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/POLICY_START_DATE/customMaxDateError}" />						
+					</customData>                
+                </DatePicker>
 
                 <!-- Policy End Date -->
                 <Label text="{i18n>label_claimdetails_input_insurance_policy_end_date}" />
@@ -208,9 +226,27 @@
                         }
                     }"
                     displayFormat="dd-MMM-yyyy"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_END_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                    }"
                     visible="{claimitem_property>/policy_end_date/is_visible}"
                     required="true"
-                />
+                >
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/POLICY_END_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/POLICY_END_DATE/customMinDateError}" />						
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/POLICY_END_DATE/customMaxDateError}" />						
+					</customData>                
+                </DatePicker>
 
                 <!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
 				<Label text="{i18n>label_claimdetails_input_funeraltransport}" />
