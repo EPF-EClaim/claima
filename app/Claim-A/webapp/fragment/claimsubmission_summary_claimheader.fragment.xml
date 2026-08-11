@@ -328,7 +328,8 @@
                 <!-- Remaining Medical Entitlement -->
                 <Label
                     text="{i18n>label_remaining_medical_entitlement}"
-                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} }"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL_ADVANCE} }"
                 />
 
                 <Text
@@ -343,7 +344,8 @@
                         }
                     }"
                     textAlign="End"
-                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} }"
+                    visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL_ADVANCE}}"
                 />
 
                 <!-- Cash Advance (MYR) -->

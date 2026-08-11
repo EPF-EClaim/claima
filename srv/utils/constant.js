@@ -102,7 +102,8 @@ const Constant = {
         "MEDICAL": "MEDICAL",
         "PEDU" : "PEDU",
         "CERAMAH" : "CERAMAH",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",

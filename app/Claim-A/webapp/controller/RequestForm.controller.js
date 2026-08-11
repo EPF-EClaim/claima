@@ -149,7 +149,7 @@ sap.ui.define([
 
 				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
-				if (sClaimType === this._oConstant.ClaimType.MEDICAL) {
+				if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
 
 					await Utility.getRemainingMedicalEntitlement(
 						this._oReqModel,
@@ -446,7 +446,7 @@ sap.ui.define([
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										this._oReqModel.setProperty("/view", 'view');
 
-										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL) {
+										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
 											const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
 											oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
 											oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
@@ -1234,7 +1234,11 @@ sap.ui.define([
 					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
 				}
 
-				if (oReqItem.cash_advance) {
+				if (oReqItem.claim_type_item_id === this._oConstant.ClaimTypeItem.MED_ADVANCE) {
+					oReqItem.cost_center = this._oConstant.MedicalAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account = this._oConstant.MedicalAdvanceInfo.GL_ACCOUNT;
+				}
+				else if (oReqItem.cash_advance) {
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
@@ -1242,8 +1246,8 @@ sap.ui.define([
 						? oReqHeader.altcostcenter
 						: oReqHeader.costcenter;
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
-					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
+					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {

@@ -124,22 +124,16 @@
 
                 <!-- Attachment 3 -->
                 <Column
-                visible="{=
-                    ${claimsubmission_input>/claim_header/claim_type_id}
-                    ===
-                    ${constant>/ClaimType/MEDICAL}
-                }"
+                visible="{= ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL} ||
+                            ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL_ADVANCE}}"
                 >
                     <Text text="{i18n>columntext_claimsummary_attachment3}" />
                 </Column>
 
                 <!-- Attachment 4 -->
                 <Column
-                visible="{=
-                    ${claimsubmission_input>/claim_header/claim_type_id}
-                    ===
-                    ${constant>/ClaimType/MEDICAL}
-                }"
+                visible="{= ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL} ||
+                            ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL_ADVANCE}}"
                 >
                     <Text text="{i18n>columntext_claimsummary_attachment4}" />
                 </Column>

@@ -1534,7 +1534,7 @@
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} ||
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/DLM_NEGARA} ||
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ||
-                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL} ) &amp;&amp;
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TAMBANG}  ||
@@ -1550,7 +1550,7 @@
                                         <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
                                                enabled="{=${request>/view} !== 'view' &amp;&amp;
                                                         !(
-                                                            ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL} &amp;&amp;
+                                                            ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} &amp;&amp;
                                                             ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}
                                                             )
                                                         }"

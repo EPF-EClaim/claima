@@ -1770,7 +1770,7 @@ sap.ui.define([
 						break;
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
-					case this._oConstant.RequestType.MEDICAL:
+					case this._oConstant.RequestType.MEDICAL_ADVANCE:
 						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;

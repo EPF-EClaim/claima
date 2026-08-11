@@ -311,6 +311,7 @@ module.exports = {
           break;
 
         case Constant.ClaimType.MEDICAL:
+        case Constant.ClaimType.MEDICAL_ADVANCE:
           oReturnPayload = await Medical.onEligibleCheck(
             aPayload[i],
             aEmpData[0],

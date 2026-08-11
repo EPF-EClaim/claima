@@ -43,13 +43,12 @@ module.exports = {
                 .from(sHeaderTable)
                 .where({ [sHeaderField]: sRecordId }));
 
-        if (!oHeader || oHeader.CLAIM_TYPE_ID !== Constant.ClaimType.MEDICAL) {
+        if (!oHeader || (oHeader.CLAIM_TYPE_ID !== Constant.ClaimType.MEDICAL && oHeader.CLAIM_TYPE_ID !== Constant.ClaimType.MEDICAL_ADVANCE)) {
             return;
         }
 
         const aSubmittedItems = await tx.run(
             SELECT.from(sItemTable).where({ [sHeaderField]: sRecordId }));
-
         const iTotalCashRepayment = aSubmittedItems.reduce(
             (iTotal, oItem) =>
                 oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.CASH_REPAY
@@ -90,7 +89,6 @@ module.exports = {
         }
 
         const iCurrentUtilizedAmount = parseFloat(oEmpMaster.MEDICAL_INSURANCE_ENTITLEMENT || 0);
-
         let iNewAmount = iCurrentUtilizedAmount;
 
         if (sStatus === Constant.Status.PENDING_APPROVAL) {

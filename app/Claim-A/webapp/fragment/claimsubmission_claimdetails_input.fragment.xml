@@ -1864,10 +1864,7 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
-                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
-                              &amp;&amp;
-                              ${claimitem_input>/claim_item/attachment_file_4} === null}"
+                    
                 />
                 <Label
                     id="label_claimdetails_input_attachment_file_4"

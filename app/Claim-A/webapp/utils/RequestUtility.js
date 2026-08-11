@@ -612,7 +612,7 @@ sap.ui.define([
 						and: true
 					})
 
-                case Constants.ClaimType.MEDICAL:
+                case Constants.ClaimType.MEDICAL_ADVANCE:
 
                     var d25YearsAndBelow = DateUtility.today();
                     d25YearsAndBelow.setFullYear(

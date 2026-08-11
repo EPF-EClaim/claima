@@ -143,7 +143,7 @@
                             </form:FormElement>
                             <form:FormElement
                                 label="Remaining Medical Entitlement"
-                                visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL} }">
+                                visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} }">
 
                                 <form:fields>
 

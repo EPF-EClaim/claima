@@ -491,7 +491,9 @@ sap.ui.define([
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 
-				if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL) {
+				if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
+					oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL_ADVANCE 
+				) {
 					await Utility.getRemainingMedicalEntitlement(
 						oClaimSubmissionModel,
 						oHeader.emp_id,
@@ -4585,7 +4587,8 @@ sap.ui.define([
 									}
 
 									// update Medical entitlement usage if claim type is Medical
-									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL) {
+									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+										oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
 										const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
 										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
 										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
@@ -4698,7 +4701,8 @@ sap.ui.define([
 								}
 
 								// update Medical entitlement usage if claim type is Medical
-								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL) {
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+									oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
 									const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
 									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
 									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);

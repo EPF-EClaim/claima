@@ -26,7 +26,8 @@ sap.ui.define([
             "HANDPHONE": "HANDPHONE",
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
-            "CERAMAH": "CERAMAH"
+            "CERAMAH": "CERAMAH",
+            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -688,7 +689,8 @@ sap.ui.define([
             "TRAVEL_INSURANCE": "Medical Travel Insurance",
             "VISA": "Visa & Passport",
             "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
-            "YURAN_KLJ": "Bayaran Yuran KLJ"
+            "YURAN_KLJ": "Bayaran Yuran KLJ",
+            "INSURANCE": "INSURANCE"
         },
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
@@ -716,6 +718,10 @@ sap.ui.define([
         },
         "InsuranceMedicalProvider": {
             "OTHERS": "4",
+        },
+        "MedicalAdvanceInfo": {
+            "COST_CENTER": "100000000",
+            "GL_ACCOUNT": "214230"
         }
         
     }
