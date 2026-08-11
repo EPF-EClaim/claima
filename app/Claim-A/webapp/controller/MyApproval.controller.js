@@ -474,7 +474,7 @@ sap.ui.define([
                 last_push_back_date: null,
                 course_code: o.COURSE_CODE,
                 session_number: o.SESSION_NUMBER,
-                project_code: null,
+                project_code: o.PROJECT_CODE,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
                 reject_reason_id: null,
@@ -482,6 +482,13 @@ sap.ui.define([
                 last_push_back_time: null,
                 reject_reason_date: null,
                 reject_reason_time: null,
+                mode_of_transfer: o.TRANSFER_MODE_DESC,
+                travel_alone_family: o.TRAVEL_TYPE_DESC,
+                travel_family_now_later: o.FAMILY_TIMING_DESC,
+                mode_of_transfer_id: o.MODE_OF_TRANSFER,
+                card_no: o.CARD_NO,
+                card_advance_amount: o.CCC_ADV_AMT,
+                original_card_advance_amount: o.CCC_ADV_AMT,
                 descr: {
                     submission_type: null,
                     alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -489,15 +496,16 @@ sap.ui.define([
                     request_id: null,
                     status_id: o.STATUS_DESC,
                     claim_type_id: o.CLAIM_TYPE_DESC,
-                    housing_loan_scheme: null,
-                    lender_name: null,
+                    housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
+                    lender_name: o.LENDER_DESC,
                     course_code: o.COURSE_CODE_DESC,
-                    project_code: null,
+                    project_code: o.PROJECT_DESC,
                     attachment_email_approver: null,
+                    mode_of_transfer: o.TRANSFER_MODE_DESC,
+                    travel_alone_family: o.TRAVEL_TYPE_DESC,
+                    travel_family_now_later: o.FAMILY_TIMING_DESC,
                 }
             };
-
-
         },
 
         async _loadClaimById(sClaimId) {
@@ -519,6 +527,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oHeaderBinding.refresh();
 
             // Items binding
             const oItemBinding = this.getOwnerComponent().getModel().bindList(
@@ -532,6 +541,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemBinding.refresh();
 
             // Items Descr binding
             const oItemDescrBinding = oModel.bindList(
@@ -545,6 +555,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemDescrBinding.refresh();
 
             try {
                 const [aHeaderCtx, aItemCtx, aItemDCtx] = await Promise.all([
