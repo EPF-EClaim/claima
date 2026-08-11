@@ -557,7 +557,8 @@ const Constant = {
         'HSBC_BIC_CODE',
         'HSBC_VENDOR_NAME',
         'ID_TYPE',
-        'REGISTRATION_NO'
+        'REGISTRATION_NO',
+        'PAYMENT_METHOD'
     ],
 
 };
