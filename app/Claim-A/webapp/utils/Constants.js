@@ -731,7 +731,6 @@ sap.ui.define([
         "TravelClaimItems" : {
             "FLIGHT_L" : "FLIGHT_L",
             "HOTEL_L" : "HOTEL_L",
-            "MAKAN_L" : "MAKAN_L",
             "YURAN" : "YURAN",
             "CASH_REPAY"  : "CASH_REPAY",
             "DOBI" : "DOBI",
@@ -741,9 +740,7 @@ sap.ui.define([
             "EXCESS" : "EXCESS",
             "FLIGHT_O" : "FLIGHT_O",
             "HOTEL_O" : "HOTEL_O",
-            "MAKAN_O" : "MAKAN_O",
             "PELBAGAI" : "PELBAGAI",
-            "PKN_PANAS" : "PKN_PANAS",
             "SERVICES" : "SERVICES",
             "TELEFON" : "TELEFON",
             "VISA" : "VISA",
