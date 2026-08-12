@@ -142,7 +142,7 @@
                                     textDirection="RTL"></Text></form:fields>
                             </form:FormElement>
                             <form:FormElement
-                                label="Remaining Medical Entitlement"
+                                label="{i18n>label_remaining_medical_entitlement}"
                                 visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} }">
 
                                 <form:fields>
