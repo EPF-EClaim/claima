@@ -5726,16 +5726,22 @@ sap.ui.define([
 
 			var nCashAdvAmt = Math.max(0, Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0);
 
-			// Items charged to CCC are excluded from the reimbursable total,
-			// since those get settled via the corporate card advance offset
-			// instead.
+			// Total Claim Amount includes everything except POTONGAN_ELAUN,
+			// regardless of charged_to_ccc status.
 			var nTotal = aClaimItems
-				.filter((it) => !it.charged_to_ccc)
+				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			// Final Amount to Receive additionally excludes charged_to_ccc items
+			// (they get settled via the corporate card advance offset instead) -
+			// but not POTONGAN_ELAUN again, since it's already excluded from
+			// nTotal above and would otherwise be double-subtracted.
+			var nChargedToCccExcludingPotongan = aClaimItems
+				.filter((it) => it.charged_to_ccc && it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
 			// POTONGAN_ELAUN items are actively deducted from Final Amount to
-			// Receive, on top of already being excluded from the reimbursable
-			// total above (since they're always charged_to_ccc = true).
+			// Receive, on top of already being excluded from nTotal above.
 			var nPotonganElaunAmt = aClaimItems
 				.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
@@ -5744,21 +5750,16 @@ sap.ui.define([
 			var bHasCard = !!sCardNo;
 
 			if (bIsTravelClaimType && bHasCard) {
-				var nExcludedAmt = aClaimItems
-					.filter((it) => it.charged_to_ccc)
-					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-
-				if (nExcludedAmt > 0) {
-					// nTotal already excludes these items - do not subtract nExcludedAmt again
-					var nNewTotal = nTotal - nCashAdvAmt - nPotonganElaunAmt;
+				if (nChargedToCccExcludingPotongan > 0) {
+					var nNewTotal = nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt;
 					oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 					oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 					return;
 				}
 			}
 
-			// Default: subtract cash advance and POTONGAN_ELAUN deduction, if any
-			var nFinal = nTotal - nCashAdvAmt - nPotonganElaunAmt;
+			// Default
+			var nFinal = nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
