@@ -2648,9 +2648,12 @@ sap.ui.define([
 			// 2. Determine which CLAIM_TYPE_ITEM_IDs to exclude.
 			var aExcludedClaimTypeItemIds = [];
 
+			var sCardNoForFilter = oModel.getProperty("/claim_header/card_no");
+			var bIsTravelWithCard = !!sCardNoForFilter && !!this._oConstant.TravelClaimType[oModel.getProperty("/claim_header/claim_type_id")];
+
 			// Using Number() or parseFloat() ensures the check works whether the model stores it as a string "0" or number 0
 			var fCashAdvanceAmount = oModel.getProperty("/claim_header/cash_advance_amount");
-			if (Number(fCashAdvanceAmount) === 0) {
+			if (Number(fCashAdvanceAmount) === 0 && !bIsTravelWithCard) {
 				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.CASH_REPAY);
 			}
 
