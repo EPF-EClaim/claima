@@ -2565,6 +2565,8 @@ sap.ui.define([
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
+				//refresh policy info 
+				await this._refreshPolicyInfo();
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
 
