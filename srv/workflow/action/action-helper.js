@@ -702,8 +702,6 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
             .where({ REQUEST_ID: sRequestId })
     );
 
-    // Resolve PRINCIPLE per card, needed both for the Statement Due
-    // override on item lines and for the header's OPENING_BALANCE.
     const aCardNos = [...new Set((aItemParts || []).map((oPart) => oPart.CARD_NO).filter((sCardNo) => !!sCardNo))];
     const mIsPrincipleByCardNo = {};
     if (aCardNos.length > 0) {
@@ -752,13 +750,14 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     const aPayload = [];
 
     (aItemParts || []).forEach((oPart) => {
-        // Main line - this row's own amounts. STATEMENT_DUE_AMT is no
-        // longer sent per cardholder - it's represented once, at the
-        // header level, as OPENING_BALANCE (the principal card's amount).
+        // Main line - each card's own raw STATEMENT_DUE_AMT, no principal
+        // override. The principal's own figure is also separately
+        // available at the header level as OPENING_BALANCE.
         const oMainLine = {
             REQUEST_ID: oPart.REQUEST_ID,
             REQUEST_SUB_ID: oPart.REQUEST_SUB_ID,
             CARD_NO: oPart.CARD_NO,
+            STATEMENT_DUE_AMT: oPart.STATEMENT_DUE_AMT || 0,
             SERVICE_TAX: oPart.SERVICE_TAX || 0,
             CASHBACK: oPart.CASHBACK || 0,
             MERCHANT_REFUND_AMT: oPart.MERCHANT_REFUND_AMT || 0,
@@ -767,13 +766,14 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
             MATERIAL_CODE: oPart.MATERIAL_CODE
         };
 
-        if (oMainLine.SERVICE_TAX !== 0 || oMainLine.CASHBACK !== 0 || oMainLine.MERCHANT_REFUND_AMT !== 0) {
+        if (oMainLine.STATEMENT_DUE_AMT !== 0 || oMainLine.SERVICE_TAX !== 0 ||
+            oMainLine.CASHBACK !== 0 || oMainLine.MERCHANT_REFUND_AMT !== 0) {
             aPayload.push(oMainLine);
         }
 
         // One additional line per merchant refund entry, using the SAME
         // column shape as the main line above - only MERCHANT_REFUND_AMT
-        // is populated for these, the other two amount fields are 0.
+        // is populated for these, the other three amount fields are 0.
         // Each entry already carries its own CARD_NO/GL_CODE/MATERIAL_CODE/
         // COST_CENTER (enriched at save time).
         if (oPart.MERCHANT_REFUND_ARR) {
@@ -789,6 +789,7 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
                     REQUEST_ID: oPart.REQUEST_ID,
                     REQUEST_SUB_ID: oPart.REQUEST_SUB_ID,
                     CARD_NO: oRefund.card_number,
+                    STATEMENT_DUE_AMT: 0,
                     SERVICE_TAX: 0,
                     CASHBACK: 0,
                     MERCHANT_REFUND_AMT: oRefund.merchant_refund_amount || 0,
@@ -797,7 +798,8 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
                     MATERIAL_CODE: oRefund.MATERIAL_CODE
                 };
 
-                if (oRefundLine.SERVICE_TAX !== 0 || oRefundLine.CASHBACK !== 0 || oRefundLine.MERCHANT_REFUND_AMT !== 0) {
+                if (oRefundLine.STATEMENT_DUE_AMT !== 0 || oRefundLine.SERVICE_TAX !== 0 ||
+                    oRefundLine.CASHBACK !== 0 || oRefundLine.MERCHANT_REFUND_AMT !== 0) {
                     aPayload.push(oRefundLine);
                 }
             });
@@ -807,8 +809,7 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     // Total Payment Due Amount for the whole request - matches the
     // frontend's corpo_totals/payment_due calculation (STATEMENT_DUE_AMT -
     // CASHBACK, summed across every card/item), using each card's own raw
-    // amount - not the principal-card override, which is specific to
-    // OPENING_BALANCE above.
+    // amount.
     const fTotalPaymentDueAmount = (aItemParts || []).reduce((fSum, oPart) => {
         return fSum + (Number(oPart.STATEMENT_DUE_AMT) || 0) - (Number(oPart.CASHBACK) || 0);
     }, 0);
