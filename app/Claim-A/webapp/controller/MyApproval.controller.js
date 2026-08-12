@@ -29,6 +29,13 @@ sap.ui.define([
             await this._getMyApproverClaim();
         },
 
+        formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+            var fAmount = (String(sRequestTypeId) === String(this._oConstant.RequestType.CORP_CC))
+                ? Math.max(0, Number(fTotalPaymentDueAmount) || 0)
+                : fPreapprovalAmount;
+            return (Number(fAmount) || 0).toFixed(2);
+        },
+
         _getMyApproverPAReq: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
@@ -68,6 +75,52 @@ sap.ui.define([
                 a.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
+
+                // For Corporate Credit Card requests, compute Total Payment Due
+                // Amount fresh from ZREQ_ITEM_CCC_PART (STATEMENT_DUE_AMT -
+                // CASHBACK, summed across every card/item) instead of using
+                // PREAPPROVAL_AMOUNT. PREAPPROVAL_ID is the request's REQUEST_ID
+                // under a different name in this table. Batched into one query
+                // for the whole list rather than one request per row.
+                const aCorpoCCRequestIds = a
+                    .filter((it) => String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC))
+                    .map((it) => it.PREAPPROVAL_ID);
+
+                if (aCorpoCCRequestIds.length > 0) {
+                    try {
+                        const oPartListBinding = this.getOwnerComponent().getModel().bindList(
+                            "/ZREQ_ITEM_CCC_PART",
+                            null,
+                            null,
+                            new Filter({
+                                filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
+                                and: false
+                            }),
+                            {
+                                $$ownRequest: true,
+                                $select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
+                            }
+                        );
+                        const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
+
+                        const mTotalByRequestId = {};
+                        aPartCtx.forEach((ctx) => {
+                            const oPart = ctx.getObject();
+                            const sReqId = oPart.REQUEST_ID;
+                            mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
+                                + (Number(oPart.STATEMENT_DUE_AMT) || 0)
+                                - (Number(oPart.CASHBACK) || 0);
+                        });
+
+                        a.forEach((it) => {
+                            if (String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC)) {
+                                it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it.PREAPPROVAL_ID] || 0) * 100) / 100;
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Failed to compute Total Payment Due Amount for CCC requests:", e);
+                    }
+                }
 
                 this._oReqStatusModel.setProperty("/req_header_list", a);
                 this._oReqStatusModel.setProperty("/req_header_count", a.length);

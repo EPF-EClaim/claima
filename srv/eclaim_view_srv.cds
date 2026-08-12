@@ -953,6 +953,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER_SUBS.EMAIL            as SUBSTITUTE_EMAIL,
                 ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
                 ZREQUEST_HEADER.EMP_ID,
+                ZREQUEST_HEADER.REQUEST_TYPE_ID,
                 ZREQUEST_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
                 ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
                 ZREQUEST_HEADER.REQUEST_DATE,

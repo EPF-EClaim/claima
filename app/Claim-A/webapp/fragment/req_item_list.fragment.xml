@@ -103,31 +103,51 @@
                     <table:Column width="15rem" >
                         <Label text="{i18n>req_current_balance}"></Label>
                         <table:template>
-                            <Text text="{request>current_balance}" />
+                            <Text text="{
+                                path: 'request>current_balance',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                            }" />
                         </table:template>
                     </table:Column>
                     <table:Column width="15rem" >
                         <Label text="{i18n>req_service_tax}"></Label>
                         <table:template>
-                            <Text text="{request>service_tax}" />
+                            <Text text="{
+                                path: 'request>service_tax',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                            }" />
                         </table:template>
                     </table:Column>
                     <table:Column width="15rem" id="merchantRefundColumn" >
                         <Label text="{i18n>req_merchant_refund}"></Label>
                         <table:template>
-                            <Text text="{request>merchant_refunds_total}" />
+                            <Text text="{
+                                path: 'request>merchant_refunds_total',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                            }" />
                         </table:template>
                     </table:Column>
                     <table:Column width="15rem">
                         <Label text="{i18n>req_cashback}"></Label>
                         <table:template>
-                            <Text text="{request>cashback}" />
+                            <Text text="{
+                                path: 'request>cashback',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                            }" />
                         </table:template>
                     </table:Column>
                     <table:Column width="15rem">
                         <Label text="{i18n>req_adv_amt}"></Label>
                         <table:template>
-                            <Text text="{request>advance_amount}" />
+                            <Text text="{
+                                path: 'request>advance_amount',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                            }" />
                         </table:template>
                     </table:Column>
                 </table:Table>
@@ -136,30 +156,54 @@
                 <HBox justifyContent="End" class="sapUiSmallMarginTop" gap="2rem">
                     <VBox>
                         <Label text="Total Current Statement Balance " design="Bold"/>
-                        <Text text="{request>/corpo_totals/current_balance}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/current_balance',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                     <VBox>
                         <Label text="Total Service Tax" design="Bold"/>
-                        <Text text="{request>/corpo_totals/service_tax}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/service_tax',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                     <VBox>
                         <Label text="Total Merchant Refund" design="Bold"/>
-                        <Text text="{request>/corpo_totals/merchant_refunds_total}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/merchant_refunds_total',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                     <VBox>
                         <Label text="Total Cash Back" design="Bold" />
-                        <Text text="{request>/corpo_totals/cashback}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/cashback',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                     <VBox>
                         <Label text="Total Advanced Amount" design="Bold"/>
-                        <Text text="{request>/corpo_totals/advance_amount}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/advance_amount',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                 </HBox>
 
                 <HBox justifyContent="End" class="sapUiTinyMarginTop">
                     <VBox>
                         <Label text="Total Payment Due Amount" design="Bold"/>
-                        <Text text="{request>/corpo_totals/payment_due}" />
+                        <Text text="{
+                            path: 'request>/corpo_totals/payment_due',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true }
+                        }" />
                     </VBox>
                 </HBox>
             </VBox>

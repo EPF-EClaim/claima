@@ -1607,7 +1607,8 @@
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: {
                                         minFractionDigits: 2,
-                                        maxFractionDigits: 2
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
                                     }
                                 }"
                                 enabled="{= ${request>/view} !== 'view' }"
@@ -1632,7 +1633,8 @@
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: {
                                         minFractionDigits: 2,
-                                        maxFractionDigits: 2
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
                                     },
                                     constraints: {
                                         minimum: 0
@@ -1652,7 +1654,15 @@
                     <table:Column width="25rem" id="merchantRefundColumn" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MERCH_RETURN} }">
                         <Label text="{i18n>req_merchant_refund}"></Label>
                         <table:template>
-                            <Text text="{request>merchant_refunds_total}" >
+                            <Text text="{
+                                path: 'request>merchant_refunds_total',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: {
+                                    minFractionDigits: 2,
+                                    maxFractionDigits: 2,
+                                    groupingEnabled: true
+                                }
+                            }" >
                                 <customData>
                                     <core:CustomData
                                             key="field"
@@ -1672,7 +1682,8 @@
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: {
                                         minFractionDigits: 2,
-                                        maxFractionDigits: 2
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
                                     },
                                     constraints: {
                                             minimum: 0
