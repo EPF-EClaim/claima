@@ -53,17 +53,15 @@ module.exports = {
         }
 
         //Split Timestamp into Date Time
+        let oDateTime;
         if (!!oTimestamp.PROCESS_TIMESTAMP) {
-            var oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
-
-            var dDate = oDateTime.sDateFormat;
-            var tTime = oDateTime.sTimeFormat;
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
         } else {
-            var oDateTime = BuildSelectWhereConditions.formatTimeStamp(new Date());
-
-            var dDate = oDateTime.sDateFormat;
-            var tTime = oDateTime.sTimeFormat;
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(new Date());
         }
+
+        var dDate = oDateTime.sDateFormat;
+        var tTime = oDateTime.sTimeFormat;
 
         // change Date time field based on Status
         switch (sStatus) {
