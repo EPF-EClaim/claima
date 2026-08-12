@@ -2200,6 +2200,7 @@ sap.ui.define([
 				});
 
 			} catch (e) {
+				console.error("Excel export failed:", e);
 				MessageBox.error(Utility.getText("req_d_e_excel_export_failed"));
 			} finally {
 				oView.setBusy(false);
