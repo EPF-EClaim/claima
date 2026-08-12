@@ -246,7 +246,7 @@ entity ZREQUEST_ITEM : managed {
         ENTITLED_DINNER                 : Integer        @Common.Label: 'Entitled Dinner';
         DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
         CURRENCY_CODE                   : String         @Common.Label: 'Currency Code';
-        CURRENCY_RATE                   : Decimal(6, 2)  @Common.Label: 'Currency Rate';
+        CURRENCY_RATE                   : Decimal(16, 4) @Common.Label: 'Currency Rate';
         TYPE_OF_PROFESSIONAL_BODY       : String(3)      @Common.Label: 'Type of Professional Body';
         TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';
         ROUND_TRIP                      : Boolean        @Common.Label: 'Round Trip';
