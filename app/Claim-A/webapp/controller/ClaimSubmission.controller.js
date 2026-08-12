@@ -4281,7 +4281,7 @@ sap.ui.define([
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 
 				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				//await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				this._calculateCardAdvanceAmount();
 			}
 		},
