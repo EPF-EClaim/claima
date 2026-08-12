@@ -53,7 +53,12 @@ module.exports = {
         }
 
         //Split Timestamp into Date Time
-        var oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
+        let oDateTime;
+        if (!!oTimestamp.PROCESS_TIMESTAMP) {
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
+        } else {
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(new Date());
+        }
 
         var dDate = oDateTime.sDateFormat;
         var tTime = oDateTime.sTimeFormat;
