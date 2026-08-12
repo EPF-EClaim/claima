@@ -233,10 +233,12 @@ sap.ui.define([
 
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-								sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
-							} else {
-								sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							if (oField.result) {
+								if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+									sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
+								} else {
+									sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+								}
 							}
 							break;
 
