@@ -134,7 +134,7 @@ sap.ui.define([
                 MessageToast.show(Utility.getText("msg_approver_save_success"));
                 if (oApproverFragment) { oApproverFragment.close(); }
             }).catch(function (oError) {
-                
+
                 BusyIndicator.hide();
 
                 var sMsg = "";
@@ -257,8 +257,22 @@ sap.ui.define([
                 },
                 search: function (oSearchEvent) {
                     var sValue = oSearchEvent.getParameter("value");
-                    var oFilter = new Filter("NAME", FilterOperator.Contains, sValue);
-                    oSearchEvent.getSource().getBinding("items").filter([oFilter]);
+
+                    var aFilters = [];
+
+                    if (sValue) {
+                        aFilters.push(
+                            new Filter({
+                                filters: [
+                                    new Filter("NAME_SEARCH", FilterOperator.Contains, sValue.toUpperCase()),
+                                    new Filter("EEID", FilterOperator.Contains, sValue)
+                                ],
+                                and: false
+                            })
+                        );
+                    }
+
+                    oSearchEvent.getSource().getBinding("items").filter(aFilters);
                 }
             });
             if (oModel) {
