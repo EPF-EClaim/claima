@@ -4340,7 +4340,7 @@ sap.ui.define([
 						BusyIndicator.hide();
 						return;
 					}
-		}
+				}
 
 				// Travel claim with a corporate credit card - final amount to
 				// receive can be 0 but not negative, on submit.
