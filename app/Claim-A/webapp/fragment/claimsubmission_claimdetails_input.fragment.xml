@@ -188,6 +188,18 @@
                         }
                     }"
                     displayFormat="dd-MMM-yyyy"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_START_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                    }"
                     maxDate="{
                         parts: [
                             'constant>/EntitiesFields/POLICY_START_DATE',
