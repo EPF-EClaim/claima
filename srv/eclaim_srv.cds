@@ -18,7 +18,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         operationEnabled : Boolean;
     }
 
-      type budgetdata {
+    type budgetdata {
         YEAR            : String(4);
         INTERNAL_ORDER  : String;
         FUND_CENTER     : String;
@@ -68,21 +68,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchUpdatePaymentStatus(aPayment: many paymentdata)                                        returns Response;
 
 
-    entity ZREQUEST_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Claimant',
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZREQUEST_TYPE;
+    entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM                   as
         projection on ECLAIM.ZCLAIM_ITEM {
@@ -97,41 +83,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
             *
         };
 
-    entity ZEMP_MASTER @(restrict: [
-        {
-            grant: ['*'],
-            to   : [
-                'DTD_Admin',
-                'Approver'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : [
-                'Claimant',
-                'Admin_CC',
-                'Admin_System'
-
-            ]
-        }
-    ])                                   as projection on ECLAIM.ZEMP_MASTER;
+    entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
 
-    entity ZCLAIM_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Claimant',
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as
+    entity ZCLAIM_TYPE                   as
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
@@ -166,791 +121,100 @@ service eclaim_srv @(requires: 'authenticated-user') {
             *
         };
 
-    entity ZNUM_RANGE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['*'],
-            to   : [
-                'Claimant',
-                'Approver'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZNUM_RANGE;
+    entity ZNUM_RANGE                    as projection on ECLAIM.ZNUM_RANGE;
 
-    entity ZRISK @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZRISK;
+    entity ZRISK                         as projection on ECLAIM.ZRISK;
 
-    entity ZCLAIM_TYPE_ITEM @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
+    entity ZCLAIM_TYPE_ITEM              as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZCLAIM_CATEGORY @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCLAIM_CATEGORY;
+    entity ZCLAIM_CATEGORY               as projection on ECLAIM.ZCLAIM_CATEGORY;
 
-    entity ZSTATUS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZSTATUS;
+    entity ZSTATUS                       as projection on ECLAIM.ZSTATUS;
 
-    entity ZLODGING_CAT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZLODGING_CAT;
+    entity ZLODGING_CAT                  as projection on ECLAIM.ZLODGING_CAT;
 
-    entity ZROOM_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZROOM_TYPE;
+    entity ZROOM_TYPE                    as projection on ECLAIM.ZROOM_TYPE;
 
-    entity ZFLIGHT_CLASS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZFLIGHT_CLASS;
+    entity ZFLIGHT_CLASS                 as projection on ECLAIM.ZFLIGHT_CLASS;
 
-    entity ZCOUNTRY @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCOUNTRY;
+    entity ZCOUNTRY                      as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZAREA @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZAREA;
+    entity ZAREA                         as projection on ECLAIM.ZAREA;
 
-    entity ZMARITAL_STAT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZMARITAL_STAT;
+    entity ZMARITAL_STAT                 as projection on ECLAIM.ZMARITAL_STAT;
 
-    entity ZVEHICLE_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZVEHICLE_TYPE;
+    entity ZVEHICLE_TYPE                 as projection on ECLAIM.ZVEHICLE_TYPE;
 
-    entity ZSTATE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZSTATE;
+    entity ZSTATE                        as projection on ECLAIM.ZSTATE;
 
-    entity ZUSER_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZUSER_TYPE;
+    entity ZUSER_TYPE                    as projection on ECLAIM.ZUSER_TYPE;
 
-    entity ZROLE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZROLE;
+    entity ZROLE                         as projection on ECLAIM.ZROLE;
 
-    entity ZDEPARTMENT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZDEPARTMENT;
+    entity ZDEPARTMENT                   as projection on ECLAIM.ZDEPARTMENT;
 
-    entity ZJOB_GROUP @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZJOB_GROUP;
+    entity ZJOB_GROUP                    as projection on ECLAIM.ZJOB_GROUP;
 
-    entity ZEMP_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZEMP_TYPE;
+    entity ZEMP_TYPE                     as projection on ECLAIM.ZEMP_TYPE;
 
-    entity ZREGION @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZREGION;
+    entity ZREGION                       as projection on ECLAIM.ZREGION;
 
-    entity ZRATE_KM @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZRATE_KM;
+    entity ZRATE_KM                      as projection on ECLAIM.ZRATE_KM;
 
-    entity ZSUBMISSION_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZSUBMISSION_TYPE;
+    entity ZSUBMISSION_TYPE              as projection on ECLAIM.ZSUBMISSION_TYPE;
 
-    entity ZOFFICE_LOCATION @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZOFFICE_LOCATION;
+    entity ZOFFICE_LOCATION              as projection on ECLAIM.ZOFFICE_LOCATION;
 
-    entity ZOFFICE_DISTANCE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZOFFICE_DISTANCE;
+    entity ZOFFICE_DISTANCE              as projection on ECLAIM.ZOFFICE_DISTANCE;
 
-    entity ZLOC_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZLOC_TYPE;
+    entity ZLOC_TYPE                     as projection on ECLAIM.ZLOC_TYPE;
 
-    entity ZMATERIAL_GROUP @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZMATERIAL_GROUP;
+    entity ZMATERIAL_GROUP               as projection on ECLAIM.ZMATERIAL_GROUP;
 
-    entity ZINDIV_GROUP @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZINDIV_GROUP;
+    entity ZINDIV_GROUP                  as projection on ECLAIM.ZINDIV_GROUP;
 
     entity ZLOG                          as projection on ECLAIM.ZLOG;
 
     @cds.redirection.target
     entity ZTRAIN_COURSE_PART            as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
-    entity ZEMP_DEPENDENT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZEMP_DEPENDENT;
+    entity ZEMP_DEPENDENT                as projection on ECLAIM.ZEMP_DEPENDENT;
 
-    entity ZBUDGET @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Admin_CC']
-        },
-        {
-            grant: [
-                'READ',
-                'WRITE'
-            ],
-            to   : [
-                'Claimant',
-                'Approver'
-            ]
-        },
-        {
-            grant: '*',
-            to   : [
-                'DTD_Admin',
-                'Admin_System'
-            ]
-        }
-    ])                                   as projection on ECLAIM.ZBUDGET;
+    entity ZBUDGET                       as projection on ECLAIM.ZBUDGET;
 
-    entity ZVEHICLE_OWNERSHIP @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: [
-                'READ',
-                'WRITE'
-            ],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
+    entity ZVEHICLE_OWNERSHIP            as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
-    entity ZCOST_CENTER @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCOST_CENTER;
+    entity ZCOST_CENTER                  as projection on ECLAIM.ZCOST_CENTER;
 
-    entity ZEMP_RELATIONSHIP @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZEMP_RELATIONSHIP;
+    entity ZEMP_RELATIONSHIP             as projection on ECLAIM.ZEMP_RELATIONSHIP;
 
-    entity ZINTERNAL_ORDER @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZINTERNAL_ORDER;
+    entity ZINTERNAL_ORDER               as projection on ECLAIM.ZINTERNAL_ORDER;
 
-    entity ZGL_ACCOUNT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZGL_ACCOUNT;
+    entity ZGL_ACCOUNT                   as projection on ECLAIM.ZGL_ACCOUNT;
 
-    entity ZMARITAL_CAT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZMARITAL_CAT;
+    entity ZMARITAL_CAT                  as projection on ECLAIM.ZMARITAL_CAT;
 
-    entity ZPROJECT_HDR @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZPROJECT_HDR;
+    entity ZPROJECT_HDR                  as projection on ECLAIM.ZPROJECT_HDR;
 
-    entity ZBRANCH @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZBRANCH;
+    entity ZBRANCH                       as projection on ECLAIM.ZBRANCH;
 
-    entity ZEMP_CA_PAYMENT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZEMP_CA_PAYMENT;
+    entity ZEMP_CA_PAYMENT               as projection on ECLAIM.ZEMP_CA_PAYMENT;
 
-    entity ZPERDIEM_ENT @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZPERDIEM_ENT;
+    entity ZPERDIEM_ENT                  as projection on ECLAIM.ZPERDIEM_ENT;
 
-    entity ZHOUSING_LOAN_SCHEME @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+    entity ZHOUSING_LOAN_SCHEME          as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
 
-    entity ZLENDER_NAME @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZLENDER_NAME;
+    entity ZLENDER_NAME                  as projection on ECLAIM.ZLENDER_NAME;
 
-    entity ZREJECT_REASON @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZREJECT_REASON;
+    entity ZREJECT_REASON                as projection on ECLAIM.ZREJECT_REASON;
 
-    entity ZCURRENCY @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCURRENCY;
+    entity ZCURRENCY                     as projection on ECLAIM.ZCURRENCY;
 
-    entity ZMOBILE_CATEGORY_PURPOSE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZMOBILE_CATEGORY_PURPOSE;
+    entity ZMOBILE_CATEGORY_PURPOSE      as projection on ECLAIM.ZMOBILE_CATEGORY_PURPOSE;
 
-    entity ZVEHICLE_CLASS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZVEHICLE_CLASS;
+    entity ZVEHICLE_CLASS                as projection on ECLAIM.ZVEHICLE_CLASS;
 
-    entity ZINSURANCE_PROVIDER @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZINSURANCE_PROVIDER;
+    entity ZINSURANCE_PROVIDER           as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
     type UserRoles {
         isClaimant    : Boolean;
@@ -992,261 +256,37 @@ service eclaim_srv @(requires: 'authenticated-user') {
                        RejectReason: String,
                        ApproverComments: String)                                                         returns Response;
 
-    entity ZINSURANCE_PACKAGE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZINSURANCE_PACKAGE;
+    entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
-    entity ZPROFESIONAL_BODY @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZPROFESIONAL_BODY;
+    entity ZPROFESIONAL_BODY             as projection on ECLAIM.ZPROFESIONAL_BODY;
 
-    entity ZSTUDY_LEVELS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZSTUDY_LEVELS;
+    entity ZSTUDY_LEVELS                 as projection on ECLAIM.ZSTUDY_LEVELS;
 
-    entity ZTRANSFER_MODE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZTRANSFER_MODE;
+    entity ZTRANSFER_MODE                as projection on ECLAIM.ZTRANSFER_MODE;
 
-    entity ZTRANSPORT_PASSING @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZTRANSPORT_PASSING;
+    entity ZTRANSPORT_PASSING            as projection on ECLAIM.ZTRANSPORT_PASSING;
 
-    entity ZTRAVEL_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZTRAVEL_TYPE;
+    entity ZTRAVEL_TYPE                  as projection on ECLAIM.ZTRAVEL_TYPE;
 
-    entity ZFAMILY_TIMING @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZFAMILY_TIMING;
+    entity ZFAMILY_TIMING                as projection on ECLAIM.ZFAMILY_TIMING;
 
-    entity ZSPORTS_REPRESENTATION @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZSPORTS_REPRESENTATION;
+    entity ZSPORTS_REPRESENTATION        as projection on ECLAIM.ZSPORTS_REPRESENTATION;
 
-    entity ZPOSITION_EVENT_REASON @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZPOSITION_EVENT_REASON;
+    entity ZPOSITION_EVENT_REASON        as projection on ECLAIM.ZPOSITION_EVENT_REASON;
 
-    entity ZEMP_DEPENDENT_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
+    entity ZEMP_DEPENDENT_TYPE           as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
 
-    entity ZCLAIM_BASIS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZCLAIM_BASIS;
+    entity ZCLAIM_BASIS                  as projection on ECLAIM.ZCLAIM_BASIS;
 
-    entity ZHOTEL_LODGING @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZHOTEL_LODGING;
+    entity ZHOTEL_LODGING                as projection on ECLAIM.ZHOTEL_LODGING;
 
-    entity ZFARE_TYPE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZFARE_TYPE;
+    entity ZFARE_TYPE                    as projection on ECLAIM.ZFARE_TYPE;
 
-    entity ZMETER_CUBE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZMETER_CUBE;
+    entity ZMETER_CUBE                   as projection on ECLAIM.ZMETER_CUBE;
 
-    entity ZTRAVEL_DAYS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZTRAVEL_DAYS;
+    entity ZTRAVEL_DAYS                  as projection on ECLAIM.ZTRAVEL_DAYS;
 
-    entity ZELIGIBILITY_RULE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZELIGIBILITY_RULE;
+    entity ZELIGIBILITY_RULE             as projection on ECLAIM.ZELIGIBILITY_RULE;
 
     entity ZWORKFLOW_STEP                as projection on ECLAIM.ZWORKFLOW_STEP;
 
@@ -1258,42 +298,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
     @cds.redirection.target
     entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
-    entity ZSUBSTITUTION_RULES @(restrict: [
-        {
-            grant: 'WRITE',
-            to   : 'Approver'
-        },
-        {
-            grant: 'READ',
-            to   : 'Approver',
-            where: 'USER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
-        }
-    ])                                   as projection on ECLAIM.ZSUBSTITUTION_RULES;
+    entity ZSUBSTITUTION_RULES           as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
     entity ZSUBSTITUTION_RULES_CONFIG    as
         projection on ECLAIM.ZSUBSTITUTION_RULES {
                 @Core.Computed
             key SUBSTITUTE_RULE_ID,
                 ZEMP_MASTER_USER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME,            
-                *
+                ZEMP_MASTER_SUBS.NAME as SUBSTITUTE_NAME, *
         };
 
-    entity ZDB_STRUCTURE @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System',
-                'Claimant'
-            ]
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZDB_STRUCTURE;
+    entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
     type PreApproveClaims {
         REQUEST_ID     : String;
@@ -1581,57 +596,169 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-     view ZAPPROVER_REQUEST_PIVOT as
+    view ZAPPROVER_REQUEST_PIVOT as
         select from ZEMP_APPROVER_REQUEST_DETAILS {
             key PREAPPROVAL_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_ID
+                    end) as APPROVER1      : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_NAME
+                    end) as APPROVER1_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 1
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER1_TS   : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_ID
+                    end) as APPROVER2      : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_NAME
+                    end) as APPROVER2_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 2
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER2_TS   : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_ID
+                    end) as APPROVER3      : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_NAME
+                    end) as APPROVER3_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 3
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER3_TS   : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_ID
+                    end) as APPROVER4      : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_NAME
+                    end) as APPROVER4_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 4
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER4_TS   : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_ID
+                    end) as APPROVER5      : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_NAME
+                    end) as APPROVER5_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 5
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER5_TS   : String
         }
-        group by PREAPPROVAL_ID;
+        group by
+            PREAPPROVAL_ID;
 
     view ZAPPROVER_CLAIM_PIVOT as
         select from ZEMP_APPROVER_CLAIM_DETAILS {
             key CLAIM_ID,
 
-            max(case when LEVEL = 1 then APPROVER_ID end)                       as APPROVER1      : String,
-            max(case when LEVEL = 1 then APPROVER_NAME end)                     as APPROVER1_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 1 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER1_TS : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_ID
+                    end) as APPROVER1      : String,
+                max(case
+                        when LEVEL = 1
+                             then APPROVER_NAME
+                    end) as APPROVER1_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 1
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER1_TS   : String,
 
-            max(case when LEVEL = 2 then APPROVER_ID end)                       as APPROVER2      : String,
-            max(case when LEVEL = 2 then APPROVER_NAME end)                     as APPROVER2_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 2 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER2_TS : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_ID
+                    end) as APPROVER2      : String,
+                max(case
+                        when LEVEL = 2
+                             then APPROVER_NAME
+                    end) as APPROVER2_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 2
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER2_TS   : String,
 
-            max(case when LEVEL = 3 then APPROVER_ID end)                       as APPROVER3      : String,
-            max(case when LEVEL = 3 then APPROVER_NAME end)                     as APPROVER3_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 3 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER3_TS : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_ID
+                    end) as APPROVER3      : String,
+                max(case
+                        when LEVEL = 3
+                             then APPROVER_NAME
+                    end) as APPROVER3_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 3
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER3_TS   : String,
 
-            max(case when LEVEL = 4 then APPROVER_ID end)                       as APPROVER4      : String,
-            max(case when LEVEL = 4 then APPROVER_NAME end)                     as APPROVER4_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 4 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER4_TS : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_ID
+                    end) as APPROVER4      : String,
+                max(case
+                        when LEVEL = 4
+                             then APPROVER_NAME
+                    end) as APPROVER4_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 4
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER4_TS   : String,
 
-            max(case when LEVEL = 5 then APPROVER_ID end)                       as APPROVER5      : String,
-            max(case when LEVEL = 5 then APPROVER_NAME end)                     as APPROVER5_NAME : String,
-            TO_VARCHAR(max(case when LEVEL = 5 then PROCESS_TIMESTAMP end), 'dd Mon yyyy HH12:MI:SS AM') as APPROVER5_TS : String
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_ID
+                    end) as APPROVER5      : String,
+                max(case
+                        when LEVEL = 5
+                             then APPROVER_NAME
+                    end) as APPROVER5_NAME : String,
+                TO_VARCHAR(
+                    max(case
+                            when LEVEL = 5
+                                 then PROCESS_TIMESTAMP
+                        end), 'dd Mon yyyy HH12:MI:SS AM'
+                )        as APPROVER5_TS   : String
         }
-        group by CLAIM_ID;
+        group by
+            CLAIM_ID;
 
     entity ZEMP_REQUEST_REPORT_SUMMARY   as
         select from ECLAIM.ZREQUEST_HEADER as HEADER
@@ -1653,18 +780,18 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 cast(
                     case
                         when ALTERNATE_COST_CENTER is not null
-                        then ALTERNATE_COST_CENTER
+                             then ALTERNATE_COST_CENTER
                         else COST_CENTER
                     end as String(50)
-                ) as CHARGING_COST_CENTER,
+                )                           as CHARGING_COST_CENTER,
 
                 cast(
                     case
                         when ALTERNATE_COST_CENTER is not null
-                        then COSTCENTER.COST_CENTER_DESC
+                             then COSTCENTER.COST_CENTER_DESC
                         else ZCOST_CENTER.COST_CENTER_DESC
                     end as String(255)
-                ) as CHARGING_COST_CENTER_DESC,
+                )                           as CHARGING_COST_CENTER_DESC,
 
                 PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
@@ -1734,24 +861,24 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCOST_CENTER.COST_CENTER_DESC,
 
                 ALTERNATE_COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
 
                 cast(
                     case
                         when ALTERNATE_COST_CENTER is not null
-                        then ALTERNATE_COST_CENTER
+                             then ALTERNATE_COST_CENTER
                         else COST_CENTER
                     end as String(50)
-                ) as CHARGING_COST_CENTER,
+                )                                                              as CHARGING_COST_CENTER,
 
                 cast(
                     case
                         when ALTERNATE_COST_CENTER is not null
-                        then COSTCENTER.COST_CENTER_DESC
+                             then COSTCENTER.COST_CENTER_DESC
                         else ZCOST_CENTER.COST_CENTER_DESC
                     end as String(255)
-                ) as CHARGING_COST_CENTER_DESC,
-                
+                )                                                              as CHARGING_COST_CENTER_DESC,
+
                 PREAPPROVAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
@@ -1869,355 +996,359 @@ service eclaim_srv @(requires: 'authenticated-user') {
         };
 
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY as
+    entity ZEMP_CLAIM_REPORT_SUMMARY     as
         select from ECLAIM.ZCLAIM_HEADER as HEADER
         left join ZAPPROVER_CLAIM_PIVOT as PIVOT
             on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
-    {
-        key HEADER.CLAIM_ID,
-            EMP_ID,
-            ZREQUEST_HEADER.REQUEST_ID,
-            ZREQUEST_HEADER.REQUEST_DATE,
-            CLAIM_TYPE_ID,
-            ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-            ZCLAIM_TYPE.GL_ACCOUNT,
-            ZEMP_MASTER.NAME,
-            ZEMP_MASTER.GRADE,
-            ZEMP_MASTER.DEP,
-            ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-            ZEMP_MASTER.POSITION_NAME,
-            SUBMISSION_TYPE,
-            ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
-            SUBMITTED_DATE,
-            ZREQUEST_HEADER.CASH_ADVANCE_DATE,
-            LAST_APPROVED_DATE,
-            PAYMENT_DATE,
-            STATUS_ID,
-            ZSTATUS.STATUS_DESC,
+        {
+            key HEADER.CLAIM_ID,
+                EMP_ID,
+                ZREQUEST_HEADER.REQUEST_ID,
+                ZREQUEST_HEADER.REQUEST_DATE,
+                CLAIM_TYPE_ID,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                ZCLAIM_TYPE.GL_ACCOUNT,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.POSITION_NAME,
+                SUBMISSION_TYPE,
+                ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+                SUBMITTED_DATE,
+                ZREQUEST_HEADER.CASH_ADVANCE_DATE,
+                LAST_APPROVED_DATE,
+                PAYMENT_DATE,
+                STATUS_ID,
+                ZSTATUS.STATUS_DESC,
 
-            COST_CENTER,
-            COSTCENTER.COST_CENTER_DESC,
+                COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC,
 
-            ALTERNATE_COST_CENTER,
-            ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                ALTERNATE_COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
 
-            cast(
-                case
-                    when ALTERNATE_COST_CENTER is not null
-                        and ALTERNATE_COST_CENTER <> ''
-                    then ALTERNATE_COST_CENTER
-                    else COST_CENTER
-                end as String
-            ) as CHARGING_COST_CENTER,
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                             and ALTERNATE_COST_CENTER <> ''
+                             then ALTERNATE_COST_CENTER
+                        else COST_CENTER
+                    end as String
+                )                             as CHARGING_COST_CENTER,
 
-            cast(
-                case
-                    when ALTERNATE_COST_CENTER is not null
-                        and ALTERNATE_COST_CENTER <> ''
-                    then ZCOST_CENTER.COST_CENTER_DESC
-                    else COSTCENTER.COST_CENTER_DESC
-                end as String
-            ) as CHARGING_COST_CENTER_DESC,
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                             and ALTERNATE_COST_CENTER <> ''
+                             then ZCOST_CENTER.COST_CENTER_DESC
+                        else COSTCENTER.COST_CENTER_DESC
+                    end as String
+                )                             as CHARGING_COST_CENTER_DESC,
 
-            FINAL_AMOUNT_TO_RECEIVE,
-            TOTAL_CLAIM_AMOUNT,
-            CASH_ADVANCE_AMOUNT,
-            PURPOSE,
-            COMMENT,
-            TRIP_START_DATE,
-            TRIP_END_DATE,
-            LOCATION,
+                FINAL_AMOUNT_TO_RECEIVE,
+                TOTAL_CLAIM_AMOUNT,
+                CASH_ADVANCE_AMOUNT,
+                PURPOSE,
+                COMMENT,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                LOCATION,
 
-            PIVOT.APPROVER1,
-            PIVOT.APPROVER1_NAME,
-            PIVOT.APPROVER1_TS,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
 
-            PIVOT.APPROVER2,
-            PIVOT.APPROVER2_NAME,
-            PIVOT.APPROVER2_TS,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
 
-            PIVOT.APPROVER3,
-            PIVOT.APPROVER3_NAME,
-            PIVOT.APPROVER3_TS,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
 
-            PIVOT.APPROVER4,
-            PIVOT.APPROVER4_NAME,
-            PIVOT.APPROVER4_TS,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
 
-            PIVOT.APPROVER5,
-            PIVOT.APPROVER5_NAME,
-            PIVOT.APPROVER5_TS,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
 
-            ZEMP_MASTER.UNIT_SECTION,
-            ZTRAIN_COURSE_PART.COURSE_ID,
-            ZTRAIN_COURSE_PART.COURSE_DESC,
-            ZTRAIN_COURSE_PART.SESSION_NUMBER,
+                ZEMP_MASTER.UNIT_SECTION,
+                ZTRAIN_COURSE_PART.COURSE_ID,
+                ZTRAIN_COURSE_PART.COURSE_DESC,
+                ZTRAIN_COURSE_PART.SESSION_NUMBER,
 
-            LAST_PUSH_BACK_DATE,
-            createdBy,
+                LAST_PUSH_BACK_DATE,
+                createdBy,
 
-            days_between(
-                HEADER.SUBMITTED_DATE,
-                HEADER.LAST_APPROVED_DATE
-            ) as DAYS_APPROVED : Integer,
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                             as DAYS_APPROVED : Integer,
 
-            ZEMP_MASTER.ZBRANCH.BRANCH_DESC
-    };
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
+        };
 
-    entity ZEMP_CLAIM_REPORT_DETAILS as
+    entity ZEMP_CLAIM_REPORT_DETAILS     as
         select from ECLAIM.ZCLAIM_HEADER as HEADER
         left join ZAPPROVER_CLAIM_PIVOT as PIVOT
             on PIVOT.CLAIM_ID = HEADER.CLAIM_ID
-    {
-        key HEADER.CLAIM_ID,
-        key ZCLAIM_ITEM.CLAIM_SUB_ID,
-            EMP_ID,
-            ZEMP_MASTER.NAME,
-            ZEMP_MASTER.GRADE,
-            ZEMP_MASTER.DEP,
-            ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-            ZEMP_MASTER.POSITION_NAME,
-            SUBMISSION_TYPE,
-            ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
-            SUBMITTED_DATE,
-            LAST_APPROVED_DATE,
-            ZREQUEST_HEADER.CASH_ADVANCE_DATE,
-            PAYMENT_DATE,
-            STATUS_ID,
-            ZSTATUS.STATUS_DESC,
+        {
+            key HEADER.CLAIM_ID,
+            key ZCLAIM_ITEM.CLAIM_SUB_ID,
+                EMP_ID,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                ZEMP_MASTER.POSITION_NAME,
+                SUBMISSION_TYPE,
+                ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+                SUBMITTED_DATE,
+                LAST_APPROVED_DATE,
+                ZREQUEST_HEADER.CASH_ADVANCE_DATE,
+                PAYMENT_DATE,
+                STATUS_ID,
+                ZSTATUS.STATUS_DESC,
 
-            COST_CENTER,
-            COSTCENTER.COST_CENTER_DESC,
+                COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC,
 
-            ALTERNATE_COST_CENTER,
-            ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                ALTERNATE_COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC                                as ALT_COST_CENTER_DESC,
 
-            cast(
-                case
-                    when ALTERNATE_COST_CENTER is not null
-                    then ALTERNATE_COST_CENTER
-                    else COST_CENTER
-                end as String(50)
-            ) as CHARGING_COST_CENTER,
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                             then ALTERNATE_COST_CENTER
+                        else COST_CENTER
+                    end as String(50)
+                )                                                            as CHARGING_COST_CENTER,
 
-            cast(
-                case
-                    when ALTERNATE_COST_CENTER is not null
-                    then ZCOST_CENTER.COST_CENTER_DESC
-                    else COSTCENTER.COST_CENTER_DESC
-                end as String(255)
-            ) as CHARGING_COST_CENTER_DESC,
+                cast(
+                    case
+                        when ALTERNATE_COST_CENTER is not null
+                             then ZCOST_CENTER.COST_CENTER_DESC
+                        else COSTCENTER.COST_CENTER_DESC
+                    end as String(255)
+                )                                                            as CHARGING_COST_CENTER_DESC,
 
-            TOTAL_CLAIM_AMOUNT,
-            CASH_ADVANCE_AMOUNT,
-            FINAL_AMOUNT_TO_RECEIVE,
-            PURPOSE,
-            LOCATION,
-            CLAIM_TYPE_ID,
-            TRIP_START_DATE as TRIP_START_DATE_HEADER,
-            TRIP_END_DATE as TRIP_END_DATE_HEADER,
-            ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
-            ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-            ZCLAIM_ITEM.REMARK,
-            ZCLAIM_ITEM.TRIP_START_DATE,
-            ZCLAIM_ITEM.TRIP_START_TIME,
-            ZCLAIM_ITEM.TRIP_END_DATE,
-            ZCLAIM_ITEM.TRIP_END_TIME,
-            ZCLAIM_ITEM.LOCATION as LOCATION_ITEM,
-            ZCLAIM_ITEM.PERCENTAGE_COMPENSATION,
-            ZCLAIM_ITEM.ACCOUNT_NO,
-            ZCLAIM_ITEM.AMOUNT,
-            ZCLAIM_ITEM.BILL_DATE,
-            ZCLAIM_ITEM.BILL_NO,
-            ZCLAIM_ITEM.CLAIM_CATEGORY,
-            ZCLAIM_ITEM.COUNTRY,
-            ZCLAIM_ITEM.DISCLAIMER,
-            ZCLAIM_ITEM.END_DATE,
-            ZCLAIM_ITEM.END_TIME,
-            ZCLAIM_ITEM.FLIGHT_CLASS,
-            ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
-            ZCLAIM_ITEM.FROM_LOCATION,
-            ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
-            ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
-            ZCLAIM_ITEM.KM,
-            ZCLAIM_ITEM.LOCATION_TYPE,
-            ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
-            ZCLAIM_ITEM.LODGING_ADDRESS,
-            ZCLAIM_ITEM.LODGING_CATEGORY,
-            ZCLAIM_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
-            ZCLAIM_ITEM.MARRIAGE_CATEGORY,
-            ZCLAIM_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
-            ZCLAIM_ITEM.AREA,
-            ZCLAIM_ITEM.ZAREA.AREA_DESC,
-            ZCLAIM_ITEM.NO_OF_FAMILY_MEMBER,
-            ZCLAIM_ITEM.PARKING,
-            ZCLAIM_ITEM.PHONE_NO,
-            ZCLAIM_ITEM.RATE_PER_KM,
-            ZCLAIM_ITEM.RECEIPT_DATE,
-            ZCLAIM_ITEM.RECEIPT_NUMBER,
-            ZCLAIM_ITEM.ROOM_TYPE,
-            ZCLAIM_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
-            ZCLAIM_ITEM.REGION,
-            ZCLAIM_ITEM.ZREGION.REGION_DESC,
-            ZCLAIM_ITEM.START_DATE,
-            ZCLAIM_ITEM.START_TIME,
-            ZCLAIM_ITEM.TO_LOCATION,
-            ZCLAIM_ITEM.TO_LOCATION_OFFICE,
-            ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
-            ZCLAIM_ITEM.TOLL,
-            ZCLAIM_ITEM.TOTAL_EXP_AMOUNT,
-            ZCLAIM_ITEM.VEHICLE_TYPE,
-            ZCLAIM_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
-            ZCLAIM_ITEM.VEHICLE_FARE,
-            ZCLAIM_ITEM.EVENT_START_DATE,
-            ZCLAIM_ITEM.EVENT_END_DATE,
-            ZCLAIM_ITEM.TRAVEL_DURATION_DAY,
-            ZCLAIM_ITEM.TRAVEL_DURATION_HOUR,
-            ZCLAIM_ITEM.PROVIDED_BREAKFAST,
-            ZCLAIM_ITEM.PROVIDED_LUNCH,
-            ZCLAIM_ITEM.PROVIDED_DINNER,
-            ZCLAIM_ITEM.ENTITLED_BREAKFAST,
-            ZCLAIM_ITEM.ENTITLED_LUNCH,
-            ZCLAIM_ITEM.ENTITLED_DINNER,
-            ZCLAIM_ITEM.ANGGOTA_ID,
-            ZCLAIM_ITEM.ANGGOTA_NAME,
-            ZCLAIM_ITEM.DEPENDENT_NAME,
-            ZCLAIM_ITEM.FROM_STATE_ID,
-            ZCLAIM_ITEM.ZSTATE.STATE_DESC as FROM_STATE_DESC,
-            ZCLAIM_ITEM.TO_STATE_ID,
-            ZCLAIM_ITEM.ZTOSTATE.STATE_DESC as TO_STATE_DESC,
-            ZCLAIM_ITEM.GL_ACCOUNT,
-            ZCLAIM_ITEM.MATERIAL_CODE,
-            ZREQUEST_HEADER.REQUEST_ID,
-            ZREQUEST_HEADER.REQUEST_DATE,
+                TOTAL_CLAIM_AMOUNT,
+                CASH_ADVANCE_AMOUNT,
+                FINAL_AMOUNT_TO_RECEIVE,
+                PURPOSE,
+                LOCATION,
+                CLAIM_TYPE_ID,
+                TRIP_START_DATE                                              as TRIP_START_DATE_HEADER,
+                TRIP_END_DATE                                                as TRIP_END_DATE_HEADER,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+                ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
+                ZCLAIM_ITEM.REMARK,
+                ZCLAIM_ITEM.TRIP_START_DATE,
+                ZCLAIM_ITEM.TRIP_START_TIME,
+                ZCLAIM_ITEM.TRIP_END_DATE,
+                ZCLAIM_ITEM.TRIP_END_TIME,
+                ZCLAIM_ITEM.LOCATION                                         as LOCATION_ITEM,
+                ZCLAIM_ITEM.PERCENTAGE_COMPENSATION,
+                ZCLAIM_ITEM.ACCOUNT_NO,
+                ZCLAIM_ITEM.AMOUNT,
+                ZCLAIM_ITEM.BILL_DATE,
+                ZCLAIM_ITEM.BILL_NO,
+                ZCLAIM_ITEM.CLAIM_CATEGORY,
+                ZCLAIM_ITEM.COUNTRY,
+                ZCLAIM_ITEM.DISCLAIMER,
+                ZCLAIM_ITEM.END_DATE,
+                ZCLAIM_ITEM.END_TIME,
+                ZCLAIM_ITEM.FLIGHT_CLASS,
+                ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
+                ZCLAIM_ITEM.FROM_LOCATION,
+                ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
+                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
+                ZCLAIM_ITEM.KM,
+                ZCLAIM_ITEM.LOCATION_TYPE,
+                ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
+                ZCLAIM_ITEM.LODGING_ADDRESS,
+                ZCLAIM_ITEM.LODGING_CATEGORY,
+                ZCLAIM_ITEM.ZLODGING_CAT.LODGING_CATEGORY_DESC,
+                ZCLAIM_ITEM.MARRIAGE_CATEGORY,
+                ZCLAIM_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
+                ZCLAIM_ITEM.AREA,
+                ZCLAIM_ITEM.ZAREA.AREA_DESC,
+                ZCLAIM_ITEM.NO_OF_FAMILY_MEMBER,
+                ZCLAIM_ITEM.PARKING,
+                ZCLAIM_ITEM.PHONE_NO,
+                ZCLAIM_ITEM.RATE_PER_KM,
+                ZCLAIM_ITEM.RECEIPT_DATE,
+                ZCLAIM_ITEM.RECEIPT_NUMBER,
+                ZCLAIM_ITEM.ROOM_TYPE,
+                ZCLAIM_ITEM.ZROOM_TYPE.ROOM_TYPE_DESC,
+                ZCLAIM_ITEM.REGION,
+                ZCLAIM_ITEM.ZREGION.REGION_DESC,
+                ZCLAIM_ITEM.START_DATE,
+                ZCLAIM_ITEM.START_TIME,
+                ZCLAIM_ITEM.TO_LOCATION,
+                ZCLAIM_ITEM.TO_LOCATION_OFFICE,
+                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+                ZCLAIM_ITEM.TOLL,
+                ZCLAIM_ITEM.TOTAL_EXP_AMOUNT,
+                ZCLAIM_ITEM.VEHICLE_TYPE,
+                ZCLAIM_ITEM.ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
+                ZCLAIM_ITEM.VEHICLE_FARE,
+                ZCLAIM_ITEM.EVENT_START_DATE,
+                ZCLAIM_ITEM.EVENT_END_DATE,
+                ZCLAIM_ITEM.TRAVEL_DURATION_DAY,
+                ZCLAIM_ITEM.TRAVEL_DURATION_HOUR,
+                ZCLAIM_ITEM.PROVIDED_BREAKFAST,
+                ZCLAIM_ITEM.PROVIDED_LUNCH,
+                ZCLAIM_ITEM.PROVIDED_DINNER,
+                ZCLAIM_ITEM.ENTITLED_BREAKFAST,
+                ZCLAIM_ITEM.ENTITLED_LUNCH,
+                ZCLAIM_ITEM.ENTITLED_DINNER,
+                ZCLAIM_ITEM.ANGGOTA_ID,
+                ZCLAIM_ITEM.ANGGOTA_NAME,
+                ZCLAIM_ITEM.DEPENDENT_NAME,
+                ZCLAIM_ITEM.FROM_STATE_ID,
+                ZCLAIM_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
+                ZCLAIM_ITEM.TO_STATE_ID,
+                ZCLAIM_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                ZREQUEST_HEADER.REQUEST_ID,
+                ZREQUEST_HEADER.REQUEST_DATE,
 
-            PIVOT.APPROVER1,
-            PIVOT.APPROVER1_NAME,
-            PIVOT.APPROVER1_TS,
-            PIVOT.APPROVER2,
-            PIVOT.APPROVER2_NAME,
-            PIVOT.APPROVER2_TS,
-            PIVOT.APPROVER3,
-            PIVOT.APPROVER3_NAME,
-            PIVOT.APPROVER3_TS,
-            PIVOT.APPROVER4,
-            PIVOT.APPROVER4_NAME,
-            PIVOT.APPROVER4_TS,
-            PIVOT.APPROVER5,
-            PIVOT.APPROVER5_NAME,
-            PIVOT.APPROVER5_TS,
+                PIVOT.APPROVER1,
+                PIVOT.APPROVER1_NAME,
+                PIVOT.APPROVER1_TS,
+                PIVOT.APPROVER2,
+                PIVOT.APPROVER2_NAME,
+                PIVOT.APPROVER2_TS,
+                PIVOT.APPROVER3,
+                PIVOT.APPROVER3_NAME,
+                PIVOT.APPROVER3_TS,
+                PIVOT.APPROVER4,
+                PIVOT.APPROVER4_NAME,
+                PIVOT.APPROVER4_TS,
+                PIVOT.APPROVER5,
+                PIVOT.APPROVER5_NAME,
+                PIVOT.APPROVER5_TS,
 
-            ZEMP_MASTER.UNIT_SECTION,
-            ZTRAIN_COURSE_PART.COURSE_ID,
-            ZTRAIN_COURSE_PART.COURSE_DESC,
-            ZTRAIN_COURSE_PART.SESSION_NUMBER,
-            LAST_PUSH_BACK_DATE,
-            createdBy,
-            ZCLAIM_ITEM.ROUND_TRIP,
-            ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
-            ZCLAIM_ITEM.ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC,
-            ZCLAIM_ITEM.DISCLAIMER_GALAKAN,
-            ZCLAIM_ITEM.TRANSFER_DATE,
-            ZCLAIM_ITEM.NO_OF_DAYS,
-            ZCLAIM_ITEM.FAMILY_COUNT,
-            ZCLAIM_ITEM.FUNERAL_TRANSPORTATION,
-            ZCLAIM_ITEM.ZTRANSPORT_PASSING.TRANSPORT_PASSING_DESC,
-            ZCLAIM_ITEM.COURSE_TITLE,
-            ZCLAIM_ITEM.ACTUAL_AMOUNT,
-            ZCLAIM_ITEM.NEED_FOREIGN_CURRENCY,
-            ZCLAIM_ITEM.CURRENCY_CODE,
-            ZCLAIM_ITEM.ZCURRENCY.CURRENCY_DESC,
-            ZCLAIM_ITEM.CURRENCY_RATE,
-            ZCLAIM_ITEM.CURRENCY_AMOUNT,
-            ZCLAIM_ITEM.REQUEST_APPROVAL_AMOUNT,
-            ZCLAIM_ITEM.DEPARTURE_TIME,
-            ZCLAIM_ITEM.ARRIVAL_TIME,
-            ZCLAIM_ITEM.DEPENDENT,
-            ZCLAIM_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
-            ZCLAIM_ITEM.POLICY_NUMBER,
-            ZCLAIM_ITEM.INSURANCE_PROVIDER_ID,
-            ZCLAIM_ITEM.ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
-            ZCLAIM_ITEM.INSURANCE_PROVIDER_NAME,
-            ZCLAIM_ITEM.INSURANCE_PURCHASE_DATE,
-            ZCLAIM_ITEM.INSURANCE_CERT_START_DATE,
-            ZCLAIM_ITEM.INSURANCE_CERT_END_DATE,
-            ZCLAIM_ITEM.TRAVEL_DAYS_ID,
-            ZCLAIM_ITEM.ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
-            ZCLAIM_ITEM.METER_CUBE_ENTITLED,
-            ZCLAIM_ITEM.METER_CUBE_ACTUAL,
-            ZCLAIM_ITEM.INSURANCE_PACKAGE_ID,
-            ZCLAIM_ITEM.ZINSURANCE_PACKAGE.ZINSURANCE_PACKAGE_DESC,
-            ZCLAIM_ITEM.FARE_TYPE_ID,
-            ZCLAIM_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
-            ZCLAIM_ITEM.VEHICLE_CLASS_ID,
-            ZCLAIM_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
-            ZCLAIM_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
-            ZCLAIM_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
-            ZCLAIM_ITEM.STUDY_LEVELS_ID,
-            ZCLAIM_ITEM.ZSTUDY_LEVELS.STUDY_LEVELS_DESC,
-            ZCLAIM_ITEM.MODE_OF_TRANSFER,
-            ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
-            ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
-            ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
+                ZEMP_MASTER.UNIT_SECTION,
+                ZTRAIN_COURSE_PART.COURSE_ID,
+                ZTRAIN_COURSE_PART.COURSE_DESC,
+                ZTRAIN_COURSE_PART.SESSION_NUMBER,
+                LAST_PUSH_BACK_DATE,
+                createdBy,
+                ZCLAIM_ITEM.ROUND_TRIP,
+                ZCLAIM_ITEM.TYPE_OF_PROFESSIONAL_BODY,
+                ZCLAIM_ITEM.ZPROFESIONAL_BODY.PROFESIONAL_BODY_DESC,
+                ZCLAIM_ITEM.DISCLAIMER_GALAKAN,
+                ZCLAIM_ITEM.TRANSFER_DATE,
+                ZCLAIM_ITEM.NO_OF_DAYS,
+                ZCLAIM_ITEM.FAMILY_COUNT,
+                ZCLAIM_ITEM.FUNERAL_TRANSPORTATION,
+                ZCLAIM_ITEM.ZTRANSPORT_PASSING.TRANSPORT_PASSING_DESC,
+                ZCLAIM_ITEM.COURSE_TITLE,
+                ZCLAIM_ITEM.ACTUAL_AMOUNT,
+                ZCLAIM_ITEM.NEED_FOREIGN_CURRENCY,
+                ZCLAIM_ITEM.CURRENCY_CODE,
+                ZCLAIM_ITEM.ZCURRENCY.CURRENCY_DESC,
+                ZCLAIM_ITEM.CURRENCY_RATE,
+                ZCLAIM_ITEM.CURRENCY_AMOUNT,
+                ZCLAIM_ITEM.REQUEST_APPROVAL_AMOUNT,
+                ZCLAIM_ITEM.DEPARTURE_TIME,
+                ZCLAIM_ITEM.ARRIVAL_TIME,
+                ZCLAIM_ITEM.DEPENDENT,
+                ZCLAIM_ITEM.ZEMP_DEPENDENT.DEPENDENT_NO,
+                ZCLAIM_ITEM.POLICY_NUMBER,
+                ZCLAIM_ITEM.INSURANCE_PROVIDER_ID,
+                ZCLAIM_ITEM.ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
+                ZCLAIM_ITEM.INSURANCE_PROVIDER_NAME,
+                ZCLAIM_ITEM.INSURANCE_PURCHASE_DATE,
+                ZCLAIM_ITEM.INSURANCE_CERT_START_DATE,
+                ZCLAIM_ITEM.INSURANCE_CERT_END_DATE,
+                ZCLAIM_ITEM.TRAVEL_DAYS_ID,
+                ZCLAIM_ITEM.ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
+                ZCLAIM_ITEM.METER_CUBE_ENTITLED,
+                ZCLAIM_ITEM.METER_CUBE_ACTUAL,
+                ZCLAIM_ITEM.INSURANCE_PACKAGE_ID,
+                ZCLAIM_ITEM.ZINSURANCE_PACKAGE.ZINSURANCE_PACKAGE_DESC,
+                ZCLAIM_ITEM.FARE_TYPE_ID,
+                ZCLAIM_ITEM.ZFARE_TYPE.FARE_TYPE_DESC,
+                ZCLAIM_ITEM.VEHICLE_CLASS_ID,
+                ZCLAIM_ITEM.ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
+                ZCLAIM_ITEM.MOBILE_CATEGORY_PURPOSE_ID,
+                ZCLAIM_ITEM.ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
+                ZCLAIM_ITEM.STUDY_LEVELS_ID,
+                ZCLAIM_ITEM.ZSTUDY_LEVELS.STUDY_LEVELS_DESC,
+                ZCLAIM_ITEM.MODE_OF_TRANSFER,
+                ZCLAIM_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+                ZCLAIM_ITEM.VEHICLE_OWNERSHIP_ID,
+                ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
 
-            days_between(
-                HEADER.SUBMITTED_DATE,
-                HEADER.LAST_APPROVED_DATE
-            ) as DAYS_APPROVED : Integer,
+                days_between(
+                    HEADER.SUBMITTED_DATE, HEADER.LAST_APPROVED_DATE
+                )                                                            as DAYS_APPROVED : Integer,
 
-            ZEMP_MASTER.ZBRANCH.BRANCH_DESC
-    };
+                ZEMP_MASTER.ZBRANCH.BRANCH_DESC
+        };
 
-    entity ZCASH_REPAYMENT_SUM as
-        select from ZCLAIM_ITEM
-    {
-        key CLAIM_ID,
-        sum(AMOUNT) as CASH_REPAYMENT_AMOUNT : Decimal(16,2)
-    }
-    where CLAIM_TYPE_ITEM_ID = 'CASH_REPAY'
-    group by CLAIM_ID;
+    entity ZCASH_REPAYMENT_SUM           as
+        select from ZCLAIM_ITEM {
+            key CLAIM_ID,
+                sum(AMOUNT) as CASH_REPAYMENT_AMOUNT : Decimal(16, 2)
+        }
+        where
+            CLAIM_TYPE_ITEM_ID = 'CASH_REPAY'
+        group by
+            CLAIM_ID;
 
-    entity ZEMP_CASHADVANCE_REPORT as
+    entity ZEMP_CASHADVANCE_REPORT       as
         select from ECLAIM.ZREQUEST_HEADER as RH
-            left join ECLAIM.ZCLAIM_HEADER as CH
-                on CH.REQUEST_ID = RH.REQUEST_ID
+        left join ECLAIM.ZCLAIM_HEADER as CH
+            on CH.REQUEST_ID = RH.REQUEST_ID
 
-            left join ZCASH_REPAYMENT_SUM as CR
-                on CR.CLAIM_ID = CH.CLAIM_ID
-    {
-        key RH.REQUEST_ID,
-        key CH.CLAIM_ID,
+        left join ZCASH_REPAYMENT_SUM as CR
+            on CR.CLAIM_ID = CH.CLAIM_ID
+        {
+            key RH.REQUEST_ID,
+            key CH.CLAIM_ID,
 
-        RH.EMP_ID,
-        RH.CLAIM_TYPE_ID,
-        RH.OBJECTIVE_PURPOSE,
-        RH.STATUS,
-        RH.ZSTATUS.STATUS_DESC as REQUEST_STATUS_DESC,
+                RH.EMP_ID,
+                RH.CLAIM_TYPE_ID,
+                RH.OBJECTIVE_PURPOSE,
+                RH.STATUS,
+                RH.ZSTATUS.STATUS_DESC as REQUEST_STATUS_DESC,
 
-        RH.TRIP_START_DATE,
-        RH.TRIP_END_DATE,
-        RH.LAST_APPROVED_DATE,
-        RH.CASH_ADVANCE,
+                RH.TRIP_START_DATE,
+                RH.TRIP_END_DATE,
+                RH.LAST_APPROVED_DATE,
+                RH.CASH_ADVANCE,
 
-        CH.SUBMITTED_DATE,
-        CH.STATUS_ID,
-        CH.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
+                CH.SUBMITTED_DATE,
+                CH.STATUS_ID,
+                CH.ZSTATUS.STATUS_DESC as CLAIM_STATUS_DESC,
 
-        RH.ZEMP_MASTER.NAME,
-        RH.ZEMP_MASTER.GRADE,
-        RH.ZEMP_MASTER.DEP,
-        RH.ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
-        RH.ZEMP_MASTER.UNIT_SECTION,
-        RH.createdBy,
-        RH.ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
+                RH.ZEMP_MASTER.NAME,
+                RH.ZEMP_MASTER.GRADE,
+                RH.ZEMP_MASTER.DEP,
+                RH.ZEMP_MASTER.ZDEPARTMENT.DEPARTMENT_DESC,
+                RH.ZEMP_MASTER.UNIT_SECTION,
+                RH.createdBy,
+                RH.ZEMP_MASTER.ZBRANCH.BRANCH_DESC,
 
-        RH.CASH_ADVANCE_DATE as PAYMENT_DATE,
-        coalesce(CH.FINAL_AMOUNT_TO_RECEIVE, 0) as FINAL_AMOUNT_TO_RECEIVE : Decimal(16,2),
+                RH.CASH_ADVANCE_DATE   as PAYMENT_DATE,
+                coalesce(
+                    CH.FINAL_AMOUNT_TO_RECEIVE, 0
+                )                      as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
 
-        coalesce(CR.CASH_REPAYMENT_AMOUNT, 0) as CASH_REPAYMENT_AMOUNT : Decimal(16,2)
-    }
-    where RH.CASH_ADVANCE > 0;
+                coalesce(
+                    CR.CASH_REPAYMENT_AMOUNT, 0
+                )                      as CASH_REPAYMENT_AMOUNT   : Decimal(16, 2)
+        }
+        where
+            RH.CASH_ADVANCE > 0;
 
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
@@ -2306,11 +1437,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ACTUAL,
                 CONSUMED,
                 BUDGET_BALANCE,
-                _Detail            : Association to many ZEMP_CC_BUDGET_DETAIL
-                                         on  $self.FUND_CENTER     = _Detail.FUND_CENTER
-                                         and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
-                                         and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
-                                         and $self.PROJECT_CODE    = _Detail.PROJECT_CODE
+                _Detail : Association to many ZEMP_CC_BUDGET_DETAIL
+                              on  $self.FUND_CENTER     = _Detail.FUND_CENTER
+                              and $self.COMMITMENT_ITEM = _Detail.COMMITMENT_ITEM
+                              and $self.MATERIAL_GROUP  = _Detail.MATERIAL_GROUP
+                              and $self.PROJECT_CODE    = _Detail.PROJECT_CODE
         };
 
     action   updatePEDUEntitleAmount(sRecordId: String,
@@ -2324,13 +1455,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function checkGalakanEligible()                                                                      returns Boolean;
 
-    function getCeramahEntitlement(fDuration: Decimal(5,2))                                             returns Decimal(10,2);
+    function getCeramahEntitlement(fDuration: Decimal(5, 2))                                             returns Decimal(10, 2);
 
-    type ClaimStatusAuto{
+    type ClaimStatusAuto {
         sStatus : String;
     }
 
-    function checkClaimHeaderStatusForAutoApproval(sClaimID: String) returns ClaimStatusAuto;
+    function checkClaimHeaderStatusForAutoApproval(sClaimID: String)                                     returns ClaimStatusAuto;
 
     action   getInternalOrderByProjectCode(sProjectCode: String)                                         returns String;
 
@@ -2347,7 +1478,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     action   reassignApprover(payload: many ReassignmentPayload,
-                              comment: String)                                         returns Boolean;
+                              comment: String)                                                           returns Boolean;
 
     entity ZCONFIG_VARIABLE              as projection on ECLAIM.ZCONFIG_VARIABLE;
 
@@ -2364,7 +1495,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 emp.DEP         as DEP,
                 emp.GRADE       as GRADE,
                 cfg.SEQUENCE_NO as GRADE_SEQUENCE,
-                cast(upper(emp.NAME) as String) as NAME_SEARCH
+                cast(
+                    upper(emp.NAME) as String
+                )               as NAME_SEARCH
         };
 
     @cds.autoexpose
@@ -2376,40 +1509,42 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 DEP
         };
 
-    entity ZEMP_PENDING_LIST as
+    entity ZEMP_PENDING_LIST             as
 
-        select from ECLAIM.ZREQUEST_HEADER as request
+            select from ECLAIM.ZREQUEST_HEADER as request
             left join ZLATEST_LOG_DETAILS as Log
                 on Log.RECORD_ID = request.REQUEST_ID
-        {
-            key request.REQUEST_ID          as ID,
-                request.EMP_ID,
-                request.CLAIM_TYPE_ID,
-                request.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                request.ZSTATUS.STATUS_DESC as STATUS_DESC,
-                request.SUBMITTED_DATE,
-                request.ZEMP_MASTER.DEP,
-                request.CASH_ADVANCE        as CASH_ADVANCE_AMOUNT,
+            {
+                key request.REQUEST_ID          as ID,
+                    request.EMP_ID,
+                    request.CLAIM_TYPE_ID,
+                    request.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                    request.ZSTATUS.STATUS_DESC as STATUS_DESC,
+                    request.SUBMITTED_DATE,
+                    request.ZEMP_MASTER.DEP,
+                    request.CASH_ADVANCE        as CASH_ADVANCE_AMOUNT,
 
-                Log.MESSAGE
-        }
-        where request.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+                    Log.MESSAGE
+            }
+            where
+                request.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
         union all
-        select from ECLAIM.ZCLAIM_HEADER as claim
+            select from ECLAIM.ZCLAIM_HEADER as claim
             left join ZLATEST_LOG_DETAILS as Log
                 on Log.RECORD_ID = claim.CLAIM_ID
-        {
-            key claim.CLAIM_ID             as ID,
-                claim.EMP_ID,
-                claim.CLAIM_TYPE_ID,
-                claim.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                claim.ZSTATUS.STATUS_DESC  as STATUS_DESC,
-                claim.SUBMITTED_DATE,
-                claim.ZEMP_MASTER.DEP,
-                claim.CASH_ADVANCE_AMOUNT,
-                Log.MESSAGE
-        }
-        where claim.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+            {
+                key claim.CLAIM_ID            as ID,
+                    claim.EMP_ID,
+                    claim.CLAIM_TYPE_ID,
+                    claim.ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                    claim.ZSTATUS.STATUS_DESC as STATUS_DESC,
+                    claim.SUBMITTED_DATE,
+                    claim.ZEMP_MASTER.DEP,
+                    claim.CASH_ADVANCE_AMOUNT,
+                    Log.MESSAGE
+            }
+            where
+                claim.ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
     entity ZEMP_PENDING_LIST_APPROVER    as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
@@ -2479,44 +1614,38 @@ service eclaim_srv @(requires: 'authenticated-user') {
             GRADE
         };
 
- 
-    entity ZCORPORATE_CARD_ADVANCED as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
 
-    entity ZCORPORATE_CARD as projection on ECLAIM.ZCORPORATE_CARD;
+    entity ZCORPORATE_CARD_ADVANCED      as projection on ECLAIM.ZCORPORATE_CARD_ADVANCED;
 
-    entity ZREQ_ITEM_CCC_PART as projection on ECLAIM.ZREQ_ITEM_CCC_PART;
-    
-    action updateSubstitutionValidTo(
-            SUBSTITUTE_RULE_ID : String(10),
-            USER_ID            : String,
-            SUBSTITUTE_ID      : String,
-            VALID_FROM         : Date,
-            OLD_VALID_TO       : Date,
-            NEW_VALID_TO       : Date
-        ) returns Boolean;
+    entity ZCORPORATE_CARD               as projection on ECLAIM.ZCORPORATE_CARD;
 
-    action checkSubstitutionOverlap(
-        USER_ID            : String,
-        SUBSTITUTE_ID      : String,
-        VALID_FROM         : Date,
-        VALID_TO           : Date,
-        SUBSTITUTE_RULE_ID : String
-        ) returns Boolean;
+    entity ZREQ_ITEM_CCC_PART            as projection on ECLAIM.ZREQ_ITEM_CCC_PART;
 
-    entity ZINSURANCE_MEDICAL_PROVIDER as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
+    action   updateSubstitutionValidTo(SUBSTITUTE_RULE_ID: String(10),
+                                       USER_ID: String,
+                                       SUBSTITUTE_ID: String,
+                                       VALID_FROM: Date,
+                                       OLD_VALID_TO: Date,
+                                       NEW_VALID_TO: Date)                                               returns Boolean;
 
-    action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
+    action   checkSubstitutionOverlap(USER_ID: String,
+                                      SUBSTITUTE_ID: String,
+                                      VALID_FROM: Date,
+                                      VALID_TO: Date,
+                                      SUBSTITUTE_RULE_ID: String)                                        returns Boolean;
 
-    action getPolicyInfo(
-        dependentNationalId : String,
-        policyYear          : String
-    ) returns {
+    entity ZINSURANCE_MEDICAL_PROVIDER   as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
+
+    action   getGLAccountByProjectCode(sProjectCode: String)                                             returns String;
+
+    action   getPolicyInfo(dependentNationalId: String,
+                           policyYear: String)                                                           returns {
         previous_policy_number : String;
         current_policy_number  : String;
         next_policy_number     : String;
     };
 
-    action getDependentNationalId(dependentNo : String)                                            returns String;
+    action   getDependentNationalId(dependentNo: String)                                                 returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
         select from ECLAIM.ZREQUEST_HEADER as RequestHeader
@@ -2526,51 +1655,51 @@ service eclaim_srv @(requires: 'authenticated-user') {
             on EmpMaster.EEID = RequestHeader.EMP_ID
         {
             key RequestHeader.REQUEST_ID,
-            RequestHeader.EMP_ID,
-            ClaimHeader.CLAIM_ID,
-            EmpMaster.NAME,
-            EmpMaster.EMAIL,
-            RequestHeader.LAST_APPROVED_DATE
+                RequestHeader.EMP_ID,
+                ClaimHeader.CLAIM_ID,
+                EmpMaster.NAME,
+                EmpMaster.EMAIL,
+                RequestHeader.LAST_APPROVED_DATE
         }
 
         where
-                REQUEST_TYPE_ID             = 'RT0005'
-            and RequestHeader.CLAIM_TYPE_ID = 'MEDICAL'
-            and STATUS                      = 'STAT05'
-            and CASH_ADVANCE                > 0    
+                REQUEST_TYPE_ID             =  'RT0005'
+            and RequestHeader.CLAIM_TYPE_ID =  'MEDICAL'
+            and STATUS                      =  'STAT05'
+            and CASH_ADVANCE                >  0
             and CLAIM_ID                    is null;
 
     type MedicalEntitlementBalance {
-        entitlement : Decimal(16,2);
-        approved    : Decimal(16,2);
-        remaining   : Decimal(16,2);
-        };
+        entitlement : Decimal(16, 2);
+        approved    : Decimal(16, 2);
+        remaining   : Decimal(16, 2);
+    };
 
-    action getRemainingMedicalEntitlement(
-        empId : String)                                                                           returns MedicalEntitlementBalance;
+    action   getRemainingMedicalEntitlement(empId: String)                                               returns MedicalEntitlementBalance;
 
-    action updateMedicalUsedAmount(sRecordId: String,
-                                   sStatus: String) returns Response;   
+    action   updateMedicalUsedAmount(sRecordId: String,
+                                     sStatus: String)                                                    returns Response;
 
-    action clearMedicalEntitlement() returns String;
+    action   clearMedicalEntitlement()                                                                   returns String;
 
-    function getMedicalReminderEmail() returns array of reminders;                                   
+    function getMedicalReminderEmail()                                                                   returns array of reminders;
 
-    entity ZCASH_ADVANCE_CATEGORY as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY ;
+    entity ZCASH_ADVANCE_CATEGORY        as projection on ECLAIM.ZCASH_ADVANCE_CATEGORY;
 
-    function getApprovalLogHistory(sRecordId: String)                                               returns LargeString;
+    function getApprovalLogHistory(sRecordId: String)                                                    returns LargeString;
 
-     entity ZPOSITION as projection on ECLAIM.ZPOSITION;
+    entity ZPOSITION                     as projection on ECLAIM.ZPOSITION;
 
-     entity ZDIVISION as projection on ECLAIM.ZDIVISION;
+    entity ZDIVISION                     as projection on ECLAIM.ZDIVISION;
 
-     
+
     entity ZLATEST_LOG                   as
         select from ECLAIM.ZLOG {
             key RECORD_ID,
             key max(TIMESTAMP) as LOG_TIMESTAMP : Timestamp
         }
-        where MESSAGE_TYPE = 'A'
+        where
+            MESSAGE_TYPE = 'A'
         group by
             RECORD_ID;
 
@@ -2582,11 +1711,25 @@ service eclaim_srv @(requires: 'authenticated-user') {
         {
             key Log.RECORD_ID,
             key Log.TIMESTAMP,
-            Log.MESSAGE,
-            Log.MESSAGE_TYPE,
-            Log.STATUS_CODE
+                Log.MESSAGE,
+                Log.MESSAGE_TYPE,
+                Log.STATUS_CODE
         };
-    
-    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
+
+    entity ZEMP_MEDICAL_ENT_HISTORY      as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
+
+    entity ZEMP_CLAIM_POLICY_VALID as
+        select from ECLAIM.ZCLAIM_ITEM as item
+            inner join ECLAIM.ZCLAIM_HEADER as header
+                on header.CLAIM_ID = item.CLAIM_ID
+    {
+        key item.CLAIM_SUB_ID,
+            item.CLAIM_ID,
+            header.STATUS_ID,
+            POLICY_NUMBER,
+            POLICY_YEAR,
+            DEPENDENT_NATIONAL_ID
+    }
+    where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');  
 
 };
