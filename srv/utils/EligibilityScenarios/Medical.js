@@ -170,7 +170,6 @@ module.exports = {
                 const aStatus = [
                     Constant.Status.APPROVED,
                     Constant.Status.PENDING_APPROVAL,
-                    Constant.Status.PUSH_BACK,
                     Constant.Status.COMPLETED_DISBURSEMENT
                 ];
 
@@ -243,7 +242,6 @@ module.exports = {
                     const aClaimStatus = [
                         Constant.Status.APPROVED,
                         Constant.Status.PENDING_APPROVAL,
-                        Constant.Status.PUSH_BACK,
                         Constant.Status.COMPLETED_DISBURSEMENT
                     ];
 
