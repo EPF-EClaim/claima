@@ -132,7 +132,7 @@ sap.ui.define([
 
 		formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
 			var fAmount = (String(sRequestTypeId) === String(this._oConstant.RequestType.CORP_CC))
-				? Math.max(0, Number(fTotalPaymentDueAmount) || 0)
+				? Number(fTotalPaymentDueAmount) || 0
 				: fPreapprovalAmount;
 			return (Number(fAmount) || 0).toFixed(2);
 		},
