@@ -169,7 +169,9 @@ module.exports = {
             if (aOtherRecordIds.length > 0) {
                 const aStatus = [
                     Constant.Status.APPROVED,
-                    Constant.Status.PENDING_APPROVAL
+                    Constant.Status.PENDING_APPROVAL,
+                    Constant.Status.PUSH_BACK,
+                    Constant.Status.COMPLETED_DISBURSEMENT
                 ];
 
                 const aHeaderConditions = {
@@ -240,7 +242,9 @@ module.exports = {
                 if (aClaimIds.length > 0) {
                     const aClaimStatus = [
                         Constant.Status.APPROVED,
-                        Constant.Status.PENDING_APPROVAL
+                        Constant.Status.PENDING_APPROVAL,
+                        Constant.Status.PUSH_BACK,
+                        Constant.Status.COMPLETED_DISBURSEMENT
                     ];
 
                     const aClaimHeaderConditions = {
