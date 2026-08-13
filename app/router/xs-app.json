@@ -8,21 +8,10 @@
   "sessionTimeout": 20,
   "routes": [
     {
-      "source": "^/$",
-      "target": "/",
-      "authenticationType": "xsuaa"
-    },
-    {
       "source": "^/user-api/currentUser$",
       "target": "/currentUser",
       "service": "sap-approuter-userapi",
       "authenticationType": "xsuaa" 
-    },
-    {
-      "source": "^/claima/(.*)$",
-      "target": "/claima/$1",
-      "localDir": "resources", 
-      "authenticationType": "xsuaa"
     },
     {
       "source": "/http/(.*)$",

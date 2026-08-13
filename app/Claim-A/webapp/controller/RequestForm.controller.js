@@ -89,7 +89,8 @@ sap.ui.define([
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oReqModel = this.getOwnerComponent().getModel("request");
-			this._oApprovalLogModel = this.getOwnerComponent().getModel('approval_log')
+			this._oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
+			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
 			this._oDataModel = this.getOwnerComponent().getModel();
 			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
@@ -219,7 +220,7 @@ sap.ui.define([
 			await this._removeByLocalId("approval_log");
 
 			const oCreate = await this._getFormFragment("req_create_item");
-			await this._replaceContentAt(oPage, 1, oCreate);
+			await this._replaceContentAt(oPage, 2, oCreate);
 
 			if (bEdit && this._oReqModel.getProperty("/req_item/doc1_filename")) {
 				this.byId("i_attachment_1_file").setRequired(false);
@@ -246,7 +247,7 @@ sap.ui.define([
 
 			const sFragmentName = this.getView().getModel("editButtonModel").getProperty("/state") ? "request_header_edit" : "request_header"
 			await this._getFormFragment(sFragmentName).then(function (oVBox) {
-				oRequestFormPage.insertContent(oVBox, 0);
+				oRequestFormPage.insertContent(oVBox, 1);
 			});
 		},
 
@@ -260,7 +261,7 @@ sap.ui.define([
 			await this._removeByLocalId("approval_log");
 
 			const oList = await this._getFormFragment("req_item_list");
-			await this._replaceContentAt(oPage, 1, oList);
+			await this._replaceContentAt(oPage, 2, oList);
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
@@ -276,9 +277,11 @@ sap.ui.define([
 						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
 					}
 				}
+				const oOwnerDetail = await this._getFormFragment("claimant_detail");
+				await this._replaceContentAt(oPage, 0, oOwnerDetail);
 				await ApprovalLog.getApprovalLogHistory(this._oApprovalLogModel, this._oDataModel, sReqId);
 				const oApproval = await this._getFormFragment("approval_log");
-				await this._replaceContentAt(oPage, 2, oApproval);
+				await this._replaceContentAt(oPage, 3, oApproval);
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
 			}
@@ -394,6 +397,12 @@ sap.ui.define([
 		},
 
 		async onSubmitRequest() {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqData = this._oReqModel.getData();
 			const aReqItemRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
@@ -569,6 +578,12 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
 			await this._showItemCreate(false);
 			this._loadSelections();
@@ -613,6 +628,13 @@ sap.ui.define([
 		},
 
 		onOpenItemEdit(oEvent) {
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 
@@ -1168,6 +1190,12 @@ sap.ui.define([
 
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqHeader = oData.req_header;
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();

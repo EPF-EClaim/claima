@@ -82,9 +82,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 ATTACHMENT3,
                 ATTACHMENT4,
+                PAYMENT_DUE_DATE
         };
 
-    entity ZEMP_REQUEST_EE_VIEW as
+    entity ZEMP_REQUEST_EE_VIEW @(restrict: [
+        {
+            grant: 'READ',
+            to   : ['Claimant'],
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
+        }
+    ])                                   as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -250,7 +261,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_EE_VIEW as
+    entity ZEMP_CLAIM_EE_VIEW @(restrict: [
+        {
+            grant: 'READ',
+            to   : ['Claimant'],
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
+        }
+    ])                                   as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -371,15 +392,15 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
         select from ECLAIM.ZCLAIM_ITEM 
-        left join ECLAIM.ZCLAIM_ITEM as PrevPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as PrevPolicy
             on PrevPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and PrevPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR - 1
 
-        left join ECLAIM.ZCLAIM_ITEM as CurrPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as CurrPolicy
             on CurrPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and CurrPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR
 
-        left join ECLAIM.ZCLAIM_ITEM as NextPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as NextPolicy
             on NextPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and NextPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR + 1        
         {
@@ -530,7 +551,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_4,
-                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                       
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID,
+                ZCLAIM_ITEM.CHARGED_TO_CCC                        
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -567,7 +589,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY as
+    entity ZEMP_CLAIM_REPORT_SUMMARY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Admin_System',
+                'DTD_Admin'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : 'Admin_CC',
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        }
+    ])                                   as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -614,7 +649,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_DETAILS as
+    entity ZEMP_CLAIM_REPORT_DETAILS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Admin_System',
+                'DTD_Admin'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : 'Admin_CC',
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        }
+    ])                                   as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -778,7 +826,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
         };
 
-    entity ZEMP_REQUEST_REPORT_SUMMARY as
+    entity ZEMP_REQUEST_REPORT_SUMMARY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Admin_System',
+                'DTD_Admin'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : 'Admin_CC',
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        }
+    ])                                   as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -824,7 +885,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_REPORT_DETAILS as
+    entity ZEMP_REQUEST_REPORT_DETAILS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Admin_System',
+                'DTD_Admin'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : 'Admin_CC',
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        }
+    ])                                   as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -1064,7 +1138,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-entity ZEMP_APPROVER_DETAILS           as
+entity ZEMP_APPROVER_DETAILS @(restrict: [{
+        grant: 'READ',
+        to   : ['Approver'],
+        where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) OR SUBSTITUTE_APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+    }])                                  as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
@@ -1107,13 +1185,13 @@ entity ZEMP_APPROVER_DETAILS           as
         message : String;
     };
 
-    entity ZROLEHIERARCHY as
+    entity ZROLEHIERARCHY                as
         projection on ECLAIM.ZROLEHIERARCHY {
             key ROLE,
                 RANK
         };
 
-    entity ZCONSTANTS as
+    entity ZCONSTANTS                    as
         projection on ECLAIM.ZCONSTANTS {
             key ID,
                 VALUE
@@ -1273,4 +1351,17 @@ entity ZEMP_APPROVER_DETAILS           as
             req.TRAVEL_ALONE_FAMILY,
             req.TRAVEL_FAMILY_NOW_LATER;
 
+    entity ZEMP_CLAIM_POLICY_VALID as
+        select from ECLAIM.ZCLAIM_ITEM as item
+            inner join ECLAIM.ZCLAIM_HEADER as header
+                on header.CLAIM_ID = item.CLAIM_ID
+    {
+        key item.CLAIM_SUB_ID,
+            item.CLAIM_ID,
+            header.STATUS_ID,
+            POLICY_NUMBER,
+            POLICY_YEAR,
+            DEPENDENT_NATIONAL_ID
+    }
+    where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');           
 }
