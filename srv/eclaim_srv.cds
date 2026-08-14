@@ -1653,21 +1653,25 @@ service eclaim_srv @(requires: 'authenticated-user') {
             on ClaimHeader.REQUEST_ID = RequestHeader.REQUEST_ID
         left join ECLAIM.ZEMP_MASTER as EmpMaster
             on EmpMaster.EEID = RequestHeader.EMP_ID
+        left join ECLAIM.ZCLAIM_TYPE as ClaimType
+            on ClaimType.CLAIM_TYPE_ID = RequestHeader.CLAIM_TYPE_ID
         {
             key RequestHeader.REQUEST_ID,
                 RequestHeader.EMP_ID,
+                RequestHeader.CLAIM_TYPE_ID,
+                ClaimType.CLAIM_TYPE_DESC,
                 ClaimHeader.CLAIM_ID,
                 EmpMaster.NAME,
                 EmpMaster.EMAIL,
-                RequestHeader.LAST_APPROVED_DATE
+                RequestHeader.LAST_APPROVED_DATE,
+                RequestHeader.PAYMENT_DATE
         }
 
         where
                 REQUEST_TYPE_ID             =  'RT0005'
-            and RequestHeader.CLAIM_TYPE_ID =  'MEDICAL'
-            and STATUS                      =  'STAT05'
+            and RequestHeader.CLAIM_TYPE_ID =  'MEDICAL_ADVANCE'
             and CASH_ADVANCE                >  0
-            and CLAIM_ID                    is null;
+            and CLAIM_ID                    is null;    
 
     type MedicalEntitlementBalance {
         entitlement : Decimal(16, 2);
