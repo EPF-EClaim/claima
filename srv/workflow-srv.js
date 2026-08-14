@@ -207,19 +207,13 @@ module.exports = (srv) => {
                 throw new Error('Rejection reason is required for rejection or push back action');
             }
             console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
-        }
-        if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
-            (
-                
-                sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL
-            )
-        ) {
+            bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
+        } 
+        else if(sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL) {
             //trigger final approval process to send batch claim to IS 
-            if(oLastLevelApproverStatus.ISLASTLEVEL){
-                console.log("Final approval Start");
-                const oSendClaimBatch = await sendClaimBatch(sId);
-                console.log("Final Approval: ", oSendClaimBatch);
-            }
+            console.log("Final approval Start");
+            const oSendClaimBatch = await sendClaimBatch(sId);
+            console.log("Final Approval: ", oSendClaimBatch);
             bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }
         else {
