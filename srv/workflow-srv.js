@@ -207,69 +207,66 @@ module.exports = (srv) => {
                 console.log("Header table update: ", sStatus);
             }
 
-            // Notify claimant/next level approver
-            // If action is REJECT/PUSH BACK, notify claimant
-            // If action is APPROVE, notify next level approver
-            // If action is APPROVE and there are no next level approver, notify claimant
-            // Retrieve Reject reason description if rejection reason is provided
-            let sRejectionReasonDesc = null;
-            if (sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK) {
-                sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
-                if (!sRejectionReasonDesc) {
-                    throw new Error('Rejection reason is required for rejection or push back action');
-                }
-                console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
+        // Notify claimant/next level approver
+        // If action is REJECT/PUSH BACK, notify claimant
+        // If action is APPROVE, notify next level approver
+        // If action is APPROVE and there are no next level approver, notify claimant
+        // Retrieve Reject reason description if rejection reason is provided
+        let sRejectionReasonDesc = null;
+        if(sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK){
+            sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
+            if(!sRejectionReasonDesc) {
+                throw new Error('Rejection reason is required for rejection or push back action');
             }
-            if (sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK ||
-                (
-
-                    sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL
-                )
-            ) {
-                //trigger final approval process to send batch claim to IS 
-                if (sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL) {
-                    console.log("Final approval Start");
-                    const oSendClaimBatch = await sendClaimBatch(sId);
-                    console.log("Final Approval: ", oSendClaimBatch);
-
-                    try {
-                        await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
-                    } catch (oAdvErr) {
-                        console.error("Failed to update corpo card advance:", oAdvErr);
-                        throw new Error('Error encountered during Corporate Card Advance update');
-                    }
-
-                    // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
-                    if (sAction === Constant.Status.APPROVED && sId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
-                        console.log("Sending final approve CCC email")
-                        await notifyCardholdersOfRequestApproval(oTx, sId);
-                        await notifyCCCMakerOfApproval(oTx, sId, sUserId);
-
-                        const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sId);
-                        console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
-
-                    }
-                } else {
-                    // for non final approve
-                    try {
-                        await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
-                    } catch (oAdvErr) {
-                        console.error("Failed to update corpo card advance:", oAdvErr);
-                        throw new Error('Error encountered during Corporate Card Advance update');
-                    }
-                    bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
-
-                }
+            console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
+            try {
+                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+            } catch (oAdvErr) {
+                console.error("Failed to update corpo card advance:", oAdvErr);
+                throw new Error('Error encountered during Corporate Card Advance update');
             }
-            else {
-                const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
-                console.log("Approver context for next level approver: ", aApproversContext);
-                bStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
+            bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
+        } 
+        else if(sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL) {
+            //trigger final approval process to send batch claim to IS 
+            console.log("Final approval Start");
+            const oSendClaimBatch = await sendClaimBatch(sId);
+            console.log("Final Approval: ", oSendClaimBatch);
+
+            try {
+                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+            } catch (oAdvErr) {
+                console.error("Failed to update corpo card advance:", oAdvErr);
+                throw new Error('Error encountered during Corporate Card Advance update');
             }
-            if (!bStatus) {
-                throw new Error('Error encountered during Email Notification');
+
+            // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
+            if (sAction === Constant.Status.APPROVED && sId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
+                console.log("Sending final approve CCC email")
+                await notifyCardholdersOfRequestApproval(oTx, sId);
+                await notifyCCCMakerOfApproval(oTx, sId, sUserId);
+
+                const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sId);
+                console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
+
             }
-            console.log("Approver Action Status: ", bStatus);
+            bStatus = await sendEmailToClaimant(sId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
+        }
+        else {
+            const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
+            console.log("Approver context for next level approver: ", aApproversContext);
+            try {
+                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
+            } catch (oAdvErr) {
+                console.error("Failed to update corpo card advance:", oAdvErr);
+                throw new Error('Error encountered during Corporate Card Advance update');
+            }
+            bStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
+        }
+        if(!bStatus) {
+            throw new Error('Error encountered during Email Notification');
+        }
+        console.log("Approver Action Status: ", bStatus);
 
             const mActionText = {
                 APPROVE: "approved",
