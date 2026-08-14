@@ -156,6 +156,7 @@
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
+                        change="onSwitch_ClaimProcess_Req_EmailApprove"
                     >
                         <layoutData>
                             <FlexItemData growFactor="1" />

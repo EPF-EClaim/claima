@@ -541,50 +541,74 @@ module.exports = (srv) => {
             SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
         );
 
-        // Total Claim Amount includes everything except POTONGAN_ELAUN,
-        // regardless of CHARGED_TO_CCC status.
-        const totalResult = await tx.run(
-            SELECT.one`
-                SUM(AMOUNT) as TotalClaimAmount
-            `
-                .from('ZCLAIM_ITEM')
-                .where(
-                    'CLAIM_ID =', sClaimId,
-                    "and CLAIM_TYPE_ITEM_ID <> 'POTONGAN_ELAUN'"
-                )
-        );
-        const totalClaimAmount = totalResult.TotalClaimAmount || 0;
-
-        // Final Amount to Receive additionally excludes CHARGED_TO_CCC items
-        // (they get settled via the corporate card advance offset instead) -
-        // but not POTONGAN_ELAUN again, since it's already excluded from
-        // totalClaimAmount above and would otherwise be double-subtracted.
-        const chargedResult = await tx.run(
-            SELECT.one`
-                SUM(AMOUNT) as ChargedToCccAmount
-            `
-                .from('ZCLAIM_ITEM')
-                .where(
-                    'CLAIM_ID =', sClaimId,
-                    "and CHARGED_TO_CCC = true and CLAIM_TYPE_ITEM_ID <> 'POTONGAN_ELAUN'"
-                )
-        );
-        const chargedToCccAmount = chargedResult.ChargedToCccAmount || 0;
-
-        // POTONGAN_ELAUN items are actively deducted from Final Amount to
-        // Receive, on top of already being excluded from totalClaimAmount
-        // above. Mirrors the frontend's _calculateClaimTotal() deduction.
-        const potonganElaunResult = await tx.run(
-            SELECT.one`
-                SUM(AMOUNT) as PotonganElaunAmount
-            `
-                .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: 'POTONGAN_ELAUN' })
-        );
-        const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
-
         const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
-        const finalAmountToReceive = (totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0;
+
+        // Same travel claim type list as the frontend's TravelClaimType constant.
+        const aTravelClaimTypeIds = ['DLM_NEGARA', 'LUAR_NEGARA', 'KURSUS_DLM_NEGARA', 'KURSUS_LUAR_NEGARA'];
+        const bHasCard = !!headerResult.CARD_NO;
+        const bIsTravelClaimType = aTravelClaimTypeIds.includes(headerResult.CLAIM_TYPE_ID);
+
+        let totalClaimAmount;
+        let finalAmountToReceive;
+
+        if (bHasCard && bIsTravelClaimType) {
+            // Total Claim Amount includes everything except POTONGAN_ELAUN and
+            // CASH_REPAY, regardless of CHARGED_TO_CCC status.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+
+            // Final Amount to Receive additionally excludes CHARGED_TO_CCC items
+            // (they get settled via the corporate card advance offset instead) -
+            // but not POTONGAN_ELAUN or CASH_REPAY again, since both are already
+            // excluded from totalClaimAmount above and would otherwise be
+            // double-subtracted.
+            const chargedResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as ChargedToCccAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CHARGED_TO_CCC = true and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            const chargedToCccAmount = chargedResult.ChargedToCccAmount || 0;
+
+            // POTONGAN_ELAUN items are actively deducted from Final Amount to
+            // Receive, on top of already being excluded from totalClaimAmount
+            // above. Mirrors the frontend's _calculateClaimTotal() deduction.
+            const potonganElaunResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as PotonganElaunAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: 'POTONGAN_ELAUN' })
+            );
+            const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
+
+            finalAmountToReceive = (totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0;
+        } else {
+            // Default: not a travel claim with a corporate credit card - simple
+            // sum of everything, minus cash advance only.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId })
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+            finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount) || 0;
+        }
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')

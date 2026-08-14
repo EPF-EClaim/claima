@@ -1066,7 +1066,9 @@
 							maxIntegerDigits: 16,
 							preserveDecimals: false
                         },
-                        constraints: { minimum: 0.01 }
+                        constraints: {
+							minimum: 0.01
+						}
 					}"
 					required="true"
 					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
