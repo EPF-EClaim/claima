@@ -994,23 +994,27 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_DETAILS             as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
-            key ZCLAIM_ITEM.CLAIM_SUB_ID,
-                EMP_ID,
-                LAST_MODIFIED_DATE,
-                SUBMITTED_DATE,
-                FINAL_AMOUNT_TO_RECEIVE,
-                ZCLAIM_ITEM.RECEIPT_DATE,
-                ZCLAIM_ITEM.AMOUNT,
-                ZCLAIM_ITEM.COST_CENTER,
-                ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                CASH_ADVANCE_AMOUNT,
-                ALTERNATE_COST_CENTER,
-                ZCLAIM_ITEM.INTERNAL_ORDER,
-                ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID
-        };
+    projection on ECLAIM.ZCLAIM_HEADER {
+        key CLAIM_ID,
+        key ZCLAIM_ITEM.CLAIM_SUB_ID,
+            EMP_ID,
+            LAST_MODIFIED_DATE,
+            SUBMITTED_DATE,
+            FINAL_AMOUNT_TO_RECEIVE,
+            ZCLAIM_ITEM.RECEIPT_DATE,
+            ZCLAIM_ITEM.AMOUNT,
+            ZCLAIM_ITEM.COST_CENTER,
+            ZCLAIM_ITEM.GL_ACCOUNT,
+            ZCLAIM_ITEM.MATERIAL_CODE,
+            CASH_ADVANCE_AMOUNT,
+            ALTERNATE_COST_CENTER,
+            ZCLAIM_ITEM.INTERNAL_ORDER,
+            ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID,
+            ZCLAIM_ITEM.CHARGED_TO_CCC,
+            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+            CARD_NO,
+            CLAIM_TYPE_ID
+    };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
         projection on ECLAIM.ZREQUEST_HEADER {
