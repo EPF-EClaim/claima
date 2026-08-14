@@ -622,19 +622,78 @@ sap.ui.define([
                     var s25YearsAndBelow =
                         d25YearsAndBelow.toLocaleDateString("en-CA");
 
-                    var oNonChildFilter = new Filter({
+                    // Spouse / Additional Spouse
+                    var oSpouseFilter = new Filter({
                         filters: [
-                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.SPOUSE),
-                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.ADDITIONAL_SPOUSE)
+                            new Filter({
+                                filters: [
+                                    new Filter(
+                                        Constants.EntitiesFields.RELATIONSHIP,
+                                        FilterOperator.EQ,
+                                        Constants.Relationship.SPOUSE
+                                    ),
+                                    new Filter(
+                                        Constants.EntitiesFields.RELATIONSHIP,
+                                        FilterOperator.EQ,
+                                        Constants.Relationship.ADDITIONAL_SPOUSE
+                                    )
+                                ],
+                                and: false
+                            }),
+                            new Filter(
+                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
+                                FilterOperator.EQ,
+                                true
+                            )
                         ],
-                        and: false
+                        and: true
                     });
 
+                    // Child - Normal Rule
                     var oEligibleChildFilter = new Filter({
                         filters: [
-                            new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.CHILD),
-                            new Filter(Constants.EntitiesFields.STUDENT,FilterOperator.EQ,true),
-                            new Filter(Constants.EntitiesFields.DOB,FilterOperator.GE,s25YearsAndBelow)
+                            new Filter(
+                                Constants.EntitiesFields.RELATIONSHIP,
+                                FilterOperator.EQ,
+                                Constants.Relationship.CHILD
+                            ),
+                            new Filter(
+                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
+                                FilterOperator.EQ,
+                                true
+                            ),
+                            new Filter(
+                                Constants.EntitiesFields.STUDENT,
+                                FilterOperator.EQ,
+                                true
+                            ),
+                            new Filter(
+                                Constants.EntitiesFields.DOB,
+                                FilterOperator.GE,
+                                s25YearsAndBelow
+                            )
+                        ],
+                        and: true
+                    });
+
+                    // Child - Disabled (bypass Student & DOB checks)
+                    var oDisabledChildFilter = new Filter({
+                        filters: [
+                            new Filter(
+                                Constants.EntitiesFields.RELATIONSHIP,
+                                FilterOperator.EQ,
+                                Constants.Relationship.CHILD
+                            ),
+                            new Filter(
+                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
+                                FilterOperator.EQ,
+                                true
+                            ),
+                            new Filter(
+                                Constants.EntitiesFields.DISABLED,
+                                FilterOperator.EQ,
+                                true
+                            )
                         ],
                         and: true
                     });
@@ -644,8 +703,9 @@ sap.ui.define([
                             oEmpFilter,
                             new Filter({
                                 filters: [
-                                    oNonChildFilter,
-                                    oEligibleChildFilter
+                                    oSpouseFilter,
+                                    oEligibleChildFilter,
+                                    oDisabledChildFilter
                                 ],
                                 and: false
                             })

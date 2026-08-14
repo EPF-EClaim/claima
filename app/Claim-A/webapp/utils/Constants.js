@@ -304,7 +304,9 @@ sap.ui.define([
             "ALT_CC" : "ALT_CC",
             "PROJECT_CODE" : "PROJECT_CODE",
             "POLICY_END_DATE" : "POLICY_END_DATE",
-            "POLICY_START_DATE" : "POLICY_START_DATE"
+            "POLICY_START_DATE" : "POLICY_START_DATE",
+            "DISABLED" : "DISABLED",
+            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY"
         },
         "Operators": {
             "EQUAL": "EQ",

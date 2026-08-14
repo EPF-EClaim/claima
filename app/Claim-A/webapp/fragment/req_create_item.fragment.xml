@@ -319,7 +319,7 @@
                                 <!-- Attachment 1 -->
                                 <form:FormElement 
                                         label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
-                                                ? ${i18n>label_insurance_attachment_1}
+                                                ? ${i18n>req_label_insurance_attachment_1}
                                                 : ${i18n>req_attach1}
                                             }"
                                         visible="false"
@@ -397,7 +397,7 @@
                                 <!-- Attachment 2 -->
                                 <form:FormElement 
                                             label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
-                                                ? ${i18n>label_insurance_attachment_2}
+                                                ? ${i18n>req_label_insurance_attachment_2}
                                                 : ${i18n>req_attach2}
                                             }"
                                             visible="false"

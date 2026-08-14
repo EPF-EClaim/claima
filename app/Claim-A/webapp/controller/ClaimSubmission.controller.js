@@ -2404,8 +2404,42 @@ sap.ui.define([
 				return;
 			}
 
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.MEDICAL_ADVANCE &&
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY &&
+				oClaimSubmissionModel.getProperty("/claim_items").length === 0 &&
+				!this._bSkipMedicalPolicyDialog
+			) {
+				this._oPendingClaimItem = claimItem;
+
+				if (!this._oMedicalPolicyDialog) {
+
+					Fragment.load({
+						name: "claima.fragment.medicalpolicy",
+						id: "medicalPolicyDialogFrag",
+						controller: this
+					}).then(function (oMedicalPolicyDialog) {
+
+						this._oMedicalPolicyDialog = oMedicalPolicyDialog;
+
+						this.getView().addDependent(this._oMedicalPolicyDialog);
+
+						this._oMedicalPolicyDialog.open();
+
+					}.bind(this));
+
+				} else {
+
+					this._oMedicalPolicyDialog.open();
+
+				}
+
+				return;
+			}
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
+
+			this._bSkipMedicalPolicyDialog = false;
 
 			// When Location Type is visible but no selection yet, hide State and Location fields by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
@@ -2907,34 +2941,51 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-				case this._oConstant.ClaimTypeItem.CASH_REPAY: 	
+				case this._oConstant.ClaimTypeItem.CASH_REPAY:
 					var d25YearsAndBelow = DateUtility.today();
 					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
 
 					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
 
-					var oNonChildFilter = new Filter({
+					// Spouse / Additional Spouse
+					var oSpouseFilter = new Filter({
 						filters: [
+							new Filter({
+								filters: [
+									new Filter(
+										this._oConstant.EntitiesFields.RELATIONSHIP,
+										FilterOperator.EQ,
+										this._oConstant.Relationship.SPOUSE
+									),
+									new Filter(
+										this._oConstant.EntitiesFields.RELATIONSHIP,
+										FilterOperator.EQ,
+										this._oConstant.Relationship.ADDITIONAL_SPOUSE
+									)
+								],
+								and: false
+							}),
 							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
 								FilterOperator.EQ,
-								this._oConstant.Relationship.SPOUSE
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
-								FilterOperator.EQ,
-								this._oConstant.Relationship.ADDITIONAL_SPOUSE
+								true
 							)
 						],
-						and: false
+						and: true
 					});
 
+					// Child - Normal Rule
 					var oEligibleChildFilter = new Filter({
 						filters: [
 							new Filter(
 								this._oConstant.EntitiesFields.RELATIONSHIP,
 								FilterOperator.EQ,
 								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
+								FilterOperator.EQ,
+								true
 							),
 							new Filter(
 								this._oConstant.EntitiesFields.STUDENT,
@@ -2950,13 +3001,36 @@ sap.ui.define([
 						and: true
 					});
 
+					// Child - Disabled (bypass Student & DOB checks)
+					var oDisabledChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.DISABLED,
+								FilterOperator.EQ,
+								true
+							)
+						],
+						and: true
+					});
+
 					return new Filter({
 						filters: [
 							oEmpFilter,
 							new Filter({
 								filters: [
-									oNonChildFilter,
-									oEligibleChildFilter
+									oSpouseFilter,
+									oEligibleChildFilter,
+									oDisabledChildFilter
 								],
 								and: false
 							})
@@ -6005,6 +6079,66 @@ sap.ui.define([
 			} catch (error) {
 
 			}
+		},
+
+
+		onMedicalPolicyYes: function (oEvent) {
+
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			if (!this._oMedicalDeclarationDialog) {
+
+				Fragment.load({
+					name: "claima.fragment.medicaldeclaration",
+					id: "medicalDeclarationDialogFrag",
+					controller: this
+				}).then(function (oMedicalDeclarationDialog) {
+
+					this._oMedicalDeclarationDialog = oMedicalDeclarationDialog;
+
+					this.getView().addDependent(this._oMedicalDeclarationDialog);
+
+					this._oMedicalDeclarationDialog.open();
+
+				}.bind(this));
+
+			} else {
+
+				this._oMedicalDeclarationDialog.open();
+
+			}
+		},
+
+		onMedicalPolicyNo: function (oEvent) {
+
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			this._bSkipMedicalPolicyDialog = true;
+
+			this.onSelect_ClaimDetails_ClaimItem({
+				getParameters: () => ({
+					selectedItem: this._oPendingClaimItem
+				})
+			});
+		},
+
+		onMedicalDeclarationClose: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			oInputModel.setProperty("/claim_item/claim_type_item_id", "");
+
+			this.byId("select_claimdetails_input_claimitem")
+				?.setSelectedKey("");
+
+			this._resetClaimItemInputs(oInputModel);
 		}
 	});
 });
