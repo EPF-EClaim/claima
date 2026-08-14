@@ -255,12 +255,6 @@ module.exports = (srv) => {
         else {
             const aApproversContext = await getApproverContextByLevel(sId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
             console.log("Approver context for next level approver: ", aApproversContext);
-            try {
-                await updateCorpoCardAdvance(oTx, sId, oActionDescriptor.actionValue);
-            } catch (oAdvErr) {
-                console.error("Failed to update corpo card advance:", oAdvErr);
-                throw new Error('Error encountered during Corporate Card Advance update');
-            }
             bStatus = await sendEmailToApprover(aApproversContext, sId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
         }
         if(!bStatus) {
