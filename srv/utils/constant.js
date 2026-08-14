@@ -350,7 +350,8 @@ const Constant = {
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",
-        WITH_CASH_ADVANCE: "2"
+        WITH_CASH_ADVANCE: "2",
+        MEDICAL_ADVANCE: "3"
     }, 
     RequestType: {
         Travel : "RT0001", 
