@@ -1099,10 +1099,10 @@ module.exports = (srv) => {
 
         const baseline15 = new Date();
         baseline15.getDate()
-        baseline15.setDate(baseline15.getDate() - 16); // 1 day after 15 days aging
+        baseline15.setDate(baseline15.getDate() - 14); // considering the payment itself
 
         const baseline30 = new Date();
-        baseline30.setDate(baseline30.getDate() - 31); // 1 day after 30 days aging
+        baseline30.setDate(baseline30.getDate() - 29); // considering the payment itself
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
