@@ -330,7 +330,50 @@ sap.ui.define([
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
 
-				// disable footer buttons if claim already cancelled
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+				const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+				const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+
+				if (sStatusId === this._oConstant.ClaimStatus.SEND_BACK) {
+					const oApprovalLogModel = this.getOwnerComponent().getModel("approval_log");
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+					await ApprovalLog.getApproverList(
+						oApprovalLogModel,
+						oEmployeeViewModel,
+						sClaimId,
+						sClaimTypeId
+					);
+
+					const aApprovalList = oApprovalLogModel.getProperty("/approval") || [];
+
+					const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
+						oApproval.APPROVER_ID === sCurrentUserId ||
+						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
+					);
+
+					if (
+						bCurrentUserIsApprover &&
+						sClaimOwnerId !== sCurrentUserId
+					) {
+						oClaimSubmissionModel.setProperty("/is_approver", false);
+						oClaimSubmissionModel.setProperty("/view_only", true);
+
+						this._setClaimItemTableToolbar(false);
+
+						Utility.updateFooterState(
+							this.getView(),
+							oClaimSubmissionModel,
+							this._oConstant,
+							this._oConstant.ClaimFooterMode.VIEW_ONLY
+						);
+
+						return;
+					}
+				}
+
 				Utility.updateFooterState(
 					this.getView(),
 					oClaimSubmissionModel,
@@ -338,7 +381,6 @@ sap.ui.define([
 					null
 				);
 
-				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
 
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -361,8 +403,8 @@ sap.ui.define([
 
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-					await ApprovalLog.getApprovalLogHistory(oApprovalLogModel, this._oModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, sClaimId, sClaimTypeId);
+					await ApprovalLog.getApprovalLogHistory(oApprovalLogModel, this._oModel, sClaimId);
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
 					if (!bIsSendBack) {

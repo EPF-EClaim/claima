@@ -255,7 +255,13 @@ sap.ui.define([
 				
 				case oController._oConstant.PARMode.VIEWAPPR:		// i_edit
 					bShowBackScr	= true;
-					oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+
+					if (sReqStatus !== oController._oConstant.RequestStatus.SEND_BACK) { 
+                        oController._oReqModel.setProperty( 
+                            "/view", 
+                            oController._oConstant.PARMode.VIEW 
+                        ); 
+                    }
 					break;
 				
 				default:
