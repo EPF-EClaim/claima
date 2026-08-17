@@ -395,7 +395,11 @@
                 <!-- Corporate Credit Card Advance (MYR) -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_amtcardadvance}"
-                    visible="{claimsubmission_input>/claimtype/has_ccc}"
+                    visible="{= ${claimsubmission_input>/claimtype/has_ccc} === true &amp;&amp;
+                                ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} ) }"
                 />
                 <Text
                     id="text_claimsummary_claimheader_amtcardadvance"
@@ -409,7 +413,11 @@
                         }
                     }"
                     textAlign="End"
-                    visible="{claimsubmission_input>/claimtype/has_ccc}"
+                    visible="{= ${claimsubmission_input>/claimtype/has_ccc} === true &amp;&amp;
+                                ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} ) }"
                 />
 
                 <!-- Final Amount to Receive (MYR) -->
