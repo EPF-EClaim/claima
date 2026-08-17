@@ -1015,6 +1015,17 @@ sap.ui.define([
 				return;
 			}
 
+			// Confirm before proceeding - deletion is permanent and applies
+			// whether one or multiple items were selected.
+			const bConfirmed = await new Promise((resolve) => {
+				MessageBox.confirm(Utility.getText("req_d_w_delete_item_confirm"), {
+					onClose: (sAction) => resolve(sAction === MessageBox.Action.OK)
+				});
+			});
+			if (!bConfirmed) {
+				return;
+			}
+
 			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
 
 			BusyIndicator.show(0);
@@ -1071,7 +1082,7 @@ sap.ui.define([
 				}, { fReqTotal: 0, fCashTotal: 0 });
 
 				const oRound2 = (n) => Math.round(n * 100) / 100;
- 
+
 				const oHeader = this._oReqModel.getProperty("/req_header") || {};
 				var sClaimTypeId = this._oReqModel.getProperty('/req_header/claimtype');
 				var bIsCorpoCC = String(sClaimTypeId) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
