@@ -112,22 +112,37 @@
                     <Text text="{i18n>columntext_claimsummary_remarks}" />
                 </Column>
 
-                <!-- Attachment 1 -->
+              <!-- Attachment 1 -->
                 <Column>
-                    <Text text="{i18n>columntext_claimsummary_attachment1}" />
+                    <Text
+                        text="{=
+                            ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL_ADVANCE} ||
+                            ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL}
+                            ? ${i18n>label_insurance_attachment_1}
+                            : ${i18n>columntext_claimsummary_attachment1}
+                        }"
+                    />
                 </Column>
 
                 <!-- Attachment 2 -->
                 <Column>
-                    <Text text="{i18n>columntext_claimsummary_attachment2}" />
+                    <Text
+                        text="{=
+                            ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL_ADVANCE} ||
+                            ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/MEDICAL}
+                            ? ${i18n>label_insurance_attachment_2}
+                            : ${i18n>columntext_claimsummary_attachment2}
+                        }"
+                    />
                 </Column>
+
 
                 <!-- Attachment 3 -->
                 <Column
                 visible="{= ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL} ||
                             ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL_ADVANCE}}"
                 >
-                    <Text text="{i18n>columntext_claimsummary_attachment3}" />
+                    <Text text="{i18n>label_insurance_attachment_3}" />
                 </Column>
 
                 <!-- Attachment 4 -->
@@ -135,7 +150,7 @@
                 visible="{= ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL} ||
                             ${claimsubmission_input>/claim_header/claim_type_id} ===${constant>/ClaimType/MEDICAL_ADVANCE}}"
                 >
-                    <Text text="{i18n>columntext_claimsummary_attachment4}" />
+                    <Text text="{i18n>label_insurance_attachment_4}" />
                 </Column>
 
 
