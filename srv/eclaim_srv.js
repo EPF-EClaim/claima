@@ -595,7 +595,9 @@ module.exports = (srv) => {
             );
             const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
 
-            finalAmountToReceive = (totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0;
+            // Rounded to 2dp to avoid floating-point residue (e.g. 671.5699999999997)
+            // being truncated instead of rounded when persisted to the DECIMAL column.
+            finalAmountToReceive = Math.round(((totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0) * 100) / 100;
         } else {
             // Default: not a travel claim with a corporate credit card - simple
             // sum of everything, minus cash advance only.
@@ -607,7 +609,7 @@ module.exports = (srv) => {
                     .where({ CLAIM_ID: sClaimId })
             );
             totalClaimAmount = totalResult.TotalClaimAmount || 0;
-            finalAmountToReceive = (totalClaimAmount - nCashAdvanceAmount) || 0;
+            finalAmountToReceive = Math.round(((totalClaimAmount - nCashAdvanceAmount) || 0) * 100) / 100;
         }
 
         await tx.run(

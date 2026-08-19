@@ -5756,7 +5756,9 @@ sap.ui.define([
 					.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
-				var nNewTotal = nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt;
+				// Rounded to 2dp so the on-screen preview matches what the backend
+				// will persist, avoiding floating-point residue in the subtraction.
+				var nNewTotal = Math.round((nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt) * 100) / 100;
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
 				return;
@@ -5765,7 +5767,7 @@ sap.ui.define([
 			// Default: not a travel claim with a corporate credit card - simple
 			// sum of everything, minus cash advance only.
 			var nTotalDefault = aClaimItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			var nFinal = nTotalDefault - nCashAdvAmt;
+			var nFinal = Math.round((nTotalDefault - nCashAdvAmt) * 100) / 100;
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotalDefault);
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
