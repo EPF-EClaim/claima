@@ -4346,7 +4346,7 @@ sap.ui.define([
 				// receive can be 0 but not negative, on submit.
 				if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCard && bIsTravelClaimType) {
 					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_and_potongan_elaun_prompt"));
 						BusyIndicator.hide();
 						return;
 					}
