@@ -598,8 +598,8 @@ async function sendClaimBatch(sId){
 
         return { message: "Approved claim batch sent", oResponse };
 
-    } catch (e) {
-        console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+    } catch (oError) {
+        console.log(500, `sendApprovedClaimBatch failed: ${oError?.message || oError}`);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
         await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
