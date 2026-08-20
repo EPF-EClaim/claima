@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/m/library",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
+	"sap/m/Text",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/library",
@@ -41,6 +42,7 @@ sap.ui.define([
 	mLibrary,
 	MessageBox,
 	MessageToast,
+	Text,
 	BusyIndicator,
 	Fragment,
 	coreLibrary,
@@ -548,9 +550,9 @@ sap.ui.define([
 			const sSubmitMsg = this._oReqModel.getProperty("/req_header/claimtype") === this._oConstant.ClaimType.CORPO_CRED_CARD ? Utility.getText("req_d_w_ccc_submit") : Utility.getText("req_d_w_submit");
 
 			this.oSubmitDialog = new Dialog({
-				title: "Submit Request",
+				title: this._oReqModel.getProperty("/req_header/claimtype") === this._oConstant.ClaimType.CORPO_CRED_CARD ? "Declaration" : "Submit Request",
 				type: DialogType.Message,
-				content: [new Label({ text: sSubmitMsg})],
+				content: [new Text({ text: sSubmitMsg })],
 				beginButton: new Button({
 					type: ButtonType.Emphasized,
 					text: Utility.getText("req_btn_confirm"),
@@ -1332,13 +1334,7 @@ sap.ui.define([
 			var sReqTypeId = this._oReqModel.getProperty('/req_header/reqtypeid');
 			var bIsCorpoCC = String(sReqTypeId) === String(this._oConstant.RequestType.CORP_CC);
 
-			if (bIsCorpoCC) {
-				var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
-				if (parseFloat(fEstAmount) == parseFloat(0)) {
-					MessageBox.error(Utility.getText("req_d_w_error_amount_ccc"))
-					return;
-				}
-			}else{
+			if (!bIsCorpoCC) {
 				var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
 				if (parseFloat(fEstAmount) <= parseFloat(0)) {
 					MessageBox.error(Utility.getText("req_d_w_error_amount"))
@@ -3572,10 +3568,7 @@ sap.ui.define([
  
 			var sClaimTypeId = this._oReqModel.getProperty('/req_header/claimtype');
 			var bIsCorpoCC = String(sClaimTypeId) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
-			if (bIsCorpoCC && oTotals.payment_due < 0) {
-				oTotals.payment_due = 0;
-			}
-			
+
 			Object.keys(oTotals).forEach((k) => {
 				oTotals[k] = oTotals[k].toFixed(2);
 			});

@@ -129,8 +129,8 @@ annotate service.ZCORPORATE_CARD with @(
         UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Corporate Card - ZCORPORATE_CARD',
-            TypeNamePlural: 'Corporate Card - ZCORPORATE_CARD',
+            TypeName      : 'List of Corporate Credit Card - ZCORPORATE_CARD',
+            TypeNamePlural: 'List of Corporate Credit Card - ZCORPORATE_CARD',
         },
         LineItem    : [
             {
@@ -215,8 +215,8 @@ annotate service.ZCORPORATE_CARD_ADVANCED with @(
         UpdateHidden: true,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Corporate Card Advanced - ZCORPORATE_CARD_ADVANCED',
-            TypeNamePlural: 'Corporate Card Advanced - ZCORPORATE_CARD_ADVANCED',
+            TypeName      : 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
+            TypeNamePlural: 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
         },
         LineItem    : [
             {

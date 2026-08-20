@@ -687,17 +687,6 @@ sap.ui.define([
 						)
 					);
  
-					// Corporate Credit Card
-					if (Object.values(this._oConstant.TravelClaimType).includes(oInputModel.getProperty("/claimtype/type"))) {
-						aOwnClaimTypeFilters.push(
-							new Filter(
-								"CLAIM_TYPE_ID",
-								FilterOperator.EQ,
-								this._oConstant.ClaimType.CORPO_CRED_CARD
-							)
-						);
-					}
- 
 					var oOwnClaimTypeOrFilter = new Filter({
 						filters: aOwnClaimTypeFilters,
 						and: false
@@ -2143,9 +2132,6 @@ sap.ui.define([
  
 			try {
 				var aClaimTypeIds = [sClaimTypeId];
-				if (Object.values(this._oConstant.TravelClaimType).includes(sClaimTypeId)) {
-					aClaimTypeIds.push(this._oConstant.ClaimType.CORPO_CRED_CARD);
-				}
  
 				var aFilters = [
 					new Filter("PARTICIPANTS_ID", FilterOperator.EQ, sParticipantId),

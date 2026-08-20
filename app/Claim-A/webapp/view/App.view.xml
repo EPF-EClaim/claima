@@ -171,7 +171,7 @@
                     <tnt:NavigationListGroup 
                         text="Configuration" 
                         expanded="false"
-                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} }">
+                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
 
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
