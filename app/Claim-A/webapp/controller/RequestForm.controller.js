@@ -2273,7 +2273,8 @@ sap.ui.define([
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE),
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
-						new Filter("CATEGORY_ID", FilterOperator.NE, "X")			// filter out claim type item that is not required for PAR
+						new Filter("CATEGORY_ID", FilterOperator.NE, "X"),			// filter out claim type item that is not required for PAR
+						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)	// POTONGAN_ELAUN is not selectable on a pre-approval request
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],

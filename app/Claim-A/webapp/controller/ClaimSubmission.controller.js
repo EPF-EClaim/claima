@@ -2314,6 +2314,10 @@ sap.ui.define([
 			if (!oInputModel.getProperty("/claim_item/claim_type_item_id")) {
 				return;
 			}
+			
+			// CCC holders creating a CASH_REPAY item: default/lock the CCC switch
+			// based on whether a cash advance amount is available
+			this._applyCashRepayCCCDefault(oInputModel, oClaimSubmissionModel);
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
@@ -2487,7 +2491,8 @@ sap.ui.define([
 				combo_dependent: { is_editable: true },
 				to_location: { is_visible: false },
 				from_location: { is_visible: false },
-				marriage_category: { is_visible: false }
+				marriage_category: { is_visible: false },
+				charged_to_ccc: { is_editable: true }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2510,6 +2515,10 @@ sap.ui.define([
 				var oPropertyModel = this.getView().getModel("claimitem_property"); 
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
+
+				// CCC holders editing a CASH_REPAY item: default/lock the CCC switch
+				// based on whether a cash advance amount is available
+				this._applyCashRepayCCCDefault(oInputModel, oClaimSubmissionModel);
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
@@ -5719,6 +5728,40 @@ sap.ui.define([
 		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
 			if (!sCardNo || !sClaimTypeItemId) return false;
 			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		/**
+		 * For CCC (corporate credit card) holders creating/editing a CASH_REPAY
+		 * claim item: if there is no cash advance on the claim, the item must be
+		 * charged to the CCC, so the switch defaults to ON and is locked. If a
+		 * cash advance amount is present, the user is free to decide, so the
+		 * switch is left editable (existing value, if any, is preserved).
+		 */
+		_applyCashRepayCCCDefault: function (oInputModel, oClaimSubmissionModel) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (!oInputModel || !oClaimSubmissionModel || !oPropertyModel) return;
+
+			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			if (sClaimTypeItemId !== this._oConstant.ClaimTypeItem.CASH_REPAY) {
+				return;
+			}
+
+			// Only applies to corporate credit card holders
+			var sCardNo = oClaimSubmissionModel.getProperty("/claim_header/card_no");
+			if (!sCardNo) {
+				return;
+			}
+
+			var nCashAdvanceAmount = Math.max(0, Number(oClaimSubmissionModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+
+			if (nCashAdvanceAmount === 0) {
+				// No cash advance to draw from - must be charged to CCC, and locked
+				oInputModel.setProperty("/claim_item/charged_to_ccc", true);
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", false);
+			} else {
+				// Cash advance available - let the user decide
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", true);
+			}
 		},
 
 		_calculateClaimTotal: function () {

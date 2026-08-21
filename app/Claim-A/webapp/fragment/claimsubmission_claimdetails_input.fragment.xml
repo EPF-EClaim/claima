@@ -1656,7 +1656,11 @@
                     state="{claimitem_input>/claim_item/charged_to_ccc}"
                     customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                     customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
-                    enabled="{= !${claimsubmission_input>/view_only}}"
+                    enabled="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_property>/charged_to_ccc/is_editable} !== false
+                    }"
                     visible="{
                         parts: [
                             'claimsubmission_input>/claim_header/card_no',
