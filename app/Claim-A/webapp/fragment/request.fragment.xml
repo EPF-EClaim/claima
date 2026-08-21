@@ -173,7 +173,7 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004' || ${reqDialog>/reqtype} === 'RT0005'}"
 					visible="false"
 					minDate="{
 						parts: [
@@ -242,7 +242,7 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004'|| ${reqDialog>/reqtype} === 'RT0005'}"
 					visible="false"
 					minDate="{
 						parts: [

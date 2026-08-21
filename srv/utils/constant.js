@@ -102,7 +102,8 @@ const Constant = {
         "MEDICAL": "MEDICAL",
         "PEDU" : "PEDU",
         "CERAMAH" : "CERAMAH",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -170,7 +171,10 @@ const Constant = {
         "KEMATIAN": "KEMATIAN",
         "SEWAPETAK": "SEWAPETAK",
         "KEAHLIANKELAB": "S_K.KELAB",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "MED_ADVANCE": "MED_ADVANCE",
+        "INSURANCE": "INSURANCE",
+        "CASH_REPAY": "CASH_REPAY"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -303,7 +307,11 @@ const Constant = {
         "PROJECT_CODE" : "PROJECT_CODE",
         "PROJECT_CLAIM" : "PROJECT_CLAIM",
         "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT",
-        "CASH_REPAYMENT" : "CASH_REPAYMENT"
+        "CASH_REPAYMENT" : "CASH_REPAYMENT",
+        "MEDICAL_INSURANCE_ENTITLEMENT" : "MEDICAL_INSURANCE_ENTITLEMENT",
+        "POLICY_START_DATE" : "POLICY_START_DATE",
+        "DEPENDENT_NATIONAL_ID" : "DEPENDENT_NATIONAL_ID",
+        "POLICY_YEAR": "POLICY_YEAR"
     },
     Wildcard: {
         "All": "*",
@@ -342,11 +350,13 @@ const Constant = {
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",
-        WITH_CASH_ADVANCE: "2"
+        WITH_CASH_ADVANCE: "2",
+        MEDICAL_ADVANCE: "3"
     }, 
     RequestType: {
         Travel : "RT0001", 
-        Reimbursement : "RT0004"
+        Reimbursement : "RT0004",
+        Medical : "RT0005"
     }, 
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
@@ -361,7 +371,8 @@ const Constant = {
         "GreaterEquals": ">=",
         "Equals": "=",
         "NotEquals": "!=",
-        "Like": "like"
+        "Like": "like",
+        "GreaterThan": ">",
     },
     WhereCondition: {
         "AND": "AND",
@@ -441,6 +452,7 @@ const Constant = {
     },
     ConstantId: {
         ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER: "ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER",
+        PROD_CENTRA_LINK: "PROD_CENTRA_LINK",
         EXCEPTION_COUNTRY_TRAVEL_INSURANCE: "EXCEPTION_COUNTRY_TRAVEL_INSURANCE",
         EXCEPTION_HP_FREQUENCY_JOB_GRADE: "EXCEPTION_HP_FREQUENCY_JOB_GRADE",
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",

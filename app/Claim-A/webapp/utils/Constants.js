@@ -26,7 +26,8 @@ sap.ui.define([
             "HANDPHONE": "HANDPHONE",
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
-            "CERAMAH": "CERAMAH"
+            "CERAMAH": "CERAMAH",
+            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -96,7 +97,9 @@ sap.ui.define([
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
-            "KEMATIAN": "KEMATIAN"
+            "KEMATIAN": "KEMATIAN",
+            "INSURANCE": "INSURANCE",
+            "MED_ADVANCE": "MED_ADVANCE"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -299,7 +302,11 @@ sap.ui.define([
             "COUNTRY": "COUNTRY",
             "PHONE_NO": "PHONE_NO",
             "ALT_CC" : "ALT_CC",
-            "PROJECT_CODE" : "PROJECT_CODE"
+            "PROJECT_CODE" : "PROJECT_CODE",
+            "POLICY_END_DATE" : "POLICY_END_DATE",
+            "POLICY_START_DATE" : "POLICY_START_DATE",
+            "DISABLED" : "DISABLED",
+            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -684,7 +691,8 @@ sap.ui.define([
             "TRAVEL_INSURANCE": "Medical Travel Insurance",
             "VISA": "Visa & Passport",
             "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
-            "YURAN_KLJ": "Bayaran Yuran KLJ"
+            "YURAN_KLJ": "Bayaran Yuran KLJ",
+            "INSURANCE": "INSURANCE"
         },
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
@@ -698,8 +706,16 @@ sap.ui.define([
             "LUAR_STESEN": "2",
             "FLIGHT": "3"
         },
+        "SubmissionOwnerType": {
+            "REQUESTOR": "Requestor",
+            "CLAIMANT": "Claimant"
+        },
         "SpecialApprover" : {
             "VERIFIER" : "Verifier"
+        },
+        "SuccessFactorCompanyCode": {
+            "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
+            "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         },
         "RelationshipType": {
             "SPOUSE": "01",
@@ -709,7 +725,14 @@ sap.ui.define([
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
+        },
+        "InsuranceMedicalProvider": {
+            "OTHERS": "4",
+        },
+        "MedicalAdvanceInfo": {
+            "COST_CENTER": "100000000",
+            "GL_ACCOUNT": "214230"
         }
-        
+
     }
 });

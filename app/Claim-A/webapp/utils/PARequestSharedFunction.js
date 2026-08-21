@@ -3,12 +3,16 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",
-	"claima/utils/ApprovalLog"
+	"claima/utils/ApprovalLog",
+	"claima/utils/Utility",
+	"claima/utils/Constants"
 ], function (Filter,
 	FilterOperator,
 	Sorter,
 	DateFormat,
-	ApprovalLog) {
+	ApprovalLog,
+	Utility,
+	Constants) {
 	"use strict";
 
 	return {
@@ -36,7 +40,7 @@ sap.ui.define([
 		* Get My Pre-Approval Request Details
 		* ======================================================= */
 
-		async _getHeader(oController, sReqId) {
+		async getHeader(oController, sReqId) {
 			const oReqModel = oController._oReqModel;
 
 			if (!sReqId) {
@@ -82,6 +86,8 @@ sap.ui.define([
 					comment:        oData.REMARK || "",
 					doc1:           oData.ATTACHMENT1 || "",
 					doc2:           oData.ATTACHMENT2 || "",
+					doc3:           oData.ATTACHMENT3 || "",
+					doc4:           oData.ATTACHMENT4 || "",
 					claimtype:      oData.CLAIM_TYPE_ID || "",
 					claimtypedesc:  oData.CLAIM_TYPE_DESC || "",
 					reqdate:        oData.REQUEST_DATE,
@@ -97,6 +103,8 @@ sap.ui.define([
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
+
+				Utility.mapOwnerDetail(oController.getOwnerComponent().getModel("owner_detail"), oData, Constants.SubmissionOwnerType.REQUESTOR);
 
 			} catch (err) {
 				console.error("Header fetch failed:", err);
@@ -247,7 +255,13 @@ sap.ui.define([
 				
 				case oController._oConstant.PARMode.VIEWAPPR:		// i_edit
 					bShowBackScr	= true;
-					oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+
+					if (sReqStatus !== oController._oConstant.RequestStatus.SEND_BACK) { 
+                        oController._oReqModel.setProperty( 
+                            "/view", 
+                            oController._oConstant.PARMode.VIEW 
+                        ); 
+                    }
 					break;
 				
 				default:

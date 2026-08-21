@@ -55,7 +55,9 @@ sap.ui.define([
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
 						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
-						"to_state": "TO_STATE_ID"
+						"to_state": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
@@ -93,7 +95,10 @@ sap.ui.define([
 						"insurance_package_id": "INSURANCE_PACKAGE_ID",
 						"dependent": "DEPENDENT",
 						"phone_no": "PHONE_NO",
-						"to_state_id": "TO_STATE_ID"
+						"to_state_id": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_start_date": "POLICY_START_DATE",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
@@ -242,7 +247,11 @@ sap.ui.define([
 							break;
 
 						case Constants.EntitiesFields.FLIGHT_CLASS_ID:
-							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [oField.value, sEmpId]);
+							sErrorMsg = Utility.getText("eligibility_validation_flight_class", [sEmpId]);
+							break;
+
+						case Constants.EntitiesFields.ROOM_TYPE_ID:
+							sErrorMsg = Utility.getText("eligibility_validation_room_type", [sEmpId]);
 							break;
 
 						case Constants.EntitiesFields.VEHICLE_OWNERSHIP_ID:
@@ -269,7 +278,7 @@ sap.ui.define([
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
 							break;
 					}
-					if (!aErrorMessages.includes(sErrorMsg)) {
+					if (!aErrorMessages.includes(sErrorMsg) && sErrorMsg) {
 						aErrorMessages.push(sErrorMsg);
 					}
 

@@ -89,7 +89,8 @@ sap.ui.define([
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oReqModel = this.getOwnerComponent().getModel("request");
-			this._oApprovalLogModel = this.getOwnerComponent().getModel('approval_log')
+			this._oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
+			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
 			this._oDataModel = this.getOwnerComponent().getModel();
 			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
@@ -146,6 +147,18 @@ sap.ui.define([
 			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction._getHeader(this, sReqId);
+
+				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
+
+				if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
+
+					await Utility.getRemainingMedicalEntitlement(
+						this._oReqModel,
+						this._oReqModel.getProperty("/req_header/empid"),
+						"/req_header/medical_remaining"
+					);
+				}
+
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
@@ -207,10 +220,18 @@ sap.ui.define([
 			await this._removeByLocalId("approval_log");
 
 			const oCreate = await this._getFormFragment("req_create_item");
-			await this._replaceContentAt(oPage, 1, oCreate);
+			await this._replaceContentAt(oPage, 2, oCreate);
 
 			if (bEdit && this._oReqModel.getProperty("/req_item/doc1_filename")) {
 				this.byId("i_attachment_1_file").setRequired(false);
+			}
+
+			if (bEdit && this._oReqModel.getProperty("/req_item/doc2_filename")) {
+				this.byId("i_attachment_2_file").setRequired(false);
+			}
+
+			if (bEdit && this._oReqModel.getProperty("/req_item/doc3_filename")) {
+				this.byId("i_attachment_3_file").setRequired(false);
 			}
 
 			PARequestSharedFunction.determineFooterButton(this);
@@ -226,7 +247,7 @@ sap.ui.define([
 
 			const sFragmentName = this.getView().getModel("editButtonModel").getProperty("/state") ? "request_header_edit" : "request_header"
 			await this._getFormFragment(sFragmentName).then(function (oVBox) {
-				oRequestFormPage.insertContent(oVBox, 0);
+				oRequestFormPage.insertContent(oVBox, 1);
 			});
 		},
 
@@ -240,25 +261,58 @@ sap.ui.define([
 			await this._removeByLocalId("approval_log");
 
 			const oList = await this._getFormFragment("req_item_list");
-			await this._replaceContentAt(oPage, 1, oList);
+			await this._replaceContentAt(oPage, 2, oList);
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
 			if (bApproval) {
-				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
-				for (const row of aApprover) {
-					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
-						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") ||
-							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
-						break;
+				var aApprover = await
+					ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
+
+				var sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				var sRequestOwnerId = this._oReqModel.getProperty("/req_header/empid");
+
+				var bCurrentUserIsApprover = aApprover.some((row) =>
+					row.APPROVER_ID == sCurrentUserId ||
+					row.SUBSTITUTE_APPROVER_ID == sCurrentUserId
+				);
+
+				// Special case after Push Back reload: 
+				// If current user is the approver and not the requester, 
+				// do not show requester/claimant buttons. 
+				if (
+					sReqStatus === this._oConstant.RequestStatus.SEND_BACK &&
+					bCurrentUserIsApprover &&
+					sRequestOwnerId != sCurrentUserId
+				) {
+					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				} else {
+					var bPendingApprover = false;
+
+					for (const row of aApprover) {
+						if (
+							row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
+							(
+								row.SUBSTITUTE_APPROVER_ID == sCurrentUserId ||
+								row.APPROVER_ID == sCurrentUserId
+							)
+						) {
+							bPendingApprover = true;
+							break;
+						}
+					}
+
+					if (bPendingApprover) {
+						this._oReqModel.setProperty("/view", this._oConstant.PARMode.APPROVER);
 					} else {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
+						this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 					}
 				}
+				const oOwnerDetail = await this._getFormFragment("claimant_detail");
+				await this._replaceContentAt(oPage, 0, oOwnerDetail);
 				await ApprovalLog.getApprovalLogHistory(this._oApprovalLogModel, this._oDataModel, sReqId);
 				const oApproval = await this._getFormFragment("approval_log");
-				await this._replaceContentAt(oPage, 2, oApproval);
+				await this._replaceContentAt(oPage, 3, oApproval);
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
 			}
@@ -374,6 +428,12 @@ sap.ui.define([
 		},
 
 		async onSubmitRequest() {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqData = this._oReqModel.getData();
 			const aReqItemRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
@@ -425,6 +485,19 @@ sap.ui.define([
 									if (oResponse.Success) {
 										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 										this._oReqModel.setProperty("/view", 'view');
+
+										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
+											const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
+											oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
+											oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+											try {
+												await oAction.execute();
+											} catch (oError) {
+												MessageBox.error(oError.message);
+											} finally {
+												BusyIndicator.hide();
+											}
+										}										
 
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
 										await this._loadRequest(sCurrentReqId);
@@ -536,6 +609,12 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
 			await this._showItemCreate(false);
 			this._loadSelections();
@@ -580,6 +659,13 @@ sap.ui.define([
 		},
 
 		onOpenItemEdit(oEvent) {
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 
@@ -680,7 +766,13 @@ sap.ui.define([
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 				: oReqItem.ROUND_TRIP || false,
-				internal_order			: oReqItem.INTERNAL_ORDER || null
+				internal_order			: oReqItem.INTERNAL_ORDER || null,
+				policy_year				: oReqItem.POLICY_YEAR || null,
+				dependent_national_id	: oReqItem.DEPENDENT_NATIONAL_ID || null,
+				insurance_medical_provider_id: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
+				insurance_medical_provider_name: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null,
+				doc3_filename			: oReqItem.ATTACHMENT3 || "",
+				doc4_filename			: oReqItem.ATTACHMENT4 || "",
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1129,6 +1221,12 @@ sap.ui.define([
 
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			const oReqHeader = oData.req_header;
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
@@ -1177,7 +1275,7 @@ sap.ui.define([
 			BusyIndicator.show(0);
 
 			try {
-				let sAttachment1_SFID, sAttachment2_SFID;
+				let sAttachment1_SFID, sAttachment2_SFID, sAttachment3_SFID, sAttachment4_SFID ;
 				if (oReqItem.doc1) {
 					const sAttachment1Binary = await Attachment.getFileAsBinary(oReqItem.doc1);
 					sAttachment1_SFID = await Attachment.postAttachment(oReqItem.doc1.name, sAttachment1Binary, sEmpId);
@@ -1186,8 +1284,20 @@ sap.ui.define([
 					const sAttachment2Binary = await Attachment.getFileAsBinary(oReqItem.doc2);
 					sAttachment2_SFID = await Attachment.postAttachment(oReqItem.doc2.name, sAttachment2Binary, sEmpId);
 				}
+				if (oReqItem.doc3) {
+					const sAttachment3Binary = await Attachment.getFileAsBinary(oReqItem.doc3);
+					sAttachment3_SFID = await Attachment.postAttachment(oReqItem.doc3.name, sAttachment3Binary, sEmpId);
+				}
+				if (oReqItem.doc4) {
+					const sAttachment4Binary = await Attachment.getFileAsBinary(oReqItem.doc4);
+					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
+				}
 
-				if (oReqItem.cash_advance) {
+				if (oReqItem.claim_type_item_id === this._oConstant.ClaimTypeItem.MED_ADVANCE) {
+					oReqItem.cost_center = this._oConstant.MedicalAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account = this._oConstant.MedicalAdvanceInfo.GL_ACCOUNT;
+				}
+				else if (oReqItem.cash_advance) {
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
@@ -1195,8 +1305,8 @@ sap.ui.define([
 						? oReqHeader.altcostcenter
 						: oReqHeader.costcenter;
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
-					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
+					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {
@@ -1281,11 +1391,17 @@ sap.ui.define([
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
 					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
 					ROUND_TRIP:					  !!oReqItem.round_trip,
-					INTERNAL_ORDER: 			  oReqItem.internal_order || null
+					INTERNAL_ORDER: 			  oReqItem.internal_order || null,
+					POLICY_YEAR: 				  oReqItem.policy_year || null,
+					DEPENDENT_NATIONAL_ID:		  oReqItem.dependent_national_id || null,
+					INSURANCE_MEDICAL_PROVIDER_ID:oReqItem.insurance_medical_provider_id || null,
+					INSURANCE_MEDICAL_PROVIDER_NAME:oReqItem.insurance_medical_provider_name || null
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
 				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
+				if (sAttachment3_SFID) oPayload.ATTACHMENT3 = `${sAttachment3_SFID} - ${oReqItem.doc3.name}`;
+				if (sAttachment4_SFID) oPayload.ATTACHMENT4 = `${sAttachment4_SFID} - ${oReqItem.doc4.name}`;
 				
 				if (bIsEdit) {
 					const sReqSubId = String(oReqItem.req_subid || "").trim();
@@ -1304,6 +1420,20 @@ sap.ui.define([
 						oReqItem.doc2_delete = null;
 					}
 
+					if (oReqItem.doc3_delete) {
+						var sSFID = oReqItem.doc3_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT3 = null;
+						oReqItem.doc3_delete = null;
+					}
+
+					if (oReqItem.doc4_delete) {
+						var sSFID = oReqItem.doc4_delete?.split(" - ")[0];
+						await Attachment.deleteAttachment(sSFID);
+						oPayload.ATTACHMENT4 = null;
+						oReqItem.doc4_delete = null;
+					}
+
 					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
@@ -1317,7 +1447,7 @@ sap.ui.define([
 					await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
 					await this._oDataModel.submitBatch("itemSave");
 
-					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID,sAttachment3_SFID, sAttachment4_SFID)
 
 				} else {
 					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1332,7 +1462,7 @@ sap.ui.define([
 					}
 
 					// upload Child MDF
-					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID, sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID, sAttachment2_SFID, sAttachment3_SFID, sAttachment4_SFID)
 
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
@@ -1383,6 +1513,18 @@ sap.ui.define([
 			const oData = this._oReqModel.getProperty("/req_item")
 			oData.doc2 = oEvent.getParameters("files").files[0];
 			if(oData.doc2_delete) oData.doc2_delete = null;
+		},
+
+		onImportChange3(oEvent) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc3 = oEvent.getParameters("files").files[0];
+			if(oData.doc3_delete) oData.doc3_delete = null;
+		},
+
+		onImportChange4(oEvent) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc4 = oEvent.getParameters("files").files[0];
+			if(oData.doc4_delete) oData.doc4_delete = null;
 		},
 
 		async _upsertParticipantsForItem(sReqId, sReqSubId, aParticipants) {
@@ -1906,6 +2048,8 @@ sap.ui.define([
 					{ label: "Category/Purpose (Mobile) Desc", property: "MOBILE_CATEGORY_PURPOSE_DESC", type: "string" },
 					{ label: "Attachment 1", property: "ATTACHMENT 1", type: "string" },
 					{ label: "Attachment 2", property: "ATTACHMENT 2", type: "string" },
+					{ label: "Attachment 3", property: "ATTACHMENT 3", type: "string" },
+					{ label: "Attachment 4", property: "ATTACHMENT 4", type: "string" },
 					{ label: "Start Date", property: "START DATE", type: "date" },
 					{ label: "End Date", property: "END DATE", type: "date" },
 					{ label: "Vehicle Ownership ID", property: "VEHICLE OWNERSHIP_ID", type: "string" },
@@ -1946,7 +2090,9 @@ sap.ui.define([
 					{ label: "Lodging Category ID", property: "LODGING CATEGORY", type: "string" },
 					{ label: "Lodging Category Desc", property: "LODGING_CATEGORY_DESC", type: "string" },
 					{ label: "Estimated Participants", property: "ESTIMATED PARTICIPANTS", type: "string" },
-					{ label: "Cash Advance (Yes/No)", property: "CASH ADVANCE", type: "string" }
+					{ label: "Cash Advance (Yes/No)", property: "CASH ADVANCE", type: "string" },
+					{ label: "Insurance Medical Provider ID", property: " INSURANCE_MEDICAL_PROVIDER_ID", type: "string" },
+					{ label: "Insurance Medical Provider Name", property: "INSURANCE_MEDICAL_PROVIDER_NAME", type: "string" }
 				];
 
 				const itemsLabels = itemsColumns.map(c => c.label);
@@ -2278,6 +2424,10 @@ sap.ui.define([
 
 					// special initialization based on claim type item
 					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.MED_ADVANCE:
+							this._oReqModel.setProperty("/req_item/cash_advance",true);
+							this._oReqModel.setProperty("/req_item/policy_year",String(new Date().getFullYear()));
+						break;
 						// set visible for the number of family member and traveller when choosing travel with Family Now
 						case Constants.ClaimTypeItem.LOD_TUKAR:
 						case Constants.ClaimTypeItem.MKN_TUKAR:
@@ -2372,7 +2522,9 @@ sap.ui.define([
 				"i_currency_code",
 				"i_currency_rate",
 				"i_type_of_prof_body",
-				"i_no_of_traveler"
+				"i_no_of_traveler",
+				"i_attachment_3",
+				"i_attachment_4"
 			];
 
 			aControlIds.forEach(id => {
@@ -2862,7 +3014,25 @@ sap.ui.define([
         const aSelectedKeys = aSelectedItems.map(oItem => oItem.getKey()) || [];
 
         await RequestUtility._getEntitledMeterCube(aSelectedKeys);
-        }
+        },
+
+		onChange_Dependent: async function (oEvent) {
+
+			const sDependentNo =oEvent.getSource().getSelectedKey();
+			const oAction =this._oDataModel.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter(
+				"dependentNo",
+				sDependentNo
+			);
+
+			await oAction.execute();
+
+			const sNationalId=
+				oAction.getBoundContext().getObject().value;
+
+			this._oReqModel.setProperty("/req_item/dependent_national_id",sNationalId);
+		}
 
 	});
 });

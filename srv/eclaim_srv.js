@@ -10,6 +10,7 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
+const UpdateMedical = require('./utils/UpdateMedical');
 
 module.exports = (srv) => {
 
@@ -1092,13 +1093,22 @@ module.exports = (srv) => {
         //RT0001 and RT0002 - travel and reimbursement
         //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
         const today = new Date();
-        const baseline = new Date();
 
+        const baseline = new Date();
         baseline.setMonth(baseline.getMonth() - 3);
+
+        const baseline15 = new Date();
+        baseline15.getDate()
+        baseline15.setDate(baseline15.getDate() - 14); // considering the payment itself
+
+        const baseline30 = new Date();
+        baseline30.setDate(baseline30.getDate() - 29); // considering the payment itself
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
-        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS } = srv.entities;
+        const sMedBaselineDate15 = baseline15.toISOString().slice(0, 10);
+        const sMedBaselineDate30 = baseline30.toISOString().slice(0, 10);
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, ZEMP_APPROVED_PREAPPROVAL } = srv.entities;
         const tx = cds.tx(req);
 
         let aResult = [];
@@ -1114,6 +1124,23 @@ module.exports = (srv) => {
             }).and(
                 `TRIP_END_DATE > '${sBaselineDate}' AND 
                 TRIP_END_DATE <= '${sTodayDate}'`)
+        );
+
+        const aRequest15 = await tx.run(
+            SELECT.from(ZEMP_APPROVED_PREAPPROVAL)
+                .where({ PAYMENT_DATE: sMedBaselineDate15 })
+        );
+
+        const aRequest30 = await tx.run(
+            SELECT.from(ZEMP_APPROVED_PREAPPROVAL)
+                .where({ PAYMENT_DATE: sMedBaselineDate30 })
+        );
+
+        // Get medical CC list once only
+        const sMedCCEmail = await EmailReminder.getMedCCList(
+            ZEMP_MASTER,
+            ZCONSTANTS,
+            tx
         );
 
         for (var oRequest of preapproval) {
@@ -1155,6 +1182,62 @@ module.exports = (srv) => {
             } catch (error) {
                 console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
                 req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
+        }
+
+        for (var oRequest15 of aRequest15) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                sScenario = Constant.ReminderScenario.MEDICAL_ADVANCE;
+                sAgingDay = 15;
+
+                aResult.push({
+                    empName: oRequest15.NAME,
+                    empEmail: oRequest15.EMAIL,
+                    ccEmail: sMedCCEmail,
+                    tripEndDate: new Date(oRequest15.PAYMENT_DATE).toISOString().slice(0, 10),
+                    scenario: sScenario,
+                    milestone: sAgingDay
+                })
+
+            } catch (error) {
+                console.log(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
+                req.info(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
+                continue;
+            }
+        }
+
+        for (var oRequest30 of aRequest30) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                sScenario = Constant.ReminderScenario.MEDICAL_ADVANCE;
+                sAgingDay = 30;
+
+                aResult.push({
+                    empName: oRequest30.NAME,
+                    empEmail: oRequest30.EMAIL,
+                    ccEmail: sMedCCEmail,
+                    tripEndDate: new Date(oRequest30.PAYMENT_DATE).toISOString().slice(0, 10),
+                    scenario: sScenario,
+                    milestone: sAgingDay
+                })
+
+            } catch (error) {
+                console.log(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
+                req.info(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
                 continue;
             }
         }
@@ -2891,7 +2974,7 @@ module.exports = (srv) => {
                 SELECT.one.from('ZEMP_MASTER')
                     .where({ EEID: USER_ID })
                     .columns('EMAIL', 'NAME')
-            );            
+            );
             const ibaseTime = new Date().getTime();
             let ilogIndexCounter = 0;
             // =======================================================================
@@ -4143,7 +4226,7 @@ module.exports = (srv) => {
             SELECT.one.from('ZEMP_MASTER')
                 .where({ EEID: sUserID })
                 .columns('EMAIL', 'NAME')
-        );        
+        );
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================
@@ -4407,6 +4490,201 @@ module.exports = (srv) => {
         }
     });
 
+
+    srv.on('getDependentNationalId', async (req) => {
+
+        const { dependentNo } = req.data;
+
+        const oDependent = await SELECT.one
+            .from('ZEMP_DEPENDENT')
+            .where({
+                DEPENDENT_NO: dependentNo
+            });
+
+        return oDependent?.NATIONAL_ID || null;
+    });
+
+    srv.on('getRemainingMedicalEntitlement', async (req) => {
+
+        const tx = cds.tx(req);
+        const { empId } = req.data;
+
+        console.log("empId:", empId);
+
+        const oEmployee = await tx.run(
+            SELECT.one
+                .from(Constant.Entities.ZEMP_MASTER)
+                .columns(
+                    Constant.EntitiesFields.EEID,
+                    Constant.EntitiesFields.ROLE,
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                )
+                .where({
+                    [Constant.EntitiesFields.EEID]: empId
+                })
+        );
+
+        console.log("oEmployee:", JSON.stringify(oEmployee, null, 2));
+
+        if (!oEmployee) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        const sEmployeeRole = oEmployee[Constant.EntitiesFields.ROLE];
+
+        const aRules = await tx.run(
+            SELECT.from(Constant.Entities.ZELIGIBILITY_RULE)
+                .where({
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]:
+                        Constant.ClaimType.MEDICAL
+                })
+        );
+
+        const bHasSpecificRole = aRules.some(
+            rule => rule.ROLE_ID === sEmployeeRole
+        );
+
+        const aFilteredRules = aRules.filter(rule =>
+            bHasSpecificRole
+                ? rule.ROLE_ID === sEmployeeRole
+                : rule.ROLE_ID === Constant.Wildcard.All
+        );
+
+        const oRule = aFilteredRules[0];
+
+        console.log("Selected Rule:", oRule);
+
+        if (!oRule) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
+            return {
+                entitlement: Constant.UnlimitedAmount,
+                approved: parseFloat(
+                    oEmployee[
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    ] || 0
+                ),
+                remaining: Constant.UnlimitedAmount
+            };
+        }
+
+        const fEligibleAmount = parseFloat(
+            oRule.ELIGIBLE_AMOUNT || 0
+        );
+
+        const fConsumedAmount = parseFloat(
+            oEmployee[
+            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+            ] || 0
+        );
+
+        const fRemaining = fEligibleAmount - fConsumedAmount;
+
+        console.log("fEligibleAmount:", fEligibleAmount);
+        console.log("fConsumedAmount:", fConsumedAmount);
+        console.log("fRemaining:", fRemaining);
+
+        return {
+            entitlement: fEligibleAmount,
+            approved: fConsumedAmount,
+            remaining: Math.max(0, fRemaining)
+        };
+    });
+
+    /**
+        * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updateMedicalUsedAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateMedical.updateUsedMedicalAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });
+
+    /**
+        * Clear MEDICAL_INSURANCE_ENTITLEMENT in ZEMP_MASTER table every year (Job Scheduler)
+        * Job schedule to run on early of the year
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('clearMedicalEntitlement', async (req) => {
+        console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
+        try {
+            const { ZEMP_MEDICAL_ENT_HISTORY } = srv.entities;
+
+            const iPreviousYear = new Date().getFullYear() - 1;
+
+            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => {
+
+                // Keep all
+                const aAllEmployees = await tx.run(
+                    SELECT.from(ZEMP_MASTER).columns(
+                        Constant.EntitiesFields.EEID,
+                        Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    )
+                );
+
+                // Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
+                const aHistoryEntries = aAllEmployees.map(item => ({
+                    YEAR: iPreviousYear,
+                    EMP_ID: item[Constant.EntitiesFields.EEID],
+                    MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
+                }));
+
+                const iHistoryCount = aHistoryEntries.length;
+
+                // UPSERT history records (Inserts new entries or updates existing ones for current year)
+                await tx.run(
+                    UPSERT(aHistoryEntries).into(ZEMP_MEDICAL_ENT_HISTORY)
+                );
+
+                // Perform the mass update to reset entitlement
+                const iUpdateCount = await tx.run(
+                    UPDATE(ZEMP_MASTER)
+                        .set({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: 0
+                        })
+                        .where({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
+                                [Constant.ComparisonOperators.GreaterThan]: 0
+                            }
+                        })
+                );
+                return {
+                    iUpdateCount,
+                    iHistoryCount
+                };
+            });
+            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
+            return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
+        } catch (error) {
+            console.error('[JOB ERROR] Annual entitlement reset failed:', error);
+            return req.error(500, `Job execution failed: ${error.message}`);
+        }
+    });
+
     srv.on('batchUpsertCompanyInfo', async (req) => {
         try {
             const { entityName, data } = req.data;
@@ -4497,5 +4775,28 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Retrieve policy information for selected dependent.
+     * Policy lookup and year filtering 
+     * @private
+     */
+    srv.on("getPolicyInfo", async (req) => {
+
+        const { ZEMP_CLAIM_POLICY_VALID } = srv.entities;
+        const { dependentNationalId } = req.data;
+
+        const aRows = await SELECT.from(ZEMP_CLAIM_POLICY_VALID)
+            .where({
+                DEPENDENT_NATIONAL_ID: dependentNationalId
+            })
+            .columns(
+                "POLICY_YEAR",
+                "POLICY_NUMBER"
+            );
+
+        return {
+            policies: aRows
+        };
+    });
 
 }
