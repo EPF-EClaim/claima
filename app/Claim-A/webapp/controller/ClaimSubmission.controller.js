@@ -92,6 +92,7 @@ sap.ui.define([
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
 			this._oDeleteAttachmentDialog = null;
+			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
 		
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -285,10 +286,10 @@ sap.ui.define([
 
 			// display initial fragments
 			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 0);
+				oPage.insertContent(oVBox, 1);
 			});
 			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
+				oPage.insertContent(oVBox, 2);
 			});
 		},
 
@@ -390,12 +391,11 @@ sap.ui.define([
 					null
 				);
 
-				// set view-only features
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
+
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					if (
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
-					) {
+					if (sStatusId !== this._oConstant.ClaimStatus.DRAFT && !bIsSendBack) {
 						oClaimSubmissionModel.setProperty("/view_only", true)
 					}
 				}
@@ -403,51 +403,48 @@ sap.ui.define([
 					this._setClaimItemTableToolbar(false);
 				}
 
-				// show approval log fragment for non-draft
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
+				if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 					this._setApprovalLog(true);
 					Utility.updateFooterState(
 						this.getView(),
 						oClaimSubmissionModel,
 						this._oConstant,
-						this._oConstant.ClaimFooterMode.VIEW_ONLY
+						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
 					);
 
-
-					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
 					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 					await ApprovalLog.getApprovalLogHistory(oApprovalLogModel, this._oModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
-					// approver view
-					//// set approver view if current user is approver
-					let oApprovalLogFragment = await this._getFormFragment("approval_log");
-					let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
-					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-						var sUserId = this._oSessionModel.getProperty("/userId");
-						if (sUserId) {
-							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
-								(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
-								oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
-							);
-							if (iItemIndex !== -1) {
-								oClaimSubmissionModel.setProperty("/is_approver", true);
+					if (!bIsSendBack) {
+						//// set approver view if current user is approver
+						let oApprovalLogFragment = await this._getFormFragment("approval_log");
+						let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
+						if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+							var sUserId = this._oSessionModel.getProperty("/userId");
+							if (sUserId) {
+								let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+									(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
+									oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
+								);
+								if (iItemIndex !== -1) {
+									oClaimSubmissionModel.setProperty("/is_approver", true);
+								}
 							}
+							this._setOwnerDetail(true);
 						}
-					}
-					//// change screen details if approver
-					if (oClaimSubmissionModel.getProperty("/is_approver")) {
-						Utility.updateFooterState(
-							this.getView(),
-							oClaimSubmissionModel,
-							this._oConstant,
-							this._oConstant.ClaimFooterMode.APPROVER
-						);
+						//// change screen details if approver
+						if (oClaimSubmissionModel.getProperty("/is_approver")) {
+							Utility.updateFooterState(
+								this.getView(),
+								oClaimSubmissionModel,
+								this._oConstant,
+								this._oConstant.ClaimFooterMode.APPROVER
+							);
 
-
+						}
 					}
 				}
 				else {
@@ -541,6 +538,7 @@ sap.ui.define([
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+				Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
@@ -1012,12 +1010,29 @@ sap.ui.define([
 			if (bCheckPage) {
 				// display approval log
 				await this._getFormFragment("approval_log", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 2);
+					oPage.insertContent(oVBox, 3);
 				});
 			}
 			else {
 				// remove approval log
 				var oApprovalLogFragment = await this._getFormFragment("approval_log");
+				if (oApprovalLogFragment) {
+					oPage.removeContent(oApprovalLogFragment);
+				}
+			}
+		},
+
+		_setOwnerDetail: async function (bCheckPage) {
+			var oPage = this.byId("page_claimsubmission");
+			if (bCheckPage) {
+				// display approval log
+				await this._getFormFragment("claimant_detail", true).then(function (oVBox) {
+					oPage.insertContent(oVBox, 0);
+				});
+			}
+			else {
+				// remove approval log
+				var oApprovalLogFragment = await this._getFormFragment("claimant_detail");
 				if (oApprovalLogFragment) {
 					oPage.removeContent(oApprovalLogFragment);
 				}
@@ -1432,7 +1447,13 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
-
+			// check if header currently in edit mode, if yes show warning to save first
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_create"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// Destroy previous detail fragment to avoid stale bindings
 			if (this._oClaimFragments["claimsubmission_claimdetails_input"]) {
 				const oFrag = await this._oClaimFragments["claimsubmission_claimdetails_input"];
@@ -1447,8 +1468,12 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				oPage.removeContent(oClaimItemFragment);
 			}
+
+			if (await this._getFormFragment("approval_log")) {
+				this._setApprovalLog(false);
+			}
 			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
+				oPage.insertContent(oVBox, 2);
 			});
 			// set new claim submission model;
 			if (Number.isInteger(indexNumber)) {
@@ -1494,7 +1519,7 @@ sap.ui.define([
 
 				oInputModel.setProperty("/claim_item/gl_account", glAccount);
 				//// get cost center
-				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || null;
+				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center") || null;
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
 				//// get descriptions
 				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
@@ -1579,8 +1604,13 @@ sap.ui.define([
 
 		},
 
-
 		onEdit_ClaimSummary: function (oItem) {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_edit"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
@@ -1711,6 +1741,12 @@ sap.ui.define([
 			switch (oAction) {
 				//// Save Draft
 				case this._oConstant.Claim_Action.DRAFT:
+					const oEditButtonModelDraft = this.getView().getModel("editButtonModel");
+					if (oEditButtonModelDraft && oEditButtonModelDraft.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_savedraft"),
@@ -1733,6 +1769,12 @@ sap.ui.define([
 					break;
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
+					const oEditButtonModel = this.getView().getModel("editButtonModel");
+					if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+						return MessageBox.error(Utility.getText("msg_error_unsaved_header_submit"), {
+							title: Utility.getText("msg_error_unsaved_header_title")
+						});
+					}
 					this._pendingAction = oAction;
 
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2951,7 +2993,8 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			if (!bCanProceed) {
 				return;
 			}
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
@@ -3130,6 +3173,12 @@ sap.ui.define([
 		},
 
 		_saveClaimItem: async function () {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
+				return MessageBox.error(Utility.getText("msg_error_unsaved_header_text"), {
+					title: Utility.getText("msg_error_unsaved_header_title")
+				});
+			}
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -3996,7 +4045,8 @@ sap.ui.define([
 				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
 			) {
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+				if (!bCanProceed) {
 					return;
 				}
 
@@ -4036,7 +4086,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_from_location");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (!oBinding || !oInputModel) return;
+			if (!oBinding || !oInputModel) return;			
 
 			// set description value
 			var oSelectedItem = oEvent ? oEvent.getParameters().selectedItem : null;
@@ -4067,6 +4117,7 @@ sap.ui.define([
 			var oSelect = this.byId("select_claimdetails_input_to_state_id");
 			var oBinding = oSelect?.getBinding("items");
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (!oBinding || !oInputModel) return;
 
 			// set description value
@@ -4089,6 +4140,7 @@ sap.ui.define([
 
 			// reset current value of To State
 			oInputModel.setProperty("/claim_item/to_state_id", null)
+			oPropertyModel.setProperty("/to_state_id/is_required", true)
 			this.onSelect_ClaimDetails_ToState();
 		},
 
@@ -4246,51 +4298,58 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			await this._afterLoadFragments();
-			if (oClaimItemFragment) {
-				// disable item visibility
-				this._setAllControlsVisible(false);
-
-				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/view_only")) {
-					if (this.byId("button_claimdetails_input_return").getVisible()) {
-						this.byId("button_claimdetails_input_return").setVisible(false);
-					}
-					this._setAllControlsEditable(true);
-				}
-
-				// clear fileuploader fields
-				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
-				}
-
-				oPage.removeContent(oClaimItemFragment);
-
-				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 1);
-				});
-				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-
-				let sFooterMode;
-
-				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/view_only")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-				}
-				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else {
-					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				}
-
-				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-
-				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+			if (!oClaimItemFragment) {
+				await this._afterLoadFragments();
+				return;
 			}
+
+			// disable item visibility
+			this._setAllControlsVisible(false);
+
+			// approver view changes
+			if (oClaimSubmissionModel.getProperty("/view_only")) {
+				if (this.byId("button_claimdetails_input_return").getVisible()) {
+					this.byId("button_claimdetails_input_return").setVisible(false);
+				}
+				this._setAllControlsEditable(true);
+			}
+
+			// clear fileuploader fields
+			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+				this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+			}
+
+			oPage.removeContent(oClaimItemFragment);
+
+			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
+				oPage.insertContent(oVBox, 2);
+			});
+
+			await this._afterLoadFragments();
+
+			// Reload when item cancellation
+			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+
+			let sFooterMode;
+
+			if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else if (oClaimSubmissionModel.getProperty("/view_only")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
+			}
+			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+			}
+			else {
+				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+			}
+
+			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+
+			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+			this._setEnabledToolbarFooter();
 		},
 
 		_updateClaimSubmission: async function (oAction) {
@@ -4307,11 +4366,13 @@ sap.ui.define([
 					return;
 				}
 
-				// run validator before proceeding 
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
-				if (!bCanProceed) {
-					return;
+				if (oAction !== 'Delete Report') {
+					// run validator before proceeding 
+					CustomValidator.init(this.getOwnerComponent(), this.getView());
+					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+					if (!bCanProceed) {
+						return;
+					}
 				}
 
 				// Total Claim Amount Validation checking
@@ -4336,7 +4397,7 @@ sap.ui.define([
 				// solving the issue of having 0 amount claim item when submitting claims
 				// CustomValidator.init(this.getOwnerComponent(), this.getView());
 				// if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-				// 	return;
+				//  return;
 				// }
 
 				//// update last modified date
@@ -4459,24 +4520,7 @@ sap.ui.define([
 								var oModelAppr = this.getView().getModel();
 								var oEmployeeViewModel = this.getView().getModel("employee_view");
 								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-								if (!oResponse || !oResponse.Success) {
-
-									try {
-										await budgetCheck.backendBudgetChecking(
-											this,
-											this._oConstant.SubmissionTypePrefix.CLAIM,
-											this._oConstant.BudgetCheckAction.REJECT
-										);
-
-									} catch (oRollbackError) {
-										console.error(
-											"[Claim Submission] Budget rollback failed:",
-											oRollbackError
-										);
-									}
-
-									throw new Error(Utility.getText("msg_failed_no_approver"));
-								}
+								if (oResponse.Success) {
 									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
 										const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
@@ -4506,6 +4550,9 @@ sap.ui.define([
 										}
 									}
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
+								} else {
+									throw new Error(Utility.getText("msg_failed_no_approver"))
+								}
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
@@ -4587,55 +4634,40 @@ sap.ui.define([
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-								if (!oResponse || !oResponse.Success) {
-
+							if (oResponse.Success) {
+								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+									const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
+									oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									try {
-										await budgetCheck.backendBudgetChecking(
-											this,
-											this._oConstant.SubmissionTypePrefix.CLAIM,
-											this._oConstant.BudgetCheckAction.REJECT
-										);
-
-									} catch (oRollbackError) {
-										console.error(
-											"[Claim Submission] Budget rollback failed:",
-											oRollbackError
-										);
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
 									}
+								}
 
-									throw new Error(Utility.getText("msg_failed_no_approver"));
+								// update Medical entitlement usage if claim type is Medical
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+									oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
+									const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									try {
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
+									}
 								}
-							// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-							if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-								const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-								oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
-								oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								try {
-									await oAction.execute();
-								} catch (oError) {
-									MessageBox.error(oError.message);
-								} finally {
-									BusyIndicator.hide();
-								}
+
+								oMsg = Utility.getText("msg_claimsubmission_pending", []);
+							} else {
+								throw new Error(Utility.getText("msg_failed_no_approver"))
 							}
-
-							// update Medical entitlement usage if claim type is Medical
-							if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
-								oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
-								const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
-								oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-								oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								try {
-									await oAction.execute();
-								} catch (oError) {
-									MessageBox.error(oError.message);
-								} finally {
-									BusyIndicator.hide();
-								}
-							}
-
-							oMsg = Utility.getText("msg_claimsubmission_pending", []);
-
 							break;
 
 						default:
@@ -4653,11 +4685,14 @@ sap.ui.define([
 							this.onBack_ClaimSubmission();
 							break;
 						case 'Submit Report':
-							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
-								var submittedDate = this._getJsonDate(new Date());
-								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+							const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
+							if (sStatus != this._oConstant.ClaimStatus.APPROVED) {
+								oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
+								if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+									var submittedDate = this._getJsonDate(new Date());
+									oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+								}
 							}
 
 							this.onBack_ClaimSubmission();
@@ -4674,6 +4709,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
+
 
 		_updateClaimItems: async function () {
 			// get input model
@@ -5593,7 +5629,8 @@ sap.ui.define([
 			const oInputItemModel = this.getView().getModel("claimitem_input");
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			if (!bCanProceed) {
 				return;
 			}
 

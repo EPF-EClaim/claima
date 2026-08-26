@@ -160,6 +160,7 @@ resources:
   - name: claima-backend-destination
     type: org.cloudfoundry.managed-service
     parameters:
+      keep-existing: true
       service: destination
       service-plan: lite
       config:
