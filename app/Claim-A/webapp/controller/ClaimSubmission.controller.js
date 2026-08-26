@@ -329,7 +329,60 @@ sap.ui.define([
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
 
-				// disable footer buttons if claim already cancelled
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+				const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+				const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+
+				if (sStatusId === this._oConstant.ClaimStatus.SEND_BACK) {
+					const oApprovalLogModel = this.getOwnerComponent().getModel("approval_log");
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+					await ApprovalLog.getApproverList(
+						oApprovalLogModel,
+						oEmployeeViewModel,
+						sClaimId,
+						sClaimTypeId
+					);
+
+					const aApprovalList = oApprovalLogModel.getProperty("/approval") || [];
+
+					const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
+						oApproval.APPROVER_ID === sCurrentUserId ||
+						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
+					);
+
+					if (
+						bCurrentUserIsApprover &&
+						sClaimOwnerId !== sCurrentUserId
+					) {
+						oClaimSubmissionModel.setProperty("/is_approver", false);
+						oClaimSubmissionModel.setProperty("/view_only", true);
+
+						this._setClaimItemTableToolbar(false);
+						this._setApprovalLog(true);
+
+						await ApprovalLog.getApprovalLogHistory(
+							oApprovalLogModel,
+							this._oModel,
+							sClaimId
+
+						);
+
+						this.byId("approval_log_table")?.getBinding("rows")?.refresh();
+
+						Utility.updateFooterState(
+							this.getView(),
+							oClaimSubmissionModel,
+							this._oConstant,
+							this._oConstant.ClaimFooterMode.VIEW_ONLY
+						);
+						
+						return;
+					}
+				}
+
 				Utility.updateFooterState(
 					this.getView(),
 					oClaimSubmissionModel,
@@ -4404,9 +4457,26 @@ sap.ui.define([
 								// else, do not send message claim submission pending
 								// instead, jump to catch statement with error no approver found
 								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
+								var oEmployeeViewModel = this.getView().getModel("employee_view");
 								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-								if (oResponse.Success) {
+								if (!oResponse || !oResponse.Success) {
+
+									try {
+										await budgetCheck.backendBudgetChecking(
+											this,
+											this._oConstant.SubmissionTypePrefix.CLAIM,
+											this._oConstant.BudgetCheckAction.REJECT
+										);
+
+									} catch (oRollbackError) {
+										console.error(
+											"[Claim Submission] Budget rollback failed:",
+											oRollbackError
+										);
+									}
+
+									throw new Error(Utility.getText("msg_failed_no_approver"));
+								}
 									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
 										const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
@@ -4420,10 +4490,22 @@ sap.ui.define([
 											BusyIndicator.hide();
 										}
 									}
+
+									// update Medical entitlement usage if claim type is Medical
+									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+										oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
+										const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										try {
+											await oAction.execute();
+										} catch (oError) {
+											MessageBox.error(oError.message);
+										} finally {
+											BusyIndicator.hide();
+										}
+									}
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
-								} else {
-									throw new Error(Utility.getText("msg_failed_no_approver"))
-								}
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
@@ -4503,28 +4585,59 @@ sap.ui.define([
 							// else, do not send message claim submission pending
 							// instead, jump to catch statement with error no approver found
 							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
+							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-							if (oResponse.Success) {
-								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-									const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-									oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
-									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									try {
-										await oAction.execute();
-									} catch (oError) {
-										MessageBox.error(oError.message);
-									} finally {
-										BusyIndicator.hide();
-									}
-								}
+								if (!oResponse || !oResponse.Success) {
 
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);
-							} else {
-								throw new Error(Utility.getText("msg_failed_no_approver"))
+									try {
+										await budgetCheck.backendBudgetChecking(
+											this,
+											this._oConstant.SubmissionTypePrefix.CLAIM,
+											this._oConstant.BudgetCheckAction.REJECT
+										);
+
+									} catch (oRollbackError) {
+										console.error(
+											"[Claim Submission] Budget rollback failed:",
+											oRollbackError
+										);
+									}
+
+									throw new Error(Utility.getText("msg_failed_no_approver"));
+								}
+							// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
+							if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+								const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
+								oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
+								oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								try {
+									await oAction.execute();
+								} catch (oError) {
+									MessageBox.error(oError.message);
+								} finally {
+									BusyIndicator.hide();
+								}
 							}
+
+							// update Medical entitlement usage if claim type is Medical
+							if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+								oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
+								const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+								oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+								oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+								try {
+									await oAction.execute();
+								} catch (oError) {
+									MessageBox.error(oError.message);
+								} finally {
+									BusyIndicator.hide();
+								}
+							}
+
+							oMsg = Utility.getText("msg_claimsubmission_pending", []);
+
 							break;
+
 						default:
 							throw new Error("Invalid action selected: " + oAction);
 					}
