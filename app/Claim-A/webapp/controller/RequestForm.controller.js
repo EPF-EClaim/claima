@@ -247,14 +247,44 @@ sap.ui.define([
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
-				for (const row of aApprover) {
-					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
-						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") ||
-							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
-						break;
+
+				var sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				var sRequestOwnerId = this._oReqModel.getProperty("/req_header/empid");
+
+				var bCurrentUserIsApprover = aApprover.some((row) =>
+					row.APPROVER_ID == sCurrentUserId ||
+					row.SUBSTITUTE_APPROVER_ID == sCurrentUserId
+				);
+
+				// Special case after Push Back reload: 
+				// If current user is the approver and not the requester, 
+				// do not show requester/claimant buttons. 
+				if (
+					sReqStatus === this._oConstant.RequestStatus.SEND_BACK &&
+					bCurrentUserIsApprover &&
+					sRequestOwnerId != sCurrentUserId
+				) {
+					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				} else {
+					var bPendingApprover = false;
+
+					for (const row of aApprover) {
+						if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL &&
+							(
+								row.SUBSTITUTE_APPROVER_ID == sCurrentUserId ||
+								row.APPROVER_ID == sCurrentUserId
+							)
+						) {
+							bPendingApprover = true;
+							break;
+						}
+					}
+
+					if (bPendingApprover) {
+						this._oReqModel.setProperty("/view",
+							this._oConstant.PARMode.APPROVER);
 					} else {
-						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
+						this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 					}
 				}
 				const oOwnerDetail = await this._getFormFragment("claimant_detail");
