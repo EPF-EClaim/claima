@@ -2992,8 +2992,18 @@ sap.ui.define([
 					2. If Receipt Date is null, get item Bill Date
 					3. If Bill Date is null, get item Start Date
 					4. If Start Date is null, get header Trip Start Date 
+
+				Exception: Kilometer claim items (KILOMETER / KM) must NOT be auto-populated.
+				The Travel/Receipt Date for these claims is a mandatory field that the
+				claimant has to fill in manually, so we skip the fallback chain entirely
+				and let the required-field validation below prompt the user instead.
 			*/
-			if (oInputModel.getProperty("/claim_item/receipt_date") === null) {
+			const bIsKilometerClaimItem = [
+				this._oConstant.ClaimTypeItem.KILOMETER,
+				this._oConstant.ClaimTypeItem.KM
+			].includes(oInputModel.getProperty("/claim_item/claim_type_item_id"));
+
+			if (!bIsKilometerClaimItem && oInputModel.getProperty("/claim_item/receipt_date") === null) {
 				if (oInputModel.getProperty("/claim_item/bill_date") !== null) {
 					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
 				} else {
@@ -3003,6 +3013,17 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
 					}
 				}
+			}
+
+			// For Kilometer claim items, once a Travel/Receipt Date has been provided,
+			// the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+			if (bIsKilometerClaimItem &&
+				!!oInputModel.getProperty("/claim_item/receipt_date") &&
+				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
+				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
 			}
 
 			// Eligibility Checking
