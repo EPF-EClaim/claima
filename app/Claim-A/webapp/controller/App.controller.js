@@ -818,30 +818,11 @@ sap.ui.define([
 					oInputModel.setProperty("/claimtype/course_code/start_date", aKeyParts[2]);
 					oInputModel.setProperty("/claimtype/course_code/end_date", aKeyParts[3]);
 				}
-
-				// // set Session Number selection based on selected course code
-				// if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
-				// 	var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
-				// 	var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
-				// 	var aFilterSelectSessionNumber = [
-				// 		// ensure status is active
-				// 		new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-				// 		new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-				// 		new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-				// 		new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-				// 	];
-				// 	oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
-				// }
 			}
 			else {
 				// reset claim item values
 				oInputModel.setProperty("/claimtype/course_code/course_desc", null);
 			}
-			// // reset session number
-			// if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
-			// 	oInputModel.setProperty("/claimtype/course_code/session_number", null);
-			// 	this.onSelect_ClaimProcess_SessionNumber();
-			// }
 		},
 
 		/**
