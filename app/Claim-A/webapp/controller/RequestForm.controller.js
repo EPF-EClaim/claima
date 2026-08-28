@@ -167,146 +167,24 @@ sap.ui.define([
 
 		async _loadCorpoCardsForItem(sReqId) {
 
-			let aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
+			const aCorpoCards = this._oReqModel.getProperty("/corpo_cards") || [];
 
 			if (!sReqId || aCorpoCards.length === 0) {
 				return;
 			}
 
 			try {
-				// Fetch each card's validity window + PRINCIPLE flag from the
-				// card master, to filter out cards outside their valid date
-				// range and sort principal cards first.
-				const aCardNos = [...new Set(aCorpoCards.map((oCard) => oCard.CARD_NO).filter((sCardNo) => !!sCardNo))];
-				const mCardMasterByCardNo = {};
+				const oFunction = this._oDataModel.bindContext("/getCorpoCardsForItem(...)");
+				oFunction.setParameter("sReqId", sReqId);
+				oFunction.setParameter("sCorpoCards", JSON.stringify(aCorpoCards));
 
-				if (aCardNos.length > 0) {
-					try {
-						const oCardMasterList = this._oDataModel.bindList(
-							"/ZCORPORATE_CARD",
-							null,
-							null,
-							new Filter({
-								filters: aCardNos.map((sCardNo) => new Filter("CARD_NO", FilterOperator.EQ, sCardNo)),
-								and: false
-							}),
-							{ $$ownRequest: true, $select: "CARD_NO,START_DATE,END_DATE,PRINCIPLE" }
-						);
-						const aCardMasterCtx = await oCardMasterList.requestContexts(0, Infinity);
-						aCardMasterCtx.forEach((ctx) => {
-							const oCardMaster = ctx.getObject();
-							mCardMasterByCardNo[oCardMaster.CARD_NO] = oCardMaster;
-						});
-					} catch (e) {
-						console.error("Failed to load card master validity/principle info:", e);
-					}
-				}
+				await oFunction.execute();
 
-				// Only keep cards currently within their validity window
-				// (START_DATE <= today <= END_DATE). A missing START_DATE/
-				// END_DATE on the master record is treated as no restriction
-				// on that side, so cards without dates set aren't wrongly
-				// excluded.
-				const dToday = new Date();
-				dToday.setHours(0, 0, 0, 0);
+				const oContext = oFunction.getBoundContext();
+				const sResult = oContext.getObject("value");
+				const aEnrichedCards = sResult ? JSON.parse(sResult) : [];
 
-				aCorpoCards = aCorpoCards.filter((oCard) => {
-					const oCardMaster = mCardMasterByCardNo[oCard.CARD_NO];
-					if (!oCardMaster) return true;
-
-					const dStart = oCardMaster.START_DATE ? new Date(oCardMaster.START_DATE) : null;
-					const dEnd = oCardMaster.END_DATE ? new Date(oCardMaster.END_DATE) : null;
-
-					if (dStart) dStart.setHours(0, 0, 0, 0);
-					if (dEnd) dEnd.setHours(0, 0, 0, 0);
-
-					if (dStart && dToday < dStart) return false;
-					if (dEnd && dToday > dEnd) return false;
-					return true;
-				});
-
-				const oListBinding = this._oDataModel.bindList(
-					"/ZREQ_ITEM_CCC_PART",
-					null,
-					null,
-					[
-						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)
-					],
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$select: "CARD_NO,STATEMENT_DUE_AMT,SERVICE_TAX,CASHBACK,MERCHANT_REFUND_AMT,MERCHANT_REFUND_ARR"
-					}
-				);
-
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const aSavedParts = aCtx.map((ctx) => ctx.getObject());
-				const mTotalsByCard = {};
-
-				aSavedParts.forEach((oPart) => {
-					const sCardNo = oPart.CARD_NO;
-
-					if (!mTotalsByCard[sCardNo]) {
-						mTotalsByCard[sCardNo] = {
-							current_balance: 0,
-							service_tax: 0,
-							cashback: 0,
-							merchant_refunds_total: 0,
-							merchant_refunds_array: []
-						};
-					}
-
-					mTotalsByCard[sCardNo].current_balance += parseFloat(oPart.STATEMENT_DUE_AMT) || 0;
-					mTotalsByCard[sCardNo].service_tax += parseFloat(oPart.SERVICE_TAX) || 0;
-					mTotalsByCard[sCardNo].cashback += parseFloat(oPart.CASHBACK) || 0;
-					mTotalsByCard[sCardNo].merchant_refunds_total += parseFloat(oPart.MERCHANT_REFUND_AMT) || 0;
-
-					if (oPart.MERCHANT_REFUND_ARR) {
-						try {
-							const aParsed = JSON.parse(oPart.MERCHANT_REFUND_ARR);
-							mTotalsByCard[sCardNo].merchant_refunds_array.push(...aParsed);
-						} catch (e) {
-							console.warn("Failed to parse MERCHANT_REFUND_ARR for card:", sCardNo);
-						}
-					}
-				});
-
-				// Merge summed totals into the base corpo_cards list
-				aCorpoCards = aCorpoCards.map((oCard) => {
-					const oTotals = mTotalsByCard[oCard.CARD_NO] || {
-						current_balance: 0,
-						service_tax: 0,
-						cashback: 0,
-						merchant_refunds_total: 0,
-						merchant_refunds_array: []
-					};
-
-					const iAdvAmt = Math.max(
-                    0,
-                    	oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
-                	).toFixed(2);
-					
-					return {
-						...oCard,
-						PRINCIPLE: !!(mCardMasterByCardNo[oCard.CARD_NO]?.PRINCIPLE),
-						current_balance: oTotals.current_balance.toFixed(2),
-						service_tax: oTotals.service_tax.toFixed(2),
-						cashback: oTotals.cashback.toFixed(2),
-						merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
-						merchant_refunds: oTotals.merchant_refunds_array,
-						merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
-						advance_amount: iAdvAmt
-					};
-				});
-
-				// Sort principal cardholders first
-				aCorpoCards.sort((oA, oB) => {
-					const bPrincipleA = !!(mCardMasterByCardNo[oA.CARD_NO]?.PRINCIPLE);
-					const bPrincipleB = !!(mCardMasterByCardNo[oB.CARD_NO]?.PRINCIPLE);
-					return (bPrincipleB ? 1 : 0) - (bPrincipleA ? 1 : 0);
-				});
-
-				this._oReqModel.setProperty("/corpo_cards", aCorpoCards);
+				this._oReqModel.setProperty("/corpo_cards", aEnrichedCards);
 
 			} catch (e) {
 				console.error("Load corpo cards failed:", e);
@@ -3304,7 +3182,7 @@ sap.ui.define([
 				return;
 			}
 		
-			const oListBinding = this.getView().getModel().bindList("/ZEMP_MASTER");
+			const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER");
 		
 			const aFilters = aCardholderIds.map((sId) => new Filter("EEID", FilterOperator.EQ, sId));
 			const oCombinedFilter = new Filter({

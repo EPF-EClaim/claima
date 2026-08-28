@@ -709,28 +709,6 @@
                             <cards:Header title="{i18n>eligibility_rule}" />
                         </f:header>
                     </f:Card>
-
-                    <f:Card
-                        id="ZCORPORATE_CARD"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="{i18n>corporateCard}" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
-                        id="ZCORPORATE_CARD_ADVANCED"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="{i18n>corporateCard}" />
-                        </f:header>
-                    </f:Card>
                 </f:GridContainer>
             </ScrollContainer>
         </content>

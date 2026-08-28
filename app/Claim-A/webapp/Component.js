@@ -137,8 +137,9 @@ sap.ui.define([
                         oRoleModel.setProperty("/JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
                         oRoleModel.setProperty("/GA_role", true);
+                    } else if (oUserRoles.isCCCAdmin) {
+                        oSessionModel.setProperty("/userType", "CCC Admin");
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
                     } else {

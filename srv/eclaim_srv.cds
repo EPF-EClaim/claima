@@ -1603,4 +1603,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
 
+    function getCorpoCardsForItem(sReqId: String, sCorpoCards: LargeString) returns LargeString;
 };
