@@ -42,7 +42,7 @@
                         <form:formElements>
                             <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                            <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_start} : ${i18n>req_tripstartdate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <Text text="{
                                         path: 'request>/req_header/tripstartdate',
@@ -56,10 +56,24 @@
                                     }"/>
                                 </form:fields>
                             </form:FormElement>
-                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                            <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_end} : ${i18n>req_tripenddate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <Text text="{
                                         path: 'request>/req_header/tripenddate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_corp_cc_payment_due_date}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} }">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/cccduedate',
                                         type: 'sap.ui.model.type.Date',
                                         formatOptions: {
                                             source: {
@@ -130,7 +144,7 @@
                                         }}" 
                                     textDirection="RTL"></Text></form:fields>
                             </form:FormElement>
-                            <form:FormElement label="{i18n>req_amt}">
+                            <form:FormElement label="{i18n>req_amt}" visible="{= ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD} }">
                                 <form:fields><Text text="{
                                         path: 'request>/req_header/reqamt',
                                         type: 'sap.ui.model.type.Float',

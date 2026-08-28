@@ -4,15 +4,22 @@ module.exports = {
         try {
             const ISservice = await cds.connect.to('IS_Conn');
 
+            const oPayload = {
+                TripStartDate: null,
+                TripEndDate: null,
+                CardAdvanceAmt: 0,
+                ...emailData
+            };
+            console.log("sendEmailInternal", oPayload)
+
             const response = await ISservice.send({
                 method: 'POST',
                 path: "/http/SendEmailNotification_eClaim",
-                data: emailData
+                data: oPayload
             });
 
             return response;
         } catch (error) {
-            // Throw a standard JavaScript error so the calling function can handle it
             throw new Error(`Fail sending email: ${error.message}`);
         }
     }

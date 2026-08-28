@@ -26,7 +26,8 @@ const Constant = {
     NumberRange: {
         REQUEST: "NR01",
         CLAIM: "NR02",
-        SUBSTITUTION_RULE: "NR04"        
+        SUBSTITUTION_RULE: "NR04",
+        REQUEST_CCC: "NR03"
     },
     DisbursementStatus: {
         TO_BE_DISBURSED: "01",
@@ -44,7 +45,8 @@ const Constant = {
     Admin: {
         Admin_System: "Admin_System",
         DTD_Admin: "DTD_Admin",
-        Admin_CC: "Admin_CC"
+        Admin_CC: "Admin_CC",
+        CCC_Admin : "CCC_Admin"
     },
 
     WorkflowType: {
@@ -170,7 +172,8 @@ const Constant = {
         "KEMATIAN": "KEMATIAN",
         "SEWAPETAK": "SEWAPETAK",
         "KEAHLIANKELAB": "S_K.KELAB",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "PERSONAL_EXPENSE": "PERSONAL_EXPENSE"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -326,7 +329,9 @@ const Constant = {
         "AUTO": "AUTO",
         "ELAUN_PINDAH_VERIFIER" : "ELAUN_PINDAH_VERIFIER",
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER",
-        "PROJECT_OWNER" : "PROJECT_OWNER"
+        "PROJECT_OWNER" : "PROJECT_OWNER",
+        "CCC_APPROVER1" : "CCC_APPROVER1",
+        "CCC_APPROVER2" : "CCC_APPROVER2"
     }, 
     Status: {
         DRAFT : "STAT01", 
@@ -346,7 +351,8 @@ const Constant = {
     }, 
     RequestType: {
         Travel : "RT0001", 
-        Reimbursement : "RT0004"
+        Reimbursement : "RT0004",
+        CORP_CC : "RT0007"
     }, 
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
@@ -446,7 +452,8 @@ const Constant = {
         EXCEPTION_HP_FREQUENCY_JOB_GRADE: "EXCEPTION_HP_FREQUENCY_JOB_GRADE",
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
         DEFAULT_EDU_ELIGIBLE_YEAR: "DEFAULT_EDU_ELIGIBLE_YEAR",
-        DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT"
+        DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT",
+        CCC_MAKER: "CCC_MAKER"
     },
     ElaunTukarStatus: {
         ALLOWED_CREATION: "01",
@@ -492,7 +499,9 @@ const Constant = {
         "ACTION_NOTIFY" : "NOTIFY",
         "ACTION_APPROVE": "APPROVE",
         "ACTION_REJECT": "REJECT",
-        "ACTION_PUSHBACK": "SEND BACK"
+        "ACTION_PUSHBACK": "SEND BACK",
+        "ACTION_APPROVED_TRANSFER": "APPROVED TRANSFER",
+        "ACTION_NOTIFY_CARDHOLDER" : "NOTIFY CARDHOLDER"
     },
     WorkflowArea: {
         "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",
@@ -519,7 +528,9 @@ const Constant = {
         "MED_REVIEWER": "MED_REVIEWER", 
         "MED_APPROVER": "MED_APPROVER", 
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
-        "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER"
+        "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER",
+        "CCC_APPROVER1": "CCC_APPROVER1",
+        "CCC_APPROVER2": "CCC_APPROVER2"
     },
     StatusCode: {       
         SUCCESS: "200"
@@ -535,7 +546,21 @@ const Constant = {
         APPROVE     : "approved",
         REJECT      : "rejected",
         PUSHBACK    : "pushed back"
-    }
+    },
+    StatementDueInfo: {
+        GL_CODE: "214229",
+        MATERIAL_CODE: "NA"
+    },
+    BankingConstantIds: [
+        'EPF_BANK_ACCT_NUMBER',
+        'HSBC_VENDOR_ID',
+        'HSBC_BANK_ACCT_NUMBER',
+        'HSBC_BIC_CODE',
+        'HSBC_VENDOR_NAME',
+        'ID_TYPE',
+        'REGISTRATION_NO',
+        'PAYMENT_METHOD'
+    ],
 
 };
 

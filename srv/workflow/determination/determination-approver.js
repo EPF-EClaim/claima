@@ -139,6 +139,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                     case Constant.Role.MED_APPROVER:
                     case Constant.Role.ELAUN_PINDAH_VERIFIER:
                     case Constant.Role.WILAYAH_ASAL_VERIFIER:
+                    case Constant.Role.CCC_APPROVER2:
                         // Possible multiple approvers retrieved from ZCONSTANTS table
                         aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
                         console.log("aConstantValues", aConstantValues)
@@ -173,6 +174,34 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             }
 
                         }
+                        break;
+                    case Constant.Role.CCC_APPROVER1:
+                        // CCC_APPROVER1 has multiple candidates in ZCONSTANTS, one
+                        // of whom may be the person who submitted this request -
+                        // exclude the requestor, then use the first remaining
+                        // candidate as the sole Level 1 approver. The other
+                        // remaining candidate becomes their substitute via the
+                        // SpecialMultipleConstantApproverList lookup further down,
+                        // not a second parallel approver here.
+                        aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
+                        console.log("aConstantValues (CCC_APPROVER1)", aConstantValues)
+                        var aEligibleConstantValues = aConstantValues.filter(
+                            oCandidate => oCandidate.VALUE !== oHeader[Constant.EntitiesFields.EMP_ID]
+                        );
+                        console.log("aEligibleConstantValues (requestor excluded)", aEligibleConstantValues)
+                        if(aEligibleConstantValues.length === 0){
+                            return [];
+                        }
+                        oApproverDetails = await retrieveEmployeeDetails(aEligibleConstantValues[0].VALUE);
+                        console.log("oApproverDetails", oApproverDetails)
+                        oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                        console.log("oPopulatedEmployee", oPopulatedEmployee)
+                        if(oPopulatedEmployee){
+                            aApproversDetails.push(oPopulatedEmployee);
+                        }else{
+                            return [];
+                        }
+                        console.log("CCC_APPROVER1 Approver: ", oPopulatedEmployee)
                         break;
                     default:
                 }
@@ -210,24 +239,28 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     for (const [iIndex, oApprover] of aUniqueApproversDetails.entries()){
 
         // Variable declaration for substitutes
-        let sSubstitute = null;         // Variable to store substitute user
-        let oSubstituteDetails = null;  // Variable to store substitute user details
-        let sSubstitute_eeid = "";       // Variable to store substitute EEID
-        let sSubstitute_name = "";       // Variable to store substitute name
-        let sSubstitute_email = "";      // Variable to store substitute email
+        let sSubstitute = null;
+        let oSubstituteDetails = null;
+        let sSubstitute_eeid = "";
+        let sSubstitute_name = "";
+        let sSubstitute_email = "";
+
         // If LEVEL = 0, Approver is Auto
         if(oApprover.LEVEL > 0){
-            if(Object.values(Constant.SpecialMultipleConstantApproverList).includes(aWorkflowApprStep[iIndex])){
-                aConstantValues = await retrieveFromConstantTable(oTx, aWorkflowApprStep[iIndex]);
-                const aOtherConstantAppr = aConstantValues.filter(item => item.VALUE !== oApprover.EEID);
-                //possible that the approver dont have the substitute. skip if cannot find substitute
-                if (aOtherConstantAppr.length > 0) {
+            const sApproverStep = aWorkflowApprStep[oApprover.LEVEL - 1];   // <- was aWorkflowApprStep[iIndex]
+
+            if(Object.values(Constant.SpecialMultipleConstantApproverList).includes(sApproverStep)){
+                aConstantValues = await retrieveFromConstantTable(oTx, sApproverStep);   // <- also uses sApproverStep now
+                const aOtherConstantAppr = aConstantValues.filter(
+                    item => item.VALUE !== oApprover.EEID && item.VALUE !== oHeader[Constant.EntitiesFields.EMP_ID]
+                );
+                console.log("sApproverStep", sApproverStep);
+                console.log("aConstantValues", aConstantValues);
+                console.log("aOtherConstantAppr", aOtherConstantAppr);
+                if(aOtherConstantAppr.length > 0){
                     oSubstituteDetails = await retrieveEmployeeDetails(aOtherConstantAppr[0].VALUE);
-                    console.log("aWorkflowApprStep[iIndex]", aWorkflowApprStep[iIndex]);
-                    console.log("aConstantValues", aConstantValues);
-                    console.log("aOtherConstantAppr", aOtherConstantAppr);
                     console.log("oSubstituteDetails", oSubstituteDetails);
-                    if (oSubstituteDetails) {
+                    if(oSubstituteDetails){
                         sSubstitute_eeid = oSubstituteDetails.EEID;
                         sSubstitute_name = oSubstituteDetails.NAME;
                         sSubstitute_email = oSubstituteDetails.EMAIL;
@@ -236,7 +269,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             }
             else{
                 sSubstitute = await retrieveSubstitute(oApprover.EEID);
-                //console.log("sSubstitute", sSubstitute);
                 if(sSubstitute){
                     oSubstituteDetails = await retrieveEmployeeDetails(sSubstitute);
                     if(oSubstituteDetails){
@@ -245,10 +277,11 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                         sSubstitute_email = oSubstituteDetails.EMAIL;
                     }
                 }
-            }  
+            }
         }else{
             sSubstitute_name = Constant.Role.AUTO;
         }
+
         aFullApproversDetails.push({
             APPROVER_EEID   : oApprover.EEID,
             APPROVER_NAME   : oApprover.NAME,
