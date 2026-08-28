@@ -99,7 +99,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             if(!oBudgetDetails){
                                 return false;
                             }
-                            oApproverDetails = await retrieveEmployeeDetails(oBudgetDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
+                            oApproverDetails = await retrieveEmployeeDetails(oBudgetDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
                             oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
@@ -119,7 +119,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             if(!oProjectDetails){
                                 return false;
                             }
-                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
+                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
                             oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);

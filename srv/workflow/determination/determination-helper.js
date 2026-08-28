@@ -115,7 +115,7 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
     if(!oBudgetContext){
         return null;
     }
-    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
     if (oBudgetOwnerContext){
         sEEID = oBudgetOwnerContext[Constant.EntitiesFields.EEID];
     }
@@ -127,7 +127,7 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
         FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
         MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
         BUDGET_OWNER_ID:    sEEID
     };
 }
@@ -162,7 +162,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
     if(!oBudgetContext){
         return null;
     }
-    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
     if (oProjectOwnerContext){
         sEEID = oProjectOwnerContext[Constant.EntitiesFields.EEID];
     }
@@ -174,7 +174,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
         COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
         FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
         MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
         BUDGET_OWNER_ID:    sEEID
     };
 }
