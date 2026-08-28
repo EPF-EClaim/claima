@@ -269,13 +269,53 @@ async function determineCashAdvance(oTx, sId, oDescriptor) {
                 .where({
                     [oDescriptor.idField]   : sId
                 })
-                .columns(Constant.EntitiesFields.CASH_ADVANCE_AMOUNT)
+                .columns(
+                    Constant.EntitiesFields.CASH_ADVANCE_AMOUNT,
+                    Constant.EntitiesFields.CLAIM_TYPE_ID,
+                    Constant.EntitiesFields.EMP_ID
+                )
         )
         if(!oCashAdvance) {        
             return null;
         }
         const sCashAdvanceAmount = Number(oCashAdvance[Constant.EntitiesFields.CASH_ADVANCE_AMOUNT]) || 0;
-        return sCashAdvanceAmount > 0;
+        if (sCashAdvanceAmount > 0) {
+            return true;
+        }
+
+        // Also true if: the claim is a travel claim type, the employee
+        // has a corporate credit card, and the claim has a CASH_REPAY item.
+        const aTravelClaimTypes = [
+            Constant.ClaimType.DLM_NEGARA,
+            Constant.ClaimType.LUAR_NEGARA,
+            Constant.ClaimType.KURSUS_DLM_NEGARA,
+            Constant.ClaimType.KURSUS_LUAR_NEGARA
+        ];
+        const bIsTravelClaimType = aTravelClaimTypes.includes(oCashAdvance[Constant.EntitiesFields.CLAIM_TYPE_ID]);
+
+        if (!bIsTravelClaimType) {
+            return false;
+        }
+
+        const sEmpId = oCashAdvance[Constant.EntitiesFields.EMP_ID];
+        const oCardRow = sEmpId ? await oTx.run(
+            SELECT.one.from('ZCORPORATE_CARD')
+                .where({ CARDHOLDER_ID: sEmpId })
+                .columns('CARD_NO')
+        ) : null;
+        const bHasCard = !!oCardRow;
+
+        if (!bHasCard) {
+            return false;
+        }
+
+        const oCashRepayItem = await oTx.run(
+            SELECT.one.from('ZCLAIM_ITEM')
+                .where({ CLAIM_ID: sId, CLAIM_TYPE_ITEM_ID: 'CASH_REPAY' })
+                .columns('CLAIM_ID')
+        );
+
+        return !!oCashRepayItem;
     }
 
     if(oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {

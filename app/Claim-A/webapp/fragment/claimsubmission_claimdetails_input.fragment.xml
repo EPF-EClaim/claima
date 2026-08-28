@@ -1066,7 +1066,9 @@
 							maxIntegerDigits: 16,
 							preserveDecimals: false
                         },
-                        constraints: { minimum: 0.01 }
+                        constraints: {
+							minimum: 0.01
+						}
 					}"
 					required="true"
 					editable="{= !${claimitem_input>/claim_item/need_foreign_currency} &amp;&amp;
@@ -1540,7 +1542,6 @@
                     selected="{claimitem_input>/claim_item/disclaimer}"
                 />
 
-
                 <!-- Remarks -->
                 <Label text="{i18n>label_claimdetails_input_remarks}" />
                 <Input
@@ -1647,6 +1648,31 @@
                         ${claimitem_input>/claim_item/attachment_file_2} !== null
                     }"
                 />
+
+                <!--CCC Switch-->
+                <Label text="{i18n>label_claimdetails_input_ccc_switch}"/>
+                <Switch
+                    id="switch_claimprocess_charged_to_ccc"
+                    state="{claimitem_input>/claim_item/charged_to_ccc}"
+                    customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
+                    customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
+                    enabled="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_property>/charged_to_ccc/is_editable} !== false
+                    }"
+                    visible="{
+                        parts: [
+                            'claimsubmission_input>/claim_header/card_no',
+                            'claimitem_input>/claim_item/claim_type_item_id'
+                        ],
+                        formatter: '.formatCCCSwitchVisibility'
+                    }"
+                >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
+                </Switch>
 
             </f:content>
             <f:dependents>

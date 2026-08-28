@@ -143,6 +143,7 @@ entity ZREQUEST_HEADER : managed {
         PAYMENT_DATE                  : Date           @Common.Label: 'Payment Date';
         ATTACHMENT3                   : String         @Common.Label: 'Attachment 3';
         ATTACHMENT4                   : String         @Common.Label: 'Attachment 4';
+        PAYMENT_DUE_DATE              : Date           @Common.Label: 'Payment Due Date';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -1561,26 +1562,26 @@ entity ZCONFIG_VARIABLE : managed {
 }
 
 entity ZCORPORATE_CARD : managed {
-    key CARD_NO         : String(16)  @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID   : String      @mandatory  @Common.Label: 'Cardholder Employee ID';
-    key PRINCIPLE       : Boolean     @mandatory  @Common.Label: 'Principle';
-        START_DATE      : Date        @Common.Label: 'Start Date';
-        END_DATE        : Date        @Common.Label: 'End Date';
-        CARDHOLDER_NAME : String(200) @Common.Label: 'Cardholder Name';
-        STATEMENT_DATE  : Integer     @Common.Label: 'Statement Date (Day)';
-        DUE_DATE        : Integer     @Common.Label: 'Statement Due Date (Day)';
-        EXPIRY_DATA     : String(5)   @Common.Label: 'Card Expiry Date (MM/YY)';
-        REMARKS         : String(500) @Common.Label: 'Remarks';
+    key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID  : String       @mandatory  @Common.Label: 'Cardholder Employee ID';
+    PRINCIPLE          : Boolean      @Common.Label: 'Principle';
+    START_DATE         : Date         @Common.Label: 'Start Date';
+    END_DATE           : Date         @Common.Label: 'End Date';
+    CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';
+    STATEMENT_DATE     : Integer      @Common.Label: 'Statement Date (Day)';
+    DUE_DATE           : Integer      @Common.Label: 'Statement Due Date (Day)';
+    EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
+    REMARKS            : String(500)  @Common.Label: 'Remarks';
 }
 
 entity ZCORPORATE_CARD_ADVANCED : managed {
-    key CARD_NO                  : String(16)     @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID            : Integer        @mandatory  @Common.Label: 'Cardholder Employee ID';
-        STATUS                   : String         @Common.Label: 'Status';
-        MONTHLY_ADVANCED_AMT     : Decimal(16, 2) @Common.Label: 'Monthly Advanced Amount';
-        COMMIT_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Commitment Offset Amount';
-        ACTUAL_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Actual Offset Amount';
-        CURRENT_ADVANCED_BALANCE : Decimal(16, 2) @Common.Label: 'Current Advanced Balance';
+    key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID           : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
+    STATUS                      : String          @Common.Label: 'Status';
+    MONTHLY_ADVANCED_AMT        : Decimal(16, 2)  @Common.Label: 'Monthly Advanced Amount';
+    COMMIT_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Commitment Offset Amount';
+    ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
+    CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
 }
 
 entity ZREQ_ITEM_CCC_PART : managed {
@@ -1592,6 +1593,9 @@ entity ZREQ_ITEM_CCC_PART : managed {
         CASHBACK            : Decimal(16, 2) @Common.Label: 'Cashback';
         MERCHANT_REFUND_AMT : Decimal(16, 2) @Common.Label: 'Merchant Refund';
         MERCHANT_REFUND_ARR : String         @Common.Label: 'Merchant Refund List';
+        GL_CODE             : String         @Common.Label: 'GL Code';
+        MATERIAL_CODE       : String         @Common.Label: 'Material Code';
+        COST_CENTER         : String         @Common.Label: 'Cost Center';
 }
 
 entity ZINSURANCE_MEDICAL_PROVIDER : managed {

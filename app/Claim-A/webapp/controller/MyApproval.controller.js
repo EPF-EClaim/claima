@@ -29,6 +29,13 @@ sap.ui.define([
             await this._getMyApproverClaim();
         },
 
+        formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+            var fAmount = (String(sRequestTypeId) === String(this._oConstant.RequestType.CORP_CC))
+                ? Number(fTotalPaymentDueAmount) || 0
+                : fPreapprovalAmount;
+            return (Number(fAmount) || 0).toFixed(2);
+        },
+
         _getMyApproverPAReq: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
@@ -68,6 +75,52 @@ sap.ui.define([
                 a.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
+
+                // For Corporate Credit Card requests, compute Total Payment Due
+                // Amount fresh from ZREQ_ITEM_CCC_PART (STATEMENT_DUE_AMT -
+                // CASHBACK, summed across every card/item) instead of using
+                // PREAPPROVAL_AMOUNT. PREAPPROVAL_ID is the request's REQUEST_ID
+                // under a different name in this table. Batched into one query
+                // for the whole list rather than one request per row.
+                const aCorpoCCRequestIds = a
+                    .filter((it) => String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC))
+                    .map((it) => it.PREAPPROVAL_ID);
+
+                if (aCorpoCCRequestIds.length > 0) {
+                    try {
+                        const oPartListBinding = this.getOwnerComponent().getModel().bindList(
+                            "/ZREQ_ITEM_CCC_PART",
+                            null,
+                            null,
+                            new Filter({
+                                filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
+                                and: false
+                            }),
+                            {
+                                $$ownRequest: true,
+                                $select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
+                            }
+                        );
+                        const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
+
+                        const mTotalByRequestId = {};
+                        aPartCtx.forEach((ctx) => {
+                            const oPart = ctx.getObject();
+                            const sReqId = oPart.REQUEST_ID;
+                            mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
+                                + (Number(oPart.STATEMENT_DUE_AMT) || 0)
+                                - (Number(oPart.CASHBACK) || 0);
+                        });
+
+                        a.forEach((it) => {
+                            if (String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC)) {
+                                it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it.PREAPPROVAL_ID] || 0) * 100) / 100;
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Failed to compute Total Payment Due Amount for CCC requests:", e);
+                    }
+                }
 
                 this._oReqStatusModel.setProperty("/req_header_list", a);
                 this._oReqStatusModel.setProperty("/req_header_count", a.length);
@@ -474,7 +527,7 @@ sap.ui.define([
                 last_push_back_date: null,
                 course_code: o.COURSE_CODE,
                 session_number: o.SESSION_NUMBER,
-                project_code: null,
+                project_code: o.PROJECT_CODE,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
                 reject_reason_id: null,
@@ -482,6 +535,13 @@ sap.ui.define([
                 last_push_back_time: null,
                 reject_reason_date: null,
                 reject_reason_time: null,
+                mode_of_transfer: o.TRANSFER_MODE_DESC,
+                travel_alone_family: o.TRAVEL_TYPE_DESC,
+                travel_family_now_later: o.FAMILY_TIMING_DESC,
+                mode_of_transfer_id: o.MODE_OF_TRANSFER,
+                card_no: o.CARD_NO,
+                card_advance_amount: o.CCC_ADV_AMT,
+                original_card_advance_amount: o.CCC_ADV_AMT,
                 descr: {
                     submission_type: null,
                     alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -489,15 +549,16 @@ sap.ui.define([
                     request_id: null,
                     status_id: o.STATUS_DESC,
                     claim_type_id: o.CLAIM_TYPE_DESC,
-                    housing_loan_scheme: null,
-                    lender_name: null,
+                    housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
+                    lender_name: o.LENDER_DESC,
                     course_code: o.COURSE_CODE_DESC,
-                    project_code: null,
+                    project_code: o.PROJECT_DESC,
                     attachment_email_approver: null,
+                    mode_of_transfer: o.TRANSFER_MODE_DESC,
+                    travel_alone_family: o.TRAVEL_TYPE_DESC,
+                    travel_family_now_later: o.FAMILY_TIMING_DESC,
                 }
             };
-
-
         },
 
         async _loadClaimById(sClaimId) {
@@ -519,6 +580,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oHeaderBinding.refresh();
 
             // Items binding
             const oItemBinding = this.getOwnerComponent().getModel().bindList(
@@ -532,6 +594,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemBinding.refresh();
 
             // Items Descr binding
             const oItemDescrBinding = oModel.bindList(
@@ -545,6 +608,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemDescrBinding.refresh();
 
             try {
                 const [aHeaderCtx, aItemCtx, aItemDCtx] = await Promise.all([
@@ -691,7 +755,9 @@ sap.ui.define([
                 }));
 
                 // Derive totals from items (just in case)
-                const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+                const nTotal = aItems
+                    .filter((it) => !it.charged_to_ccc)
+                    .reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
                 // Only overwrite header totals if header had null/0 (tweak to your preference)
                 if (!oHeader.total_claim_amount) {

@@ -13,6 +13,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     };
 
     @odata.singleton
+    entity CCCFeatureControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
+    };
+
+    @odata.singleton
     entity BudgetControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;
@@ -1517,6 +1523,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action getGLAccountByProjectCode(sProjectCode: String)                                         returns String;
 
+    function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
+
     action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
@@ -1588,6 +1596,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
             Log.STATUS_CODE
         };
 
+    action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
+
+
     entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
 
+    action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
+
+    function getCorpoCardsForItem(sReqId: String, sCorpoCards: LargeString) returns LargeString;
 };

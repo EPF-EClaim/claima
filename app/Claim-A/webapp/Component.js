@@ -123,7 +123,10 @@ sap.ui.define([
                     oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);
                     oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
                     oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
+                    oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
 
+                    // userType is a single display label - priority order
+                    // determines which one shows when a user has multiple roles.
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
                         oRoleModel.setProperty("/Admin_role", true);
@@ -134,12 +137,34 @@ sap.ui.define([
                         oRoleModel.setProperty("/JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
                         oRoleModel.setProperty("/GA_role", true);
+                    } else if (oUserRoles.isCCCAdmin) {
+                        oSessionModel.setProperty("/userType", "CCC Admin");
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
                     } else {
                         oSessionModel.setProperty("/userType", "Claimant");
+                    }
+
+                    // Role-visibility flags are independent - a user can hold
+                    // multiple admin roles at once (e.g. Admin_CC AND
+                    // CCC_Admin), so each flag must be set on its own
+                    // condition rather than an else-if chain that stops at
+                    // the first match and silently skips the rest.
+                    if (oUserRoles.isDTDAdmin) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                        oRoleModel.setProperty("/DTDAdmin_role", true);
+                    }
+                    if (oUserRoles.isAdminSystem) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                    }
+                    if (oUserRoles.isAdminCC) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                    }
+                    if (oUserRoles.isCCCAdmin) {
+                        oRoleModel.setProperty("/CCC_Admin", true);
                     }
 
                     this._fnRolesLoaded();
@@ -429,7 +454,8 @@ sap.ui.define([
                 this._oRolesLoadedPromise.then(function () {
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
-                                  oRoleModel.getProperty("/isAdminCC");
+                                  oRoleModel.getProperty("/isAdminCC") || 
+                                  oRoleModel.getProperty("/isCCCAdmin") ;
                     // restriction for manual url change to Analytics and Configuration without admin role
                     if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");

@@ -81,6 +81,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 ATTACHMENT3,
                 ATTACHMENT4,
+                PAYMENT_DUE_DATE
         };
 
     entity ZEMP_REQUEST_EE_VIEW as
@@ -519,6 +520,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.INTERNAL_ORDER,
                 ZCLAIM_ITEM.COURSE_DURATION,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_3,
+                ZCLAIM_ITEM.CHARGED_TO_CCC,
                 ZCLAIM_ITEM.POLICY_YEAR,
                 PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
                 CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
@@ -951,6 +953,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER_SUBS.EMAIL            as SUBSTITUTE_EMAIL,
                 ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
                 ZREQUEST_HEADER.EMP_ID,
+                ZREQUEST_HEADER.REQUEST_TYPE_ID,
                 ZREQUEST_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
                 ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
                 ZREQUEST_HEADER.REQUEST_DATE,
@@ -991,23 +994,27 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_DETAILS             as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
-            key ZCLAIM_ITEM.CLAIM_SUB_ID,
-                EMP_ID,
-                LAST_MODIFIED_DATE,
-                SUBMITTED_DATE,
-                FINAL_AMOUNT_TO_RECEIVE,
-                ZCLAIM_ITEM.RECEIPT_DATE,
-                ZCLAIM_ITEM.AMOUNT,
-                ZCLAIM_ITEM.COST_CENTER,
-                ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                CASH_ADVANCE_AMOUNT,
-                ALTERNATE_COST_CENTER,
-                ZCLAIM_ITEM.INTERNAL_ORDER,
-                ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID
-        };
+    projection on ECLAIM.ZCLAIM_HEADER {
+        key CLAIM_ID,
+        key ZCLAIM_ITEM.CLAIM_SUB_ID,
+            EMP_ID,
+            LAST_MODIFIED_DATE,
+            SUBMITTED_DATE,
+            FINAL_AMOUNT_TO_RECEIVE,
+            ZCLAIM_ITEM.RECEIPT_DATE,
+            ZCLAIM_ITEM.AMOUNT,
+            ZCLAIM_ITEM.COST_CENTER,
+            ZCLAIM_ITEM.GL_ACCOUNT,
+            ZCLAIM_ITEM.MATERIAL_CODE,
+            CASH_ADVANCE_AMOUNT,
+            ALTERNATE_COST_CENTER,
+            ZCLAIM_ITEM.INTERNAL_ORDER,
+            ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID,
+            ZCLAIM_ITEM.CHARGED_TO_CCC,
+            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+            CARD_NO,
+            CLAIM_TYPE_ID
+    };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
         projection on ECLAIM.ZREQUEST_HEADER {
