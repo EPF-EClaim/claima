@@ -137,5 +137,41 @@ module.exports = {
     getZConstant: async function (ZCONSTANTS, tx) {
         const aConstant = await tx.run(SELECT.from(ZCONSTANTS).columns('ID', 'VALUE'));
         return aConstant;
+    },
+
+    getMedCCList: async function (ZEMP_MASTER, ZCONSTANTS, tx) {
+
+        const aConstants = await tx.run(
+            SELECT.from(ZCONSTANTS)
+                .where({
+                    ID: {
+                        in: [
+                            Constant.Role.MED_REVIEWER,
+                            Constant.Role.MED_APPROVER
+                        ]
+                    }
+                })
+        );
+
+        if (!aConstants?.length) {
+            return null;
+        }
+
+        const aEEID = aConstants.map(o => o.VALUE);
+
+        const aUsers = await tx.run(
+            SELECT.from(ZEMP_MASTER)
+                .columns('EMAIL')
+                .where({
+                    EEID: {
+                        in: aEEID
+                    }
+                })
+        );
+
+        return aUsers
+            .map(o => o.EMAIL)
+            .filter(Boolean)
+            .join(';');
     }
 };

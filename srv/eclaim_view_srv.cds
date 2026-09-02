@@ -16,6 +16,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         MaterialCode         : String;
         CashAdvanceAmount    : Decimal(15, 2);
         InternalOrder        : String;
+        CashAdvanceCatID     : String(10);
     }
 
 
@@ -1070,7 +1071,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_APPROVER_DETAILS  as
+entity ZEMP_APPROVER_DETAILS           as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,

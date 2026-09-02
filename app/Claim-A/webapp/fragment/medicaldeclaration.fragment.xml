@@ -1,0 +1,23 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        id="medicalDeclarationDialog"
+        type="Message"
+        state="Warning"
+        title="{i18n>msg_medical_declaration_confirmation}">
+
+        <Text
+            text="{i18n>msg_submit_medical_declaration}"
+            wrapping="true" />
+
+       <beginButton>
+            <Button
+                text="{i18n>button_ok}"
+                press=".onMedicalDeclarationClose" />
+        </beginButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>
