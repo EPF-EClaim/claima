@@ -267,7 +267,7 @@ sap.ui.define([
 							} else {
 								sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
 							}
-							break;					
+							break;
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
@@ -346,7 +346,7 @@ sap.ui.define([
 
 			try {
 				await oFunction.execute();
-				const oContext  = oFunction.getBoundContext();
+				const oContext = oFunction.getBoundContext();
 				return oContext.getObject().value;
 
 			} catch (oError) {

@@ -115,7 +115,7 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
     if(!oBudgetContext){
         return null;
     }
-    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
     if (oBudgetOwnerContext){
         sEEID = oBudgetOwnerContext[Constant.EntitiesFields.EEID];
     }
@@ -127,7 +127,7 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
         FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
         MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
         BUDGET_OWNER_ID:    sEEID
     };
 }
@@ -162,7 +162,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
     if(!oBudgetContext){
         return null;
     }
-    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID])
+    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
     if (oProjectOwnerContext){
         sEEID = oProjectOwnerContext[Constant.EntitiesFields.EEID];
     }
@@ -174,7 +174,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
         COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
         FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
         MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID],
+        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
         BUDGET_OWNER_ID:    sEEID
     };
 }
@@ -532,6 +532,19 @@ async function sendClaimBatch(sId){
             return null;
         }
 
+        // A claim is a Corporate Credit Card submission if a card is
+        // assigned; it also needs to be one of the travel claim types
+        // for CASH_ADVANCE_CAT_ID to be overridden to EPF_CAT_3.
+        const aTravelClaimTypeIds = [
+            Constant.ClaimType.DLM_NEGARA,
+            Constant.ClaimType.LUAR_NEGARA,
+            Constant.ClaimType.KURSUS_DLM_NEGARA,
+            Constant.ClaimType.KURSUS_LUAR_NEGARA
+        ];
+        const bIsCorpoCC = !!aAllClaimItem[0].CARD_NO;
+        const bIsTravelClaimType = aTravelClaimTypeIds.includes(aAllClaimItem[0].CLAIM_TYPE_ID);
+        const bOverrideToEpfCat3 = bIsCorpoCC && bIsTravelClaimType;
+
         // Forward the single consolidated payload to IS
         if(aAllClaimItem[0].INTERNAL_ORDER == null){
             var sData = 
@@ -548,7 +561,10 @@ async function sendClaimBatch(sId){
                     COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           oItem.MATERIAL_CODE,
-                    INTERNAL_ORDER:          null
+                    INTERNAL_ORDER:          null,
+                    CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
+                    CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
+                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID
                 }));
         }else{ 
             sData = 
@@ -565,7 +581,10 @@ async function sendClaimBatch(sId){
                     COST_CENTER:             null,
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
-                    INTERNAL_ORDER:          oItem.INTERNAL_ORDER
+                    INTERNAL_ORDER:          oItem.INTERNAL_ORDER,
+                    CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
+                    CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
+                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID
                 }));
         }
 
@@ -579,8 +598,8 @@ async function sendClaimBatch(sId){
 
         return { message: "Approved claim batch sent", oResponse };
 
-    } catch (e) {
-        console.log(500, `sendApprovedClaimBatch failed: ${e?.message || e}`);
+    } catch (oError) {
+        console.log(500, `sendApprovedClaimBatch failed: ${oError?.message || oError}`);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
         await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);

@@ -153,7 +153,7 @@ async function retrieveItems(sId, oDescriptor) {
     }
 
     if (sId?.startsWith('CLM')) {
-        oQuery.where`CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY'`;
+        oQuery.where`CLAIM_TYPE_ITEM_ID not in ('CASH_REPAY', 'POTONGAN_ELAUN', 'PERSONAL_EXPENSE')`;
     }
 
     return await cds.run(oQuery);
@@ -169,7 +169,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
     const sFinalCostCenter = oHeaderContext[Constant.EntitiesFields.ALTERNATE_COST_CENTER] || oHeaderContext[Constant.EntitiesFields.COST_CENTER] || null;
-    const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] ?? Constant.Wildcard.NA;
+    const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
     if(!aItemsContext.length) {
         return aBudgetContexts;
