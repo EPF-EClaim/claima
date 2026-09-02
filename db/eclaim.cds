@@ -711,6 +711,7 @@ entity ZCLAIM_TYPE_ITEM : managed {
         FREQUENCY            : Integer    @Common.Label: 'Frequency';
         PERIOD               : Integer    @Common.Label: 'Period';
         PERIOD_UNIT          : String(24) @Common.Label: 'Period Unit';
+        COST_CENTER          : String(9)  @Common.Label    : 'Cost Center';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
         ZRISK                : Association to ZRISK
@@ -719,6 +720,8 @@ entity ZCLAIM_TYPE_ITEM : managed {
                                    on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
         ZINDIV_GROUP         : Association to ZINDIV_GROUP
                                    on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER           : Association to ZCOST_CENTER
+                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
 }
 
 entity ZBUDGET : managed {
