@@ -8789,3 +8789,93 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
         Common.Label : 'Comment',
     )
 };
+
+annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with @(
+    cds.autoexpose,
+
+    Capabilities : {
+        Deletable : false,
+        Updatable : true,
+        Insertable: false
+    },
+
+    UI : {
+        CreateHidden : true,
+        DeleteHidden : true,
+        UpdateHidden : false,
+
+        HeaderInfo : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC',
+            TypeNamePlural: 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC'
+        },
+
+        LineItem : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with {
+
+    CHARGING_COST_CENTER @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CHARGING_COST_CENTER_DESC,
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
+
+};
+
+

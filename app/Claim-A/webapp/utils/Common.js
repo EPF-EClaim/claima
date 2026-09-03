@@ -117,6 +117,9 @@ sap.ui.define([
 
                             await oODataModel.submitBatch("$auto");
 
+                            const oController =this._oView.getController();
+                            await oController._updateRequestItemCostCenters();
+
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(
                                 Utility.getText("msg_claimheader_updated", [sReqID])
@@ -198,18 +201,33 @@ sap.ui.define([
                             }
 
                             await oODataModel.submitBatch("$auto");
-                            
+                
                             // Update all claim item cost centers after header save
                             var itemCc =
                                 oInputModel.getProperty("/claim_header/alternate_cost_center") ||
                                 oInputModel.getProperty("/claim_header/cost_center") ||
                                 null;
-
+         
                             var aClaimItems = oInputModel.getProperty("/claim_items") || [];
-                            aClaimItems.forEach(function (oItem, i) {
-                                oInputModel.setProperty("/claim_items/" + i + "/cost_center", itemCc);
-                            });
-   
+
+                            for (let i = 0; i < aClaimItems.length; i++) {
+
+                                const oItem = aClaimItems[i];
+
+                                const sChargingCostCenter =
+                                    await Utility._getChargingCostCenter(
+                                        oODataModel,
+                                        oItem.claim_type_id,
+                                        oItem.claim_type_item_id
+                                    );
+
+                                if (sChargingCostCenter) {
+                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",sChargingCostCenter);
+                                } else {
+                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",itemCc);
+                                }
+                            }
+
                             //calling from claim submission controller to update claim items after header save
                             const oController = this._oView.getController();
                             await oController._updateClaimItems();

@@ -4872,4 +4872,40 @@ module.exports = (srv) => {
             req.error(500, 'An error occurred while loading corporate cards for the item.');
         }
     });
+
+        srv.on("updateChargingCostCenter", async (req) => {
+            const {
+                claimTypeId,
+                claimTypeItemId,
+                chargingCostCenter
+            } = req.data;
+
+            if (!claimTypeId || !claimTypeItemId) {
+                return req.reject(
+                    400,
+                    "Claim Type and Claim Type Item are required."
+                );
+            }
+
+            const { ZCLAIM_TYPE_ITEM } = cds.entities("ECLAIM");
+
+            const iUpdatedRows = await UPDATE(ZCLAIM_TYPE_ITEM)
+                .set({
+                    COST_CENTER:
+                        chargingCostCenter?.trim() || null
+                })
+                .where({
+                    CLAIM_TYPE_ID: claimTypeId,
+                    CLAIM_TYPE_ITEM_ID: claimTypeItemId
+                });
+
+            if (!iUpdatedRows) {
+                return req.reject(
+                    404,
+                    "Claim Type Item record was not found."
+                );
+            }
+
+            return true;
+        });
 }

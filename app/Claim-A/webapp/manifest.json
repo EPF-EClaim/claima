@@ -721,6 +721,11 @@
                     "pattern": "ZCORPORATE_CARD_ADVANCED",
                     "name": "ZCORPORATE_CARD_ADVANCED",
                     "target": "ZCORPORATE_CARD_ADVANCED"
+                },
+                {
+                    "pattern": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "name": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "target": "ZCLAIM_TYPE_ITEM_CHARGING_CC"
                 }
             ],
             
@@ -5636,6 +5641,63 @@
                                             "hideTableTitle": true
                                         },
                                         "disableCopyToClipboard": false
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCLAIM_TYPE_ITEM_CHARGING_CC": {
+                    "type": "Component",
+                    "id": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "CHARGING_COST_CENTER"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "EditChargingCC": {
+                                            "press": "claima.ext.controller.ChargingCostCenter.onEditChargingCostCenter",
+                                            "visible": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
                                     }
                                 }
                             },

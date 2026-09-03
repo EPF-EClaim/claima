@@ -3169,6 +3169,23 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
+			// Cash Repayment - override charging cost center from config
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY) {
+
+				const sConfiguredCostCenter =
+					await Utility._getChargingCostCenter(
+						this.getOwnerComponent().getModel(),
+						oInputModel.getProperty("/claim_item/claim_type_id"),
+						oInputModel.getProperty("/claim_item/claim_type_item_id")
+					);
+
+				if (sConfiguredCostCenter) {
+					oInputModel.setProperty(
+						"/claim_item/cost_center",
+						sConfiguredCostCenter
+					);
+				}
+			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -3328,7 +3345,7 @@ sap.ui.define([
 					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
 					COST_CENTER: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? null
-									: (oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center")),
+									: (oInputModel.getProperty("/claim_item/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center")),
 					GL_ACCOUNT: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? this._oConstant.StatementDueInfo.GL_CODE
 									: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account")),
@@ -4861,8 +4878,8 @@ sap.ui.define([
 				try {
 					oModel = this.getOwnerComponent().getModel();
 					oListBinding = null;
-					
-					// set body for update
+
+									// set body for update
 					var oBody = new JSONModel({
 						CLAIM_ID: claim_item.claim_id,
 						CLAIM_SUB_ID: claim_item.claim_sub_id,

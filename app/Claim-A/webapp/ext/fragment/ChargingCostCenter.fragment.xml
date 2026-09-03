@@ -1,0 +1,63 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        id="chargingCCDialog"
+        title="Edit Charging Cost Center"
+        contentWidth="40%">
+
+        <content>
+
+            <VBox class="sapUiMediumMargin">
+
+                <Label text="Claim Type" />
+                <Input
+                    value="{chargingCC>/CLAIM_TYPE_DESC}"
+                    editable="false" />
+
+                <Label
+                    text="Claim Item"
+                    class="sapUiSmallMarginTop" />
+                <Input
+                    value="{chargingCC>/CLAIM_TYPE_ITEM_DESC}"
+                    editable="false" />
+
+                <Label
+                    text="Charging Cost Center"
+                    required="true"
+                    class="sapUiSmallMarginTop" />
+
+                <Input
+                    value="{chargingCC>/CHARGING_COST_CENTER}"
+                    showValueHelp="true"
+                    valueHelpRequest=".onChargingCostCenterValueHelp" />
+
+                <Label
+                    text="Cost Center Description"
+                    class="sapUiSmallMarginTop" />
+
+                <Input
+                    value="{chargingCC>/CHARGING_COST_CENTER_DESC}"
+                    editable="false" />
+
+            </VBox>
+
+        </content>
+
+        <beginButton>
+            <Button
+                text="Save"
+                type="Emphasized"
+                press=".onSaveChargingCostCenter" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="Cancel"
+                press=".onCloseChargingCostCenter" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

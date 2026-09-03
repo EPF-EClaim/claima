@@ -732,5 +732,28 @@ sap.ui.define([
             return dResult;
         },
 
+        async _getChargingCostCenter(oModel, sClaimType, sClaimTypeItem) {
+
+		const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
+			new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),
+			new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
+		]);
+
+		try {
+			const aContexts = await oListBinding.requestContexts(0, 1);
+
+			if (aContexts.length > 0) {
+				const oData = aContexts[0].getObject();
+				return oData.COST_CENTER || "";
+			}
+
+			return "";
+
+		} catch (oError) {
+			console.error("Error fetching charging cost center", oError);
+			return "";
+		}
+	},
+
     };
     });

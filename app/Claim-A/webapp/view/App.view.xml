@@ -171,14 +171,14 @@
                     <tnt:NavigationListGroup 
                         text="Configuration" 
                         expanded="false"
-                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
+                         visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
 
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
-                            visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
+                             visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -194,7 +194,7 @@
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_TYPE"
                                     text="{i18n>claimtyp}"
-                                    visible="{roleModel>/DTDAdmin_role}"
+                                   visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTATUS"
@@ -420,7 +420,7 @@
                             icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
-                            visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role}}"
+                           visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role}}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -503,6 +503,11 @@
                                     key="ZHOUSING_LOAN_SCHEME"
                                     text="{i18n>housing}"
                                     visible="{roleModel>/DTDAdmin_role}"
+                                />
+                                 <tnt:NavigationListItem
+                                    key="ZCLAIM_TYPE_ITEM_CHARGING_CC"
+                                    text="{i18n>chargingCostCenter}"
+                                    visible="{roleModel>/JKEW_role}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>

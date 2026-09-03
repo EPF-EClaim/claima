@@ -483,8 +483,48 @@ sap.ui.define([
 								return;
 							}
 
-								// budget checking
-								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
+							var aLatestReqItemRows =
+								this._oReqModel.getProperty("/req_item_rows") || [];
+
+							for (let i = 0; i < aLatestReqItemRows.length; i++) {
+								const oItem = aLatestReqItemRows[i];
+
+								const sConfiguredCostCenter =
+									await Utility._getChargingCostCenter(
+										this._oDataModel,
+										oItem.CLAIM_TYPE_ID,
+										oItem.CLAIM_TYPE_ITEM_ID
+									);
+
+								if (sConfiguredCostCenter) {
+									// check maintained Claim Type Item CC first
+									oItem.COST_CENTER = sConfiguredCostCenter;
+								} else if (oItem.COST_CENTER) {
+									// still keep the item-cc but remove description if present
+									oItem.COST_CENTER =
+										String(oItem.COST_CENTER).split(" - ")[0].trim();
+								} else {
+									// if not then just use use header Alt CC or CC
+									const sHeaderCostCenter =
+										(
+											this._oReqModel.getProperty("/req_header/altcostcenter") &&
+											this._oReqModel.getProperty("/req_header/altcostcenter") !== "-"
+										)
+											? this._oReqModel.getProperty("/req_header/altcostcenter")
+											: this._oReqModel.getProperty("/req_header/costcenter");
+
+									oItem.COST_CENTER =
+										sHeaderCostCenter
+											? String(sHeaderCostCenter)
+												.split(" - ")[0]
+												.trim()
+											: null;
+								}
+							}
+
+							this._oReqModel.setProperty("/req_item_rows",aLatestReqItemRows);
+							//budget checking
+							var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
 
@@ -1324,11 +1364,29 @@ sap.ui.define([
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
-						? oReqHeader.altcostcenter
-						: oReqHeader.costcenter;
+					const sChargingCostCenter =
+						await Utility._getChargingCostCenter(
+							this._oDataModel,
+							oReqHeader.claimtype,
+							oReqItem.claim_type_item_id
+						);
+
+					if (sChargingCostCenter) {
+						oReqItem.cost_center = sChargingCostCenter;
+					} else {
+						oReqItem.cost_center =
+							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
+								? oReqHeader.altcostcenter
+								: oReqHeader.costcenter;
+					}
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+				}
+				if (oReqItem.cost_center) {
+					oReqItem.cost_center =
+						String(oReqItem.cost_center)
+							.split(" - ")[0]
+							.trim();
 				}
 
 				// Get Internal Order from ZBUDGET using Request Header Project Code
@@ -3574,6 +3632,98 @@ sap.ui.define([
 			} catch (e) {
 				console.error("Load corpo cards for edit item failed:", e);
 			}
+		},
+
+		/**
+		 * Update all Request Item cost centers after Request Header save
+		 */
+		_updateRequestItemCostCenters: async function () {
+
+			const sReqId = String(
+				this._oReqModel.getProperty("/req_header/reqid") || ""
+			).trim();
+
+			if (!sReqId) {
+				throw new Error("Request ID not found");
+			}
+
+			const fnCostCenterId = function (sValue) {
+				if (!sValue || sValue === "-") {
+					return null;
+				}
+
+				return String(sValue)
+					.split(" - ")[0]
+					.trim();
+			};
+
+			const sHeaderAltCostCenter =fnCostCenterId(this._oReqModel.getProperty("/req_header/altcostcenter"));
+			const sHeaderCostCenter =fnCostCenterId(this._oReqModel.getProperty("/req_header/costcenter"));
+			const sFallbackCostCenter =sHeaderAltCostCenter ||sHeaderCostCenter || null;
+			const oList = this._oDataModel.bindList(
+				"/ZREQUEST_ITEM",
+				null,
+				null,
+				[
+					new Filter(
+						"REQUEST_ID",
+						FilterOperator.EQ,
+						sReqId
+					)
+				],
+				{
+					$$updateGroupId: "requestHeaderUpdate"
+				}
+			);
+
+			const aCtx =
+				await oList.requestContexts(0, Infinity);
+
+
+			for (const oCtx of aCtx) {
+
+				const oItem = oCtx.getObject();
+
+				let sNewCostCenter = null;
+
+				// Cash Advance
+				if (oItem.CASH_ADVANCE) {
+
+					sNewCostCenter =
+						this._oConstant.CashAdvanceInfo.COST_CENTER;
+
+				} else {
+
+					const sChargingCostCenter =
+						await Utility._getChargingCostCenter(
+							this._oDataModel,
+							oItem.CLAIM_TYPE_ID,
+							oItem.CLAIM_TYPE_ITEM_ID
+						);
+
+					if (sChargingCostCenter) {
+
+						sNewCostCenter = fnCostCenterId(sChargingCostCenter);
+
+					} else {
+
+						sNewCostCenter = sFallbackCostCenter;
+
+					}
+				}
+
+				oCtx.setProperty("COST_CENTER",sNewCostCenter);
+			}
+
+			await this._oDataModel.submitBatch(
+				"requestHeaderUpdate"
+			);
+
+			await PARequestSharedFunction._getItemList(
+				this,
+				sReqId
+			);
+
 		},
 	});
 });
