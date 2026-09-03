@@ -1768,4 +1768,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
             CostCenter.COST_CENTER_DESC as CHARGING_COST_CENTER_DESC
         };
+
+        action updateChargingCostCenter(
+            claimTypeId        : String,
+            claimTypeItemId    : String,
+            chargingCostCenter : String(9)
+        ) returns Boolean;
 };
