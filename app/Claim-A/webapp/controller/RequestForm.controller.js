@@ -523,8 +523,8 @@ sap.ui.define([
 							}
 
 							this._oReqModel.setProperty("/req_item_rows",aLatestReqItemRows);
-							//budget checking
-							var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
+								//budget checking
+								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
 
