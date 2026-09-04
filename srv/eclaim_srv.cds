@@ -1629,7 +1629,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
             CostCenter.COST_CENTER_DESC as CHARGING_COST_CENTER_DESC
         };
 
-        action updateChargingCostCenter(
+       /**
+        * Update default charging cost center maintained at ZCLAIM_TYPE_ITEM.COST_CENTER
+        */
+        action updateDefaultChargingCostCenter(
             claimTypeId        : String,
             claimTypeItemId    : String,
             chargingCostCenter : String(9)

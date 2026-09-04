@@ -1298,7 +1298,7 @@ module.exports = (srv) => {
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
 
         const sStatus = data.STATUS || req.data.STATUS;
-
+        
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -4873,39 +4873,39 @@ module.exports = (srv) => {
         }
     });
 
-        srv.on("updateChargingCostCenter", async (req) => {
-            const {
-                claimTypeId,
-                claimTypeItemId,
-                chargingCostCenter
-            } = req.data;
+    srv.on("updateDefaultChargingCostCenter", async (req) => {
+        const {
+            claimTypeId,
+            claimTypeItemId,
+            chargingCostCenter
+        } = req.data;
 
-            if (!claimTypeId || !claimTypeItemId) {
-                return req.reject(
-                    400,
-                    "Claim Type and Claim Type Item are required."
-                );
-            }
+        if (!claimTypeId || !claimTypeItemId) {
+            return req.reject(
+                400,
+                "Claim Type and Claim Type Item are required."
+            );
+        }
 
-            const { ZCLAIM_TYPE_ITEM } = cds.entities("ECLAIM");
+        const { ZCLAIM_TYPE_ITEM } = cds.entities("ECLAIM");
 
-            const iUpdatedRows = await UPDATE(ZCLAIM_TYPE_ITEM)
-                .set({
-                    COST_CENTER:
-                        chargingCostCenter?.trim() || null
-                })
-                .where({
-                    CLAIM_TYPE_ID: claimTypeId,
-                    CLAIM_TYPE_ITEM_ID: claimTypeItemId
-                });
+        const iUpdatedRows = await UPDATE(ZCLAIM_TYPE_ITEM)
+            .set({
+                COST_CENTER:
+                    chargingCostCenter?.trim() || null
+            })
+            .where({
+                CLAIM_TYPE_ID: claimTypeId,
+                CLAIM_TYPE_ITEM_ID: claimTypeItemId
+            });
 
-            if (!iUpdatedRows) {
-                return req.reject(
-                    404,
-                    "Claim Type Item record was not found."
-                );
-            }
+        if (!iUpdatedRows) {
+            return req.reject(
+                404,
+                "Claim Type Item record was not found."
+            );
+        }
 
-            return true;
-        });
+        return true;
+    });
 }

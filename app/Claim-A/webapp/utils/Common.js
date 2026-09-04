@@ -214,15 +214,15 @@ sap.ui.define([
 
                                 const oItem = aClaimItems[i];
 
-                                const sChargingCostCenter =
-                                    await Utility._getChargingCostCenter(
+                                const sDefaultChargingCostCenter =
+                                    await Utility.getDefaultChargingCostCenter(
                                         oODataModel,
                                         oItem.claim_type_id,
                                         oItem.claim_type_item_id
                                     );
 
-                                if (sChargingCostCenter) {
-                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",sChargingCostCenter);
+                                if (sDefaultChargingCostCenter) {
+                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",sDefaultChargingCostCenter);
                                 } else {
                                     oInputModel.setProperty("/claim_items/" + i + "/cost_center",itemCc);
                                 }

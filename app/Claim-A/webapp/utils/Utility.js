@@ -732,7 +732,7 @@ sap.ui.define([
             return dResult;
         },
 
-        async _getChargingCostCenter(oModel, sClaimType, sClaimTypeItem) {
+        async getDefaultChargingCostCenter(oModel, sClaimType, sClaimTypeItem) {
 
 		const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
 			new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),

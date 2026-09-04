@@ -3172,17 +3172,17 @@ sap.ui.define([
 			// Cash Repayment - override charging cost center from config
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY) {
 
-				const sConfiguredCostCenter =
-					await Utility._getChargingCostCenter(
+				const sDefaultChargingCostCenter =
+					await Utility.getDefaultChargingCostCenter(
 						this.getOwnerComponent().getModel(),
 						oInputModel.getProperty("/claim_item/claim_type_id"),
 						oInputModel.getProperty("/claim_item/claim_type_item_id")
 					);
 
-				if (sConfiguredCostCenter) {
+				if (sDefaultChargingCostCenter) {
 					oInputModel.setProperty(
 						"/claim_item/cost_center",
-						sConfiguredCostCenter
+						sDefaultChargingCostCenter
 					);
 				}
 			}

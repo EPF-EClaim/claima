@@ -270,7 +270,7 @@ sap.ui.define([
                 oSelectedContext.getModel();
 
             var oAction = oModel.bindContext(
-                "/updateChargingCostCenter(...)"
+                "/updateDefaultChargingCostCenter(...)"
             );
 
             oAction.setParameter(

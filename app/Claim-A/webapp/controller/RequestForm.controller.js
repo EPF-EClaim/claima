@@ -482,23 +482,23 @@ sap.ui.define([
 								MessageBox.error(Utility.getText("req_d_e_not_eligible_for_elaun_tukar"));
 								return;
 							}
-
+    
 							var aLatestReqItemRows =
 								this._oReqModel.getProperty("/req_item_rows") || [];
 
 							for (let i = 0; i < aLatestReqItemRows.length; i++) {
 								const oItem = aLatestReqItemRows[i];
 
-								const sConfiguredCostCenter =
-									await Utility._getChargingCostCenter(
+								const sDefaultChargingCostCenter =
+									await Utility.getDefaultChargingCostCenter(
 										this._oDataModel,
 										oItem.CLAIM_TYPE_ID,
 										oItem.CLAIM_TYPE_ITEM_ID
 									);
 
-								if (sConfiguredCostCenter) {
+								if (sDefaultChargingCostCenter) {
 									// check maintained Claim Type Item CC first
-									oItem.COST_CENTER = sConfiguredCostCenter;
+									oItem.COST_CENTER = sDefaultChargingCostCenter;
 								} else if (oItem.COST_CENTER) {
 									// still keep the item-cc but remove description if present
 									oItem.COST_CENTER =
@@ -523,6 +523,7 @@ sap.ui.define([
 							}
 
 							this._oReqModel.setProperty("/req_item_rows",aLatestReqItemRows);
+
 								//budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
@@ -1364,15 +1365,15 @@ sap.ui.define([
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					const sChargingCostCenter =
-						await Utility._getChargingCostCenter(
+					const sDefaultChargingCostCenter =
+						await Utility.getDefaultChargingCostCenter(
 							this._oDataModel,
 							oReqHeader.claimtype,
 							oReqItem.claim_type_item_id
 						);
 
-					if (sChargingCostCenter) {
-						oReqItem.cost_center = sChargingCostCenter;
+					if (sDefaultChargingCostCenter) {
+						oReqItem.cost_center = sDefaultChargingCostCenter;
 					} else {
 						oReqItem.cost_center =
 							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
@@ -3695,7 +3696,7 @@ sap.ui.define([
 				} else {
 
 					const sChargingCostCenter =
-						await Utility._getChargingCostCenter(
+						await Utility.getDefaultChargingCostCenter(
 							this._oDataModel,
 							oItem.CLAIM_TYPE_ID,
 							oItem.CLAIM_TYPE_ITEM_ID
@@ -3725,5 +3726,6 @@ sap.ui.define([
 			);
 
 		},
+
 	});
 });
