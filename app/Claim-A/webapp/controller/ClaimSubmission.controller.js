@@ -3045,7 +3045,6 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-				case this._oConstant.ClaimTypeItem.CASH_REPAY:
 					var d25YearsAndBelow = DateUtility.today();
 					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
 

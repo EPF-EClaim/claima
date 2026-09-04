@@ -201,11 +201,11 @@ module.exports = (srv) => {
                 console.log("Budget Checking Status: ", bStatus);
             }
 
-        // update PEDU entitlement usage if action is reject
-        await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);
+            // update PEDU entitlement usage if action is reject
+            await updateUsedEntitlementAmount(sId, oActionDescriptor.actionValue, oTx);
 
-        // update Medical Entitlement usage if action is reject
-        await updateUsedMedicalAmount(sId, oActionDescriptor.actionValue, oTx);
+            // update Medical Entitlement usage if action is reject
+            await updateUsedMedicalAmount(sId, oActionDescriptor.actionValue, oTx);
 
             // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
             if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {

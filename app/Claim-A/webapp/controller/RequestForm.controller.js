@@ -148,7 +148,7 @@ sap.ui.define([
 			}
 			this._oRequestFragments = Object.create(null);
 			try {
-				await PARequestSharedFunction._getHeader(this, sReqId);
+				await PARequestSharedFunction.getHeader(this, sReqId);
 
 				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
