@@ -798,8 +798,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             grant: 'READ',
             to   : [
                 'Approver',
-                'Admin_CC',
-                'Admin_System'
+                'Admin_CC'
             ]
         },
         {
@@ -808,7 +807,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         },
         {
             grant: '*',
-            to   : 'DTD_Admin'
+            to   : 'Admin_System'
         }
     ])                                   as projection on ECLAIM.ZEMP_CA_PAYMENT;
 
