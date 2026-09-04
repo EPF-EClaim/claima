@@ -85,7 +85,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PAYMENT_DUE_DATE
         };
 
-    entity ZEMP_REQUEST_EE_VIEW                                  as
+    entity ZEMP_REQUEST_EE_VIEW          as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -251,7 +251,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_EE_VIEW                                  as
+    entity ZEMP_CLAIM_EE_VIEW            as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -521,6 +521,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.INTERNAL_ORDER,
                 ZCLAIM_ITEM.COURSE_DURATION,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_3,
+                ZCLAIM_ITEM.CHARGED_TO_CCC,
                 ZCLAIM_ITEM.POLICY_YEAR,
                 PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
                 CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
@@ -531,8 +532,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_4,
-                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID,
-                ZCLAIM_ITEM.CHARGED_TO_CCC                        
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                     
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -569,7 +569,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_SUMMARY                              as
+    entity ZEMP_CLAIM_REPORT_SUMMARY      as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -616,7 +616,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_REPORT_DETAILS       as
+    entity ZEMP_CLAIM_REPORT_DETAILS      as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -780,7 +780,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
         };
 
-    entity ZEMP_REQUEST_REPORT_SUMMARY                             as
+    entity ZEMP_REQUEST_REPORT_SUMMARY    as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -826,20 +826,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_REPORT_DETAILS @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Admin_System',
-                'DTD_Admin'
-            ]
-        },
-        {
-            grant: 'READ',
-            to   : 'Admin_CC',
-            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-        }
-    ])                                   as
+    entity ZEMP_REQUEST_REPORT_DETAILS    as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -967,6 +954,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER_SUBS.EMAIL            as SUBSTITUTE_EMAIL,
                 ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
                 ZREQUEST_HEADER.EMP_ID,
+                ZREQUEST_HEADER.REQUEST_TYPE_ID,
                 ZREQUEST_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
                 ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
                 ZREQUEST_HEADER.REQUEST_DATE,
@@ -1007,23 +995,27 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_DETAILS             as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
-            key ZCLAIM_ITEM.CLAIM_SUB_ID,
-                EMP_ID,
-                LAST_MODIFIED_DATE,
-                SUBMITTED_DATE,
-                FINAL_AMOUNT_TO_RECEIVE,
-                ZCLAIM_ITEM.RECEIPT_DATE,
-                ZCLAIM_ITEM.AMOUNT,
-                ZCLAIM_ITEM.COST_CENTER,
-                ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                CASH_ADVANCE_AMOUNT,
-                ALTERNATE_COST_CENTER,
-                ZCLAIM_ITEM.INTERNAL_ORDER,
-                ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID
-        };
+    projection on ECLAIM.ZCLAIM_HEADER {
+        key CLAIM_ID,
+        key ZCLAIM_ITEM.CLAIM_SUB_ID,
+            EMP_ID,
+            LAST_MODIFIED_DATE,
+            SUBMITTED_DATE,
+            FINAL_AMOUNT_TO_RECEIVE,
+            ZCLAIM_ITEM.RECEIPT_DATE,
+            ZCLAIM_ITEM.AMOUNT,
+            ZCLAIM_ITEM.COST_CENTER,
+            ZCLAIM_ITEM.GL_ACCOUNT,
+            ZCLAIM_ITEM.MATERIAL_CODE,
+            CASH_ADVANCE_AMOUNT,
+            ALTERNATE_COST_CENTER,
+            ZCLAIM_ITEM.INTERNAL_ORDER,
+            ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID,
+            ZCLAIM_ITEM.CHARGED_TO_CCC,
+            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+            CARD_NO,
+            CLAIM_TYPE_ID
+    };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -1079,7 +1071,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-entity ZEMP_APPROVER_DETAILS           as
+    entity ZEMP_APPROVER_DETAILS  as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,

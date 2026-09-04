@@ -711,8 +711,19 @@
                     "pattern": "ZEMP_CC_BUDGET_DETAIL(FUND_CENTER={FUND_CENTER},COMMITMENT_ITEM={COMMITMENT_ITEM},MATERIAL_GROUP={MATERIAL_GROUP})",
                     "name": "ZEMP_CC_BUDGET_DETAIL",
                     "target": "ZEMP_CC_BUDGET_DETAIL"
+                },
+                {
+                    "pattern": "ZCORPORATE_CARD",
+                    "name": "ZCORPORATE_CARD",
+                    "target": "ZCORPORATE_CARD"
+                },
+                {
+                    "pattern": "ZCORPORATE_CARD_ADVANCED",
+                    "name": "ZCORPORATE_CARD_ADVANCED",
+                    "target": "ZCORPORATE_CARD_ADVANCED"
                 }
             ],
+            
             "targets": {
                 "TargetMain": {
                     "id": "Main",
@@ -5516,6 +5527,115 @@
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCORPORATE_CARD": {
+                    "type": "Component",
+                    "id": "ZCORPORATE_CARD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCORPORATE_CARD",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "CARD_NO,CARDHOLDER_ID,PRINCIPLE,START_DATE,END_DATE,CARDHOLDER_NAME,STATEMENT_DATE,DUE_DATE,EXPIRY_DATA,REMARKS"
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CARD_NO,CARDHOLDER_ID,PRINCIPLE,START_DATE,END_DATE,CARDHOLDER_NAME,STATEMENT_DATE,DUE_DATE,EXPIRY_DATA,REMARKS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/CCCFeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCORPORATE_CARD_ADVANCED": {
+                    "type": "Component",
+                    "id": "ZCORPORATE_CARD_ADVANCED",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCORPORATE_CARD_ADVANCED",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": false
                                     }
                                 }
                             },

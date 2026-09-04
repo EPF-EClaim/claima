@@ -89,7 +89,8 @@ module.exports = (srv) => {
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC),
+                isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
 
             let sDeptDesc = "UNKNOWN";
@@ -413,7 +414,12 @@ module.exports = (srv) => {
 
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
-        const range_id = Constant.NumberRange.REQUEST;
+
+        const isCorpoCC = String(req.data.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        console.log("req.data.REQTYPEID", req.data)
+        const range_id = isCorpoCC
+            ? Constant.NumberRange.REQUEST_CCC
+            : Constant.NumberRange.REQUEST;
 
         const row = await tx.run(
             SELECT.one.from('ZNUM_RANGE')
@@ -440,7 +446,7 @@ module.exports = (srv) => {
 
         oUpdateVariables.CURRENT = String(current + 1);
 
-        const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+        const nextNumber = isCorpoCC ? `${prefix}${yy}${String(current).padStart(5, "0")}` : `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
@@ -532,18 +538,80 @@ module.exports = (srv) => {
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
 
-        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
-
-        const result = await tx.run(
-            SELECT.one`
-                SUM(AMOUNT) as TotalClaimAmount
-            `
-                .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId })
+        const headerResult = await tx.run(
+            SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
         );
 
-        const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
+        const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
+
+        // Same travel claim type list as the frontend's TravelClaimType constant.
+        const aTravelClaimTypeIds = ['DLM_NEGARA', 'LUAR_NEGARA', 'KURSUS_DLM_NEGARA', 'KURSUS_LUAR_NEGARA'];
+        const bHasCard = !!headerResult.CARD_NO;
+        const bIsTravelClaimType = aTravelClaimTypeIds.includes(headerResult.CLAIM_TYPE_ID);
+
+        let totalClaimAmount;
+        let finalAmountToReceive;
+
+        if (bHasCard && bIsTravelClaimType) {
+            // Total Claim Amount includes everything except POTONGAN_ELAUN and
+            // CASH_REPAY, regardless of CHARGED_TO_CCC status.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+
+            // Final Amount to Receive additionally excludes CHARGED_TO_CCC items
+            // (they get settled via the corporate card advance offset instead) -
+            // but not POTONGAN_ELAUN or CASH_REPAY again, since both are already
+            // excluded from totalClaimAmount above and would otherwise be
+            // double-subtracted.
+            const chargedResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as ChargedToCccAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CHARGED_TO_CCC = true and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            const chargedToCccAmount = chargedResult.ChargedToCccAmount || 0;
+
+            // POTONGAN_ELAUN items are actively deducted from Final Amount to
+            // Receive, on top of already being excluded from totalClaimAmount
+            // above. Mirrors the frontend's _calculateClaimTotal() deduction.
+            const potonganElaunResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as PotonganElaunAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: 'POTONGAN_ELAUN' })
+            );
+            const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
+
+            // Rounded to 2dp to avoid floating-point residue (e.g. 671.5699999999997)
+            // being truncated instead of rounded when persisted to the DECIMAL column.
+            finalAmountToReceive = Math.round(((totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0) * 100) / 100;
+        } else {
+            // Default: not a travel claim with a corporate credit card - simple
+            // sum of everything, minus cash advance only.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId })
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+            finalAmountToReceive = Math.round(((totalClaimAmount - nCashAdvanceAmount) || 0) * 100) / 100;
+        }
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -553,13 +621,18 @@ module.exports = (srv) => {
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
-
         console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
     }
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-
+    
+        const oHeaderResult = await tx.run(
+            SELECT.one.from('ZREQUEST_HEADER')
+                .where({ REQUEST_ID: sRequestId })
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+        );
+    
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -568,10 +641,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-
-        const totalEstAmount = result.TotalEstAmount || 0;
+    
+        let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-
+    
+        const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        if (bIsCorpoCC && totalEstAmount < 0) {
+            totalEstAmount = 0;
+        }
+    
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -4490,6 +4568,29 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getMonthlyAdvanceAmount', async (req) => {
+        const { sCardNo, sCardholderId } = req.data;
+        if (!sCardNo || !sCardholderId) return 0.00;
+    
+        try {
+            const oCardAdvance = await SELECT
+                .one
+                .from('ZCORPORATE_CARD_ADVANCED')
+                .columns('CURRENT_ADVANCED_BALANCE')
+                .where({
+                    CARD_NO: sCardNo,
+                    CARDHOLDER_ID: sCardholderId
+                });
+ 
+            console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
+    
+            return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
+    
+        } catch (error) {
+            console.error('[getMonthlyAdvanceAmount] Query failed:', error);
+            req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
+        }
+    });
 
     srv.on('getDependentNationalId', async (req) => {
 
@@ -4775,7 +4876,236 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('deleteItemCascade', async (req) => {
+        const { sReqId, sReqSubId } = req.data;
+    
+        if (!sReqId || !sReqSubId) {
+            req.error(400, 'sReqId and sReqSubId are required');
+            return;
+        }
+    
+        const tx = cds.tx(req);
+    
+        try {
+            await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+    
+            return true;
+    
+        } catch (error) {
+            console.error('[deleteItemCascade] Failed:', error);
+            req.error(500, `Failed to delete item: ${error.message}`);
+        }
+    });
+
+    srv.on('READ', 'CCCFeatureControl', async (req) => {
+        let operationHidden = true;
+        if (req.user.is(Constant.Admin.DTD_Admin) || req.user.is(Constant.Admin.CCC_Admin)) {
+            operationHidden = false;
+        }
+
+        return {
+            operationHidden: operationHidden,
+            operationEnabled: !operationHidden,
+        }
+    });
+
     /**
+     * batch create budget records from IFAMS Modern
+     * This particular service will not calculate the original budget with the virements, supplement and return for the current budget
+     * as these value will be directly reflect from IFMAS Modern (S/4 HANA)
+     */
+    srv.on('batchCreateBudgetIFAMSModern', async (req) => {
+        const { ZBUDGET } = srv.entities;
+        let results = [];
+        try {
+            const { budget } = req.data;
+            if (!budget || budget.length === 0) throw new Error('No Data Sent');
+            const tx = cds.tx(req);
+        
+            for (const row of budget) {
+                const key = {
+                    YEAR: row.YEAR,
+                    INTERNAL_ORDER: row.INTERNAL_ORDER,
+                    COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                    FUND_CENTER: row.FUND_CENTER,
+                    MATERIAL_GROUP: row.MATERIAL_GROUP
+                };
+                const existing = await tx.read(ZBUDGET)
+                    .where(key)
+                    .limit(1);
+                const isExisting = existing.length > 0;
+                const upsertPayload = { ...row };
+                const originalBudget = Number(row.ORIGINAL_BUDGET) || 0;
+                const virementIn = Number(row.VIREMENT_IN) || 0;
+                const virementOut = Number(row.VIREMENT_OUT) || 0;    // -ve value
+                const supplement = Number(row.SUPPLEMENT) || 0;
+                const returnValue = Number(row.RETURN) || 0;          // -ve value
+                const consumed = isExisting
+                    ? Number(existing[0].CONSUMED) || 0
+                    : Number(row.CONSUMED) || 0;
+                const totalBudget = originalBudget + virementIn + virementOut + supplement + returnValue;
+                const totalBudgetBalance = totalBudget + consumed;
+                upsertPayload.CURRENT_BUDGET = totalBudget.toFixed(2);
+                upsertPayload.BUDGET_BALANCE = totalBudgetBalance.toFixed(2);
+                await tx.run(
+                    UPSERT.into(ZBUDGET).entries(upsertPayload)
+                );
+                results.push({
+                    status: isExisting ? "record updated" : "record inserted",
+                    year: row.YEAR,
+                    internalorder: row.INTERNAL_ORDER,
+                    commitment_item: row.COMMITMENT_ITEM,
+                    fund_center: row.FUND_CENTER,
+                    materialgroup: row.MATERIAL_GROUP,
+                    currentBudget: upsertPayload.CURRENT_BUDGET,
+                    budgetBalance: upsertPayload.BUDGET_BALANCE
+                });
+            }
+            return { results };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    });
+
+    srv.on('getCorpoCardsForItem', async (req) => {
+        const { sReqId, sCorpoCards } = req.data;
+
+        let aCorpoCards = [];
+        try {
+            aCorpoCards = sCorpoCards ? JSON.parse(sCorpoCards) : [];
+        } catch (error) {
+            req.error(400, 'sCorpoCards must be valid JSON.');
+            return;
+        }
+
+        if (!sReqId || !Array.isArray(aCorpoCards) || aCorpoCards.length === 0) {
+            return JSON.stringify([]);
+        }
+
+        try {
+            // Fetch each card's validity window + PRINCIPLE flag from the
+            // card master, to filter out cards outside their valid date
+            // range and sort principal cards first.
+            const aCardNos = [...new Set(aCorpoCards.map((oCard) => oCard.CARD_NO).filter((sCardNo) => !!sCardNo))];
+            const mCardMasterByCardNo = {};
+
+            if (aCardNos.length > 0) {
+                try {
+                    const aCardMasterRows = await SELECT
+                        .from('ZCORPORATE_CARD')
+                        .columns('CARD_NO', 'START_DATE', 'END_DATE', 'PRINCIPLE')
+                        .where({ CARD_NO: { in: aCardNos } });
+
+                    aCardMasterRows.forEach((oCardMaster) => {
+                        mCardMasterByCardNo[oCardMaster.CARD_NO] = oCardMaster;
+                    });
+                } catch (error) {
+                    console.error('Failed to load card master validity/principle info:', error);
+                }
+            }
+
+            // Only keep cards currently within their validity window
+            // (START_DATE <= today <= END_DATE). A missing START_DATE/
+            // END_DATE on the master record is treated as no restriction
+            // on that side, so cards without dates set aren't wrongly
+            // excluded.
+            const dToday = new Date();
+            dToday.setHours(0, 0, 0, 0);
+
+            aCorpoCards = aCorpoCards.filter((oCard) => {
+                const oCardMaster = mCardMasterByCardNo[oCard.CARD_NO];
+                if (!oCardMaster) return true;
+
+                const dStart = oCardMaster.START_DATE ? new Date(oCardMaster.START_DATE) : null;
+                const dEnd = oCardMaster.END_DATE ? new Date(oCardMaster.END_DATE) : null;
+
+                if (dStart) dStart.setHours(0, 0, 0, 0);
+                if (dEnd) dEnd.setHours(0, 0, 0, 0);
+
+                if (dStart && dToday < dStart) return false;
+                if (dEnd && dToday > dEnd) return false;
+                return true;
+            });
+
+            const aSavedParts = await SELECT
+                .from('ZREQ_ITEM_CCC_PART')
+                .columns('CARD_NO', 'STATEMENT_DUE_AMT', 'SERVICE_TAX', 'CASHBACK', 'MERCHANT_REFUND_AMT', 'MERCHANT_REFUND_ARR')
+                .where({ REQUEST_ID: sReqId });
+
+            const mTotalsByCard = {};
+
+            aSavedParts.forEach((oPart) => {
+                const sCardNo = oPart.CARD_NO;
+
+                if (!mTotalsByCard[sCardNo]) {
+                    mTotalsByCard[sCardNo] = {
+                        current_balance: 0,
+                        service_tax: 0,
+                        cashback: 0,
+                        merchant_refunds_total: 0,
+                        merchant_refunds_array: []
+                    };
+                }
+
+                mTotalsByCard[sCardNo].current_balance += parseFloat(oPart.STATEMENT_DUE_AMT) || 0;
+                mTotalsByCard[sCardNo].service_tax += parseFloat(oPart.SERVICE_TAX) || 0;
+                mTotalsByCard[sCardNo].cashback += parseFloat(oPart.CASHBACK) || 0;
+                mTotalsByCard[sCardNo].merchant_refunds_total += parseFloat(oPart.MERCHANT_REFUND_AMT) || 0;
+
+                if (oPart.MERCHANT_REFUND_ARR) {
+                    try {
+                        const aParsed = JSON.parse(oPart.MERCHANT_REFUND_ARR);
+                        mTotalsByCard[sCardNo].merchant_refunds_array.push(...aParsed);
+                    } catch (error) {
+                        console.warn('Failed to parse MERCHANT_REFUND_ARR for card:', sCardNo);
+                    }
+                }
+            });
+
+            // Merge summed totals into the base corpo_cards list
+            aCorpoCards = aCorpoCards.map((oCard) => {
+                const oTotals = mTotalsByCard[oCard.CARD_NO] || {
+                    current_balance: 0,
+                    service_tax: 0,
+                    cashback: 0,
+                    merchant_refunds_total: 0,
+                    merchant_refunds_array: []
+                };
+
+                const iAdvAmt = Math.max(
+                    0,
+                    oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
+                ).toFixed(2);
+
+                return {
+                    ...oCard,
+                    PRINCIPLE: !!(mCardMasterByCardNo[oCard.CARD_NO]?.PRINCIPLE),
+                    current_balance: oTotals.current_balance.toFixed(2),
+                    service_tax: oTotals.service_tax.toFixed(2),
+                    cashback: oTotals.cashback.toFixed(2),
+                    merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
+                    merchant_refunds: oTotals.merchant_refunds_array,
+                    merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
+                    advance_amount: iAdvAmt
+                };
+            });
+
+            // Sort principal cardholders first
+            aCorpoCards.sort((oA, oB) => {
+                const bPrincipleA = !!(mCardMasterByCardNo[oA.CARD_NO]?.PRINCIPLE);
+                const bPrincipleB = !!(mCardMasterByCardNo[oB.CARD_NO]?.PRINCIPLE);
+                return (bPrincipleB ? 1 : 0) - (bPrincipleA ? 1 : 0);
+            });
+
+            return JSON.stringify(aCorpoCards);
+
+        } catch (error) {
+            console.error('getCorpoCardsForItem failed:', error);
+            req.error(500, 'An error occurred while loading corporate cards for the item.');
+        }
+    });    /**
      * Retrieve policy information for selected dependent.
      * Policy lookup and year filtering 
      * @private

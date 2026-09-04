@@ -200,4 +200,3 @@ annotate eclaim_srv.ZEMP_MASTER with {
 annotate eclaim_srv.ZEMP_MASTER with {
     POSITION_EVENT_REASON @Common.Label : 'POSITION_EVENT_REASON'
 };
-

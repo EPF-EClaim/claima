@@ -731,7 +731,35 @@ sap.ui.define([
 
                 oModel.setProperty(sPropertyPath,0);
             }
-        }
+        },
+
+        getMonthlyAdvanceAmount: async function (sCardNo, sCardholderId) {
+            const oDataModel = this._oOwnerComponent.getModel();
+            var dResult = 0.00;
+            if (!sCardNo || !sCardholderId) return dResult;
+        
+            try {
+                BusyIndicator.show(0);
+        
+                const oFunction = oDataModel.bindContext("/getMonthlyAdvanceAmount(...)");
+        
+                oFunction.setParameter("sCardNo", sCardNo);
+                oFunction.setParameter("sCardholderId", sCardholderId);
+        
+                await oFunction.execute();
+        
+                const oContext = oFunction.getBoundContext();
+                dResult = oContext.getObject("value") || 0.00;
+        
+            } catch (oError) {
+                MessageBox.error(oError.toString());
+                dResult = 0.00;
+            } finally {
+                BusyIndicator.hide();
+            }
+        
+            return dResult;
+        },
 
     };
     });

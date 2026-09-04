@@ -112,6 +112,170 @@ annotate service.ZREQUEST_TYPE with @(
     }
 );
 
+annotate service.ZCORPORATE_CARD with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [CARD_NO],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'List of Corporate Credit Card - ZCORPORATE_CARD',
+            TypeNamePlural: 'List of Corporate Credit Card - ZCORPORATE_CARD',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARD_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Card No.'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PRINCIPLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Principal'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATEMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Statement Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DUE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Due Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EXPIRY_DATA,
+                ![@UI.Importance]: #High,
+                Label            : 'Expiry Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARKS,
+                ![@UI.Importance]: #High,
+                Label            : 'Remarks'
+            }
+        ],
+
+    }
+);
+
+annotate service.ZCORPORATE_CARD_ADVANCED with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SortRestrictions  : {Sortable: true},
+    Common.SemanticKey             : [CARD_NO, CARDHOLDER_ID],
+    Capabilities                   : {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false
+    },
+
+    UI                             : {
+        CreateHidden: true,
+        DeleteHidden: true,
+        UpdateHidden: true,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
+            TypeNamePlural: 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARD_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Card No.'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MONTHLY_ADVANCED_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Monthly Advanced Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMIT_OFFSET_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Commit Offset Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL_OFFSET_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Actual Offset Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_ADVANCED_BALANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Advanced Balance'
+            }
+        ],
+
+    }
+);
+
+annotate service.ZCORPORATE_CARD_ADVANCED with {
+    CARD_NO                  @readonly;
+    CARDHOLDER_ID             @readonly;
+    STATUS                    @readonly;
+    MONTHLY_ADVANCED_AMT      @readonly;
+    COMMIT_OFFSET_AMT         @readonly;
+    ACTUAL_OFFSET_AMT         @readonly;
+    CURRENT_ADVANCED_BALANCE  @readonly;
+};
+
 annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
     odata.draft.enabled,

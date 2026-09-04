@@ -13,6 +13,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     };
 
     @odata.singleton
+    entity CCCFeatureControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
+    };
+
+    @odata.singleton
     entity BudgetControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;
@@ -1634,9 +1640,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                       VALID_TO: Date,
                                       SUBSTITUTE_RULE_ID: String)                                        returns Boolean;
 
+
     entity ZINSURANCE_MEDICAL_PROVIDER   as projection on ECLAIM.ZINSURANCE_MEDICAL_PROVIDER;
 
-    action   getGLAccountByProjectCode(sProjectCode: String)                                             returns String;
+    action getGLAccountByProjectCode(sProjectCode: String)                                             returns String;
 
     action   getPolicyInfo(dependentNationalId: String,
                            policyYear: String)                                                           returns {
@@ -1645,7 +1652,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
         next_policy_number     : String;
     };
 
-    action   getDependentNationalId(dependentNo: String)                                                 returns String;
+    function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
+
+    action getDependentNationalId(dependentNo : String)                                            returns String;
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
         select from ECLAIM.ZREQUEST_HEADER as RequestHeader
@@ -1719,9 +1728,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 Log.MESSAGE_TYPE,
                 Log.STATUS_CODE
         };
-
-    entity ZEMP_MEDICAL_ENT_HISTORY      as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
-
+        
     entity ZEMP_CLAIM_POLICY_VALID as
         select from ECLAIM.ZCLAIM_ITEM as item
             inner join ECLAIM.ZCLAIM_HEADER as header
@@ -1736,4 +1743,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
     where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');  
 
+    action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
+
+    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
+
+    action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
+
+    function getCorpoCardsForItem(sReqId: String, sCorpoCards: LargeString) returns LargeString;
 };

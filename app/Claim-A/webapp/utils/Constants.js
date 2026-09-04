@@ -27,6 +27,7 @@ sap.ui.define([
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
             "CERAMAH": "CERAMAH",
+            "CORPO_CRED_CARD" : "CORPO_CRED_CARD",
             "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
         },
         "ClaimTypeKursus": {
@@ -99,7 +100,13 @@ sap.ui.define([
             "JENAZAH":"JENAZAH",
             "KEMATIAN": "KEMATIAN",
             "INSURANCE": "INSURANCE",
-            "MED_ADVANCE": "MED_ADVANCE"
+            "MED_ADVANCE": "MED_ADVANCE",
+            "CASH_BACK" : "CASH_BACK",
+            "STATMENT_DUE" : "STATMENT_DUE",
+            "SERV_TAX" : "SERV_TAX",
+            "MERCH_RETURN" : "MERCH_RETURN",
+            "PERSONAL_EXP" : "PERSONAL_EXPENSE",
+            "POTONGAN_ELAUN" : "POTONGAN_ELAUN"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -327,7 +334,8 @@ sap.ui.define([
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
             "SUPER_ADMIN": "Super Admin",
-            "HEADOFDEP": "HOD"
+            "HEADOFDEP": "HOD",
+            "CCC_ADMIN" : "CCC Admin"
         },
         "User_Type": {
             "CASH_FI": "CASH_FI",
@@ -352,7 +360,8 @@ sap.ui.define([
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET",
-            "ZEMP_CA_PAYMENT" : "ZEMP_CA_PAYMENT"
+            "ZEMP_CA_PAYMENT" : "ZEMP_CA_PAYMENT",
+            "ZCORPORATE_CARD" : "ZCORPORATE_CARD"
         },
         "BudgetCheckStatus": {
             "NOT_FOUND": "RECORD NOT FOUND",
@@ -416,7 +425,8 @@ sap.ui.define([
             "EVENTS": "RT0003",
             "REIMBURSEMENT": "RT0004",
             "MEDICAL": "RT0005",
-            "PROJECT": "RT0006"
+            "PROJECT": "RT0006",
+            "CORP_CC" : "RT0007"
         },
         "ClaimFooterMode": {
             "SUMMARY": "SUMMARY",
@@ -497,7 +507,7 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART", "ZEMP_PENDING_LIST", "ZSUBSTITUTION_RULES_CONFIG"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART", "ZEMP_PENDING_LIST", "ZSUBSTITUTION_RULES_CONFIG","ZCORPORATE_CARD", "ZCORPORATE_CARD_ADVANCED"
             ],
         "ExcludeField":
         {
@@ -725,6 +735,45 @@ sap.ui.define([
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
+        },
+
+        "TravelClaimType" :{
+            "DLM_NEGARA" : "DLM_NEGARA",
+            "LUAR_NEGARA" : "LUAR_NEGARA",
+            "KURSUS_DLM_NEGARA" : "KURSUS_DLM_NEGARA",
+            "KURSUS_LUAR_NEGARA" : "KURSUS_LUAR_NEGARA"
+        },
+
+        "TravelClaimItems" : {
+            "FLIGHT_L" : "FLIGHT_L",
+            "HOTEL_L" : "HOTEL_L",
+            "YURAN" : "YURAN",
+            "CASH_REPAY"  : "CASH_REPAY",
+            "DOBI" : "DOBI",
+            "TAMBANG" : "TAMBANG",
+            "MISC" : "MISC",
+            "PARKING" : "PARKING",
+            "EXCESS" : "EXCESS",
+            "FLIGHT_O" : "FLIGHT_O",
+            "HOTEL_O" : "HOTEL_O",
+            "PELBAGAI" : "PELBAGAI",
+            "SERVICES" : "SERVICES",
+            "TELEFON" : "TELEFON",
+            "VISA" : "VISA",
+        },
+        "StatementDueInfo" : {
+            "GL_CODE" : "214229",
+            "MATERIAL_CODE" : "NA"
+        },
+        "CashBackInfo" : {
+            "GL_CODE" : "690003",
+            "MATERIAL_CODE" : "NA",
+            "COST_CENTER" : "100050505"
+        },
+        "ServiceTaxInfo" : {
+            "GL_CODE" : "721001",
+            "MATERIAL_CODE" : "721001006",
+            "COST_CENTER" : "100050505"
         },
         "InsuranceMedicalProvider": {
             "OTHERS": "4",

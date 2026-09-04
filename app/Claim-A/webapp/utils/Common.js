@@ -99,6 +99,9 @@ sap.ui.define([
                             oContext.setProperty("EVENT_END_DATE",
                                 DateUtility.getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
                             );
+                            oContext.setProperty("PAYMENT_DUE_DATE",
+                                DateUtility.getHanaDate(oInputModel.getProperty("/req_header/cccduedate"))
+                            );
 
                             var oProject = this._oView.byId("select_request_project_code");
 
@@ -326,7 +329,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/comment", !bEdit);
                         oEditableFields.setProperty("/saveHeader", !bEdit);
 
-                        if ( sReqTypeID == Constants.RequestType.TRAVEL ) {
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.CORP_CC ) {
                             oEditableFields.setProperty("/startEvent", bEdit);
                             oEditableFields.setProperty("/endEvent", bEdit);
                             RequestUtility.init(this._oOwnerComponent, this._oView);
@@ -335,7 +338,7 @@ sap.ui.define([
                                 oEditableFields.setProperty("/endEventRequired", bEdit);
                             }
                         }
-                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT ) {
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT || sReqTypeID == Constants.RequestType.CORP_CC ) {
                             oEditableFields.setProperty("/startTrip", bEdit);
                             oEditableFields.setProperty("/endTrip", bEdit);
                             oEditableFields.setProperty("/location", bEdit);

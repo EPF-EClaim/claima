@@ -153,7 +153,7 @@ async function retrieveItems(sId, oDescriptor) {
     }
 
     if (sId?.startsWith('CLM')) {
-        oQuery.where`CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY'`;
+        oQuery.where`CLAIM_TYPE_ITEM_ID not in ('CASH_REPAY', 'POTONGAN_ELAUN', 'PERSONAL_EXPENSE')`;
     }
 
     return await cds.run(oQuery);
