@@ -118,8 +118,6 @@ sap.ui.define([
                             await oODataModel.submitBatch("$auto");
 
                             const oController =this._oView.getController();
-                            await oController._updateRequestItemCostCenters();
-
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(
                                 Utility.getText("msg_claimheader_updated", [sReqID])

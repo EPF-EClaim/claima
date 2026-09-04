@@ -150,6 +150,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
                 ZCLAIM_TYPE.COST_CENTER,
+                COST_CENTER   as  CHARGING_COST_CENTER,
                 ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 NO_OF_DAYS,
                 PURPOSE,

@@ -81,7 +81,7 @@ sap.ui.define([
 							return {
 								"YEAR": sYear,
 								"INTERNAL_ORDER": sInternalCode,
-								"FUND_CENTER": row.COST_CENTER,
+								"FUND_CENTER": row.CHARGING_COST_CENTER,
 								"MATERIAL_GROUP": row.MATERIAL_CODE,
 								"COMMITMENT_ITEM": row.GL_ACCOUNT,
 								"AMOUNT": parseFloat(row.EST_AMOUNT),
