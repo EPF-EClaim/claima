@@ -73,9 +73,6 @@ sap.ui.define([
 
 					var sDate = new Date(oHeader.reqdate);
 					var sYear = String(sDate.getFullYear());
-					var sFundCenter = (oHeader.altcostcenter && oHeader.altcostcenter !== "-")
-						? oHeader.altcostcenter.split(" - ")[0]
-						: oHeader.costcenter.split(" - ")[0];
 					var sInternalCode = oHeader.projectcode || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 
 					var aPayload = aItemRows
@@ -84,7 +81,7 @@ sap.ui.define([
 							return {
 								"YEAR": sYear,
 								"INTERNAL_ORDER": sInternalCode,
-								"FUND_CENTER": sFundCenter,
+								"FUND_CENTER": row.CHARGING_COST_CENTER,
 								"MATERIAL_GROUP": row.MATERIAL_CODE,
 								"COMMITMENT_ITEM": row.GL_ACCOUNT,
 								"AMOUNT": parseFloat(row.EST_AMOUNT),
@@ -103,7 +100,6 @@ sap.ui.define([
 
 					var sDate = new Date();
 					var sYear = String(sDate.getFullYear());
-					var sFundCenter = oHeader.alternate_cost_center || oHeader.cost_center;
 					var sInternalCode = oHeader.project_code || Constant.Default.PROJECT_CODE;	// todo change to NA after flush db
 					var sCommitmentItem = await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
 
@@ -115,7 +111,7 @@ sap.ui.define([
 							return {
 								"YEAR": sYear,
 								"INTERNAL_ORDER": sInternalCode,
-								"FUND_CENTER": sFundCenter,
+								"FUND_CENTER": row.cost_center,
 								"MATERIAL_GROUP": row.material_code,
 								"COMMITMENT_ITEM": sCommitmentItem,
 								"AMOUNT": parseFloat(row.amount),

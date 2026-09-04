@@ -8802,11 +8802,12 @@ annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with @(
     UI : {
         CreateHidden : true,
         DeleteHidden : true,
+        UpdateHidden : false,
 
         HeaderInfo : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Claim Type Item Charging Cost Center',
-            TypeNamePlural: 'Claim Type Item Charging Cost Center'
+            TypeName      : 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC',
+            TypeNamePlural: 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC'
         },
 
         LineItem : [
@@ -8839,10 +8840,19 @@ annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with @(
                 Value            : CHARGING_COST_CENTER,
                 ![@UI.Importance]: #High,
                 Label            : 'Charging Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             }
         ]
     }
-){
+);
+
+annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with {
+
     CHARGING_COST_CENTER @(
         Common.Label                   : 'Charging Cost Center',
         Common.Text                    : CHARGING_COST_CENTER_DESC,
@@ -8865,4 +8875,7 @@ annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with @(
             ]
         }
     );
+
 };
+
+

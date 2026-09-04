@@ -1653,7 +1653,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
         next_policy_number     : String;
     };
 
-    action   getDependentNationalId(dependentNo: String)                                                 returns String;
+
+    function getMonthlyAdvanceAmount(sCardNo: String, sCardholderId: String) returns Decimal(16, 2);
+
+    action getDependentNationalId(dependentNo : String)                                            returns String;
+
 
     entity ZEMP_APPROVED_PREAPPROVAL     as
         select from ECLAIM.ZREQUEST_HEADER as RequestHeader
@@ -1728,11 +1732,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 Log.STATUS_CODE
         };
 
-    action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
-
-
-    entity ZEMP_MEDICAL_ENT_HISTORY      as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
-
     entity ZEMP_CLAIM_POLICY_VALID as
         select from ECLAIM.ZCLAIM_ITEM as item
             inner join ECLAIM.ZCLAIM_HEADER as header
@@ -1746,6 +1745,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
             DEPENDENT_NATIONAL_ID
     }
     where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');  
+
+    action   deleteItemCascade(sReqId: String, sReqSubId: String)                                        returns Boolean;
+
+
+    entity ZEMP_MEDICAL_ENT_HISTORY as projection on ECLAIM.ZEMP_MEDICAL_ENT_HISTORY;
+
 
     action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
 

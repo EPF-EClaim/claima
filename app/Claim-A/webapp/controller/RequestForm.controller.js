@@ -148,7 +148,7 @@ sap.ui.define([
 			}
 			this._oRequestFragments = Object.create(null);
 			try {
-				await PARequestSharedFunction._getHeader(this, sReqId);
+				await PARequestSharedFunction.getHeader(this, sReqId);
 
 				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
@@ -503,7 +503,7 @@ sap.ui.define([
 								return;
 							}
 
-								// budget checking
+								//budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
@@ -539,6 +539,7 @@ sap.ui.define([
 									} else {
 										throw new Error(Utility.getText("msg_failed_no_approver"))
 									}
+
 
 								} else {
 									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oBudgetCheckHandling.aClaimTypeItem));
@@ -829,6 +830,7 @@ sap.ui.define([
 				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
 				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 				: oReqItem.ROUND_TRIP || false,
+				internal_order			: oReqItem.INTERNAL_ORDER || null,
 				internal_order			: oReqItem.INTERNAL_ORDER || null,
 				policy_year				: oReqItem.POLICY_YEAR || null,
 				dependent_national_id	: oReqItem.DEPENDENT_NATIONAL_ID || null,
@@ -1375,12 +1377,30 @@ sap.ui.define([
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
-						? oReqHeader.altcostcenter
-						: oReqHeader.costcenter;
+					const sDefaultChargingCostCenter =
+						await Utility.getDefaultChargingCostCenter(
+							this._oDataModel,
+							oReqHeader.claimtype,
+							oReqItem.claim_type_item_id
+						);
+
+					if (sDefaultChargingCostCenter) {
+						oReqItem.cost_center = sDefaultChargingCostCenter;
+					} else {
+						oReqItem.cost_center =
+							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
+								? oReqHeader.altcostcenter
+								: oReqHeader.costcenter;
+					}
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 				}
 					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+				if (oReqItem.cost_center) {
+					oReqItem.cost_center =
+						String(oReqItem.cost_center)
+							.split(" - ")[0]
+							.trim();
+				}
 
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {
@@ -3668,6 +3688,25 @@ sap.ui.define([
 				console.error("Load corpo cards for edit item failed:", e);
 			}
 		},
+
+		onChange_Dependent: async function (oEvent) {
+
+			const sDependentNo =oEvent.getSource().getSelectedKey();
+			const oAction =this._oDataModel.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter(
+				"dependentNo",
+				sDependentNo
+			);
+
+			await oAction.execute();
+
+			const sNationalId=
+				oAction.getBoundContext().getObject().value;
+
+			this._oReqModel.setProperty("/req_item/dependent_national_id",sNationalId);
+		}
+
         await RequestUtility._getEntitledMeterCube(aSelectedKeys);
         },
 

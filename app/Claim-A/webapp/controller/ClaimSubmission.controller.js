@@ -2459,7 +2459,7 @@ sap.ui.define([
 			if (!oInputModel.getProperty("/claim_item/claim_type_item_id")) {
 				return;
 			}
-			
+
 			// CCC holders creating a CASH_REPAY item: default/lock the CCC switch
 			// based on whether a cash advance amount is available
 			this._applyCashRepayCCCDefault(oInputModel, oClaimSubmissionModel);
@@ -3045,7 +3045,6 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-				case this._oConstant.ClaimTypeItem.CASH_REPAY:
 					var d25YearsAndBelow = DateUtility.today();
 					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
 
@@ -3379,6 +3378,24 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment4) return; // stop processing if upload fails for attachment 4
 
+
+			// Cash Repayment - override charging cost center from config
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY) {
+
+				const sDefaultChargingCostCenter =
+					await Utility.getDefaultChargingCostCenter(
+						this.getOwnerComponent().getModel(),
+						oInputModel.getProperty("/claim_item/claim_type_id"),
+						oInputModel.getProperty("/claim_item/claim_type_item_id")
+					);
+
+				if (sDefaultChargingCostCenter) {
+					oInputModel.setProperty(
+						"/claim_item/cost_center",
+						sDefaultChargingCostCenter
+					);
+				}
+			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -3538,7 +3555,7 @@ sap.ui.define([
 					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
 					COST_CENTER: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? null
-									: (oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center")),
+									: (oInputModel.getProperty("/claim_item/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center")),
 					GL_ACCOUNT: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? this._oConstant.StatementDueInfo.GL_CODE
 									: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account")),
@@ -3584,6 +3601,7 @@ sap.ui.define([
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? true
 									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
 					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
 					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
@@ -5026,7 +5044,7 @@ sap.ui.define([
 									}
 								}
 
-								const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"));
+const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"));
 								if(sStatus != this._oConstant.ClaimStatus.APPROVED){
 									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
@@ -5034,18 +5052,24 @@ sap.ui.define([
 										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
 									}
 								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);												
-							break;
 
-								const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"));
-								if(sStatus != this._oConstant.ClaimStatus.APPROVED){
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-									}
-								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);											
+								// update Medical entitlement usage if claim type is Medical
+								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
+									oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
+									const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
+									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									try {
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
+									}								
+									oMsg = Utility.getText("msg_claimsubmission_pending", []);
+								} else {
+								throw new Error(Utility.getText("msg_failed_no_approver"))
+							}												
 							break;
 						default:
 							throw new Error("Invalid action selected: " + oAction);
@@ -5133,8 +5157,8 @@ sap.ui.define([
 				try {
 					oModel = this.getOwnerComponent().getModel();
 					oListBinding = null;
-					
-					// set body for update
+
+									// set body for update
 					var oBody = new JSONModel({
 						CLAIM_ID: claim_item.claim_id,
 						CLAIM_SUB_ID: claim_item.claim_sub_id,
@@ -6176,6 +6200,114 @@ sap.ui.define([
 				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
+		},
+		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
+			if (!sCardNo || !sClaimTypeItemId) return false;
+			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		/**
+		 * For CCC (corporate credit card) holders creating/editing a CASH_REPAY
+		 * claim item: if there is no cash advance on the claim, the item must be
+		 * charged to the CCC, so the switch defaults to ON and is locked. If a
+		 * cash advance amount is present, the user is free to decide, so the
+		 * switch is left editable (existing value, if any, is preserved).
+		 */
+		_applyCashRepayCCCDefault: function (oInputModel, oClaimSubmissionModel) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (!oInputModel || !oClaimSubmissionModel || !oPropertyModel) return;
+
+			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			if (sClaimTypeItemId !== this._oConstant.ClaimTypeItem.CASH_REPAY) {
+				return;
+			}
+
+			// Only applies to corporate credit card holders
+			var sCardNo = oClaimSubmissionModel.getProperty("/claim_header/card_no");
+			if (!sCardNo) {
+				return;
+			}
+
+			var nCashAdvanceAmount = Math.max(0, Number(oClaimSubmissionModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+
+			if (nCashAdvanceAmount === 0) {
+				// No cash advance to draw from - must be charged to CCC, and locked
+				oInputModel.setProperty("/claim_item/charged_to_ccc", true);
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", false);
+			} else {
+				// Cash advance available - let the user decide
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", true);
+			}
+		},
+
+		_calculateClaimTotal: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+
+			var nCashAdvAmt = Math.max(0, Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+
+			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+			var bHasCard = !!sCardNo;
+
+			if (bHasCard && bIsTravelClaimType) {
+				// Total Claim Amount includes everything except POTONGAN_ELAUN and
+				// CASH_REPAY, regardless of charged_to_ccc status.
+				var nTotal = aClaimItems
+					.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// Final Amount to Receive additionally excludes charged_to_ccc items
+				// (they get settled via the corporate card advance offset instead) -
+				// but not POTONGAN_ELAUN or CASH_REPAY again, since both are already
+				// excluded from nTotal above and would otherwise be double-subtracted.
+				var nChargedToCccExcludingPotongan = aClaimItems
+					.filter((it) => it.charged_to_ccc
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// POTONGAN_ELAUN items are actively deducted from Final Amount to
+				// Receive, on top of already being excluded from nTotal above.
+				var nPotonganElaunAmt = aClaimItems
+					.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// Rounded to 2dp so the on-screen preview matches what the backend
+				// will persist, avoiding floating-point residue in the subtraction.
+				var nNewTotal = Math.round((nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt) * 100) / 100;
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
+				return;
+			}
+
+			// Default: not a travel claim with a corporate credit card - simple
+			// sum of everything, minus cash advance only.
+			var nTotalDefault = aClaimItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			var nFinal = Math.round((nTotalDefault - nCashAdvAmt) * 100) / 100;
+			oInputModel.setProperty("/claim_header/total_claim_amount", nTotalDefault);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
+		},
+
+		_calculateCardAdvanceAmount: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (oInputModel.getProperty("/view_only")) {
+				return;
+			}
+
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
+
+			var nChargedToCccAmount = aClaimItems
+				.filter((it) => it.charged_to_ccc)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			var nCardAdvanceAmount = nOriginalCardAdvanceAmount - nChargedToCccAmount;
+
+			oInputModel.setProperty("/claim_header/card_advance_amount", nCardAdvanceAmount);
 		},
 
 		onChange_Dependent: async function (oEvent) {

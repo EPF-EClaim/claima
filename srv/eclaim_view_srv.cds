@@ -151,7 +151,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
                 ZCLAIM_TYPE.COST_CENTER,
-                COST_CENTER    as CHARGING_COST_CENTER,
+                COST_CENTER   as  CHARGING_COST_CENTER,
                 ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 NO_OF_DAYS,
                 PURPOSE,
@@ -1072,7 +1072,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-entity ZEMP_APPROVER_DETAILS           as
+    entity ZEMP_APPROVER_DETAILS  as
+
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
