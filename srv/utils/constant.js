@@ -572,6 +572,10 @@ const Constant = {
         'REGISTRATION_NO',
         'PAYMENT_METHOD'
     ],
+    "CashAdvanceInfo": {
+        "COST_CENTER": "100000000",
+        "GL_ACCOUNT": "214005"
+    }
 
 };
 

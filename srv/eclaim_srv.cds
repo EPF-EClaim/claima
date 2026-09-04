@@ -1750,4 +1750,31 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchCreateBudgetIFAMSModern(budget: many ZBUDGET)                                          returns BudgetProcessResult;
 
     function getCorpoCardsForItem(sReqId: String, sCorpoCards: LargeString) returns LargeString;
+
+    entity ZCLAIM_TYPE_ITEM_CHARGING_CC as
+        select from ECLAIM.ZCLAIM_TYPE_ITEM as Item
+            left join ECLAIM.ZCLAIM_TYPE as ClaimType
+                on ClaimType.CLAIM_TYPE_ID = Item.CLAIM_TYPE_ID
+            left join ECLAIM.ZCOST_CENTER as CostCenter
+                on CostCenter.COST_CENTER_ID = Item.COST_CENTER
+        {
+        key Item.CLAIM_TYPE_ID,
+            ClaimType.CLAIM_TYPE_DESC,
+
+        key Item.CLAIM_TYPE_ITEM_ID,
+            Item.CLAIM_TYPE_ITEM_DESC,
+
+            Item.COST_CENTER as CHARGING_COST_CENTER,
+
+            CostCenter.COST_CENTER_DESC as CHARGING_COST_CENTER_DESC
+        };
+
+       /**
+        * Update default charging cost center maintained at ZCLAIM_TYPE_ITEM.COST_CENTER
+        */
+        action updateDefaultChargingCostCenter(
+            claimTypeId        : String,
+            claimTypeItemId    : String,
+            chargingCostCenter : String(9)
+        ) returns Boolean;
 };
