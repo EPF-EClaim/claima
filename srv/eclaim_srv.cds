@@ -204,7 +204,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZBRANCH                       as projection on ECLAIM.ZBRANCH;
 
-    entity ZEMP_CA_PAYMENT               as projection on ECLAIM.ZEMP_CA_PAYMENT;
+    entity ZEMP_CA_PAYMENT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'Admin_System'
+        }
+    ])                                   as projection on ECLAIM.ZEMP_CA_PAYMENT;
 
     entity ZPERDIEM_ENT                  as projection on ECLAIM.ZPERDIEM_ENT;
 
