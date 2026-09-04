@@ -614,6 +614,17 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
 				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
 
+				if (
+					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL ||
+					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL_ADVANCE
+				) {
+					await Utility.getRemainingMedicalEntitlement(
+						oInputModel,
+						this._oSessionModel.getProperty("/userId"),
+						"/claim_header/medical_remaining"
+					);
+				}
+
 				// if claim type is not project claim, reset project code value
 				if (!oClaimTypeData.PROJECT_CLAIM) {
 					oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -1550,6 +1561,18 @@ sap.ui.define([
 					oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
 				}
 
+				if (oDialogData.doc3) {
+					const sAttachment3Binary = await Attachment.getFileAsBinary(oDialogData.doc3);
+					const sAttachment3SFId = await Attachment.postAttachment(oDialogData.doc3.name, sAttachment3Binary, sEmpId);
+					oDialogData.doc3 = `${sAttachment3SFId} - ${oDialogData.doc3.name}`;
+				}
+
+				if (oDialogData.doc4) {
+					const sAttachment4Binary = await Attachment.getFileAsBinary(oDialogData.doc4);
+					const sAttachment4SFId = await Attachment.postAttachment(oDialogData.doc4.name, sAttachment4Binary, sEmpId);
+					oDialogData.doc4 = `${sAttachment4SFId} - ${oDialogData.doc4.name}`;
+				}
+
 				await this.createRequestHeader(oDialogData);
 
 			} catch (err) {
@@ -1598,7 +1621,9 @@ sap.ui.define([
 					TRANSFER_MODE_ID: oInputData.transfermode || null,
 					TRAVEL_ALONE_FAMILY: oInputData.transferalonefamily || null,
 					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null,
-					PROJECT_CODE: oInputData.project_code || null
+					PROJECT_CODE: oInputData.project_code || null,
+					ATTACHMENT3: oInputData.doc3 || null,
+					ATTACHMENT4: oInputData.doc4 || null
 				});
 
 				await oContext.created();
@@ -1635,6 +1660,18 @@ sap.ui.define([
 			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
+		},
+
+		onImportChange3(oEvent) {
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+			const oDialogData = oDialogModel.getData();
+			oDialogData.doc3 = oEvent.getParameters("files").files[0];
+		},
+
+		onImportChange4(oEvent) {
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+			const oDialogData = oDialogModel.getData();
+			oDialogData.doc4 = oEvent.getParameters("files").files[0];
 		},
 
 		// get backend data
@@ -1832,6 +1869,7 @@ sap.ui.define([
 						break;
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
+					case this._oConstant.RequestType.MEDICAL:
 						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
@@ -1860,7 +1898,7 @@ sap.ui.define([
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {
-			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment","req_CorpCCPayDueDate","req_corpoRefNo"];
+			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment","req_CorpCCPayDueDate","req_corpoRefNo", "req_attachment_3", "req_attachment_4"];
 			aHeaderControlIds.forEach(id => {
 				const c = this._resolveControl(id, "request");
 				if (c && typeof c.setVisible === "function") {

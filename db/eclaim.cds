@@ -1046,6 +1046,8 @@ entity ZEMP_DEPENDENT : managed {
         START_DATE                        : Date          @Common.Label: 'Effective Date';
         UPDATED_DATE                      : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                     : Date          @Common.Label: 'Inserted Date';
+        DISABLED                          : Boolean       @Common.Label: 'Disabled';
+        MEDICAL_BENEFICIARY               : Boolean       @Common.Label: 'Medical Beneficiary';  
 }
 
 

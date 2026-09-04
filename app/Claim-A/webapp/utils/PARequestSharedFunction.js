@@ -86,6 +86,8 @@ sap.ui.define([
 					comment:        oData.REMARK || "",
 					doc1:           oData.ATTACHMENT1 || "",
 					doc2:           oData.ATTACHMENT2 || "",
+					doc3:           oData.ATTACHMENT3 || "",
+					doc4:           oData.ATTACHMENT4 || "",
 					claimtype:      oData.CLAIM_TYPE_ID || "",
 					claimtypedesc:  oData.CLAIM_TYPE_DESC || "",
 					reqdate:        oData.REQUEST_DATE,

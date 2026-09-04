@@ -27,7 +27,8 @@ sap.ui.define([
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
             "CERAMAH": "CERAMAH",
-            "CORPO_CRED_CARD" : "CORPO_CRED_CARD"
+            "CORPO_CRED_CARD" : "CORPO_CRED_CARD",
+            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -98,6 +99,8 @@ sap.ui.define([
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
             "KEMATIAN": "KEMATIAN",
+            "INSURANCE": "INSURANCE",
+            "MED_ADVANCE": "MED_ADVANCE",
             "CASH_BACK" : "CASH_BACK",
             "STATMENT_DUE" : "STATMENT_DUE",
             "SERV_TAX" : "SERV_TAX",
@@ -306,7 +309,11 @@ sap.ui.define([
             "COUNTRY": "COUNTRY",
             "PHONE_NO": "PHONE_NO",
             "ALT_CC" : "ALT_CC",
-            "PROJECT_CODE" : "PROJECT_CODE"
+            "PROJECT_CODE" : "PROJECT_CODE",
+            "POLICY_END_DATE" : "POLICY_END_DATE",
+            "POLICY_START_DATE" : "POLICY_START_DATE",
+            "DISABLED" : "DISABLED",
+            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -695,7 +702,8 @@ sap.ui.define([
             "TRAVEL_INSURANCE": "Medical Travel Insurance",
             "VISA": "Visa & Passport",
             "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
-            "YURAN_KLJ": "Bayaran Yuran KLJ"
+            "YURAN_KLJ": "Bayaran Yuran KLJ",
+            "INSURANCE": "INSURANCE"
         },
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
@@ -767,6 +775,13 @@ sap.ui.define([
             "GL_CODE" : "721001",
             "MATERIAL_CODE" : "721001006",
             "COST_CENTER" : "100050505"
+        },
+        "InsuranceMedicalProvider": {
+            "OTHERS": "4",
+        },
+        "MedicalAdvanceInfo": {
+            "COST_CENTER": "100000000",
+            "GL_ACCOUNT": "214230"
         }
 
     }

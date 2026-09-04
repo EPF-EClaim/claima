@@ -106,6 +106,7 @@
 					id="select_claimdetails_input_dependent_name"
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/dependent}"
+                    change="onChange_Dependent"
 					items="{
 						path:'employee>/ZEMP_DEPENDENT',
 						sorter: { path: 'LEGAL_NAME', descending: false }
@@ -169,7 +170,95 @@
                     id="input_claimdetails_input_policy_number"
                     value="{claimitem_input>/claim_item/policy_number}"
                     visible="false"
+                    required="true"
                 />
+
+                <!-- Policy Start Date -->
+                <Label text="{i18n>label_claimdetails_input_insurance_policy_start_date}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_insurance_policy_start_date"
+                    value="{
+                        path: 'claimitem_input>/claim_item/policy_start_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+                            source:{
+                                pattern:'yyyy-MM-dd'
+                            },
+                            pattern:'dd-MMM-yyyy'
+                        }
+                    }"
+                    displayFormat="dd-MMM-yyyy"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_START_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                    }"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_START_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"                    
+                    visible="{claimitem_property>/policy_start_date/is_visible}"
+                    required="true"
+                    change= ".onChange_PolicyStartDate"
+                >
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/POLICY_START_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/POLICY_START_DATE/customMinDateError}" />						
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/POLICY_START_DATE/customMaxDateError}" />						
+					</customData>                
+                </DatePicker>
+
+                <!-- Policy End Date -->
+                <Label text="{i18n>label_claimdetails_input_insurance_policy_end_date}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_insurance_policy_end_date"
+                    value="{
+                        path: 'claimitem_input>/claim_item/policy_end_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions:{
+                            source:{
+                                pattern:'yyyy-MM-dd'
+                            },
+                            pattern:'dd-MMM-yyyy'
+                        }
+                    }"
+                    displayFormat="dd-MMM-yyyy"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/POLICY_END_DATE',
+                            'claimsubmission_input>/claim_header/claim_id',
+                            'claimsubmission_input>/claim_header/claim_type_id',
+                            'claimitem_input>/claim_item/claim_type_item_id',
+                            'claimsubmission_input>/claim_header',
+                            'claimitem_input>/claim_item',
+                            'claimitem_input>/claim_item/policy_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                    }"
+                    visible="{claimitem_property>/policy_end_date/is_visible}"
+                    required="true"
+                >
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/POLICY_END_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/POLICY_END_DATE/customMinDateError}" />						
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/POLICY_END_DATE/customMaxDateError}" />						
+					</customData>                
+                </DatePicker>
 
                 <!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
 				<Label text="{i18n>label_claimdetails_input_funeraltransport}" />
@@ -617,6 +706,61 @@
                     required="true"
 				>
 				</Select>
+
+                <!-- Medical Insurance Provider Name -->
+				<Label text="{i18n>label_claimdetails_input_insurance_medical_provider_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_medical_provider_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_medical_provider_id}"
+					visible="{claimitem_property>/insurance_medical_provider_id/is_visible}"
+                    required="true"
+				>
+				</Select>
+
+				<!-- Medical Insurance Provider Name (Long Text) -->
+				<Label text="{i18n>label_claimdetails_input_insurance_medical_provider_name}" />
+				<Input
+					id="input_claimdetails_input_insurance_medical_provider_name"
+					value="{claimitem_input>/claim_item/insurance_medical_provider_name}"
+					visible="{= ${claimitem_input>/claim_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						${claimitem_input>/claim_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}
+					}"
+				/>
+                
+                <!-- Past Year Policy -->
+                <Label
+                    id="label_past_year_policy"
+                    text="Past Year Policy"
+                    visible="false" />
+
+                <Text
+                    id="text_past_year_policy"
+                    text="{claimitem_input>/claim_item/previous_policy_number}"
+                    visible="false" />
+
+                <!-- Current Year Policy -->
+                <Label
+                    id="label_current_year_policy"
+                    text="Current Year Policy"
+                    visible="false" />
+
+                <Text
+                    id="text_current_year_policy"
+                    text="{claimitem_input>/claim_item/current_policy_number}"
+                    visible="false" />
+
+                <!-- Future Year Policy -->
+                <Label
+                    id="label_future_year_policy"
+                    text="Future Year Policy"
+                    visible="false" />
+
+                <Text
+                    id="text_future_year_policy"
+                    text="{claimitem_input>/claim_item/next_policy_number}"
+                    visible="false" />
 
 				<!-- Date of Purchase of Insurance 
 				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
@@ -1559,7 +1703,11 @@
 
                 <!-- Attachment 1 -->
                 <Label
-                    text="{i18n>label_claimdetails_input_attachment_file_1}"
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                        ? ${i18n>label_insurance_attachment_1}
+                        : ${i18n>label_claimdetails_input_attachment_file_1}
+                    }"
                 />
                 <u:FileUploader
                     id="fileuploader_claimdetails_input_attachment_file_1"
@@ -1586,7 +1734,12 @@
 				</u:FileUploader>
                 <Label
                     id="label_claimdetails_input_attachment_file_1"
-                    text="{i18n>label_claimdetails_input_attachment_file_1}"
+                    text="{=
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                            ? ${i18n>label_insurance_attachment_1}
+                            : ${i18n>label_claimdetails_input_attachment_file_1}
+                        }"
                     visible="{=
                         ${claimsubmission_input>/view_only} &amp;&amp;
                         ${claimitem_input>/claim_item/attachment_file_1 !== null}
@@ -1612,8 +1765,14 @@
                         ${claimitem_input>/claim_item/attachment_file_1} !== null
                     }"
                 />
-                <!-- Attachment 2 -->
-				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
+                <!-- Attachment 2-->
+				<Label
+                    text="{=${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} || 
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE} 
+                        ? ${i18n>label_insurance_attachment_2}
+                        : ${i18n>label_claimdetails_input_attachment_file_2}
+                    }"
+                />
                 <u:FileUploader
                     id="fileuploader_claimdetails_input_attachment_file_2"
                     name="fileUploaderClaimDetailsInputAttachment2"
@@ -1628,10 +1787,19 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
+                    required="{=(${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE})
+                              &amp;&amp;
+                              ${claimitem_input>/claim_item/attachment_file_2} === null}"
                 />
                 <Label
                     id="label_claimdetails_input_attachment_file_2"
-                    text="{i18n>label_claimdetails_input_attachment_file_2}"
+                    text="{=
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/INSURANCE} ||
+                            ${claimitem_input>/claim_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                            ? ${i18n>label_insurance_attachment_2}
+                            : ${i18n>label_claimdetails_input_attachment_file_2}
+                        }"
                     visible="{=
                         ${claimsubmission_input>/view_only} &amp;&amp;
                         ${claimitem_input>/claim_item/attachment_file_2} !== null
@@ -1682,6 +1850,104 @@
                         <FlexItemData growFactor="1" />
                     </layoutData>
                 </Switch>
+
+                <!-- Attachment 3-->
+				<Label
+                    text="{i18n>label_insurance_attachment_3}"
+                />
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_3"
+                    name="fileUploaderClaimDetailsInputAttachment3"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'3')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                  
+                />
+                <Label
+                    id="label_claimdetails_input_attachment_file_3"
+                    text="{i18n>label_insurance_attachment_3}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_3} !== null
+                    }"
+                />
+
+                <Link
+                    id="link_claimdetails_input_attachment_file_3"
+                    press="onView_Claim_Attachment('child','3')"
+                    text="{claimitem_input>/claim_item/attachment_file_3}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_3} !== null }"
+                />
+                <!-- Attachment 3 delete button -->
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment('attachment_file_3')"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_3} !== null
+                    }"
+                />
+
+                <!-- Attachment 4-->
+				<Label
+                    text="{i18n>label_insurance_attachment_4}"
+                />
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_4"
+                    name="fileUploaderClaimDetailsInputAttachment4"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'4')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                    
+                />
+                <Label
+                    id="label_claimdetails_input_attachment_file_4"
+                    text="{i18n>label_insurance_attachment_4}"
+                    visible="{=
+                        ${claimsubmission_input>/view_only} &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_4} !== null
+                    }"
+                />
+
+                <Link
+                    id="link_claimdetails_input_attachment_file_4"
+                    press="onView_Claim_Attachment('child','4')"
+                    text="{claimitem_input>/claim_item/attachment_file_4}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_4} !== null }"
+                />
+                <!-- Attachment 4 delete button -->
+                <Button
+                    width="10%"
+                    icon="sap-icon://delete"
+                    type="Transparent"
+                    tooltip="Delete attachment"
+                    press="onDelete_Claim_Attachment('attachment_file_4')"
+                    visible="{=
+                        !${claimsubmission_input>/view_only}
+                        &amp;&amp;
+                        ${claimitem_input>/claim_item/attachment_file_4} !== null
+                    }"
+                />
 
             </f:content>
             <f:dependents>

@@ -704,6 +704,35 @@ sap.ui.define([
             }
         },
 
+        /**
+         * Retrieve remaining medical entitlement.
+         * Shared utility for Claim Submission and Pre-Approval Request.
+         *
+         * @public
+         * @param {sap.ui.model.json.JSONModel} oModel
+         * @param {string} sEmpId
+         * @param {string} sPropertyPath
+         */
+        getRemainingMedicalEntitlement: async function (oModel, sEmpId, sPropertyPath) {
+
+            const oFunction = this._oOwnerComponent.getModel().bindContext("/getRemainingMedicalEntitlement(...)");
+
+            oFunction.setParameter("empId", sEmpId);
+
+            try {
+
+                await oFunction.execute();
+
+                const oResult = oFunction.getBoundContext().getObject();
+
+                oModel.setProperty(sPropertyPath,oResult.remaining || 0);
+                
+            } catch (oError) {
+
+                oModel.setProperty(sPropertyPath,0);
+            }
+        },
+
         getMonthlyAdvanceAmount: async function (sCardNo, sCardholderId) {
             const oDataModel = this._oOwnerComponent.getModel();
             var dResult = 0.00;
