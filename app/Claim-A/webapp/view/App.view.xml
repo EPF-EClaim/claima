@@ -504,6 +504,11 @@
                                     text="{i18n>housing}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                 <tnt:NavigationListItem
+                                    key="ZCLAIM_TYPE_ITEM_CHARGING_CC"
+                                    text="{i18n>chargingCostCenter}"
+                                    visible="{roleModel>/JKEW_role}"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem

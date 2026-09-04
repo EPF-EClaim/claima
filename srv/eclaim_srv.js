@@ -1364,9 +1364,14 @@ module.exports = (srv) => {
     });
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
+        const tx = cds.tx(req);
+        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
 
+        if (sRequestId) {
+            await updateRequestItemCostCenters(tx,sRequestId);
+        }
         const sStatus = data.STATUS || req.data.STATUS;
-
+        
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -5129,4 +5134,129 @@ module.exports = (srv) => {
         };
     });
 
+
+    srv.on("updateDefaultChargingCostCenter", async (req) => {
+        const {
+            claimTypeId,
+            claimTypeItemId,
+            chargingCostCenter
+        } = req.data;
+
+        if (!claimTypeId || !claimTypeItemId) {
+            return req.reject(
+                400,
+                "Claim Type and Claim Type Item are required."
+            );
+        }
+
+        const { ZCLAIM_TYPE_ITEM } = cds.entities("ECLAIM");
+
+        const iUpdatedRows = await UPDATE(ZCLAIM_TYPE_ITEM)
+            .set({
+                COST_CENTER:
+                    chargingCostCenter?.trim() || null
+            })
+            .where({
+                CLAIM_TYPE_ID: claimTypeId,
+                CLAIM_TYPE_ITEM_ID: claimTypeItemId
+            });
+
+        if (!iUpdatedRows) {
+            return req.reject(
+                404,
+                "Claim Type Item record was not found."
+            );
+        }
+
+        return true;
+    });
+
+    /**
+     * Get maintained Charging Cost Center from Claim Type Item configuration.
+     */
+    async function getDefaultChargingCostCenter(
+        tx,
+        sClaimTypeId,
+        sClaimTypeItemId
+    ) {
+
+        const oClaimTypeItem = await tx.run(
+            SELECT.one
+                .from("ZCLAIM_TYPE_ITEM")
+                .where({
+                    CLAIM_TYPE_ID: sClaimTypeId,
+                    CLAIM_TYPE_ITEM_ID: sClaimTypeItemId
+                })
+        );
+
+        return oClaimTypeItem?.COST_CENTER || null;
+    }
+
+    /**
+    * Update Request Item Cost Center whenever Request Header is updated.
+    */
+    async function updateRequestItemCostCenters(
+        tx,
+        sRequestId
+    ) {
+
+        const oHeader = await tx.run(
+            SELECT.one
+                .from("ZREQUEST_HEADER")
+                .where({
+                    REQUEST_ID: sRequestId
+                })
+        );
+
+        if (!oHeader) {
+            return;
+        }
+
+        const aItems = await tx.run(
+            SELECT.from("ZREQUEST_ITEM")
+                .where({
+                    REQUEST_ID: sRequestId
+                })
+        );
+
+        const sFallbackCostCenter =
+            oHeader.ALTERNATE_COST_CENTER ||
+            oHeader.COST_CENTER ||
+            null;
+
+        for (const oItem of aItems) {
+
+            let sNewCostCenter;
+
+            if (oItem.CASH_ADVANCE) {
+
+                sNewCostCenter =
+                    Constant.CashAdvanceInfo.COST_CENTER;
+
+            } else {
+
+                const sDefaultChargingCostCenter =
+                    await getDefaultChargingCostCenter(
+                        tx,
+                        oItem.CLAIM_TYPE_ID,
+                        oItem.CLAIM_TYPE_ITEM_ID
+                    );
+
+                sNewCostCenter =
+                    sDefaultChargingCostCenter ||
+                    sFallbackCostCenter;
+            }
+
+            await tx.run(
+                UPDATE("ZREQUEST_ITEM")
+                    .set({
+                        COST_CENTER: sNewCostCenter
+                    })
+                    .where({
+                        REQUEST_ID: oItem.REQUEST_ID,
+                        REQUEST_SUB_ID: oItem.REQUEST_SUB_ID
+                    })
+            );
+        }
+    }
 }

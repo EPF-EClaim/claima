@@ -503,7 +503,7 @@ sap.ui.define([
 								return;
 							}
 
-								// budget checking
+								//budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
 								var bApproversDetermined = true;
@@ -1376,12 +1376,30 @@ sap.ui.define([
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
-						? oReqHeader.altcostcenter
-						: oReqHeader.costcenter;
+					const sDefaultChargingCostCenter =
+						await Utility.getDefaultChargingCostCenter(
+							this._oDataModel,
+							oReqHeader.claimtype,
+							oReqItem.claim_type_item_id
+						);
+
+					if (sDefaultChargingCostCenter) {
+						oReqItem.cost_center = sDefaultChargingCostCenter;
+					} else {
+						oReqItem.cost_center =
+							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
+								? oReqHeader.altcostcenter
+								: oReqHeader.costcenter;
+					}
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 				}
 					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+				if (oReqItem.cost_center) {
+					oReqItem.cost_center =
+						String(oReqItem.cost_center)
+							.split(" - ")[0]
+							.trim();
+				}
 
 				// Get Internal Order from ZBUDGET using Request Header Project Code
 				if (!oReqItem.internal_order) {
