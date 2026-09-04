@@ -104,7 +104,8 @@ const Constant = {
         "MEDICAL": "MEDICAL",
         "PEDU" : "PEDU",
         "CERAMAH" : "CERAMAH",
-        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE"
+        "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
+        "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -173,7 +174,10 @@ const Constant = {
         "SEWAPETAK": "SEWAPETAK",
         "KEAHLIANKELAB": "S_K.KELAB",
         "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
-        "PERSONAL_EXPENSE": "PERSONAL_EXPENSE"
+        "PERSONAL_EXPENSE": "PERSONAL_EXPENSE",
+        "MED_ADVANCE": "MED_ADVANCE",
+        "INSURANCE": "INSURANCE",
+        "CASH_REPAY": "CASH_REPAY"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -306,7 +310,11 @@ const Constant = {
         "PROJECT_CODE" : "PROJECT_CODE",
         "PROJECT_CLAIM" : "PROJECT_CLAIM",
         "CASH_ADVANCE_AMOUNT" : "CASH_ADVANCE_AMOUNT",
-        "CASH_REPAYMENT" : "CASH_REPAYMENT"
+        "CASH_REPAYMENT" : "CASH_REPAYMENT",
+        "MEDICAL_INSURANCE_ENTITLEMENT" : "MEDICAL_INSURANCE_ENTITLEMENT",
+        "POLICY_START_DATE" : "POLICY_START_DATE",
+        "DEPENDENT_NATIONAL_ID" : "DEPENDENT_NATIONAL_ID",
+        "POLICY_YEAR": "POLICY_YEAR"
     },
     Wildcard: {
         "All": "*",
@@ -347,12 +355,14 @@ const Constant = {
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",
-        WITH_CASH_ADVANCE: "2"
+        WITH_CASH_ADVANCE: "2",
+        MEDICAL_ADVANCE: "3"
     }, 
     RequestType: {
         Travel : "RT0001", 
         Reimbursement : "RT0004",
-        CORP_CC : "RT0007"
+        CORP_CC : "RT0007",
+        Medical : "RT0005"
     }, 
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
@@ -367,7 +377,8 @@ const Constant = {
         "GreaterEquals": ">=",
         "Equals": "=",
         "NotEquals": "!=",
-        "Like": "like"
+        "Like": "like",
+        "GreaterThan": ">",
     },
     WhereCondition: {
         "AND": "AND",

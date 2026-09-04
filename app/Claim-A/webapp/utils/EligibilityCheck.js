@@ -55,7 +55,9 @@ sap.ui.define([
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
 						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
-						"to_state": "TO_STATE_ID"
+						"to_state": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
@@ -93,7 +95,10 @@ sap.ui.define([
 						"insurance_package_id": "INSURANCE_PACKAGE_ID",
 						"dependent": "DEPENDENT",
 						"phone_no": "PHONE_NO",
-						"to_state_id": "TO_STATE_ID"
+						"to_state_id": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_start_date": "POLICY_START_DATE",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 

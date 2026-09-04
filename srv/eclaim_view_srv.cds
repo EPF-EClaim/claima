@@ -16,6 +16,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         MaterialCode         : String;
         CashAdvanceAmount    : Decimal(15, 2);
         InternalOrder        : String;
+        CashAdvanceCatID     : String(10);
     }
 
 
@@ -371,15 +372,15 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
         select from ECLAIM.ZCLAIM_ITEM 
-        left join ECLAIM.ZCLAIM_ITEM as PrevPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as PrevPolicy
             on PrevPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and PrevPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR - 1
 
-        left join ECLAIM.ZCLAIM_ITEM as CurrPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as CurrPolicy
             on CurrPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and CurrPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR
 
-        left join ECLAIM.ZCLAIM_ITEM as NextPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as NextPolicy
             on NextPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and NextPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR + 1        
         {
@@ -1279,4 +1280,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             req.TRAVEL_ALONE_FAMILY,
             req.TRAVEL_FAMILY_NOW_LATER;
 
+    entity ZEMP_CLAIM_POLICY_VALID as
+        select from ECLAIM.ZCLAIM_ITEM as item
+            inner join ECLAIM.ZCLAIM_HEADER as header
+                on header.CLAIM_ID = item.CLAIM_ID
+    {
+        key item.CLAIM_SUB_ID,
+            item.CLAIM_ID,
+            header.STATUS_ID,
+            POLICY_NUMBER,
+            POLICY_YEAR,
+            DEPENDENT_NATIONAL_ID
+    }
+    where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');           
 }
