@@ -558,7 +558,7 @@ async function sendClaimBatch(sId){
                     LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
                     AMOUNT:                  oItem.AMOUNT,
                     RECEIPT_DATE:            oItem.RECEIPT_DATE,
-                    COST_CENTER:             oItem.ALTERNATE_COST_CENTER || oItem.COST_CENTER,
+                    COST_CENTER:             oItem.COST_CENTER,
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           oItem.MATERIAL_CODE,
                     INTERNAL_ORDER:          null,
