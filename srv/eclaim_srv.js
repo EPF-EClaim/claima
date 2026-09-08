@@ -4942,17 +4942,13 @@ module.exports = (srv) => {
                     .limit(1);
                 const isExisting = existing.length > 0;
                 const upsertPayload = { ...row };
-                const originalBudget = Number(row.ORIGINAL_BUDGET) || 0;
-                const virementIn = Number(row.VIREMENT_IN) || 0;
-                const virementOut = Number(row.VIREMENT_OUT) || 0;    // -ve value
-                const supplement = Number(row.SUPPLEMENT) || 0;
-                const returnValue = Number(row.RETURN) || 0;          // -ve value
-                const consumed = isExisting
-                    ? Number(existing[0].CONSUMED) || 0
-                    : Number(row.CONSUMED) || 0;
-                const totalBudget = originalBudget + virementIn + virementOut + supplement + returnValue;
-                const totalBudgetBalance = totalBudget + consumed;
-                upsertPayload.CURRENT_BUDGET = totalBudget.toFixed(2);
+                const commitment = isExisting ? Number(existing[0].COMMITMENT) || 0 : Number(row.COMMITMENT) || 0;
+                const actual = isExisting ? Number(existing[0].ACTUAL) || 0 : Number(row.ACTUAL) || 0;
+                const consumed = isExisting ? Number(existing[0].CONSUMED) || 0 : Number(row.CONSUMED) || 0;
+                const totalBudgetBalance = row.CURRENT_BUDGET - consumed;
+                upsertPayload.COMMITMENT = commitment.toFixed(2);
+                upsertPayload.ACTUAL = actual.toFixed(2);
+                upsertPayload.CONSUMED = consumed.toFixed(2);
                 upsertPayload.BUDGET_BALANCE = totalBudgetBalance.toFixed(2);
                 await tx.run(
                     UPSERT.into(ZBUDGET).entries(upsertPayload)
