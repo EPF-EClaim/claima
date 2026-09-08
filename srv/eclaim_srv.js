@@ -4945,7 +4945,7 @@ module.exports = (srv) => {
                 const commitment = isExisting ? Number(existing[0].COMMITMENT) || 0 : Number(row.COMMITMENT) || 0;
                 const actual = isExisting ? Number(existing[0].ACTUAL) || 0 : Number(row.ACTUAL) || 0;
                 const consumed = isExisting ? Number(existing[0].CONSUMED) || 0 : Number(row.CONSUMED) || 0;
-                const totalBudgetBalance = row.CURRENT_BUDGET + consumed;
+                const totalBudgetBalance = Number(row.CURRENT_BUDGET) + consumed;
                 upsertPayload.COMMITMENT = commitment.toFixed(2);
                 upsertPayload.ACTUAL = actual.toFixed(2);
                 upsertPayload.CONSUMED = consumed.toFixed(2);
