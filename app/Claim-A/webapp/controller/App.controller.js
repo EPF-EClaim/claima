@@ -760,11 +760,21 @@ sap.ui.define([
 					var oFinalFilter = new Filter({
 						filters: [
 							oCombinedOrFilter,
-							new Filter(
-								"STATUS",
-								FilterOperator.EQ,
-								this._oConstant.ClaimStatus.APPROVED
-							)
+							new Filter({
+								filters: [
+									new Filter(
+										"STATUS",
+										FilterOperator.EQ,
+										this._oConstant.ClaimStatus.APPROVED
+									),
+									new Filter(
+										"STATUS",
+										FilterOperator.EQ,
+										this._oConstant.ClaimStatus.COMPLETED_DISBURSEMENT
+									)
+								],
+								and: false // OR
+							})
 						],
 						and: true
 					});
@@ -2182,8 +2192,7 @@ sap.ui.define([
 							return new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sId);
 						}),
 						and: false
-					}),
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
+					})
 				];
  
 				if (sRequestId) {

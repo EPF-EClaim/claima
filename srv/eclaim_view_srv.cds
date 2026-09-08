@@ -1256,7 +1256,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             sum(itemPart.ALLOCATED_AMOUNT) as PREAPPROVED_AMOUNT : Decimal
         }
         where
-            req.STATUS = 'STAT05'
+            req.STATUS IN ('STAT05', 'STAT06')
             
         group by
             itemPart.REQUEST_ID,
