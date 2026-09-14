@@ -128,6 +128,12 @@ sap.ui.define([
 
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
 
+			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+			const bAllowed = await Utility.checkClaimAccess(sRequestId, sCurrentUserId);
+			if (!bAllowed) {
+				return; // popup + dashboard redirect already handled
+			}
+
 			await this._loadRequest(sRequestId);
 		},
 

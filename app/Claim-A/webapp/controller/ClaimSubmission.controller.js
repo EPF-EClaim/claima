@@ -200,6 +200,12 @@ sap.ui.define([
 
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
+			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+			const bAllowed = await Utility.checkClaimAccess(sClaimId, sCurrentUserId);
+			if (!bAllowed) {
+				return; // popup + dashboard redirect already handled
+			}
+			
 			try {
 				sClaimId = decodeURIComponent(sClaimId);
 			}

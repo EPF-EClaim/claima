@@ -1,4 +1,3 @@
-
 sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -68,6 +67,50 @@ sap.ui.define([
             oCtx.setProperty(sStatusField, sStatus);
 
             await oModel.submitBatch("$auto");
+        },
+        /**
+         * @public
+         * @param {string} sId - the Claim ID or Request ID 
+         * @returns {Promise<boolean>} true if access is allowed, false otherwise
+         */
+        checkClaimAccess: async function (sId) {
+            const oModel = this._oOwnerComponent.getModel();
+
+            if (!sId || !oModel) {
+                this._denyClaimAccess();
+                return false;
+            }
+
+            let bHasAccess = false;
+
+            try {
+                const oFunction = oModel.bindContext("/checkClaimAccess(...)");
+                oFunction.setParameter("sId", sId);
+
+                await oFunction.execute();
+
+                bHasAccess = !!oFunction.getBoundContext().getObject("value");
+            } catch (oError) {
+                console.error("checkClaimAccess: unable to verify claim/request access", oError);
+                bHasAccess = false;
+            }
+
+            if (!bHasAccess) {
+                this._denyClaimAccess();
+            }
+
+            return bHasAccess;
+        },
+        
+        _denyClaimAccess: function () {
+            MessageBox.error(this.getText("msg_claim_access_denied"), {
+                onClose: () => {
+                    const oRouter = this._oOwnerComponent && this._oOwnerComponent.getRouter();
+                    if (oRouter) {
+                        oRouter.navTo("Dashboard", {}, true);
+                    }
+                }
+            });
         },
 
         /**
