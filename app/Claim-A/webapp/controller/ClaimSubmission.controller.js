@@ -200,12 +200,6 @@ sap.ui.define([
 
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
-			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
-			const bAllowed = await Utility.checkClaimAccess(sClaimId, sCurrentUserId);
-			if (!bAllowed) {
-				return; // popup + dashboard redirect already handled
-			}
-			
 			try {
 				sClaimId = decodeURIComponent(sClaimId);
 			}
@@ -213,6 +207,11 @@ sap.ui.define([
 				// unable to decode URL
 				MessageBox.error(Utility.getText("msg_claimsubmission_decode", [sClaimId]))
 				this._onNavBack();
+				return;
+			}
+			const bAllowed = await Utility.checkClaimAccess(sClaimId);
+			if (!bAllowed) {
+				return;
 			}
 
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");

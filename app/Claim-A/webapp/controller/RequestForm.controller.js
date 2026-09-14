@@ -122,17 +122,15 @@ sap.ui.define([
 			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) { }
 
 			console.log("Deep-link request ID:", sRequestId);
+			const bAllowed = await Utility.checkClaimAccess(sRequestId);
+			if (!bAllowed) {
+				return;
+			}
 
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
 			this._oReqModel.setProperty('/view', 'view');
 
 			this.getView().getModel("editButtonModel").setProperty("/state", false);
-
-			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
-			const bAllowed = await Utility.checkClaimAccess(sRequestId, sCurrentUserId);
-			if (!bAllowed) {
-				return; // popup + dashboard redirect already handled
-			}
 
 			await this._loadRequest(sRequestId);
 		},
