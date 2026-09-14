@@ -4784,7 +4784,7 @@ sap.ui.define([
 
 							try {
 								await oSubmitAction.execute();
-								var oResponse = await oSubmitAction.getBoundContext().requestObject();
+								const oResponse = await oSubmitAction.getBoundContext().requestObject();
 
 								if (!oResponse.Success) {
 									switch (oResponse.Area) {
