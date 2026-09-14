@@ -329,4 +329,80 @@ module.exports = {
       return aPayload;
     }
   },
+
+  generateEligibilityPayload: async function (sClaimId, tx) {
+    const ZCLAIM_HEADER = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
+    const ZCLAIM_ITEM = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
+
+    const oHeader = await tx.run(
+        SELECT.one.from(ZCLAIM_HEADER)
+            .columns('EMP_ID', 'CLAIM_TYPE_ID')
+            .where({ CLAIM_ID: sClaimId })
+    );
+    if (!oHeader) {
+        return [];
+    }
+
+    const aItems = await tx.run(SELECT.from(ZCLAIM_ITEM).where({ CLAIM_ID: sClaimId }));
+
+    return aItems.map((oItem) => {
+        const sAmountField = oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.PEM_PINDAH ? 'ACTUAL_AMOUNT' : 'AMOUNT';
+        const sReceiptDateField = oItem.RECEIPT_DATE ? 'RECEIPT_DATE' : 'BILL_DATE';
+
+        // Mirrors the flight-duration calculation done on save in
+        // ClaimSubmission.controller.js#onSave_ClaimDetails_Input
+        let vTravelHours;
+        if (oItem.DEPARTURE_TIME && oItem.ARRIVAL_TIME) {
+            const iDiffMs = new Date(oItem.ARRIVAL_TIME).getTime() - new Date(oItem.DEPARTURE_TIME).getTime();
+            vTravelHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+        }
+
+        const oMapping = {
+            [sAmountField]: 'ELIGIBLE_AMOUNT',
+            NO_OF_DAYS: 'TRAVEL_DAYS_ID',
+            FARE_TYPE_ID: 'FARE_TYPE_ID',
+            VEHICLE_CLASS_ID: 'TRANSPORT_CLASS',
+            FLIGHT_CLASS: 'FLIGHT_CLASS_ID',
+            ROOM_TYPE: 'ROOM_TYPE_ID',
+            MOBILE_CATEGORY_PURPOSE_ID: 'MOBILE_PHONE_BILL',
+            [sReceiptDateField]: 'RECEIPT_DATE',
+            REGION: 'REGION_ID',
+            TOTAL_TRAVELLER: 'TOTAL_TRAVELLER',
+            LODGING_CATEGORY: 'LODGING_CATEGORY',
+            FUNERAL_TRANSPORTATION: 'FUNERAL_TRANSPORTATION',
+            DEPENDENT_TYPE_ID: 'DEPENDENT_TYPE',
+            VEHICLE_OWNERSHIP_ID: 'VEHICLE_OWNERSHIP_ID',
+            COUNTRY: 'COUNTRY',
+            INSURANCE_PACKAGE_ID: 'INSURANCE_PACKAGE_ID',
+            DEPENDENT: 'DEPENDENT',
+            PHONE_NO: 'PHONE_NO',
+            TO_STATE_ID: 'TO_STATE_ID',
+            DEPENDENT_NATIONAL_ID: 'DEPENDENT_NATIONAL_ID',
+            POLICY_START_DATE: 'POLICY_START_DATE',
+            POLICY_YEAR: 'POLICY_YEAR'
+        };
+
+        const aCheckFields = Object.entries(oMapping).map(([sColumn, sTargetName]) => ({
+            fieldName: sTargetName,
+            value: String(oItem[sColumn]),
+            result: null
+        }));
+
+        aCheckFields.push({
+            fieldName: 'TRAVEL_HOURS',
+            value: String(vTravelHours),
+            result: null
+        });
+
+        return {
+            EmpId: oHeader.EMP_ID,
+            RecordId: sClaimId,
+            RecordSubId: oItem.CLAIM_SUB_ID,
+            ClaimType: oHeader.CLAIM_TYPE_ID,
+            ClaimTypeItem: oItem.CLAIM_TYPE_ITEM_ID,
+            CheckFields: aCheckFields
+        };
+    });
+  }
+
 };

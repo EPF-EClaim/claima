@@ -419,30 +419,22 @@ sap.ui.define([
 						type: ButtonType.Emphasized,
 						text: "Delete",
 						press: async () => {
+							this.oDeleteDialog.getBeginButton().setEnabled(false);
+							BusyIndicator.show(0);
+
+							const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+
+							const oDeleteAction = this._oDataModel.bindContext("/cancelRecord(...)");
+							oDeleteAction.setParameter("sId", oHeader.claim_id)
+
 							try {
-								this.oDeleteDialog.getBeginButton().setEnabled(false);
-								BusyIndicator.show(0);
-
-								const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-
-								// update status to CANCELLED
-								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
+								await oDeleteAction.execute()?.getBoundContext()?.requestObject();
 
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
-								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
-								//Call CAP action 
-								const oAction = this._oDataModel.bindContext("/DeleteApproverDetails(...)");
-								oAction.setParameter("ID", sCurrentReqId);
-								try {
-									await oAction.execute();
-								} catch (oError) {
-									MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
-								}
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
-
-							} catch (e) {
+							} catch (oError) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_delete_failed"));
 							} finally {
 								BusyIndicator.hide();
