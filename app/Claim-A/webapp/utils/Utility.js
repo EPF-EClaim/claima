@@ -1,4 +1,3 @@
-
 sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -68,6 +67,59 @@ sap.ui.define([
             oCtx.setProperty(sStatusField, sStatus);
 
             await oModel.submitBatch("$auto");
+        },
+        /**
+        * Purpose of this code is to prevent any users from using a url with a claim id/ request id that is not tied to their employee id
+        * this could be either if they are not the claimant, approver or the substitute approver
+        * only the owner of the claim, the current approver or current substitute of the claim/request can view the claim/request
+        * @public
+         * @param {string} sId - the Claim ID or Request ID to check
+         * @returns {Promise<boolean>} true if access is allowed, false otherwise
+         */
+        checkClaimAccess: async function (sId) {
+            const oModel = this._oOwnerComponent.getModel();
+
+            if (!sId || !oModel) {
+                this._denyClaimAccess();
+                return false;
+            }
+
+            let bHasAccess = false;
+
+            try {
+                const oFunction = oModel.bindContext("/checkClaimAccess(...)");
+                oFunction.setParameter("sId", sId);
+
+                await oFunction.execute();
+
+                bHasAccess = !!oFunction.getBoundContext().getObject("value");
+            } catch (oError) {
+                this._denyClaimAccess(this.getText("msg_claim_access_check_failed"));
+                return false;
+            }
+
+            if (!bHasAccess) {
+                this._denyClaimAccess();
+            }
+
+            return bHasAccess;
+        },
+
+        /**
+         * shows a pop up error message to notifying the users about the unathorized claim/request access
+         * @private
+         * @param {string} [sMessage] - message to display; defaults to the
+         *      "not authorized" message when omitted
+         */
+        _denyClaimAccess: function (sMessage) {
+            MessageBox.error(sMessage || this.getText("msg_claim_access_denied"), {
+                onClose: () => {
+                    const oRouter = this._oOwnerComponent && this._oOwnerComponent.getRouter();
+                    if (oRouter) {
+                        oRouter.navTo("Dashboard", {}, true);
+                    }
+                }
+            });
         },
 
         /**
