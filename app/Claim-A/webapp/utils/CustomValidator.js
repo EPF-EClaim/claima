@@ -124,7 +124,7 @@ sap.ui.define([
                     }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
-                    	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
+                    	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdetails_receipt_date_before_trip_start_date"));
                         if (!bConfirm) {
                             bCanProceed = false;
                         }
