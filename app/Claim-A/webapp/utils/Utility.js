@@ -69,8 +69,11 @@ sap.ui.define([
             await oModel.submitBatch("$auto");
         },
         /**
-         * @public
-         * @param {string} sId - the Claim ID or Request ID 
+        * Purpose of this code is to prevent any users from using a url with a claim id/ request id that is not tied to their employee id
+        * this could be either if they are not the claimant, approver or the substitute approver
+        * only the owner of the claim, the current approver or current substitute of the claim/request can view the claim/request
+        * @public
+         * @param {string} sId - the Claim ID or Request ID to check
          * @returns {Promise<boolean>} true if access is allowed, false otherwise
          */
         checkClaimAccess: async function (sId) {
@@ -91,8 +94,8 @@ sap.ui.define([
 
                 bHasAccess = !!oFunction.getBoundContext().getObject("value");
             } catch (oError) {
-                console.error("checkClaimAccess: unable to verify claim/request access", oError);
-                bHasAccess = false;
+                this._denyClaimAccess(this.getText("msg_claim_access_check_failed"));
+                return false;
             }
 
             if (!bHasAccess) {
@@ -101,9 +104,15 @@ sap.ui.define([
 
             return bHasAccess;
         },
-        
-        _denyClaimAccess: function () {
-            MessageBox.error(this.getText("msg_claim_access_denied"), {
+
+        /**
+         * shows a pop up error message to notifying the users about the unathorized claim/request access
+         * @private
+         * @param {string} [sMessage] - message to display; defaults to the
+         *      "not authorized" message when omitted
+         */
+        _denyClaimAccess: function (sMessage) {
+            MessageBox.error(sMessage || this.getText("msg_claim_access_denied"), {
                 onClose: () => {
                     const oRouter = this._oOwnerComponent && this._oOwnerComponent.getRouter();
                     if (oRouter) {

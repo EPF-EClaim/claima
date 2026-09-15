@@ -114,10 +114,12 @@ module.exports = (srv) => {
         });
 
     /**
+     *Purpose is to allow unrestricted admins to view the claim/request (Admin_cc and Admin_system), 
+     *the owner of the claim, the current approver and current substitute approver. 
      * @public
-     * @param {String} sId - Claim ID or Request ID
+     * @param {String} sId - Claim ID or Request ID 
      * @returns {Boolean} true if the logged-in user may access the claim/request
-     **/
+     */
     srv.on('checkClaimAccess', async (req) => {
         const { sId } = req.data;
 
@@ -126,13 +128,7 @@ module.exports = (srv) => {
             return false;
         }
 
-        // Unrestricted access for certain admin roles
-        if (
-            req.user.is(Constant.Admin.DTD_Admin) ||
-            req.user.is(Constant.Admin.Admin_CC) ||
-            req.user.is(Constant.Admin.Admin_System) ||
-            req.user.is(Constant.Admin.CCC_Admin)
-        ) {
+        if (Object.values(Constant.AccessControlledAdmin).some(sRole => req.user.is(sRole))) {
             return true;
         }
 
@@ -157,9 +153,11 @@ module.exports = (srv) => {
         );
 
         if (!oHeader) {
+            // ID doesn't exist - nothing to grant access to
             return false;
         }
 
+        // b) Owner check
         if (oHeader.EMP_ID === sUserId) {
             return true;
         }
@@ -169,8 +167,9 @@ module.exports = (srv) => {
 
         const aApproverDetails = await tx.run(
             SELECT.from(sApproverTable).where({ [sApproverIdField]: sId })
-        );
+        ) || [];
 
+        // c) Approver check, d) Substitute approver check
         return aApproverDetails.some(oDetail =>
             oDetail.APPROVER_ID === sUserId || oDetail.SUBSTITUTE_APPROVER_ID === sUserId
         );
