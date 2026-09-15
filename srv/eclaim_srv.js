@@ -11,6 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const UpdateMedical = require('./utils/UpdateMedical');
+const { resolveDocDescriptor } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
 
@@ -5284,5 +5285,48 @@ module.exports = (srv) => {
             throw new Error(oError)
         }
         
+    });
+
+    srv.on("cancelRecord", async (req) => {
+        const oTx = cds.tx(req);
+        const { sId } = req.data;
+        const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
+
+        if (!oEmp) {
+            req.error(404, `No employee data found.`);
+        }
+
+        const sCancelledStatus = Constant.Status.CANCELLED;
+        const oDescriptor = resolveDocDescriptor(sId);
+
+        try {
+            
+            // udpate header status
+            await oTx.run(UPDATE(oDescriptor.entityHeader)
+                .set({
+                    [oDescriptor.statusField]            : Constant.Status.CANCELLED
+                })
+                .where({
+                    [oDescriptor.approverIdField]           : sId 
+                })
+            );
+
+            // remove approval log
+            await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
+
+            // insert record history
+            await oTx.run(INSERT.into("ZLOG").entries({
+                TIMESTAMP: new Date(),
+                RECORD_ID: `${sId}`,
+                PROGRAM: 'WORKFLOW',
+                MESSAGE_TYPE: 'A',
+                STATUS_CODE: '200',
+                MESSAGE: `${sId} is cancelled by ${oEmp.NAME}.`
+            }));
+        } catch (error) {
+            return req.error(500, `Failed to cancel ${sId}: ${error.message}`);
+        }
+
+        return true;
     });
 }

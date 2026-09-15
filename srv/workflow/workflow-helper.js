@@ -14,7 +14,9 @@ const aEntityTableByPrefix = {
         approverIdField     : Constant.ApproverDetailsTable.CLAIM_ID,
         entityTypeDesc      : 'ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC',
         entityTypeDescField : 'ZSUBMISSION_TYPE_SUBMISSION_TYPE_DESC',
-        entityAmount        : Constant.EntitiesFields.AMOUNT
+        entityAmount        : Constant.EntitiesFields.AMOUNT,
+        statusField         : Constant.EntitiesFields.STATUS_ID,
+        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM']
     },
     [Constant.WorkflowType.REQUEST] : {
         entityPrefix        : Constant.WorkflowType.REQUEST,
@@ -26,7 +28,9 @@ const aEntityTableByPrefix = {
         approverIdField     : Constant.ApproverDetailsTable.PREAPPROVAL_ID,
         entityTypeDesc      : 'ZREQUEST_TYPE.REQUEST_TYPE_DESC',
         entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC',
-        entityAmount        : Constant.EntitiesFields.EST_AMOUNT
+        entityAmount        : Constant.EntitiesFields.EST_AMOUNT,
+        statusField         : Constant.EntitiesFields.STATUS,
+        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM']
     }
 }
 
@@ -136,10 +140,11 @@ async function retrieveItems(sId, oDescriptor) {
         Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID,
         Constant.EntitiesFields.GL_ACCOUNT,
         oDescriptor.entityAmount,
-        Constant.EntitiesFields.MATERIAL_CODE
+        Constant.EntitiesFields.MATERIAL_CODE,
+        Constant.EntitiesFields.COST_CENTER
     ];
 
-    if (sId?.startsWith('REQ')) {
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
     }
 
@@ -148,15 +153,39 @@ async function retrieveItems(sId, oDescriptor) {
         .columns(...aColumns)
         .where({ [oDescriptor.idField]: sId });
 
-    if (sId?.startsWith('REQ')) {
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         oQuery.where({ CASH_ADVANCE: false });
     }
 
-    if (sId?.startsWith('CLM')) {
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
         oQuery.where`CLAIM_TYPE_ITEM_ID not in ('CASH_REPAY', 'POTONGAN_ELAUN', 'PERSONAL_EXPENSE')`;
     }
 
-    return await cds.run(oQuery);
+    const aItems = await cds.run(oQuery);
+
+    if (!aItems.length) {
+        return aItems;
+    }
+
+    // all items share the same claim type, so fetch descriptions with one CLAIM_TYPE_ID + item-id list
+    const sClaimTypeId = aItems[0][Constant.EntitiesFields.CLAIM_TYPE_ID];
+    const aTypeItemIds = [...new Set(aItems.map(r => r[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]))];
+
+    const aDescriptions = await cds.run(
+        SELECT.from(oDescriptor.entityClaimTypeItem)
+            .columns('CLAIM_TYPE_ITEM_ID', 'CLAIM_TYPE_ITEM_DESC')
+            .where({
+                CLAIM_TYPE_ID: sClaimTypeId,
+                CLAIM_TYPE_ITEM_ID: { in: aTypeItemIds }
+            })
+    );
+
+    const oDescMap = new Map(aDescriptions.map(d => [d.CLAIM_TYPE_ITEM_ID, d.CLAIM_TYPE_ITEM_DESC]));
+
+    return aItems.map(r => ({
+        ...r,
+        CLAIM_TYPE_ITEM_DESC: oDescMap.get(r[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]) ?? null
+    }));
 }
 async function retrieveBudgetContext(sId, oDescriptor, sAction) {
 
@@ -165,10 +194,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     if(!oHeaderContext) {
         return null;
     }
-    console.log("SubmittedDate: ", oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]);
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
-    const sFinalCostCenter = oHeaderContext[Constant.EntitiesFields.ALTERNATE_COST_CENTER] || oHeaderContext[Constant.EntitiesFields.COST_CENTER] || null;
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
     if(!aItemsContext.length) {
@@ -179,10 +206,10 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
         aBudgetContexts.push({
             YEAR            : dSubmittedYear,
             INTERNAL_ORDER  : sInternalOrder,
-            FUND_CENTER     : sFinalCostCenter,
-            MATERIAL_GROUP  : oItemContext[Constant.EntitiesFields.MATERIAL_CODE] ?? null,
+            FUND_CENTER     : oItemContext[Constant.EntitiesFields.COST_CENTER],
+            MATERIAL_GROUP  : oItemContext[Constant.EntitiesFields.MATERIAL_CODE],
             COMMITMENT_ITEM : oItemContext[Constant.EntitiesFields.GL_ACCOUNT],
-            CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID],
+            CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC],
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             ACTION          : sAction //SUBMIT, REJECT, APPROVE;
@@ -217,23 +244,19 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
 }
 async function performBudgetChecking(oTx, aBudgetContext) {
     const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
-    // const { budget } = req.data;
 
     const toNum = (v) => Number(v) || 0;
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
-
-    // const tx = cds.tx(req);
-    // const results = [];
-    // let error = false;
 
     try {
         let error = false;
         let errorResults = [];
         let successResults = [];
+        let condition;
 
         for (const entry of aBudgetContext) {
             if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
-                var condition = {
+                condition = {
                     YEAR: entry.YEAR,
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 };
@@ -324,17 +347,13 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         }
 
         if (error) {
-            // await oTx.rollback();
             return errorResults;
         }
 
-        // await oTx.commit();
         return successResults;
 
     } catch (err) {
-        // await oTx.rollback();
         return err;
-        // req.error(400, `Budget checking failed: ${err.message}`);
     }
 }
 async function getApproverContextByLevel(sId, oDescriptor, sLevel){
@@ -383,6 +402,9 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     }
     return aApproversContext;
 }
+async function retrieveEligibilityCheckContext(sId, oDescriptor) {
+    
+}
 module.exports = { 
     resolveDocDescriptor,
     retrieveHeaderDetails,
@@ -393,5 +415,6 @@ module.exports = {
     performBudgetChecking,
     getApproverContextByLevel,
     retrieveRoleRank,
-    retrieveRejectReasonDesc
+    retrieveRejectReasonDesc,
+    retrieveEligibilityCheckContext
 };

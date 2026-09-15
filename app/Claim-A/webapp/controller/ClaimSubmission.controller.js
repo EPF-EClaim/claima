@@ -85,14 +85,15 @@ sap.ui.define([
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-
 			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._oDeclarationDialog = null;
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
 			this._oDeleteAttachmentDialog = null;
 			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
+			this._oApprovalLog = this.getOwnerComponent().getModel("approval_log");
 		
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -337,17 +338,16 @@ sap.ui.define([
 				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 
 				if (sStatusId === this._oConstant.ClaimStatus.SEND_BACK) {
-					const oApprovalLogModel = this.getOwnerComponent().getModel("approval_log");
 					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
 					await ApprovalLog.getApproverList(
-						oApprovalLogModel,
+						this._oApprovalLog,
 						oEmployeeViewModel,
 						sClaimId,
 						sClaimTypeId
 					);
 
-					const aApprovalList = oApprovalLogModel.getProperty("/approval") || [];
+					const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
 
 					const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
 						oApproval.APPROVER_ID === sCurrentUserId ||
@@ -365,7 +365,7 @@ sap.ui.define([
 						this._setApprovalLog(true);
 
 						await ApprovalLog.getApprovalLogHistory(
-							oApprovalLogModel,
+							this._oApprovalLog,
 							this._oModel,
 							sClaimId
 
@@ -412,20 +412,19 @@ sap.ui.define([
 						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
 					);
 
-					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, sClaimId, sClaimTypeId);
-					await ApprovalLog.getApprovalLogHistory(oApprovalLogModel, this._oModel, sClaimId);
+					await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+					await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 
 					if (!bIsSendBack) {
 						//// set approver view if current user is approver
 						let oApprovalLogFragment = await this._getFormFragment("approval_log");
-						let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
+						let iApproverCount = this._oApprovalLog.getProperty("/approval")?.length || 0;
 						if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 							var sUserId = this._oSessionModel.getProperty("/userId");
 							if (sUserId) {
-								let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+								let iItemIndex = this._oApprovalLog.getProperty("/approval").findIndex((oApproval) =>
 									(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
 									oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
 								);
@@ -4678,224 +4677,143 @@ sap.ui.define([
 		},
 
 		_updateClaimSubmission: async function (oAction) {
+
+			var oListBinding;
+			var claimSaved;
+			var bApproversDetermined = true;
+
 			try {
-				BusyIndicator.show(0);
+				BusyIndicator.show();
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
+				var oHeader = oInputModel.getProperty("/claim_header") || [];
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (oAction !== this._oConstant.Claim_Action.DELETE && aItems.length === 0) {
-					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
-					BusyIndicator.hide();
-					return;
-				}
+				// flow delete action first to avoid any extra steps when cancel claim
+				if (oAction === this._oConstant.Claim_Action.DELETE) {
+					const oDeleteAction = this._oModel.bindContext("/cancelRecord(...)");
+					oDeleteAction.setParameter("sId", oHeader.claim_id)
 
-				if (oAction !== 'Delete Report') {
-					// run validator before proceeding 
+					try {
+						await oDeleteAction.execute();
+						await oDeleteAction.getBoundContext().requestObject();
+					} catch (oError) {
+						MessageBox.error(oError.message);
+						return false;
+					} finally {
+						BusyIndicator.hide();
+					}
+
+					oMsg = Utility.getText("msg_claimsubmission_deleted");
+				} else {
+
+					// start with all logic steps that is not related to DELETE action
+					if (aItems.length === 0) {
+						MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+						BusyIndicator.hide();
+						return;
+					}
+					
+					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
 					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 					if (!bCanProceed) {
 						return;
 					}
-				}
 
-				// Total Claim Amount Validation checking
-				var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
-				var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+					// Total Claim Amount Validation checking
+					var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+					var sCardNo = oInputModel.getProperty("/claim_header/card_no");
 
-				var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
-				var bHasCard = !!sCardNo;
-				var bTravelWithCard = bHasCard && bIsTravelClaimType;
+					var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+					var bHasCard = !!sCardNo;
+					var bTravelWithCard = bHasCard && bIsTravelClaimType;
 
-				var nTotalClaimAmount = oInputModel.getProperty("/claim_header/total_claim_amount");
-				if (aItems.length > 0 && (
-					isNaN(nTotalClaimAmount) ||
-					(bTravelWithCard ? nTotalClaimAmount < 0 : nTotalClaimAmount <= 0)
-				)) {
-					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
-					BusyIndicator.hide();
-					return;
-				}
+					var nTotalClaimAmount = oInputModel.getProperty("/claim_header/total_claim_amount");
+					if (aItems.length > 0 && (
+						isNaN(nTotalClaimAmount) ||
+						(bTravelWithCard ? nTotalClaimAmount < 0 : nTotalClaimAmount <= 0)
+					)) {
+						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
+						BusyIndicator.hide();
+						return;
+					}
 
-				// Duplication check skip Delete 
-				if (oAction !== this._oConstant.Claim_Action.DELETE) {
+					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
-				}
 
-				// Cash Advance Repayment Validation checking
-				if (!bHasCard && !bIsTravelClaimType) {
-					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+					// Cash Advance Repayment Validation checking
+					if (!bHasCard && !bIsTravelClaimType) {
+						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
+							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+							BusyIndicator.hide();
+							return;
+						}
+					}
+
+					// Travel claim with a corporate credit card - final amount to
+					// receive can be 0 but not negative, on submit.
+					if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCard && bIsTravelClaimType) {
+						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
+							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_and_potongan_elaun_prompt"));
+							BusyIndicator.hide();
+							return;
+						}
+					}
+
+					// Corporate Credit Card Advance Validation checking
+					if (oAction === this._oConstant.Claim_Action.SUBMIT &&
+						Number(oInputModel.getProperty("/claim_header/card_advance_amount")) < 0) {
+						MessageBox.error(Utility.getText("msg_error_negative_card_advance"));
 						BusyIndicator.hide();
 						return;
 					}
-				}
 
-				// Travel claim with a corporate credit card - final amount to
-				// receive can be 0 but not negative, on submit.
-				if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCard && bIsTravelClaimType) {
-					if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-						MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_and_potongan_elaun_prompt"));
-						BusyIndicator.hide();
-						return;
-					}
-				}
+					switch (oAction) {
+						case this._oConstant.Claim_Action.DRAFT:
+							var oMsg = Utility.getText("msg_claimsubmission_changed");
+							await this._saveDraftItems();
+							break;
 
-				// Corporate Credit Card Advance Validation checking
-				if (oAction === this._oConstant.Claim_Action.SUBMIT &&
-					Number(oInputModel.getProperty("/claim_header/card_advance_amount")) < 0) {
-					MessageBox.error(Utility.getText("msg_error_negative_card_advance"));
-					BusyIndicator.hide();
-					return;
-				}
-				//FUT issue 102
-				// solving the issue of having 0 amount claim item when submitting claims
-				// CustomValidator.init(this.getOwnerComponent(), this.getView());
-				// if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-				//  return;
-				// }
+						// Submit Report Button
+						case this._oConstant.Claim_Action.SUBMIT:
+							const oSubmitAction = this._oWorkflowModel.bindContext("/startWorkflow(...)");
+							oSubmitAction.setParameter("id", oHeader.claim_id);
+							oSubmitAction.setParameter("currentStatus", oHeader.status_id);
 
-				//// update last modified date
-				var lastModifiedDate = this._getJsonDate(new Date());
-				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
+							try {
+								await oSubmitAction.execute();
+								const oResponse = await oSubmitAction.getBoundContext().requestObject();
 
-				//assign submitted date for submit oAction
-				if (oAction == this._oConstant.Claim_Action.SUBMIT) {
-					var submittedDate = this._getJsonDate(new Date());
-					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-				}
+								if (!oResponse.Success) {
+									switch (oResponse.Area) {
+										case this._oConstant.WorkflowArea.ELIGIBILITY_CHECKING:
+											await EligibilityCheck.eligibilityHandling(this, oResponse.Message, this._oConstant.SubmissionTypePrefix.CLAIM);
+											break;
 
-				// assign report number to new claim
-				if (oInputModel.getProperty("/is_new")) {
-					var currentReportNumber = await this._getCurrentReportNumber('NR02');
-					var retries = 5;
-					while (retries-- > 0 && currentReportNumber.result === 'X') {
-						await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
-						currentReportNumber = await this._getCurrentReportNumber('NR02');
-					}
-					if (!isNaN(currentReportNumber.result.slice(-1))) {
-						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
-						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
-						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-					}
-					else {
-						MessageBox.error(Utility.getText("msg_claimsubmission_noclaim"));
-					}
-				}
-				//// set status for new claim as draft
-				if (oInputModel.getProperty("/is_new")) {
-					oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
-					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
-				}
+										case this._oConstant.WorkflowArea.BUDGET_CHECKING:
+											var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
+											var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
 
-				// set body for update
-				var oBody = new JSONModel({
-					EMP_ID: this._oSessionModel.getProperty("/userId"),
-					PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-					TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-					TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-					EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-					EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
-					SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
-					COMMENT: oInputModel.getProperty("/claim_header/comment"),
-					ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
-					COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
-					REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
-					ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
-					STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
-					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
-					LOCATION: oInputModel.getProperty("/claim_header/location"),
-					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-					HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-					MOVE_IN_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
-					HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
-					LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
-					SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
-					NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-					DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-					DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
-					APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
-					APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
-					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
-					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
-					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
-					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
-					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-					CCC_ADV_AMT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2),
-					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2)
-				});
+											var aMessages = [];
+											if (aInsufficientItems.length > 0) {
+												aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											}
+											if (aNotFoundItems.length > 0) {
+												aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											}
 
-				//// addon for new claim
-				if (oInputModel.getProperty("/is_new")) {
-					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
-				}
+											if (aMessages.length > 0) {
+												MessageBox.error(aMessages.join("\n"));
+											}
+											break;
 
-				const oModel = this.getOwnerComponent().getModel();
-				var oListBinding;
-				var claimSaved;
-				var bApproversDetermined = true;
-
-				if (oInputModel.getProperty("/is_new")) {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
-					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then(async () => {
-						switch (oAction) {
-							case 'Save Draft':
-								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
-								await this._saveDraftItems();
-								break;
-							case 'Submit Report':
-								//eligibility checking
-								var aAllClaimItems = oInputModel.getProperty("/claim_items");
-								var aAllEligibilityGeneratedPayload = [];
-								for (var i = 0; i < aAllClaimItems.length; i++) {
-									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-									aAllEligibilityGeneratedPayload.push(oPayload[0]);
-								}
-
-								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed) return;
-
-								// budget checking
-								const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
-								const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-								console.log(oHandlingResult);
-								if (!oHandlingResult.bCanProceed) {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
-									return;
-								}
-
-								// move approver determination function before claim is saved
-								// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
-								// else, do not send message claim submission pending
-								// instead, jump to catch statement with error no approver found
-								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view");
-								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-								if (!oResponse || !oResponse.Success) {
-
-									try {
-										await budgetCheck.backendBudgetChecking(
-											this,
-											this._oConstant.SubmissionTypePrefix.CLAIM,
-											this._oConstant.BudgetCheckAction.REJECT
-										);
-
-									} catch (oRollbackError) {
-										console.error(
-											"[Claim Submission] Budget rollback failed:",
-											oRollbackError
-										);
+										default:
+											MessageBox.error(oResponse.Message);
+											break;
 									}
-
-									throw new Error(Utility.getText("msg_failed_no_approver"));
+									return;
 								} else {
 									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
 									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
@@ -4925,172 +4843,28 @@ sap.ui.define([
 											BusyIndicator.hide();
 										}
 									}
+
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								}
-								break;
-							default:
-								throw new Error("Invalid action selected: " + oAction);
-						}
-						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
-						MessageToast.show(oMsg);
-						this._onNavBack();
-					}).catch(err => {
-						MessageBox.error(Utility.getText("msg_claimsubmission_creation_err", [err.message]));
-					});
-				}
-				else {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER", null, null,
-						[
-							new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_header/claim_id") })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: "$auto",
-							$$updateGroupId: "$auto"
-						}
-					);
-
-					const aCtx = await oListBinding.requestContexts(0, 1);
-					const oCtx = aCtx[0];
-
-					if (!oCtx) {
-						throw new Error("Claim not reachable.");
-					}
-
-					for (const [key, value] of Object.entries(oBody.getData())) {
-						oCtx.setProperty(key, value);
-					}
-					switch (oAction) {
-						case 'Save Draft':
-							var oMsg = Utility.getText("msg_claimsubmission_changed");
-							await this._saveDraftItems();
-							break;
-						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
-							oMsg = Utility.getText("msg_claimsubmission_deleted");
-							// Placeholder to put delete function for ZAPPROVER_DETAILS_CLAIMS
-							//Call CAP action 
-							const oAction = oModel.bindContext("/DeleteApproverDetails(...)");
-							oAction.setParameter("ID", oInputModel.getProperty("/claim_header/claim_id"));
-							try {
-								await oAction.execute();
 							} catch (oError) {
-								MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
+								MessageBox.error(oError.message);
 							}
 							break;
-						case 'Submit Report':
-							//eligibility checking
-							var aAllClaimItems = oInputModel.getProperty("/claim_items");
-							var aAllEligibilityGeneratedPayload = [];
-							for (var i = 0; i < aAllClaimItems.length; i++) {
-								var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-								aAllEligibilityGeneratedPayload.push(oPayload[0]);
-							}
-
-							var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-							var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-							if (!bCanProceed) return;
-
-							// budget checking
-							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
-							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-							console.log(oHandlingResult);
-							if (!oHandlingResult.bCanProceed) {
-								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
-								return;
-							}
-
-							// move approver determination function before claim is saved
-							// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
-							// else, do not send message claim submission pending
-							// instead, jump to catch statement with error no approver found
-							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-							if (!oResponse || !oResponse.Success) {
-								try {
-									await budgetCheck.backendBudgetChecking(
-										this,
-										this._oConstant.SubmissionTypePrefix.CLAIM,
-										this._oConstant.BudgetCheckAction.REJECT
-									);
-								} catch (oRollbackError) {
-									console.error(
-										"[Claim Submission] Budget rollback failed:",
-										oRollbackError
-									);
-								}
-								throw new Error(Utility.getText("msg_failed_no_approver"));
-							} else {
-								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-									const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									try {
-										await oAction.execute();
-									} catch (oError) {
-										MessageBox.error(oError.message);
-									} finally {
-										BusyIndicator.hide();
-									}
-								}
-									
-								// update Medical entitlement usage if claim type is Medical
-								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
-									oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
-									const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
-									oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									try {
-										await oAction.execute();
-									} catch (oError) {
-										MessageBox.error(oError.message);
-									} finally {
-										BusyIndicator.hide();
-									}
-								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);
-							}
-							break;
+					
 						default:
 							throw new Error("Invalid action selected: " + oAction);
-					}
-					await oModel.submitBatch("$auto");
-
-					MessageToast.show(oMsg);
-					//// change status based on oAction
-					switch (oAction) {
-						case 'Delete Report':
-							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.CANCELLED);
-							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
-
-							this.onBack_ClaimSubmission();
-							break;
-						case 'Submit Report':
-							const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
-							if(sStatus != this._oConstant.ClaimStatus.APPROVED){
-								oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-								if (!oInputModel.getProperty("/claim_header/submitted_date")) {
-									var submittedDate = this._getJsonDate(new Date());
-									oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-								}
-							}
-
-							this.onBack_ClaimSubmission();
-							break;
-						default:
 							break;
 					}
-				}
-
+				}				
+				MessageToast.show(oMsg);
 			} catch (e) {
 				// Sync with request error message
 				MessageBox.error(e.message || "Submission failed");
 			} finally {
 				BusyIndicator.hide();
+				await this._loadClaimById(String(oHeader.claim_id));
+				this._afterLoadFragments()
 			}
 		},
 

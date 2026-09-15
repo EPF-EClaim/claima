@@ -1777,4 +1777,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
             claimTypeItemId    : String,
             chargingCostCenter : String(9)
         ) returns Boolean;
+
+    action cancelRecord(sId: String) returns Boolean;
 };

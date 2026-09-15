@@ -419,30 +419,22 @@ sap.ui.define([
 						type: ButtonType.Emphasized,
 						text: "Delete",
 						press: async () => {
+							this.oDeleteDialog.getBeginButton().setEnabled(false);
+							BusyIndicator.show(0);
+
+							const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+
+							const oDeleteAction = this._oDataModel.bindContext("/cancelRecord(...)");
+							oDeleteAction.setParameter("sId", oHeader.claim_id)
+
 							try {
-								this.oDeleteDialog.getBeginButton().setEnabled(false);
-								BusyIndicator.show(0);
-
-								const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-
-								// update status to CANCELLED
-								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
+								await oDeleteAction.execute()?.getBoundContext()?.requestObject();
 
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
-								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
-								//Call CAP action 
-								const oAction = this._oDataModel.bindContext("/DeleteApproverDetails(...)");
-								oAction.setParameter("ID", sCurrentReqId);
-								try {
-									await oAction.execute();
-								} catch (oError) {
-									MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
-								}
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
-
-							} catch (e) {
+							} catch (oError) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_delete_failed"));
 							} finally {
 								BusyIndicator.hide();
@@ -503,24 +495,45 @@ sap.ui.define([
 								return;
 							}
 
-								//budget checking
-								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
-								var oBudgetCheckHandling = budgetCheck.budgetCheckHandling(aResult);
-								var bApproversDetermined = true;
-
-								if (oBudgetCheckHandling.bCanProceed) {
-
-									// move approver determination function before claim is saved
-									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
-									// else, do not change claim status
-									// update status to PENDING APPROVAL
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 									const sCurrentStatus = String(this._oReqModel.getProperty("/req_header/reqstatusid") || "").trim();
-									const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, sCurrentReqId, sCurrentStatus);
-									if (oResponse.Success) {
-										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										this._oReqModel.setProperty("/view", 'view');
 
+							const oSubmitAction = this._oWorkflowModel.bindContext("/startWorkflow(...)");
+							oSubmitAction.setParameter("id", sCurrentReqId);
+							oSubmitAction.setParameter("currentStatus", sCurrentStatus);
+
+							await oSubmitAction.execute();
+							const oResponse = await oSubmitAction.getBoundContext().requestObject();
+
+							if (!oResponse.Success) {
+								switch (oResponse.Area) {
+									case this._oConstant.WorkflowArea.ELIGIBILITY_CHECKING:
+										await EligibilityCheck.eligibilityHandling(this, oResponse.Message, this._oConstant.SubmissionTypePrefix.CLAIM);
+										break;
+
+									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
+										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
+										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+
+										var aMessages = [];
+										if (aInsufficientItems.length > 0) {
+											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+										}
+										if (aNotFoundItems.length > 0) {
+											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+										}
+
+										if (aMessages.length > 0) {
+											MessageBox.error(aMessages.join("\n"));
+										}
+										break;
+
+									default:
+										MessageBox.error(oResponse.Message);
+										break;
+								}
+								return;
+							} else {
 										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
 											const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
 											oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
@@ -533,16 +546,8 @@ sap.ui.define([
 												BusyIndicator.hide();
 											}
 										}										
-
-									// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
-									await this._loadRequest(sCurrentReqId);
-								} else {
-									throw new Error(Utility.getText("msg_failed_no_approver"))
 								}
-
-								} else {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oBudgetCheckHandling.aClaimTypeItem));
-								}
+							await this._loadRequest(sCurrentReqId);
 							} catch (e) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
 							} finally {
