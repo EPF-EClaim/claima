@@ -425,19 +425,21 @@ sap.ui.define([
 							const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 							const oDeleteAction = this._oDataModel.bindContext("/cancelRecord(...)");
-							oDeleteAction.setParameter("sId", oHeader.claim_id)
+							oDeleteAction.setParameter("sRecordId", sCurrentReqId)
 
 							try {
-								await oDeleteAction.execute()?.getBoundContext()?.requestObject();
+								await oDeleteAction.execute();
+								const bSuccess = await oDeleteAction.getBoundContext().requestObject();	
 
-								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
-								this.oDeleteDialog.close();
-
-								this._oRouter.navTo("RequestFormStatus");
+								if (bSuccess) {								
+									MessageToast.show(Utility.getText("req_tm_s_delete_request"));
+									await this._loadRequest(sCurrentReqId);
+								}
 							} catch (oError) {
-								MessageBox.error(e.message || Utility.getText("req_d_e_delete_failed"));
+								MessageBox.error(oError.message || Utility.getText("req_d_e_delete_failed"));
 							} finally {
 								BusyIndicator.hide();
+								this.oDeleteDialog.close();
 								this.oDeleteDialog.getBeginButton().setEnabled(true);
 							}
 						}
@@ -534,19 +536,19 @@ sap.ui.define([
 								}
 								return;
 							} else {
-										if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
-											const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
-											oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
-											oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-											try {
-												await oAction.execute();
-											} catch (oError) {
-												MessageBox.error(oError.message);
-											} finally {
-												BusyIndicator.hide();
-											}
-										}										
-								}
+								if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
+									const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
+									oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
+									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									try {
+										await oAction.execute();
+									} catch (oError) {
+										MessageBox.error(oError.message);
+									} finally {
+										BusyIndicator.hide();
+									}
+								}										
+							}
 							await this._loadRequest(sCurrentReqId);
 							} catch (e) {
 								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));

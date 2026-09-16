@@ -5289,42 +5289,44 @@ module.exports = (srv) => {
 
     srv.on("cancelRecord", async (req) => {
         const oTx = cds.tx(req);
-        const { sId } = req.data;
+        const { sRecordId } = req.data;
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
 
         if (!oEmp) {
-            req.error(404, `No employee data found.`);
+            throw req.error(404, `No employee data found.`);
         }
 
-        const sCancelledStatus = Constant.Status.CANCELLED;
-        const oDescriptor = resolveDocDescriptor(sId);
+        const oDescriptor = resolveDocDescriptor(sRecordId);
 
+        // update header status
         try {
-            
-            // udpate header status
-            await oTx.run(UPDATE(oDescriptor.entityHeader)
-                .set({
-                    [oDescriptor.statusField]            : Constant.Status.CANCELLED
-                })
-                .where({
-                    [oDescriptor.approverIdField]           : sId 
-                })
-            );
+            await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.CANCELLED, oTx);
+        } catch (error) {
+            await oTx.rollback();
+            throw req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
+        }
 
-            // remove approval log
-            await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
+        // remove approval log
+        try {
+            await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
+        } catch (error) {
+            await oTx.rollback();
+            throw req.reject(500, `Failed to remove approver details for ${sRecordId}: ${error.message}`);
+        }
 
-            // insert record history
+        // insert record history
+        try {
             await oTx.run(INSERT.into("ZLOG").entries({
                 TIMESTAMP: new Date(),
-                RECORD_ID: `${sId}`,
+                RECORD_ID: `${sRecordId}`,
                 PROGRAM: 'WORKFLOW',
                 MESSAGE_TYPE: 'A',
                 STATUS_CODE: '200',
-                MESSAGE: `${sId} is cancelled by ${oEmp.NAME}.`
+                MESSAGE: `${sRecordId} is cancelled by ${oEmp.NAME}.`
             }));
         } catch (error) {
-            return req.error(500, `Failed to cancel ${sId}: ${error.message}`);
+            await oTx.rollback();
+            throw req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);
         }
 
         return true;

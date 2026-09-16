@@ -4693,11 +4693,15 @@ sap.ui.define([
 				// flow delete action first to avoid any extra steps when cancel claim
 				if (oAction === this._oConstant.Claim_Action.DELETE) {
 					const oDeleteAction = this._oModel.bindContext("/cancelRecord(...)");
-					oDeleteAction.setParameter("sId", oHeader.claim_id)
+					oDeleteAction.setParameter("sRecordId", oHeader.claim_id)
 
 					try {
 						await oDeleteAction.execute();
-						await oDeleteAction.getBoundContext().requestObject();
+						const bSuccess = await oDeleteAction.getBoundContext().requestObject();	
+
+						if (!bSuccess) {								
+							return false;
+						}
 					} catch (oError) {
 						MessageBox.error(oError.message);
 						return false;
