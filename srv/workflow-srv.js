@@ -1,20 +1,13 @@
-// Require START
 const cds = require('@sap/cds');
 const { Constant } = require("./utils/constant");
 const UpdateHeader = require("./utils/UpdateHeader");
 const {
-    determineWorkflow
-} = require("./workflow/determination/determination-workflow");
-const {
-    determineApprovers
-} = require("./workflow/determination/determination-approver");
-const {
-    setApproversContext,
     sendClaimBatch,
-    deleteApproverDetails,
-    insertRecords,
     sendFinalApproveLog
 } = require("./workflow/determination/determination-helper");
+const {
+    runPreWorkflowChecks
+} = require("./workflow/pre-workflow-checks");
 const {
     resolveDocDescriptor,
     retrieveBudgetContext,
@@ -46,12 +39,6 @@ const { message } = require('@sap/cds/lib/log/cds-error');
 const {
     updateUsedMedicalAmount
 } = require('./utils/UpdateMedical');
-const {
-    onEligibilityCheck,
-    generateEligibilityPayload
- } = require('./utils/EligibilityScenarios/EligibleScenarioCheck');
-
-// Require END
 
 module.exports = (srv) => {
 
@@ -60,103 +47,21 @@ module.exports = (srv) => {
         const { id: sId, currentStatus: sCurrentStatus } = req.data
 
         let bStatus = false;    // default to false, will be set to true
-        let aBudgetContext = [];
-        let aBudgetCheckReturn = [];
 
         const oDescriptor = resolveDocDescriptor(sId);
         if (!oDescriptor) {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`, false);
         }
 
-        // 1. Eligibility Checking ===
-        // for Claim only upon submission
-        if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
-            try {
-                const aEligibilityPayload = await generateEligibilityPayload(sId, oTx);
-                const aEligibilityResult = aEligibilityPayload.length
-                    ? await onEligibilityCheck(aEligibilityPayload, oTx)
-                    : [];
-                const bEligible = aEligibilityResult.every(oPayload =>
-                    (oPayload.CheckFields || []).every(oField => oField.result === true || oField.result === null)
-                );
-                if (!bEligible) {
-                    await oTx.rollback();
-                    return {
-                        ...generateReturnMessage(bStatus, sId, Constant.WorkflowArea.ELIGIBILITY_CHECKING, aEligibilityResult, false),
-                        EligibilityResults: aEligibilityResult
-                    };
-                }
-            } catch (error) {
-                await oTx.rollback();
-                throw new Error(`Error encountered during submission eligibility checking: ${error.message}`);
-            }
-        }
-        // ==========
-
-        // 2. Budget Locking ===
-        // return full list of claim type item that failed
-        try {
-            aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
-            aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-        } catch (error) {
-            await oTx.rollback();
-            throw new Error(`Error encountered during Budget Locking: ${error.message}`);
-        }
-
-        var oInvalidBudget = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND || r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-        if (oInvalidBudget) {
-            await oTx.rollback();   // rollback any changes
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, aBudgetCheckReturn, false);
-        }
-        // ==========
-
-        // 3. Determine workflow ===
-        let oWorkflowContext;
-        try {
-            oWorkflowContext = await determineWorkflow(oTx, sId);
-        } catch (error) {
-            await oTx.rollback();
-            throw new Error(`Error encountered during Workflow Determination: ${error.message}`);
-        }
-        if (!oWorkflowContext) {
-            await oTx.rollback();
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched', false);
-        }
-        // ==========
-
-        // 4. Determine approvers and substitutes ===
-        let aApproversContext;
-        try {
-            aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
-        } catch (error) {
-            await oTx.rollback();
-            throw new Error(`Error encountered during Approver Determination: ${error.message}`);
-        }
-        if (!aApproversContext?.length) {
-            await oTx.rollback();
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'No approvers determined', false);
-        }
-        // ==========
-
-        // 5. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table ===
-        const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
-        if (!aApproversContextNew?.length) {
-            await oTx.rollback();
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization', false);
-        }
-
-        try {
-            await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
-            await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
-        } catch (error) {
-            await oTx.rollback();
-            throw new Error(`Error encountered while saving approver details${error.message}`);
-        }
-        // ==========
+        // Steps 1-5: eligibility, budget locking, workflow determination,
+        // approver determination, approver detail persistence.
+        // Any failure inside rolls back and throws - see runPreWorkflowChecks.
+        const { oWorkflowContext, aApproversContext, aApproversContextNew } = await runPreWorkflowChecks(oTx, sId, oDescriptor);
 
         // 6.1 Perform budget actualization for auto approve ===
         // 6.2 update header status
-        if (aApproversContext[0].LEVEL == 0) {
+        let aBudgetContext, aBudgetCheckReturn;
+        if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             try {
                 aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
                 aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
