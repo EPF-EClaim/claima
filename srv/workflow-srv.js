@@ -62,12 +62,14 @@ module.exports = (srv) => {
         try {
             const oDescriptor = resolveDocDescriptor(sId);
             if (!oDescriptor) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sId}`, false);
             }
 
             //1. Determine workflow
             const oWorkflowContext = await determineWorkflow(oTx, sId);
             if (!oWorkflowContext) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, 'No workflow rule matched', false);
             }
             console.log('[workflow-srv] oWorkflowContext:', oWorkflowContext)
@@ -75,23 +77,27 @@ module.exports = (srv) => {
             //2. Determine approvers and substitutes
             const aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext)
             if (!aApproversContext.length) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'No approvers determined', false);
             }
 
             //3. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
             const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
             if (!aApproversContextNew.length) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Normalization', false);
             }
             console.log('[workflow-srv] aApproversContextNew:', aApproversContextNew)
 
             const sDelete = await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
             if (sDelete === undefined || sDelete === null) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Deletion', false);
             }
 
             const sInsert = await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
             if (!sInsert) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.APPROVER_DETERMINATION, 'Error encountered during Approver Insertion', false);
             }
             console.log(sDelete);
@@ -104,6 +110,7 @@ module.exports = (srv) => {
                 const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
                 if (oReturn) {
                     bStatus = false;
+                    await oTx.rollback();
                     return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.BUDGET_CHECKING, 'Error encountered during Budget Checking', false);
                 }
                 //   If successful, update Header table with approved status and timestamp
@@ -113,7 +120,6 @@ module.exports = (srv) => {
             try {
                 await updateCorpoCardAdvance(oTx, sId, Constant.Status.PENDING_APPROVAL);
             } catch (oAdvErr) {
-                console.error("Failed to update corpo card advance (pending approval):", oAdvErr);
                 throw new Error('Error encountered during Corporate Card Advance update');
             }
         }
@@ -131,6 +137,7 @@ module.exports = (srv) => {
                 await UpdateHeader.updateApproverActionToHeader(sId, Constant.Status.PENDING_APPROVAL, oTx);
             }
             if (!sStatus) {
+                await oTx.rollback();
                 return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_NOTIFICATION, 'Error encountered during Workflow Notification', false);
             }
             console.log('[workflow-srv] sStatus:', sStatus)
@@ -155,6 +162,11 @@ module.exports = (srv) => {
 
         } catch (oErr) {
             console.error('[workflow-srv] startWorkflow failed:', oErr);
+            try {
+                await oTx.rollback();
+            } catch (oRollbackErr) {
+                console.error('[workflow-srv] rollback also failed:', oRollbackErr);
+            }
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, oErr.message || 'Unexpected error encountered during Workflow processing', false);
         }
 
