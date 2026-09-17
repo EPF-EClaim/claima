@@ -763,26 +763,239 @@ sap.ui.define([
 
         async getDefaultChargingCostCenter(oModel, sClaimType, sClaimTypeItem) {
 
-		const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
-			new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),
-			new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
-		]);
+            const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
+                new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),
+                new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
+            ]);
 
-		try {
-			const aContexts = await oListBinding.requestContexts(0, 1);
+            try {
+                const aContexts = await oListBinding.requestContexts(0, 1);
 
-			if (aContexts.length > 0) {
-				const oData = aContexts[0].getObject();
-				return oData.COST_CENTER || "";
-			}
+                if (aContexts.length > 0) {
+                    const oData = aContexts[0].getObject();
+                    return oData.COST_CENTER || "";
+                }
 
-			return "";
+                return "";
 
-		} catch (oError) {
-			console.error("Error fetching charging cost center", oError);
-			return "";
-		}
-	},
+            } catch (oError) {
+                console.error("Error fetching charging cost center", oError);
+                return "";
+            }
+        },
+
+        /**
+         * Resolves and populates display descriptions for a set of employee master
+         * fields (cost center, department, branch/unit section, marital status,
+         * job group, office location, state, country, role, user type, employee
+         * type) on the given model, driven by a config array (`aDescriptorConfig`).
+         *
+         * For each entry whose source path has a value, looks up the corresponding
+         * ID's description via `bindEclaimDescr` and writes it to the matching
+         * `/emp_master/descr/*` path. Runs sequentially (`for...of` with `await`),
+         * not in parallel — each lookup completes before the next starts. Entries
+         * needing a second filter (e.g. office location filtered by state) support
+         * it via optional `srcPath2`/`fieldId2` config fields.
+         *
+         * @param {sap.ui.model.Model} oModel - the model holding `/emp_master/*`
+         * @returns {Promise<void>} resolves once every applicable description has been set
+         */
+        getEmpDataDescr: async function (oModel) {
+            const aDescriptorConfig = [
+                { srcPath: "/emp_master/cc", destPath: "/emp_master/descr/cc", entity: Constants.Entities.ZCOST_CENTER, fieldId: Constants.EntitiesFields.COST_CENTER_ID, fieldDesc: Constants.EntitiesFields.COST_CENTER_DESC },
+                { srcPath: "/emp_master/dep", destPath: "/emp_master/descr/dep", entity: Constants.Entities.ZDEPARTMENT, fieldId: Constants.EntitiesFields.DEPARTMENT_ID, fieldDesc: Constants.EntitiesFields.DEPARTMENT_DESC },
+                { srcPath: "/emp_master/unit_section", destPath: "/emp_master/descr/unit_section", entity: Constants.Entities.ZBRANCH, fieldId: Constants.EntitiesFields.BRANCH_ID, fieldDesc: Constants.EntitiesFields.BRANCH_DESC },
+                { srcPath: "/emp_master/marital", destPath: "/emp_master/descr/marital", entity: Constants.Entities.ZMARITAL_STAT, fieldId: Constants.EntitiesFields.MARRIAGE_STATUS_ID, fieldDesc: Constants.EntitiesFields.MARRIAGE_STATUS_DESC },
+                { srcPath: "/emp_master/job_group", destPath: "/emp_master/descr/job_group", entity: Constants.Entities.ZJOB_GROUP, fieldId: Constants.EntitiesFields.JOB_GROUP_ID, fieldDesc: Constants.EntitiesFields.JOB_GROUP_DESC },
+                { srcPath: "/emp_master/office_location", destPath: "/emp_master/descr/office_location", entity: Constants.Entities.ZOFFICE_LOCATION, fieldId: Constants.EntitiesFields.LOCATION_ID, fieldDesc: Constants.EntitiesFields.LOCATION_DESC, srcPath2: "/emp_master/state", fieldId2: Constants.EntitiesFields.STATE_ID },
+                { srcPath: "/emp_master/state", destPath: "/emp_master/descr/state", entity: Constants.Entities.ZSTATE, fieldId: Constants.EntitiesFields.STATE_ID, fieldDesc: Constants.EntitiesFields.STATE_DESC, srcPath2: "/emp_master/country", fieldId2: Constants.EntitiesFields.COUNTRY_ID },
+                { srcPath: "/emp_master/country", destPath: "/emp_master/descr/country", entity: Constants.Entities.ZCOUNTRY, fieldId: Constants.EntitiesFields.COUNTRY_ID, fieldDesc: Constants.EntitiesFields.COUNTRY_DESC },
+                { srcPath: "/emp_master/role", destPath: "/emp_master/descr/role", entity: Constants.Entities.ZROLE, fieldId: Constants.EntitiesFields.ROLE_ID, fieldDesc: Constants.EntitiesFields.ROLE_DESC },
+                { srcPath: "/emp_master/user_type", destPath: "/emp_master/descr/user_type", entity: Constants.Entities.ZUSER_TYPE, fieldId: Constants.EntitiesFields.USER_TYPE_ID, fieldDesc: Constants.EntitiesFields.USER_TYPE_DESC },
+                { srcPath: "/emp_master/employee_type", destPath: "/emp_master/descr/employee_type", entity: Constants.Entities.ZEMP_TYPE, fieldId: Constants.EntitiesFields.EMP_TYPE_ID, fieldDesc: Constants.EntitiesFields.EMP_TYPE_DESC }
+            ];
+
+            for (const oDescriptor of aDescriptorConfig) {
+                if (!oModel.getProperty(oDescriptor.srcPath)) {
+                    continue;
+                }
+
+                const sValue = await this.bindEclaimDescr(
+                    oDescriptor.entity,
+                    oModel.getProperty(oDescriptor.srcPath),
+                    oDescriptor.fieldId,
+                    oDescriptor.fieldDesc,
+                    oDescriptor.srcPath2 ? oModel.getProperty(oDescriptor.srcPath2) : undefined,
+                    oDescriptor.fieldId2
+                );
+
+                oModel.setProperty(oDescriptor.destPath, sValue);
+            }
+        },
+
+        /**
+         * Resolves and populates display descriptions for claim header fields
+         * (submission type, linked request ID) on the given model, using the same
+         * config-array + sequential `for...of` pattern as `_getEmpDataDescr`.
+         *
+         * For each entry whose source path has a value, looks up the description
+         * via `bindEclaimDescr` and writes it to the matching `/claim_header/descr/*`
+         * path. New lookups can be added by appending to `aDescriptorConfig` without
+         * changing the loop itself.
+         *
+         * @param {sap.ui.model.Model} oModel - the model holding `/claim_header/*`
+         * @returns {Promise<void>} resolves once every applicable description has been set
+         */
+        getClaimHeaderDataDescr: async function (oModel) {
+            const aDescriptorConfig = [
+                { srcPath: "/claim_header/submission_type", destPath: "/claim_header/descr/submission_type", entity: Constants.Entities.ZSUBMISSION_TYPE, fieldId: Constants.EntitiesFields.SUBMISSION_TYPE_ID, fieldDesc: Constants.EntitiesFields.SUBMISSION_TYPE_DESC },
+                { srcPath: "/claim_header/request_id", destPath: "/claim_header/descr/request_id", entity: Constants.Entities.ZREQUEST_HEADER, fieldId: Constants.EntitiesFields.REQUESTID, fieldDesc: Constants.EntitiesFields.OBJECTIVE_PURPOSE }
+                // add future claim_header description lookups here
+            ];
+
+            for (const o of aDescriptorConfig) {
+                if (!oModel.getProperty(o.srcPath)) {
+                    continue;
+                }
+
+                const sValue = await this.bindEclaimDescr(
+                    o.entity,
+                    oModel.getProperty(o.srcPath),
+                    o.fieldId,
+                    o.fieldDesc,
+                    o.srcPath2 ? oModel.getProperty(o.srcPath2) : undefined,
+                    o.fieldId2
+                );
+
+                oModel.setProperty(o.destPath, sValue);
+            }
+        },
+
+        /**
+         * Looks up a single record's description field by ID (and optionally a
+         * second ID/value pair for a composite filter, e.g. state filtered by
+         * country) against a given OData entity set, using a one-row list-binding
+         * read.
+         *
+         * Builds an EQ filter on `oFieldId`/`oInputValue`, AND-ed with a second EQ
+         * filter on `oFieldId2`/`oInputValue2` when `oFieldId2` is provided, then
+         * reads the first matching row's `oFieldDescr` value. Returns `null` (never
+         * throws) if no row matches or the request fails — errors are logged via
+         * `console.error` so a lookup failure degrades to a blank description
+         * instead of crashing the caller.
+         *
+         * @param {string} oTable - absolute entity set path, e.g. `Constant.Entities.ZCOST_CENTER`
+         * @param {string} oInputValue - the ID value to filter on
+         * @param {string} oFieldId - the entity's ID field name
+         * @param {string} oFieldDescr - the entity's description field name to return
+         * @param {string} [oInputValue2] - optional second filter value
+         * @param {string} [oFieldId2] - optional second filter field name; when omitted, only the first filter is applied
+         * @returns {Promise<string|null>} the description string, or `null` if not found or on error
+         */
+        bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
+            var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
+            if (oFieldId2) {
+                aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
+            }
+            const oListBinding = this._oOwnerComponent.getModel().bindList(oTable, null, null, aFilterArray);
+
+            try {
+                const aContexts = await oListBinding.requestContexts(0, 1);
+
+                if (aContexts.length > 0) {
+                    const oData = aContexts[0].getObject();
+                    return oData[oFieldDescr];
+                } else {
+                    return null;
+                }
+            } catch (oError) {
+                return null; // Return null so the app doesn't crash
+            }
+        },
+
+        /**
+         * Looks up a ZEMP_MASTER record by a given field (EEID or EMAIL) and maps
+         * it to the flat employee-detail shape used across App, ClaimSubmission,
+         * and MyApproval controllers.
+         *
+         * @param {sap.ui.model.Model} oModel
+         * @param {string} sFieldName - Constant.EntitiesFields.EEID or Constant.EntitiesFields.EMAIL
+         * @param {string} sValue
+         * @param {boolean} [bCaseSensitive=true] - pass false for email lookups
+         * @returns {Promise<object|null>}
+         */
+        getEmpIdDetail: async function (oModel, sFieldName, sValue, bCaseSensitive) {
+            const oListBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null, null, [
+                new Filter({
+                    path: sFieldName,
+                    operator: FilterOperator.EQ,
+                    value1: sValue,
+                    caseSensitive: bCaseSensitive !== false
+                })
+            ]);
+
+            try {
+                const aContexts = await oListBinding.requestContexts(0, 1);
+
+                if (aContexts.length > 0) {
+                    const oData = aContexts[0].getObject();
+                    return {
+                        eeid: oData.EEID,
+                        name: oData.NAME,
+                        grade: oData.GRADE,
+                        cc: oData.CC,
+                        pos: oData.POS,
+                        dep: oData.DEP,
+                        unit_section: oData.UNIT_SECTION,
+                        b_place: oData.B_PLACE,
+                        marital: oData.MARITAL,
+                        job_group: oData.JOB_GROUP,
+                        office_location: oData.OFFICE_LOCATION,
+                        address_line1: oData.ADDRESS_LINE1,
+                        address_line2: oData.ADDRESS_LINE2,
+                        address_line3: oData.ADDRESS_LINE3,
+                        postcode: oData.POSTCODE,
+                        state: oData.STATE,
+                        country: oData.COUNTRY,
+                        contact_no: oData.CONTACT_NO,
+                        email: oData.EMAIL,
+                        direct_supperior: oData.DIRECT_SUPPERIOR,
+                        role: oData.ROLE,
+                        user_type: oData.USER_TYPE,
+                        mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
+                        mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
+                        employee_type: oData.EMPLOYEE_TYPE,
+                        position_name: oData.POSITION_NAME,
+                        position_start_date: oData.POSITION_START_DATE,
+                        position_event_reason: oData.POSITION_EVENT_REASON,
+                        confirmation_date: oData.CONFIRMATION_DATE,
+                        effective_date: oData.EFFECTIVE_DATE,
+                        updated_date: oData.UPDATED_DATE,
+                        inserted_date: oData.INSERTED_DATE,
+                        medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
+                        descr: {
+                            cc: null,
+                            dep: null,
+                            unit_section: null,
+                            marital: null,
+                            job_group: null,
+                            state: null,
+                            country: null,
+                            direct_supperior: null,
+                            role: null,
+                            user_type: null,
+                            employee_type: null
+                        }
+                    };
+                }
+
+                console.warn(`No employee found with ${sFieldName}: ${sValue}`);
+                return null;
+            } catch (oError) {
+                console.error("Error fetching employee detail", oError);
+                return null;
+            }
+        }
 
     };
-    });
+});

@@ -512,10 +512,10 @@ sap.ui.define([
 					return;
 				}
 			}
-			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			const oEmpData = await Utility.getEmpIdDetail(this._oDataModel, Constants.EntitiesFields.EMAIL, oUserModelData.email, false);
 			if (oEmpData) {
 				oInputModel.setProperty("/emp_master", oEmpData);
-				await this._getEmpDataDescr(oInputModel);
+				await Utility.getEmpDataDescr(oInputModel);
 			}
 			await this._setHasCorporateCard();
 			// set claim items based on selected claim type
@@ -529,76 +529,6 @@ sap.ui.define([
 				new Filter("CLAIM_TYPE_ID", FilterOperator.NE, this._oConstant.ClaimType.CORPO_CRED_CARD)
 			];
 			oBindingSelectClaimType.filter(aFilterSelectClaimType);
-			},
-
-		_getEmpDataDescr: async function (oModel) {
-			// cost center
-			if (oModel.getProperty("/emp_master/cc")) {
-				oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-			}
-			// department
-			if (oModel.getProperty("/emp_master/dep")) {
-				oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
-			}
-			// branch / unit section
-			if (oModel.getProperty("/emp_master/unit_section")) {
-				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
-			}
-			// marital status
-			if (oModel.getProperty("/emp_master/marital")) {
-				oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
-			}
-			// job group
-			if (oModel.getProperty("/emp_master/job_group")) {
-				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
-			}
-			// office location
-			if (oModel.getProperty("/emp_master/office_location")) {
-				oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
-			}
-			// state
-			if (oModel.getProperty("/emp_master/state")) {
-				oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
-			}
-			// country
-			if (oModel.getProperty("/emp_master/country")) {
-				oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
-			}
-			// role
-			if (oModel.getProperty("/emp_master/role")) {
-				oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
-			}
-			// user type
-			if (oModel.getProperty("/emp_master/user_type")) {
-				oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
-			}
-			// employee type
-			if (oModel.getProperty("/emp_master/employee_type")) {
-				oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
-			}
-		},
-
-		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-			const oModel = this.getOwnerComponent().getModel();
-			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
-			if (oFieldId2) {
-				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
-			}
-			const oListBinding = oModel.bindList(oTable, null, null, aFilterArray);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return oData[oFieldDescr];
-				} else {
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching description: ", oError);
-				return null; // Return null so the app doesn't crash
-			}
 		},
 
 		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
@@ -1684,80 +1614,6 @@ sap.ui.define([
 			oDialogData.doc4 = oEvent.getParameters("files").files[0];
 		},
 
-		// get backend data
-		async _getEmpIdDetail(sEMAIL) {
-			const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [
-				new Filter({
-					path: "EMAIL",
-					operator: FilterOperator.EQ,
-					value1: sEMAIL,
-					caseSensitive: false
-				}) // non case-sensitive search
-			]);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return {
-						eeid: oData.EEID,
-						name: oData.NAME,
-						grade: oData.GRADE,
-						cc: oData.CC,
-						pos: oData.POS,
-						dep: oData.DEP,
-						unit_section: oData.UNIT_SECTION,
-						b_place: oData.B_PLACE,
-						marital: oData.MARITAL,
-						job_group: oData.JOB_GROUP,
-						office_location: oData.OFFICE_LOCATION,
-						address_line1: oData.ADDRESS_LINE1,
-						address_line2: oData.ADDRESS_LINE2,
-						address_line3: oData.ADDRESS_LINE3,
-						postcode: oData.POSTCODE,
-						state: oData.STATE,
-						country: oData.COUNTRY,
-						contact_no: oData.CONTACT_NO,
-						email: oData.EMAIL,
-						direct_supperior: oData.DIRECT_SUPPERIOR,
-						role: oData.ROLE,
-						user_type: oData.USER_TYPE,
-						mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
-						mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
-						employee_type: oData.EMPLOYEE_TYPE,
-						position_name: oData.POSITION_NAME,
-						position_start_date: oData.POSITION_START_DATE,
-						position_event_reason: oData.POSITION_EVENT_REASON,
-						confirmation_date: oData.CONFIRMATION_DATE,
-						effective_date: oData.EFFECTIVE_DATE,
-						updated_date: oData.UPDATED_DATE,
-						inserted_date: oData.INSERTED_DATE,
-						medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
-						descr: {
-							cc: null,
-							dep: null,
-							unit_section: null,
-							marital: null,
-							job_group: null,
-							state: null,
-							country: null,
-							direct_supperior: null,
-							role: null,
-							user_type: null,
-							employee_type: null
-						}
-					};
-				} else {
-					console.warn("No employee found with email: " + sEMAIL);
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
-				return null; // Return null so the app doesn't crash
-			}
-		},
-
 		onSelect_ClaimType: function (oEvent) {
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
@@ -2128,11 +1984,11 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//housing loan
 			if (oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme")) {
-				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await this._bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_ID, this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_DESC));
+				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await Utility.bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_ID, this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_DESC));
 			}
 			//lender name
 			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
-				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await Utility.bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
 			}
 		},
 
