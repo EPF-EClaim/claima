@@ -814,6 +814,16 @@ sap.ui.define([
         "MedicalAdvanceInfo": {
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214230"
+        },
+        "WorkflowArea": {
+            "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",
+            "WORKFLOW_DETERMINATION"    : "WORKFLOW_DETERMINATION",
+            "APPROVER_DETERMINATION"    : "APPROVER_DETERMINATION",
+            "WORKFLOW_TABLE_SAVING"     : "WORKFLOW_TABLE_SAVING",
+            "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
+            "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
+            "BUDGET_CHECKING"           : "BUDGET_CHECKING",
+            "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION"
         }
 
     }
