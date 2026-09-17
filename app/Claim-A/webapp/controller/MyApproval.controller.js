@@ -17,6 +17,7 @@ sap.ui.define([
         * ======================================================= */
         onInit: async function() {
             this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+            this._oDataModel = this.getOwnerComponent().getModel();
             this._oReqModel = this.getOwnerComponent().getModel("request");
             this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
             this._oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
@@ -31,7 +32,7 @@ sap.ui.define([
         },
 
         formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
-            return PARequestSharedFunction.formatRequestAmount(this._oConstant, sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
+            return PARequestSharedFunction.formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
         },
 
         _getMyApproverPAReq: async function () {
@@ -68,20 +69,24 @@ sap.ui.define([
 
             try {
                 const aCtx = await oListBinding.requestContexts(0, Infinity);
-                const a = aCtx.map((ctx) => ctx.getObject());
+                const aRequestList = aCtx.map((ctx) => ctx.getObject());
 
-                a.forEach((it) => {
+                aRequestList.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
-                await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
-                    this.getOwnerComponent().getModel(), a, "PREAPPROVAL_ID", this._oConstant
-                );
+                try {
+                    await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+                        this._oDataModel, aRequestList, "PREAPPROVAL_ID"
+                    );
+                } catch (oError) {
+                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable"));
+                }
 
-                this._oReqStatusModel.setProperty("/req_header_list", a);
-                this._oReqStatusModel.setProperty("/req_header_count", a.length);
+                this._oReqStatusModel.setProperty("/req_header_list", aRequestList);
+                this._oReqStatusModel.setProperty("/req_header_count", aRequestList.length);
 
-                return a;
+                return aRequestList;
             } catch (err) {
                 console.error("OData bindList failed:", err);
                 this._oReqStatusModel.setProperty("/req_header_list", []);

@@ -73,9 +73,13 @@ sap.ui.define([
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
-				await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
-					this._oDataModel, oContextItems, "REQUEST_ID", this._oConstant
-				);
+				try {
+					await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+						this._oDataModel, oContextItems, "REQUEST_ID"
+					);
+				} catch (oError) {
+					MessageToast.show(Utility.getText("msg_ccc_total_unavailable"));
+				}
 
 				oReqStatusModel.setProperty("/req_header_list", oContextItems);
 				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
@@ -90,7 +94,7 @@ sap.ui.define([
 		},
 
 		formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
-			return PARequestSharedFunction.formatRequestAmount(this._oConstant, sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
+			return PARequestSharedFunction.formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
 		},
 
 		async openItemFromList(oEvent) {

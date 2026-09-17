@@ -5,16 +5,14 @@ sap.ui.define([
 	"sap/ui/core/format/DateFormat",
 	"claima/utils/ApprovalLog",
 	"claima/utils/Utility",
-	"claima/utils/Constants",
-	"sap/m/MessageBox"
+	"claima/utils/Constants"
 ], function (Filter,
 	FilterOperator,
 	Sorter,
 	DateFormat,
 	ApprovalLog,
 	Utility,
-	Constants,
-	MessageBox) {
+	Constants) {
 	"use strict";
 
 	return {
@@ -323,52 +321,57 @@ sap.ui.define([
 			}, 0);
 			return Math.round(fSum * 100) / 100;
 		},
-		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField, oConstant) {
+		/**
+		* Calculates the payment-due amount for Corporate Credit Card requests
+		*@PARAM {sap.ui.model.odata.v4.ODataModel} oDataModel OData V4 model
+		*@PARAM {Array} aItems Request header rows
+		*@PARAM {string} sRequestIdField Field containing REQUEST_ID
+		*@PARAM {Object} oConstant Application constants
+		*@returns {Promise<Map<string, number>>} Totals keyed by request ID
+		*@throws When the CCC-part query cannot be completed
+		*/
+		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField) {
 			const aCorpoCCRequestIds = aItems
-				.filter((it) => String(it.REQUEST_TYPE_ID) === String(oConstant.RequestType.CORP_CC))
+				.filter((it) => String(it.REQUEST_TYPE_ID) === String(Constants.RequestType.CORP_CC))
 				.map((it) => it[sRequestIdField]);
 
 			if (aCorpoCCRequestIds.length === 0) {
 				return;
 			}
 
-			try {
-				const oPartListBinding = oDataModel.bindList(
-					"/ZREQ_ITEM_CCC_PART",
-					null,
-					null,
-					new Filter({
-						filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
-						and: false
-					}),
-					{
-						$$ownRequest: true,
-						$select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
-					}
-				);
-				const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
+			const oPartListBinding = oDataModel.bindList(
+				"/ZREQ_ITEM_CCC_PART",
+				null,
+				null,
+				new Filter({
+					filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
+					and: false
+				}),
+				{
+					$$ownRequest: true,
+					$select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
+				}
+			);
+			const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
 
-				const mTotalByRequestId = {};
-				aPartCtx.forEach((ctx) => {
-					const oPart = ctx.getObject();
-					const sReqId = oPart.REQUEST_ID;
-					mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
-						+ (Number(oPart.STATEMENT_DUE_AMT) || 0)
-						- (Number(oPart.CASHBACK) || 0);
-				});
+			const mTotalByRequestId = {};
+			aPartCtx.forEach((ctx) => {
+				const oPart = ctx.getObject();
+				const sReqId = oPart.REQUEST_ID;
+				mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
+					+ (Number(oPart.STATEMENT_DUE_AMT) || 0)
+					- (Number(oPart.CASHBACK) || 0);
+			});
 
-				aItems.forEach((it) => {
-					if (String(it.REQUEST_TYPE_ID) === String(oConstant.RequestType.CORP_CC)) {
-						it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it[sRequestIdField]] || 0) * 100) / 100;
-					}
-				});
-			} catch (e) {
-				MessageBox.error("Failed to compute Total Payment Due Amount for CCC requests:", e);
-			}
+			aItems.forEach((it) => {
+				if (String(it.REQUEST_TYPE_ID) === String(Constants.RequestType.CORP_CC)) {
+					it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it[sRequestIdField]] || 0) * 100) / 100;
+				}
+			});
 		},
 
-		formatRequestAmount(oConstant, sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
-			var fAmount = (String(sRequestTypeId) === String(oConstant.RequestType.CORP_CC))
+		formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+			var fAmount = (String(sRequestTypeId) === String(Constants.RequestType.CORP_CC))
 				? Number(fTotalPaymentDueAmount) || 0
 				: fPreapprovalAmount;
 			return (Number(fAmount) || 0).toFixed(2);
