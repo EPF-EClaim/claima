@@ -67,8 +67,8 @@ module.exports = {
         switch (sStatus) {
 
             case Constant.Status.PENDING_APPROVAL:
-             sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
-             break;
+                sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
+                break;
 
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
@@ -87,6 +87,10 @@ module.exports = {
                 sTimeField = Constant.EntitiesFields.LAST_PUSH_BACK_TIME;
                 sReasonIdField = Constant.EntitiesFields.PUSH_BACK_REASON_ID;
                 sReasonId = oTimestamp.REJECT_REASON_ID;
+                break;
+
+            case Constant.Status.CANCELLED:
+                // no additional field udpate required.
                 break;
 
             default:
