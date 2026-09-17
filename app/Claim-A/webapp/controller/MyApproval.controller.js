@@ -74,8 +74,6 @@ sap.ui.define([
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
-                // PREAPPROVAL_ID is the request's REQUEST_ID under a different
-                // name in this table.
                 await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
                     this.getOwnerComponent().getModel(), a, "PREAPPROVAL_ID", this._oConstant
                 );
