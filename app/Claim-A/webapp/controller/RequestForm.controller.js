@@ -398,6 +398,25 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Handles the "Delete Request" action.
+		 *
+		 * Guard: returns early with an error if employee ID or request ID can't
+		 * be resolved.
+		 *
+		 * Lazily creates and opens a confirmation dialog (only built once, reused
+		 * on later calls). On Delete:
+		 *   - Disables the Delete button and shows the busy indicator.
+		 *   - Calls the `cancelRecord` OData action with the request ID.
+		 *   - On success, shows a toast and reloads the request via `_loadRequest`.
+		 *   - On failure, shows an error message.
+		 *   - `finally` always hides the busy indicator, closes the dialog, and
+		 *     re-enables the Delete button.
+		 *
+		 * Cancel just closes the dialog.
+		 *
+		 * @returns {void} opens the dialog synchronously; delete logic runs later in the Delete button's press handler
+		 */
 		onDeleteRequest() {
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
@@ -455,6 +474,25 @@ sap.ui.define([
 			this.oDeleteDialog.open();
 		},
 
+		/**
+		 * Handles the "Submit Request" action.
+		 *
+		 * Guards (return early on failure): no unsaved header edits, at least one
+		 * item in `/req_item_rows`, and both `reqid` + employee ID resolvable.
+		 *
+		 * If checks pass, opens a confirm dialog ("Declaration" for corporate
+		 * credit card requests, "Submit Request" otherwise). On Confirm:
+		 *   - Blocks if claim type is `ELAUN_TUKAR` and ineligible.
+		 *   - Calls the `startWorkflow` OData action (eligibility, budget, and
+		 *     approver checks in one backend call).
+		 *   - On failure, shows an error based on `oResponse.Area`; on success,
+		 *     reloads the request via `_loadRequest`.
+		 *   - `finally` always hides the busy indicator and closes the dialog.
+		 *
+		 * Cancel just closes the dialog.
+		 *
+		 * @returns {Promise<void>} resolves once the dialog opens; submit logic runs later in Confirm's handler
+		 */
 		async onSubmitRequest() {
 			const oEditButtonModel = this.getView().getModel("editButtonModel");
 			if (oEditButtonModel && oEditButtonModel.getProperty("/state") === true) {
@@ -535,23 +573,11 @@ sap.ui.define([
 										break;
 								}
 								return;
-							} else {
-								if (oReqData.req_header.claimtype === Constants.ClaimType.MEDICAL_ADVANCE) {
-									const oAction = this._oDataModel.bindContext("/updateMedicalUsedAmount(...)");
-									oAction.setParameter("sRecordId", String(this._oReqModel.getProperty("/req_header/reqid")));
-									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									try {
-										await oAction.execute();
-									} catch (oError) {
-										MessageBox.error(oError.message);
-									} finally {
-										BusyIndicator.hide();
-									}
-								}										
 							}
+							// reload request data
 							await this._loadRequest(sCurrentReqId);
-							} catch (e) {
-								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
+							} catch (oError) {
+								MessageBox.error(oError.message || Utility.getText("req_d_e_submit_failed"));
 							} finally {
 								BusyIndicator.hide();
 								this.oSubmitDialog.close();

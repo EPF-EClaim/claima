@@ -49,9 +49,9 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                 await oTx.rollback();
                 throw new Error(`Eligibility check failed for ${sId}`);
             }
-        } catch (error) {
+        } catch (oError) {
             await oTx.rollback();
-            throw new Error(`Error encountered during submission eligibility checking: ${error.message}`);
+            throw new Error(`Error encountered during submission eligibility checking: ${oError.message}`);
         }
     }
 
@@ -60,9 +60,9 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     try {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
         aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-    } catch (error) {
+    } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Budget Locking: ${error.message}`);
+        throw new Error(`Error encountered during Budget Locking: ${oError.message}`);
     }
 
     const oInvalidBudget = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND || r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
@@ -75,9 +75,9 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     let oWorkflowContext;
     try {
         oWorkflowContext = await determineWorkflow(oTx, sId);
-    } catch (error) {
+    } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Workflow Determination: ${error.message}`);
+        throw new Error(`Error encountered during Workflow Determination: ${oError.message}`);
     }
     if (!oWorkflowContext) {
         await oTx.rollback();
@@ -88,9 +88,9 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     let aApproversContext;
     try {
         aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
-    } catch (error) {
+    } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Approver Determination: ${error.message}`);
+        throw new Error(`Error encountered during Approver Determination: ${oError.message}`);
     }
     if (!aApproversContext?.length) {
         await oTx.rollback();
@@ -107,9 +107,9 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     try {
         await deleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sId, oTx);
         await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
-    } catch (error) {
+    } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered while saving approver details: ${error.message}`);
+        throw new Error(`Error encountered while saving approver details: ${oError.message}`);
     }
 
     return { oWorkflowContext, aApproversContext, aApproversContextNew };

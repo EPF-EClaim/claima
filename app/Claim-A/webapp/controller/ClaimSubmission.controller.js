@@ -4676,6 +4676,40 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Handles the claim header actions triggered from the Claim Submission
+		 * toolbar: Delete, Save Draft, and Submit Report.
+		 *
+		 * - **Delete** (`Claim_Action.DELETE`): calls the `cancelRecord` OData action
+		 *   directly with the claim's ID and returns
+		 * - **Save Draft / Submit Report**: first runs client-side checks, in order,
+		 *   returning early on the first failure:
+		 *     1. Items list not empty
+		 *     2. Header field validation via `CustomValidator`
+		 *     3. Total claim amount validity (NaN / sign, adjusted for travel claims
+		 *        paid by corporate card)
+		 *     4. Duplicate item check via `CustomDuplicationCheck`
+		 *     5. Cash advance repayment amount not negative (non-card, non-travel claims)
+		 *     6. Final amount to receive not negative (travel claims paid by card, on Submit only)
+		 *     7. Corporate card advance amount not negative (on Submit only)
+		 *
+		 *   If all checks pass:
+		 *     - **Save Draft** persists the current items via `_saveDraftItems`.
+		 *     - **Submit Report** calls the `startWorkflow` OData action — a single
+		 *       backend call that performs eligibility checking, budget locking,
+		 *       workflow/approver determination, and entitlement updates. On failure,
+		 *       shows an error message tailored to `oResponse.Area`
+		 *       (`ELIGIBILITY_CHECKING`, `BUDGET_CHECKING`, or a generic fallback for
+		 *       any other area) and returns without showing a success toast.
+		 *
+		 * On success, shows a toast with the relevant status message. Any thrown
+		 * error during the try block surfaces as a `MessageBox.error`.
+		 *
+		 * @param {string} oAction - one of `this._oConstant.Claim_Action` (`DELETE`, `DRAFT`, `SUBMIT`)
+		 * @returns {Promise<void|boolean>} resolves once the action completes and the
+		 *          view has reloaded; resolves to `false` if a Delete action fails or
+		 *          is declined by the backend
+		 */
 		_updateClaimSubmission: async function (oAction) {
 
 			var oListBinding;
@@ -4819,35 +4853,7 @@ sap.ui.define([
 									}
 									return;
 								} else {
-									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-										const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										try {
-											await oAction.execute();
-										} catch (oError) {
-											MessageBox.error(oError.message);
-										} finally {
-											BusyIndicator.hide();
-										}
-									}
-										
-									// update Medical entitlement usage if claim type is Medical
-									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL ||
-										oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.MEDICAL_ADVANCE) {
-										const oAction = this._oModel.bindContext("/updateMedicalUsedAmount(...)");
-										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										try {
-											await oAction.execute();
-										} catch (oError) {
-											MessageBox.error(oError.message);
-										} finally {
-											BusyIndicator.hide();
-										}
-									}
-
+									// workflow successfully determined and returns
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								}
 
@@ -4860,11 +4866,11 @@ sap.ui.define([
 							throw new Error("Invalid action selected: " + oAction);
 							break;
 					}
-				}				
+				}
 				MessageToast.show(oMsg);
-			} catch (e) {
+			} catch (oError) {
 				// Sync with request error message
-				MessageBox.error(e.message || "Submission failed");
+				MessageBox.error(`Submission failed: ${oError.message}`);
 			} finally {
 				BusyIndicator.hide();
 				await this._loadClaimById(String(oHeader.claim_id));
