@@ -811,8 +811,8 @@ sap.ui.define([
 			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
-			var sPrefix = oEvent.getParameter("selectedItem").getKey().slice(0, 6);
 			if (oRequestForm) {
+				var sPrefix = oRequestForm.getKey().slice(0, 6);
 				// populate request form values
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
 				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
