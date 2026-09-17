@@ -326,9 +326,6 @@ sap.ui.define([
 		*@PARAM {sap.ui.model.odata.v4.ODataModel} oDataModel OData V4 model
 		*@PARAM {Array} aItems Request header rows
 		*@PARAM {string} sRequestIdField Field containing REQUEST_ID
-		*@PARAM {Object} oConstant Application constants
-		*@returns {Promise<Map<string, number>>} Totals keyed by request ID
-		*@throws When the CCC-part query cannot be completed
 		*/
 		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField) {
 			const aCorpoCCRequestIds = aItems
