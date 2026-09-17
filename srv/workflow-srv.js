@@ -14,7 +14,8 @@ const {
     generateReturnMessage,
     performBudgetChecking,
     getApproverContextByLevel,
-    retrieveRejectReasonDesc
+    retrieveRejectReasonDesc,
+    logWorkflowHistory
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -121,14 +122,12 @@ module.exports = (srv) => {
 
             // 7.1 log record history
             try {
-                await oTx.run(INSERT.into("ZLOG").entries({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: `${sRecordId}`,
-                    PROGRAM: 'WORKFLOW',
-                    MESSAGE_TYPE: 'A',
-                    STATUS_CODE: '200',
-                    MESSAGE: `${sRecordId} is ${sSubmitText}.`
-                }));
+                await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is ${sSubmitText}.`);
+
+                // log as auto approved
+                if (aApproversContextNew[0].LEVEL == 0) {
+                    await logWorkflowHistory(oTx, sRecordId, `${sRecordId} has been auto-approved.`);
+                }
             } catch (oError) {
                 await oTx.rollback();
                 throw new Error(`Error encountered during Corporate Card Advance update\n${oError.message}`);
@@ -145,7 +144,9 @@ module.exports = (srv) => {
                     await sendEmailToApprover(aApproversContext, sRecordId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY);
                 }
             } catch (oError) {
-                console.error(`[${sRecordId}] Notification step failed:`, oError.message);
+                // Log the failure for audit visibility, but don't roll back or throw -
+                // the workflow itself already succeeded by this point.
+                await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, 'E', '500');
             }
         }
         // ==========

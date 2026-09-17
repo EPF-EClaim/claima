@@ -11,7 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const UpdateMedical = require('./utils/UpdateMedical');
-const { resolveDocDescriptor } = require('./workflow/workflow-helper');
+const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
 
@@ -5316,14 +5316,7 @@ module.exports = (srv) => {
 
         // insert record history
         try {
-            await oTx.run(INSERT.into("ZLOG").entries({
-                TIMESTAMP: new Date(),
-                RECORD_ID: `${sRecordId}`,
-                PROGRAM: 'WORKFLOW',
-                MESSAGE_TYPE: 'A',
-                STATUS_CODE: '200',
-                MESSAGE: `${sRecordId} is cancelled by ${oEmp.NAME}.`
-            }));
+            await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is cancelled by ${oEmp.NAME}.`);
         } catch (error) {
             await oTx.rollback();
             throw req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);

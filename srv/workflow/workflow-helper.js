@@ -402,8 +402,27 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     }
     return aApproversContext;
 }
-async function retrieveEligibilityCheckContext(sId, oDescriptor) {
-    
+/**
+ * Inserts a ZLOG history record. Does not roll back or throw on its own
+ * failure — callers decide whether a log-write failure should abort their
+ * step; this function's only job is the insert.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {string} sRecordId
+ * @param {string} sMessage
+ * @param {string} [sMessageType='A'] - 'A' informational, 'E' error, etc.
+ * @param {string} [sStatusCode='200']
+ * @returns {Promise<void>}
+ */
+async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200') {
+    await oTx.run(INSERT.into("ZLOG").entries({
+        TIMESTAMP: new Date(),
+        RECORD_ID: `${sRecordId}`,
+        PROGRAM: 'WORKFLOW',
+        MESSAGE_TYPE: sMessageType,
+        STATUS_CODE: sStatusCode,
+        MESSAGE: sMessage
+    }));
 }
 module.exports = { 
     resolveDocDescriptor,
@@ -416,5 +435,5 @@ module.exports = {
     getApproverContextByLevel,
     retrieveRoleRank,
     retrieveRejectReasonDesc,
-    retrieveEligibilityCheckContext
+    logWorkflowHistory
 };
