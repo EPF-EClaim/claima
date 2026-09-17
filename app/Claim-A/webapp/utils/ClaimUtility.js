@@ -795,7 +795,7 @@ sap.ui.define([
 			}
 		},
 
-		mapClaimHeaderToForm(oHeaderRaw) {
+		mapClaimHeaderToForm: function (oHeaderRaw) {
             return {
                 claim_id: oHeaderRaw.CLAIM_ID,
                 emp_id: oHeaderRaw.EMP_ID,

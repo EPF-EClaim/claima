@@ -800,7 +800,7 @@ sap.ui.define([
          * @param {sap.ui.model.Model} oModel - the model holding `/emp_master/*`
          * @returns {Promise<void>} resolves once every applicable description has been set
          */
-        getEmpDataDescr: async function (oModel) {
+        applyEmpDataDescr: async function (oModel) {
             const aDescriptorConfig = [
                 { srcPath: "/emp_master/cc", destPath: "/emp_master/descr/cc", entity: Constants.Entities.ZCOST_CENTER, fieldId: Constants.EntitiesFields.COST_CENTER_ID, fieldDesc: Constants.EntitiesFields.COST_CENTER_DESC },
                 { srcPath: "/emp_master/dep", destPath: "/emp_master/descr/dep", entity: Constants.Entities.ZDEPARTMENT, fieldId: Constants.EntitiesFields.DEPARTMENT_ID, fieldDesc: Constants.EntitiesFields.DEPARTMENT_DESC },
@@ -836,7 +836,7 @@ sap.ui.define([
         /**
          * Resolves and populates display descriptions for claim header fields
          * (submission type, linked request ID) on the given model, using the same
-         * config-array + sequential `for...of` pattern as `_getEmpDataDescr`.
+         * config-array + sequential `for...of` pattern as `_applyEmpDataDescr`.
          *
          * For each entry whose source path has a value, looks up the description
          * via `bindEclaimDescr` and writes it to the matching `/claim_header/descr/*`
@@ -846,7 +846,7 @@ sap.ui.define([
          * @param {sap.ui.model.Model} oModel - the model holding `/claim_header/*`
          * @returns {Promise<void>} resolves once every applicable description has been set
          */
-        getClaimHeaderDataDescr: async function (oModel) {
+        applyClaimHeaderDataDescr: async function (oModel) {
             const aDescriptorConfig = [
                 { srcPath: "/claim_header/submission_type", destPath: "/claim_header/descr/submission_type", entity: Constants.Entities.ZSUBMISSION_TYPE, fieldId: Constants.EntitiesFields.SUBMISSION_TYPE_ID, fieldDesc: Constants.EntitiesFields.SUBMISSION_TYPE_DESC },
                 { srcPath: "/claim_header/request_id", destPath: "/claim_header/descr/request_id", entity: Constants.Entities.ZREQUEST_HEADER, fieldId: Constants.EntitiesFields.REQUESTID, fieldDesc: Constants.EntitiesFields.OBJECTIVE_PURPOSE }

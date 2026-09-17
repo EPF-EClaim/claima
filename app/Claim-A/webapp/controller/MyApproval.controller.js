@@ -566,7 +566,7 @@ sap.ui.define([
 
                 const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
                 oClaimInputModel.setProperty("/claim_header", oHeader);
-                await Utility.getClaimHeaderDataDescr(oClaimInputModel);
+                await Utility.applyClaimHeaderDataDescr(oClaimInputModel);
 
                 // set view-only for non-draft claims
                 if (
@@ -755,7 +755,7 @@ sap.ui.define([
                 const emp_data = await Utility.getEmpIdDetail(this._oDataModel, Constants.EntitiesFields.EEID, this._oSessionModel.getProperty("/userId"));
                 if (emp_data) {
                     oClaimInputModel.setProperty("/emp_master", emp_data);
-                    await Utility.getEmpDataDescr(oClaimInputModel);
+                    await Utility.applyEmpDataDescr(oClaimInputModel);
                 }
 
                 return { header: oHeaderRaw, items: aItems };

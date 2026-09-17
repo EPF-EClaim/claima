@@ -519,8 +519,8 @@ sap.ui.define([
 					return { header: null, items: [] };
 				}
 
-				const { oModel: oUpdatedModel, oHeader } = await this._applyClaimHeader(oHeaderRaw);
-				oClaimSubmissionModel = oUpdatedModel;
+				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
+				const oHeader = await this._applyClaimHeader(oClaimSubmissionModel, oHeaderRaw);
 
 				// Items
 				const aRawItems = aItemCtx.map(ctx => ctx.getObject());
@@ -558,13 +558,12 @@ sap.ui.define([
 		 * lookup, the view-only flag, and resets is_approver.
 		 *
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
-		 * @returns {Promise<{oModel: sap.ui.model.json.JSONModel, oHeader: object}>}
+		 * @returns {Promise<object>} the mapped header
 		 */
-		_applyClaimHeader: async function (oHeaderRaw) {
+		_applyClaimHeader: async function (oClaimSubmissionModel, oHeaderRaw) {
 			const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
 			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 
-			const oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 
 			if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
@@ -577,7 +576,7 @@ sap.ui.define([
 				);
 			}
 
-			await Utility.getClaimHeaderDataDescr(oClaimSubmissionModel);
+			await Utility.applyClaimHeaderDataDescr(oClaimSubmissionModel);
 
 			const sStatus = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 			const bViewOnly = sStatus !== this._oConstant.ClaimStatus.DRAFT && sStatus !== this._oConstant.ClaimStatus.SEND_BACK;
@@ -587,7 +586,7 @@ sap.ui.define([
 				oClaimSubmissionModel.setProperty("/is_approver", false);
 			}
 
-			return { oModel: oClaimSubmissionModel, oHeader };
+			return oHeader;
 		},
 
 		/**
@@ -617,7 +616,7 @@ sap.ui.define([
 			);
 			if (emp_data) {
 				oClaimSubmissionModel.setProperty("/emp_master", emp_data);
-				await Utility.getEmpDataDescr(oClaimSubmissionModel);
+				await Utility.applyEmpDataDescr(oClaimSubmissionModel);
 			}
 		},
 

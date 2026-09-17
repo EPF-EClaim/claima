@@ -515,7 +515,7 @@ sap.ui.define([
 			const oEmpData = await Utility.getEmpIdDetail(this._oDataModel, Constants.EntitiesFields.EMAIL, oUserModelData.email, false);
 			if (oEmpData) {
 				oInputModel.setProperty("/emp_master", oEmpData);
-				await Utility.getEmpDataDescr(oInputModel);
+				await Utility.applyEmpDataDescr(oInputModel);
 			}
 			await this._setHasCorporateCard();
 			// set claim items based on selected claim type
