@@ -211,7 +211,6 @@ sap.ui.define([
 
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (!oClaimSubmissionModel) {
-				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
 				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
 					// unable to load claim details
@@ -516,17 +515,15 @@ sap.ui.define([
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
 					this.getOwnerComponent().getRouter().navTo("ClaimStatus", {}, {}, true);
-					return { header: null, items: [] };
 				}
 
-				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
-				const oHeader = await this._applyClaimHeader(oClaimSubmissionModel, oHeaderRaw);
+				const oHeader = await this._applyClaimHeader(oHeaderRaw);
 
 				// Items
 				const aRawItems = aItemCtx.map(ctx => ctx.getObject());
 				const aItems = ClaimUtility.mapClaimItems(aRawItems);
 
-				this._applyItemTotalsFallback(oClaimSubmissionModel, oHeader, aItems);
+				this._applyItemTotalsFallback(oHeader, aItems);
 
 				oClaimSubmissionModel.setProperty("/claim_items", aItems);
 				oClaimSubmissionModel.setProperty("/claim_items_count", aItems.length);
@@ -537,15 +534,12 @@ sap.ui.define([
 				ClaimUtility.applyClaimItemDescr(oClaimSubmissionModel, aRawItems);
 
 				// Employee master
-				await this._loadEmployeeMasterData(oClaimSubmissionModel);
-
-				return { header: oHeaderRaw, items: aItems };
+				await this._loadEmployeeMasterData();
 			} catch (err) {
 				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-				return { header: null, items: [] };
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -560,7 +554,8 @@ sap.ui.define([
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
 		 * @returns {Promise<object>} the mapped header
 		 */
-		_applyClaimHeader: async function (oClaimSubmissionModel, oHeaderRaw) {
+		_applyClaimHeader: async function (oHeaderRaw) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
 			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 
@@ -593,7 +588,8 @@ sap.ui.define([
 		 * If the header had no total_claim_amount, derives it from non-CCC-charged
 		 * items and writes it back onto the model.
 		 */
-		_applyItemTotalsFallback: function (oClaimSubmissionModel, oHeader, aItems) {
+		_applyItemTotalsFallback: function (oHeader, aItems) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oHeader.total_claim_amount) {
 				return;
 			}
@@ -608,7 +604,8 @@ sap.ui.define([
 		 * Loads the current user's ZEMP_MASTER record and its resolved
 		 * descriptions onto /emp_master, when found.
 		 */
-		_loadEmployeeMasterData: async function (oClaimSubmissionModel) {
+		_loadEmployeeMasterData: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const emp_data = await Utility.getEmpIdDetail(
 				this._oModel,
 				Constants.EntitiesFields.EEID,
@@ -711,193 +708,6 @@ sap.ui.define([
 				// Single select when not editable
 				this.byId("table_claimsummary_claimitem")?.setMode(ListMode.SingleSelectMaster);
 			}
-		},
-
-		_getNewEmployeeModel: function (modelName) {
-			// Employee Model
-			var oEmployeeModel = new JSONModel({
-				"eeid": null,
-				"name": null,
-				"grade": null,
-				"cc": null,
-				"pos": null,
-				"dep": null,
-				"unit_section": null,
-				"b_place": null,
-				"marital": null,
-				"job_group": null,
-				"office_location": null,
-				"address_line1": null,
-				"address_line2": null,
-				"address_line3": null,
-				"postcode": null,
-				"state": null,
-				"country": null,
-				"contact_no": null,
-				"email": null,
-				"direct_supperior": null,
-				"role": null,
-				"user_type": null,
-				"mobile_bill_eligibility": null,
-				"mobile_bill_elig_amount": null,
-				"employee_type": null,
-				"position_name": null,
-				"position_start_date": null,
-				"position_event_reason": null,
-				"confirmation_date": null,
-				"effective_date": null,
-				"updated_date": null,
-				"inserted_date": null,
-				"medical_insurance_entitlement": null,
-				"descr": {
-					"cc": null,
-					"dep": null,
-					"unit_section": null,
-					"marital": null,
-					"job_group": null,
-					"office_location": null,
-					"state": null,
-					"country": null,
-					"role": null,
-					"user_type": null,
-					"employee_type": null
-				}
-			});
-			//// set input
-			this.getView().setModel(oEmployeeModel, modelName);
-			return this.getView().getModel(modelName);
-		},
-
-		_getNewClaimSubmissionModel: function (modelName) {
-			// Employee Model
-			var oEmployeeModel = this._getNewEmployeeModel("emp_current");
-
-			// Claim Submission Model
-			var oClaimSubmissionModel = new JSONModel({
-				"emp_master": oEmployeeModel.getData(),
-				"claimtype": {
-					"type": null,
-					"item": null,
-					"category": null,
-					"cost_center": null,
-					"dependent_type": null,
-					"requestform": {
-						"request_id": null,
-						"objective_purpose": null,
-						"preapproval_amount": null,
-						"trip_start_date": null,
-						"trip_end_date": null,
-						"event_start_date": null,
-						"event_end_date": null,
-						"alternate_cost_center": null,
-						"descr": {
-							"alternate_cost_center": null
-						}
-					},
-					"requestform_amt": null,
-					"req_emailapprove": null,
-					"course_code": {
-						"course_id": null,
-						"course_desc": null,
-						"session_number": null,
-						"start_date": null,
-						"end_date": null
-					},
-					"descr": {
-						"type": null,
-						"item": null,
-						"category": null,
-						"cost_center": null
-					}
-				},
-				"is_new": false,
-				"is_approver": false,
-				"view_only": false,
-				"claim_header": {
-					"claim_id": null,
-					"emp_id": null,
-					"purpose": null,
-					"trip_start_date": null,
-					"trip_end_date": null,
-					"event_start_date": null,
-					"event_end_date": null,
-					"submission_type": null,
-					"comment": null,
-					"alternate_cost_center": null,
-					"cost_center": null,
-					"request_id": null,
-					"attachment_email_approver": null,
-					"status_id": null,
-					"claim_type_id": null,
-					"total_claim_amount": null,
-					"final_amount_to_receive": null,
-					"last_modified_date": null,
-					"submitted_date": null,
-					"last_approved_date": null,
-					"last_approved_time": null,
-					"payment_date": null,
-					"location": null,
-					"spouse_office_address": null,
-					"house_completion_date": null,
-					"move_in_date": null,
-					"housing_loan_scheme": null,
-					"lender_name": null,
-					"specify_details": null,
-					"new_house_address": null,
-					"dist_old_house_to_office_km": null,
-					"dist_old_house_to_new_house_km": null,
-					"approver1": null,
-					"approver2": null,
-					"approver3": null,
-					"approver4": null,
-					"approver5": null,
-					"last_push_back_date": null,
-					"course_code": null,
-					"session_number": null,
-					"project_code": null,
-					"cash_advance_amount": null,
-					"preapproved_amount": null,
-					"reject_reason_id": null,
-					"push_back_reason_id": null,
-					"last_push_back_time": null,
-					"reject_reason_date": null,
-					"reject_reason_time": null,
-					"mode_of_transfer": null,
-					"travel_alone_family": null,
-					"travel_family_now_later": null,
-					"mode_of_transfer_id": null,
-					"card_no": null,
-					"descr": {
-						"submission_type": null,
-						"alternate_cost_center": null,
-						"cost_center": null,
-						"request_id": null,
-						"status_id": null,
-						"claim_type_id": null,
-						"housing_loan_scheme": null,
-						"lender_name": null,
-						"course_code": null,
-						"project_code": null,
-						"attachment_email_approver": null,
-						"mode_of_transfer": null,
-						"travel_alone_family": null,
-						"travel_family_now_later": null,
-					}
-				},
-				"claim_items": [],
-				"claim_items_count": 0,
-				"reportnumber": {
-					"reportno": null,
-					"current": null
-				},
-				"attachment": {
-					"fileName": null,
-					"fileContent": null
-				}
-			});
-			//// set input
-			this.getView().setModel(oClaimSubmissionModel, modelName);
-			return this.getView().getModel(modelName);
 		},
 
 		_getNewClaimItemModel: function (modelName) {
