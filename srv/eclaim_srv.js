@@ -11,6 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const UpdateMedical = require('./utils/UpdateMedical');
+const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
 
@@ -5284,5 +5285,43 @@ module.exports = (srv) => {
             throw new Error(oError)
         }
         
+    });
+
+    srv.on("cancelRecord", async (req) => {
+        const oTx = cds.tx(req);
+        const { sRecordId } = req.data;
+        const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
+
+        if (!oEmp) {
+            throw req.error(404, `No employee data found.`);
+        }
+
+        const oDescriptor = resolveDocDescriptor(sRecordId);
+
+        // update header status
+        try {
+            await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.CANCELLED, oTx);
+        } catch (error) {
+            await oTx.rollback();
+            throw req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
+        }
+
+        // remove approval log
+        try {
+            await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
+        } catch (error) {
+            await oTx.rollback();
+            throw req.reject(500, `Failed to remove approver details for ${sRecordId}: ${error.message}`);
+        }
+
+        // insert record history
+        try {
+            await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is cancelled by ${oEmp.NAME}.`);
+        } catch (error) {
+            await oTx.rollback();
+            throw req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);
+        }
+
+        return true;
     });
 }
