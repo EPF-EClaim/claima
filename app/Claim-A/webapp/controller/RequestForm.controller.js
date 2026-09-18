@@ -1604,11 +1604,6 @@ sap.ui.define([
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
 
-					// $$updateGroupId must be set on bindList() itself — passing it as
-					// create()'s 2nd arg does nothing (that arg is bSkipRefresh), which
-					// meant these records were silently created under the default
-					// "$auto" group instead of "partCreate", so the submitBatch below
-					// had nothing to submit and failures went unnoticed.
 					const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
 						$$updateGroupId: "partCreate"
 					});
