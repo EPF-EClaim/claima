@@ -65,24 +65,7 @@
       },
       "connectivity": true,
       "[hybrid]": {
-        "db": "hana-cloud",
-        "auth": {
-          "kind": "mocked",
-          "users": {
-            "nur.ain.mohamad": {
-              "password": "test123",
-              "roles": [
-                "Claimant"
-              ]
-            },
-            "nurin.athirah@my.ey.com": {
-              "password": "test123",
-              "roles": [
-                "DTD_Admin"
-              ]
-            }
-          }
-        }
+        "db": "hana-cloud"
       },
       "app-front": true,
       "html5-repo": true,
