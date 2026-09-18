@@ -6,6 +6,7 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "claima/utils/Utility",
+    "claima/utils/PARequestSharedFunction",
 	"claima/utils/ClaimUtility"
 ], function (Controller,
 	MessageToast,
@@ -14,7 +15,8 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Utility,
-	ClaimUtility) {
+	ClaimUtility, 
+    PARequestSharedFunction) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -25,6 +27,7 @@ sap.ui.define([
         onInit: async function() {
             this._oDataModel = this.getOwnerComponent().getModel();
             this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+            this._oDataModel = this.getOwnerComponent().getModel();
             this._oReqModel = this.getOwnerComponent().getModel("request");
             this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
             this._oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
@@ -39,10 +42,7 @@ sap.ui.define([
         },
 
         formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
-            var fAmount = (String(sRequestTypeId) === String(this._oConstant.RequestType.CORP_CC))
-                ? Number(fTotalPaymentDueAmount) || 0
-                : fPreapprovalAmount;
-            return (Number(fAmount) || 0).toFixed(2);
+            return PARequestSharedFunction.formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
         },
 
         _getMyApproverPAReq: async function () {
@@ -79,62 +79,25 @@ sap.ui.define([
 
             try {
                 const aCtx = await oListBinding.requestContexts(0, Infinity);
-                const a = aCtx.map((ctx) => ctx.getObject());
+                let aRequestList = aCtx.map((ctx) => ctx.getObject());
 
-                a.forEach((it) => {
+                aRequestList.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
-                // For Corporate Credit Card requests, compute Total Payment Due
-                // Amount fresh from ZREQ_ITEM_CCC_PART (STATEMENT_DUE_AMT -
-                // CASHBACK, summed across every card/item) instead of using
-                // PREAPPROVAL_AMOUNT. PREAPPROVAL_ID is the request's REQUEST_ID
-                // under a different name in this table. Batched into one query
-                // for the whole list rather than one request per row.
-                const aCorpoCCRequestIds = a
-                    .filter((it) => String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC))
-                    .map((it) => it.PREAPPROVAL_ID);
-
-                if (aCorpoCCRequestIds.length > 0) {
-                    try {
-                        const oPartListBinding = this.getOwnerComponent().getModel().bindList(
-                            "/ZREQ_ITEM_CCC_PART",
-                            null,
-                            null,
-                            new Filter({
-                                filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
-                                and: false
-                            }),
-                            {
-                                $$ownRequest: true,
-                                $select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
-                            }
-                        );
-                        const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
-
-                        const mTotalByRequestId = {};
-                        aPartCtx.forEach((ctx) => {
-                            const oPart = ctx.getObject();
-                            const sReqId = oPart.REQUEST_ID;
-                            mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
-                                + (Number(oPart.STATEMENT_DUE_AMT) || 0)
-                                - (Number(oPart.CASHBACK) || 0);
-                        });
-
-                        a.forEach((it) => {
-                            if (String(it.REQUEST_TYPE_ID) === String(this._oConstant.RequestType.CORP_CC)) {
-                                it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it.PREAPPROVAL_ID] || 0) * 100) / 100;
-                            }
-                        });
-                    } catch (e) {
-                        console.error("Failed to compute Total Payment Due Amount for CCC requests:", e);
-                    }
+                //db error will be handled here instead of in the utility file
+                try {
+                    aRequestList = await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+                        this._oDataModel, aRequestList, "PREAPPROVAL_ID"
+                    );
+                } catch (oError) {
+                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable", [String(oError.message || oError)]));
                 }
 
-                this._oReqStatusModel.setProperty("/req_header_list", a);
-                this._oReqStatusModel.setProperty("/req_header_count", a.length);
+                this._oReqStatusModel.setProperty("/req_header_list", aRequestList);
+                this._oReqStatusModel.setProperty("/req_header_count", aRequestList.length);
 
-                return a;
+                return aRequestList;
             } catch (err) {
                 console.error("OData bindList failed:", err);
                 this._oReqStatusModel.setProperty("/req_header_list", []);
