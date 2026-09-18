@@ -252,6 +252,21 @@ sap.ui.define([
 		},
 
 		/**
+		 * Whether the request's trip start/end dates should be locked because a
+		 * cash-advance item exists — either already saved against the request,
+		 * or currently being filled in on the (unsaved) create-item form.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean}
+		 */
+		hasCashAdvanceLock: function (oReqModel) {
+			const aReqItems = oReqModel.getProperty("/req_item_rows") || [];
+			const bSavedCashAdvanceItem = aReqItems.some((oItem) => !!oItem.CASH_ADVANCE);
+			const bInProgressCashAdvance = !!oReqModel.getProperty("/req_item/cash_advance");
+			return bSavedCashAdvanceItem || bInProgressCashAdvance;
+		},
+
+		/**
 		 * Set fields to be editable
 		 * if there is a request tied to claim, do not allow editing for start and end trip dates
 		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
@@ -365,10 +380,9 @@ sap.ui.define([
                         }
 
                         // Trip start/end dates drive cash-advance eligibility calculations,
-                        // so lock them once a cash-advance item exists on this request.
-                        const aReqItems = oReqModel.getProperty("/req_item_rows") || [];
-                        const bHasCashAdvanceItem = aReqItems.some((oItem) => !!oItem.CASH_ADVANCE);
-                        if (bHasCashAdvanceItem) {
+                        // so lock them once a cash-advance item exists on this request —
+                        // whether already saved, or currently being filled in (unsaved).
+                        if (this.hasCashAdvanceLock(oReqModel)) {
                             oEditableFields.setProperty("/startTrip", false);
                             oEditableFields.setProperty("/endTrip", false);
                         }

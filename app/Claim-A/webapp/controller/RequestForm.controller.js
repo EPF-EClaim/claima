@@ -1747,6 +1747,11 @@ sap.ui.define([
 			// Get model
 			const oRequestModel = this.getView().getModel("request");
 
+			// Cash advance items lock the header's trip start/end dates —
+			// re-evaluate that lock immediately as the switch is toggled,
+			// even while this item hasn't been saved yet.
+			this._syncTripDateLock();
+
 			// Read event start date
 			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
 
@@ -1769,7 +1774,25 @@ sap.ui.define([
 				MessageBox.error(
 					Utility.getText("msg_cash_advance_not_allow")
 				);
+
+				// cash_advance was just forced back off above, so the lock
+				// may no longer apply — re-evaluate again.
+				this._syncTripDateLock();
 			}
+		},
+
+		/**
+		 * Re-evaluates whether the header's trip start/end dates should be
+		 * locked (cash-advance item present, saved or in progress) and, if the
+		 * header is currently open for editing, applies it immediately.
+		 */
+		async _syncTripDateLock() {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (!oEditButtonModel || oEditButtonModel.getProperty("/state") !== true) {
+				return;
+			}
+			Common.init(this.getOwnerComponent(), this.getView());
+			await Common.setHeaderEditable(this._oConstant.SubmissionTypePrefix.REQUESTHEADER, true);
 		},
 
 		onValueHelpRequest(oEvent) {
