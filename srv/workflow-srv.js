@@ -104,7 +104,7 @@ module.exports = (srv) => {
             console.log(sInsert);
 
             //4. Perform budget actualization for auto approve
-            if (aApproversContext[0].LEVEL == 0) {
+            if (aApproversContext[0].LEVEL === 0) {
                 aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.ApproverActions.APPROVE);
                 aReturn = await performBudgetChecking(oTx, aBudgetContext);
                 const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
@@ -127,7 +127,7 @@ module.exports = (srv) => {
             //5. Notify claimant/approver
             //If workflow is AUTO, send email to claimant to inform claimant that claim has been auto approved
             //Else, send email to approver 1 to inform approver that claim is awaiting approver action
-            if (aApproversContextNew[0].LEVEL == 0) {
+            if (aApproversContextNew[0].LEVEL === 0) {
                 sStatus = await sendEmailToClaimant(sId, aApproversContextNew[0].APPROVER_ID, oDescriptor, Constant.ApprovalEmailAction.ACTION_APPROVE);
                 const oSendClaimResponse = await sendClaimBatch(sId);
                 console.log("Final Approval: ", oSendClaimResponse);
@@ -161,13 +161,8 @@ module.exports = (srv) => {
             return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Workflow Started', aApproversContextNew[0].LEVEL === 0 ? true : false);
 
         } catch (oErr) {
-            console.error('[workflow-srv] startWorkflow failed:', oErr);
-            try {
-                await oTx.rollback();
-            } catch (oRollbackErr) {
-                console.error('[workflow-srv] rollback also failed:', oRollbackErr);
-            }
-            return generateReturnMessage(bStatus, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, oErr.message || 'Unexpected error encountered during Workflow processing', false);
+            await oTx.rollback();
+            req.error(400, oErr.message || 'Unexpected error encountered during Workflow processing');
         }
 
     }),
