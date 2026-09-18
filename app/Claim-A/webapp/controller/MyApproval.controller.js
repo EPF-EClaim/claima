@@ -69,14 +69,14 @@ sap.ui.define([
 
             try {
                 const aCtx = await oListBinding.requestContexts(0, Infinity);
-                const aRequestList = aCtx.map((ctx) => ctx.getObject());
+                let aRequestList = aCtx.map((ctx) => ctx.getObject());
 
                 aRequestList.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
                 try {
-                    await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+                    aRequestList = await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
                         this._oDataModel, aRequestList, "PREAPPROVAL_ID"
                     );
                 } catch (oError) {

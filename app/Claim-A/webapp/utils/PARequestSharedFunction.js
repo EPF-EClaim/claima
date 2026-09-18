@@ -322,18 +322,20 @@ sap.ui.define([
 			return Math.round(fSum * 100) / 100;
 		},
 		/**
-		* Calculates the payment-due amount for Corporate Credit Card requests
-		*@PARAM {sap.ui.model.odata.v4.ODataModel} oDataModel OData V4 model
-		*@PARAM {Array} aItems Request header rows
-		*@PARAM {string} sRequestIdField Field containing REQUEST_ID
-		*/
+		 * Calculates the payment-due amount for Corporate Credit Card requests
+		 * @param {sap.ui.model.odata.v4.ODataModel} oDataModel OData V4 model
+		 * @param {Array<Object>} aItems Request header rows
+		 * @param {string} sRequestIdField Field containing REQUEST_ID 
+		 * @returns {Promise<Array<Object>>} returns aItems Request header rows
+		 * @throws Throws error if and when the query has issue and the try catch that is used when calling this function will catch the error
+		 */
 		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField) {
 			const aCorpoCCRequestIds = aItems
 				.filter((it) => String(it.REQUEST_TYPE_ID) === String(Constants.RequestType.CORP_CC))
 				.map((it) => it[sRequestIdField]);
 
 			if (aCorpoCCRequestIds.length === 0) {
-				return;
+				return aItems;
 			}
 
 			const oPartListBinding = oDataModel.bindList(
@@ -365,6 +367,8 @@ sap.ui.define([
 					it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it[sRequestIdField]] || 0) * 100) / 100;
 				}
 			});
+
+			return aItems;
 		},
 
 		formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
