@@ -85,12 +85,13 @@ sap.ui.define([
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
+                //db error will be handled here instead of in the utility file
                 try {
                     aRequestList = await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
                         this._oDataModel, aRequestList, "PREAPPROVAL_ID"
                     );
                 } catch (oError) {
-                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable"));
+                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable", [String(oError.message || oError)]));
                 }
 
                 this._oReqStatusModel.setProperty("/req_header_list", aRequestList);

@@ -327,7 +327,6 @@ sap.ui.define([
 		 * @param {Array<Object>} aItems Request header rows
 		 * @param {string} sRequestIdField Field containing REQUEST_ID 
 		 * @returns {Promise<Array<Object>>} returns aItems Request header rows
-		 * @throws Throws error if and when the query has issue and the try catch that is used when calling this function will catch the error
 		 */
 		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField) {
 			const aCorpoCCRequestIds = aItems
