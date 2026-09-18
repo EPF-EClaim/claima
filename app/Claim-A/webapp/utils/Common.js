@@ -363,6 +363,16 @@ sap.ui.define([
                                 oEditableFields.setProperty("/altCostCenter", bEdit);
                             }
                         }
+
+                        // Trip start/end dates drive cash-advance eligibility calculations,
+                        // so lock them once a cash-advance item exists on this request.
+                        const aReqItems = oReqModel.getProperty("/req_item_rows") || [];
+                        const bHasCashAdvanceItem = aReqItems.some((oItem) => !!oItem.CASH_ADVANCE);
+                        if (bHasCashAdvanceItem) {
+                            oEditableFields.setProperty("/startTrip", false);
+                            oEditableFields.setProperty("/endTrip", false);
+                        }
+
                         oEditableFields.setProperty("/comment", bEdit);
                         
                         const sAltCC = oReqModel.getProperty("/req_header/altcostcenter");
