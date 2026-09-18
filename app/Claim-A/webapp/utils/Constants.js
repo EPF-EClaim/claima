@@ -229,7 +229,18 @@ sap.ui.define([
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
             "ZREJECT_REASON": "/ZREJECT_REASON",
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
-            "ZDISBURSEMENT_STATUS": "/ZDISBURSEMENT_STATUS"
+            "ZDISBURSEMENT_STATUS": "/ZDISBURSEMENT_STATUS",
+            "ZCOST_CENTER": "/ZCOST_CENTER",
+            "ZDEPARTMENT": "/ZDEPARTMENT",
+            "ZBRANCH": "/ZBRANCH",
+            "ZMARITAL_STAT": "/ZMARITAL_STAT",
+            "ZJOB_GROUP": "/ZJOB_GROUP",
+            "ZOFFICE_LOCATION": "/ZOFFICE_LOCATION",
+            "ZSTATE": "/ZSTATE",
+            "ZCOUNTRY": "/ZCOUNTRY",
+            "ZROLE": "/ZROLE",
+            "ZUSER_TYPE": "/ZUSER_TYPE",
+            "ZEMP_TYPE": "/ZEMP_TYPE",
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -313,7 +324,28 @@ sap.ui.define([
             "POLICY_END_DATE" : "POLICY_END_DATE",
             "POLICY_START_DATE" : "POLICY_START_DATE",
             "DISABLED" : "DISABLED",
-            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY"
+            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY",
+            "COST_CENTER_ID": "COST_CENTER_ID",
+            "COST_CENTER_DESC": "COST_CENTER_DESC",
+            "DEPARTMENT_ID": "DEPARTMENT_ID",
+            "DEPARTMENT_DESC": "DEPARTMENT_DESC",
+            "BRANCH_ID": "BRANCH_ID",
+            "BRANCH_DESC": "BRANCH_DESC",
+            "MARRIAGE_STATUS_ID": "MARRIAGE_STATUS_ID",
+            "MARRIAGE_STATUS_DESC": "MARRIAGE_STATUS_DESC",
+            "JOB_GROUP_ID": "JOB_GROUP_ID",
+            "JOB_GROUP_DESC": "JOB_GROUP_DESC",
+            "LOCATION_ID": "LOCATION_ID",
+            "COUNTRY_ID": "COUNTRY_ID",
+            "COUNTRY_DESC": "COUNTRY_DESC",
+            "ROLE_ID": "ROLE_ID",
+            "ROLE_DESC": "ROLE_DESC",
+            "USER_TYPE_ID": "USER_TYPE_ID",
+            "USER_TYPE_DESC": "USER_TYPE_DESC",
+            "EMP_TYPE_ID": "EMP_TYPE_ID",
+            "EMP_TYPE_DESC": "EMP_TYPE_DESC",
+            "SUBMISSION_TYPE_DESC": "SUBMISSION_TYPE_DESC",
+            "OBJECTIVE_PURPOSE": "OBJECTIVE_PURPOSE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -782,6 +814,16 @@ sap.ui.define([
         "MedicalAdvanceInfo": {
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214230"
+        },
+        "WorkflowArea": {
+            "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",
+            "WORKFLOW_DETERMINATION"    : "WORKFLOW_DETERMINATION",
+            "APPROVER_DETERMINATION"    : "APPROVER_DETERMINATION",
+            "WORKFLOW_TABLE_SAVING"     : "WORKFLOW_TABLE_SAVING",
+            "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
+            "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
+            "BUDGET_CHECKING"           : "BUDGET_CHECKING",
+            "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION"
         }
 
     }

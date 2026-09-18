@@ -67,8 +67,8 @@ module.exports = {
         switch (sStatus) {
 
             case Constant.Status.PENDING_APPROVAL:
-             sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
-             break;
+                sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
+                break;
 
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
@@ -87,6 +87,10 @@ module.exports = {
                 sTimeField = Constant.EntitiesFields.LAST_PUSH_BACK_TIME;
                 sReasonIdField = Constant.EntitiesFields.PUSH_BACK_REASON_ID;
                 sReasonId = oTimestamp.REJECT_REASON_ID;
+                break;
+
+            case Constant.Status.CANCELLED:
+                // no additional field udpate required.
                 break;
 
             default:
@@ -128,23 +132,27 @@ module.exports = {
         * @returns {Integer} number of records updated
         */
     updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
-        const iResult = await tx.run(
-            UPDATE(sHeaderTable)
-                .set(oToUpdateFields)
-                .where(oWhereConditions));
+        try {
+            const iResult = await tx.run(
+                UPDATE(sHeaderTable)
+                    .set(oToUpdateFields)
+                    .where(oWhereConditions));
 
-        if (sHeaderTable === 'ZREQUEST_HEADER' || sHeaderTable === Constant.Entities.ZREQUEST_HEADER) {
+            if (sHeaderTable === 'ZREQUEST_HEADER' || sHeaderTable === Constant.Entities.ZREQUEST_HEADER) {
         
-            // Extract the ID and Status from the objects passed into the function
-            const sRequestId = oWhereConditions.REQUEST_ID; 
-            const sStatus = oToUpdateFields.STATUS;
+                // Extract the ID and Status from the objects passed into the function
+                const sRequestId = oWhereConditions.REQUEST_ID;
+                const sStatus = oToUpdateFields.STATUS;
 
-            await this.handlePostHeaderUpdate(sRequestId, sStatus, tx);
+                await this.handlePostHeaderUpdate(sRequestId, sStatus, tx);
 
-        }
+            }
 
-        // Return the original update result (number of affected rows)
-        return iResult;
+            // Return the original update result (number of affected rows)
+            return iResult;
+        } catch (error) {
+            throw new Error(`Failed to update header table "${sHeaderTable}": ${error.message}`);
+        }    
     },
 
     /**

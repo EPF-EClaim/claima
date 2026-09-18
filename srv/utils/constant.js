@@ -48,7 +48,10 @@ const Constant = {
         Admin_CC: "Admin_CC",
         CCC_Admin : "CCC_Admin"
     },
-
+    AccessControlledAdmin: {
+        Admin_System: "Admin_System",
+        Admin_CC: "Admin_CC",
+    },
     WorkflowType: {
         "CLAIM": "CLM",
         "REQUEST": "REQ"
@@ -195,6 +198,7 @@ const Constant = {
         "CLAIM_STATUS": "STATUS_ID",
         "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
+        "CLAIM_TYPE_ITEM_DESC": "CLAIM_TYPE_ITEM_DESC",
         "EEID": "EEID",
         "EMP_ID": "EMP_ID",
         "ROLE_ID": "ROLE_ID",
@@ -492,7 +496,8 @@ const Constant = {
     ApproverActions: {
         APPROVE     : "APPROVE",
         REJECT      : "REJECT",
-        PUSHBACK    : "PUSHBACK"
+        PUSHBACK    : "PUSHBACK",
+        SUBMIT      : "SUBMIT"
     },
     RiskLevels: {
         HIGH    : "H",
@@ -521,7 +526,9 @@ const Constant = {
         "WORKFLOW_TABLE_SAVING"     : "WORKFLOW_TABLE_SAVING",
         "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
         "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
-        "BUDGET_CHECKING"           : "BUDGET_CHECKING"
+        "BUDGET_CHECKING"           : "BUDGET_CHECKING",
+        "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
+        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
     },
     LocationType: {
         HQ: "HQ",
