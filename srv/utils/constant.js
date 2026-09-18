@@ -48,7 +48,10 @@ const Constant = {
         Admin_CC: "Admin_CC",
         CCC_Admin : "CCC_Admin"
     },
-
+    AccessControlledAdmin: {
+        Admin_System: "Admin_System",
+        Admin_CC: "Admin_CC",
+    },
     WorkflowType: {
         "CLAIM": "CLM",
         "REQUEST": "REQ"

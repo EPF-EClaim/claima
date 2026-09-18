@@ -114,6 +114,130 @@ module.exports = (srv) => {
             };
         });
 
+    /**
+     *Purpose is to allow unrestricted admins to view the claim/request (Admin_cc and Admin_system), 
+     *the owner of the claim, the current approver and current substitute approver. 
+     * @public
+     * @param {String} sId - Claim ID or Request ID 
+     * @returns {Boolean} true if the logged-in user may access the claim/request
+     */
+    srv.on('checkClaimAccess', async (req) => {
+        const { sId } = req.data;
+
+        if (!sId) {
+            req.error(400, 'Claim/Request ID is required');
+            return false;
+        }
+
+        if (Object.values(Constant.AccessControlledAdmin).some(sRole => req.user.is(sRole))) {
+            return true;
+        }
+
+        const tx = cds.tx(req);
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const sUserId = oEmp?.EEID;
+
+        if (!sUserId) {
+            return false;
+        }
+
+        const sIDType = sId.substring(0, 3);
+        const bIsRequest = sIDType === Constant.WorkflowType.REQUEST;
+
+        const sHeaderEntity = bIsRequest ? ZREQUEST_HEADER : ZCLAIM_HEADER;
+        const sHeaderIdField = bIsRequest ? 'REQUEST_ID' : 'CLAIM_ID';
+
+        const oHeader = await tx.run(
+            SELECT.one.from(sHeaderEntity).where({ [sHeaderIdField]: sId })
+        );
+
+        if (!oHeader) {
+            // ID doesn't exist - nothing to grant access to
+            return false;
+        }
+
+        // b) Owner check
+        if (oHeader.EMP_ID === sUserId) {
+            return true;
+        }
+
+        const sApproverTable = bIsRequest ? Constant.ApproverDetailsTable.REQUEST : Constant.ApproverDetailsTable.CLAIM;
+        const sApproverIdField = bIsRequest ? Constant.ApproverDetailsTable.PREAPPROVAL_ID : Constant.ApproverDetailsTable.CLAIM_ID;
+
+        const aApproverDetails = await tx.run(
+            SELECT.from(sApproverTable).where({ [sApproverIdField]: sId })
+        ) || [];
+
+        // c) Approver check, d) Substitute approver check
+        return aApproverDetails.some(oDetail =>
+            oDetail.APPROVER_ID === sUserId || oDetail.SUBSTITUTE_APPROVER_ID === sUserId
+        );
+    });
+
+    /**
+     *Purpose is to allow unrestricted admins to view the claim/request (Admin_cc and Admin_system), 
+     *the owner of the claim, the current approver and current substitute approver. 
+     * @public
+     * @param {String} sId - Claim ID or Request ID 
+     * @returns {Boolean} true if the logged-in user may access the claim/request
+     */
+    srv.on('checkClaimAccess', async (req) => {
+        const { sId } = req.data;
+
+        if (!sId) {
+            req.error(400, 'Claim/Request ID is required');
+            return false;
+        }
+
+        if (Object.values(Constant.AccessControlledAdmin).some(sRole => req.user.is(sRole))) {
+            return true;
+        }
+
+        const tx = cds.tx(req);
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const sUserId = oEmp?.EEID;
+
+        if (!sUserId) {
+            return false;
+        }
+
+        const sIDType = sId.substring(0, 3);
+        const bIsRequest = sIDType === Constant.WorkflowType.REQUEST;
+
+        const sHeaderEntity = bIsRequest ? ZREQUEST_HEADER : ZCLAIM_HEADER;
+        const sHeaderIdField = bIsRequest ? 'REQUEST_ID' : 'CLAIM_ID';
+
+        const oHeader = await tx.run(
+            SELECT.one.from(sHeaderEntity).where({ [sHeaderIdField]: sId })
+        );
+
+        if (!oHeader) {
+            // ID doesn't exist - nothing to grant access to
+            return false;
+        }
+
+        // b) Owner check
+        if (oHeader.EMP_ID === sUserId) {
+            return true;
+        }
+
+        const sApproverTable = bIsRequest ? Constant.ApproverDetailsTable.REQUEST : Constant.ApproverDetailsTable.CLAIM;
+        const sApproverIdField = bIsRequest ? Constant.ApproverDetailsTable.PREAPPROVAL_ID : Constant.ApproverDetailsTable.CLAIM_ID;
+
+        const aApproverDetails = await tx.run(
+            SELECT.from(sApproverTable).where({ [sApproverIdField]: sId })
+        ) || [];
+
+        // c) Approver check, d) Substitute approver check
+        return aApproverDetails.some(oDetail =>
+            oDetail.APPROVER_ID === sUserId || oDetail.SUBSTITUTE_APPROVER_ID === sUserId
+        );
+    });
+
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
@@ -5287,7 +5411,7 @@ module.exports = (srv) => {
         
     });
 
-    srv.on("cancelRecord", async (req) => {
+        srv.on("cancelRecord", async (req) => {
         const oTx = cds.tx(req);
         const { sRecordId } = req.data;
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);

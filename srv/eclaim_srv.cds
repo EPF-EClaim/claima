@@ -245,6 +245,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     function getUserType()                                                                               returns UserInfo;
+    
+    function checkClaimAccess(sId: String)                                                                returns Boolean;
 
     action   sendEmail(ApproverName: String,
                        SubmissionDate: String,

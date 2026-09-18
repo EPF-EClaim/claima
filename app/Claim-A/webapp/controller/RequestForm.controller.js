@@ -122,6 +122,10 @@ sap.ui.define([
 			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) { }
 
 			console.log("Deep-link request ID:", sRequestId);
+			const bAllowed = await Utility.checkClaimAccess(sRequestId);
+			if (!bAllowed) {
+				return;
+			}
 
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
 			this._oReqModel.setProperty('/view', 'view');
