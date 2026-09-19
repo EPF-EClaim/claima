@@ -69,6 +69,11 @@ sap.ui.define([
                                 return;
                             }
 
+                            // Cash advance is not allowed when the trip start date is in the past
+                            if ( !this.validateCashAdvanceTripStartDate(oInputModel) ) {
+                                return;
+                            }
+
                             // Bind to existing claim header
                             const oContext = await RequestUtility.getReqHeader(oODataModel, sReqID);
 
@@ -252,18 +257,56 @@ sap.ui.define([
 		},
 
 		/**
-		 * Whether the request's trip start/end dates should be locked because a
-		 * cash-advance item exists — either already saved against the request,
-		 * or currently being filled in on the (unsaved) create-item form.
+		 * Whether the request has a cash-advance item — either already saved, or
+		 * currently being created/edited with the cash-advance switch on.
 		 * @public
          * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
          * @returns {boolean}
 		 */
-		hasCashAdvanceLock: function (oReqModel) {
+		hasCashAdvanceItem: function (oReqModel) {
 			const aReqItems = oReqModel.getProperty("/req_item_rows") || [];
-			const bSavedCashAdvanceItem = aReqItems.some((oItem) => !!oItem.CASH_ADVANCE);
-			const bInProgressCashAdvance = !!oReqModel.getProperty("/req_item/cash_advance");
+			// CASH_ADVANCE is a Boolean on the item entity, but the employee view
+			// exposes it as "YES"/"NO", so accept both shapes.
+			const bSavedCashAdvanceItem = aReqItems.some((oItem) =>
+				oItem.CASH_ADVANCE === true || String(oItem.CASH_ADVANCE).toUpperCase() === "YES"
+			);
+
+			// Only count the item form's switch while the form is actually open
+			const sView = oReqModel.getProperty("/view");
+			const bItemFormOpen = sView === Constants.PARMode.CREATE || sView === Constants.PARMode.EDIT;
+			const bInProgressCashAdvance = bItemFormOpen && !!oReqModel.getProperty("/req_item/cash_advance");
+
 			return bSavedCashAdvanceItem || bInProgressCashAdvance;
+		},
+
+		/**
+		 * Whether the header's trip start date is before today.
+		 * Compares local YYYY-MM-DD strings (the same conversion used when the
+		 * header is saved) so time-of-day can't skew the result.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean}
+		 */
+		isTripStartDateBackdated: function (oReqModel) {
+			const sTripStart = DateUtility.getHanaDate(oReqModel.getProperty("/req_header/tripstartdate"));
+			const sToday = DateUtility.getHanaDate(new Date());
+			return !!sTripStart && sTripStart < sToday;
+		},
+
+		/**
+		 * Cash advance is not allowed for a backdated trip. If the request has a
+		 * cash-advance item and the header's trip start date is before today,
+		 * show an error and report that the header must not be saved.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean} true if the header may be saved, false if blocked
+		 */
+		validateCashAdvanceTripStartDate: function (oReqModel) {
+			if (this.hasCashAdvanceItem(oReqModel) && this.isTripStartDateBackdated(oReqModel)) {
+				MessageBox.error(Utility.getText("msg_cash_advance_not_allow"));
+				return false;
+			}
+			return true;
 		},
 
 		/**
@@ -377,14 +420,6 @@ sap.ui.define([
                             if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
                                 oEditableFields.setProperty("/altCostCenter", bEdit);
                             }
-                        }
-
-                        // Trip start/end dates drive cash-advance eligibility calculations,
-                        // so lock them once a cash-advance item exists on this request —
-                        // whether already saved, or currently being filled in (unsaved).
-                        if (this.hasCashAdvanceLock(oReqModel)) {
-                            oEditableFields.setProperty("/startTrip", false);
-                            oEditableFields.setProperty("/endTrip", false);
                         }
 
                         oEditableFields.setProperty("/comment", bEdit);
