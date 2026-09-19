@@ -2178,16 +2178,6 @@ sap.ui.define([
 					oPropertyModel.setProperty("/to_state_id/is_required", true);
 					break;
 
-				case this._oConstant.ClaimTypeItem.ELEKTRIK:
-					oPropertyModel.setProperty("/bill_no/is_required", true);
-					oPropertyModel.setProperty("/account_no/is_required", true);
-					break;
-
-				case this._oConstant.ClaimTypeItem.BIL_AIR:
-					oPropertyModel.setProperty("/bill_no/is_required", true);
-					oPropertyModel.setProperty("/account_no/is_required", true);
-					break;
-
 				case this._oConstant.ClaimTypeItem.LAUT:
 					//entitled meter cube
 					oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);

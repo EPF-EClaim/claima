@@ -1625,7 +1625,8 @@
                     id="input_claimdetails_input_bill_no"
                     value="{claimitem_input>/claim_item/bill_no}"
                     visible="false"
-                    required="{claimitem_property>/bill_no/is_required}"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK}}"
                 />
 
                 <!-- Account No -->
@@ -1634,7 +1635,8 @@
                     id="input_claimdetails_input_account_no"
                     value="{claimitem_input>/claim_item/account_no}"
                     visible="false"
-                    required="{claimitem_property>/account_no/is_required}"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK}}"
                 />
 
                 <!-- Bill Date -->
