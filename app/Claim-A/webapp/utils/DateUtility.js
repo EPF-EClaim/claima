@@ -548,7 +548,9 @@ sap.ui.define([
                             }
                             break;
                         case Constants.SubmissionTypePrefix.CLAIM:
-
+                            if (sFieldValue) {
+                                _dMinDate = new Date(sFieldValue);
+                            }
                             break;
                     }
                     break;
@@ -561,7 +563,9 @@ sap.ui.define([
                             }
                             break;
                         case Constants.SubmissionTypePrefix.CLAIM:
-
+                            if (sFieldValue) {
+                                _dMinDate = new Date(sFieldValue);
+                            }
                             break;
                     }
                     break;
@@ -947,7 +951,11 @@ sap.ui.define([
                             }
                             break;
                         case Constants.SubmissionTypePrefix.CLAIM:
-
+                            if (sFieldValue) {
+                                _dMaxDate = new Date(sFieldValue);
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("req_d_w_check_date"));
+                            }
                             break;
                     }
                     break;
@@ -963,7 +971,11 @@ sap.ui.define([
 
                             break;
                         case Constants.SubmissionTypePrefix.CLAIM:
-
+                            if (sFieldValue) {
+                                _dMaxDate = new Date(sFieldValue);
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("req_d_w_check_date"));
+                            }
                             break;
                     }
                     break;
