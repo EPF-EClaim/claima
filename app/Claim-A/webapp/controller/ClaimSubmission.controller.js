@@ -2168,7 +2168,8 @@ sap.ui.define([
 			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
 			const bKmRequired = [
 				this._oConstant.ClaimTypeItem.DARAT,
-				this._oConstant.ClaimTypeItem.KILOMETER
+				this._oConstant.ClaimTypeItem.KILOMETER,	
+				this._oConstant.ClaimTypeItem.KM			// ELAUN_PINDAH Kilometer Claim
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
 
