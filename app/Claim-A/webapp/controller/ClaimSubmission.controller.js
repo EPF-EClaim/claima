@@ -2876,6 +2876,15 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
+			// the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+			if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0) {
+				MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
+
+
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 			if (!bCanProceed) {
@@ -2951,7 +2960,7 @@ sap.ui.define([
 			if (bIsKilometerClaimItem &&
 				!!oInputModel.getProperty("/claim_item/receipt_date") &&
 				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
-				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+				MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
