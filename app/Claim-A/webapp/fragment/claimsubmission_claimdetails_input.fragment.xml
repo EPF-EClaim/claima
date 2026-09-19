@@ -913,6 +913,7 @@
                     change="onSelect_ClaimDetails_VehicleOwnership"
                     liveChange="onSelect_ClaimDetails_VehicleOwnership"
                     visible="false"
+                    required="true"
 				>
 				</Select>
 
