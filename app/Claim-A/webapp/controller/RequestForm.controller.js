@@ -1337,6 +1337,7 @@ sap.ui.define([
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
+
 			this.calculateNumberOfHours();
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -1757,25 +1758,13 @@ sap.ui.define([
 			// Get model
 			const oRequestModel = this.getView().getModel("request");
 
-			// Cash advance items lock the header's trip start/end dates —
-			// re-evaluate that lock immediately as the switch is toggled,
-			// even while this item hasn't been saved yet.
-			this._syncTripDateLock();
-
-			// Read event start date
-			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
-
-			if (!dTripDate) {
-				return; // no date entered yet
+			// Only relevant when the switch has just been turned ON
+			if (!oRequestModel.getProperty("/req_item/cash_advance")) {
+				return;
 			}
 
-			// Convert to JS Date
-			const dEventDate = new Date(dTripDate);
-			const dToday = new Date();
-			dToday.setHours(0, 0, 0, 0);
-
-			// ✅ If event date is before today → backdated
-			if (dEventDate < dToday) {
+			// ✅ If trip start date is before today → backdated (no-op if no date entered yet)
+			if (Common.isTripStartDateBackdated(oRequestModel)) {
 
 				// Update model value
 				oRequestModel.setProperty("/req_item/cash_advance", false);
@@ -1784,25 +1773,7 @@ sap.ui.define([
 				MessageBox.error(
 					Utility.getText("msg_cash_advance_not_allow")
 				);
-
-				// cash_advance was just forced back off above, so the lock
-				// may no longer apply — re-evaluate again.
-				this._syncTripDateLock();
 			}
-		},
-
-		/**
-		 * Re-evaluates whether the header's trip start/end dates should be
-		 * locked (cash-advance item present, saved or in progress) and, if the
-		 * header is currently open for editing, applies it immediately.
-		 */
-		async _syncTripDateLock() {
-			const oEditButtonModel = this.getView().getModel("editButtonModel");
-			if (!oEditButtonModel || oEditButtonModel.getProperty("/state") !== true) {
-				return;
-			}
-			Common.init(this.getOwnerComponent(), this.getView());
-			await Common.setHeaderEditable(this._oConstant.SubmissionTypePrefix.REQUESTHEADER, true);
 		},
 
 		onValueHelpRequest(oEvent) {
