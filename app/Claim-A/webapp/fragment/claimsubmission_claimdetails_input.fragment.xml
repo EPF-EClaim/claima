@@ -1197,7 +1197,12 @@
 					id="input_claimdetails_input_rate_per_km"
 					value="{
 						path: 'claimitem_input>/claim_item/descr/rate_per_km',
-						type: 'FloatType'
+						type: 'sap.ui.model.type.Float',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2,
+                            groupingEnabled: true
+                        }
 					}"
 					editable="false"
 					visible="{claimitem_property>/rate_per_km/is_visible}"
