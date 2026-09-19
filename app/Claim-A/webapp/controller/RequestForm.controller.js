@@ -1585,7 +1585,9 @@ sap.ui.define([
 					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID,sAttachment3_SFID, sAttachment4_SFID)
 
 				} else {
-					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
+					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, null, {
+						$$updateGroupId: "itemCreate"
+					}).create(oPayload, true);
 
 					await this._oDataModel.submitBatch("itemCreate");
 					await oItemContext.created();
@@ -1602,17 +1604,21 @@ sap.ui.define([
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
 
+					const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
+						$$updateGroupId: "partCreate"
+					});
+
 					for (const p of aParts) {
 						const sPID = String(p.PARTICIPANTS_ID || "").trim();
 						if (!sPID) continue;
 
 						bHasParticipants = true;
-						this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
+						oPartList.create({
 							REQUEST_ID: sReqId,
 							REQUEST_SUB_ID: sGeneratedSubId,
 							PARTICIPANTS_ID: sPID,
 							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
-						}, { $$updateGroupId: "partCreate" });
+						}, true);
 					}
 
 					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
