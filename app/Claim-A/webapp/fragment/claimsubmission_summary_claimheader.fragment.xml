@@ -47,7 +47,8 @@
                 id="btnEditHeader"
                 press=".onEditHeaderPress"
                 visible="{= ${claimsubmission_input>/claim_header/status_id} === ${constant>/ClaimStatus/DRAFT} ||
-                            ${claimsubmission_input>/claim_header/status_id} === ${constant>/ClaimStatus/SEND_BACK} }"
+                            ( ${claimsubmission_input>/claim_header/status_id} === ${constant>/ClaimStatus/SEND_BACK} &amp;&amp;
+                              !${claimsubmission_input>/view_only} ) }"
             />
 
         </OverflowToolbar>
