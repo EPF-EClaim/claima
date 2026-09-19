@@ -1634,6 +1634,10 @@ sap.ui.define([
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
+				} else {
+					// Refresh header (incl. total amount) so it reflects the item
+					// that was just saved, without resetting the create-item form.
+					await PARequestSharedFunction.getHeader(this, sReqId);
 				}
 
 			} catch (e) {
