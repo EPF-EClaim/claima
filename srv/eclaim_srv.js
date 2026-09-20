@@ -5411,6 +5411,14 @@ module.exports = (srv) => {
         
     });
 
+    /**
+     * Cancels a claim/request record: updates the header status to CANCELLED, 
+     * removes any pending approver details, 
+     * and logs the cancellation by user in the workflow history.
+     * @public
+     * @param {String} req.data.sRecordId - claim/request ID to cancel
+     * @returns {Promise<Boolean|Object>} true on success; a rejected/error response on failure
+     */
     srv.on("cancelRecord", async (req) => {
         const oTx = cds.tx(req);
         const { sRecordId } = req.data;
