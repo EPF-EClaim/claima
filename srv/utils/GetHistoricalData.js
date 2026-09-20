@@ -40,6 +40,7 @@ module.exports = {
             // Map Claim Status for Approved and Pending Approval
             aStatus.push(Constant.Status.APPROVED);
             aStatus.push(Constant.Status.PENDING_APPROVAL);
+            aStatus.push(Constant.Status.COMPLETED_DISBURSEMENT);
             // Check if items within frequency are either Approved or Pending Approval
             let aHeaderCondition = {
                 [sHeaderField]: { in: aHeaders },
