@@ -16,23 +16,23 @@ const {
 } = require("./determination/determination-helper");
 const {
     retrieveBudgetContext,
-    performBudgetChecking
+    performBudgetChecking,
+    generateReturnMessage
 } = require("./workflow-helper");
 
 /**
  * startWorkflow steps 1-5: eligibility check, budget locking, workflow
  * determination, approver determination, and approver detail persistence.
  *
- * Every failure path here rolls back the transaction and throws - none
- * of them return a soft { bStatus: false, ... } message - so the caller
- * only needs a single try/catch around the call, instead of inspecting a
- * mix of thrown errors and returned failure objects.
+ * On failure, rolls back the transaction and returns a generateReturnMessage
+ * object (Success: false) instead of throwing, so the frontend can read
+ * oResponse.Area / oResponse.Message directly.
+ * On success, returns { oWorkflowContext, aApproversContext, aApproversContextNew }.
  *
  * @param {object} oTx - the cds transaction (cds.tx(req))
  * @param {string} sId - claim/request id
  * @param {object} oDescriptor - result of resolveDocDescriptor(sId)
- * @returns {Promise<{ oWorkflowContext: object, aApproversContext: object[], aApproversContextNew: object[] }>}
- * @throws {Error} on any failure - oTx.rollback() is called before throwing
+ * @returns {Promise<object>} either the success context object, or a generateReturnMessage failure object
  */
 async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     // 1. Eligibility Checking (Claim only, upon submission)
@@ -47,11 +47,11 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             );
             if (!bEligible) {
                 await oTx.rollback();
-                throw new Error(`Eligibility check failed for ${sId}`);
+                return generateReturnMessage(false, sId, Constant.WorkflowArea.ELIGIBILITY_CHECKING, aEligibilityResult, false);
             }
         } catch (oError) {
             await oTx.rollback();
-            throw new Error(`Error encountered during submission eligibility checking: ${oError.message}`);
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during submission eligibility checking: ${oError.message}`, false);
         }
     }
 
@@ -60,48 +60,50 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     try {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
         aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
+
+        const oInvalidBudget = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND || r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
+        if (oInvalidBudget) {
+            await oTx.rollback();
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, aBudgetCheckReturn, false);
+        }
     } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Budget Locking: ${oError.message}`);
-    }
-
-    const oInvalidBudget = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND || r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-    if (oInvalidBudget) {
-        await oTx.rollback();
-        throw new Error(`Budget check failed for ${sId}`);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during submission budget checking: ${oError.message}`, false);
     }
 
     // 3. Determine workflow
     let oWorkflowContext;
     try {
         oWorkflowContext = await determineWorkflow(oTx, sId);
+
+        if (!oWorkflowContext) {
+            await oTx.rollback();
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No workflow rule matched for ${sId}`, false);
+        }
     } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Workflow Determination: ${oError.message}`);
-    }
-    if (!oWorkflowContext) {
-        await oTx.rollback();
-        throw new Error(`No workflow rule matched for ${sId}`);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Workflow Determination: ${oError.message}`, false);
     }
 
     // 4. Determine approvers and substitutes
     let aApproversContext;
     try {
         aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
+
+        if (!aApproversContext?.length) {
+            await oTx.rollback();
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No approvers determined for ${sId}`, false);
+        }
     } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Approver Determination: ${oError.message}`);
-    }
-    if (!aApproversContext?.length) {
-        await oTx.rollback();
-        throw new Error(`No approvers determined for ${sId}`);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Approver Determination: ${oError.message}`, false);
     }
 
     // 5. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table
     const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
     if (!aApproversContextNew?.length) {
         await oTx.rollback();
-        throw new Error(`Error encountered during Approver Normalization for ${sId}`);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error encountered during Approver Normalization for ${sId}`, false);
     }
 
     try {
@@ -109,7 +111,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
     } catch (oError) {
         await oTx.rollback();
-        throw new Error(`Error encountered while saving approver details: ${oError.message}`);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered while saving approver details: ${oError.message}`, false);
     }
 
     return { oWorkflowContext, aApproversContext, aApproversContextNew };
