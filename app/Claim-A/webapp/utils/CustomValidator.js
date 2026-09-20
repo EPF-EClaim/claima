@@ -309,12 +309,6 @@ sap.ui.define([
 
         /**
          * Check that the receipt date of every claim item is not later than the header End Date.
-         * Claim item entry already limits the receipt date to the header End Date via
-         * DateUtility.determineMaxDate (and CustomValidator CLAIM), but that does not re-run when the
-         * header dates are edited afterwards, so the same rule is re-checked here against the items
-         * already added. Only the upper bound is checked: the lower bound differs per claim type/item
-         * (e.g. the 90-day limit only applies to the Receipt Date picker, not to Bill Date-based items
-         * such as Duti Setem), so it is intentionally not enforced here.
          * @private
          * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
          * @returns {boolean} true if all claim items are within range, false (with error message shown) otherwise
