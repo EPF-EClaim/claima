@@ -303,7 +303,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 2, oList);
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
-			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT;
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 
