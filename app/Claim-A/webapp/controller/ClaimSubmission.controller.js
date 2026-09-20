@@ -1625,6 +1625,13 @@ sap.ui.define([
 			
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
+			// Guard against editing when the claim is view-only for this user
+			// (e.g. an approver viewing a claim they just sent back — only the
+			// claim owner may edit the header while it's in Send Back status).
+			if (oInputModel.getProperty("/view_only")) {
+				return;
+			}
+
 			if (oInputModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR) {
 				var iMaxDays = await Utility.getModeofTransferMaxDays(oInputModel.getProperty("/claim_header/mode_of_transfer_id"));
 				if (!!iMaxDays) {

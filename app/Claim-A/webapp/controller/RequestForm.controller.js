@@ -1585,7 +1585,9 @@ sap.ui.define([
 					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID,sAttachment3_SFID, sAttachment4_SFID)
 
 				} else {
-					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
+					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, null, {
+						$$updateGroupId: "itemCreate"
+					}).create(oPayload, true);
 
 					await this._oDataModel.submitBatch("itemCreate");
 					await oItemContext.created();
@@ -1602,17 +1604,21 @@ sap.ui.define([
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
 
+					const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
+						$$updateGroupId: "partCreate"
+					});
+
 					for (const p of aParts) {
 						const sPID = String(p.PARTICIPANTS_ID || "").trim();
 						if (!sPID) continue;
 
 						bHasParticipants = true;
-						this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
+						oPartList.create({
 							REQUEST_ID: sReqId,
 							REQUEST_SUB_ID: sGeneratedSubId,
 							PARTICIPANTS_ID: sPID,
 							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
-						}, { $$updateGroupId: "partCreate" });
+						}, true);
 					}
 
 					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
@@ -1634,6 +1640,10 @@ sap.ui.define([
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
+				} else {
+					// Refresh header (incl. total amount) so it reflects the item
+					// that was just saved, without resetting the create-item form.
+					await PARequestSharedFunction.getHeader(this, sReqId);
 				}
 
 			} catch (e) {
@@ -1747,6 +1757,11 @@ sap.ui.define([
 			// Get model
 			const oRequestModel = this.getView().getModel("request");
 
+			// Cash advance items lock the header's trip start/end dates —
+			// re-evaluate that lock immediately as the switch is toggled,
+			// even while this item hasn't been saved yet.
+			this._syncTripDateLock();
+
 			// Read event start date
 			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
 
@@ -1769,7 +1784,25 @@ sap.ui.define([
 				MessageBox.error(
 					Utility.getText("msg_cash_advance_not_allow")
 				);
+
+				// cash_advance was just forced back off above, so the lock
+				// may no longer apply — re-evaluate again.
+				this._syncTripDateLock();
 			}
+		},
+
+		/**
+		 * Re-evaluates whether the header's trip start/end dates should be
+		 * locked (cash-advance item present, saved or in progress) and, if the
+		 * header is currently open for editing, applies it immediately.
+		 */
+		async _syncTripDateLock() {
+			const oEditButtonModel = this.getView().getModel("editButtonModel");
+			if (!oEditButtonModel || oEditButtonModel.getProperty("/state") !== true) {
+				return;
+			}
+			Common.init(this.getOwnerComponent(), this.getView());
+			await Common.setHeaderEditable(this._oConstant.SubmissionTypePrefix.REQUESTHEADER, true);
 		},
 
 		onValueHelpRequest(oEvent) {

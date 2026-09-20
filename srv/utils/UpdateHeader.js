@@ -177,7 +177,7 @@ module.exports = {
                     .from('ZBUDGET')
                     .columns('WBS_CODE')
                     .where({
-                        PROJECT_CODE: sProjectCode,
+                        PROJECT_CODE: oHeader.PROJECT_CODE,
                         YEAR: sCurrentYear
                     })
             );

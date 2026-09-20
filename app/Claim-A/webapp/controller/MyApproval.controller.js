@@ -15,8 +15,8 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Utility,
-	ClaimUtility, 
-    PARequestSharedFunction) {
+	PARequestSharedFunction,
+    ClaimUtility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
