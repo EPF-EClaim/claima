@@ -684,6 +684,13 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Inserts a fragment into a Page's content aggregation at the given index
+		 * @private
+		 * @param {sap.m.Page} oPage - the page whose content aggregation is modified
+		 * @param {Number} iIndex - desired insertion index
+		 * @param {Object} oControl - fragment to insert
+		 */
 		_replaceContentAt: async function (oPage, iIndex, oControl) {
 			// Ensure the slot exists
 			const iSafe = Math.min(iIndex, oPage.getContent().length);
