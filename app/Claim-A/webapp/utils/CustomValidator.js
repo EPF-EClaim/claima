@@ -4,14 +4,16 @@ sap.ui.define([
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
-    "claima/utils/RequestUtility"
+    "claima/utils/RequestUtility",
+    "claima/utils/DateUtility"
 ], function (
     MessageBox,
     Fragment,
     Constants,
     ClaimUtility,
     Utility,
-    RequestUtility
+    RequestUtility,
+    DateUtility
 ) {
     "use strict";
 
@@ -246,6 +248,12 @@ sap.ui.define([
                             }
                         }
 
+                        // existing claim items must still fall within the (possibly edited) header dates
+                        // runs on both header save and claim submission
+                        if (bCanProceed && !this._isReceiptDatesWithinHeaderRange(oClaimSubmissionModel)) {
+                            bCanProceed = false;
+                        }
+
                         var sClaimType = oClaimSubmissionModel ? oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type") : null;
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
                             // course code pre-check
@@ -297,6 +305,44 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
+        },
+
+        /**
+         * Check that the receipt date of every claim item is not later than the header End Date.
+         * Claim item entry already limits the receipt date to the header End Date via
+         * DateUtility.determineMaxDate (and CustomValidator CLAIM), but that does not re-run when the
+         * header dates are edited afterwards, so the same rule is re-checked here against the items
+         * already added. Only the upper bound is checked: the lower bound differs per claim type/item
+         * (e.g. the 90-day limit only applies to the Receipt Date picker, not to Bill Date-based items
+         * such as Duti Setem), so it is intentionally not enforced here.
+         * @private
+         * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
+         * @returns {boolean} true if all claim items are within range, false (with error message shown) otherwise
+         */
+        _isReceiptDatesWithinHeaderRange: function (oClaimSubmissionModel) {
+            var sHeaderEnd = DateUtility.toYMD(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"));
+
+            // missing/invalid header dates are reported by _isValidDateRange
+            if (!sHeaderEnd) {
+                return true;
+            }
+
+            var aInvalidItems = [];
+            (oClaimSubmissionModel.getProperty("/claim_items") || []).forEach(function (oItem) {
+                var sReceiptDate = DateUtility.toYMD(oItem.receipt_date);
+                if (sReceiptDate && sReceiptDate > sHeaderEnd) {
+                    aInvalidItems.push("\u2022 " + oItem.claim_sub_id + " (" + DateUtility.formatDate(sReceiptDate, "dd-MMM-yyyy") + ")");
+                }
+            });
+
+            if (aInvalidItems.length > 0) {
+                MessageBox.error(Utility.getText("msg_claimheader_receipt_date_out_of_range", [
+                    DateUtility.formatDate(sHeaderEnd, "dd-MMM-yyyy"),
+                    aInvalidItems.join("\n")
+                ]));
+                return false;
+            }
+            return true;
         },
 
         /**
