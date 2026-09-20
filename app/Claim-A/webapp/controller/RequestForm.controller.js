@@ -303,7 +303,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 2, oList);
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
-			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT;
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 
@@ -561,10 +561,10 @@ sap.ui.define([
 
 										var aMessages = [];
 										if (aInsufficientItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
 										}
 										if (aNotFoundItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
 										}
 
 										if (aMessages.length > 0) {
