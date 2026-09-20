@@ -540,7 +540,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -551,7 +553,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
@@ -600,7 +604,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -611,7 +617,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
