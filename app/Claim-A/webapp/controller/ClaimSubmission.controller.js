@@ -4460,20 +4460,22 @@ sap.ui.define([
 
 								if (!oResponse.Success) {
 									switch (oResponse.Area) {
+										// Handling for eligibility checking error
 										case this._oConstant.WorkflowArea.ELIGIBILITY_CHECKING:
 											await EligibilityCheck.eligibilityHandling(this, oResponse.Message, this._oConstant.SubmissionTypePrefix.CLAIM);
 											break;
 
+										// Handling for Budget checking/locking error
 										case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-											var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-											var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+											var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
+											var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
 
 											var aMessages = [];
 											if (aInsufficientItems.length > 0) {
-												aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+												aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
 											}
 											if (aNotFoundItems.length > 0) {
-												aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+												aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
 											}
 
 											if (aMessages.length > 0) {
