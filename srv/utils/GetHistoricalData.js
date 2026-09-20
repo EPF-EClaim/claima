@@ -37,9 +37,13 @@ module.exports = {
                 sStatusField = Constant.EntitiesFields.STATUS;
             }
 
-            // Map Claim Status for Approved and Pending Approval
-            aStatus.push(Constant.Status.APPROVED);
+            // Map Claim Status for 
+            // 1. STAT02 - PENDING APPROVAL
+            // 2. STAT05 - APPROVED
+            // 3. STAT06 - COMPLETED DISBURSEMENT
             aStatus.push(Constant.Status.PENDING_APPROVAL);
+            aStatus.push(Constant.Status.APPROVED);
+            aStatus.push(Constant.Status.COMPLETED_DISBURSEMENT);
             // Check if items within frequency are either Approved or Pending Approval
             let aHeaderCondition = {
                 [sHeaderField]: { in: aHeaders },
