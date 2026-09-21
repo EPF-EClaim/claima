@@ -29,8 +29,10 @@
                     icon="sap-icon://edit"
                     text="{i18n>req_b_edit}"
                     press=".onEditHeaderPress"
-                    visible="{= ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
-                                ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} }" />
+                    visible="{= ( ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
+                                  ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} ) &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/VIEWAPPR} &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/APPROVER} }" />
             </OverflowToolbar>
 
             <form:Form 
