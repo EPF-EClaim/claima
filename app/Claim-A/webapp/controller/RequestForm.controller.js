@@ -680,6 +680,11 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
+			// Approvers (including after they push a request back) must never edit the header
+			const sViewMode = this._oReqModel.getProperty("/view");
+			if (sViewMode === this._oConstant.PARMode.VIEWAPPR || sViewMode === this._oConstant.PARMode.APPROVER) {
+				return;
+			}
 			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
