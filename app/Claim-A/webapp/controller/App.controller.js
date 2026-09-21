@@ -1013,12 +1013,17 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", oInputModel.getProperty("/claimtype/course_code/session_number"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/course_code/course_desc"));
 
-				// check if trip dates already auto-populated from pre-approval request, else populate with course code dates
-				if (!oInputModel.getProperty("/claim_header/trip_start_date")) {
-					oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
+				// claim start/end date hierarchy:
+				//   1. course code start/end date (overrides the pre-approval request dates set above)
+				//   2. pre-approval request start/end date (already set above, kept as fallback)
+				//   3. user manual input (field stays empty if neither source has a date)
+				var sCourseStartDate = oInputModel.getProperty("/claimtype/course_code/start_date");
+				var sCourseEndDate = oInputModel.getProperty("/claimtype/course_code/end_date");
+				if (sCourseStartDate) {
+					oInputModel.setProperty("/claim_header/trip_start_date", sCourseStartDate);
 				}
-				if (!oInputModel.getProperty("/claim_header/trip_end_date")) {
-					oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
+				if (sCourseEndDate) {
+					oInputModel.setProperty("/claim_header/trip_end_date", sCourseEndDate);
 				}
 			}
 			else {
