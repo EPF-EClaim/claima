@@ -986,7 +986,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: null
                         },
                         constraints: { minimum: 0.00 }
 					}"

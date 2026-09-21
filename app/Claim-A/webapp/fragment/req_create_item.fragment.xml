@@ -328,13 +328,28 @@
                                     <unified:FileUploader
                                         change=".onImportChange1"
                                         enabled="{= ${request>/view} !== 'view' }"
-                                        required="{= (${request>/req_item/doc1} === null &amp;&amp;
-                                                (${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} 
-                                                    || (parseFloat(${request>/req_item/toll_amt}) &gt; 0.00 &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
-                                                ) 
-                                            ) || ${request>/req_item/location_type} === ${constant>/LocationType/OTHER} || 
-                                                ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD} ||
-                                                !${request>/req_item/doc1_filename}
+                                        required="{=
+                                            !${request>/req_item/doc1_filename}
+                                            &amp;&amp;
+                                            (
+                                                (
+                                                    ${request>/req_item/doc1} === null
+                                                    &amp;&amp;
+                                                    (
+                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
+                                                        ||
+                                                        (
+                                                            parseFloat(${request>/req_item/toll_amt}) > 0.00
+                                                            &amp;&amp;
+                                                            ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}
+                                                        )
+                                                    )
+                                                )
+                                                ||
+                                                ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}
+                                                ||
+                                                ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD}
+                                            )
                                         }"
                                         maximumFileSize="5.0"
                                         mimeType="application/pdf,image/png,image/jpeg"
@@ -958,7 +973,8 @@
                                                 type: 'sap.ui.model.type.Float',
                                                 formatOptions: {
                                                     minFractionDigits: 2,
-                                                    maxFractionDigits: 2
+                                                    maxFractionDigits: 2,
+                                                    emptyString: null
                                                 },
                                                 constraints: {
                                                     minimum: 0
