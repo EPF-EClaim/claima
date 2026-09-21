@@ -255,14 +255,8 @@ sap.ui.define([
 						case oController._oConstant.RequestStatus.REJECTED:			// rejected
 						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
 						case oController._oConstant.RequestStatus.APPROVED:			// approved
-							bShowBackScr	= true;
-							break;
-
 						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
-							bShowBack   	= true;
-							bShowDelete 	= true;
-							bShowSubmit 	= true;
-							oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.LIST);
+							bShowBackScr	= true;
 							break;
 
 						default:
