@@ -352,7 +352,8 @@ const Constant = {
         REJECTED: "STAT04",
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
-        CANCELLED: "STAT07"
+        CANCELLED: "STAT07",
+        MIGRATED_DATA: "STAT08"
     },
     ClaimTypeItemStatus: {
         ACTIVE: "ACTIVE"
