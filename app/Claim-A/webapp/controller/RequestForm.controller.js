@@ -881,11 +881,11 @@ sap.ui.define([
 			}
 
 			const sState = this._oReqModel.getProperty("/view");
-			if (sState != this._oConstant.PARMode.APPROVER) {
+			if (sState != this._oConstant.PARMode.APPROVER && sState != this._oConstant.PARMode.VIEWAPPR) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 				this._getClaimTypeItemSelection();
 			} else {
-				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);

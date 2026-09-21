@@ -360,7 +360,7 @@ sap.ui.define([
 						bCurrentUserIsApprover &&
 						sClaimOwnerId !== sCurrentUserId
 					) {
-						oClaimSubmissionModel.setProperty("/is_approver", false);
+						oClaimSubmissionModel.setProperty("/is_approver", true);
 						oClaimSubmissionModel.setProperty("/view_only", true);
 
 						this._setClaimItemTableToolbar(false);
@@ -537,6 +537,30 @@ sap.ui.define([
 
 				// Employee master
 				await this._loadEmployeeMasterData();
+
+				// check is approver
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+				const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+				const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+
+				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
+				const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
+					(oApproval.APPROVER_ID === sCurrentUserId || oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId) &&
+					oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
+				);
+
+				if (bCurrentUserIsApprover && sClaimOwnerId !== sCurrentUserId) {
+					oClaimSubmissionModel.setProperty("/is_approver", true);
+					oClaimSubmissionModel.setProperty("/view_only", true);
+				} else if (sClaimOwnerId !== sCurrentUserId) {
+					oClaimSubmissionModel.setProperty("/view_only", true);
+				}
+				
 			} catch (err) {
 				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
