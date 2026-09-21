@@ -290,13 +290,10 @@ sap.ui.define([
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
 
-			// display initial fragments
-			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
-			});
-			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 2);
-			});
+			const oHeaderSection = await this._getFormFragment("claimsubmission_summary_claimheader", true);
+			await this._replaceContentAt(oPage, 1, oHeaderSection);
+			const oItemSection = await this._getFormFragment("claimsubmission_summary_claimitem", true);
+			await this._replaceContentAt(oPage, 2, oItemSection);
 		},
 
 		_getFormFragment: async function (sName, toCreate) {
@@ -659,9 +656,8 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			if (bCheckPage) {
 				// display approval log
-				await this._getFormFragment("approval_log", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 3);
-				});
+				const oApprovalLog = await this._getFormFragment("approval_log", true);
+				await this._replaceContentAt(oPage, 3, oApprovalLog);
 			}
 			else {
 				// remove approval log
@@ -675,10 +671,9 @@ sap.ui.define([
 		_setOwnerDetail: async function (bCheckPage) {
 			var oPage = this.byId("page_claimsubmission");
 			if (bCheckPage) {
-				// display approval log
-				await this._getFormFragment("claimant_detail", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
+				// display owner detail
+				const oOwnerDetail = await this._getFormFragment("claimant_detail", true);
+				await this._replaceContentAt(oPage, 0, oOwnerDetail);
 			}
 			else {
 				// remove approval log
@@ -688,6 +683,20 @@ sap.ui.define([
 				}
 			}
 		},
+
+		/**
+		 * Inserts a fragment into a Page's content aggregation at the given index
+		 * @private
+		 * @param {sap.m.Page} oPage - the page whose content aggregation is modified
+		 * @param {Number} iIndex - desired insertion index
+		 * @param {Object} oControl - fragment to insert
+		 */
+		_replaceContentAt: async function (oPage, iIndex, oControl) {
+			// Ensure the slot exists
+			const iSafe = Math.min(iIndex, oPage.getContent().length);
+			oPage.insertContent(oControl, iSafe);
+		},
+
 		_setClaimItemTableToolbar: function (bViewCheck) {
 
 
@@ -1160,9 +1169,8 @@ sap.ui.define([
 			if (await this._getFormFragment("approval_log")) {
 				this._setApprovalLog(false);
 			}
-			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 2);
-			});
+			const oCreate = await this._getFormFragment("claimsubmission_claimdetails_input", true);
+			await this._replaceContentAt(oPage, 2, oCreate);
 			// set new claim submission model;
 			if (Number.isInteger(indexNumber)) {
 				this._onInit_ClaimDetails_Input(indexNumber);
@@ -4264,8 +4272,7 @@ sap.ui.define([
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			await this._afterLoadFragments(true);
+			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input", true);
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
@@ -4285,9 +4292,8 @@ sap.ui.define([
  
 				oPage.removeContent(oClaimItemFragment);
  
-				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 2);
-				});
+				this._showInitFormFragment();
+				await this._afterLoadFragments();
 				// Reload when item cancellation
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				this._calculateCardAdvanceAmount();
