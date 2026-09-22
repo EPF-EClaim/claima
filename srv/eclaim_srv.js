@@ -1243,6 +1243,7 @@ module.exports = (srv) => {
                 } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
                     //entitle for daily allowance
                     meal_allowance = entitlement.AMOUNT / 2;
+                    daily_allowance = entitlement.AMOUNT / 2;
                 }
                 else if (req.data.day > 0) {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
