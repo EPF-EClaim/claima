@@ -1470,7 +1470,7 @@
                     value="{
 						path: 'claimitem_input>/claim_item/provided_lunch',
                         type: 'sap.ui.model.type.Integer',
-                        formatOption: {
+                        formatOptions: {
                             emptyString: null
                         }
 					}"
@@ -1484,7 +1484,10 @@
                     id="input_claimdetails_input_provided_dinner"
                     value="{
 						path: 'claimitem_input>/claim_item/provided_dinner',
-						type: 'Integer'
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
