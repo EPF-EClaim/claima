@@ -32,7 +32,8 @@
                     visible="{= ( ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
                                   ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} ) &amp;&amp;
                                 ${request>/view} !== ${constant>/PARMode/VIEWAPPR} &amp;&amp;
-                                ${request>/view} !== ${constant>/PARMode/APPROVER} }" />
+                                ${request>/view} !== ${constant>/PARMode/APPROVER} &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/VIEW} }" />
             </OverflowToolbar>
 
             <form:Form 
