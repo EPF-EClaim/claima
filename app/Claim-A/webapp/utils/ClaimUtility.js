@@ -2,7 +2,6 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -13,7 +12,6 @@ sap.ui.define([
 	Sorter,
 	Filter,
 	FilterOperator,
-	JSONModel,
 	BusyIndicator,
 	MessageBox,
 	MessageToast,
@@ -22,6 +20,396 @@ sap.ui.define([
 	DateUtility
 ) {
 	"use strict";
+
+	// Claim-side utility module - mirrors RequestUtility.js's shape (one flat
+	// file per domain: init + every scenario as a method on the singleton),
+	// rather than splitting into several small files. Covers course-code/cost
+	// center/PAR checks, entitlement auto-populate scenarios, and header/item
+	// load-save mapping.
+
+	function nonNan(n) {
+		return isNaN(n) ? 0 : n;
+	}
+
+	/**
+	 * Builds the ZCLAIM_ITEM OData payload from a claim item object. Single source
+	 * of truth, replacing two independently-maintained ~90-field payload builders
+	 * that used to live in ClaimSubmission.controller.js (_saveClaimItem, used when
+	 * saving one item from the item-detail form, and _updateClaimItems, used to
+	 * bulk-resync all items e.g. after a delete) which had drifted apart: missing
+	 * POTONGAN_ELAUN/CASH_REPAY special-casing, wrong CURRENCY_RATE precision,
+	 * RATE_PER_KM read from the wrong field, DEPENDENT double-stringified or not
+	 * stringified depending on caller, and several fields silently dropped.
+	 *
+	 * Accepts either shape claim items take in this app: the live `claimitem_input`
+	 * model's `/claim_item` (mid-edit; `dependent` may be an array, deserialized
+	 * from DB for the multi-select control) or an entry from `claimsubmission_input`
+	 * `/claim_items` (persisted shape; `dependent` is already the DB's JSON string).
+	 *
+	 * @param {object} oItem - claim_item object
+	 * @param {object} [oHeader] - claim_header object, for the alternate_cost_center
+	 *        fallback when the item has no cost_center of its own
+	 * @returns {object} ZCLAIM_ITEM OData payload
+	 */
+	function buildItemPayload(oItem, oHeader) {
+		const isSpecialGlItem = oItem.claim_type_item_id === Constant.ClaimTypeItem.PERSONAL_EXP ||
+			oItem.claim_type_item_id === Constant.ClaimTypeItem.POTONGAN_ELAUN;
+
+		return {
+			CLAIM_ID: oItem.claim_id,
+			CLAIM_SUB_ID: oItem.claim_sub_id,
+			CLAIM_TYPE_ITEM_ID: oItem.claim_type_item_id,
+			PERCENTAGE_COMPENSATION: nonNan(parseFloat(oItem.percentage_compensation)).toFixed(2),
+			ACCOUNT_NO: oItem.account_no,
+			AMOUNT: nonNan(parseFloat(oItem.amount)).toFixed(2),
+			ATTACHMENT_FILE_1: oItem.attachment_file_1,
+			ATTACHMENT_FILE_2: oItem.attachment_file_2,
+			BILL_NO: oItem.bill_no,
+			BILL_DATE: DateUtility.getHanaDate(oItem.bill_date),
+			CLAIM_CATEGORY: oItem.claim_category,
+			COUNTRY: oItem.country,
+			DISCLAIMER: oItem.disclaimer,
+			START_DATE: DateUtility.getHanaDate(oItem.start_date),
+			END_DATE: DateUtility.getHanaDate(oItem.end_date),
+			START_TIME: DateUtility.getHanaTime(oItem.start_time),
+			END_TIME: DateUtility.getHanaTime(oItem.end_time),
+			FLIGHT_CLASS: oItem.flight_class,
+			FROM_LOCATION: oItem.from_location,
+			FROM_LOCATION_OFFICE: oItem.from_location_office,
+			KM: nonNan(parseFloat(oItem.km)).toFixed(2),
+			LOCATION: oItem.location,
+			LOCATION_TYPE: oItem.location_type,
+			LODGING_CATEGORY: oItem.lodging_category,
+			LODGING_ADDRESS: oItem.lodging_address,
+			MARRIAGE_CATEGORY: oItem.marriage_category,
+			AREA: oItem.area,
+			NO_OF_FAMILY_MEMBER: oItem.no_of_family_member,
+			PARKING: nonNan(parseFloat(oItem.parking)),
+			PHONE_NO: oItem.phone_no,
+			// the rate VALUE lives in descr.rate_per_km; the top-level rate_per_km
+			// field holds the rate lookup's ID, not the decimal rate.
+			RATE_PER_KM: oItem.descr ? oItem.descr.rate_per_km : oItem.rate_per_km,
+			RECEIPT_DATE: DateUtility.getHanaDate(oItem.receipt_date),
+			RECEIPT_NUMBER: oItem.receipt_number,
+			REMARK: oItem.remark,
+			ROOM_TYPE: oItem.room_type,
+			REGION: oItem.region,
+			FROM_STATE_ID: oItem.from_state_id,
+			TO_STATE_ID: oItem.to_state_id,
+			TO_LOCATION: oItem.to_location,
+			TO_LOCATION_OFFICE: oItem.to_location_office,
+			TOLL: nonNan(parseFloat(oItem.toll)).toFixed(2),
+			TOTAL_EXP_AMOUNT: nonNan(parseFloat(oItem.total_exp_amount)).toFixed(2),
+			VEHICLE_TYPE: oItem.vehicle_type,
+			VEHICLE_FARE: oItem.vehicle_fare,
+			TRIP_START_DATE: DateUtility.getHanaDate(oItem.trip_start_date),
+			TRIP_END_DATE: DateUtility.getHanaDate(oItem.trip_end_date),
+			EVENT_START_DATE: DateUtility.getHanaDate(oItem.event_start_date),
+			EVENT_END_DATE: DateUtility.getHanaDate(oItem.event_end_date),
+			TRAVEL_DURATION_DAY: nonNan(parseFloat(oItem.travel_duration_day)).toFixed(1),
+			TRAVEL_DURATION_HOUR: nonNan(parseFloat(oItem.travel_duration_hour)).toFixed(1),
+			PROVIDED_BREAKFAST: oItem.provided_breakfast?.toString(),
+			PROVIDED_LUNCH: oItem.provided_lunch?.toString(),
+			PROVIDED_DINNER: oItem.provided_dinner?.toString(),
+			ENTITLED_BREAKFAST: oItem.entitled_breakfast?.toString(),
+			ENTITLED_LUNCH: oItem.entitled_lunch?.toString(),
+			ENTITLED_DINNER: oItem.entitled_dinner?.toString(),
+			ANGGOTA_ID: oItem.anggota_id,
+			ANGGOTA_NAME: oItem.anggota_name,
+			DEPENDENT_NAME: oItem.dependent_name,
+			TYPE_OF_PROFESSIONAL_BODY: oItem.type_of_professional_body,
+			DISCLAIMER_GALAKAN: oItem.disclaimer_galakan,
+			TRANSFER_DATE: DateUtility.getHanaDate(oItem.transfer_date),
+			NO_OF_DAYS: oItem.no_of_days,
+			FAMILY_COUNT: oItem.family_count,
+			FUNERAL_TRANSPORTATION: oItem.funeral_transportation,
+			ROUND_TRIP: oItem.round_trip,
+			TRIP_END_TIME: DateUtility.getHanaTime(oItem.trip_end_time),
+			TRIP_START_TIME: DateUtility.getHanaTime(oItem.trip_start_time),
+			COST_CENTER: isSpecialGlItem ? null : (oItem.cost_center || oHeader?.alternate_cost_center),
+			GL_ACCOUNT: isSpecialGlItem
+				? Constant.StatementDueInfo.GL_CODE
+				: (oItem.claim_type_item_id === Constant.ClaimTypeItem.CASH_REPAY ? Constant.Default.CASH_REPAY_GL : oItem.gl_account),
+			MATERIAL_CODE: isSpecialGlItem ? null : oItem.material_code,
+			VEHICLE_OWNERSHIP_ID: oItem.vehicle_ownership_id,
+			ACTUAL_AMOUNT: nonNan(parseFloat(oItem.actual_amount)).toFixed(2),
+			ARRIVAL_TIME: oItem.arrival_time ? new Date(oItem.arrival_time).toISOString() : null,
+			CLAIM_TYPE_ID: oItem.claim_type_id,
+			COURSE_TITLE: oItem.course_title,
+			CURRENCY_AMOUNT: nonNan(parseFloat(oItem.currency_amount)).toFixed(2),
+			CURRENCY_CODE: oItem.currency_code,
+			CURRENCY_RATE: nonNan(parseFloat(oItem.currency_rate)).toFixed(4),
+			DEPARTURE_TIME: oItem.departure_time ? new Date(oItem.departure_time).toISOString() : null,
+			// already a JSON string when it comes from the claim_items summary array
+			// (as persisted); still an array when it comes from the live item-detail
+			// form's multi-select binding (deserialized on load) - stringify only then.
+			DEPENDENT: typeof oItem.dependent === "string" ? oItem.dependent : JSON.stringify(oItem.dependent),
+			EMP_ID: oItem.emp_id,
+			FARE_TYPE_ID: oItem.fare_type_id,
+			INSURANCE_CERT_END_DATE: DateUtility.getHanaDate(oItem.insurance_cert_end_date),
+			INSURANCE_CERT_START_DATE: DateUtility.getHanaDate(oItem.insurance_cert_start_date),
+			INSURANCE_PACKAGE_ID: oItem.insurance_package_id,
+			INSURANCE_PROVIDER_ID: oItem.insurance_provider_id,
+			INSURANCE_PROVIDER_NAME: oItem.insurance_provider_name,
+			INSURANCE_PURCHASE_DATE: DateUtility.getHanaDate(oItem.insurance_purchase_date),
+			METER_CUBE_ACTUAL: nonNan(parseFloat(oItem.meter_cube_actual)).toFixed(2),
+			METER_CUBE_ENTITLED: nonNan(parseFloat(oItem.meter_cube_entitled)).toFixed(2),
+			MOBILE_CATEGORY_PURPOSE_ID: oItem.mobile_category_purpose_id,
+			NEED_FOREIGN_CURRENCY: oItem.need_foreign_currency,
+			POLICY_NUMBER: oItem.policy_number,
+			PURPOSE: oItem.purpose,
+			REQUEST_APPROVAL_AMOUNT: oItem.request_approval_amount,
+			STUDY_LEVELS_ID: oItem.study_levels_id,
+			TRAVEL_DAYS_ID: oItem.travel_days_id,
+			VEHICLE_CLASS_ID: oItem.vehicle_class_id,
+			DAILY_ALLOWANCE: nonNan(parseInt(oItem.daily_allowance)),
+			TIPS: nonNan(parseInt(oItem.tips)),
+			EXCLUDE_TIPS: oItem.exclude_tips,
+			TOTAL_TRAVELLER: oItem.number_of_travellers,
+			DEPENDENT_TYPE_ID: oItem.dependent_type,
+			INTERNAL_ORDER: oItem.internal_order,
+			COURSE_DURATION: oItem.course_duration,
+			CHARGED_TO_CCC: isSpecialGlItem ? true : !!oItem.charged_to_ccc,
+			POLICY_START_DATE: DateUtility.getHanaDate(oItem.policy_start_date),
+			POLICY_END_DATE: DateUtility.getHanaDate(oItem.policy_end_date),
+			DEPENDENT_NATIONAL_ID: oItem.dependent_national_id,
+			INSURANCE_MEDICAL_PROVIDER_ID: oItem.insurance_medical_provider_id,
+			INSURANCE_MEDICAL_PROVIDER_NAME: oItem.insurance_medical_provider_name,
+			ATTACHMENT_FILE_3: oItem.attachment_file_3,
+			ATTACHMENT_FILE_4: oItem.attachment_file_4,
+			POLICY_YEAR: oItem.policy_year
+		};
+	}
+
+	/**
+	 * Maps raw ZEMP_CLAIM_ITEM_VIEW rows to the flat item structure the
+	 * fragment binds against. `descr` starts empty - filled separately by
+	 * `applyClaimItemDescr` from the same raw rows.
+	 */
+	function mapClaimItems(aRawItems) {
+		return aRawItems.map(it => ({
+			claim_id: it.CLAIM_ID,
+			claim_sub_id: it.CLAIM_SUB_ID,
+			claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
+			charged_to_ccc: !!it.CHARGED_TO_CCC,
+			percentage_compensation: it.PERCENTAGE_COMPENSATION,
+			account_no: it.ACCOUNT_NO,
+			amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
+			attachment_file_1: it.ATTACHMENT_FILE_1,
+			attachment_file_2: it.ATTACHMENT_FILE_2,
+			bill_no: it.BILL_NO,
+			bill_date: it.BILL_DATE,
+			claim_category: it.CLAIM_CATEGORY,
+			country: it.COUNTRY,
+			disclaimer: it.DISCLAIMER,
+			start_date: it.START_DATE,
+			end_date: it.END_DATE,
+			start_time: it.START_TIME,
+			end_time: it.END_TIME,
+			flight_class: it.FLIGHT_CLASS,
+			from_location: it.FROM_LOCATION,
+			from_location_office: it.FROM_LOCATION_OFFICE,
+			km: it.KM,
+			location: it.LOCATION,
+			location_type: it.LOCATION_TYPE,
+			lodging_category: it.LODGING_CATEGORY,
+			lodging_address: it.LODGING_ADDRESS,
+			marriage_category: it.MARRIAGE_CATEGORY,
+			area: it.AREA,
+			no_of_family_member: it.NO_OF_FAMILY_MEMBER,
+			parking: it.PARKING,
+			phone_no: it.PHONE_NO,
+			rate_per_km: it.RATE_PER_KM,
+			receipt_date: it.RECEIPT_DATE,
+			receipt_number: it.RECEIPT_NUMBER,
+			remark: it.REMARK,
+			room_type: it.ROOM_TYPE,
+			region: it.REGION,
+			from_state_id: it.FROM_STATE_ID,
+			to_state_id: it.TO_STATE_ID,
+			to_location: it.TO_LOCATION,
+			to_location_office: it.TO_LOCATION_OFFICE,
+			toll: it.TOLL,
+			total_exp_amount: it.TOTAL_EXP_AMOUNT,
+			vehicle_type: it.VEHICLE_TYPE,
+			vehicle_fare: it.VEHICLE_FARE,
+			trip_start_date: it.TRIP_START_DATE,
+			trip_end_date: it.TRIP_END_DATE,
+			event_start_date: it.EVENT_START_DATE,
+			event_end_date: it.EVENT_END_DATE,
+			travel_duration_day: it.TRAVEL_DURATION_DAY,
+			travel_duration_hour: it.TRAVEL_DURATION_HOUR,
+			provided_breakfast: it.PROVIDED_BREAKFAST,
+			provided_lunch: it.PROVIDED_LUNCH,
+			provided_dinner: it.PROVIDED_DINNER,
+			entitled_breakfast: it.ENTITLED_BREAKFAST,
+			entitled_lunch: it.ENTITLED_LUNCH,
+			entitled_dinner: it.ENTITLED_DINNER,
+			dependent_type: it.DEPENDENT_TYPE_ID,
+			anggota_id: it.ANGGOTA_ID,
+			anggota_name: it.ANGGOTA_NAME,
+			dependent_name: it.DEPENDENT_NAME,
+			dependent: it.DEPENDENT,
+			type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
+			disclaimer_galakan: it.DISCLAIMER_GALAKAN,
+			mode_of_transfer: it.MODE_OF_TRANSFER,
+			travel_alone_family: it.TRAVEL_ALONE_FAMILY,
+			travel_family_now_later: it.TRAVEL_FAMILY_NOW_LATER,
+			transfer_date: it.TRANSFER_DATE,
+			no_of_days: it.NO_OF_DAYS,
+			family_count: it.FAMILY_COUNT,
+			funeral_transportation: it.FUNERAL_TRANSPORTATION,
+			round_trip: it.ROUND_TRIP,
+			trip_end_time: it.TRIP_END_TIME,
+			trip_start_time: it.TRIP_START_TIME,
+			cost_center: it.COST_CENTER,
+			gl_account: it.GL_ACCOUNT,
+			material_code: it.MATERIAL_CODE,
+			vehicle_ownership_id: it.VEHICLE_OWNERSHIP_ID,
+			actual_amount: it.ACTUAL_AMOUNT,
+			arrival_time: it.ARRIVAL_TIME,
+			claim_type_id: it.CLAIM_TYPE_ID,
+			course_title: it.COURSE_TITLE,
+			currency_amount: it.CURRENCY_AMOUNT,
+			currency_code: it.CURRENCY_CODE,
+			currency_rate: it.CURRENCY_RATE,
+			departure_time: it.DEPARTURE_TIME,
+			emp_id: it.EMP_ID,
+			fare_type_id: it.FARE_TYPE_ID,
+			insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
+			insurance_cert_start_date: it.INSURANCE_CERT_START_DATE,
+			insurance_package_id: it.INSURANCE_PACKAGE_ID,
+			insurance_provider_id: it.INSURANCE_PROVIDER_ID,
+			insurance_provider_name: it.INSURANCE_PROVIDER_NAME,
+			insurance_purchase_date: it.INSURANCE_PURCHASE_DATE,
+			meter_cube_actual: it.METER_CUBE_ACTUAL,
+			meter_cube_entitled: it.METER_CUBE_ENTITLED,
+			mobile_category_purpose_id: it.MOBILE_CATEGORY_PURPOSE_ID,
+			need_foreign_currency: it.NEED_FOREIGN_CURRENCY,
+			policy_number: it.POLICY_NUMBER,
+			purpose: it.PURPOSE,
+			request_approval_amount: it.REQUEST_APPROVAL_AMOUNT,
+			study_levels_id: it.STUDY_LEVELS_ID,
+			travel_days_id: it.TRAVEL_DAYS_ID,
+			vehicle_class_id: it.VEHICLE_CLASS_ID,
+			daily_allowance: it.DAILY_ALLOWANCE,
+			tips: it.TIPS,
+			exclude_tips: it.EXCLUDE_TIPS,
+			number_of_travellers: it.TOTAL_TRAVELLER,
+			internal_order: it.INTERNAL_ORDER,
+			course_duration: it.COURSE_DURATION,
+			insurance_medical_provider_id: it.INSURANCE_MEDICAL_PROVIDER_ID,
+			insurance_medical_provider_name: it.INSURANCE_MEDICAL_PROVIDER_NAME,
+			policy_start_date: it.POLICY_START_DATE,
+			policy_end_date: it.POLICY_END_DATE,
+			dependent_national_id: it.DEPENDENT_NATIONAL_ID,
+			previous_policy_number: it.PREVIOUS_POLICY_NUMBER,
+			current_policy_number: it.CURRENT_POLICY_NUMBER,
+			next_policy_number: it.NEXT_POLICY_NUMBER,
+			attachment_file_3: it.ATTACHMENT_FILE_3,
+			attachment_file_4: it.ATTACHMENT_FILE_4,
+			policy_year: it.POLICY_YEAR,
+			descr: {}
+		}));
+	}
+
+	/**
+	 * Maps each raw item row's *_DESC (and related) fields to the `descr`
+	 * sub-object the fragment expects, and writes it onto /claim_items/{i}/descr.
+	 * Uses the same raw rows already fetched for item values - no second query.
+	 */
+	function applyClaimItemDescr(oClaimSubmissionModel, aRawItems) {
+		const aItemsD = aRawItems.map(it => ({
+			claim_type_item_id: it.CLAIM_TYPE_ITEM_DESC,
+			claim_category: it.CLAIM_CATEGORY_DESC,
+			country: it.COUNTRY_DESC,
+			flight_class: it.FLIGHT_CLASS_DESC,
+			from_location_office: null,
+			location_type: it.LOC_TYPE_DESC,
+			lodging_category: it.LODGING_CATEGORY_DESC,
+			marriage_category: it.MARRIAGE_CATEGORY_DESC,
+			area: it.AREA_DESC,
+			rate_per_km: it.RATE_PER_KM,
+			room_type: it.ROOM_TYPE_DESC,
+			region: it.REGION_DESC,
+			from_state_id: null,
+			to_state_id: null,
+			to_location_office: null,
+			vehicle_type: it.VEHICLE_TYPE_DESC,
+			type_of_professional_body: null,
+			no_of_days: null,
+			funeral_transportation: null,
+			material_code: null,
+			vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
+			fare_type_id: null,
+			insurance_package_id: null,
+			insurance_provider_id: null,
+			meter_cube_entitled: null,
+			mobile_category_purpose_id: null,
+			study_levels_id: null,
+			claim_type_id: it.CLAIM_TYPE_DESC,
+			vehicle_class_id: null,
+			attachment_file_1: null,
+			attachment_file_2: null,
+			mode_of_transfer: it.TRANSFER_MODE_DESC,
+			travel_alone_family: it.TRAVEL_TYPE_DESC,
+			travel_family_now_later: it.FAMILY_TIMING_DESC,
+			attachment_file_3: null,
+			attachment_file_4: null
+		}));
+
+		aItemsD.forEach((oDescr, i) => {
+			oClaimSubmissionModel.setProperty("/claim_items/" + i + "/descr", oDescr);
+		});
+	}
+
+	/**
+	 * Single source of truth for "what does this claim's status_id allow", replacing
+	 * independent DRAFT/SEND_BACK re-derivations previously scattered across
+	 * ClaimSubmission.controller.js (_onMatched, _afterLoadFragments x2, _loadClaimById,
+	 * _applyClaimHeader, and the header fragment's own XML binding).
+	 *
+	 * Today only DRAFT and SEND_BACK are actually editable - every other status
+	 * collapses to the same view-only/approval-log-visible behavior. That business
+	 * decision (what PENDING_APPROVAL/REJECTED/APPROVED/COMPLETED_DISBURSEMENT/
+	 * CANCELLED should each individually allow or display) is explicitly out of
+	 * scope for this pass - the point of this function is that changing it later is a
+	 * one-line edit here instead of finding every call site again.
+	 *
+	 * @param {string} sStatusId - claim_header/status_id (one of Constant.ClaimStatus)
+	 * @returns {object} { isEditableStatus, showApprovalLog, baseFooterMode }
+	 */
+	function getStatusPolicy(sStatusId) {
+		switch (sStatusId) {
+			case Constant.ClaimStatus.DRAFT:
+				return {
+					isEditableStatus: true,
+					showApprovalLog: false,
+					baseFooterMode: Constant.ClaimFooterMode.SUMMARY
+				};
+
+			case Constant.ClaimStatus.SEND_BACK:
+				return {
+					isEditableStatus: true,
+					showApprovalLog: true,
+					baseFooterMode: Constant.ClaimFooterMode.SUMMARY
+				};
+
+			case Constant.ClaimStatus.PENDING_APPROVAL:
+			case Constant.ClaimStatus.REJECTED:
+			case Constant.ClaimStatus.APPROVED:
+			case Constant.ClaimStatus.COMPLETED_DISBURSEMENT:
+			case Constant.ClaimStatus.CANCELLED:
+			default:
+				// Every other status (including an unrecognized one) is view-only,
+				// matching today's "not DRAFT and not SEND_BACK -> view_only" rule.
+				return {
+					isEditableStatus: false,
+					showApprovalLog: true,
+					baseFooterMode: Constant.ClaimFooterMode.VIEW_ONLY
+				};
+		}
+	}
 
 	return {
 
@@ -54,7 +442,7 @@ sap.ui.define([
 			});
 
 			const aFilters = [
-				// check if claim exists with following 
+				// check if claim exists with following
 				new Filter("COURSE_CODE", FilterOperator.EQ, sCourseCode),
 				new Filter("SESSION_NUMBER", FilterOperator.EQ, sSessionNumber),
 				new Filter("EMP_ID", FilterOperator.EQ, sParticipantId),
@@ -86,8 +474,66 @@ sap.ui.define([
 		},
 
 		/**
+		 * Check for default cost center assigned to claim type, if no data found, return null value
+		 * @public
+		 * @param {string} sClaimTypeId claim type to be checked
+		 * @returns {string} cost center selected
+		 */
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject() || null;
+
+				return oResult.sCostCenter;
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
+		 * Check if PAR has been reused for claim submission
+		 * @public
+		 * @param {String} sRequestID - Pre-approval request ID
+		 * @returns {Boolean} bIsUsed - show if warning should be sent
+		 */
+		checkReusedPAR: async function (sRequestID) {
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
+			oContext.setParameter("requestID", sRequestID);
+			return oContext.execute().then(() => oContext.requestObject());
+		},
+
+		/**
+		 * Get Fare Type filters based on Claim Type and Claim Item
+		 * @public
+		 * @param {string} sClaimTypeId
+		 * @param {string} sClaimTypeItemId
+		 * @returns {sap.ui.model.Filter[]} array of filters
+		 */
+		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
+			var aFilters = [];
+			if ([Constant.ClaimType.KURSUS_DLM_NEGARA,
+			Constant.ClaimType.DLM_NEGARA,
+			Constant.ClaimType.KURSUS_LUAR_NEGARA,
+			Constant.ClaimType.LUAR_NEGARA,
+			Constant.ClaimType.ELAUN_TUKAR
+			].includes(sClaimTypeId) &&
+				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
+				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
+			}
+			return aFilters;
+		},
+
+		/**
 		* Set default values for claim item fields
-		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
+		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given
 		* if record found, value is retrieved from the table and populated in the claim item model
 		* @public
 		* @param {object} oClaimSubmissionModel - claim submission to be passed into param
@@ -144,79 +590,6 @@ sap.ui.define([
 			} catch (oError) {
 				oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
 				MessageBox.error(Utility.getText("msg_claimdetails_input_" + sClaimItemField + "_err", [oError]));
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		/**
-		* Check if current user ID has previously approved claim with elaun pengangkutan claim item
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found and have been approved, return true; else, return false
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {boolean} if records found, return true; else, return false
-		*/
-		getPreviousElaunPengangkutan: async function (sEmpId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_ITEM, null, [
-				new Sorter("CLAIM_ID")
-			], [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, Constant.ClaimTypeItem.E_PENGAKUT)
-			], {
-				$expand: { "ZCLAIM_HEADER": { $select: "STATUS_ID" } }
-			});
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					for (var iContext = 0; iContext < aContexts.length; iContext++) {
-						var oData = aContexts[iContext].getObject();
-						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
-							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
-						) {
-							// if approved claim header found, return true
-							return true;
-						}
-					}
-					// if exit for loop, no approved claim header found with elaun pengangkutan
-				}
-				return false;
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_err", [oError]));
-				return false;
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getNumberOfFamilyMembers: async function (sEmpId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
-				new Sorter("DEPENDENT_NO")
-			], [
-				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
-			]);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				return aContexts.length;
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
-				return 0;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -287,30 +660,6 @@ sap.ui.define([
 			return oContext.execute()
 				.then(() => oContext.requestObject());
 
-		},
-
-		/**
-		 * Check for default cost center assigned to claim type, if no data found, return null value
-		 * @public
-		 * @param {string} sClaimTypeId claim type to be checked
-		 * @returns {string} cost center selected
-		 */
-		determineDefaultCostCenter: async function (sClaimTypeId) {
-			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject() || null;
-
-				return oResult.sCostCenter;
-
-			} catch (oError) {
-				return null;
-			}
 		},
 
 		/**
@@ -467,27 +816,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Bind to existing claim header with claim ID, if not found return null value
-		 * @public
-		 * @param {object} oODataModel model used for claim data binding
-		 * @param {string} sClaimId claim ID to check from database
-		 * @returns {object} Bound context of the claim header, null value if not found
-		 */
-		getClaimHeader: async function (oODataModel, sClaimId) {
-			try {
-				const oContextBinding = oODataModel.bindContext(
-					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
-				);
-
-				await oContextBinding.requestObject();
-				const oContext = oContextBinding.getBoundContext();
-				return oContext;
-			} catch (oError) {
-				return null;
-			}
-		},
-
-		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
 		 * Calls backend entitlement function using the logged-in employee ID
@@ -546,40 +874,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/meter_cube_entitled", oResult.entitled);
 					oInputModel.setProperty("/claim_item/amount", oResult.amount);
 				});
-		},
-
-		/**
-		 * Check if PAR has been reused for claim submission 
-		 * @public
-		 * @param {String} sRequestID - Pre-approval request ID
-		 * @returns {Boolean} bIsUsed - show if warning should be sent
-		 */
-		checkReusedPAR: async function (sRequestID) {
-			const oModel = this._oView.getModel();
-			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
-			oContext.setParameter("requestID", sRequestID);
-			return oContext.execute().then(() => oContext.requestObject());
-		},
-
-		/**
-		 * Get Fare Type filters based on Claim Type and Claim Item
-		 * @public
-		 * @param {string} sClaimTypeId
-		 * @param {string} sClaimTypeItemId
-		 * @returns {sap.ui.model.Filter[]} array of filters
-		 */
-		getFareTypeFilters: function (sClaimTypeId, sClaimTypeItemId) {
-			var aFilters = [];
-			if ([Constant.ClaimType.KURSUS_DLM_NEGARA,
-			Constant.ClaimType.DLM_NEGARA,
-			Constant.ClaimType.KURSUS_LUAR_NEGARA,
-			Constant.ClaimType.LUAR_NEGARA,
-			Constant.ClaimType.ELAUN_TUKAR
-			].includes(sClaimTypeId) &&
-				sClaimTypeItemId === Constant.ClaimTypeItem.TAMBANG) {
-				aFilters.push(new Filter("FARE_TYPE_ID", FilterOperator.NE, Constant.FareType.FLIGHT));
-			}
-			return aFilters;
 		},
 
 		/**
@@ -664,26 +958,6 @@ sap.ui.define([
 		},
 
 		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sEmpId - employee ID to retrieve dependents for
-		* @returns {integer} if records found, return total number of dependents for employee
-		*/
-		getSpouseChildNo: async function () {
-			const oContext = this._oView.getModel().bindContext("/getNumberOfFamilyMembers(...)");
-			oContext.setParameter("IND", "IND1"); //Get count of spouse and children + self
-
-			await oContext.execute();
-
-			// Read return value
-			const oResult = await oContext.requestObject();
-
-			return oResult?.value ?? 0;
-		},
-
-		/**
 		 * Retrieve and apply Pemberian Pindah claim amount from backend service.
 		 *
 		 * Calls backend calculation function using employee ID,region, marital status
@@ -715,36 +989,6 @@ sap.ui.define([
 					}
 
 				});
-		},
-		
-		fetchAutoClaimStatus: async function(sClaimID){
-			const oContext = this._oView.getModel().bindContext("/checkClaimHeaderStatusForAutoApproval(...)");
-			oContext.setParameter("sClaimID", sClaimID);
-
-			try{
-				await oContext.execute();
-				const oResult = oContext.getBoundContext().getObject();
-				
-				return oResult.sStatus;
-			}catch(oError){
-				return null;
-			}
-		},
-		/**
-		 * Calculate the KM based on tickbox RoundTrip.
-		 *
-		 * Calls backend calculation function using KM field and multiple by 2.
-		 *
-		 * @public
-		 * @returns final amount KM after multiply by 2
-		 */
-
-		calculateRoundTripKM: async function (oModel, fKM) {
-			const oAction = oModel.bindContext("/calculateRoundTripKM(...)");
-			oAction.setParameter("fKM", fKM);
-			await oAction.execute();
-			const oResult = oAction.getBoundContext().getObject();
-			return oResult.fFinalAmount;
 		},
 		getFuneralTransportEligibleAmount: async function (sTransportPassingID, sClaimTypeItem, sClaimType) {
 			const oContext = this._oView.getModel().bindContext("/getJenazahEligibleAmount(...)");
@@ -795,6 +1039,13 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Maps a raw ZEMP_CLAIM_HEADER_VIEW row to the flat form shape the
+		 * claimsubmission_input/claim header fragments bind against.
+		 * @public
+		 * @param {object} oHeaderRaw - raw header row
+		 * @returns {object} mapped header
+		 */
 		mapClaimHeaderToForm: function (oHeaderRaw) {
             return {
                 claim_id: oHeaderRaw.CLAIM_ID,
@@ -872,185 +1123,30 @@ sap.ui.define([
         },
 
 		/**
-		 * Maps raw ZEMP_CLAIM_ITEM_VIEW rows to the flat item structure the
-		 * fragment binds against. `descr` starts empty - filled separately by
-		 * `_applyClaimItemDescr` from the same raw rows.
+		 * Bind to existing claim header with claim ID, if not found return null value
+		 * @public
+		 * @param {object} oODataModel model used for claim data binding
+		 * @param {string} sClaimId claim ID to check from database
+		 * @returns {object} Bound context of the claim header, null value if not found
 		 */
-		mapClaimItems: function (aRawItems) {
-			return aRawItems.map(it => ({
-				claim_id: it.CLAIM_ID,
-				claim_sub_id: it.CLAIM_SUB_ID,
-				claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
-				charged_to_ccc: !!it.CHARGED_TO_CCC,
-				percentage_compensation: it.PERCENTAGE_COMPENSATION,
-				account_no: it.ACCOUNT_NO,
-				amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
-				attachment_file_1: it.ATTACHMENT_FILE_1,
-				attachment_file_2: it.ATTACHMENT_FILE_2,
-				bill_no: it.BILL_NO,
-				bill_date: it.BILL_DATE,
-				claim_category: it.CLAIM_CATEGORY,
-				country: it.COUNTRY,
-				disclaimer: it.DISCLAIMER,
-				start_date: it.START_DATE,
-				end_date: it.END_DATE,
-				start_time: it.START_TIME,
-				end_time: it.END_TIME,
-				flight_class: it.FLIGHT_CLASS,
-				from_location: it.FROM_LOCATION,
-				from_location_office: it.FROM_LOCATION_OFFICE,
-				km: it.KM,
-				location: it.LOCATION,
-				location_type: it.LOCATION_TYPE,
-				lodging_category: it.LODGING_CATEGORY,
-				lodging_address: it.LODGING_ADDRESS,
-				marriage_category: it.MARRIAGE_CATEGORY,
-				area: it.AREA,
-				no_of_family_member: it.NO_OF_FAMILY_MEMBER,
-				parking: it.PARKING,
-				phone_no: it.PHONE_NO,
-				rate_per_km: it.RATE_PER_KM,
-				receipt_date: it.RECEIPT_DATE,
-				receipt_number: it.RECEIPT_NUMBER,
-				remark: it.REMARK,
-				room_type: it.ROOM_TYPE,
-				region: it.REGION,
-				from_state_id: it.FROM_STATE_ID,
-				to_state_id: it.TO_STATE_ID,
-				to_location: it.TO_LOCATION,
-				to_location_office: it.TO_LOCATION_OFFICE,
-				toll: it.TOLL,
-				total_exp_amount: it.TOTAL_EXP_AMOUNT,
-				vehicle_type: it.VEHICLE_TYPE,
-				vehicle_fare: it.VEHICLE_FARE,
-				trip_start_date: it.TRIP_START_DATE,
-				trip_end_date: it.TRIP_END_DATE,
-				event_start_date: it.EVENT_START_DATE,
-				event_end_date: it.EVENT_END_DATE,
-				travel_duration_day: it.TRAVEL_DURATION_DAY,
-				travel_duration_hour: it.TRAVEL_DURATION_HOUR,
-				provided_breakfast: it.PROVIDED_BREAKFAST,
-				provided_lunch: it.PROVIDED_LUNCH,
-				provided_dinner: it.PROVIDED_DINNER,
-				entitled_breakfast: it.ENTITLED_BREAKFAST,
-				entitled_lunch: it.ENTITLED_LUNCH,
-				entitled_dinner: it.ENTITLED_DINNER,
-				dependent_type: it.DEPENDENT_TYPE_ID,
-				anggota_id: it.ANGGOTA_ID,
-				anggota_name: it.ANGGOTA_NAME,
-				dependent_name: it.DEPENDENT_NAME,
-				dependent: it.DEPENDENT,
-				type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
-				disclaimer_galakan: it.DISCLAIMER_GALAKAN,
-				mode_of_transfer: it.MODE_OF_TRANSFER,
-				travel_alone_family: it.TRAVEL_ALONE_FAMILY,
-				travel_family_now_later: it.TRAVEL_FAMILY_NOW_LATER,
-				transfer_date: it.TRANSFER_DATE,
-				no_of_days: it.NO_OF_DAYS,
-				family_count: it.FAMILY_COUNT,
-				funeral_transportation: it.FUNERAL_TRANSPORTATION,
-				round_trip: it.ROUND_TRIP,
-				trip_end_time: it.TRIP_END_TIME,
-				trip_start_time: it.TRIP_START_TIME,
-				cost_center: it.COST_CENTER,
-				gl_account: it.GL_ACCOUNT,
-				material_code: it.MATERIAL_CODE,
-				vehicle_ownership_id: it.VEHICLE_OWNERSHIP_ID,
-				actual_amount: it.ACTUAL_AMOUNT,
-				arrival_time: it.ARRIVAL_TIME,
-				claim_type_id: it.CLAIM_TYPE_ID,
-				course_title: it.COURSE_TITLE,
-				currency_amount: it.CURRENCY_AMOUNT,
-				currency_code: it.CURRENCY_CODE,
-				currency_rate: it.CURRENCY_RATE,
-				departure_time: it.DEPARTURE_TIME,
-				emp_id: it.EMP_ID,
-				fare_type_id: it.FARE_TYPE_ID,
-				insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
-				insurance_cert_start_date: it.INSURANCE_CERT_START_DATE,
-				insurance_package_id: it.INSURANCE_PACKAGE_ID,
-				insurance_provider_id: it.INSURANCE_PROVIDER_ID,
-				insurance_provider_name: it.INSURANCE_PROVIDER_NAME,
-				insurance_purchase_date: it.INSURANCE_PURCHASE_DATE,
-				meter_cube_actual: it.METER_CUBE_ACTUAL,
-				meter_cube_entitled: it.METER_CUBE_ENTITLED,
-				mobile_category_purpose_id: it.MOBILE_CATEGORY_PURPOSE_ID,
-				need_foreign_currency: it.NEED_FOREIGN_CURRENCY,
-				policy_number: it.POLICY_NUMBER,
-				purpose: it.PURPOSE,
-				request_approval_amount: it.REQUEST_APPROVAL_AMOUNT,
-				study_levels_id: it.STUDY_LEVELS_ID,
-				travel_days_id: it.TRAVEL_DAYS_ID,
-				vehicle_class_id: it.VEHICLE_CLASS_ID,
-				daily_allowance: it.DAILY_ALLOWANCE,
-				tips: it.TIPS,
-				exclude_tips: it.EXCLUDE_TIPS,
-				number_of_travellers: it.TOTAL_TRAVELLER,
-				internal_order: it.INTERNAL_ORDER,
-				course_duration: it.COURSE_DURATION,
-				insurance_medical_provider_id: it.INSURANCE_MEDICAL_PROVIDER_ID,
-				insurance_medical_provider_name: it.INSURANCE_MEDICAL_PROVIDER_NAME,
-				policy_start_date: it.POLICY_START_DATE,
-				policy_end_date: it.POLICY_END_DATE,
-				dependent_national_id: it.DEPENDENT_NATIONAL_ID,
-				previous_policy_number: it.PREVIOUS_POLICY_NUMBER,
-				current_policy_number: it.CURRENT_POLICY_NUMBER,
-				next_policy_number: it.NEXT_POLICY_NUMBER,
-				attachment_file_3: it.ATTACHMENT_FILE_3,
-				attachment_file_4: it.ATTACHMENT_FILE_4,
-				policy_year: it.POLICY_YEAR,
-				descr: {}
-			}));
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject();
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
 		},
 
-		/**
-		 * Maps each raw item row's *_DESC (and related) fields to the `descr`
-		 * sub-object the fragment expects, and writes it onto /claim_items/{i}/descr.
-		 * Uses the same raw rows already fetched for item values - no second query.
-		 */
-		applyClaimItemDescr: function (oClaimSubmissionModel, aRawItems) {
-			const aItemsD = aRawItems.map(it => ({
-				claim_type_item_id: it.CLAIM_TYPE_ITEM_DESC,
-				claim_category: it.CLAIM_CATEGORY_DESC,
-				country: it.COUNTRY_DESC,
-				flight_class: it.FLIGHT_CLASS_DESC,
-				from_location_office: null,
-				location_type: it.LOC_TYPE_DESC,
-				lodging_category: it.LODGING_CATEGORY_DESC,
-				marriage_category: it.MARRIAGE_CATEGORY_DESC,
-				area: it.AREA_DESC,
-				rate_per_km: it.RATE_PER_KM,
-				room_type: it.ROOM_TYPE_DESC,
-				region: it.REGION_DESC,
-				from_state_id: null,
-				to_state_id: null,
-				to_location_office: null,
-				vehicle_type: it.VEHICLE_TYPE_DESC,
-				type_of_professional_body: null,
-				no_of_days: null,
-				funeral_transportation: null,
-				material_code: null,
-				vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
-				fare_type_id: null,
-				insurance_package_id: null,
-				insurance_provider_id: null,
-				meter_cube_entitled: null,
-				mobile_category_purpose_id: null,
-				study_levels_id: null,
-				claim_type_id: it.CLAIM_TYPE_DESC,
-				vehicle_class_id: null,
-				attachment_file_1: null,
-				attachment_file_2: null,
-				mode_of_transfer: it.TRANSFER_MODE_DESC,
-				travel_alone_family: it.TRAVEL_TYPE_DESC,
-				travel_family_now_later: it.FAMILY_TIMING_DESC,
-				attachment_file_3: null,
-				attachment_file_4: null
-			}));
+		buildItemPayload: buildItemPayload,
+		mapClaimItems: mapClaimItems,
+		applyClaimItemDescr: applyClaimItemDescr,
+		getStatusPolicy: getStatusPolicy
 
-			aItemsD.forEach((oDescr, i) => {
-				oClaimSubmissionModel.setProperty("/claim_items/" + i + "/descr", oDescr);
-			});
-		},
-	}
+	};
 });
