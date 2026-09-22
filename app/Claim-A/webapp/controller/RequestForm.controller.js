@@ -321,9 +321,11 @@ sap.ui.define([
 				if (
 					sReqStatus === this._oConstant.RequestStatus.SEND_BACK &&
 					bCurrentUserIsApprover &&
-					sRequestOwnerId != sCurrentUserId
+					sRequestOwnerId !== sCurrentUserId
 				) {
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				} else if (sRequestOwnerId === sCurrentUserId) {
+					PARequestSharedFunction.getCurrentState(this);
 				} else {
 					var bPendingApprover = false;
 
@@ -556,8 +558,8 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
+										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
 
 										var aMessages = [];
 										if (aInsufficientItems.length > 0) {
