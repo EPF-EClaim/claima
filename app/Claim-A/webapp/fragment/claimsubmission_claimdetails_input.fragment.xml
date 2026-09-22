@@ -977,7 +977,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: null
                         },
                         constraints: { minimum: 0.00 }
 					}"
@@ -1445,8 +1446,7 @@
                 <Input
                     id="input_claimdetails_input_provided_breakfast"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_breakfast',
-						type: 'Integer'
+						path: 'claimitem_input>/claim_item/provided_breakfast'
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1457,8 +1457,7 @@
                 <Input
                     id="input_claimdetails_input_provided_lunch"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_lunch',
-						type: 'Integer'
+						path: 'claimitem_input>/claim_item/provided_lunch'
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1469,8 +1468,7 @@
                 <Input
                     id="input_claimdetails_input_provided_dinner"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_dinner',
-						type: 'Integer'
+						path: 'claimitem_input>/claim_item/provided_dinner'
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"

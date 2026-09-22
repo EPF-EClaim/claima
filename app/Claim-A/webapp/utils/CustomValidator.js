@@ -117,9 +117,31 @@ sap.ui.define([
                         var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
                         var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
                         var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
+                        var bInteger = true;
+                        [
+                        "provided_breakfast",
+                        "provided_lunch",
+                        "provided_dinner"
+			            ].forEach(function (sField) {
+			        	const sPath = `/claim_item/${sField}`;
+			        	const vValue = oInputModel.getProperty(sPath);
+			        	if (vValue === null || vValue === undefined || String(vValue).trim() === "" ) {
+			        		oInputModel.setProperty(sPath, null);
+			        	}
+
+                        if (!Number.isInteger(Number(vValue))) { 
+                            bInteger = false;
+                        }
+			            });
+
+                        if (!bInteger) {
+                            MessageBox.error(Utility.getText("msg_invalid_integer_input"));
+                            bCanProceed = false;
+                        }
+
                         if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
-                            bCanProceed = false
+                            bCanProceed = false;
                         }
                     }
 
