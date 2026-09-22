@@ -344,11 +344,11 @@
 					<customData>
 						<core:CustomData
 							key="customMinDateError"
-							value="{i18n>error_event_start_date_header_mindate}"
+							value="{i18n>error_event_date_range}"
 						/>
 						<core:CustomData
 							key="customMaxDateError"
-							value="{= ${reqDialog>/eventenddate} ? ${i18n>error_event_start_date_maxdate} : ${i18n>error_event_start_date_header_maxdate} }"
+							value="{i18n>error_event_date_range}"
 						/>
 					</customData>
 				</DatePicker>
@@ -403,11 +403,11 @@
 					<customData>
 						<core:CustomData
 							key="customMinDateError"
-							value="{= ${reqDialog>/eventstartdate} ? ${i18n>error_event_end_date_mindate} : ${i18n>error_event_end_date_header_mindate} }"
+							value="{i18n>error_event_date_range}"
 						/>
 						<core:CustomData
 							key="customMaxDateError"
-							value="{i18n>error_event_end_date_header_maxdate}"
+							value="{i18n>error_event_date_range}"
 						/>
 					</customData>
 				</DatePicker>

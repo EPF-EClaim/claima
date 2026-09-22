@@ -593,8 +593,8 @@
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_start_date_mindate}" />
-                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_start_date_maxdate}" />
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
@@ -646,8 +646,8 @@
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_end_date_mindate}" />
-                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_end_date_maxdate}" />
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
@@ -1388,8 +1388,8 @@
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_start_date_mindate}" />
-                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_start_date_maxdate}" />
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
@@ -1442,8 +1442,8 @@
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_end_date_mindate}" />
-                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_end_date_maxdate}" />
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
