@@ -680,6 +680,11 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
+			// Approvers (including after they push a request back) must never edit the header
+			const sViewMode = this._oReqModel.getProperty("/view");
+			if (sViewMode === this._oConstant.PARMode.VIEWAPPR || sViewMode === this._oConstant.PARMode.APPROVER) {
+				return;
+			}
 			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
@@ -881,11 +886,11 @@ sap.ui.define([
 			}
 
 			const sState = this._oReqModel.getProperty("/view");
-			if (sState != this._oConstant.PARMode.APPROVER) {
+			if (sState != this._oConstant.PARMode.APPROVER && sState != this._oConstant.PARMode.VIEWAPPR) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 				this._getClaimTypeItemSelection();
 			} else {
-				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);

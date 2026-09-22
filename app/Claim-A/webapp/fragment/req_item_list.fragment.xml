@@ -64,7 +64,7 @@
                             <table:items>
                                 <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} === 'list' }" />
                                 <table:RowActionItem type="Custom"      press=".onOpenItemEdit"     visible="{= ${request>/view} === 'list' }"  icon="sap-icon://edit"  text="Edit"/>
-                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"     visible="{= ${request>/view} === 'view' || ${request>/view} === 'approver' }" />
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"     visible="{= ${request>/view} === 'view' || ${request>/view} === 'approver' || ${request>/view} === 'view_appr'}" />
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>
