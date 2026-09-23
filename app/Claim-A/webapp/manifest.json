@@ -764,12 +764,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,START_DATE,END_DATE"
+                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,START_DATE,END_DATE"
+                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
                                         }
                                     },
                                     "actions": {

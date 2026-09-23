@@ -2372,18 +2372,6 @@ annotate service.ZPROJECT_HDR with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
             }
         ]
     }
@@ -2393,7 +2381,6 @@ annotate service.ZPROJECT_HDR with {
     PROJECT_CODE_IO @mandatory;
     PROJECT_DESC    @mandatory;
     GL_ACCOUNT      @mandatory;
-    COST_CENTER     @mandatory;
     STATUS          @mandatory;
 };
 
