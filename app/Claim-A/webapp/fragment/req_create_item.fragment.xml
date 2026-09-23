@@ -1472,7 +1472,14 @@
                                             visible="false"
                                             id="i_daily_allowance" >
                                     <form:fields>
-                                        <Text text="{request>/req_item/daily_allowance}"/>
+                                        <Text text="{
+                                            path: 'request>/req_item/daily_allowance',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                                }
+                                            }"/>
                                     </form:fields>
                                 </form:FormElement>
 
