@@ -319,148 +319,127 @@ sap.ui.define([
 		},
 
 		_afterLoadFragments: async function () {
-			// ReInit claimutility because of model undefined upon refresh on claim submission view
+
+			// Reinitialize utilities
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
-			// ReInit utility because of model undefined upon refresh on claim submission view
 			Utility.init(this.getOwnerComponent(), this.getView());
-			// enable view attachment at claim summary
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
+
+			const oView = this.getView();
+			const oClaimSubmissionModel = oView.getModel("claimsubmission_input");
+
+			if (!oClaimSubmissionModel) {
+				return;
+			}
+
+			// Enable attachment button
+			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
 				this.byId("button_claimsummary_viewattachment").setEnabled(true);
 			}
 
-			// enable additional functionality if 1 or more claim items exist
-			if (oClaimSubmissionModel) {
-				this._setEnabledToolbarFooter();
+			this._setEnabledToolbarFooter();
 
-				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
-				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
-				const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
-				const sCurrentUserId = this._oSessionModel.getProperty("/userId");
-				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+			const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+			const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+			const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+			const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
 
-				if (sStatusId === this._oConstant.ClaimStatus.SEND_BACK) {
-					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			const bIsDraft =
+				sStatusId === this._oConstant.ClaimStatus.DRAFT;
 
-					await ApprovalLog.getApproverList(
-						this._oApprovalLog,
-						oEmployeeViewModel,
-						sClaimId,
-						sClaimTypeId
-					);
+			const bIsSendBack =
+				sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
 
-					const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
+			let bIsApprover = false;
+			let bViewOnly = false;
+			let sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
 
-					const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
+			// =====================================================
+			// Load approval information for non-draft records
+			// =====================================================
+			if (!bIsDraft) {
+
+				const oEmployeeViewModel =
+					this.getOwnerComponent().getModel("employee_view");
+
+				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+				await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
+
+				this.byId("approval_log_table")?.getBinding("rows")?.refresh();
+
+				// Rule #1
+				this._setOwnerDetail(true);
+				this._setApprovalLog(true);
+
+				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
+
+				// Rule #2
+				bIsApprover =
+					sClaimOwnerId !== sCurrentUserId &&
+					aApprovalList.some(oApproval =>
 						oApproval.APPROVER_ID === sCurrentUserId ||
 						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
 					);
 
-					if (
-						bCurrentUserIsApprover &&
-						sClaimOwnerId !== sCurrentUserId
-					) {
-						oClaimSubmissionModel.setProperty("/is_approver", true);
-						oClaimSubmissionModel.setProperty("/view_only", true);
+				oClaimSubmissionModel.setProperty("/is_approver", bIsApprover);
 
-						this._setClaimItemTableToolbar(false);
-						this._setApprovalLog(true);
+				// =====================================================
+				// Determine screen mode
+				// =====================================================
 
-						await ApprovalLog.getApprovalLogHistory(
-							this._oApprovalLog,
-							this._oModel,
-							sClaimId
+				if (bIsApprover) {
 
-						);
+					// Approver always read-only
+					bViewOnly = true;
 
-						this.byId("approval_log_table")?.getBinding("rows")?.refresh();
+					// Rule #3
+					sFooterMode = bIsSendBack
+						? this._oConstant.ClaimFooterMode.VIEW_ONLY
+						: this._oConstant.ClaimFooterMode.APPROVER;
 
-						Utility.updateFooterState(
-							this.getView(),
-							oClaimSubmissionModel,
-							this._oConstant,
-							this._oConstant.ClaimFooterMode.VIEW_ONLY
-						);
-						
-						return;
+				} else {
+
+					// Owner
+
+					if (bIsSendBack) {
+						bViewOnly = false;
+						sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+					} else {
+						bViewOnly = true;
+						sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
 					}
 				}
-
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					null
-				);
-
-				//const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
-				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
-
-				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					if (sStatusId !== this._oConstant.ClaimStatus.DRAFT && !bIsSendBack) {
-						oClaimSubmissionModel.setProperty("/view_only", true)
-					}
-				}
-				if (oClaimSubmissionModel.getProperty("/view_only")) {
-					this._setClaimItemTableToolbar(false);
-				}
-
-				if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
-					this._setApprovalLog(true);
-					Utility.updateFooterState(
-						this.getView(),
-						oClaimSubmissionModel,
-						this._oConstant,
-						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
-					);
-
-					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
-					await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
-					this.byId("approval_log_table")?.getBinding("rows").refresh();
-
-					if (!bIsSendBack) {
-						//// set approver view if current user is approver
-						let oApprovalLogFragment = await this._getFormFragment("approval_log");
-						let iApproverCount = this._oApprovalLog.getProperty("/approval")?.length || 0;
-						if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-							var sUserId = this._oSessionModel.getProperty("/userId");
-							if (sUserId) {
-								let iItemIndex = this._oApprovalLog.getProperty("/approval").findIndex((oApproval) =>
-									(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
-									oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
-								);
-								if (iItemIndex !== -1) {
-									oClaimSubmissionModel.setProperty("/is_approver", true);
-								}
-							}
-							this._setOwnerDetail(true);
-						}
-						//// change screen details if approver
-						if (oClaimSubmissionModel.getProperty("/is_approver")) {
-							Utility.updateFooterState(
-								this.getView(),
-								oClaimSubmissionModel,
-								this._oConstant,
-								this._oConstant.ClaimFooterMode.APPROVER
-							);
-
-						}
-					}
-				}
-				else {
-					Utility.updateFooterState(
-						this.getView(),
-						oClaimSubmissionModel,
-						this._oConstant,
-						this._oConstant.ClaimFooterMode.SUMMARY
-					);
-
-				}
-				this._calculateClaimTotal();
-				this._calculateCardAdvanceAmount();
 			}
+
+			// Draft
+			else {
+
+				bViewOnly = false;
+				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+				oClaimSubmissionModel.setProperty("/is_approver", false);
+			}
+
+			// =====================================================
+			// Apply screen state
+			// =====================================================
+
+			oClaimSubmissionModel.setProperty("/view_only", bViewOnly);
+
+			if (bViewOnly) {
+				this._setClaimItemTableToolbar(false);
+			}
+
+			Utility.updateFooterState(
+				oView,
+				oClaimSubmissionModel,
+				this._oConstant,
+				sFooterMode
+			);
+
+			this._calculateClaimTotal();
+			this._calculateCardAdvanceAmount();
 		},
+
 		onSelectCountry: async function(oEvent){
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == Constants.ClaimTypeItem.LODG_O){
@@ -4316,7 +4295,7 @@ sap.ui.define([
  
 				oPage.removeContent(oClaimItemFragment);
  
-				this._showInitFormFragment();
+				await this._showInitFormFragment();
 				await this._afterLoadFragments();
 				// Reload when item cancellation
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
