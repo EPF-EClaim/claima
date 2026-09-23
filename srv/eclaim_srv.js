@@ -239,16 +239,16 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        //crud operation visibility in config table for DTD and JKEW
-        let operationHidden = true;
-        if (req.user.is(Constant.Admin.DTD_Admin)) {
-            operationHidden = false;
-        }
+        // CRUD operation visibility in config table for DTD and JKEW
+
+        const bHasAccess =
+            req.user.is(Constant.Admin.DTD_Admin) ||
+            req.user.is(Constant.Admin.Admin_System);
 
         return {
-            operationHidden: operationHidden,
-            operationEnabled: !operationHidden,
-        }
+            operationHidden: !bHasAccess,
+            operationEnabled: bHasAccess
+        };
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
