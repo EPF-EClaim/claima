@@ -331,13 +331,14 @@ sap.ui.define([
 
 			const oView = this.getView();
 			const oClaimSubmissionModel = oView.getModel("claimsubmission_input");
+
+			if (!oClaimSubmissionModel) return;
+
 			const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 			const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
 			const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
 			const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
-
-			if (!oClaimSubmissionModel) return;
 
 			// Enable attachment button
 			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
