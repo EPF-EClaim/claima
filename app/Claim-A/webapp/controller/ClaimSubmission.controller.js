@@ -2988,11 +2988,6 @@ sap.ui.define([
 				});
 				return;
 			}
-			var oItemPropertyModel = this.getView().getModel("claimitem_property");
-			if (oItemPropertyModel.getProperty("/start_date/is_visible") && oItemPropertyModel.getProperty("/end_date/is_visible") &&
-				!CustomValidator._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
-				return;
-			}
 
 			// Check for existing MataWang
 			if (oInputModel.getProperty("/is_new") &&
