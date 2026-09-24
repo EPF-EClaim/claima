@@ -377,8 +377,9 @@ sap.ui.define([
 				bIsApprover =
 					sClaimOwnerId !== sCurrentUserId &&
 					aApprovalList.some(oApproval =>
-						oApproval.APPROVER_ID === sCurrentUserId ||
-						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
+						( oApproval.APPROVER_ID === sCurrentUserId || 
+							oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId ) &&
+						oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
 					);
 
 				oClaimSubmissionModel.setProperty("/is_approver", bIsApprover);
