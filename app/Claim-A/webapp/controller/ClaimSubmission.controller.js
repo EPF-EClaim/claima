@@ -4333,9 +4333,8 @@ sap.ui.define([
 		 *     3. Total claim amount validity (NaN / sign, adjusted for travel claims
 		 *        paid by corporate card)
 		 *     4. Duplicate item check via `CustomDuplicationCheck`
-		 *     5. Cash advance repayment amount not negative (non-card, non-travel claims)
-		 *     6. Final amount to receive not negative (travel claims paid by card, on Submit only)
-		 *     7. Corporate card advance amount not negative (on Submit only)
+		 *     5. Final amount to receive not negative (all claims, on Save Draft and Submit)
+		 *     6. Corporate card advance amount not negative (on Submit only)
 		 *
 		 *   If all checks pass:
 		 *     - **Save Draft** persists the current items via `_saveDraftItems`.
@@ -4424,24 +4423,13 @@ sap.ui.define([
 
 					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
-
 					// Cash Advance Repayment Validation checking
-					if (!bHasCard && !bIsTravelClaimType) {
-						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
-							BusyIndicator.hide();
-							return;
-						}
-					}
-
-					// Travel claim with a corporate credit card - final amount to
-					// receive can be 0 but not negative, on submit.
-					if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCard && bIsTravelClaimType) {
-						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_and_potongan_elaun_prompt"));
-							BusyIndicator.hide();
-							return;
-						}
+					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
+						MessageBox.error(Utility.getText(bTravelWithCard
+							? "msg_error_cash_advance_repayment_and_potongan_elaun_prompt"
+							: "msg_error_cash_advance_repayment_prompt"));
+						BusyIndicator.hide();
+						return;
 					}
 
 					// Corporate Credit Card Advance Validation checking
@@ -5416,18 +5404,12 @@ sap.ui.define([
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
+					oClaimItemInputModel.setProperty("/claim_item/daily_allowance", 0);
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
 					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
-				}
-
-				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
-					oClaimItemInputModel.setProperty(
-						"/claim_item/daily_allowance",
-						oResult.daily_allowance
-					);
 				}
 
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
@@ -5445,6 +5427,13 @@ sap.ui.define([
 
 				if (this.byId("input_claimdetails_input_tips").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
+				}
+
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
+					oClaimItemInputModel.setProperty(
+						"/claim_item/daily_allowance",
+						oResult.daily_allowance
+					);
 				}
 
 			}).catch(err => {
