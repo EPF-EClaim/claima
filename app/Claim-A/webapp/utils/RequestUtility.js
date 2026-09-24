@@ -363,7 +363,7 @@ sap.ui.define([
                 var nTravelHour     = oReqItem.no_of_days * 24 || 1;
             }
 
-            if (!nTravelHour || !sRegion) return;
+            if (!nTravelHour || !sRegion) return 0;
 
             const oFunction = oDataModel.bindContext("/getAmountEntitlement(...)");
             

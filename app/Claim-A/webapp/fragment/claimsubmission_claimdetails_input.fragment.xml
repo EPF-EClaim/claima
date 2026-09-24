@@ -540,7 +540,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -551,7 +553,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
@@ -600,7 +604,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -611,7 +617,9 @@
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
 							'claimsubmission_input>/claim_header',
-							'claimitem_input>/claim_item'
+							'claimitem_input>/claim_item',
+							'claimitem_input>/claim_item/start_date',
+							'claimitem_input>/claim_item/end_date'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
@@ -1446,8 +1454,12 @@
                 <Input
                     id="input_claimdetails_input_provided_breakfast"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_breakfast'
-					}"
+                        path: 'claimitem_input>/claim_item/provided_breakfast',
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
+                    }"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
                 />
@@ -1457,7 +1469,11 @@
                 <Input
                     id="input_claimdetails_input_provided_lunch"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_lunch'
+						path: 'claimitem_input>/claim_item/provided_lunch',
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1468,7 +1484,11 @@
                 <Input
                     id="input_claimdetails_input_provided_dinner"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_dinner'
+						path: 'claimitem_input>/claim_item/provided_dinner',
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1507,9 +1527,14 @@
                 <Label text="{i18n>label_claimdetails_input_daily_allowance}" />
                 <Input
                     id="input_claimdetails_input_daily_allowance"
-                    value="{ path: 'claimitem_input>/claim_item/daily_allowance',
-							 type: 'Integer'
-						}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/daily_allowance',
+                        type: 'sap.ui.model.type.Float',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2
+                            }
+                        }"
                     visible="false"
                     editable="false"
                 />

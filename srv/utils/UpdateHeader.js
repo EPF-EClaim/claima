@@ -89,10 +89,6 @@ module.exports = {
                 sReasonId = oTimestamp.REJECT_REASON_ID;
                 break;
 
-            case Constant.Status.CANCELLED:
-                // no additional field udpate required.
-                break;
-
             default:
                 throw new Error("No corresponding status field in header Table.");
                 break;
@@ -115,11 +111,46 @@ module.exports = {
             [sIdField]: sRecordId
         };
 
-        console.log("To Update Fields: ", oToUpdateFields);
-        console.log("Where Conditions: ", oWhereConditions);
-        console.log("Header Table: ", sHeaderTable);    
+        return sResult = await this._updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
+    },
 
-        return sResult = await this.updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
+    /**
+        * Update Claim and Request Header Status
+        * @public
+        * @param {String} sRecordId - Claims / Request Record ID
+        * @param {String} sStatus - Status to be updated into header tables
+        * @param {Object} tx - CDS Transaction
+        * @returns {Integer} result number of records updated in header tables
+        */
+    updateHeaderStatus: async function (sRecordId, sStatus, tx) {
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sIdField, sStatusField;
+
+        // Build Where Condition
+        switch (sRecordId.substring(0, 3)) {
+            case Constant.WorkflowType.CLAIM:
+                sIdField = Constant.EntitiesFields.CLAIMID;
+                sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS_ID;
+                break;
+
+            case Constant.WorkflowType.REQUEST:
+                sIdField = Constant.EntitiesFields.REQUESTID;
+                sHeaderTable = Constant.Entities.ZREQUEST_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS;
+                break;
+        };
+
+        // Object of to be updated fields
+        oToUpdateFields = {
+            [sStatusField]: sStatus // caters for both par and claim
+        };
+
+        // where condition
+        var oWhereConditions = {
+            [sIdField]: sRecordId
+        };
+
+        return sResult = await this._updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
     },
 
     /**
@@ -131,7 +162,7 @@ module.exports = {
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} number of records updated
         */
-    updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
+    _updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
         try {
             const iResult = await tx.run(
                 UPDATE(sHeaderTable)
@@ -177,7 +208,7 @@ module.exports = {
                     .from('ZBUDGET')
                     .columns('WBS_CODE')
                     .where({
-                        PROJECT_CODE: sProjectCode,
+                        PROJECT_CODE: oHeader.PROJECT_CODE,
                         YEAR: sCurrentYear
                     })
             );
