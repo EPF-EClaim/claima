@@ -389,19 +389,14 @@ sap.ui.define([
 				// Determine screen mode
 				// =====================================================
 
-				if (bIsApprover) {
+				// Approver always read-only
+				bViewOnly = true;
+				sFooterMode = bIsApprover
+						? this._oConstant.ClaimFooterMode.APPROVER :
+						this._oConstant.ClaimFooterMode.VIEW_ONLY;
 
-					// Approver always read-only
-					bViewOnly = true;
-
-					// Rule #3
-					sFooterMode = bIsSendBack
-						? this._oConstant.ClaimFooterMode.VIEW_ONLY
-						: this._oConstant.ClaimFooterMode.APPROVER;
-
-				} else {
-
-					// Owner
+				// Owner
+				if (sClaimOwnerId === sCurrentUserId) {
 
 					if (bIsSendBack) {
 						bViewOnly = false;
