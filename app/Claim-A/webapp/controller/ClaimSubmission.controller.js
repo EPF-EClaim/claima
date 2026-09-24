@@ -80,6 +80,7 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: function () {
+			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oClaimFragments = Object.create(null);
 			this._clearExit = false;
@@ -1805,8 +1806,6 @@ sap.ui.define([
 			);
 		},
 
-		// Aiman Salim - 14/03/2026 - For Approval Process. 
-
 		onClickCancel_app: function () {
 			// Close via the stored instance (ApproveDialog keeps it on controller as __approveDialog)
 			if (this._approveDialog) {
@@ -1815,9 +1814,9 @@ sap.ui.define([
 			if (this._sendBackDialog) { this._sendBackDialog.close(); }
 			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
+
 		//Button config for Approve
 		onClickCreate_app: async function () {
-
 
 			if (this.bIsApproving) {
 				return;
@@ -1859,7 +1858,7 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					window.location.reload(true);
+					this._oRouter.navTo("MyApproval");
 
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
@@ -1924,7 +1923,7 @@ sap.ui.define([
 					this._oRejectDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
@@ -1979,7 +1978,7 @@ sap.ui.define([
 					this._oSendBackDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
@@ -3242,7 +3241,7 @@ sap.ui.define([
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
-					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
+					DAILY_ALLOWANCE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
