@@ -311,10 +311,8 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_start_date_kursus_mindate"));
                             } else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                // Elaun Perpindahan - minimum date = move-in date
+                                // Elaun Perpindahan / Elaun Pertukaran - minimum date = header trip start date
                                 _dMinDate = new Date(oHeader["trip_start_date"]);
-                                const dPastDate = new Date(_dMinDate);
-                                _dMinDate = dPastDate;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
                             }else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
@@ -368,11 +366,21 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_end_date_kursus_mindate"));
                                 }
                             } else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMinDate = new Date(oHeader["trip_start_date"]);
-                                const dPastDate = new Date(_dMinDate);
-                                _dMinDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                                // Elaun Perpindahan / Elaun Pertukaran (e.g. Elaun Pengangkutan items)
+                                // minimum date = item start date if set, otherwise header trip start date
+                                // (whichever is later), so End Date can never be earlier than Start Date
+                                var dHeaderStart = new Date(oHeader["trip_start_date"]);
+                                var dItemStart = (oItem && oItem["start_date"]) ? new Date(oItem["start_date"]) : null;
+                                if (!!dItemStart && !isNaN(dItemStart.getTime()) &&
+                                    (isNaN(dHeaderStart.getTime()) || dItemStart >= dHeaderStart)) {
+                                    _dMinDate = dItemStart;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_end_date_mindate"));
+                                } else {
+                                    _dMinDate = dHeaderStart;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                                }
                             } else {
                                 // Other Claim Type - minimum date = item start date
                                 // if start date not set, default to null (no constraint)
@@ -709,11 +717,21 @@ sap.ui.define([
                                 }
                             }
                             else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                // Elaun Perpindahan - maximum date = trip end date
-                                _dMaxDate = new Date(oHeader["trip_end_date"]);
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
+                                // Elaun Perpindahan / Elaun Pertukaran (e.g. Elaun Pengangkutan items)
+                                // maximum date = item end date if set, otherwise header trip end date
+                                // (whichever is earlier), so Start Date can never exceed End Date
+                                var dHeaderEnd = new Date(oHeader["trip_end_date"]);
+                                var dItemEnd = (oItem && oItem["end_date"]) ? new Date(oItem["end_date"]) : null;
+                                if (!!dItemEnd && !isNaN(dItemEnd.getTime()) &&
+                                    (isNaN(dHeaderEnd.getTime()) || dItemEnd <= dHeaderEnd)) {
+                                    _dMaxDate = dItemEnd;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_maxdate"));
+                                } else {
+                                    _dMaxDate = dHeaderEnd;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
+                                }
                             }
                             else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
                                 // Kursus Dalam Negara/Kursus Luar Negara - maximum date = item end date
@@ -774,7 +792,7 @@ sap.ui.define([
                                     _oResourceBundle.getText("error_end_date_kursus_maxdate"));
                             }
                             else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                // Elaun Perpindahan - maximum date = trip end date
+                                // Elaun Perpindahan / Elaun Pertukaran - maximum date = header trip end date
                                 _dMaxDate = new Date(oHeader["trip_end_date"]);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
