@@ -921,6 +921,7 @@
                     change="onSelect_ClaimDetails_VehicleOwnership"
                     liveChange="onSelect_ClaimDetails_VehicleOwnership"
                     visible="false"
+                    required="true"
 				>
 				</Select>
 
@@ -985,7 +986,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: null
                         },
                         constraints: { minimum: 0.00 }
 					}"
@@ -1205,7 +1207,12 @@
 					id="input_claimdetails_input_rate_per_km"
 					value="{
 						path: 'claimitem_input>/claim_item/descr/rate_per_km',
-						type: 'FloatType'
+						type: 'sap.ui.model.type.Float',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2,
+                            groupingEnabled: true
+                        }
 					}"
 					editable="false"
 					visible="{claimitem_property>/rate_per_km/is_visible}"
@@ -1641,7 +1648,8 @@
                     id="input_claimdetails_input_bill_no"
                     value="{claimitem_input>/claim_item/bill_no}"
                     visible="false"
-                    required="{claimitem_property>/bill_no/is_required}"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK}}"
                 />
 
                 <!-- Account No -->
@@ -1650,7 +1658,8 @@
                     id="input_claimdetails_input_account_no"
                     value="{claimitem_input>/claim_item/account_no}"
                     visible="false"
-                    required="{claimitem_property>/account_no/is_required}"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/BIL_AIR} ||
+                                ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/ELEKTRIK}}"
                 />
 
                 <!-- Bill Date -->

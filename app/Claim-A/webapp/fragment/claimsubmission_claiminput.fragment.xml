@@ -82,7 +82,14 @@
                     <Label text="{i18n>label_claiminput_amtapproved}" />
                     <Text
                         id="text_claiminput_amtapproved"
-                        text="{claimsubmission_input>/claim_header/preapproved_amount}"
+                        text="{
+                            parts: [
+                                { path: 'claimsubmission_input>/claim_header/preapproved_amount' },
+                                { path: 'claimsubmission_input>/claim_header/currency_code' }
+                            ],
+                            type: 'sap.ui.model.type.Currency',
+                            formatOptions: { showMeasure: true }
+                        }"
                         visible="{= ${claimsubmission_input>/claimtype/requestform/preapproval_amount} !== null &amp;&amp;
                                 !${claimsubmission_input>/req_emailapprove} }"
                     />
@@ -164,7 +171,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
                         }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
@@ -176,7 +183,7 @@
                                         ${claimsubmission_input>/claimtype/course_code/start_date} === null ))
                         }"
                         required="true"
-                        displayFormat="dd-MMM-yyyy"
+                        displayFormat="dd MMM yyyy"
                         minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_START_DATE',
@@ -221,7 +228,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
                         }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
@@ -233,7 +240,7 @@
                                         ${claimsubmission_input>/claimtype/course_code/end_date} === null ))
                         }"
                         required="true"
-                        displayFormat="dd-MMM-yyyy"
+                        displayFormat="dd MMM yyyy"
                         minDate="{
                             parts: [
                                 'constant>/EntitiesFields/TRIP_END_DATE',
@@ -276,7 +283,31 @@
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 ${claimsubmission_input>/req_emailapprove} }"
-                        displayFormat="dd-MMM-yyyy"
+                        displayFormat="dd MMM yyyy"
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/EVENT_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/EVENT_START_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
                         />
 
                     <!-- Event End Date -->
@@ -289,7 +320,31 @@
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 ${claimsubmission_input>/req_emailapprove} }"
-                        displayFormat="dd-MMM-yyyy"
+                        displayFormat="dd MMM yyyy"
+                        minDate="{
+                            parts: [
+                                'constant>/EntitiesFields/EVENT_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/event_start_date'
+                            ],
+                            formatter: '.DateUtility.determineMinDate'
+                            }"
+                        maxDate="{
+                            parts: [
+                                'constant>/EntitiesFields/EVENT_END_DATE',
+                                'constant>/WorkflowType/CLAIM',
+                                'claimsubmission_input>/claimtype/type',
+                                { value: 'null' },
+                                'claimsubmission_input>/claim_header',
+                                'claimsubmission_input>/claimtype/item',
+                                'claimsubmission_input>/claim_header/trip_end_date'
+                            ],
+                            formatter: '.DateUtility.determineMaxDate'
+                        }"
                         />
 
                     <!-- Corporate credit card -->
@@ -365,7 +420,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
                         }"
                         showCurrentDateButton="true"
