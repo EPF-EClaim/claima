@@ -16,6 +16,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/ListMode",
+	"claima/utils/ActionStateService",
 	"claima/utils/Utility",
 	"claima/utils/ClaimUtility",
 	"claima/utils/Attachment",
@@ -53,6 +54,7 @@ sap.ui.define([
 	Button,
 	Label,
 	ListMode,
+	ActionStateService,
 	Utility,
 	ClaimUtility,
 	Attachment,
@@ -80,6 +82,7 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: function () {
+			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oClaimFragments = Object.create(null);
 			this._clearExit = false;
@@ -106,6 +109,8 @@ sap.ui.define([
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());
+
+			ActionStateService.init(this.getOwnerComponent());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -327,16 +332,7 @@ sap.ui.define([
 			const oView = this.getView();
 			const oClaimSubmissionModel = oView.getModel("claimsubmission_input");
 
-			if (!oClaimSubmissionModel) {
-				return;
-			}
-
-			// Enable attachment button
-			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
-				this.byId("button_claimsummary_viewattachment").setEnabled(true);
-			}
-
-			this._setEnabledToolbarFooter();
+			if (!oClaimSubmissionModel) return;
 
 			const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 			const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
@@ -344,97 +340,29 @@ sap.ui.define([
 			const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
 
-			const bIsDraft =
-				sStatusId === this._oConstant.ClaimStatus.DRAFT;
+			// Enable attachment button
+			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
+				this.byId("button_claimsummary_viewattachment").setEnabled(true);
+			}
 
-			const bIsSendBack =
-				sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
+			const aEditableStatus = [this._oConstant.ClaimStatus.DRAFT, this._oConstant.ClaimStatus.SEND_BACK];
+			const bEditable = aEditableStatus.includes(sStatusId) && (sClaimOwnerId === sCurrentUserId);
 
-			let bIsApprover = false;
-			let bViewOnly = false;
-			let sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+			// always show owner detail and approval log once it is submitted
+			if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 
-			// =====================================================
-			// Load approval information for non-draft records
-			// =====================================================
-			if (!bIsDraft) {
-
-				const oEmployeeViewModel =
-					this.getOwnerComponent().getModel("employee_view");
-
-				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+				await ApprovalLog.getApproverList(this._oApprovalLog, this._oViewModel, sClaimId, sClaimTypeId);
 				await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
 
-				this.byId("approval_log_table")?.getBinding("rows")?.refresh();
-
-				// Rule #1
 				this._setOwnerDetail(true);
 				this._setApprovalLog(true);
-
-				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
-
-				// Rule #2
-				bIsApprover =
-					sClaimOwnerId !== sCurrentUserId &&
-					aApprovalList.some(oApproval =>
-						oApproval.APPROVER_ID === sCurrentUserId ||
-						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
-					);
-
-				oClaimSubmissionModel.setProperty("/is_approver", bIsApprover);
-
-				// =====================================================
-				// Determine screen mode
-				// =====================================================
-
-				if (bIsApprover) {
-
-					// Approver always read-only
-					bViewOnly = true;
-
-					// Rule #3
-					sFooterMode = bIsSendBack
-						? this._oConstant.ClaimFooterMode.VIEW_ONLY
-						: this._oConstant.ClaimFooterMode.APPROVER;
-
-				} else {
-
-					// Owner
-
-					if (bIsSendBack) {
-						bViewOnly = false;
-						sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-					} else {
-						bViewOnly = true;
-						sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-					}
-				}
 			}
 
-			// Draft
-			else {
+			oClaimSubmissionModel.setProperty("/view_only", !bEditable);
+			this._setClaimItemTableToolbar(bEditable);
 
-				bViewOnly = false;
-				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				oClaimSubmissionModel.setProperty("/is_approver", false);
-			}
-
-			// =====================================================
-			// Apply screen state
-			// =====================================================
-
-			oClaimSubmissionModel.setProperty("/view_only", bViewOnly);
-
-			if (bViewOnly) {
-				this._setClaimItemTableToolbar(false);
-			}
-
-			Utility.updateFooterState(
-				oView,
-				oClaimSubmissionModel,
-				this._oConstant,
-				sFooterMode
-			);
+			this._setEnabledToolbarFooter();		// summary section button control
+			this._refreshActionState("SUMMARY");	// footer button control
 
 			this._calculateClaimTotal();
 			this._calculateCardAdvanceAmount();
@@ -1804,8 +1732,6 @@ sap.ui.define([
 			);
 		},
 
-		// Aiman Salim - 14/03/2026 - For Approval Process. 
-
 		onClickCancel_app: function () {
 			// Close via the stored instance (ApproveDialog keeps it on controller as __approveDialog)
 			if (this._approveDialog) {
@@ -1814,9 +1740,9 @@ sap.ui.define([
 			if (this._sendBackDialog) { this._sendBackDialog.close(); }
 			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
+
 		//Button config for Approve
 		onClickCreate_app: async function () {
-
 
 			if (this.bIsApproving) {
 				return;
@@ -1858,7 +1784,7 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					window.location.reload(true);
+					this._oRouter.navTo("MyApproval");
 
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
@@ -1923,7 +1849,7 @@ sap.ui.define([
 					this._oRejectDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
@@ -1978,7 +1904,7 @@ sap.ui.define([
 					this._oSendBackDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
@@ -2042,7 +1968,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && !this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(true);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(true);
 				}
 			}
 			else {
@@ -2060,7 +1986,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(false);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(false);
 				}
 			}
 		},
@@ -2335,17 +2261,7 @@ sap.ui.define([
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
-			// change footer buttons
-			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.DETAILS
-				);
-
-			}
+			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
@@ -2439,13 +2355,13 @@ sap.ui.define([
 			}
 
 			//for tambang excluding flight
-				this._filterFareType();
+			this._filterFareType();
 
 			// if claim type item is lodging, retrieve eligible amount
 			// if claim type item is lodging, retrieve eligible amount
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O) {
 				oInputModel.setProperty("/claim_item/eligible_amount", 0);
-			}else{
+			} else {
 				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 				}
@@ -3241,7 +3157,7 @@ sap.ui.define([
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
-					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
+					DAILY_ALLOWANCE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
@@ -4301,22 +4217,7 @@ sap.ui.define([
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				this._calculateCardAdvanceAmount();
 
-				let sFooterMode;
- 
-				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/view_only")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-				}
-				else {
-					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				}
- 
-				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+				this._refreshActionState("SUMMARY");	// footer button control
 			}
 		},
 
@@ -4883,24 +4784,20 @@ sap.ui.define([
 			}
 			if (oSideNav) {
 				return;
-			}
-			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.SUMMARY
-				);
+			} else {
+				this._refreshActionState("SUMMARY");
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
 
-				// return to approver screen
-				this.getMyApproverPAReq();
-				this.getMyApproverClaim();
+					// return to approver screen
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
 
-				var oRouter = this.getOwnerComponent().getRouter();
-				this._onNavBack();
-			}
-			else {
-				this._onNavBack();
+					var oRouter = this.getOwnerComponent().getRouter();
+					this._onNavBack();
+				}
+				else {
+					this._onNavBack();
+				}
 			}
 		},
 
@@ -5862,6 +5759,18 @@ sap.ui.define([
 				?.setSelectedKey("");
 
 			this._resetClaimItemInputs(oInputModel);
+		},
+
+		_refreshActionState: function (sScreen) {
+			var oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
+			ActionStateService.apply(ActionStateService.buildContext({
+				screen:        sScreen,
+				header:        oHeader,
+				itemCount:	   this.getView().getModel("claimsubmission_input").getProperty("/claim_items")?.length,
+				items:         this.getView().getModel("claimsubmission_input").getProperty("/claim_items"),
+				currentUserId: this.getOwnerComponent().getModel("session").getProperty("/userId"),
+				approvalList:  this._oApprovalLog.getProperty("/approval"),
+			}));
 		}
 	});
 });
