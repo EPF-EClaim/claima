@@ -1519,7 +1519,7 @@ sap.ui.define([
                     TRIP_END_DATE:                oReqItem.trip_end_date || null,
                     TRIP_START_TIME:              oReqItem.trip_start_time || null,
                     TRIP_END_TIME:                oReqItem.trip_end_time || null,
-                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
+                    DAILY_ALLOWANCE:              parseFloat(oReqItem.daily_allowance || 0),
                     ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
                     ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
                     ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
@@ -2848,7 +2848,7 @@ sap.ui.define([
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
-					window.location.reload(true);
+					this._oRouter.navTo("MyApproval");
 
 				} catch (e) {
 					MessageBox.error(e.message);
@@ -2906,7 +2906,7 @@ sap.ui.define([
 					this._sendBackDialog.close();
 				}
 
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
@@ -2943,7 +2943,7 @@ sap.ui.define([
 
 				this._rejectDialog && this._rejectDialog.close();
 
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));
