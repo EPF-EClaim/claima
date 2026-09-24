@@ -4399,7 +4399,7 @@ sap.ui.define([
 					
 					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
-					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 					if (!bCanProceed) {
 						return;
 					}
@@ -4426,7 +4426,7 @@ sap.ui.define([
 					await CustomDuplicationCheck.CheckAllItems(this);
 
 					// Cash Advance Repayment Validation checking
-					if (!bHasCard && !bIsTravelClaimType) {
+					if (!bHasCard && bIsTravelClaimType) {
 						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
 							BusyIndicator.hide();
@@ -5416,18 +5416,12 @@ sap.ui.define([
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
+					oClaimItemInputModel.setProperty("/claim_item/daily_allowance", 0);
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
 					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
-				}
-
-				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
-					oClaimItemInputModel.setProperty(
-						"/claim_item/daily_allowance",
-						oResult.daily_allowance
-					);
 				}
 
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
@@ -5445,6 +5439,13 @@ sap.ui.define([
 
 				if (this.byId("input_claimdetails_input_tips").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
+				}
+
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
+					oClaimItemInputModel.setProperty(
+						"/claim_item/daily_allowance",
+						oResult.daily_allowance
+					);
 				}
 
 			}).catch(err => {
