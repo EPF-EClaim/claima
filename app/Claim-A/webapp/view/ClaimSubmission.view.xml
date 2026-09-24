@@ -22,6 +22,8 @@
                     id="button_claimsubmission_back"
                     press="onAction_ClaimSubmission_Toolbar('Back')"
                     text="{i18n>button_claimsubmission_back}"
+                    visible="{actionState>/button_claimsubmission_back/visible}"
+                    enabled="{actionState>/button_claimsubmission_back/enabled}"
                 />
 
                 <!-- Reject -->
@@ -29,7 +31,8 @@
                     id="button_claimapprover_reject"
                     press="onAction_ClaimSubmission_Toolbar('Reject')"
                     text="{i18n>button_claimapprover_reject}"
-                    visible="false"
+                    visible="{actionState>/button_claimapprover_reject/visible}"
+                    enabled="{actionState>/button_claimapprover_reject/enabled}"
                 />
 
                 <!-- Push Back -->
@@ -37,7 +40,8 @@
                     id="button_claimapprover_pushback"
                     press="onAction_ClaimSubmission_Toolbar('Push Back')"
                     text="{i18n>button_claimapprover_pushback}"
-                    visible="false"
+                    visible="{actionState>/button_claimapprover_pushback/visible}"
+                    enabled="{actionState>/button_claimapprover_pushback/enabled}"
                 />
 
                 <!-- Approve -->
@@ -46,7 +50,8 @@
                     press="onAction_ClaimSubmission_Toolbar('Approve')"
                     text="{i18n>button_claimapprover_approve}"
                     type="Emphasized"
-                    visible="false"
+                    visible="{actionState>/button_claimapprover_approve/visible}"
+                    enabled="{actionState>/button_claimapprover_approve/enabled}"
                 />
 
                 <!-- (Claim Summary) -->
@@ -55,7 +60,8 @@
                     id="button_claimsubmission_savedraft"
                     press="onAction_ClaimSubmission_Toolbar('Save Draft')"
                     text="{i18n>button_claimsubmission_savedraft}"
-                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                    visible="{actionState>/button_claimsubmission_savedraft/visible}"
+                    enabled="{actionState>/button_claimsubmission_savedraft/enabled}"
                 />
 
                 <!-- Delete Report -->
@@ -63,8 +69,8 @@
                     id="button_claimsubmission_deletereport"
                     press="onAction_ClaimSubmission_Toolbar('Delete Report')"
                     text="{i18n>button_claimsubmission_deletereport}"
-                    enabled="{= ${claimsubmission_input>/claim_header/status_id} !== 'STAT02' }"
-                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                    visible="{actionState>/button_claimsubmission_deletereport/visible}"
+                    enabled="{actionState>/button_claimsubmission_deletereport/enabled}"
                 />
 
                 <!-- Submit Report -->
@@ -73,8 +79,8 @@
                     press="onAction_ClaimSubmission_Toolbar('Submit Report')"
                     text="{i18n>button_claimsubmission_submitreport}"
                     type="Emphasized"
-                   
-                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                    visible="{actionState>/button_claimsubmission_submitreport/visible}"
+                    enabled="{actionState>/button_claimsubmission_submitreport/enabled}"
                 />
 
                 <!-- (Claim Details) -->
@@ -84,7 +90,8 @@
                     press="onAction_ClaimDetails_Toolbar('Save')"
                     text="{i18n>button_claimdetails_input_save}"
                     type="Emphasized"
-                    visible="false"
+                    visible="{actionState>/button_claimdetails_input_save/visible}"
+                    enabled="{actionState>/button_claimdetails_input_save/enabled}"
                 />
 
                 <!-- Cancel -->
@@ -92,7 +99,8 @@
                     id="button_claimdetails_input_cancel"
                     press="onCancel_ClaimDetails_Input"
                     text="{i18n>button_claimdetails_input_cancel}"
-                    visible="false"
+                    visible="{actionState>/button_claimdetails_input_cancel/visible}"
+                    enabled="{actionState>/button_claimdetails_input_cancel/enabled}"
                 />
             </OverflowToolbar>
         </footer>
