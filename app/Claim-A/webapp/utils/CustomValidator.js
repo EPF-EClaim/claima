@@ -116,24 +116,6 @@ sap.ui.define([
                     }
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        var that = this;
-                        [
-                        "provided_breakfast",
-                        "provided_lunch",
-                        "provided_dinner"
-			            ].forEach(function (sProvidedMeal) {
-			        	const sProvidedMealPath = `/claim_item/${sProvidedMeal}`;
-			        	const iProvidedDays = oInputModel.getProperty(sProvidedMealPath);
-			        	if (iProvidedDays === null || iProvidedDays === undefined || String(iProvidedDays).trim() === "" ) {
-			        		oInputModel.setProperty(sProvidedMealPath, null);
-			        	}
-
-                        if (!that._isValidInteger(oInputModel.getProperty(sProvidedMealPath))) {
-                            MessageBox.error(Utility.getText("msg_invalid_integer_input"));
-                            bCanProceed = false;
-                        }
-                        });
-
                         var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
                         var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
                         var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
@@ -387,16 +369,5 @@ sap.ui.define([
             }
 			return true;
 		},
-
-        _isValidInteger: function (sNumber) {
-            if (sNumber === null) {
-                return true;
-			}
-            else{
-                return Number.isInteger(Number(sNumber));
-            }
-
-        },
- 
     };
 });
