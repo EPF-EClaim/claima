@@ -330,117 +330,37 @@ sap.ui.define([
 
 			const oView = this.getView();
 			const oClaimSubmissionModel = oView.getModel("claimsubmission_input");
-
-			if (!oClaimSubmissionModel) {
-				return;
-			}
-
-			// Enable attachment button
-			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
-				this.byId("button_claimsummary_viewattachment").setEnabled(true);
-			}
-
-			this._setEnabledToolbarFooter();
-
 			const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
 			const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
 			const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
 			const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
 			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
 
-			const bIsDraft =
-				sStatusId === this._oConstant.ClaimStatus.DRAFT;
+			if (!oClaimSubmissionModel) return;
 
-			const bIsSendBack =
-				sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
+			// Enable attachment button
+			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
+				this.byId("button_claimsummary_viewattachment").setEnabled(true);
+			}
 
-			let bIsApprover = false;
-			let bViewOnly = false;
-			let sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+			const aEditableStatus = [this._oConstant.ClaimStatus.DRAFT, this._oConstant.ClaimStatus.SEND_BACK];
+			const bEditable = aEditableStatus.includes(sStatusId) && (sClaimOwnerId === sCurrentUserId);
 
-			// =====================================================
-			// Load approval information for non-draft records
-			// =====================================================
-			if (!bIsDraft) {
+			// always show owner detail and approval log once it is submitted
+			if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 
-				const oEmployeeViewModel =
-					this.getOwnerComponent().getModel("employee_view");
-
-				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+				await ApprovalLog.getApproverList(this._oApprovalLog, this._oViewModel, sClaimId, sClaimTypeId);
 				await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
 
-				this.byId("approval_log_table")?.getBinding("rows")?.refresh();
-
-				// Rule #1
 				this._setOwnerDetail(true);
 				this._setApprovalLog(true);
-
-				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
-
-				// Rule #2
-				bIsApprover =
-					sClaimOwnerId !== sCurrentUserId &&
-					aApprovalList.some(oApproval =>
-						oApproval.APPROVER_ID === sCurrentUserId ||
-						oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId
-					);
-
-				oClaimSubmissionModel.setProperty("/is_approver", bIsApprover);
-
-				// =====================================================
-				// Determine screen mode
-				// =====================================================
-
-				if (bIsApprover) {
-
-					// Approver always read-only
-					bViewOnly = true;
-
-					// Rule #3
-					sFooterMode = bIsSendBack
-						? this._oConstant.ClaimFooterMode.VIEW_ONLY
-						: this._oConstant.ClaimFooterMode.APPROVER;
-
-				} else {
-
-					// Owner
-
-					if (bIsSendBack) {
-						bViewOnly = false;
-						sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-					} else {
-						bViewOnly = true;
-						sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-					}
-				}
 			}
 
-			// Draft
-			else {
+			oClaimSubmissionModel.setProperty("/view_only", !bEditable);
+			this._setClaimItemTableToolbar(bEditable);
 
-				bViewOnly = false;
-				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				oClaimSubmissionModel.setProperty("/is_approver", false);
-			}
-
-			// =====================================================
-			// Apply screen state
-			// =====================================================
-
-			oClaimSubmissionModel.setProperty("/view_only", bViewOnly);
-
-			if (bViewOnly) {
-				this._setClaimItemTableToolbar(false);
-			}
-
-			Utility.updateFooterState(
-				oView,
-				oClaimSubmissionModel,
-				this._oConstant,
-				sFooterMode
-			);
-
-			this._refreshActionState("SUMMARY");
+			this._setEnabledToolbarFooter();		// summary section button control
+			this._refreshActionState("SUMMARY");	// footer button control
 
 			this._calculateClaimTotal();
 			this._calculateCardAdvanceAmount();
@@ -1431,7 +1351,6 @@ sap.ui.define([
 		
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-			this._refreshActionState("SUMMARY");
 		},
 
 		onAction_ClaimSubmission_Toolbar: async function (oAction) {
@@ -2342,18 +2261,7 @@ sap.ui.define([
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
-			this._refreshActionState("DETAILS");
-			// change footer buttons
-			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-				// this._refreshActionState("DETAILS");
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.DETAILS
-				);
-
-			}
+			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
@@ -2447,13 +2355,13 @@ sap.ui.define([
 			}
 
 			//for tambang excluding flight
-				this._filterFareType();
+			this._filterFareType();
 
 			// if claim type item is lodging, retrieve eligible amount
 			// if claim type item is lodging, retrieve eligible amount
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O) {
 				oInputModel.setProperty("/claim_item/eligible_amount", 0);
-			}else{
+			} else {
 				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 				}
@@ -4309,22 +4217,7 @@ sap.ui.define([
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				this._calculateCardAdvanceAmount();
 
-				let sFooterMode;
- 
-				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-				}
-				else if (oClaimSubmissionModel.getProperty("/view_only")) {
-					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-				}
-				else {
-					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-				}
-				this._refreshActionState("SUMMARY");
-				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+				this._refreshActionState("SUMMARY");	// footer button control
 			}
 		},
 
@@ -4894,12 +4787,6 @@ sap.ui.define([
 			} else {
 				this._refreshActionState("SUMMARY");
 				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					Utility.updateFooterState(
-						this.getView(),
-						oClaimSubmissionModel,
-						this._oConstant,
-						this._oConstant.ClaimFooterMode.SUMMARY
-					);
 
 					// return to approver screen
 					this.getMyApproverPAReq();
