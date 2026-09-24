@@ -198,6 +198,7 @@ sap.ui.define([
          */
 
         updateFooterState: function (oView, oClaimModel, oConstants, sMode) {
+            return;
             if (!oView || !oClaimModel || !oConstants) return;
 
             const sStatusId = oClaimModel.getProperty("/claim_header/status_id");

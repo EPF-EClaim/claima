@@ -16,6 +16,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/ListMode",
+	"claima/utils/ActionStateService",
 	"claima/utils/Utility",
 	"claima/utils/ClaimUtility",
 	"claima/utils/Attachment",
@@ -53,6 +54,7 @@ sap.ui.define([
 	Button,
 	Label,
 	ListMode,
+	ActionStateService,
 	Utility,
 	ClaimUtility,
 	Attachment,
@@ -106,6 +108,8 @@ sap.ui.define([
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());
+
+			ActionStateService.init(this.getOwnerComponent());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -435,6 +439,8 @@ sap.ui.define([
 				this._oConstant,
 				sFooterMode
 			);
+
+			this._refreshActionState("SUMMARY");
 
 			this._calculateClaimTotal();
 			this._calculateCardAdvanceAmount();
@@ -1425,6 +1431,7 @@ sap.ui.define([
 		
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+			this._refreshActionState("SUMMARY");
 		},
 
 		onAction_ClaimSubmission_Toolbar: async function (oAction) {
@@ -2042,7 +2049,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && !this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(true);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(true);
 				}
 			}
 			else {
@@ -2060,7 +2067,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(false);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(false);
 				}
 			}
 		},
@@ -2335,9 +2342,10 @@ sap.ui.define([
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
+			this._refreshActionState("DETAILS");
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-
+				// this._refreshActionState("DETAILS");
 				Utility.updateFooterState(
 					this.getView(),
 					oClaimSubmissionModel,
@@ -4315,7 +4323,7 @@ sap.ui.define([
 				else {
 					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
 				}
- 
+				this._refreshActionState("SUMMARY");
 				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
 			}
 		},
@@ -4883,24 +4891,27 @@ sap.ui.define([
 			}
 			if (oSideNav) {
 				return;
-			}
-			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.SUMMARY
-				);
+			} else {
+				this._refreshActionState("SUMMARY");
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					this._refreshActionState("SUMMARY");
+					Utility.updateFooterState(
+						this.getView(),
+						oClaimSubmissionModel,
+						this._oConstant,
+						this._oConstant.ClaimFooterMode.SUMMARY
+					);
 
-				// return to approver screen
-				this.getMyApproverPAReq();
-				this.getMyApproverClaim();
+					// return to approver screen
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
 
-				var oRouter = this.getOwnerComponent().getRouter();
-				this._onNavBack();
-			}
-			else {
-				this._onNavBack();
+					var oRouter = this.getOwnerComponent().getRouter();
+					this._onNavBack();
+				}
+				else {
+					this._onNavBack();
+				}
 			}
 		},
 
@@ -5862,6 +5873,18 @@ sap.ui.define([
 				?.setSelectedKey("");
 
 			this._resetClaimItemInputs(oInputModel);
+		},
+
+		_refreshActionState: function (sScreen) {
+			var oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
+			ActionStateService.apply(ActionStateService.buildContext({
+				screen:        sScreen,
+				header:        oHeader,
+				itemCount:	   this.getView().getModel("claimsubmission_input").getProperty("/claim_items")?.length,
+				items:         this.getView().getModel("claimsubmission_input").getProperty("/claim_items"),
+				currentUserId: this.getOwnerComponent().getModel("session").getProperty("/userId"),
+				approvalList:  this._oApprovalLog.getProperty("/approval"),
+			}));
 		}
 	});
 });
