@@ -4399,7 +4399,7 @@ sap.ui.define([
 					
 					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
-					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 					if (!bCanProceed) {
 						return;
 					}
@@ -4426,7 +4426,7 @@ sap.ui.define([
 					await CustomDuplicationCheck.CheckAllItems(this);
 
 					// Cash Advance Repayment Validation checking
-					if (!bHasCard && bIsTravelClaimType) {
+					if (!bHasCard && !bIsTravelClaimType) {
 						if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 							MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
 							BusyIndicator.hide();
