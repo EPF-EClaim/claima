@@ -4894,7 +4894,6 @@ sap.ui.define([
 			} else {
 				this._refreshActionState("SUMMARY");
 				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					this._refreshActionState("SUMMARY");
 					Utility.updateFooterState(
 						this.getView(),
 						oClaimSubmissionModel,

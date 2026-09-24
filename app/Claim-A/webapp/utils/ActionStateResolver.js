@@ -62,11 +62,11 @@
   var STATUS = {
     DRAFT: "STAT01",
     PENDING_APPROVAL: "STAT02",
-    APPROVED: "STAT03",
-    SEND_BACK: "STAT04",
-    REJECTED: "STAT05",
-    CANCELLED: "STAT06",
-    COMPLETED_DISBURSEMENT: "STAT07",
+    SEND_BACK: "STAT03",
+    REJECTED: "STAT04",
+    APPROVED: "STAT05",
+    COMPLETED_DISBURSEMENT: "STAT06",
+    CANCELLED: "STAT07",
   };
 
   /** Who the current user is RELATIVE TO THIS RECORD. */
@@ -132,7 +132,7 @@
       // Only a draft may be deleted. A sent-back claim already exists in the
       // approval history, so it is withdrawn, not deleted.
       visible: function (c) {
-        return c.role === ROLE.OWNER && c.status === STATUS.DRAFT;
+        return c.role === ROLE.OWNER && has(EDITABLE_BY_OWNER, c.status);
       },
       enabled: function (c) {
         // if (c.isLocked) return "Record is locked by another user";
