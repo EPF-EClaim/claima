@@ -56,8 +56,11 @@ module.exports = (srv) => {
 
         // Steps 1-5: eligibility, budget locking, workflow determination,
         // approver determination, approver detail persistence.
-        // Any failure inside rolls back and throws - see runPreWorkflowChecks.
-        const { oWorkflowContext, aApproversContext, aApproversContextNew } = await runPreWorkflowChecks(oTx, sRecordId, oDescriptor);
+        const oPreWorkflowResult = await runPreWorkflowChecks(oTx, sRecordId, oDescriptor);
+        if (oPreWorkflowResult.Success === false) {
+            return oPreWorkflowResult;
+        }
+        const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
         // 6.1 Perform budget actualization for auto approve ===
         // 6.2 update header status

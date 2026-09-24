@@ -239,16 +239,16 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        //crud operation visibility in config table for DTD and JKEW
-        let operationHidden = true;
-        if (req.user.is(Constant.Admin.DTD_Admin)) {
-            operationHidden = false;
-        }
+        // CRUD operation visibility in config table for DTD and JKEW
+
+        const bHasAccess =
+            req.user.is(Constant.Admin.DTD_Admin) ||
+            req.user.is(Constant.Admin.Admin_System);
 
         return {
-            operationHidden: operationHidden,
-            operationEnabled: !operationHidden,
-        }
+            operationHidden: !bHasAccess,
+            operationEnabled: bHasAccess
+        };
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
@@ -1243,6 +1243,7 @@ module.exports = (srv) => {
                 } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
                     //entitle for daily allowance
                     meal_allowance = entitlement.AMOUNT / 2;
+                    daily_allowance = entitlement.AMOUNT / 2;
                 }
                 else if (req.data.day > 0) {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
@@ -5411,39 +5412,42 @@ module.exports = (srv) => {
         
     });
 
-        srv.on("cancelRecord", async (req) => {
+    /**
+     * Cancels a claim/request record: updates the header status to CANCELLED, 
+     * removes any pending approver details, 
+     * and logs the cancellation by user in the workflow history.
+     * @public
+     * @param {String} req.data.sRecordId - claim/request ID to cancel
+     * @returns {Promise<Boolean|Object>} true on success; a rejected/error response on failure
+     */
+    srv.on("cancelRecord", async (req) => {
         const oTx = cds.tx(req);
         const { sRecordId } = req.data;
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
 
         if (!oEmp) {
-            throw req.error(404, `No employee data found.`);
+            return req.error(404, `No employee data found.`);
         }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
 
         // update header status
         try {
-            await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.CANCELLED, oTx);
+            await UpdateHeader.updateHeaderStatus(sRecordId, Constant.Status.CANCELLED, oTx);
         } catch (error) {
             await oTx.rollback();
-            throw req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
+            return req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
         }
 
         // remove approval log
-        try {
-            await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
-        } catch (error) {
-            await oTx.rollback();
-            throw req.reject(500, `Failed to remove approver details for ${sRecordId}: ${error.message}`);
-        }
+        await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
 
         // insert record history
         try {
             await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is cancelled by ${oEmp.NAME}.`);
         } catch (error) {
             await oTx.rollback();
-            throw req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);
+            return req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);
         }
 
         return true;

@@ -303,7 +303,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 2, oList);
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
-			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT;
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 
@@ -321,9 +321,11 @@ sap.ui.define([
 				if (
 					sReqStatus === this._oConstant.RequestStatus.SEND_BACK &&
 					bCurrentUserIsApprover &&
-					sRequestOwnerId != sCurrentUserId
+					sRequestOwnerId !== sCurrentUserId
 				) {
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				} else if (sRequestOwnerId === sCurrentUserId) {
+					PARequestSharedFunction.getCurrentState(this);
 				} else {
 					var bPendingApprover = false;
 
@@ -556,15 +558,15 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
+										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
 
 										var aMessages = [];
 										if (aInsufficientItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
 										}
 										if (aNotFoundItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM_DESC)));
+											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
 										}
 
 										if (aMessages.length > 0) {
@@ -680,6 +682,11 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
+			// Approvers (including after they push a request back) must never edit the header
+			const sViewMode = this._oReqModel.getProperty("/view");
+			if (sViewMode === this._oConstant.PARMode.VIEWAPPR || sViewMode === this._oConstant.PARMode.APPROVER) {
+				return;
+			}
 			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
@@ -881,11 +888,11 @@ sap.ui.define([
 			}
 
 			const sState = this._oReqModel.getProperty("/view");
-			if (sState != this._oConstant.PARMode.APPROVER) {
+			if (sState != this._oConstant.PARMode.APPROVER && sState != this._oConstant.PARMode.VIEWAPPR) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 				this._getClaimTypeItemSelection();
 			} else {
-				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
@@ -1337,6 +1344,7 @@ sap.ui.define([
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
+
 			this.calculateNumberOfHours();
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -1585,7 +1593,9 @@ sap.ui.define([
 					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID, sAttachment2_SFID,sAttachment3_SFID, sAttachment4_SFID)
 
 				} else {
-					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
+					const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, null, {
+						$$updateGroupId: "itemCreate"
+					}).create(oPayload, true);
 
 					await this._oDataModel.submitBatch("itemCreate");
 					await oItemContext.created();
@@ -1602,17 +1612,21 @@ sap.ui.define([
 					const aParts = oData.participant || [];
 					let bHasParticipants = false;
 
+					const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
+						$$updateGroupId: "partCreate"
+					});
+
 					for (const p of aParts) {
 						const sPID = String(p.PARTICIPANTS_ID || "").trim();
 						if (!sPID) continue;
 
 						bHasParticipants = true;
-						this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
+						oPartList.create({
 							REQUEST_ID: sReqId,
 							REQUEST_SUB_ID: sGeneratedSubId,
 							PARTICIPANTS_ID: sPID,
 							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
-						}, { $$updateGroupId: "partCreate" });
+						}, true);
 					}
 
 					if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
@@ -1634,6 +1648,10 @@ sap.ui.define([
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
+				} else {
+					// Refresh header (incl. total amount) so it reflects the item
+					// that was just saved, without resetting the create-item form.
+					await PARequestSharedFunction.getHeader(this, sReqId);
 				}
 
 			} catch (e) {
@@ -1747,20 +1765,13 @@ sap.ui.define([
 			// Get model
 			const oRequestModel = this.getView().getModel("request");
 
-			// Read event start date
-			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
-
-			if (!dTripDate) {
-				return; // no date entered yet
+			// Only relevant when the switch has just been turned ON
+			if (!oRequestModel.getProperty("/req_item/cash_advance")) {
+				return;
 			}
 
-			// Convert to JS Date
-			const dEventDate = new Date(dTripDate);
-			const dToday = new Date();
-			dToday.setHours(0, 0, 0, 0);
-
-			// ✅ If event date is before today → backdated
-			if (dEventDate < dToday) {
+			// ✅ If trip start date is before today → backdated (no-op if no date entered yet)
+			if (Common.isTripStartDateBackdated(oRequestModel)) {
 
 				// Update model value
 				oRequestModel.setProperty("/req_item/cash_advance", false);
