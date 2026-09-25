@@ -985,7 +985,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: null
                         },
                         constraints: { minimum: 0.00 }
 					}"
@@ -1454,7 +1455,7 @@
                     id="input_claimdetails_input_provided_breakfast"
                     value="{
                         path: 'claimitem_input>/claim_item/provided_breakfast',
-                        type: 'sap.ui.model.type.Integer',
+                        type: 'Integer',
                         formatOptions: {
                             emptyString: null
                         }
@@ -1469,7 +1470,7 @@
                     id="input_claimdetails_input_provided_lunch"
                     value="{
 						path: 'claimitem_input>/claim_item/provided_lunch',
-                        type: 'sap.ui.model.type.Integer',
+                        type: 'Integer',
                         formatOptions: {
                             emptyString: null
                         }
@@ -1484,7 +1485,7 @@
                     id="input_claimdetails_input_provided_dinner"
                     value="{
 						path: 'claimitem_input>/claim_item/provided_dinner',
-                        type: 'sap.ui.model.type.Integer',
+                        type: 'Integer',
                         formatOptions: {
                             emptyString: null
                         }

@@ -3743,7 +3743,7 @@ sap.ui.define([
 					let fKm = parseFloat(oInputModel.getProperty("/claim_item/km")) || 0;
 					const fRate = parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km")) || 0;
 					const fToll = parseFloat(oInputModel.getProperty("/claim_item/toll")) || 0;
-					
+
 					if (oInputModel.getProperty("/claim_item/round_trip"))
 					{
 						fKm = fKm * 2;
@@ -3937,13 +3937,13 @@ sap.ui.define([
 			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
 				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
-			) {
+			) {			
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 				if (!bCanProceed) {
 					return;
 				}
-
+					
 				await this._calculatePerDiem();
 			}
 
