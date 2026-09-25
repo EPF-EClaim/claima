@@ -239,16 +239,16 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        //crud operation visibility in config table for DTD and JKEW
-        let operationHidden = true;
-        if (req.user.is(Constant.Admin.DTD_Admin)) {
-            operationHidden = false;
-        }
+        // CRUD operation visibility in config table for DTD and JKEW
+
+        const bHasAccess =
+            req.user.is(Constant.Admin.DTD_Admin) ||
+            req.user.is(Constant.Admin.Admin_System);
 
         return {
-            operationHidden: operationHidden,
-            operationEnabled: !operationHidden,
-        }
+            operationHidden: !bHasAccess,
+            operationEnabled: bHasAccess
+        };
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
@@ -1243,6 +1243,7 @@ module.exports = (srv) => {
                 } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
                     //entitle for daily allowance
                     meal_allowance = entitlement.AMOUNT / 2;
+                    daily_allowance = entitlement.AMOUNT / 2;
                 }
                 else if (req.data.day > 0) {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
