@@ -89,6 +89,12 @@ sap.ui.define([
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     var oPropertyModel = this._oView.getModel("claimitem_property");
 
+                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                        bCanProceed = false;
+                    }
+
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
                             case Constants.ClaimTypeItem.TELEFON_B:
@@ -274,7 +280,7 @@ sap.ui.define([
 
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount == 0){
+                            if(aItems[i].amount <= 0){
                                 MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
                                 bCanProceed = false;
                                 break;

@@ -2804,10 +2804,11 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 			if (!bCanProceed) {
 				return;
 			}
+
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
 			//this is needed for the eligibility check for the flight class of the employee
 			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
@@ -2878,7 +2879,7 @@ sap.ui.define([
 			if (bIsKilometerClaimItem &&
 				!!oInputModel.getProperty("/claim_item/receipt_date") &&
 				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
-				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+				MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
