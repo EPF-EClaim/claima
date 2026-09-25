@@ -55,7 +55,9 @@ sap.ui.define([
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
 						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
-						"to_state": "TO_STATE_ID"
+						"to_state": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
@@ -93,7 +95,10 @@ sap.ui.define([
 						"insurance_package_id": "INSURANCE_PACKAGE_ID",
 						"dependent": "DEPENDENT",
 						"phone_no": "PHONE_NO",
-						"to_state_id": "TO_STATE_ID"
+						"to_state_id": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_start_date": "POLICY_START_DATE",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
@@ -225,13 +230,15 @@ sap.ui.define([
 
 					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
 					let sErrorMsg;
-
+					
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-								sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
-							} else {
-								sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							if (typeof oField.result === "number" || (typeof oField.result === "object" && oField.result !== null)) {
+								if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+									sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
+								} else {
+									sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+								}
 							}
 							break;
 
@@ -265,7 +272,12 @@ sap.ui.define([
 							} else {
 								sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
 							}
-							break;					
+							break;
+
+						case Constants.EntitiesFields.TRAVEL_HOURS:
+							sErrorMsg = Utility.getText("eligibility_validation_travel_hours_insufficient", [oField.result]);
+							break;
+
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
@@ -344,7 +356,7 @@ sap.ui.define([
 
 			try {
 				await oFunction.execute();
-				const oContext  = oFunction.getBoundContext();
+				const oContext = oFunction.getBoundContext();
 				return oContext.getObject().value;
 
 			} catch (oError) {

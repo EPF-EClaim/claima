@@ -48,7 +48,7 @@
                             <form:formElements>
 
                                 <!-- Claim Type -->
-                                <form:FormElement label="{i18n>req_i_claim_type}" >
+                                <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_i_claim_type_ccc} : ${i18n>req_i_claim_type} }" >
                                     <form:fields>
                                         <Text 
                                             id="i_claim_type"
@@ -57,7 +57,7 @@
                                 </form:FormElement>
 
                                 <!-- Claim Type Item -->
-                                <form:FormElement label="{i18n>req_i_claim_type_item}">
+                                <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_i_claim_type_item_ccc} : ${i18n>req_i_claim_type_item} }">
                                     <form:fields>
                                         <Select 
                                             id="i_claim_type_item"
@@ -125,6 +125,8 @@
                                             width="100%"
                                             selectedKey="{request>/req_item/dependent}" 
                                             forceSelection="false"
+                                            change=".onChange_Dependent"
+                                            required="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}}"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             visible="{= ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/FLIGHT_WIL}}"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
@@ -135,6 +137,17 @@
                                             </items>
                                         </Select>
                                     </form:fields>
+                                </form:FormElement>
+
+                                <!-- Policy Year -->
+                                <form:FormElement label="Policy Year"
+                                    visible="false"
+                                    id="i_policy_year">
+
+                                    <form:fields>
+                                        <Text text="{request>/req_item/policy_year}" />
+                                    </form:fields>
+
                                 </form:FormElement>
 
                                 <!-- Dependent (Multi) -->
@@ -164,6 +177,62 @@
                                                     text="{request>LEGAL_NAME}" enabled="{= ${request>/view} !== 'view' }"/>
                                         </MultiComboBox>
                                     </form:fields>
+                                </form:FormElement>
+
+                                <!-- Insurance Medical Provider -->
+                                <form:FormElement
+                                    label="{i18n>req_insurance_medical_provider}"
+                                    visible="false"
+                                    id="i_insurance_medical_provider">
+
+                                    <form:fields>
+
+                                        <Select
+                                            selectedKey="{request>/req_item/insurance_medical_provider_id}"
+                                            forceSelection="false"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{
+                                                path: 'employee>/ZINSURANCE_MEDICAL_PROVIDER',
+                                                sorter: {
+                                                    path: 'INSURANCE_MEDICAL_PROVIDER_DESC',
+                                                    descending: false
+                                                },
+                                                filters: [
+                                                    {
+                                                        path: 'STATUS',
+                                                        operator: 'EQ',
+                                                        value1: 'ACTIVE'
+                                                    }
+                                                ]
+                                            }">
+
+                                            <items>
+                                                <core:Item
+                                                    key="{employee>INSURANCE_MEDICAL_PROVIDER_ID}"
+                                                    text="{employee>INSURANCE_MEDICAL_PROVIDER_DESC}" />
+                                            </items>
+
+                                        </Select>
+
+                                    </form:fields>
+
+                                </form:FormElement>
+
+                                <form:FormElement
+                                    label="{i18n>req_insurance_medical_provider_name}"
+                                    id="i_insurance_medical_provider_name"
+                                    visible="{= ${request>/req_item/insurance_medical_provider_id} === ${constant>/InsuranceMedicalProvider/OTHERS}}">
+
+                                    <form:fields>
+
+                                        <Input
+                                            value="{request>/req_item/insurance_medical_provider_name}"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }" />
+
+                                    </form:fields>
+
                                 </form:FormElement>
 
                                 <!-- Type of Professional Body -->
@@ -248,9 +317,13 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 1 -->
-                                <form:FormElement label="{i18n>req_attach1}"
-                                                visible="false"
-                                                id="i_attachment_1">
+                                <form:FormElement 
+                                        label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                ? ${i18n>req_label_insurance_attachment_1}
+                                                : ${i18n>req_attach1}
+                                            }"
+                                        visible="false"
+                                        id="i_attachment_1">
                                 <form:fields>
                                     <unified:FileUploader
                                         change=".onImportChange1"
@@ -259,7 +332,8 @@
                                                 (${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} 
                                                     || (parseFloat(${request>/req_item/toll_amt}) &gt; 0.00 &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER})
                                                 ) 
-                                            ) || ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}
+                                            ) || ${request>/req_item/location_type} === ${constant>/LocationType/OTHER} || 
+                                                ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD}
                                         }"
                                         maximumFileSize="5.0"
                                         mimeType="application/pdf,image/png,image/jpeg"
@@ -322,13 +396,21 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 2 -->
-                                <form:FormElement label="{i18n>req_attach2}"
+                                <form:FormElement 
+                                            label="{=${request>/req_item/claim_type_item_id}===${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                ? ${i18n>req_label_insurance_attachment_2}
+                                                : ${i18n>req_attach2}
+                                            }"
                                             visible="false"
                                             id="i_attachment_2" >
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
                                             enabled="{= ${request>/view} !== 'view' }"
+                                            required="{= 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                        &amp;&amp; !${request>/req_item/doc2_filename}
+                                                    }"
                                             maximumFileSize='5.0'
 					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
@@ -358,6 +440,100 @@
                                                 <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
                                             </layoutData>
                                         </Button>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 3 -->
+                                <form:FormElement label="{i18n>req_label_insurance_attachment_3}"
+                                                visible="false"
+                                                id="i_attachment_3">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange3"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="true"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc3}"
+                                        id="i_attachment_3_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment3_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc3_filename}"
+                                        visible="{= !!${request>/req_item/doc3_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc3')"
+                                            visible="{= !!${request>/req_item/doc3_filename} &amp;&amp; ${request>/view} !== 'view'}" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 4 -->
+                                <form:FormElement label="{i18n>req_label_insurance_attachment_4}"
+                                                visible="false"
+                                                id="i_attachment_4">
+                                <form:fields>
+                                    <unified:FileUploader
+                                        change=".onImportChange4"
+                                        enabled="{= ${request>/view} !== 'view' }"
+                                        required="false"
+                                        maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        placeholder="{i18n>req_attachment_format}"
+                                        value="{request>/req_item/doc4}"
+                                        id="i_attachment_4_file">
+
+                                        <unified:layoutData>
+                                        <form:ColumnElementData cellsLarge="8" cellsSmall="12" />
+                                    </unified:layoutData>
+
+                                    </unified:FileUploader>
+
+                                    <Link
+                                        id="i_attachment4_link" 
+                                        press="onDocLinkPress" 
+                                        text="{request>/req_item/doc4_filename}"
+                                        visible="{= !!${request>/req_item/doc4_filename} }" >
+                                            
+                                    <layoutData>
+                                            <form:ColumnElementData cellsLarge="7" cellsSmall="10"/>
+                                    </layoutData>
+                                    </Link>
+
+                                    <Button
+                                            width="10%"
+                                            icon="sap-icon://delete"
+                                            type="Transparent"
+                                            press="onDeleteAttachment('doc4')"
+                                            visible="{= !!${request>/req_item/doc4_filename} &amp;&amp; ${request>/view} !== 'view'}" >
+                                    
+                                            <layoutData>
+                                                <form:ColumnElementData cellsLarge="1" cellsSmall="1"/>
+                                            </layoutData>
+                                    </Button>
+                                   
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1296,7 +1472,14 @@
                                             visible="false"
                                             id="i_daily_allowance" >
                                     <form:fields>
-                                        <Text text="{request>/req_item/daily_allowance}"/>
+                                        <Text text="{
+                                            path: 'request>/req_item/daily_allowance',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                                }
+                                            }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1340,7 +1523,8 @@
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
-                                            visible="{= ${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group' }"
+                                            visible="{= (${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group') &amp;&amp;
+                                                        ${request>/req_header/reqtypeid} !== ${constant>/RequestType/CORP_CC} }"
                                             id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
@@ -1363,19 +1547,28 @@
                                                         ( ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_DLM_NEGARA} || 
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} ||
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/DLM_NEGARA} ||
-                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ) &amp;&amp;
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ||
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/TAMBANG}  ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}    ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}   ||
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}    ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O}     ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}     ) 
                                                     }"
                                             id="i_cash_adv" >
                                     <form:fields>
                                         <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
-                                                enabled="{= ${request>/view} !== 'view' }" change=".onCashAdvanceChange">
+                                               enabled="{=${request>/view} !== 'view' &amp;&amp;
+                                                        !(
+                                                            ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} &amp;&amp;
+                                                            ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}
+                                                            )
+                                                        }"
+                                                change=".onCashAdvanceChange">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
@@ -1387,7 +1580,8 @@
                         </form:FormContainer>
                     </form:formContainers>
                 </form:Form>
-                <VBox rowGap="0.5rem">
+                <!-- normal request -->
+                <VBox rowGap="0.5rem" visible="{= ${request>/req_header/reqtypeid} !== ${constant>/RequestType/CORP_CC} }">
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
@@ -1572,6 +1766,139 @@
                         </mdc:ValueHelp>
                     </dependents>
                 </VBox>
+            </VBox>
+            <!-- Corporate Credit Card -->
+            <VBox rowGap="0.5rem" visible="{= ${request>/req_header/reqtypeid} === ${constant>/RequestType/CORP_CC} }">
+                <OverflowToolbar height="3rem">
+                    <Title text="{i18n>req_corporate_credit_card}"/>
+                    <ToolbarSpacer />
+                </OverflowToolbar>
+                <table:Table 
+                    id="req_corpo_card_table"
+                    rows="{request>/corpo_cards}"
+                    columnHeaderHeight="3rem"
+                    selectionMode="None"
+                    rowActionCount="{= ${request>/req_header/grptype} === 'Individual' ? 0 : 1 }"
+                    cellClick="onCellClick"
+                    >
+                   <!-- for corporate credit card -->
+                    <table:Column width="25rem">
+                        <Label text="{i18n>req_card_number}"></Label>
+                        <table:template>
+                            <Text text="{request>CARD_NO}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem">
+                        <Label text="{i18n>req_cardholder_name}"></Label>
+                        <table:template>
+                            <Text text="{request>CARDHOLDER_NAME}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/STATMENT_DUE} }">
+                        <Label text="{i18n>req_current_balance}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_current_bal"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>current_balance',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="current_balance"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/SERV_TAX} }">
+                        <Label text="{i18n>req_service_tax}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_serv_tax"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>service_tax',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
+                                    },
+                                    constraints: {
+                                        minimum: 0
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="service_tax"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" id="merchantRefundColumn" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MERCH_RETURN} }">
+                        <Label text="{i18n>req_merchant_refund}"></Label>
+                        <table:template>
+                            <Text text="{
+                                path: 'request>merchant_refunds_total',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: {
+                                    minFractionDigits: 2,
+                                    maxFractionDigits: 2,
+                                    groupingEnabled: true
+                                }
+                            }" >
+                                <customData>
+                                    <core:CustomData
+                                            key="field"
+                                            value="merchantRefund"/>
+                                </customData>
+                            </Text>
+                        </table:template>
+                    </table:Column>
+                    <table:Column width="25rem" visible="{= ${request>/req_header/reqtypeid} ===  ${constant>/RequestType/CORP_CC} &amp;&amp; ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/CASH_BACK} }">
+                        <Label text="{i18n>req_cashback}"></Label>
+                        <table:template>
+                            <Input
+                                id="req_cashback"
+                                textAlign="End"
+                                value="{
+                                    path: 'request>cashback',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: {
+                                        minFractionDigits: 2,
+                                        maxFractionDigits: 2,
+                                        groupingEnabled: true
+                                    },
+                                    constraints: {
+                                            minimum: 0
+                                    }
+                                }"
+                                enabled="{= ${request>/view} !== 'view' &amp;&amp; ${request>PRINCIPLE} }"
+                                change=".onInputCCAmount"
+                            >
+                                <customData>
+                                    <core:CustomData
+                                        key="field"
+                                        value="cashback"/>
+                                </customData>
+                            </Input>
+                        </table:template>
+                    </table:Column>
+                </table:Table>
             </VBox>
         </VBox>
     </VBox>

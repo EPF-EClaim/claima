@@ -292,6 +292,16 @@
                         displayFormat="dd-MMM-yyyy"
                         />
 
+                    <!-- Corporate credit card -->
+                    <Label text="{i18n>label_ccc_no} " />
+                    <Input 
+                        value="{claimsubmission_input>/claim_header/card_no}" 
+                        visible="{= ${claimsubmission_input>/claimtype/has_ccc} === true &amp;&amp;
+                                    ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} ) }" 
+                        editable="false" />
                      <!-- Loan Scheme -->
                     <Label text="{i18n>label_claiminput_loan_scheme}" />
                     <Select

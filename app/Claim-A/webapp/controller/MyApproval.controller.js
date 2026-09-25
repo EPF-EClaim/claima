@@ -5,8 +5,18 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
-    "claima/utils/Utility"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
+    "claima/utils/Utility",
+    "claima/utils/PARequestSharedFunction",
+	"claima/utils/ClaimUtility"
+], function (Controller,
+	MessageToast,
+	JSONModel,
+	Filter,
+	FilterOperator,
+	Sorter,
+	Utility,
+	PARequestSharedFunction,
+    ClaimUtility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -15,7 +25,9 @@ sap.ui.define([
         * Lifecycle
         * ======================================================= */
         onInit: async function() {
+            this._oDataModel = this.getOwnerComponent().getModel();
             this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+            this._oDataModel = this.getOwnerComponent().getModel();
             this._oReqModel = this.getOwnerComponent().getModel("request");
             this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
             this._oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
@@ -27,6 +39,10 @@ sap.ui.define([
         _onMatched: async function() {
             await this._getMyApproverPAReq();
             await this._getMyApproverClaim();
+        },
+
+        formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+            return PARequestSharedFunction.formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
         },
 
         _getMyApproverPAReq: async function () {
@@ -63,16 +79,25 @@ sap.ui.define([
 
             try {
                 const aCtx = await oListBinding.requestContexts(0, Infinity);
-                const a = aCtx.map((ctx) => ctx.getObject());
+                let aRequestList = aCtx.map((ctx) => ctx.getObject());
 
-                a.forEach((it) => {
+                aRequestList.forEach((it) => {
                     if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
                 });
 
-                this._oReqStatusModel.setProperty("/req_header_list", a);
-                this._oReqStatusModel.setProperty("/req_header_count", a.length);
+                //db error will be handled here instead of in the utility file
+                try {
+                    aRequestList = await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+                        this._oDataModel, aRequestList, "PREAPPROVAL_ID"
+                    );
+                } catch (oError) {
+                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable", [String(oError.message || oError)]));
+                }
 
-                return a;
+                this._oReqStatusModel.setProperty("/req_header_list", aRequestList);
+                this._oReqStatusModel.setProperty("/req_header_count", aRequestList.length);
+
+                return aRequestList;
             } catch (err) {
                 console.error("OData bindList failed:", err);
                 this._oReqStatusModel.setProperty("/req_header_list", []);
@@ -244,7 +269,7 @@ sap.ui.define([
                         "TRIP_START_DATE", "TRIP_END_DATE", "EVENT_START_DATE", "EVENT_END_DATE",
                         "OBJECTIVE_PURPOSE", "TYPE_OF_TRANSPORTATION", "ALTERNATE_COST_CENTER",
                         "LOCATION", "COST_CENTER", "CASH_ADVANCE", "PREAPPROVAL_AMOUNT",
-                        "ATTACHMENT1", "ATTACHMENT2", "STATUS", "STATUS_DESC", "CLAIM_TYPE_ID",
+                        "ATTACHMENT1", "ATTACHMENT2",  "ATTACHMENT3",  "ATTACHMENT4", "STATUS", "STATUS_DESC", "CLAIM_TYPE_ID",
                         "EVENT_FIELD1", "EVENT_FIELD2", "EVENT_FIELD3", "EVENT_FIELD4"
                     ]
                 }
@@ -349,7 +374,9 @@ sap.ui.define([
                 reqamt: o.PREAPPROVAL_AMOUNT || 0, // will be recalculated from items
                 claimtype: o.CLAIM_TYPE_ID || "",
                 claimtypedesc: o.CLAIM_TYPE_DESC || "",
-                reqdate: o.REQUEST_DATE
+                reqdate: o.REQUEST_DATE,
+                doc3: o.ATTACHMENT3 || "",
+                doc4: o.ATTACHMENT4 || "",
             };
         },
 
@@ -432,73 +459,7 @@ sap.ui.define([
             return oModel;
         },
 
-        _mapClaimHeaderToForm(o) {
-            return {
-                claim_id: o.CLAIM_ID,
-                emp_id: o.EMP_ID,
-                purpose: o.PURPOSE,
-                trip_start_date: o.TRIP_START_DATE,
-                trip_end_date: o.TRIP_END_DATE,
-                event_start_date: o.EVENT_START_DATE,
-                event_end_date: o.EVENT_END_DATE,
-                submission_type: o.SUBMISSION_TYPE,
-                comment: o.COMMENT,
-                alternate_cost_center: o.ALTERNATE_COST_CENTER,
-                cost_center: o.COST_CENTER,
-                request_id: o.REQUEST_ID,
-                attachment_email_approver: o.ATTACHMENT_EMAIL_APPROVER,
-                status_id: o.STATUS_ID,
-                claim_type_id: o.CLAIM_TYPE_ID,
-                total_claim_amount: o.TOTAL_CLAIM_AMOUNT,
-                final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE,
-                last_modified_date: o.LAST_MODIFIED_DATE,
-                submitted_date: o.SUBMITTED_DATE,
-                last_approved_date: o.LAST_APPROVED_DATE,
-                last_approved_time: o.LAST_APPROVED_TIME,
-                payment_date: o.PAYMENT_DATE,
-                location: o.LOCATION,
-                spouse_office_address: o.SPOUSE_OFFICE_ADDRESS,
-                house_completion_date: o.HOUSE_COMPLETION_DATE,
-                move_in_date: o.MOVE_IN_DATE,
-                housing_loan_scheme: o.HOUSING_LOAN_SCHEME,
-                lender_name: o.LENDER_NAME,
-                specify_details: o.SPECIFY_DETAILS,
-                new_house_address: o.NEW_HOUSE_ADDRESS,
-                dist_old_house_to_office_km: o.DIST_OLD_HOUSE_TO_OFFICE_KM,
-                dist_old_house_to_new_house_km: o.DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
-                approver1: null,
-                approver2: null,
-                approver3: null,
-                approver4: null,
-                approver5: null,
-                last_push_back_date: null,
-                course_code: o.COURSE_CODE,
-                session_number: o.SESSION_NUMBER,
-                project_code: null,
-                cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
-                preapproved_amount: o.PREAPPROVED_AMOUNT,
-                reject_reason_id: null,
-                push_back_reason_id: null,
-                last_push_back_time: null,
-                reject_reason_date: null,
-                reject_reason_time: null,
-                descr: {
-                    submission_type: null,
-                    alternate_cost_center: o.ALT_COST_CENTER_DESC,
-                    cost_center: o.COST_CENTER_DESC,
-                    request_id: null,
-                    status_id: o.STATUS_DESC,
-                    claim_type_id: o.CLAIM_TYPE_DESC,
-                    housing_loan_scheme: null,
-                    lender_name: null,
-                    course_code: o.COURSE_CODE_DESC,
-                    project_code: null,
-                    attachment_email_approver: null,
-                }
-            };
-
-
-        },
+        
 
         async _loadClaimById(sClaimId) {
             const oClaimInputModel = this._getClaimInputModel();
@@ -519,6 +480,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oHeaderBinding.refresh();
 
             // Items binding
             const oItemBinding = this.getOwnerComponent().getModel().bindList(
@@ -532,6 +494,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemBinding.refresh();
 
             // Items Descr binding
             const oItemDescrBinding = oModel.bindList(
@@ -545,6 +508,7 @@ sap.ui.define([
                     $select: ["*"]
                 }
             );
+            oItemDescrBinding.refresh();
 
             try {
                 const [aHeaderCtx, aItemCtx, aItemDCtx] = await Promise.all([
@@ -563,9 +527,9 @@ sap.ui.define([
                     return { header: null, items: [] };
                 }
 
-                const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+                const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
                 oClaimInputModel.setProperty("/claim_header", oHeader);
-                await this._getClaimHeaderDataDescr(oClaimInputModel);
+                await Utility.applyClaimHeaderDataDescr(oClaimInputModel);
 
                 // set view-only for non-draft claims
                 if (
@@ -687,11 +651,15 @@ sap.ui.define([
                     study_levels_id: it.STUDY_LEVELS_ID,
                     travel_days_id: it.TRAVEL_DAYS_ID,
                     vehicle_class_id: it.VEHICLE_CLASS_ID,
+                    attachment_file_3: it.ATTACHMENT_FILE_3,
+                    attachment_file_4: it.ATTACHMENT_FILE_4,
                     descr: {},
                 }));
 
                 // Derive totals from items (just in case)
-                const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+                const nTotal = aItems
+                    .filter((it) => !it.charged_to_ccc)
+                    .reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
                 // Only overwrite header totals if header had null/0 (tweak to your preference)
                 if (!oHeader.total_claim_amount) {
@@ -737,6 +705,8 @@ sap.ui.define([
                     vehicle_class_id: null,
                     attachment_file_1: null,
                     attachment_file_2: null,
+                    attachment_file_3: null,
+                    attachment_file_4: null
                 }));
 
                 // assign description based on claim item index
@@ -745,10 +715,10 @@ sap.ui.define([
                 });
 
                 // set employee data
-                const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
+                const emp_data = await Utility.getEmpIdDetail(this._oDataModel, Constants.EntitiesFields.EEID, this._oSessionModel.getProperty("/userId"));
                 if (emp_data) {
                     oClaimInputModel.setProperty("/emp_master", emp_data);
-                    await this._getEmpDataDescr(oClaimInputModel);
+                    await Utility.applyEmpDataDescr(oClaimInputModel);
                 }
 
                 return { header: oHeaderRaw, items: aItems };
@@ -795,156 +765,6 @@ sap.ui.define([
                 await oModel.metadataLoaded();
             }
             return oModel;
-        },
-
-        // get backend data
-        async _getEmpIdDetail(sEEID) {
-            const oModel = this.getOwnerComponent().getModel();
-            const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-                new Filter("EEID", FilterOperator.EQ, sEEID)
-            ]);
-
-            try {
-                const aContexts = await oListBinding.requestContexts(0, 1);
-
-                if (aContexts.length > 0) {
-                    const oData = aContexts[0].getObject();
-                    return {
-                        eeid: oData.EEID,
-                        name: oData.NAME,
-                        grade: oData.GRADE,
-                        cc: oData.CC,
-                        pos: oData.POS,
-                        dep: oData.DEP,
-                        unit_section: oData.UNIT_SECTION,
-                        b_place: oData.B_PLACE,
-                        marital: oData.MARITAL,
-                        job_group: oData.JOB_GROUP,
-                        office_location: oData.OFFICE_LOCATION,
-                        address_line1: oData.ADDRESS_LINE1,
-                        address_line2: oData.ADDRESS_LINE2,
-                        address_line3: oData.ADDRESS_LINE3,
-                        postcode: oData.POSTCODE,
-                        state: oData.STATE,
-                        country: oData.COUNTRY,
-                        contact_no: oData.CONTACT_NO,
-                        email: oData.EMAIL,
-                        direct_supperior: oData.DIRECT_SUPPERIOR,
-                        role: oData.ROLE,
-                        user_type: oData.USER_TYPE,
-                        mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
-                        mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
-                        employee_type: oData.EMPLOYEE_TYPE,
-                        position_name: oData.POSITION_NAME,
-                        position_start_date: oData.POSITION_START_DATE,
-                        position_event_reason: oData.POSITION_EVENT_REASON,
-                        confirmation_date: oData.CONFIRMATION_DATE,
-                        effective_date: oData.EFFECTIVE_DATE,
-                        updated_date: oData.UPDATED_DATE,
-                        inserted_date: oData.INSERTED_DATE,
-                        medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
-                        descr: {
-                            cc: null,
-                            dep: null,
-                            unit_section: null,
-                            marital: null,
-                            job_group: null,
-                            state: null,
-                            country: null,
-                            direct_supperior: null,
-                            role: null,
-                            user_type: null,
-                            employee_type: null
-                        }
-                    };
-                } else {
-                    console.warn("No employee found with email: " + sEMAIL);
-                    return null;
-                }
-            } catch (oError) {
-                console.error("Error fetching employee detail", oError);
-                return null; // Return null so the app doesn't crash
-            }
-        },
-
-        _getEmpDataDescr: async function (oModel) {
-            // cost center
-            if (oModel.getProperty("/emp_master/cc")) {
-                oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-            }
-            // department
-            if (oModel.getProperty("/emp_master/dep")) {
-                oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
-            }
-            // branch / unit section
-            if (oModel.getProperty("/emp_master/unit_section")) {
-                oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
-            }
-            // marital status
-            if (oModel.getProperty("/emp_master/marital")) {
-                oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
-            }
-            // job group
-            if (oModel.getProperty("/emp_master/job_group")) {
-                oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
-            }
-            // office location
-            if (oModel.getProperty("/emp_master/office_location")) {
-                oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
-            }
-            // state
-            if (oModel.getProperty("/emp_master/state")) {
-                oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
-            }
-            // country
-            if (oModel.getProperty("/emp_master/country")) {
-                oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
-            }
-            // role
-            if (oModel.getProperty("/emp_master/role")) {
-                oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
-            }
-            // user type
-            if (oModel.getProperty("/emp_master/user_type")) {
-                oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
-            }
-            // employee type
-            if (oModel.getProperty("/emp_master/employee_type")) {
-                oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
-            }
-        },
-
-        _getClaimHeaderDataDescr: async function (oModel) {
-            // submission type
-            if (oModel.getProperty("/claim_header/submission_type")) {
-                oModel.setProperty("/claim_header/descr/submission_type", await this._bindEclaimDescr("/ZSUBMISSION_TYPE", oModel.getProperty("/claim_header/submission_type"), 'SUBMISSION_TYPE_ID', 'SUBMISSION_TYPE_DESC'));
-            }
-            // request ID
-            if (oModel.getProperty("/claim_header/request_id")) {
-                oModel.setProperty("/claim_header/descr/request_id", await this._bindEclaimDescr("/ZREQUEST_HEADER", oModel.getProperty("/claim_header/request_id"), 'REQUEST_ID', 'OBJECTIVE_PURPOSE'));
-            }
-        },
-
-        _bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-            var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
-            if (oFieldId2) {
-                aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
-            }
-            const oListBinding = this.getOwnerComponent().getModel().bindList(oTable, null, null, aFilterArray);
-
-            try {
-                const aContexts = await oListBinding.requestContexts(0, 1);
-
-                if (aContexts.length > 0) {
-                    const oData = aContexts[0].getObject();
-                    return oData[oFieldDescr];
-                } else {
-                    return null;
-                }
-            } catch (oError) {
-                console.error("Error fetching description: ", oError);
-                return null; // Return null so the app doesn't crash
-            }
         },
 
     });

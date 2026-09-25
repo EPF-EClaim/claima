@@ -38,8 +38,8 @@
 
                 <!-- Header Level -->
                 <Button id="req_back"           type="Default"      text="{i18n>req_view_btn_back}"                     press=".onBack"             visible="false" />
-                <Button id="req_delete"         type="Default"      text="{i18n>req_view_btn_delete}"           press=".onDeleteRequest"    visible="false" />
-                <Button id="req_submit"         type="Emphasized"   text="{i18n>req_view_btn_submit}"           press=".onSubmitRequest"    visible="false" />
+                <Button id="req_delete"         type="Default"      text="{= ${request>/req_header/reqtypeid} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_view_btn_delete_ccc} : ${i18n>req_view_btn_delete} }"           press=".onDeleteRequest"    visible="false" />
+                <Button id="req_submit"         type="Emphasized"   text="{= ${request>/req_header/reqtypeid} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_view_btn_submit_ccc} : ${i18n>req_view_btn_submit} }"           press=".onSubmitRequest"    visible="false" />
 
                 <!-- Item Level --> 
                 <Button id="req_item_cancel"    type="Default"      text="{i18n>req_view_btn_cancel}"                   press=".onCancelItem"       visible="false" />

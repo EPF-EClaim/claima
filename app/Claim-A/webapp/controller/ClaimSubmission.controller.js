@@ -16,6 +16,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/ListMode",
+	"claima/utils/ActionStateService",
 	"claima/utils/Utility",
 	"claima/utils/ClaimUtility",
 	"claima/utils/Attachment",
@@ -53,6 +54,7 @@ sap.ui.define([
 	Button,
 	Label,
 	ListMode,
+	ActionStateService,
 	Utility,
 	ClaimUtility,
 	Attachment,
@@ -80,19 +82,21 @@ sap.ui.define([
 		DateUtility: DateUtility,
 
 		onInit: function () {
+			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oClaimFragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-
 			this._oWorkflowModel = this.getOwnerComponent().getModel("workflow");
 			this._oDeclarationDialog = null;
 			this._oDisclaimerGalakanDialog = null;
 			this._sDeleteTarget = null;          // "1" or "2"
 			this._oDeleteAttachmentDialog = null;
 			this._oOwnerDetail = this.getOwnerComponent().getModel("owner_detail");
+			this._oApprovalLog = this.getOwnerComponent().getModel("approval_log");
 		
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -105,6 +109,8 @@ sap.ui.define([
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());
+
+			ActionStateService.init(this.getOwnerComponent());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -207,11 +213,16 @@ sap.ui.define([
 				// unable to decode URL
 				MessageBox.error(Utility.getText("msg_claimsubmission_decode", [sClaimId]))
 				this._onNavBack();
+				return;
+			}
+			const bAllowed = await Utility.checkClaimAccess(sClaimId);
+			if (!bAllowed) {
+				return;
 			}
 
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (!oClaimSubmissionModel) {
-				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
+				oClaimSubmissionModel = await this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
 				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
 					// unable to load claim details
@@ -284,13 +295,10 @@ sap.ui.define([
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
 
-			// display initial fragments
-			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
-			});
-			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 2);
-			});
+			const oHeaderSection = await this._getFormFragment("claimsubmission_summary_claimheader", true);
+			await this._replaceContentAt(oPage, 1, oHeaderSection);
+			const oItemSection = await this._getFormFragment("claimsubmission_summary_claimitem", true);
+			await this._replaceContentAt(oPage, 2, oItemSection);
 		},
 
 		_getFormFragment: async function (sName, toCreate) {
@@ -316,95 +324,50 @@ sap.ui.define([
 		},
 
 		_afterLoadFragments: async function () {
-			// ReInit claimutility because of model undefined upon refresh on claim submission view
+
+			// Reinitialize utilities
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
-			// ReInit utility because of model undefined upon refresh on claim submission view
 			Utility.init(this.getOwnerComponent(), this.getView());
-			// enable view attachment at claim summary
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
+
+			const oView = this.getView();
+			const oClaimSubmissionModel = oView.getModel("claimsubmission_input");
+
+			if (!oClaimSubmissionModel) return;
+
+			const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+			const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+			const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+			const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+			const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+
+			// Enable attachment button
+			if (oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
 				this.byId("button_claimsummary_viewattachment").setEnabled(true);
 			}
 
-			// enable additional functionality if 1 or more claim items exist
-			if (oClaimSubmissionModel) {
-				this._setEnabledToolbarFooter();
+			const aEditableStatus = [this._oConstant.ClaimStatus.DRAFT, this._oConstant.ClaimStatus.SEND_BACK];
+			const bEditable = aEditableStatus.includes(sStatusId) && (sClaimOwnerId === sCurrentUserId);
 
-				// disable footer buttons if claim already cancelled
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					null
-				);
+			// always show owner detail and approval log once it is submitted
+			if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
 
-				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
-				const bIsSendBack = sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
+				await ApprovalLog.getApproverList(this._oApprovalLog, this._oViewModel, sClaimId, sClaimTypeId);
+				await ApprovalLog.getApprovalLogHistory(this._oApprovalLog, this._oModel, sClaimId);
 
-				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					if (sStatusId !== this._oConstant.ClaimStatus.DRAFT && !bIsSendBack) {
-						oClaimSubmissionModel.setProperty("/view_only", true)
-					}
-				}
-				if (oClaimSubmissionModel.getProperty("/view_only")) {
-					this._setClaimItemTableToolbar(false);
-				}
-
-				if (sStatusId !== this._oConstant.ClaimStatus.DRAFT) {
-					this._setApprovalLog(true);
-					Utility.updateFooterState(
-						this.getView(),
-						oClaimSubmissionModel,
-						this._oConstant,
-						bIsSendBack ? this._oConstant.ClaimFooterMode.SUMMARY : this._oConstant.ClaimFooterMode.VIEW_ONLY
-					);
-
-					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
-					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"),oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-					await ApprovalLog.getApprovalLogHistory(oApprovalLogModel, this._oModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-					this.byId("approval_log_table")?.getBinding("rows").refresh();
-
-					if (!bIsSendBack) {
-						//// set approver view if current user is approver
-						let oApprovalLogFragment = await this._getFormFragment("approval_log");
-						let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
-						if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-							var sUserId = this._oSessionModel.getProperty("/userId");
-							if (sUserId) {
-								let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
-									(oApproval.APPROVER_ID === sUserId || oApproval.SUBSTITUTE_APPROVER_ID === sUserId) &&
-									oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
-								);
-								if (iItemIndex !== -1) {
-									oClaimSubmissionModel.setProperty("/is_approver", true);
-								}
-							}
-							this._setOwnerDetail(true);
-						}
-						//// change screen details if approver
-						if (oClaimSubmissionModel.getProperty("/is_approver")) {
-							Utility.updateFooterState(
-								this.getView(),
-								oClaimSubmissionModel,
-								this._oConstant,
-								this._oConstant.ClaimFooterMode.APPROVER
-							);
-
-						}
-					}
-				}
-				else {
-					Utility.updateFooterState(
-						this.getView(),
-						oClaimSubmissionModel,
-						this._oConstant,
-						this._oConstant.ClaimFooterMode.SUMMARY
-					);
-
-				}
+				this._setOwnerDetail(true);
+				this._setApprovalLog(true);
 			}
+
+			oClaimSubmissionModel.setProperty("/view_only", !bEditable);
+			this._setClaimItemTableToolbar(bEditable);
+
+			this._setEnabledToolbarFooter();		// summary section button control
+			this._refreshActionState("SUMMARY");	// footer button control
+
+			this._calculateClaimTotal();
+			this._calculateCardAdvanceAmount();
 		},
+
 		onSelectCountry: async function(oEvent){
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == Constants.ClaimTypeItem.LODG_O){
@@ -431,268 +394,159 @@ sap.ui.define([
 				null,
 				null,
 				aFilters,
-				{
-					$$ownRequest: true,
-					$count: true,
-					$select: ["*"]
-				}
+				{ $$ownRequest: true, $count: true, $select: ["*"] }
 			);
 
-			// Items binding
+			// Items binding - ZEMP_CLAIM_ITEM_VIEW already carries both the raw
+			// values and the *_DESC columns on the same row, so one fetch covers
+			// both /claim_items values and their /descr sub-objects.
 			const oItemBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
-				{
-					$$ownRequest: true,
-					$count: true,
-					$select: ["*"]
-				}
-			);
-
-			// Items Descr binding
-			const oItemDescrBinding = oEmployeeViewModel.bindList(
-				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
-				null,
-				[new Sorter("CLAIM_SUB_ID", false)],
-				aFilters,
-				{
-					$$ownRequest: true,
-					$count: true,
-					$select: ["*"]
-				}
+				{ $$ownRequest: true, $count: true, $select: ["*"] }
 			);
 
 			try {
 				BusyIndicator.show(0);
 
-				const [aHeaderCtx, aItemCtx, aItemDCtx] = await Promise.all([
+				const [aHeaderCtx, aItemCtx] = await Promise.all([
 					oHeaderBinding.requestContexts(0, 1),
-					oItemBinding.requestContexts(0, Infinity),
-					oItemDescrBinding.requestContexts(0, Infinity)
+					oItemBinding.requestContexts(0, Infinity)
 				]);
 
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					var _oRouter = this.getOwnerComponent().getRouter();
 					console.error("Failed to load claim submission!");
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-					_oRouter.navTo("ClaimStatus", {}, {}, true);
+					this.getOwnerComponent().getRouter().navTo("ClaimStatus", {}, {}, true);
 				}
 
-				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
-				Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
-				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
-				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
-				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
-
-				// set view-only
-				if (
-					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
-				) {
-					oClaimSubmissionModel.setProperty("/view_only", true)
-				}
-				else {
-					oClaimSubmissionModel.setProperty("/view_only", false)
-				}
-
-				// disable is_approver from claim status
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					oClaimSubmissionModel.setProperty("/is_approver", false)
-				}
+				const oHeader = await this._applyClaimHeader(oHeaderRaw);
 
 				// Items
-				const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
-					// Map to the fragment's structure
-					claim_id: it.CLAIM_ID,
-					claim_sub_id: it.CLAIM_SUB_ID,
-					claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
-					percentage_compensation: it.PERCENTAGE_COMPENSATION,
-					account_no: it.ACCOUNT_NO,
-					amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
-					attachment_file_1: it.ATTACHMENT_FILE_1,
-					attachment_file_2: it.ATTACHMENT_FILE_2,
-					bill_no: it.BILL_NO,
-					bill_date: it.BILL_DATE,
-					claim_category: it.CLAIM_CATEGORY,
-					country: it.COUNTRY,
-					disclaimer: it.DISCLAIMER,
-					start_date: it.START_DATE,
-					end_date: it.END_DATE,
-					start_time: it.START_TIME,
-					end_time: it.END_TIME,
-					flight_class: it.FLIGHT_CLASS,
-					from_location: it.FROM_LOCATION,
-					from_location_office: it.FROM_LOCATION_OFFICE,
-					km: it.KM,
-					location: it.LOCATION,
-					location_type: it.LOCATION_TYPE,
-					lodging_category: it.LODGING_CATEGORY,
-					lodging_address: it.LODGING_ADDRESS,
-					marriage_category: it.MARRIAGE_CATEGORY,
-					area: it.AREA,
-					no_of_family_member: it.NO_OF_FAMILY_MEMBER,
-					parking: it.PARKING,
-					phone_no: it.PHONE_NO,
-					rate_per_km: it.RATE_PER_KM,
-					receipt_date: it.RECEIPT_DATE,
-					receipt_number: it.RECEIPT_NUMBER,
-					remark: it.REMARK,
-					room_type: it.ROOM_TYPE,
-					region: it.REGION,
-					from_state_id: it.FROM_STATE_ID,
-					to_state_id: it.TO_STATE_ID,
-					to_location: it.TO_LOCATION,
-					to_location_office: it.TO_LOCATION_OFFICE,
-					toll: it.TOLL,
-					total_exp_amount: it.TOTAL_EXP_AMOUNT,
-					vehicle_type: it.VEHICLE_TYPE,
-					vehicle_fare: it.VEHICLE_FARE,
-					trip_start_date: it.TRIP_START_DATE,
-					trip_end_date: it.TRIP_END_DATE,
-					event_start_date: it.EVENT_START_DATE,
-					event_end_date: it.EVENT_END_DATE,
-					travel_duration_day: it.TRAVEL_DURATION_DAY,
-					travel_duration_hour: it.TRAVEL_DURATION_HOUR,
-					provided_breakfast: it.PROVIDED_BREAKFAST,
-					provided_lunch: it.PROVIDED_LUNCH,
-					provided_dinner: it.PROVIDED_DINNER,
-					entitled_breakfast: it.ENTITLED_BREAKFAST,
-					entitled_lunch: it.ENTITLED_LUNCH,
-					entitled_dinner: it.ENTITLED_DINNER,
-					dependent_type: it.DEPENDENT_TYPE_ID,
-					anggota_id: it.ANGGOTA_ID,
-					anggota_name: it.ANGGOTA_NAME,
-					dependent_name: it.DEPENDENT_NAME,
-					dependent: it.DEPENDENT,
-					type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
-					disclaimer_galakan: it.DISCLAIMER_GALAKAN,
-					mode_of_transfer: it.MODE_OF_TRANSFER,
-					travel_alone_family: it.TRAVEL_ALONE_FAMILY,
-					travel_family_now_later: it.TRAVEL_FAMILY_NOW_LATER,
-					transfer_date: it.TRANSFER_DATE,
-					no_of_days: it.NO_OF_DAYS,
-					family_count: it.FAMILY_COUNT,
-					funeral_transportation: it.FUNERAL_TRANSPORTATION,
-					round_trip: it.ROUND_TRIP,
-					trip_end_time: it.TRIP_END_TIME,
-					trip_start_time: it.TRIP_START_TIME,
-					cost_center: it.COST_CENTER,
-					gl_account: it.GL_ACCOUNT,
-					material_code: it.MATERIAL_CODE,
-					vehicle_ownership_id: it.VEHICLE_OWNERSHIP_ID,
-					actual_amount: it.ACTUAL_AMOUNT,
-					arrival_time: it.ARRIVAL_TIME,
-					claim_type_id: it.CLAIM_TYPE_ID,
-					course_title: it.COURSE_TITLE,
-					currency_amount: it.CURRENCY_AMOUNT,
-					currency_code: it.CURRENCY_CODE,
-					currency_rate: it.CURRENCY_RATE,
-					departure_time: it.DEPARTURE_TIME,
-					emp_id: it.EMP_ID,
-					fare_type_id: it.FARE_TYPE_ID,
-					insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
-					insurance_cert_start_date: it.INSURANCE_CERT_START_DATE,
-					insurance_package_id: it.INSURANCE_PACKAGE_ID,
-					insurance_provider_id: it.INSURANCE_PROVIDER_ID,
-					insurance_provider_name: it.INSURANCE_PROVIDER_NAME,
-					insurance_purchase_date: it.INSURANCE_PURCHASE_DATE,
-					meter_cube_actual: it.METER_CUBE_ACTUAL,
-					meter_cube_entitled: it.METER_CUBE_ENTITLED,
-					mobile_category_purpose_id: it.MOBILE_CATEGORY_PURPOSE_ID,
-					need_foreign_currency: it.NEED_FOREIGN_CURRENCY,
-					policy_number: it.POLICY_NUMBER,
-					purpose: it.PURPOSE,
-					request_approval_amount: it.REQUEST_APPROVAL_AMOUNT,
-					study_levels_id: it.STUDY_LEVELS_ID,
-					travel_days_id: it.TRAVEL_DAYS_ID,
-					vehicle_class_id: it.VEHICLE_CLASS_ID,
-					daily_allowance: it.DAILY_ALLOWANCE,
-					tips: it.TIPS,
-					exclude_tips: it.EXCLUDE_TIPS,
-					number_of_travellers: it.TOTAL_TRAVELLER,
-					internal_order: it.INTERNAL_ORDER,
-					course_duration: it.COURSE_DURATION,
-					descr: {},
-				}));
+				const aRawItems = aItemCtx.map(ctx => ctx.getObject());
+				const aItems = ClaimUtility.mapClaimItems(aRawItems);
 
-				// Only overwrite header totals if header had null/0 (tweak to your preference)
-				if (!oHeader.total_claim_amount) {
-					// Derive totals from items (just in case)
-					const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-
-					oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				}
+				this._applyItemTotalsFallback(oHeader, aItems);
 
 				oClaimSubmissionModel.setProperty("/claim_items", aItems);
 				oClaimSubmissionModel.setProperty("/claim_items_count", aItems.length);
 
-				// Items (descriptions)
-				const aItemsD = aItemDCtx.map(ctx => ctx.getObject()).map(it => ({
-					// Provide `descr/*` fields the fragment uses
-					claim_type_item_id: it.CLAIM_TYPE_ITEM_DESC,
-					claim_category: it.CLAIM_CATEGORY_DESC,
-					country: it.COUNTRY_DESC,
-					flight_class: it.FLIGHT_CLASS_DESC,
-					from_location_office: null,
-					location_type: it.LOC_TYPE_DESC,
-					lodging_category: it.LODGING_CATEGORY_DESC,
-					marriage_category: it.MARRIAGE_CATEGORY_DESC,
-					area: it.AREA_DESC,
-					rate_per_km: it.RATE_PER_KM,
-					room_type: it.ROOM_TYPE_DESC,
-					region: it.REGION_DESC,
-					from_state_id: null,
-					to_state_id: null,
-					to_location_office: null,
-					vehicle_type: it.VEHICLE_TYPE_DESC,
-					type_of_professional_body: null,
-					no_of_days: null,
-					funeral_transportation: null,
-					material_code: null,
-					vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
-					fare_type_id: null,
-					insurance_package_id: null,
-					insurance_provider_id: null,
-					meter_cube_entitled: null,
-					mobile_category_purpose_id: null,
-					study_levels_id: null,
-					claim_type_id: it.CLAIM_TYPE_DESC,
-					vehicle_class_id: null,
-					attachment_file_1: null,
-					attachment_file_2: null,
-					mode_of_transfer: it.TRANSFER_MODE_DESC,
-					travel_alone_family: it.TRAVEL_TYPE_DESC,
-					travel_family_now_later: it.FAMILY_TIMING_DESC,
-					
-				}));
+				// Item descriptions - derived from the same aRawItems fetched above,
+				// not a second query. Index-matching is safe here because both
+				// aItems and this descr mapping come from the same array/order.
+				ClaimUtility.applyClaimItemDescr(oClaimSubmissionModel, aRawItems);
 
-				// assign description based on claim item index
-				oClaimSubmissionModel.getProperty("/claim_items").forEach(function (claim_item, i) {
-					oClaimSubmissionModel.setProperty("/claim_items/" + i + "/descr", aItemsD[i]);
-				});
+				// Employee master
+				await this._loadEmployeeMasterData();
 
-				// set employee data
-				const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
-				if (emp_data) {
-					oClaimSubmissionModel.setProperty("/emp_master", emp_data);
-					await this._getEmpDataDescr(oClaimSubmissionModel);
+				// check is approver
+				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+				const sClaimTypeId = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+				const sCurrentUserId = this._oSessionModel.getProperty("/userId");
+				const sClaimOwnerId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+
+				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
+				const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
+					(oApproval.APPROVER_ID === sCurrentUserId || oApproval.SUBSTITUTE_APPROVER_ID === sCurrentUserId) &&
+					oApproval.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL
+				);
+
+				if (bCurrentUserIsApprover && sClaimOwnerId !== sCurrentUserId) {
+					oClaimSubmissionModel.setProperty("/is_approver", true);
+					oClaimSubmissionModel.setProperty("/view_only", true);
+				} else if (sClaimOwnerId !== sCurrentUserId) {
+					oClaimSubmissionModel.setProperty("/view_only", true);
 				}
-
-				return { header: oHeaderRaw, items: aItems };
+				
 			} catch (err) {
 				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-				return { header: null, items: [] };
 			} finally {
 				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		 * Maps the raw header row to the form shape, sets owner detail, replaces
+		 * claimsubmission_input with a fresh model instance, applies medical
+		 * entitlement lookup (MEDICAL/MEDICAL_ADVANCE only), header description
+		 * lookup, the view-only flag, and resets is_approver.
+		 *
+		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
+		 * @returns {Promise<object>} the mapped header
+		 */
+		_applyClaimHeader: async function (oHeaderRaw) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
+			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
+
+			oClaimSubmissionModel.setProperty("/claim_header", oHeader);
+
+			if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
+				oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL_ADVANCE
+			) {
+				await Utility.getRemainingMedicalEntitlement(
+					oClaimSubmissionModel,
+					oHeader.emp_id,
+					"/claim_header/medical_remaining"
+				);
+			}
+
+			await Utility.applyClaimHeaderDataDescr(oClaimSubmissionModel);
+
+			const sStatus = oClaimSubmissionModel.getProperty("/claim_header/status_id");
+			const bViewOnly = sStatus !== this._oConstant.ClaimStatus.DRAFT && sStatus !== this._oConstant.ClaimStatus.SEND_BACK;
+			oClaimSubmissionModel.setProperty("/view_only", bViewOnly);
+
+			if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				oClaimSubmissionModel.setProperty("/is_approver", false);
+			}
+
+			return oHeader;
+		},
+
+		/**
+		 * If the header had no total_claim_amount, derives it from non-CCC-charged
+		 * items and writes it back onto the model.
+		 */
+		_applyItemTotalsFallback: function (oHeader, aItems) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			if (oHeader.total_claim_amount) {
+				return;
+			}
+			const nTotal = aItems
+				.filter((it) => !it.charged_to_ccc)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);
+		},
+
+		/**
+		 * Loads the current user's ZEMP_MASTER record and its resolved
+		 * descriptions onto /emp_master, when found.
+		 */
+		_loadEmployeeMasterData: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const emp_data = await Utility.getEmpIdDetail(
+				this._oModel,
+				Constants.EntitiesFields.EEID,
+				this._oSessionModel.getProperty("/userId")
+			);
+			if (emp_data) {
+				oClaimSubmissionModel.setProperty("/emp_master", emp_data);
+				await Utility.applyEmpDataDescr(oClaimSubmissionModel);
 			}
 		},
 
@@ -729,236 +583,12 @@ sap.ui.define([
 			});
 		},
 
-		_mapClaimHeaderToForm: function (o) {
-			return {
-				claim_id: o.CLAIM_ID,
-				emp_id: o.EMP_ID,
-				purpose: o.PURPOSE,
-				trip_start_date: o.TRIP_START_DATE,
-				trip_end_date: o.TRIP_END_DATE,
-				event_start_date: o.EVENT_START_DATE,
-				event_end_date: o.EVENT_END_DATE,
-				submission_type: o.SUBMISSION_TYPE,
-				comment: o.COMMENT,
-				alternate_cost_center: o.ALTERNATE_COST_CENTER,
-				cost_center: o.COST_CENTER,
-				request_id: o.REQUEST_ID,
-				attachment_email_approver: o.ATTACHMENT_EMAIL_APPROVER,
-				status_id: o.STATUS_ID,
-				claim_type_id: o.CLAIM_TYPE_ID,
-				total_claim_amount: o.TOTAL_CLAIM_AMOUNT,
-				final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE,
-				last_modified_date: o.LAST_MODIFIED_DATE,
-				submitted_date: o.SUBMITTED_DATE,
-				last_approved_date: o.LAST_APPROVED_DATE,
-				last_approved_time: o.LAST_APPROVED_TIME,
-				payment_date: o.PAYMENT_DATE,
-				location: o.LOCATION,
-				spouse_office_address: o.SPOUSE_OFFICE_ADDRESS,
-				house_completion_date: o.HOUSE_COMPLETION_DATE,
-				move_in_date: o.MOVE_IN_DATE,
-				housing_loan_scheme: o.HOUSING_LOAN_SCHEME,
-				lender_name: o.LENDER_NAME,
-				specify_details: o.SPECIFY_DETAILS,
-				new_house_address: o.NEW_HOUSE_ADDRESS,
-				dist_old_house_to_office_km: o.DIST_OLD_HOUSE_TO_OFFICE_KM,
-				dist_old_house_to_new_house_km: o.DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
-				approver1: null,
-				approver2: null,
-				approver3: null,
-				approver4: null,
-				approver5: null,
-				last_push_back_date: null,
-				course_code: o.COURSE_CODE,
-				session_number: o.SESSION_NUMBER,
-				project_code: o.PROJECT_CODE,
-				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
-				preapproved_amount: o.PREAPPROVED_AMOUNT,
-				reject_reason_id: null,
-				push_back_reason_id: null,
-				last_push_back_time: null,
-				reject_reason_date: null,
-				reject_reason_time: null,
-				mode_of_transfer: o.TRANSFER_MODE_DESC,
-				travel_alone_family: o.TRAVEL_TYPE_DESC,
-				travel_family_now_later: o.FAMILY_TIMING_DESC,
-				mode_of_transfer_id: o.MODE_OF_TRANSFER,
-				descr: {
-					submission_type: null,
-					alternate_cost_center: o.ALT_COST_CENTER_DESC,
-					cost_center: o.COST_CENTER_DESC,
-					request_id: null,
-					status_id: o.STATUS_DESC,
-					claim_type_id: o.CLAIM_TYPE_DESC,
-					housing_loan_scheme: o.HOUSING_LOAN_SCHEME_DESC,
-					lender_name: o.LENDER_DESC,
-					course_code: o.COURSE_CODE_DESC,
-					project_code: o.PROJECT_DESC,
-					attachment_email_approver: null,
-					mode_of_transfer: o.TRANSFER_MODE_DESC,
-					travel_alone_family: o.TRAVEL_TYPE_DESC,
-					travel_family_now_later: o.FAMILY_TIMING_DESC,
-				}
-			};
-		},
-
-		_getClaimHeaderDataDescr: async function (oModel) {
-			// submission type
-			if (oModel.getProperty("/claim_header/submission_type")) {
-				oModel.setProperty("/claim_header/descr/submission_type", await this._bindEclaimDescr("/ZSUBMISSION_TYPE", oModel.getProperty("/claim_header/submission_type"), 'SUBMISSION_TYPE_ID', 'SUBMISSION_TYPE_DESC'));
-			}
-			// request ID
-			if (oModel.getProperty("/claim_header/request_id")) {
-				oModel.setProperty("/claim_header/descr/request_id", await this._bindEclaimDescr("/ZREQUEST_HEADER", oModel.getProperty("/claim_header/request_id"), 'REQUEST_ID', 'OBJECTIVE_PURPOSE'));
-			}
-		},
-
-		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-			const oModel = this.getOwnerComponent().getModel();
-			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
-			if (oFieldId2) {
-				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
-			}
-			const oListBinding = oModel.bindList(oTable, null, null, aFilterArray);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return oData[oFieldDescr];
-				} else {
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching description: ", oError);
-				return null; // Return null so the app doesn't crash
-			}
-		},
-
-		async _getEmpIdDetail(sEEID) {
-			const oModel = this.getOwnerComponent().getModel();
-			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new Filter("EEID", FilterOperator.EQ, sEEID)
-			]);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return {
-						eeid: oData.EEID,
-						name: oData.NAME,
-						grade: oData.GRADE,
-						cc: oData.CC,
-						pos: oData.POS,
-						dep: oData.DEP,
-						unit_section: oData.UNIT_SECTION,
-						b_place: oData.B_PLACE,
-						marital: oData.MARITAL,
-						job_group: oData.JOB_GROUP,
-						office_location: oData.OFFICE_LOCATION,
-						address_line1: oData.ADDRESS_LINE1,
-						address_line2: oData.ADDRESS_LINE2,
-						address_line3: oData.ADDRESS_LINE3,
-						postcode: oData.POSTCODE,
-						state: oData.STATE,
-						country: oData.COUNTRY,
-						contact_no: oData.CONTACT_NO,
-						email: oData.EMAIL,
-						direct_supperior: oData.DIRECT_SUPPERIOR,
-						role: oData.ROLE,
-						user_type: oData.USER_TYPE,
-						mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
-						mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
-						employee_type: oData.EMPLOYEE_TYPE,
-						position_name: oData.POSITION_NAME,
-						position_start_date: oData.POSITION_START_DATE,
-						position_event_reason: oData.POSITION_EVENT_REASON,
-						confirmation_date: oData.CONFIRMATION_DATE,
-						effective_date: oData.EFFECTIVE_DATE,
-						updated_date: oData.UPDATED_DATE,
-						inserted_date: oData.INSERTED_DATE,
-						medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
-						descr: {
-							cc: null,
-							dep: null,
-							unit_section: null,
-							marital: null,
-							job_group: null,
-							state: null,
-							country: null,
-							direct_supperior: null,
-							role: null,
-							user_type: null,
-							employee_type: null
-						}
-					};
-				} else {
-					console.warn("No employee found with employee ID: " + sEEID);
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
-				return null; // Return null so the app doesn't crash
-			}
-		},
-
-		_getEmpDataDescr: async function (oModel) {
-			// cost center
-			if (oModel.getProperty("/emp_master/cc")) {
-				oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-			}
-			// department
-			if (oModel.getProperty("/emp_master/dep")) {
-				oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
-			}
-			// branch / unit section
-			if (oModel.getProperty("/emp_master/unit_section")) {
-				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
-			}
-			// marital status
-			if (oModel.getProperty("/emp_master/marital")) {
-				oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
-			}
-			// job group
-			if (oModel.getProperty("/emp_master/job_group")) {
-				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
-			}
-			// office location
-			if (oModel.getProperty("/emp_master/office_location")) {
-				oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
-			}
-			// state
-			if (oModel.getProperty("/emp_master/state")) {
-				oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
-			}
-			// country
-			if (oModel.getProperty("/emp_master/country")) {
-				oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
-			}
-			// role
-			if (oModel.getProperty("/emp_master/role")) {
-				oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
-			}
-			// user type
-			if (oModel.getProperty("/emp_master/user_type")) {
-				oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
-			}
-			// employee type
-			if (oModel.getProperty("/emp_master/employee_type")) {
-				oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
-			}
-		},
-
 		_setApprovalLog: async function (bCheckPage) {
 			var oPage = this.byId("page_claimsubmission");
 			if (bCheckPage) {
 				// display approval log
-				await this._getFormFragment("approval_log", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 3);
-				});
+				const oApprovalLog = await this._getFormFragment("approval_log", true);
+				await this._replaceContentAt(oPage, 3, oApprovalLog);
 			}
 			else {
 				// remove approval log
@@ -972,10 +602,9 @@ sap.ui.define([
 		_setOwnerDetail: async function (bCheckPage) {
 			var oPage = this.byId("page_claimsubmission");
 			if (bCheckPage) {
-				// display approval log
-				await this._getFormFragment("claimant_detail", true).then(function (oVBox) {
-					oPage.insertContent(oVBox, 0);
-				});
+				// display owner detail
+				const oOwnerDetail = await this._getFormFragment("claimant_detail", true);
+				await this._replaceContentAt(oPage, 0, oOwnerDetail);
 			}
 			else {
 				// remove approval log
@@ -985,6 +614,20 @@ sap.ui.define([
 				}
 			}
 		},
+
+		/**
+		 * Inserts a fragment into a Page's content aggregation at the given index
+		 * @private
+		 * @param {sap.m.Page} oPage - the page whose content aggregation is modified
+		 * @param {Number} iIndex - desired insertion index
+		 * @param {Object} oControl - fragment to insert
+		 */
+		_replaceContentAt: async function (oPage, iIndex, oControl) {
+			// Ensure the slot exists
+			const iSafe = Math.min(iIndex, oPage.getContent().length);
+			oPage.insertContent(oControl, iSafe);
+		},
+
 		_setClaimItemTableToolbar: function (bViewCheck) {
 
 
@@ -1048,6 +691,7 @@ sap.ui.define([
 				"updated_date": null,
 				"inserted_date": null,
 				"medical_insurance_entitlement": null,
+				"marital_category": null,
 				"descr": {
 					"cc": null,
 					"dep": null,
@@ -1079,7 +723,10 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
-					"dependent_type": null,
+					"marriage_category": null,
+					"project_claim": false,
+					"has_ccc": false,
+					"card_no":null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -1089,8 +736,18 @@ sap.ui.define([
 						"event_start_date": null,
 						"event_end_date": null,
 						"alternate_cost_center": null,
+						"project_code": null,
+						"project_desc": null,
+						"cash_advance": null,
+						"mode_of_transfer": null,
+						"travel_alone_family": null,
+						"travel_family_now_later": null,
+						"corporate_cred_card" : false,
 						"descr": {
-							"alternate_cost_center": null
+							"alternate_cost_center": null,
+							"mode_of_transfer": null,
+							"travel_alone_family": null,
+							"travel_family_now_later": null
 						}
 					},
 					"requestform_amt": null,
@@ -1100,7 +757,8 @@ sap.ui.define([
 						"course_desc": null,
 						"session_number": null,
 						"start_date": null,
-						"end_date": null
+						"end_date": null,
+						"course_session_key": null,
 					},
 					"descr": {
 						"type": null,
@@ -1164,7 +822,8 @@ sap.ui.define([
 					"mode_of_transfer": null,
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
-					"mode_of_transfer_id": null,
+					"corporate_cred_card": false,
+					"card_no": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -1308,6 +967,18 @@ sap.ui.define([
 					"tips": null,
 					"number_of_travellers": null,
 					"internal_order": null,
+					"charged_to_ccc": null,
+					"policy_start_date": null,
+					"policy_end_date": null,
+					"dependent_national_id": null,
+					"insurance_medical_provider_id": null,
+					"insurance_medical_provider_name": null,
+					"previous_policy_number": null,
+					"current_policy_number": null,
+					"next_policy_number": null,
+					"attachment_file_3": null,
+					"attachment_file_4": null,
+					"policy_year": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -1341,6 +1012,8 @@ sap.ui.define([
 						"vehicle_class_id": null,
 						"attachment_file_1": null,
 						"attachment_file_2": null,
+						"attachment_file_3": null,
+						"attachment_file_4": null,
 					},
 					"eligible_amount": null,
 					"no_of_hours": null
@@ -1351,6 +1024,14 @@ sap.ui.define([
 						"fileContent": null
 					},
 					"attachment2": {
+						"fileName": null,
+						"fileContent": null
+					},
+					"attachment3": {
+						"fileName": null,
+						"fileContent": null
+					},
+					"attachment4": {
 						"fileName": null,
 						"fileContent": null
 					}
@@ -1419,9 +1100,8 @@ sap.ui.define([
 			if (await this._getFormFragment("approval_log")) {
 				this._setApprovalLog(false);
 			}
-			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 2);
-			});
+			const oCreate = await this._getFormFragment("claimsubmission_claimdetails_input", true);
+			await this._replaceContentAt(oPage, 2, oCreate);
 			// set new claim submission model;
 			if (Number.isInteger(indexNumber)) {
 				this._onInit_ClaimDetails_Input(indexNumber);
@@ -1613,7 +1293,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 
 				// calculate new total
-				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+				const nTotal = oInputModel.getProperty("/claim_items")
+					.filter((it) => !it.charged_to_ccc)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			}
 			oInputModel.setProperty(addrIndex + "/is_new", true);
@@ -1622,6 +1304,7 @@ sap.ui.define([
 			BusyIndicator.hide();
 		},
 
+		
 		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1653,21 +1336,7 @@ sap.ui.define([
 					(oInputModel.getProperty("/claim_items/" + i + "/claim_id") ?? "") + ('' + '00' + (i + 1)).slice(-3)
 				);
 			});
-
-			// calculate new total
-			var nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
-			if(oInputModel.getProperty("/claim_header/cash_advance_amount") > 0){
-				var iCashAdvAmt = Number(oInputModel.getProperty("/claim_header/cash_advance_amount"));
-				var nNewTotal =  nTotal - iCashAdvAmt;
-				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
-
-			}else{	
-				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
-				oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
-			}
-			
-
+		
 			///Check to recalculate Mata Wang if it is required
 			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
 			// update to database
@@ -1677,8 +1346,11 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items", tempItems.claim_items);
 				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
-			}
-
+			}	
+			// recalculate total_claim_amount / final_amount_to_receive
+			await this._calculateClaimTotal();
+			this._calculateCardAdvanceAmount();
+		
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
@@ -1892,6 +1564,13 @@ sap.ui.define([
 			
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
+			// Guard against editing when the claim is view-only for this user
+			// (e.g. an approver viewing a claim they just sent back — only the
+			// claim owner may edit the header while it's in Send Back status).
+			if (oInputModel.getProperty("/view_only")) {
+				return;
+			}
+
 			if (oInputModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR) {
 				var iMaxDays = await Utility.getModeofTransferMaxDays(oInputModel.getProperty("/claim_header/mode_of_transfer_id"));
 				if (!!iMaxDays) {
@@ -2034,6 +1713,12 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_marriagecategory"), property: "marriage_category", field: "select_claimdetails__input_marriagecategory", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_actual_meter_cube"), property: "actual_meter_cube", field: "input_claimdetails_meter_cube_actual", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_entitled_meter_cube"), property: "entitled_meter_cube", field: "input_claimdetails_meter_cube", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_attachment_file_3"), property: "attachment_file_3", field: "fileuploader_claimdetails_input_attachment_file_3", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_attachment_file_4"), property: "attachment_file_4", field: "fileuploader_claimdetails_input_attachment_file_4", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_start_date"), property: "policy_start_date", field: "datepicker_claimdetails_input_insurance_policy_start_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_policy_end_date"), property: "policy_end_date", field: "datepicker_claimdetails_input_insurance_policy_end_date", type: "date", width: 18 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_id"), property: "insurance_medical_provider_id", field: "select_claimdetails_input_insurance_medical_provider_id", type: "descr", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_insurance_medical_provider_name"), property: "insurance_medical_provider_name", field: "input_claimdetails_input_insurance_medical_provider_name", width: 30 }
 
 			];
 
@@ -2047,8 +1732,6 @@ sap.ui.define([
 			);
 		},
 
-		// Aiman Salim - 14/03/2026 - For Approval Process. 
-
 		onClickCancel_app: function () {
 			// Close via the stored instance (ApproveDialog keeps it on controller as __approveDialog)
 			if (this._approveDialog) {
@@ -2057,9 +1740,9 @@ sap.ui.define([
 			if (this._sendBackDialog) { this._sendBackDialog.close(); }
 			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
+
 		//Button config for Approve
 		onClickCreate_app: async function () {
-
 
 			if (this.bIsApproving) {
 				return;
@@ -2101,7 +1784,7 @@ sap.ui.define([
 						this._oApproveDialog.close();
 					}
 
-					window.location.reload(true);
+					this._oRouter.navTo("MyApproval");
 
 				} catch (oErrorMessage) {
 					MessageBox.error(Utility.getText(oErrorMessage.sCode));
@@ -2166,7 +1849,7 @@ sap.ui.define([
 					this._oRejectDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorReject) {
 				MessageBox.error(Utility.getText(oErrorReject.sCode));
@@ -2221,7 +1904,7 @@ sap.ui.define([
 					this._oSendBackDialog.close();
 				}
 				
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 				
 			} catch (oErrorSendBack) {
 				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
@@ -2285,7 +1968,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && !this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(true);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(true);
 				}
 			}
 			else {
@@ -2303,7 +1986,7 @@ sap.ui.define([
 				}
 				//// Submit Report
 				if (this.byId("button_claimsubmission_submitreport").getVisible() && this.byId("button_claimsubmission_submitreport").getEnabled()) {
-					this.byId("button_claimsubmission_submitreport").setEnabled(false);
+					// this.byId("button_claimsubmission_submitreport").setEnabled(false);
 				}
 			}
 		},
@@ -2345,7 +2028,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/location_type", "");
 
 				// get material code from claim item
-				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
+				var materialCode = claimItem.data("MATERIAL_CODE");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
@@ -2354,8 +2037,46 @@ sap.ui.define([
 				return;
 			}
 
+			// CCC holders creating a CASH_REPAY item: default/lock the CCC switch
+			// based on whether a cash advance amount is available
+			this._applyCashRepayCCCDefault(oInputModel, oClaimSubmissionModel);
+
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.MEDICAL_ADVANCE &&
+				oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY &&
+				oClaimSubmissionModel.getProperty("/claim_items").length === 0 &&
+				!this._bSkipMedicalPolicyDialog
+			) {
+				this._oPendingClaimItem = claimItem;
+
+				if (!this._oMedicalPolicyDialog) {
+
+					Fragment.load({
+						name: "claima.fragment.medicalpolicy",
+						id: "medicalPolicyDialogFrag",
+						controller: this
+					}).then(function (oMedicalPolicyDialog) {
+
+						this._oMedicalPolicyDialog = oMedicalPolicyDialog;
+
+						this.getView().addDependent(this._oMedicalPolicyDialog);
+
+						this._oMedicalPolicyDialog.open();
+
+					}.bind(this));
+
+				} else {
+
+					this._oMedicalPolicyDialog.open();
+
+				}
+
+				return;
+			}
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
+
+			this._bSkipMedicalPolicyDialog = false;
 
 			// When Location Type is visible but no selection yet, hide State and Location fields by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
@@ -2526,23 +2247,21 @@ sap.ui.define([
 				combo_dependent: { is_editable: true },
 				to_location: { is_visible: false },
 				from_location: { is_visible: false },
-				marriage_category: { is_visible: false }
+				marriage_category: { is_visible: false },
+				charged_to_ccc: { is_editable: true },
+				insurance_medical_provider_id: { is_visible: false },
+				insurance_medical_provider_name: { is_visible: false },
+				policy_start_date: { is_visible: false },
+				policy_end_date: { is_visible: false },
+				previous_policy_number: { is_visible: false },
+				current_policy_number: { is_visible: false },
+				next_policy_number: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
-			// change footer buttons
-			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.DETAILS
-				);
-
-			}
+			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
@@ -2550,6 +2269,12 @@ sap.ui.define([
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
+				// CCC holders editing a CASH_REPAY item: default/lock the CCC switch
+				// based on whether a cash advance amount is available
+				this._applyCashRepayCCCDefault(oInputModel, oClaimSubmissionModel);
+
+				//refresh policy info 
+				await this._refreshPolicyInfo();
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
 
@@ -2607,7 +2332,7 @@ sap.ui.define([
 			}
 
 			}
-			this._setClaimDetailSelection(oClaimSubmissionModel);
+			await this._setClaimDetailSelection(oClaimSubmissionModel);
 
 			// approver view changes
 			if (oClaimSubmissionModel.getProperty("/view_only")) {
@@ -2630,13 +2355,13 @@ sap.ui.define([
 			}
 
 			//for tambang excluding flight
-				this._filterFareType();
+			this._filterFareType();
 
 			// if claim type item is lodging, retrieve eligible amount
 			// if claim type item is lodging, retrieve eligible amount
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O){
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O) {
 				oInputModel.setProperty("/claim_item/eligible_amount", 0);
-			}else{
+			} else {
 				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
 				}
@@ -2645,9 +2370,13 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claim_item/round_trip")) {
 				await this.onChange_ClaimDetails_Kilometer();
 			}
+
+			//for CCC personal expense
+			await this._calculateClaimTotal();
+			await this._calculateCardAdvanceAmount();
 		},
 
-		_setClaimDetailSelection: function (oModel) {
+		_setClaimDetailSelection: async function (oModel) {
 			// filter by submission type
 			var oFilterSubsmissionType;
 			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
@@ -2667,7 +2396,10 @@ sap.ui.define([
 				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
 			}
 
-			// 1. Define the base filters
+			// 1. Define the base filters - CLAIM_TYPE_ITEM_ID exclusions are
+			// handled separately below, in plain JavaScript, rather than as
+			// OData filters (the dynamic filter/binding approach proved
+			// unreliable for this specific dropdown).
 			var aFilters = [
 				new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
 				oFilterSubsmissionType,
@@ -2677,35 +2409,67 @@ sap.ui.define([
 				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 			];
 
-			// 2. Conditionally add the CASH_REPAYMENT filter
+			// 2. Determine which CLAIM_TYPE_ITEM_IDs to exclude.
+			var aExcludedClaimTypeItemIds = [];
+
+			var sCardNoForFilter = oModel.getProperty("/claim_header/card_no");
+			var bIsTravelWithCard = !!sCardNoForFilter && !!this._oConstant.TravelClaimType[oModel.getProperty("/claim_header/claim_type_id")];
+
 			// Using Number() or parseFloat() ensures the check works whether the model stores it as a string "0" or number 0
 			var fCashAdvanceAmount = oModel.getProperty("/claim_header/cash_advance_amount");
-			if (Number(fCashAdvanceAmount) === 0) {
-				aFilters.push(new Filter('CLAIM_TYPE_ITEM_ID', FilterOperator.NE, this._oConstant.ClaimTypeItem.CASH_REPAY));
+			if (Number(fCashAdvanceAmount) === 0 && !bIsTravelWithCard) {
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.CASH_REPAY);
 			}
 
-			// 3. Set dropdown for claim items using the dynamic filter array
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
-				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: aFilters,
-				sorter: [
-					new Sorter('CLAIM_TYPE_ITEM_DESC'),
-					new Sorter('CLAIM_TYPE_ITEM_ID')
-				],
-				parameters: {
-					$expand: {
-						"ZSUBMISSION_TYPE": {
-							$select: "SUBMISSION_TYPE_DESC"
-						}
-					},
-					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
+			// POTONGAN_ELAUN and PERSONAL_EXPENSE are only shown to users
+			// who have a corporate credit card assigned.
+			var sCardNoForFilter = oModel.getProperty("/claim_header/card_no");
+			if (!sCardNoForFilter) {
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.POTONGAN_ELAUN);
+				aExcludedClaimTypeItemIds.push(this._oConstant.ClaimTypeItem.PERSONAL_EXP);
+			}
+
+			// 3. Fetch every matching row (base filters only), then remove
+			// the excluded CLAIM_TYPE_ITEM_IDs in plain JavaScript, and
+			// populate the Select control directly.
+			var oClaimItemSelect = this.byId("select_claimdetails_input_claimitem");
+			var oEmployeeModel = this.getView().getModel("employee");
+			var oListBinding = oEmployeeModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, aFilters, {
+				$$ownRequest: true,
+				$expand: {
+					"ZSUBMISSION_TYPE": {
+						$select: "SUBMISSION_TYPE_DESC"
+					}
 				},
-				template: new Item({
-					key: "{employee>CLAIM_TYPE_ITEM_ID}",
-					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
-				})
+				$select: "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC,SUBMISSION_TYPE,MATERIAL_CODE"
 			});
-			
+
+			try {
+				var aContexts = await oListBinding.requestContexts(0, Infinity);
+				var aItems = aContexts
+					.map(function (ctx) { return ctx.getObject(); })
+					.filter(function (oRow) { return !aExcludedClaimTypeItemIds.includes(oRow.CLAIM_TYPE_ITEM_ID); })
+					.sort(function (a, b) {
+						if (a.CLAIM_TYPE_ITEM_DESC !== b.CLAIM_TYPE_ITEM_DESC) {
+							return a.CLAIM_TYPE_ITEM_DESC < b.CLAIM_TYPE_ITEM_DESC ? -1 : 1;
+						}
+						return a.CLAIM_TYPE_ITEM_ID < b.CLAIM_TYPE_ITEM_ID ? -1 : 1;
+					});
+
+				oClaimItemSelect.unbindAggregation("items");
+				oClaimItemSelect.removeAllItems();
+				aItems.forEach(function (oRow) {
+					var oItem = new Item({
+						key: oRow.CLAIM_TYPE_ITEM_ID,
+						text: oRow.CLAIM_TYPE_ITEM_DESC
+					});
+					oItem.data("MATERIAL_CODE", oRow.MATERIAL_CODE);
+					oClaimItemSelect.addItem(oItem);
+				});
+			} catch (e) {
+				console.error("Failed to load claim type items:", e);
+			}
+
 			// claim detail selection values
 			this._setClaimDetailSelectionMaster();
 		},
@@ -2743,6 +2507,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//// Nama Pembekal Insuran
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_medical_provider_id", "ZINSURANCE_MEDICAL_PROVIDER");
 
 			var oFilter = this._getDependentFilters();
 
@@ -2840,6 +2606,104 @@ sap.ui.define([
 						filters: [
 							oEmpFilter,
 							oDependentRuleFilter
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.INSURANCE:
+				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
+					var d25YearsAndBelow = DateUtility.today();
+					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
+
+					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
+
+					// Spouse / Additional Spouse
+					var oSpouseFilter = new Filter({
+						filters: [
+							new Filter({
+								filters: [
+									new Filter(
+										this._oConstant.EntitiesFields.RELATIONSHIP,
+										FilterOperator.EQ,
+										this._oConstant.Relationship.SPOUSE
+									),
+									new Filter(
+										this._oConstant.EntitiesFields.RELATIONSHIP,
+										FilterOperator.EQ,
+										this._oConstant.Relationship.ADDITIONAL_SPOUSE
+									)
+								],
+								and: false
+							}),
+							new Filter(
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
+								FilterOperator.EQ,
+								true
+							)
+						],
+						and: true
+					});
+
+					// Child - Normal Rule
+					var oEligibleChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.STUDENT,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.DOB,
+								FilterOperator.GE,
+								s25YearsAndBelow
+							)
+						],
+						and: true
+					});
+
+					// Child - Disabled (bypass Student & DOB checks)
+					var oDisabledChildFilter = new Filter({
+						filters: [
+							new Filter(
+								this._oConstant.EntitiesFields.RELATIONSHIP,
+								FilterOperator.EQ,
+								this._oConstant.Relationship.CHILD
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
+								FilterOperator.EQ,
+								true
+							),
+							new Filter(
+								this._oConstant.EntitiesFields.DISABLED,
+								FilterOperator.EQ,
+								true
+							)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oSpouseFilter,
+									oEligibleChildFilter,
+									oDisabledChildFilter
+								],
+								and: false
+							})
 						],
 						and: true
 					})
@@ -2987,13 +2851,17 @@ sap.ui.define([
 				}
 			}
 
-			/* 	4 scenarios for Receipt Date to be populated
-					1. Get Receipt Date based on input
-					2. If Receipt Date is null, get item Bill Date
-					3. If Bill Date is null, get item Start Date
-					4. If Start Date is null, get header Trip Start Date 
-			*/
-			if (oInputModel.getProperty("/claim_item/receipt_date") === null) {
+			// Exception: Kilometer claim items (KILOMETER / KM) must NOT be auto-populated.
+			// 	The Travel/Receipt Date for these claims is a mandatory field that the
+			// 	claimant has to fill in manually, so we skip the fallback chain entirely
+			// 	and let the required-field validation below prompt the user instead.
+			// */
+			const bIsKilometerClaimItem = [
+				this._oConstant.ClaimTypeItem.KILOMETER,
+				this._oConstant.ClaimTypeItem.KM
+			].includes(oInputModel.getProperty("/claim_item/claim_type_item_id"));
+
+			if (!bIsKilometerClaimItem && oInputModel.getProperty("/claim_item/receipt_date") === null) {
 				if (oInputModel.getProperty("/claim_item/bill_date") !== null) {
 					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
 				} else {
@@ -3003,6 +2871,17 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
 					}
 				}
+			}
+
+			// For Kilometer claim items, once a Travel/Receipt Date has been provided,
+			// the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+			if (bIsKilometerClaimItem &&
+				!!oInputModel.getProperty("/claim_item/receipt_date") &&
+				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
+				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
 			}
 
 			// Eligibility Checking
@@ -3050,6 +2929,40 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
+			// upload Attachment 3
+			const bUploadAttachment3 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment3",
+				"/claim_item/attachment_file_3"
+			);
+			if (!bUploadAttachment3) return; // stop processing if upload fails for attachment 3
+
+			// upload Attachment 4
+			const bUploadAttachment4 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment4",
+				"/claim_item/attachment_file_4"
+			);
+			if (!bUploadAttachment4) return; // stop processing if upload fails for attachment 4
+
+
+			// Cash Repayment - override charging cost center from config
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY) {
+
+				const sDefaultChargingCostCenter =
+					await Utility.getDefaultChargingCostCenter(
+						this.getOwnerComponent().getModel(),
+						oInputModel.getProperty("/claim_item/claim_type_id"),
+						oInputModel.getProperty("/claim_item/claim_type_item_id")
+					);
+
+				if (sDefaultChargingCostCenter) {
+					oInputModel.setProperty(
+						"/claim_item/cost_center",
+						sDefaultChargingCostCenter
+					);
+				}
+			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -3073,15 +2986,7 @@ sap.ui.define([
 				}
 				///Check to recalculate Mata Wang if it is required
 				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
-
-				const nTotal = oClaimSubmissionModel
-					.getProperty("/claim_items")
-					.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
-
-				oClaimSubmissionModel.setProperty(
-					"/claim_header/total_claim_amount",
-					nTotal
-				);
+ 				
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -3215,9 +3120,15 @@ sap.ui.define([
 					ROUND_TRIP: oInputModel.getProperty("/claim_item/round_trip"),
 					TRIP_END_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_end_time")),
 					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
-					COST_CENTER: oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oInputModel.getProperty("/claim_item/cost_center"),
-					GL_ACCOUNT: oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account"),
-					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
+					COST_CENTER: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+									? null
+									: (oInputModel.getProperty("/claim_item/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center")),
+					GL_ACCOUNT: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+									? this._oConstant.StatementDueInfo.GL_CODE
+									: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account")),
+					MATERIAL_CODE: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+									? null
+									: oInputModel.getProperty("/claim_item/material_code"),					
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
 					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time") ? new Date(oInputModel.getProperty("/claim_item/arrival_time")).toISOString() : null,
@@ -3246,18 +3157,32 @@ sap.ui.define([
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"),
-					DAILY_ALLOWANCE: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/daily_allowance"))),
+					DAILY_ALLOWANCE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/daily_allowance"))),
 					TIPS: this._nonNan(parseInt(oInputModel.getProperty("/claim_item/tips"))),
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
 					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration")
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
+									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+									? true
+									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
+					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
+					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
+					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
+					INSURANCE_MEDICAL_PROVIDER_ID: oInputModel.getProperty("/claim_item/insurance_medical_provider_id"),
+					INSURANCE_MEDICAL_PROVIDER_NAME: oInputModel.getProperty("/claim_item/insurance_medical_provider_name"),
+					ATTACHMENT_FILE_3: oInputModel.getProperty("/claim_item/attachment_file_3"),
+					ATTACHMENT_FILE_4: oInputModel.getProperty("/claim_item/attachment_file_4"),
+					POLICY_YEAR: oInputModel.getProperty("/claim_item/policy_year")
 				});
-
 				// to save the attachment inside SF
 				var sAttachment1_SFID = oInputModel.getProperty("/claim_item/attachment_file_1")?.split(" - ")[0];
-                var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+				var sAttachment2_SFID = oInputModel.getProperty("/claim_item/attachment_file_2")?.split(" - ")[0];
+				var sAttachment3_SFID = oInputModel.getProperty("/claim_item/attachment_file_3")?.split(" - ")[0];
+				var sAttachment4_SFID = oInputModel.getProperty("/claim_item/attachment_file_4")?.split(" - ")[0];
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
@@ -3265,12 +3190,14 @@ sap.ui.define([
 					var oContext = oListBinding.create(oBody.getData());
 					await oContext.created().then(async () => {
 						// post MDF for item attachments
-						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2")) {
+						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2") || oInputModel.getProperty("/claim_item/attachment_file_3") || oInputModel.getProperty("/claim_item/attachment_file_4" )) {
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
 								sAttachment1_SFID,
-								sAttachment2_SFID
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID,
 							)
 						}
 
@@ -3300,6 +3227,8 @@ sap.ui.define([
 						// get existing attachment file values
 						var oAttachmentFile1 = oCtx.getProperty("ATTACHMENT_FILE_1");
 						var oAttachmentFile2 = oCtx.getProperty("ATTACHMENT_FILE_2");
+						var oAttachmentFile3 = oCtx.getProperty("ATTACHMENT_FILE_3");
+						var oAttachmentFile4 = oCtx.getProperty("ATTACHMENT_FILE_4");
 
 						for (const [key, value] of Object.entries(oBody.getData())) {
 							oCtx.setProperty(key, value);
@@ -3316,19 +3245,35 @@ sap.ui.define([
 							await Attachment.deleteAttachment(sSFID);
 							oCtx.setProperty("ATTACHMENT_FILE_2", null);
 						}
+						// Delete Attachment 3 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_3_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_3_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_3", null);
+						}
+						// Delete Attachment 4 from SF during save
+						if (oInputModel.getProperty("/claim_item/attachment_file_4_delete")) {
+							const sSFID = oInputModel.getProperty("/claim_item/attachment_file_4_delete")?.split(" - ")[0];
+							await Attachment.deleteAttachment(sSFID);
+							oCtx.setProperty("ATTACHMENT_FILE_4", null);
+						}
 
 						await oModel.submitBatch("$auto");
 
 						// post MDF for item attachments
 						if (
 							(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== oAttachmentFile1) ||
-							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2)
+							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_3") && oInputModel.getProperty("/claim_item/attachment_file_3") !== oAttachmentFile3) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_4") && oInputModel.getProperty("/claim_item/attachment_file_4") !== oAttachmentFile4)
 						) {
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
 								sAttachment1_SFID,
-								sAttachment2_SFID
+								sAttachment2_SFID,
+								sAttachment3_SFID,
+								sAttachment4_SFID
 							)
 						}
 						Attachment._mDeleteAttachments = {};
@@ -3337,10 +3282,12 @@ sap.ui.define([
 				}
 
 				return true;
-			} catch (e) {
+			} 
+			catch (e) {
 				MessageBox.error(e.message);
 				return false;
-			} finally {
+			} 
+			finally {
 				BusyIndicator.hide();
 			}
 		},
@@ -4244,400 +4191,225 @@ sap.ui.define([
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
-			if (!oClaimItemFragment) {
-				await this._afterLoadFragments();
-				return;
-			}
-
-			// disable item visibility
-			this._setAllControlsVisible(false);
-
-			// approver view changes
-			if (oClaimSubmissionModel.getProperty("/view_only")) {
-				if (this.byId("button_claimdetails_input_return").getVisible()) {
-					this.byId("button_claimdetails_input_return").setVisible(false);
+			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input", true);
+			if (oClaimItemFragment) {
+				// disable item visibility
+				this._setAllControlsVisible(false);
+ 
+				// approver view changes
+				if (oClaimSubmissionModel.getProperty("/view_only")) {
+					if (this.byId("button_claimdetails_input_return").getVisible()) {
+						this.byId("button_claimdetails_input_return").setVisible(false);
+					}
+					this._setAllControlsEditable(true);
 				}
-				this._setAllControlsEditable(true);
+ 
+				// clear fileuploader fields
+				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+				}
+ 
+				oPage.removeContent(oClaimItemFragment);
+ 
+				await this._showInitFormFragment();
+				await this._afterLoadFragments();
+				// Reload when item cancellation
+				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				this._calculateCardAdvanceAmount();
+
+				this._refreshActionState("SUMMARY");	// footer button control
 			}
-
-			// clear fileuploader fields
-			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-				this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
-			}
-
-			oPage.removeContent(oClaimItemFragment);
-
-			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
-				oPage.insertContent(oVBox, 2);
-			});
-
-			await this._afterLoadFragments();
-
-			// Reload when item cancellation
-			await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-
-			let sFooterMode;
-
-			if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
-				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-			}
-			else if (oClaimSubmissionModel.getProperty("/view_only")) {
-				sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
-			}
-			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
-			}
-			else {
-				sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
-			}
-
-			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-
-			oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
-			this._setEnabledToolbarFooter();
 		},
 
+		/**
+		 * Handles the claim header actions triggered from the Claim Submission
+		 * toolbar: Delete, Save Draft, and Submit Report.
+		 *
+		 * - **Delete** (`Claim_Action.DELETE`): calls the `cancelRecord` OData action
+		 *   directly with the claim's ID and returns
+		 * - **Save Draft / Submit Report**: first runs client-side checks, in order,
+		 *   returning early on the first failure:
+		 *     1. Items list not empty
+		 *     2. Header field validation via `CustomValidator`
+		 *     3. Total claim amount validity (NaN / sign, adjusted for travel claims
+		 *        paid by corporate card)
+		 *     4. Duplicate item check via `CustomDuplicationCheck`
+		 *     5. Final amount to receive not negative (all claims, on Save Draft and Submit)
+		 *     6. Corporate card advance amount not negative (on Submit only)
+		 *
+		 *   If all checks pass:
+		 *     - **Save Draft** persists the current items via `_saveDraftItems`.
+		 *     - **Submit Report** calls the `startWorkflow` OData action — a single
+		 *       backend call that performs eligibility checking, budget locking,
+		 *       workflow/approver determination, and entitlement updates. On failure,
+		 *       shows an error message tailored to `oResponse.Area`
+		 *       (`ELIGIBILITY_CHECKING`, `BUDGET_CHECKING`, or a generic fallback for
+		 *       any other area) and returns without showing a success toast.
+		 *
+		 * On success, shows a toast with the relevant status message. Any thrown
+		 * error during the try block surfaces as a `MessageBox.error`.
+		 *
+		 * @param {string} oAction - one of `this._oConstant.Claim_Action` (`DELETE`, `DRAFT`, `SUBMIT`)
+		 * @returns {Promise<void|boolean>} resolves once the action completes and the
+		 *          view has reloaded; resolves to `false` if a Delete action fails or
+		 *          is declined by the backend
+		 */
 		_updateClaimSubmission: async function (oAction) {
+
+			var oListBinding;
+			var claimSaved;
+			var bApproversDetermined = true;
+
 			try {
-				BusyIndicator.show(0);
+				BusyIndicator.show();
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
+				var oHeader = oInputModel.getProperty("/claim_header") || [];
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (oAction !== this._oConstant.Claim_Action.DELETE && aItems.length === 0) {
-					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
-					BusyIndicator.hide();
-					return;
-				}
+				// flow delete action first to avoid any extra steps when cancel claim
+				if (oAction === this._oConstant.Claim_Action.DELETE) {
+					const oDeleteAction = this._oModel.bindContext("/cancelRecord(...)");
+					oDeleteAction.setParameter("sRecordId", oHeader.claim_id)
 
-				if (oAction !== 'Delete Report') {
-					// run validator before proceeding 
+					try {
+						await oDeleteAction.execute();
+						const bSuccess = await oDeleteAction.getBoundContext().requestObject();	
+
+						if (!bSuccess) {								
+							return false;
+						}
+					} catch (oError) {
+						MessageBox.error(oError.message);
+						return false;
+					} finally {
+						BusyIndicator.hide();
+					}
+
+					oMsg = Utility.getText("msg_claimsubmission_deleted");
+				} else {
+
+					// start with all logic steps that is not related to DELETE action
+					if (aItems.length === 0) {
+						MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+						BusyIndicator.hide();
+						return;
+					}
+					
+					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
 					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
 					if (!bCanProceed) {
 						return;
 					}
-				}
 
-				// Total Claim Amount Validation checking
-				if (aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)) {
-					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
-					BusyIndicator.hide();
-					return;
-				}
+					// Total Claim Amount Validation checking
+					var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+					var sCardNo = oInputModel.getProperty("/claim_header/card_no");
 
-				// Duplication check skip Delete 
-				if (oAction !== this._oConstant.Claim_Action.DELETE) {
+					var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+					var bHasCard = !!sCardNo;
+					var bTravelWithCard = bHasCard && bIsTravelClaimType;
+
+					var nTotalClaimAmount = oInputModel.getProperty("/claim_header/total_claim_amount");
+					if (aItems.length > 0 && (
+						isNaN(nTotalClaimAmount) ||
+						(bTravelWithCard ? nTotalClaimAmount < 0 : nTotalClaimAmount <= 0)
+					)) {
+						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
+						BusyIndicator.hide();
+						return;
+					}
+
+					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
-				}
-
-				// Cash Advance Repayment Validation checking
-				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
-					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
-					BusyIndicator.hide();
-					return;
-				}
-				//FUT issue 102
-				// solving the issue of having 0 amount claim item when submitting claims
-				// CustomValidator.init(this.getOwnerComponent(), this.getView());
-				// if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-				// 	return;
-				// }
-
-				//// update last modified date
-				var lastModifiedDate = this._getJsonDate(new Date());
-				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
-
-				//assign submitted date for submit oAction
-				if (oAction == this._oConstant.Claim_Action.SUBMIT) {
-					var submittedDate = this._getJsonDate(new Date());
-					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-				}
-
-				// assign report number to new claim
-				if (oInputModel.getProperty("/is_new")) {
-					var currentReportNumber = await this._getCurrentReportNumber('NR02');
-					var retries = 5;
-					while (retries-- > 0 && currentReportNumber.result === 'X') {
-						await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
-						currentReportNumber = await this._getCurrentReportNumber('NR02');
-					}
-					if (!isNaN(currentReportNumber.result.slice(-1))) {
-						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
-						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
-						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-					}
-					else {
-						MessageBox.error(Utility.getText("msg_claimsubmission_noclaim"));
-					}
-				}
-				//// set status for new claim as draft
-				if (oInputModel.getProperty("/is_new")) {
-					oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
-					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
-				}
-
-				// set body for update
-				var oBody = new JSONModel({
-					EMP_ID: this._oSessionModel.getProperty("/userId"),
-					PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-					TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-					TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-					EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-					EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
-					SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
-					COMMENT: oInputModel.getProperty("/claim_header/comment"),
-					ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
-					COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
-					REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
-					ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
-					STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
-					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-					LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-					SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-					PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
-					LOCATION: oInputModel.getProperty("/claim_header/location"),
-					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-					HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-					MOVE_IN_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
-					HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
-					LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
-					SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
-					NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-					DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-					DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
-					APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
-					APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
-					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
-					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
-					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
-					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
-					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code")
-				});
-
-				//// addon for new claim
-				if (oInputModel.getProperty("/is_new")) {
-					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
-				}
-
-				const oModel = this.getOwnerComponent().getModel();
-				var oListBinding;
-				var claimSaved;
-				var bApproversDetermined = true;
-
-				if (oInputModel.getProperty("/is_new")) {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
-					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then(async () => {
-						switch (oAction) {
-							case 'Save Draft':
-								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
-								await this._saveDraftItems();
-								break;
-							case 'Submit Report':
-								//eligibility checking
-								var aAllClaimItems = oInputModel.getProperty("/claim_items");
-								var aAllEligibilityGeneratedPayload = [];
-								for (var i = 0; i < aAllClaimItems.length; i++) {
-									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-									aAllEligibilityGeneratedPayload.push(oPayload[0]);
-								}
-
-								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed) return;
-
-								// budget checking
-								const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
-								const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-								console.log(oHandlingResult);
-								if (!oHandlingResult.bCanProceed) {
-									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
-									return;
-								}
-
-								// move approver determination function before claim is saved
-								// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
-								// else, do not send message claim submission pending
-								// instead, jump to catch statement with error no approver found
-								var oModelAppr = this.getView().getModel();
-								var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-								const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-								if (oResponse.Success) {
-									// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-									if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-										const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-										oAction.setParameter("sRecordId", oInputModel.getProperty("/claim_header/claim_id"));
-										oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										try {
-											await oAction.execute();
-										} catch (oError) {
-											MessageBox.error(oError.message);
-										} finally {
-											BusyIndicator.hide();
-										}
-									}
-
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-									}
-									oMsg = Utility.getText("msg_claimsubmission_pending", []);
-								} else {
-									throw new Error(Utility.getText("msg_failed_no_approver"))
-								}
-								break;
-							default:
-								throw new Error("Invalid action selected: " + oAction);
-						}
-						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-
-						MessageToast.show(oMsg);
-						this._onNavBack();
-					}).catch(err => {
-						MessageBox.error(Utility.getText("msg_claimsubmission_creation_err", [err.message]));
-					});
-				}
-				else {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER", null, null,
-						[
-							new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: oInputModel.getProperty("/claim_header/claim_id") })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: "$auto",
-							$$updateGroupId: "$auto"
-						}
-					);
-
-					const aCtx = await oListBinding.requestContexts(0, 1);
-					const oCtx = aCtx[0];
-
-					if (!oCtx) {
-						throw new Error("Claim not reachable.");
+					// Cash Advance Repayment Validation checking
+					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
+						MessageBox.error(Utility.getText(bTravelWithCard
+							? "msg_error_cash_advance_repayment_and_potongan_elaun_prompt"
+							: "msg_error_cash_advance_repayment_prompt"));
+						BusyIndicator.hide();
+						return;
 					}
 
-					for (const [key, value] of Object.entries(oBody.getData())) {
-						oCtx.setProperty(key, value);
+					// Corporate Credit Card Advance Validation checking
+					if (oAction === this._oConstant.Claim_Action.SUBMIT &&
+						Number(oInputModel.getProperty("/claim_header/card_advance_amount")) < 0) {
+						MessageBox.error(Utility.getText("msg_error_negative_card_advance"));
+						BusyIndicator.hide();
+						return;
 					}
+
 					switch (oAction) {
-						case 'Save Draft':
+						case this._oConstant.Claim_Action.DRAFT:
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							await this._saveDraftItems();
 							break;
-						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
-							oMsg = Utility.getText("msg_claimsubmission_deleted");
-							// Placeholder to put delete function for ZAPPROVER_DETAILS_CLAIMS
-							//Call CAP action 
-							const oAction = oModel.bindContext("/DeleteApproverDetails(...)");
-							oAction.setParameter("ID", oInputModel.getProperty("/claim_header/claim_id"));
+
+						// Submit Report Button
+						case this._oConstant.Claim_Action.SUBMIT:
+							const oSubmitAction = this._oWorkflowModel.bindContext("/startWorkflow(...)");
+							oSubmitAction.setParameter("id", oHeader.claim_id);
+							oSubmitAction.setParameter("currentStatus", oHeader.status_id);
+
 							try {
-								await oAction.execute();
+								await oSubmitAction.execute();
+								const oResponse = await oSubmitAction.getBoundContext().requestObject();
+
+								if (!oResponse.Success) {
+									switch (oResponse.Area) {
+										// Handling for eligibility checking error
+										case this._oConstant.WorkflowArea.ELIGIBILITY_CHECKING:
+											await EligibilityCheck.eligibilityHandling(this, oResponse.Message, this._oConstant.SubmissionTypePrefix.CLAIM);
+											break;
+
+										// Handling for Budget checking/locking error
+										case this._oConstant.WorkflowArea.BUDGET_CHECKING:
+											var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
+											var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
+
+											var aMessages = [];
+											if (aInsufficientItems.length > 0) {
+												aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
+											}
+											if (aNotFoundItems.length > 0) {
+												aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
+											}
+
+											if (aMessages.length > 0) {
+												MessageBox.error(aMessages.join("\n"));
+											}
+											break;
+
+										default:
+											MessageBox.error(oResponse.Message);
+											break;
+									}
+									return;
+								} else {
+									// workflow successfully determined and returns
+									oMsg = Utility.getText("msg_claimsubmission_pending", []);
+								}
+
 							} catch (oError) {
-								MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
+								MessageBox.error(oError.message);
 							}
 							break;
-						case 'Submit Report':
-							//eligibility checking
-							var aAllClaimItems = oInputModel.getProperty("/claim_items");
-							var aAllEligibilityGeneratedPayload = [];
-							for (var i = 0; i < aAllClaimItems.length; i++) {
-								var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
-								aAllEligibilityGeneratedPayload.push(oPayload[0]);
-							}
-
-							var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
-							var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-							if (!bCanProceed) return;
-
-							// budget checking
-							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
-							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
-							console.log(oHandlingResult);
-							if (!oHandlingResult.bCanProceed) {
-								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
-								return;
-							}
-
-							// move approver determination function before claim is saved
-							// if approvers are determined, oResponse.Success = true and proceed with changing status to PENDING APPROVAL
-							// else, do not send message claim submission pending
-							// instead, jump to catch statement with error no approver found
-							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel = this.getView().getModel("employee_view"); 
-							const oResponse = await workflowApproval.onApproverDetermination(this._oWorkflowModel, oInputModel.getProperty("/claim_header/claim_id"), oInputModel.getProperty("/claim_header/status_id"));
-							if (oResponse.Success) {
-								// update PEDU entitlement usage if claim type is POST_EDUCATION_ASSISTANCE
-								if (oInputModel.getProperty("/claim_header/claim_type_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-									const oAction = this._oModel.bindContext("/updatePEDUEntitleAmount(...)");
-									oAction.setParameter("sRecordId",oInputModel.getProperty("/claim_header/claim_id"));
-									oAction.setParameter("sStatus", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									try {
-										await oAction.execute();
-									} catch (oError) {
-										MessageBox.error(oError.message);
-									} finally {
-										BusyIndicator.hide();
-									}
-								}
-
-								const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
-								if(sStatus != this._oConstant.ClaimStatus.APPROVED){
-									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-										var submittedDate = this._getJsonDate(new Date());
-										oCtx.setProperty("SUBMITTED_DATE", DateUtility.getHanaDate(submittedDate));
-									}
-								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);
-							} else {
-								throw new Error(Utility.getText("msg_failed_no_approver"))
-							}
-							break;
-							
+					
 						default:
 							throw new Error("Invalid action selected: " + oAction);
-					}
-					await oModel.submitBatch("$auto");
-
-					MessageToast.show(oMsg);
-					//// change status based on oAction
-					switch (oAction) {
-						case 'Delete Report':
-							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.CANCELLED);
-							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
-
-							this.onBack_ClaimSubmission();
-							break;
-						case 'Submit Report':
-							const sStatus = await ClaimUtility.fetchAutoClaimStatus(oInputModel.getProperty("/claim_header/claim_id"))
-							if(sStatus != this._oConstant.ClaimStatus.APPROVED){
-								oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-								if (!oInputModel.getProperty("/claim_header/submitted_date")) {
-									var submittedDate = this._getJsonDate(new Date());
-									oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-								}
-							}
-
-							this.onBack_ClaimSubmission();
-							break;
-						default:
 							break;
 					}
 				}
-
-			} catch (e) {
+				MessageToast.show(oMsg);
+			} catch (oError) {
 				// Sync with request error message
-				MessageBox.error(e.message || "Submission failed");
+				MessageBox.error(`Submission failed: ${oError.message}`);
 			} finally {
 				BusyIndicator.hide();
+				await this._loadClaimById(String(oHeader.claim_id));
+				this._afterLoadFragments()
 			}
 		},
 
@@ -4687,8 +4459,8 @@ sap.ui.define([
 				try {
 					oModel = this.getOwnerComponent().getModel();
 					oListBinding = null;
-					
-					// set body for update
+
+									// set body for update
 					var oBody = new JSONModel({
 						CLAIM_ID: claim_item.claim_id,
 						CLAIM_SUB_ID: claim_item.claim_sub_id,
@@ -4760,9 +4532,9 @@ sap.ui.define([
 						ROUND_TRIP: claim_item.round_trip,
 						TRIP_END_TIME: DateUtility.getHanaTime(claim_item.trip_end_time),
 						TRIP_START_TIME: DateUtility.getHanaTime(claim_item.trip_start_time),
-						COST_CENTER: claim_item.cost_center,
-						GL_ACCOUNT: claim_item.gl_account,
-						MATERIAL_CODE: claim_item.material_code,
+						COST_CENTER: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? null : claim_item.cost_center,
+						GL_ACCOUNT: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? this._oConstant.StatementDueInfo.GL_CODE : claim_item.gl_account,
+						MATERIAL_CODE: (claim_item.claim_type_item_id === this._oConstant.ClaimTypeItem.PERSONAL_EXP) ? null : claim_item.material_code,						
 						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
 						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
 						ARRIVAL_TIME: claim_item.arrival_time ? new Date(claim_item.arrival_time).toISOString() : null,
@@ -4794,6 +4566,9 @@ sap.ui.define([
 						TIPS: this._nonNan(parseInt(claim_item.tips)),
 						EXCLUDE_TIPS: claim_item.exclude_tips,
 						TOTAL_TRAVELLER: claim_item.number_of_travellers,
+						ATTACHMENT_FILE_3: claim_item.attachment_file_3,
+						ATTACHMENT_FILE_4: claim_item.attachment_file_4,
+						POLICY_YEAR: claim_item.policy_year
 					});
 
 					if (i >= itemCountDb) {
@@ -5009,24 +4784,20 @@ sap.ui.define([
 			}
 			if (oSideNav) {
 				return;
-			}
-			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				Utility.updateFooterState(
-					this.getView(),
-					oClaimSubmissionModel,
-					this._oConstant,
-					this._oConstant.ClaimFooterMode.SUMMARY
-				);
+			} else {
+				this._refreshActionState("SUMMARY");
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
 
-				// return to approver screen
-				this.getMyApproverPAReq();
-				this.getMyApproverClaim();
+					// return to approver screen
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
 
-				var oRouter = this.getOwnerComponent().getRouter();
-				this._onNavBack();
-			}
-			else {
-				this._onNavBack();
+					var oRouter = this.getOwnerComponent().getRouter();
+					this._onNavBack();
+				}
+				else {
+					this._onNavBack();
+				}
 			}
 		},
 
@@ -5234,7 +5005,18 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"select_claimdetails_input_insurance_medical_provider_id",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date",
+				"fileuploader_claimdetails_input_attachment_file_3",
+				"fileuploader_claimdetails_input_attachment_file_4",
+				"label_past_year_policy",
+				"text_past_year_policy",
+				"label_current_year_policy",
+				"text_current_year_policy",
+				"label_future_year_policy",
+				"text_future_year_policy"
 			];
 
 			aControlIds.forEach(id => {
@@ -5363,7 +5145,11 @@ sap.ui.define([
 				"input_claimdetails_input_tips",
 				"input_claimdetails_input_exclude_tips",
 				"input_claimdetails_input_daily_allowance",
-				"input_claimdetails_input_number_of_travellers"
+				"input_claimdetails_input_number_of_travellers",
+				"fileuploader_claimdetails_input_attachment_file_3",
+				"datepicker_claimdetails_input_insurance_policy_start_date",
+				"datepicker_claimdetails_input_insurance_policy_end_date",
+				"fileuploader_claimdetails_input_attachment_file_4"
 			];
 
 			aControlIds.forEach(id => {
@@ -5515,18 +5301,12 @@ sap.ui.define([
 					//reset amount
 					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					oClaimItemInputModel.setProperty("/claim_item/tips", 0);
+					oClaimItemInputModel.setProperty("/claim_item/daily_allowance", 0);
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 						oClaimItemInputModel.setProperty("/claim_item/currency_amount", 0);
 					}
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
-				}
-
-				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
-					oClaimItemInputModel.setProperty(
-						"/claim_item/daily_allowance",
-						oResult.daily_allowance
-					);
 				}
 
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
@@ -5544,6 +5324,13 @@ sap.ui.define([
 
 				if (this.byId("input_claimdetails_input_tips").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/tips", oResult.tips_amount);
+				}
+
+				if (this.byId("input_claimdetails_input_daily_allowance").getVisible()) {
+					oClaimItemInputModel.setProperty(
+						"/claim_item/daily_allowance",
+						oResult.daily_allowance
+					);
 				}
 
 			}).catch(err => {
@@ -5712,6 +5499,278 @@ sap.ui.define([
 				var fEligibleAmount = await ClaimUtility.getBantuanKematianEligibleAmount(oInputModel.getProperty("/claim_item/dependent_type"));
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
+		},
+		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
+			if (!sCardNo || !sClaimTypeItemId) return false;
+			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		/**
+		 * For CCC (corporate credit card) holders creating/editing a CASH_REPAY
+		 * claim item: if there is no cash advance on the claim, the item must be
+		 * charged to the CCC, so the switch defaults to ON and is locked. If a
+		 * cash advance amount is present, the user is free to decide, so the
+		 * switch is left editable (existing value, if any, is preserved).
+		 */
+		_applyCashRepayCCCDefault: function (oInputModel, oClaimSubmissionModel) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (!oInputModel || !oClaimSubmissionModel || !oPropertyModel) return;
+
+			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			if (sClaimTypeItemId !== this._oConstant.ClaimTypeItem.CASH_REPAY) {
+				return;
+			}
+
+			// Only applies to corporate credit card holders
+			var sCardNo = oClaimSubmissionModel.getProperty("/claim_header/card_no");
+			if (!sCardNo) {
+				return;
+			}
+
+			var nCashAdvanceAmount = Math.max(0, Number(oClaimSubmissionModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+
+			if (nCashAdvanceAmount === 0) {
+				// No cash advance to draw from - must be charged to CCC, and locked
+				oInputModel.setProperty("/claim_item/charged_to_ccc", true);
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", false);
+			} else {
+				// Cash advance available - let the user decide
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", true);
+			}
+		},
+
+		_calculateClaimTotal: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
+			var sCardNo = oInputModel.getProperty("/claim_header/card_no");
+
+			var nCashAdvAmt = Math.max(0, Number(oInputModel.getProperty("/claim_header/cash_advance_amount")) || 0);
+
+			var bIsTravelClaimType = !!this._oConstant.TravelClaimType[sClaimTypeId];
+			var bHasCard = !!sCardNo;
+
+			if (bHasCard && bIsTravelClaimType) {
+				// Total Claim Amount includes everything except POTONGAN_ELAUN and
+				// CASH_REPAY, regardless of charged_to_ccc status.
+				var nTotal = aClaimItems
+					.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// Final Amount to Receive additionally excludes charged_to_ccc items
+				// (they get settled via the corporate card advance offset instead) -
+				// but not POTONGAN_ELAUN or CASH_REPAY again, since both are already
+				// excluded from nTotal above and would otherwise be double-subtracted.
+				var nChargedToCccExcludingPotongan = aClaimItems
+					.filter((it) => it.charged_to_ccc
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// POTONGAN_ELAUN items are actively deducted from Final Amount to
+				// Receive, on top of already being excluded from nTotal above.
+				var nPotonganElaunAmt = aClaimItems
+					.filter((it) => it.claim_type_item_id === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
+					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+				// Rounded to 2dp so the on-screen preview matches what the backend
+				// will persist, avoiding floating-point residue in the subtraction.
+				var nNewTotal = Math.round((nTotal - nChargedToCccExcludingPotongan - nCashAdvAmt - nPotonganElaunAmt) * 100) / 100;
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+				oInputModel.setProperty("/claim_header/final_amount_to_receive", nNewTotal);
+				return;
+			}
+
+			// Default: not a travel claim with a corporate credit card - simple
+			// sum of everything, minus cash advance only.
+			var nTotalDefault = aClaimItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			var nFinal = Math.round((nTotalDefault - nCashAdvAmt) * 100) / 100;
+			oInputModel.setProperty("/claim_header/total_claim_amount", nTotalDefault);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
+		},
+
+		_calculateCardAdvanceAmount: function () {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (oInputModel.getProperty("/view_only")) {
+				return;
+			}
+
+			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
+			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
+
+			var nChargedToCccAmount = aClaimItems
+				.filter((it) => it.charged_to_ccc)
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+			var nCardAdvanceAmount = nOriginalCardAdvanceAmount - nChargedToCccAmount;
+
+			oInputModel.setProperty("/claim_header/card_advance_amount", nCardAdvanceAmount);
+		},
+
+		onChange_Dependent: async function (oEvent) {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sDependentNo = oEvent.getSource().getSelectedKey();
+
+			const oAction = this._oModel.bindContext("/getDependentNationalId(...)");
+
+			oAction.setParameter("dependentNo", sDependentNo);
+
+			await oAction.execute();
+
+			const sNationalId = oAction.getBoundContext().getObject().value;
+
+			oInputModel.setProperty("/claim_item/dependent_national_id",sNationalId);
+
+			await this._refreshPolicyInfo();
+		},
+
+		onChange_PolicyStartDate: async function (oEvent) {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const dPolicyStartDate = oEvent.getSource().getDateValue();
+			const sPolicyYear = dPolicyStartDate
+				? dPolicyStartDate.getFullYear().toString()
+				: null;
+
+			oInputModel.setProperty("/claim_item/policy_year",sPolicyYear);
+			await this._refreshPolicyInfo();
+		},
+
+		_refreshPolicyInfo: async function () {
+
+			const oInputModel = this.getView().getModel("claimitem_input");
+			const sNationalId = oInputModel.getProperty("/claim_item/dependent_national_id");
+
+			if (!sNationalId) {
+				return;
+			}
+
+			try {
+
+				const oAction = this._oModel.bindContext("/getPolicyInfo(...)");
+
+				oAction.setParameter(
+					"dependentNationalId",
+					sNationalId
+				);
+
+				await oAction.execute();
+
+				const oResult = oAction.getBoundContext().getObject();
+				const aPolicies = oResult.policies || [];
+				const iCurrentYear = new Date().getFullYear();
+
+				const oPrevious = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear - 1
+				);
+
+				const oCurrent = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear
+				);
+
+				const oNext = aPolicies.find(
+					p => Number(p.POLICY_YEAR) === iCurrentYear + 1
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/previous_policy_number",
+					oPrevious
+						? `${oPrevious.POLICY_YEAR} - ${oPrevious.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/current_policy_number",
+					oCurrent
+						? `${oCurrent.POLICY_YEAR} - ${oCurrent.POLICY_NUMBER}`
+						: null
+				);
+
+				oInputModel.setProperty(
+					"/claim_item/next_policy_number",
+					oNext
+						? `${oNext.POLICY_YEAR} - ${oNext.POLICY_NUMBER}`
+						: null
+				);
+
+			} catch (error) {
+
+			}
+		},
+
+
+		onMedicalPolicyYes: function (oEvent) {
+
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			if (!this._oMedicalDeclarationDialog) {
+
+				Fragment.load({
+					name: "claima.fragment.medicaldeclaration",
+					id: "medicalDeclarationDialogFrag",
+					controller: this
+				}).then(function (oMedicalDeclarationDialog) {
+
+					this._oMedicalDeclarationDialog = oMedicalDeclarationDialog;
+
+					this.getView().addDependent(this._oMedicalDeclarationDialog);
+
+					this._oMedicalDeclarationDialog.open();
+
+				}.bind(this));
+
+			} else {
+
+				this._oMedicalDeclarationDialog.open();
+
+			}
+		},
+
+		onMedicalPolicyNo: function (oEvent) {
+
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			this._bSkipMedicalPolicyDialog = true;
+
+			this.onSelect_ClaimDetails_ClaimItem({
+				getParameters: () => ({
+					selectedItem: this._oPendingClaimItem
+				})
+			});
+		},
+
+		onMedicalDeclarationClose: function (oEvent) {
+			var oDialog = oEvent.getSource().getParent();
+
+			oDialog.close();
+
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			oInputModel.setProperty("/claim_item/claim_type_item_id", "");
+
+			this.byId("select_claimdetails_input_claimitem")
+				?.setSelectedKey("");
+
+			this._resetClaimItemInputs(oInputModel);
+		},
+
+		_refreshActionState: function (sScreen) {
+			var oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
+			ActionStateService.apply(ActionStateService.buildContext({
+				screen:        sScreen,
+				header:        oHeader,
+				itemCount:	   this.getView().getModel("claimsubmission_input").getProperty("/claim_items")?.length,
+				items:         this.getView().getModel("claimsubmission_input").getProperty("/claim_items"),
+				currentUserId: this.getOwnerComponent().getModel("session").getProperty("/userId"),
+				approvalList:  this._oApprovalLog.getProperty("/approval"),
+			}));
 		}
 	});
 });

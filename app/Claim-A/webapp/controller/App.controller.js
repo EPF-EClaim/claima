@@ -72,6 +72,15 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
+			this.isFclEnabled = function () {
+				return false;
+			};
+			this.updateUIStateForView = function () {
+			};
+			this.calculateLayout = function () {
+				return "OneColumn";
+			};
+	
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent(), this.getView(), this._oDialogFragment);
 			// declare claim utility
@@ -105,6 +114,7 @@ sap.ui.define([
 			const bDTDAdmin = this._oRoleModel.getProperty("/isDTDAdmin"),
 				bAdminSystem = this._oRoleModel.getProperty("/isAdminSystem"),
 				bAdminCC = this._oRoleModel.getProperty("/isAdminCC"),
+				bAdminCCC = this._oRoleModel.getProperty("/isCCCAdmin"),
 				bClaimant = this._oRoleModel.getProperty("/isClaimant"),
 				bApprover = this._oRoleModel.getProperty("/isApprover");
 
@@ -177,8 +187,8 @@ sap.ui.define([
 					break;
 				case "cc_budgetreport":
 					if (bAdminSystem || bAdminCC) {
-					HashChanger.getInstance().replaceHash("");
-					this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_CC_BUDGET_REPORT");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
@@ -195,7 +205,7 @@ sap.ui.define([
 					break;
 				default:
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
-						if (bDTDAdmin || bAdminSystem || bAdminCC) {
+						if (bDTDAdmin || bAdminSystem || bAdminCC || bAdminCCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
 								oKey = sEmpMasterDTD;
 							} else if (bDTDAdmin && oKey === sEmpDep) {
@@ -350,8 +360,10 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
-					"marriage_category": null,	
+					"marriage_category": null,
 					"project_claim": false,
+					"has_ccc": false,
+					"card_no":null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -367,6 +379,7 @@ sap.ui.define([
 						"mode_of_transfer": null,
 						"travel_alone_family": null,
 						"travel_family_now_later": null,
+						"corporate_cred_card" : false,
 						"descr": {
 							"alternate_cost_center": null,
 							"mode_of_transfer": null,
@@ -446,6 +459,8 @@ sap.ui.define([
 					"mode_of_transfer": null,
 					"travel_alone_family": null,
 					"travel_family_now_later": null,
+					"corporate_cred_card": false,
+					"card_no": null,
 					"descr": {
 						"submission_type": null,
 						"alternate_cost_center": null,
@@ -497,12 +512,12 @@ sap.ui.define([
 					return;
 				}
 			}
-			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			const oEmpData = await Utility.getEmpIdDetail(this._oDataModel, Constants.EntitiesFields.EMAIL, oUserModelData.email, false);
 			if (oEmpData) {
 				oInputModel.setProperty("/emp_master", oEmpData);
-				await this._getEmpDataDescr(oInputModel);
+				await Utility.applyEmpDataDescr(oInputModel);
 			}
-
+			await this._setHasCorporateCard();
 			// set claim items based on selected claim type
 			var oSelectClaimType = this.byId("select_claimprocess_claimtype");
 			var oBindingSelectClaimType = oSelectClaimType.getBinding("items");
@@ -510,79 +525,10 @@ sap.ui.define([
 				// ensure status is active
 				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("CLAIM_TYPE_ID", FilterOperator.NE, this._oConstant.ClaimType.CORPO_CRED_CARD)
 			];
 			oBindingSelectClaimType.filter(aFilterSelectClaimType);
-		},
-
-		_getEmpDataDescr: async function (oModel) {
-			// cost center
-			if (oModel.getProperty("/emp_master/cc")) {
-				oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-			}
-			// department
-			if (oModel.getProperty("/emp_master/dep")) {
-				oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
-			}
-			// branch / unit section
-			if (oModel.getProperty("/emp_master/unit_section")) {
-				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
-			}
-			// marital status
-			if (oModel.getProperty("/emp_master/marital")) {
-				oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
-			}
-			// job group
-			if (oModel.getProperty("/emp_master/job_group")) {
-				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
-			}
-			// office location
-			if (oModel.getProperty("/emp_master/office_location")) {
-				oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
-			}
-			// state
-			if (oModel.getProperty("/emp_master/state")) {
-				oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
-			}
-			// country
-			if (oModel.getProperty("/emp_master/country")) {
-				oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
-			}
-			// role
-			if (oModel.getProperty("/emp_master/role")) {
-				oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
-			}
-			// user type
-			if (oModel.getProperty("/emp_master/user_type")) {
-				oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
-			}
-			// employee type
-			if (oModel.getProperty("/emp_master/employee_type")) {
-				oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
-			}
-		},
-
-		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-			const oModel = this.getOwnerComponent().getModel();
-			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
-			if (oFieldId2) {
-				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
-			}
-			const oListBinding = oModel.bindList(oTable, null, null, aFilterArray);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return oData[oFieldDescr];
-				} else {
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching description: ", oError);
-				return null; // Return null so the app doesn't crash
-			}
 		},
 
 		onSelect_ClaimProcess_ClaimType: async function (oEvent) {
@@ -590,13 +536,24 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimType = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oClaimType) {
-				 var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
+				var oClaimTypeData = oClaimType.getBindingContext("employee").getObject();
 				// get claim type description
 				oInputModel.setProperty("/claimtype/descr/type", oClaimTypeData.CLAIM_TYPE_DESC);
 				// get cost center from claim type
 				oInputModel.setProperty("/claimtype/cost_center", oClaimTypeData.COST_CENTER);
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
 				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
+
+				if (
+					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL ||
+					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL_ADVANCE
+				) {
+					await Utility.getRemainingMedicalEntitlement(
+						oInputModel,
+						this._oSessionModel.getProperty("/userId"),
+						"/claim_header/medical_remaining"
+					);
+				}
 
 				// if claim type is not project claim, reset project code value
 				if (!oClaimTypeData.PROJECT_CLAIM) {
@@ -631,7 +588,7 @@ sap.ui.define([
 			} else {
 				// reset claim type description
 				oInputModel.setProperty("/claimtype/descr/type", null);
-				
+
 				// reset project claim flag
 				oInputModel.setProperty("/claimtype/project_claim", false);
 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -659,7 +616,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/category", oClaimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 				oInputModel.setProperty("/claimtype/descr/category", oClaimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC"));
 				this._onSelect_ClaimProcess_Category();
-
+ 
 				// set Request Form selection based on selected claim type item
 				if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
 					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
@@ -669,25 +626,90 @@ sap.ui.define([
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
 					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
-					var aFilterSelectRequestForm = [
-						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
-					];
+ 
+					// (a)/(b): matches based on claim type - these require the
+					// current user to be the request's original requestor (EMP_ID)
+					var aOwnClaimTypeFilters = [];
+ 
+					// Selected claim type
+					aOwnClaimTypeFilters.push(
+						new Filter(
+							"CLAIM_TYPE_ID",
+							FilterOperator.EQ,
+							oInputModel.getProperty("/claimtype/type")
+						)
+					);
+ 
+					var oOwnClaimTypeOrFilter = new Filter({
+						filters: aOwnClaimTypeFilters,
+						and: false
+					});
+ 
+					var oOwnRequestorFilter = new Filter({
+						filters: [
+							oOwnClaimTypeOrFilter,
+							new Filter(
+								"EMP_ID",
+								FilterOperator.EQ,
+								this._oSessionModel.getProperty("/userId")
+							)
+						],
+						and: true
+					});
+ 
+					// (c): matches based on the current user being a PARTICIPANT
+					// on the request - _getParticipantPreApprovalRecords() already
+					// scopes results to PARTICIPANTS_ID = current user, so this
+					// alone is sufficient proof of legitimate access. It must NOT
+					// also require EMP_ID = current user, or a cardholder who
+					// isn't the request's original creator would be excluded -
+					// exactly defeating the point of matching on participation.
+					var aFinalOrGroups = [oOwnRequestorFilter];
+ 
 					if (aParticipantPARs.length > 0) {
-						var aRequestIdFilters = aParticipantPARs.map(function (oPAR) {
-							return new Filter("REQUEST_ID", FilterOperator.EQ, oPAR.REQUEST_ID);
+						var aParticipantReqFilters = aParticipantPARs.map(function (oPAR) {
+							return new Filter(
+								"REQUEST_ID",
+								FilterOperator.EQ,
+								oPAR.REQUEST_ID
+							);
 						});
-
-						aFilterSelectRequestForm.push(new Filter({
-							filters: aRequestIdFilters,
+ 
+						aFinalOrGroups.push(new Filter({
+							filters: aParticipantReqFilters,
 							and: false
 						}));
-					} else {
-						aFilterSelectRequestForm.push(
-							new Filter("REQUEST_ID", FilterOperator.EQ, "__NO_ELIGIBLE_PAR__")
-						);
 					}
-					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
+ 
+					var oCombinedOrFilter = new Filter({
+						filters: aFinalOrGroups,
+						and: false
+					});
+ 
+					// Apply mandatory filters
+					var oFinalFilter = new Filter({
+						filters: [
+							oCombinedOrFilter,
+							new Filter({
+								filters: [
+									new Filter(
+										"STATUS",
+										FilterOperator.EQ,
+										this._oConstant.ClaimStatus.APPROVED
+									),
+									new Filter(
+										"STATUS",
+										FilterOperator.EQ,
+										this._oConstant.ClaimStatus.COMPLETED_DISBURSEMENT
+									)
+								],
+								and: false // OR
+							})
+						],
+						and: true
+					});
+ 
+					oBindingSelectRequestForm.filter(oFinalFilter);
 				}
 			}
 			else {
@@ -720,6 +742,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oRequestForm = oEvent ? oEvent.getParameters().selectedItem : null;
 			if (oRequestForm) {
+				var sPrefix = oRequestForm.getKey().slice(0, 6);
 				// populate request form values
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
 				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
@@ -728,6 +751,10 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
 				
+				if(sPrefix.includes("CCC")){
+					oInputModel.setProperty("/claimtype/requestform/corporate_cred_card", true)
+				}
+
 				var sRequestId = oRequestForm.getKey();
 				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
 				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
@@ -766,7 +793,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/preapproved_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
- 				oInputModel.setProperty("/claimtype/requestform/project_code", null);
+				oInputModel.setProperty("/claimtype/requestform/project_code", null);
 				oInputModel.setProperty("/claimtype/requestform/project_desc", null);
 
 			}
@@ -809,30 +836,11 @@ sap.ui.define([
 					oInputModel.setProperty("/claimtype/course_code/start_date", aKeyParts[2]);
 					oInputModel.setProperty("/claimtype/course_code/end_date", aKeyParts[3]);
 				}
-
-				// // set Session Number selection based on selected course code
-				// if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
-				// 	var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
-				// 	var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
-				// 	var aFilterSelectSessionNumber = [
-				// 		// ensure status is active
-				// 		new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-				// 		new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
-				// 		new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-				// 		new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-				// 	];
-				// 	oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
-				// }
 			}
 			else {
 				// reset claim item values
 				oInputModel.setProperty("/claimtype/course_code/course_desc", null);
 			}
-			// // reset session number
-			// if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
-			// 	oInputModel.setProperty("/claimtype/course_code/session_number", null);
-			// 	this.onSelect_ClaimProcess_SessionNumber();
-			// }
 		},
 
 		/**
@@ -980,12 +988,14 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			oInputModel.setProperty("/claim_header/card_advance_amount", oInputModel.getProperty("/claimtype/card_advance"));
 			oInputModel.setProperty("/claim_header/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/mode_of_transfer"));
 			oInputModel.setProperty("/claim_header/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/travel_alone_family"));
 			oInputModel.setProperty("/claim_header/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/travel_family_now_later"));
 			oInputModel.setProperty("/claim_header/descr/mode_of_transfer", oInputModel.getProperty("/claimtype/requestform/descr/mode_of_transfer"));
 			oInputModel.setProperty("/claim_header/descr/travel_alone_family", oInputModel.getProperty("/claimtype/requestform/descr/travel_alone_family"));
 			oInputModel.setProperty("/claim_header/descr/travel_family_now_later", oInputModel.getProperty("/claimtype/requestform/descr/travel_family_now_later"));
+			oInputModel.setProperty("/claim_header/corporate_cred_card", oInputModel.getProperty("/claimtype/requestform/corporate_cred_card"));
 			//// set alternate cost center based on claim type / pre-approval
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
@@ -1003,12 +1013,17 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", oInputModel.getProperty("/claimtype/course_code/session_number"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/course_code/course_desc"));
 
-				// check if trip dates already auto-populated from pre-approval request, else populate with course code dates
-				if (!oInputModel.getProperty("/claim_header/trip_start_date")) {
-					oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
+				// claim start/end date hierarchy:
+				//   1. course code start/end date (overrides the pre-approval request dates set above)
+				//   2. pre-approval request start/end date (already set above, kept as fallback)
+				//   3. user manual input (field stays empty if neither source has a date)
+				var sCourseStartDate = oInputModel.getProperty("/claimtype/course_code/start_date");
+				var sCourseEndDate = oInputModel.getProperty("/claimtype/course_code/end_date");
+				if (sCourseStartDate) {
+					oInputModel.setProperty("/claim_header/trip_start_date", sCourseStartDate);
 				}
-				if (!oInputModel.getProperty("/claim_header/trip_end_date")) {
-					oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
+				if (sCourseEndDate) {
+					oInputModel.setProperty("/claim_header/trip_end_date", sCourseEndDate);
 				}
 			}
 			else {
@@ -1016,7 +1031,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/session_number", null);
 				oInputModel.setProperty("/claim_header/descr/course_code", null);
 			}
-			
+
 			//// project code values
 			if (oInputModel.getProperty("/claimtype/project_claim")) {
 
@@ -1027,7 +1042,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/descr/project_code", sProjectDesc || null);
 
 			} else {
-				
+
 				oInputModel.setProperty("/claim_header/project_code", null);
 				oInputModel.setProperty("/claim_header/descr/project_code", null);
 			}
@@ -1199,8 +1214,12 @@ sap.ui.define([
 				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time")),
 				MODE_OF_TRANSFER: oInputModel.getProperty("/claim_header/mode_of_transfer"),
-				TRAVEL_ALONE_FAMILY: oInputModel.getProperty("/claim_header/travel_alone_family"),
+				TRAVEL_ALONE_FAMILY: ( oInputModel.getProperty("/claimtype/marriage_category") === this._oConstant.MarriageCategory.SINGLE && 
+										oInputModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimType.ELAUN_TUKAR) ? 
+											this._oConstant.TravelAloneOrWithFamily.ALONE : oInputModel.getProperty("/claim_header/travel_alone_family"),
 				TRAVEL_FAMILY_NOW_LATER: oInputModel.getProperty("/claim_header/travel_family_now_later"),
+				CARD_NO: oInputModel.getProperty("/claim_header/card_no"),
+				CCC_ADV_AMT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/card_advance_amount"))).toFixed(2)
 			});
 			//// addon for new claim
 			if (oInputModel.getProperty("/is_new")) {
@@ -1429,14 +1448,14 @@ sap.ui.define([
 
 				this.getView().addDependent(this._oDialogFragment);
 
-				var oRequestDialogModel = new JSONModel({ 
-					reqid: "", 
-					grptype: "IND", 
-					altcostcenter: "",	
+				var oRequestDialogModel = new JSONModel({
+					reqid: "",
+					grptype: "IND",
+					altcostcenter: "",
 					project_claim: false,
 					project_code: null,
 					project_desc: null
-				 });
+				});
 				this._oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this._oDialogFragment.attachAfterClose(() => {
@@ -1447,7 +1466,8 @@ sap.ui.define([
 
 			this._oDialogFragment.addStyleClass('requestDialog');
 			this._oDialogFragment.open();
-			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			//this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			this._applyReqTypeFilters();
 			this._openAndPreload(this._oDialogFragment);
 		},
 
@@ -1486,6 +1506,18 @@ sap.ui.define([
 					const sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
 					const sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
 					oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
+				}
+
+				if (oDialogData.doc3) {
+					const sAttachment3Binary = await Attachment.getFileAsBinary(oDialogData.doc3);
+					const sAttachment3SFId = await Attachment.postAttachment(oDialogData.doc3.name, sAttachment3Binary, sEmpId);
+					oDialogData.doc3 = `${sAttachment3SFId} - ${oDialogData.doc3.name}`;
+				}
+
+				if (oDialogData.doc4) {
+					const sAttachment4Binary = await Attachment.getFileAsBinary(oDialogData.doc4);
+					const sAttachment4SFId = await Attachment.postAttachment(oDialogData.doc4.name, sAttachment4Binary, sEmpId);
+					oDialogData.doc4 = `${sAttachment4SFId} - ${oDialogData.doc4.name}`;
 				}
 
 				await this.createRequestHeader(oDialogData);
@@ -1527,6 +1559,7 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate || null,
 					TRIP_START_DATE: oInputData.tripstartdate || null,
 					TRIP_END_DATE: oInputData.tripenddate || null,
+					PAYMENT_DUE_DATE: oInputData.cccduedate || null,
 					STATUS: this._oConstant.ClaimStatus.DRAFT,
 					CLAIM_TYPE_ID: oInputData.claimtype || null,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10),
@@ -1535,7 +1568,9 @@ sap.ui.define([
 					TRANSFER_MODE_ID: oInputData.transfermode || null,
 					TRAVEL_ALONE_FAMILY: oInputData.transferalonefamily || null,
 					TRAVEL_FAMILY_NOW_LATER: oInputData.transferfamilynowlater || null,
-					PROJECT_CODE: oInputData.project_code || null
+					PROJECT_CODE: oInputData.project_code || null,
+					ATTACHMENT3: oInputData.doc3 || null,
+					ATTACHMENT4: oInputData.doc4 || null
 				});
 
 				await oContext.created();
@@ -1574,78 +1609,16 @@ sap.ui.define([
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
 		},
 
-		// get backend data
-		async _getEmpIdDetail(sEMAIL) {
-			const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [
-				new Filter({
-					path: "EMAIL",
-					operator: FilterOperator.EQ,
-					value1: sEMAIL,
-					caseSensitive: false
-				}) // non case-sensitive search
-			]);
+		onImportChange3(oEvent) {
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+			const oDialogData = oDialogModel.getData();
+			oDialogData.doc3 = oEvent.getParameters("files").files[0];
+		},
 
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return {
-						eeid: oData.EEID,
-						name: oData.NAME,
-						grade: oData.GRADE,
-						cc: oData.CC,
-						pos: oData.POS,
-						dep: oData.DEP,
-						unit_section: oData.UNIT_SECTION,
-						b_place: oData.B_PLACE,
-						marital: oData.MARITAL,
-						job_group: oData.JOB_GROUP,
-						office_location: oData.OFFICE_LOCATION,
-						address_line1: oData.ADDRESS_LINE1,
-						address_line2: oData.ADDRESS_LINE2,
-						address_line3: oData.ADDRESS_LINE3,
-						postcode: oData.POSTCODE,
-						state: oData.STATE,
-						country: oData.COUNTRY,
-						contact_no: oData.CONTACT_NO,
-						email: oData.EMAIL,
-						direct_supperior: oData.DIRECT_SUPPERIOR,
-						role: oData.ROLE,
-						user_type: oData.USER_TYPE,
-						mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
-						mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
-						employee_type: oData.EMPLOYEE_TYPE,
-						position_name: oData.POSITION_NAME,
-						position_start_date: oData.POSITION_START_DATE,
-						position_event_reason: oData.POSITION_EVENT_REASON,
-						confirmation_date: oData.CONFIRMATION_DATE,
-						effective_date: oData.EFFECTIVE_DATE,
-						updated_date: oData.UPDATED_DATE,
-						inserted_date: oData.INSERTED_DATE,
-						medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
-						descr: {
-							cc: null,
-							dep: null,
-							unit_section: null,
-							marital: null,
-							job_group: null,
-							state: null,
-							country: null,
-							direct_supperior: null,
-							role: null,
-							user_type: null,
-							employee_type: null
-						}
-					};
-				} else {
-					console.warn("No employee found with email: " + sEMAIL);
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
-				return null; // Return null so the app doesn't crash
-			}
+		onImportChange4(oEvent) {
+			const oDialogModel = this._oDialogFragment.getModel("reqDialog");
+			const oDialogData = oDialogModel.getData();
+			oDialogData.doc4 = oEvent.getParameters("files").files[0];
 		},
 
 		onSelect_ClaimType: function (oEvent) {
@@ -1656,7 +1629,7 @@ sap.ui.define([
 			this._handleProjectCodeVisibility(oEvent);
 		},
 
-		_applyReqTypeFilters: function (sUserType) {
+		_applyReqTypeFilters: function () {
 			var oSelect = Fragment.byId("request", "req_reqtype");
 
 			var oBinding = oSelect.getBinding("items");
@@ -1669,11 +1642,22 @@ sap.ui.define([
 				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE)
 			];
 
-			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
-				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
+			if (!this._oRoleModel.getProperty("/isAdminCC")) {
+				aFilters.push(
+					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE)
+				);
 			}
 
-			oBinding.filter(aFilters);
+			if (!this._oRoleModel.getProperty("/isAdminSystem") && !this._oRoleModel.getProperty("/isCCCAdmin")) {
+				aFilters.push(
+					new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.CORP_CC)
+				);
+			}
+
+			oBinding.filter(new Filter({
+				filters: aFilters,
+				and: true
+			}));
 		},
 
 		_loadClaimTypeSelectionData: async function (sReqType) {
@@ -1758,7 +1742,13 @@ sap.ui.define([
 						break;
 
 					case this._oConstant.RequestType.REIMBURSEMENT:
+					case this._oConstant.RequestType.MEDICAL:
 						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						Fragment.byId("request", "req_grptype").setEnabled(false);
+						break;
+
+					case this._oConstant.RequestType.CORP_CC:
+						this._oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
 						Fragment.byId("request", "req_grptype").setEnabled(false);
 						break;
 
@@ -1781,7 +1771,7 @@ sap.ui.define([
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {
-			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment"];
+			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment","req_CorpCCPayDueDate","req_corpoRefNo", "req_attachment_3", "req_attachment_4"];
 			aHeaderControlIds.forEach(id => {
 				const c = this._resolveControl(id, "request");
 				if (c && typeof c.setVisible === "function") {
@@ -2001,11 +1991,11 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//housing loan
 			if (oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme")) {
-				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await this._bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_ID, this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_DESC));
+				oClaimSubmissionModel.setProperty("/claim_header/descr/housing_loan_scheme", await Utility.bindEclaimDescr("/ZHOUSING_LOAN_SCHEME", oClaimSubmissionModel.getProperty("/claim_header/housing_loan_scheme"), this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_ID, this._oConstant.EntitiesFields.HOUSING_LOAN_SCHEME_DESC));
 			}
 			//lender name
 			if (oClaimSubmissionModel.getProperty("/claim_header/lender_name")) {
-				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await this._bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
+				oClaimSubmissionModel.setProperty("/claim_header/descr/lender_name", await Utility.bindEclaimDescr("/ZLENDER_NAME", oClaimSubmissionModel.getProperty("/claim_header/lender_name"), this._oConstant.EntitiesFields.LENDER_ID, this._oConstant.EntitiesFields.LENDER_NAME));
 			}
 		},
 
@@ -2048,26 +2038,32 @@ sap.ui.define([
 		_getParticipantPreApprovalRecords: async function (sRequestId) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oEmployeeModel = this.getView().getModel("employee_view");
-
+ 
 			var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
 			var sClaimTypeId = oInputModel.getProperty("/claimtype/type");
 			if (!sParticipantId || !sClaimTypeId) {
 				return [];
 			}
-
+ 
 			try {
+				var aClaimTypeIds = [sClaimTypeId];
+ 
 				var aFilters = [
 					new Filter("PARTICIPANTS_ID", FilterOperator.EQ, sParticipantId),
-					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED)
+					new Filter({
+						filters: aClaimTypeIds.map(function (sId) {
+							return new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sId);
+						}),
+						and: false
+					})
 				];
-
+ 
 				if (sRequestId) {
 					aFilters.push(
 						new Filter("REQUEST_ID", FilterOperator.EQ, sRequestId)
 					);
 				}
-
+ 
 				var oListBinding = oEmployeeModel.bindList(
 					"/ZPARTICIPANT_PREAPPROVED_AMOUNT",
 					null,
@@ -2077,15 +2073,58 @@ sap.ui.define([
 						$select: "REQUEST_ID,PARTICIPANTS_ID,CLAIM_TYPE_ID,STATUS,PREAPPROVED_AMOUNT"
 					}
 				);
-
+ 
 				var aContexts = await oListBinding.requestContexts(0, 100);
-
+ 
 				return aContexts.map(function (oContext) {
 					return oContext.getObject();
 				});
 			} catch (oError) {
 				return [];
 			}
-		}
+		},
+
+		async _setHasCorporateCard() {
+			const sUserId = this._oSessionModel.getProperty("/userId");
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			try {
+				const oListBinding = this._oDataModel.bindList(
+					"/ZCORPORATE_CARD",
+					null,
+					null,
+					[
+						new Filter("CARDHOLDER_ID", FilterOperator.EQ, sUserId)
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+
+				if (aCtx.length > 0) {
+					const oCardData = aCtx[0].getObject();
+					const fMonthlyAdvance = await Utility.getMonthlyAdvanceAmount(oCardData.CARD_NO, sUserId);
+					oInputModel.setProperty("/claimtype/has_ccc", true);
+					oInputModel.setProperty("/claim_header/card_no", oCardData.CARD_NO);
+					oInputModel.setProperty("/claimtype/card_advance", fMonthlyAdvance);
+					oInputModel.setProperty("/claim_header/card_advance_amount", fMonthlyAdvance);
+					oInputModel.setProperty("/claim_header/original_card_advance_amount", fMonthlyAdvance);
+				} else {
+					oInputModel.setProperty("/claimtype/has_ccc", false);
+					oInputModel.setProperty("/claim_header/card_no", null);
+					oInputModel.setProperty("/claimtype/card_advance", null);
+					oInputModel.setProperty("/claim_header/card_advance_amount", null);
+					oInputModel.setProperty("/claim_header/original_card_advance_amount", null);
+				}
+
+			} catch (e) {
+				console.error("Failed to check corporate card ownership:", e);
+				oInputModel.setProperty("/claimtype/has_ccc", false);
+				oInputModel.setProperty("/claim_header/card_no", null);
+				oInputModel.setProperty("/claimtype/card_advance", null);
+			}
+		},
 	});
 });

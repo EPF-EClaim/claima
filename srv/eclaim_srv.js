@@ -10,6 +10,8 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
+const UpdateMedical = require('./utils/UpdateMedical');
+const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
 
@@ -88,7 +90,8 @@ module.exports = (srv) => {
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC)
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC),
+                isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
 
             let sDeptDesc = "UNKNOWN";
@@ -111,17 +114,141 @@ module.exports = (srv) => {
             };
         });
 
-    srv.on('READ', 'FeatureControl', async (req) => {
-        //crud operation visibility in config table for DTD and JKEW
-        let operationHidden = true;
-        if (req.user.is(Constant.Admin.DTD_Admin)) {
-            operationHidden = false;
+    /**
+     *Purpose is to allow unrestricted admins to view the claim/request (Admin_cc and Admin_system), 
+     *the owner of the claim, the current approver and current substitute approver. 
+     * @public
+     * @param {String} sId - Claim ID or Request ID 
+     * @returns {Boolean} true if the logged-in user may access the claim/request
+     */
+    srv.on('checkClaimAccess', async (req) => {
+        const { sId } = req.data;
+
+        if (!sId) {
+            req.error(400, 'Claim/Request ID is required');
+            return false;
         }
 
-        return {
-            operationHidden: operationHidden,
-            operationEnabled: !operationHidden,
+        if (Object.values(Constant.AccessControlledAdmin).some(sRole => req.user.is(sRole))) {
+            return true;
         }
+
+        const tx = cds.tx(req);
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const sUserId = oEmp?.EEID;
+
+        if (!sUserId) {
+            return false;
+        }
+
+        const sIDType = sId.substring(0, 3);
+        const bIsRequest = sIDType === Constant.WorkflowType.REQUEST;
+
+        const sHeaderEntity = bIsRequest ? ZREQUEST_HEADER : ZCLAIM_HEADER;
+        const sHeaderIdField = bIsRequest ? 'REQUEST_ID' : 'CLAIM_ID';
+
+        const oHeader = await tx.run(
+            SELECT.one.from(sHeaderEntity).where({ [sHeaderIdField]: sId })
+        );
+
+        if (!oHeader) {
+            // ID doesn't exist - nothing to grant access to
+            return false;
+        }
+
+        // b) Owner check
+        if (oHeader.EMP_ID === sUserId) {
+            return true;
+        }
+
+        const sApproverTable = bIsRequest ? Constant.ApproverDetailsTable.REQUEST : Constant.ApproverDetailsTable.CLAIM;
+        const sApproverIdField = bIsRequest ? Constant.ApproverDetailsTable.PREAPPROVAL_ID : Constant.ApproverDetailsTable.CLAIM_ID;
+
+        const aApproverDetails = await tx.run(
+            SELECT.from(sApproverTable).where({ [sApproverIdField]: sId })
+        ) || [];
+
+        // c) Approver check, d) Substitute approver check
+        return aApproverDetails.some(oDetail =>
+            oDetail.APPROVER_ID === sUserId || oDetail.SUBSTITUTE_APPROVER_ID === sUserId
+        );
+    });
+
+    /**
+     *Purpose is to allow unrestricted admins to view the claim/request (Admin_cc and Admin_system), 
+     *the owner of the claim, the current approver and current substitute approver. 
+     * @public
+     * @param {String} sId - Claim ID or Request ID 
+     * @returns {Boolean} true if the logged-in user may access the claim/request
+     */
+    srv.on('checkClaimAccess', async (req) => {
+        const { sId } = req.data;
+
+        if (!sId) {
+            req.error(400, 'Claim/Request ID is required');
+            return false;
+        }
+
+        if (Object.values(Constant.AccessControlledAdmin).some(sRole => req.user.is(sRole))) {
+            return true;
+        }
+
+        const tx = cds.tx(req);
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
+
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const sUserId = oEmp?.EEID;
+
+        if (!sUserId) {
+            return false;
+        }
+
+        const sIDType = sId.substring(0, 3);
+        const bIsRequest = sIDType === Constant.WorkflowType.REQUEST;
+
+        const sHeaderEntity = bIsRequest ? ZREQUEST_HEADER : ZCLAIM_HEADER;
+        const sHeaderIdField = bIsRequest ? 'REQUEST_ID' : 'CLAIM_ID';
+
+        const oHeader = await tx.run(
+            SELECT.one.from(sHeaderEntity).where({ [sHeaderIdField]: sId })
+        );
+
+        if (!oHeader) {
+            // ID doesn't exist - nothing to grant access to
+            return false;
+        }
+
+        // b) Owner check
+        if (oHeader.EMP_ID === sUserId) {
+            return true;
+        }
+
+        const sApproverTable = bIsRequest ? Constant.ApproverDetailsTable.REQUEST : Constant.ApproverDetailsTable.CLAIM;
+        const sApproverIdField = bIsRequest ? Constant.ApproverDetailsTable.PREAPPROVAL_ID : Constant.ApproverDetailsTable.CLAIM_ID;
+
+        const aApproverDetails = await tx.run(
+            SELECT.from(sApproverTable).where({ [sApproverIdField]: sId })
+        ) || [];
+
+        // c) Approver check, d) Substitute approver check
+        return aApproverDetails.some(oDetail =>
+            oDetail.APPROVER_ID === sUserId || oDetail.SUBSTITUTE_APPROVER_ID === sUserId
+        );
+    });
+
+    srv.on('READ', 'FeatureControl', async (req) => {
+        // CRUD operation visibility in config table for DTD and JKEW
+
+        const bHasAccess =
+            req.user.is(Constant.Admin.DTD_Admin) ||
+            req.user.is(Constant.Admin.Admin_System);
+
+        return {
+            operationHidden: !bHasAccess,
+            operationEnabled: bHasAccess
+        };
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
@@ -209,20 +336,6 @@ module.exports = (srv) => {
                     .limit(1);
 
                 if (!existing.length) {
-
-                    original_budget = Number(row.ORIGINAL_BUDGET) || 0;
-                    virement_in = Number(row.VIREMENT_IN) || 0;
-                    virement_out = Number(row.VIREMENT_OUT) || 0;
-                    supplement = Number(row.SUPPLEMENT) || 0;
-                    return_value = Number(row.RETURN) || 0;
-                    consumed = Number(row.CONSUMED) || 0;
-
-                    var currentBudget = original_budget + virement_in + virement_out + supplement + return_value;
-                    var budgetBalance = currentBudget + consumed;
-
-                    row.CURRENT_BUDGET = currentBudget.toFixed(2);
-                    row.BUDGET_BALANCE = budgetBalance.toFixed(2);
-
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
 
                     results.push({
@@ -251,13 +364,13 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
-                    var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
+                    var new_return = return_value + Number(existing[0].RETURN);
+                    original_budget = original_budget === 0 ? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
                     // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
-                    var total_budget = newOriginalBudget + new_virement_in + new_virement_out + new_supplement + new_return;
+                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
@@ -265,7 +378,6 @@ module.exports = (srv) => {
                     updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
                     updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
                     updatePayload.RETURN = new_return.toFixed(2);
-                    updatePayload.ORIGINAL_BUDGET = newOriginalBudget.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -427,7 +539,12 @@ module.exports = (srv) => {
 
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
-        const range_id = Constant.NumberRange.REQUEST;
+
+        const isCorpoCC = String(req.data.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        console.log("req.data.REQTYPEID", req.data)
+        const range_id = isCorpoCC
+            ? Constant.NumberRange.REQUEST_CCC
+            : Constant.NumberRange.REQUEST;
 
         const row = await tx.run(
             SELECT.one.from('ZNUM_RANGE')
@@ -454,7 +571,7 @@ module.exports = (srv) => {
 
         oUpdateVariables.CURRENT = String(current + 1);
 
-        const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+        const nextNumber = isCorpoCC ? `${prefix}${yy}${String(current).padStart(5, "0")}` : `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
@@ -546,18 +663,80 @@ module.exports = (srv) => {
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
 
-        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
-
-        const result = await tx.run(
-            SELECT.one`
-                SUM(AMOUNT) as TotalClaimAmount
-            `
-                .from('ZCLAIM_ITEM')
-                .where({ CLAIM_ID: sClaimId })
+        const headerResult = await tx.run(
+            SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId })
         );
 
-        const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
+        const nCashAdvanceAmount = Math.max(0, Number(headerResult.CASH_ADVANCE_AMOUNT) || 0);
+
+        // Same travel claim type list as the frontend's TravelClaimType constant.
+        const aTravelClaimTypeIds = ['DLM_NEGARA', 'LUAR_NEGARA', 'KURSUS_DLM_NEGARA', 'KURSUS_LUAR_NEGARA'];
+        const bHasCard = !!headerResult.CARD_NO;
+        const bIsTravelClaimType = aTravelClaimTypeIds.includes(headerResult.CLAIM_TYPE_ID);
+
+        let totalClaimAmount;
+        let finalAmountToReceive;
+
+        if (bHasCard && bIsTravelClaimType) {
+            // Total Claim Amount includes everything except POTONGAN_ELAUN and
+            // CASH_REPAY, regardless of CHARGED_TO_CCC status.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+
+            // Final Amount to Receive additionally excludes CHARGED_TO_CCC items
+            // (they get settled via the corporate card advance offset instead) -
+            // but not POTONGAN_ELAUN or CASH_REPAY again, since both are already
+            // excluded from totalClaimAmount above and would otherwise be
+            // double-subtracted.
+            const chargedResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as ChargedToCccAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where(
+                        'CLAIM_ID =', sClaimId,
+                        "and CHARGED_TO_CCC = true and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                    )
+            );
+            const chargedToCccAmount = chargedResult.ChargedToCccAmount || 0;
+
+            // POTONGAN_ELAUN items are actively deducted from Final Amount to
+            // Receive, on top of already being excluded from totalClaimAmount
+            // above. Mirrors the frontend's _calculateClaimTotal() deduction.
+            const potonganElaunResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as PotonganElaunAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId, CLAIM_TYPE_ITEM_ID: 'POTONGAN_ELAUN' })
+            );
+            const nPotonganElaunAmt = potonganElaunResult.PotonganElaunAmount || 0;
+
+            // Rounded to 2dp to avoid floating-point residue (e.g. 671.5699999999997)
+            // being truncated instead of rounded when persisted to the DECIMAL column.
+            finalAmountToReceive = Math.round(((totalClaimAmount - chargedToCccAmount - nCashAdvanceAmount - nPotonganElaunAmt) || 0) * 100) / 100;
+        } else {
+            // Default: not a travel claim with a corporate credit card - simple
+            // sum of everything, minus cash advance only.
+            const totalResult = await tx.run(
+                SELECT.one`
+                    SUM(AMOUNT) as TotalClaimAmount
+                `
+                    .from('ZCLAIM_ITEM')
+                    .where({ CLAIM_ID: sClaimId })
+            );
+            totalClaimAmount = totalResult.TotalClaimAmount || 0;
+            finalAmountToReceive = Math.round(((totalClaimAmount - nCashAdvanceAmount) || 0) * 100) / 100;
+        }
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -567,13 +746,18 @@ module.exports = (srv) => {
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
-
         console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
     }
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-
+    
+        const oHeaderResult = await tx.run(
+            SELECT.one.from('ZREQUEST_HEADER')
+                .where({ REQUEST_ID: sRequestId })
+                .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+        );
+    
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -582,10 +766,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-
-        const totalEstAmount = result.TotalEstAmount || 0;
+    
+        let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-
+    
+        const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
+        if (bIsCorpoCC && totalEstAmount < 0) {
+            totalEstAmount = 0;
+        }
+    
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -1054,6 +1243,7 @@ module.exports = (srv) => {
                 } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
                     //entitle for daily allowance
                     meal_allowance = entitlement.AMOUNT / 2;
+                    daily_allowance = entitlement.AMOUNT / 2;
                 }
                 else if (req.data.day > 0) {
                     meal_allowance = req.data.day * entitlement.AMOUNT;
@@ -1107,13 +1297,22 @@ module.exports = (srv) => {
         //RT0001 and RT0002 - travel and reimbursement
         //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
         const today = new Date();
-        const baseline = new Date();
 
+        const baseline = new Date();
         baseline.setMonth(baseline.getMonth() - 3);
+
+        const baseline15 = new Date();
+        baseline15.getDate()
+        baseline15.setDate(baseline15.getDate() - 14); // considering the payment itself
+
+        const baseline30 = new Date();
+        baseline30.setDate(baseline30.getDate() - 29); // considering the payment itself
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
-        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS } = srv.entities;
+        const sMedBaselineDate15 = baseline15.toISOString().slice(0, 10);
+        const sMedBaselineDate30 = baseline30.toISOString().slice(0, 10);
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, ZEMP_APPROVED_PREAPPROVAL } = srv.entities;
         const tx = cds.tx(req);
 
         let aResult = [];
@@ -1129,6 +1328,23 @@ module.exports = (srv) => {
             }).and(
                 `TRIP_END_DATE > '${sBaselineDate}' AND 
                 TRIP_END_DATE <= '${sTodayDate}'`)
+        );
+
+        const aRequest15 = await tx.run(
+            SELECT.from(ZEMP_APPROVED_PREAPPROVAL)
+                .where({ PAYMENT_DATE: sMedBaselineDate15 })
+        );
+
+        const aRequest30 = await tx.run(
+            SELECT.from(ZEMP_APPROVED_PREAPPROVAL)
+                .where({ PAYMENT_DATE: sMedBaselineDate30 })
+        );
+
+        // Get medical CC list once only
+        const sMedCCEmail = await EmailReminder.getMedCCList(
+            ZEMP_MASTER,
+            ZCONSTANTS,
+            tx
         );
 
         for (var oRequest of preapproval) {
@@ -1170,6 +1386,62 @@ module.exports = (srv) => {
             } catch (error) {
                 console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
                 req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
+        }
+
+        for (var oRequest15 of aRequest15) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                sScenario = Constant.ReminderScenario.MEDICAL_ADVANCE;
+                sAgingDay = 15;
+
+                aResult.push({
+                    empName: oRequest15.NAME,
+                    empEmail: oRequest15.EMAIL,
+                    ccEmail: sMedCCEmail,
+                    tripEndDate: new Date(oRequest15.PAYMENT_DATE).toISOString().slice(0, 10),
+                    scenario: sScenario,
+                    milestone: sAgingDay
+                })
+
+            } catch (error) {
+                console.log(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
+                req.info(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
+                continue;
+            }
+        }
+
+        for (var oRequest30 of aRequest30) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                sScenario = Constant.ReminderScenario.MEDICAL_ADVANCE;
+                sAgingDay = 30;
+
+                aResult.push({
+                    empName: oRequest30.NAME,
+                    empEmail: oRequest30.EMAIL,
+                    ccEmail: sMedCCEmail,
+                    tripEndDate: new Date(oRequest30.PAYMENT_DATE).toISOString().slice(0, 10),
+                    scenario: sScenario,
+                    milestone: sAgingDay
+                })
+
+            } catch (error) {
+                console.log(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
+                req.info(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
                 continue;
             }
         }
@@ -1218,9 +1490,14 @@ module.exports = (srv) => {
     });
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
+        const tx = cds.tx(req);
+        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
 
+        if (sRequestId) {
+            await updateRequestItemCostCenters(tx,sRequestId);
+        }
         const sStatus = data.STATUS || req.data.STATUS;
-
+        
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -2073,8 +2350,8 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 1. Current Checking (Position & Date Logic)
         // ---------------------------------------------------------
-        const sPositionEvent = oEmp.ELAUN_TUKAR_REASON;
-        const sPositionStartDate = oEmp.ELAUN_TUKAR_START_DATE;
+        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
+        const sPositionStartDate = oEmp.POSITION_START_DATE;
 
         if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
@@ -2085,6 +2362,7 @@ module.exports = (srv) => {
                 .columns(Constant.EntitiesFields.VALUE)
                 .where({ ID: Constant.ConstantId.ELAUN_TUKAR_ELIGIBLE_AFTER_DAY_NUMBER })
         );
+
         const iDays = parseInt(oConstantRec?.VALUE || '0', 10);
         const dEligibleDate = new Date(sPositionStartDate);
         dEligibleDate.setUTCDate(dEligibleDate.getUTCDate() + iDays);
@@ -2092,7 +2370,7 @@ module.exports = (srv) => {
         const dCurrentDate = new Date();
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
-        if (dCurrentDate >= dEligibleDate) {
+        if (dCurrentDate <= dEligibleDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
@@ -2165,7 +2443,8 @@ module.exports = (srv) => {
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        return Constant.ElaunTukarStatus.NOT_ALLOWED; 
+                        console.log("here_req", request)
+                        return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
             }
@@ -2278,37 +2557,6 @@ module.exports = (srv) => {
             return req.reject(400, `Fail processing records: ${error.message}`);
         }
     });
-
-    srv.on('getCentraLink', async (req) => {
-        const tx = cds.tx(req);
-        var oCentraLink = await tx.run(SELECT.one
-            .from(Constant.Entities.ZCONSTANTS)
-            .where({
-                ID: Constant.ConstantId.PROD_CENTRA_LINK
-            })
-        )
-        return {
-            sCentraLink: oCentraLink.VALUE
-        };
-    });
-
-    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
-        const tx = cds.tx(req);
-        try {
-            var oStatus = await tx.run(SELECT.one
-                                    .from(Constant.Entities.ZCLAIM_HEADER)
-                                    .where({
-                                        CLAIM_ID: req.data.sClaimID
-                                    })
-            )
-
-            return { sStatus: oStatus.STATUS_ID}
-        }catch(oError){
-            throw new Error(oError)
-        }
-        
-    });
-
 
     /**
     * Update Header tables with approver actions
@@ -2935,7 +3183,7 @@ module.exports = (srv) => {
                 SELECT.one.from('ZEMP_MASTER')
                     .where({ EEID: USER_ID })
                     .columns('EMAIL', 'NAME')
-            );            
+            );
             const ibaseTime = new Date().getTime();
             let ilogIndexCounter = 0;
             // =======================================================================
@@ -4187,7 +4435,7 @@ module.exports = (srv) => {
             SELECT.one.from('ZEMP_MASTER')
                 .where({ EEID: sUserID })
                 .columns('EMAIL', 'NAME')
-        );        
+        );
         // =======================================================================
         // PROCESS 1: Claims — via ZEMP_APPROVER_CLAIM_DETAILS view
         // =======================================================================
@@ -4451,6 +4699,224 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getMonthlyAdvanceAmount', async (req) => {
+        const { sCardNo, sCardholderId } = req.data;
+        if (!sCardNo || !sCardholderId) return 0.00;
+    
+        try {
+            const oCardAdvance = await SELECT
+                .one
+                .from('ZCORPORATE_CARD_ADVANCED')
+                .columns('CURRENT_ADVANCED_BALANCE')
+                .where({
+                    CARD_NO: sCardNo,
+                    CARDHOLDER_ID: sCardholderId
+                });
+ 
+            console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
+    
+            return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
+    
+        } catch (error) {
+            console.error('[getMonthlyAdvanceAmount] Query failed:', error);
+            req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
+        }
+    });
+
+    srv.on('getDependentNationalId', async (req) => {
+
+        const { dependentNo } = req.data;
+
+        const oDependent = await SELECT.one
+            .from('ZEMP_DEPENDENT')
+            .where({
+                DEPENDENT_NO: dependentNo
+            });
+
+        return oDependent?.NATIONAL_ID || null;
+    });
+
+    srv.on('getRemainingMedicalEntitlement', async (req) => {
+
+        const tx = cds.tx(req);
+        const { empId } = req.data;
+
+        console.log("empId:", empId);
+
+        const oEmployee = await tx.run(
+            SELECT.one
+                .from(Constant.Entities.ZEMP_MASTER)
+                .columns(
+                    Constant.EntitiesFields.EEID,
+                    Constant.EntitiesFields.ROLE,
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                )
+                .where({
+                    [Constant.EntitiesFields.EEID]: empId
+                })
+        );
+
+        console.log("oEmployee:", JSON.stringify(oEmployee, null, 2));
+
+        if (!oEmployee) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        const sEmployeeRole = oEmployee[Constant.EntitiesFields.ROLE];
+
+        const aRules = await tx.run(
+            SELECT.from(Constant.Entities.ZELIGIBILITY_RULE)
+                .where({
+                    [Constant.EntitiesFields.CLAIM_TYPE_ID]:
+                        Constant.ClaimType.MEDICAL
+                })
+        );
+
+        const bHasSpecificRole = aRules.some(
+            rule => rule.ROLE_ID === sEmployeeRole
+        );
+
+        const aFilteredRules = aRules.filter(rule =>
+            bHasSpecificRole
+                ? rule.ROLE_ID === sEmployeeRole
+                : rule.ROLE_ID === Constant.Wildcard.All
+        );
+
+        const oRule = aFilteredRules[0];
+
+        console.log("Selected Rule:", oRule);
+
+        if (!oRule) {
+            return {
+                entitlement: 0,
+                approved: 0,
+                remaining: 0
+            };
+        }
+
+        if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
+            return {
+                entitlement: Constant.UnlimitedAmount,
+                approved: parseFloat(
+                    oEmployee[
+                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    ] || 0
+                ),
+                remaining: Constant.UnlimitedAmount
+            };
+        }
+
+        const fEligibleAmount = parseFloat(
+            oRule.ELIGIBLE_AMOUNT || 0
+        );
+
+        const fConsumedAmount = parseFloat(
+            oEmployee[
+            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+            ] || 0
+        );
+
+        const fRemaining = fEligibleAmount - fConsumedAmount;
+
+        console.log("fEligibleAmount:", fEligibleAmount);
+        console.log("fConsumedAmount:", fConsumedAmount);
+        console.log("fRemaining:", fRemaining);
+
+        return {
+            entitlement: fEligibleAmount,
+            approved: fConsumedAmount,
+            remaining: Math.max(0, fRemaining)
+        };
+    });
+
+    /**
+        * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('updateMedicalUsedAmount', async (req) => {
+        try {
+            const oPayload = req.data;
+            if (!oPayload || oPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            var sRecordId = oPayload.sRecordId;
+            var sStatus = oPayload.sStatus;
+            const tx = cds.tx(req);
+
+            var result = await UpdateMedical.updateUsedMedicalAmount(sRecordId, sStatus, tx);
+            return result;
+        } catch (error) {
+            return req.reject(400, `Fail processing records: ${error.message}`);
+        }
+    });
+
+    /**
+        * Clear MEDICAL_INSURANCE_ENTITLEMENT in ZEMP_MASTER table every year (Job Scheduler)
+        * Job schedule to run on early of the year
+        * @public
+        * @returns {Integer} number of records updated in header table
+        */
+    srv.on('clearMedicalEntitlement', async (req) => {
+        console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
+        try {
+            const { ZEMP_MEDICAL_ENT_HISTORY } = srv.entities;
+
+            const iPreviousYear = new Date().getFullYear() - 1;
+
+            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => {
+
+                // Keep all
+                const aAllEmployees = await tx.run(
+                    SELECT.from(ZEMP_MASTER).columns(
+                        Constant.EntitiesFields.EEID,
+                        Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
+                    )
+                );
+
+                // Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
+                const aHistoryEntries = aAllEmployees.map(item => ({
+                    YEAR: iPreviousYear,
+                    EMP_ID: item[Constant.EntitiesFields.EEID],
+                    MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
+                }));
+
+                const iHistoryCount = aHistoryEntries.length;
+
+                // UPSERT history records (Inserts new entries or updates existing ones for current year)
+                await tx.run(
+                    UPSERT(aHistoryEntries).into(ZEMP_MEDICAL_ENT_HISTORY)
+                );
+
+                // Perform the mass update to reset entitlement
+                const iUpdateCount = await tx.run(
+                    UPDATE(ZEMP_MASTER)
+                        .set({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: 0
+                        })
+                        .where({
+                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
+                                [Constant.ComparisonOperators.GreaterThan]: 0
+                            }
+                        })
+                );
+                return {
+                    iUpdateCount,
+                    iHistoryCount
+                };
+            });
+            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
+            return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
+        } catch (error) {
+            console.error('[JOB ERROR] Annual entitlement reset failed:', error);
+            return req.error(500, `Job execution failed: ${error.message}`);
+        }
+    });
+
     srv.on('batchUpsertCompanyInfo', async (req) => {
         try {
             const { entityName, data } = req.data;
@@ -4541,5 +5007,449 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('deleteItemCascade', async (req) => {
+        const { sReqId, sReqSubId } = req.data;
+    
+        if (!sReqId || !sReqSubId) {
+            req.error(400, 'sReqId and sReqSubId are required');
+            return;
+        }
+    
+        const tx = cds.tx(req);
+    
+        try {
+            await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+            await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
+    
+            return true;
+    
+        } catch (error) {
+            console.error('[deleteItemCascade] Failed:', error);
+            req.error(500, `Failed to delete item: ${error.message}`);
+        }
+    });
 
+    srv.on('READ', 'CCCFeatureControl', async (req) => {
+        let operationHidden = true;
+        if (req.user.is(Constant.Admin.DTD_Admin) || req.user.is(Constant.Admin.CCC_Admin)) {
+            operationHidden = false;
+        }
+
+        return {
+            operationHidden: operationHidden,
+            operationEnabled: !operationHidden,
+        }
+    });
+
+    /**
+     * batch create budget records from IFAMS Modern
+     * This particular service will not calculate the original budget with the virements, supplement and return for the current budget
+     * as these value will be directly reflect from IFMAS Modern (S/4 HANA)
+     */
+    srv.on('batchCreateBudgetIFAMSModern', async (req) => {
+        const { ZBUDGET } = srv.entities;
+        let results = [];
+        try {
+            const { budget } = req.data;
+            if (!budget || budget.length === 0) throw new Error('No Data Sent');
+            const tx = cds.tx(req);
+        
+            for (const row of budget) {
+                const key = {
+                    YEAR: row.YEAR,
+                    INTERNAL_ORDER: row.INTERNAL_ORDER,
+                    COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                    FUND_CENTER: row.FUND_CENTER,
+                    MATERIAL_GROUP: row.MATERIAL_GROUP
+                };
+                const existing = await tx.read(ZBUDGET)
+                    .where(key)
+                    .limit(1);
+                const isExisting = existing.length > 0;
+                const upsertPayload = { ...row };
+                const commitment = isExisting ? Number(existing[0].COMMITMENT) || 0 : Number(row.COMMITMENT) || 0;
+                const actual = isExisting ? Number(existing[0].ACTUAL) || 0 : Number(row.ACTUAL) || 0;
+                const consumed = isExisting ? Number(existing[0].CONSUMED) || 0 : Number(row.CONSUMED) || 0;
+                const totalBudgetBalance = Number(row.CURRENT_BUDGET) + consumed;
+                upsertPayload.COMMITMENT = commitment.toFixed(2);
+                upsertPayload.ACTUAL = actual.toFixed(2);
+                upsertPayload.CONSUMED = consumed.toFixed(2);
+                upsertPayload.BUDGET_BALANCE = totalBudgetBalance.toFixed(2);
+                await tx.run(
+                    UPSERT.into(ZBUDGET).entries(upsertPayload)
+                );
+                results.push({
+                    status: isExisting ? "record updated" : "record inserted",
+                    year: row.YEAR,
+                    internalorder: row.INTERNAL_ORDER,
+                    commitment_item: row.COMMITMENT_ITEM,
+                    fund_center: row.FUND_CENTER,
+                    materialgroup: row.MATERIAL_GROUP,
+                    currentBudget: upsertPayload.CURRENT_BUDGET,
+                    budgetBalance: upsertPayload.BUDGET_BALANCE
+                });
+            }
+            return { results };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    });
+
+    srv.on('getCorpoCardsForItem', async (req) => {
+        const { sReqId, sCorpoCards } = req.data;
+
+        let aCorpoCards = [];
+        try {
+            aCorpoCards = sCorpoCards ? JSON.parse(sCorpoCards) : [];
+        } catch (error) {
+            req.error(400, 'sCorpoCards must be valid JSON.');
+            return;
+        }
+
+        if (!sReqId || !Array.isArray(aCorpoCards) || aCorpoCards.length === 0) {
+            return JSON.stringify([]);
+        }
+
+        try {
+            // Fetch each card's validity window + PRINCIPLE flag from the
+            // card master, to filter out cards outside their valid date
+            // range and sort principal cards first.
+            const aCardNos = [...new Set(aCorpoCards.map((oCard) => oCard.CARD_NO).filter((sCardNo) => !!sCardNo))];
+            const mCardMasterByCardNo = {};
+
+            if (aCardNos.length > 0) {
+                try {
+                    const aCardMasterRows = await SELECT
+                        .from('ZCORPORATE_CARD')
+                        .columns('CARD_NO', 'START_DATE', 'END_DATE', 'PRINCIPLE')
+                        .where({ CARD_NO: { in: aCardNos } });
+
+                    aCardMasterRows.forEach((oCardMaster) => {
+                        mCardMasterByCardNo[oCardMaster.CARD_NO] = oCardMaster;
+                    });
+                } catch (error) {
+                    console.error('Failed to load card master validity/principle info:', error);
+                }
+            }
+
+            // Only keep cards currently within their validity window
+            // (START_DATE <= today <= END_DATE). A missing START_DATE/
+            // END_DATE on the master record is treated as no restriction
+            // on that side, so cards without dates set aren't wrongly
+            // excluded.
+            const dToday = new Date();
+            dToday.setHours(0, 0, 0, 0);
+
+            aCorpoCards = aCorpoCards.filter((oCard) => {
+                const oCardMaster = mCardMasterByCardNo[oCard.CARD_NO];
+                if (!oCardMaster) return true;
+
+                const dStart = oCardMaster.START_DATE ? new Date(oCardMaster.START_DATE) : null;
+                const dEnd = oCardMaster.END_DATE ? new Date(oCardMaster.END_DATE) : null;
+
+                if (dStart) dStart.setHours(0, 0, 0, 0);
+                if (dEnd) dEnd.setHours(0, 0, 0, 0);
+
+                if (dStart && dToday < dStart) return false;
+                if (dEnd && dToday > dEnd) return false;
+                return true;
+            });
+
+            const aSavedParts = await SELECT
+                .from('ZREQ_ITEM_CCC_PART')
+                .columns('CARD_NO', 'STATEMENT_DUE_AMT', 'SERVICE_TAX', 'CASHBACK', 'MERCHANT_REFUND_AMT', 'MERCHANT_REFUND_ARR')
+                .where({ REQUEST_ID: sReqId });
+
+            const mTotalsByCard = {};
+
+            aSavedParts.forEach((oPart) => {
+                const sCardNo = oPart.CARD_NO;
+
+                if (!mTotalsByCard[sCardNo]) {
+                    mTotalsByCard[sCardNo] = {
+                        current_balance: 0,
+                        service_tax: 0,
+                        cashback: 0,
+                        merchant_refunds_total: 0,
+                        merchant_refunds_array: []
+                    };
+                }
+
+                mTotalsByCard[sCardNo].current_balance += parseFloat(oPart.STATEMENT_DUE_AMT) || 0;
+                mTotalsByCard[sCardNo].service_tax += parseFloat(oPart.SERVICE_TAX) || 0;
+                mTotalsByCard[sCardNo].cashback += parseFloat(oPart.CASHBACK) || 0;
+                mTotalsByCard[sCardNo].merchant_refunds_total += parseFloat(oPart.MERCHANT_REFUND_AMT) || 0;
+
+                if (oPart.MERCHANT_REFUND_ARR) {
+                    try {
+                        const aParsed = JSON.parse(oPart.MERCHANT_REFUND_ARR);
+                        mTotalsByCard[sCardNo].merchant_refunds_array.push(...aParsed);
+                    } catch (error) {
+                        console.warn('Failed to parse MERCHANT_REFUND_ARR for card:', sCardNo);
+                    }
+                }
+            });
+
+            // Merge summed totals into the base corpo_cards list
+            aCorpoCards = aCorpoCards.map((oCard) => {
+                const oTotals = mTotalsByCard[oCard.CARD_NO] || {
+                    current_balance: 0,
+                    service_tax: 0,
+                    cashback: 0,
+                    merchant_refunds_total: 0,
+                    merchant_refunds_array: []
+                };
+
+                const iAdvAmt = Math.max(
+                    0,
+                    oTotals.current_balance - oTotals.service_tax + oTotals.merchant_refunds_total
+                ).toFixed(2);
+
+                return {
+                    ...oCard,
+                    PRINCIPLE: !!(mCardMasterByCardNo[oCard.CARD_NO]?.PRINCIPLE),
+                    current_balance: oTotals.current_balance.toFixed(2),
+                    service_tax: oTotals.service_tax.toFixed(2),
+                    cashback: oTotals.cashback.toFixed(2),
+                    merchant_refunds_total: oTotals.merchant_refunds_total.toFixed(2),
+                    merchant_refunds: oTotals.merchant_refunds_array,
+                    merchant_refunds_array: JSON.stringify(oTotals.merchant_refunds_array),
+                    advance_amount: iAdvAmt
+                };
+            });
+
+            // Sort principal cardholders first
+            aCorpoCards.sort((oA, oB) => {
+                const bPrincipleA = !!(mCardMasterByCardNo[oA.CARD_NO]?.PRINCIPLE);
+                const bPrincipleB = !!(mCardMasterByCardNo[oB.CARD_NO]?.PRINCIPLE);
+                return (bPrincipleB ? 1 : 0) - (bPrincipleA ? 1 : 0);
+            });
+
+            return JSON.stringify(aCorpoCards);
+
+        } catch (error) {
+            console.error('getCorpoCardsForItem failed:', error);
+            req.error(500, 'An error occurred while loading corporate cards for the item.');
+        }
+    });    /**
+     * Retrieve policy information for selected dependent.
+     * Policy lookup and year filtering 
+     * @private
+     */
+    srv.on("getPolicyInfo", async (req) => {
+
+        const { ZEMP_CLAIM_POLICY_VALID } = srv.entities;
+        const { dependentNationalId } = req.data;
+
+        const aRows = await SELECT.from(ZEMP_CLAIM_POLICY_VALID)
+            .where({
+                DEPENDENT_NATIONAL_ID: dependentNationalId
+            })
+            .columns(
+                "POLICY_YEAR",
+                "POLICY_NUMBER"
+            );
+
+        return {
+            policies: aRows
+        };
+    });
+
+
+    srv.on("updateDefaultChargingCostCenter", async (req) => {
+        const {
+            claimTypeId,
+            claimTypeItemId,
+            chargingCostCenter
+        } = req.data;
+
+        if (!claimTypeId || !claimTypeItemId) {
+            return req.reject(
+                400,
+                "Claim Type and Claim Type Item are required."
+            );
+        }
+
+        const { ZCLAIM_TYPE_ITEM } = cds.entities("ECLAIM");
+
+        const iUpdatedRows = await UPDATE(ZCLAIM_TYPE_ITEM)
+            .set({
+                COST_CENTER:
+                    chargingCostCenter?.trim() || null
+            })
+            .where({
+                CLAIM_TYPE_ID: claimTypeId,
+                CLAIM_TYPE_ITEM_ID: claimTypeItemId
+            });
+
+        if (!iUpdatedRows) {
+            return req.reject(
+                404,
+                "Claim Type Item record was not found."
+            );
+        }
+
+        return true;
+    });
+
+    /**
+     * Get maintained Charging Cost Center from Claim Type Item configuration.
+     */
+    async function getDefaultChargingCostCenter(
+        tx,
+        sClaimTypeId,
+        sClaimTypeItemId
+    ) {
+
+        const oClaimTypeItem = await tx.run(
+            SELECT.one
+                .from("ZCLAIM_TYPE_ITEM")
+                .where({
+                    CLAIM_TYPE_ID: sClaimTypeId,
+                    CLAIM_TYPE_ITEM_ID: sClaimTypeItemId
+                })
+        );
+
+        return oClaimTypeItem?.COST_CENTER || null;
+    }
+
+    /**
+    * Update Request Item Cost Center whenever Request Header is updated.
+    */
+    async function updateRequestItemCostCenters(
+        tx,
+        sRequestId
+    ) {
+
+        const oHeader = await tx.run(
+            SELECT.one
+                .from("ZREQUEST_HEADER")
+                .where({
+                    REQUEST_ID: sRequestId
+                })
+        );
+
+        if (!oHeader) {
+            return;
+        }
+
+        const aItems = await tx.run(
+            SELECT.from("ZREQUEST_ITEM")
+                .where({
+                    REQUEST_ID: sRequestId
+                })
+        );
+
+        const sFallbackCostCenter =
+            oHeader.ALTERNATE_COST_CENTER ||
+            oHeader.COST_CENTER ||
+            null;
+
+        for (const oItem of aItems) {
+
+            let sNewCostCenter;
+
+            if (oItem.CASH_ADVANCE) {
+
+                sNewCostCenter =
+                    Constant.CashAdvanceInfo.COST_CENTER;
+
+            } else {
+
+                const sDefaultChargingCostCenter =
+                    await getDefaultChargingCostCenter(
+                        tx,
+                        oItem.CLAIM_TYPE_ID,
+                        oItem.CLAIM_TYPE_ITEM_ID
+                    );
+
+                sNewCostCenter =
+                    sDefaultChargingCostCenter ||
+                    sFallbackCostCenter;
+            }
+
+            await tx.run(
+                UPDATE("ZREQUEST_ITEM")
+                    .set({
+                        COST_CENTER: sNewCostCenter
+                    })
+                    .where({
+                        REQUEST_ID: oItem.REQUEST_ID,
+                        REQUEST_SUB_ID: oItem.REQUEST_SUB_ID
+                    })
+            );
+        }
+    };
+
+    srv.on('getCentraLink', async (req) => {
+        const tx = cds.tx(req);
+        var oCentraLink = await tx.run(SELECT.one
+            .from(Constant.Entities.ZCONSTANTS)
+            .where({
+                ID: Constant.ConstantId.PROD_CENTRA_LINK
+            })
+        )
+        return {
+            sCentraLink: oCentraLink.VALUE
+        };
+    });
+
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+        const tx = cds.tx(req);
+        try {
+            var oStatus = await tx.run(SELECT.one
+                                    .from(Constant.Entities.ZCLAIM_HEADER)
+                                    .where({
+                                        CLAIM_ID: req.data.sClaimID
+                                    })
+            )
+
+            return { sStatus: oStatus.STATUS_ID}
+        }catch(oError){
+            throw new Error(oError)
+        }
+        
+    });
+
+    /**
+     * Cancels a claim/request record: updates the header status to CANCELLED, 
+     * removes any pending approver details, 
+     * and logs the cancellation by user in the workflow history.
+     * @public
+     * @param {String} req.data.sRecordId - claim/request ID to cancel
+     * @returns {Promise<Boolean|Object>} true on success; a rejected/error response on failure
+     */
+    srv.on("cancelRecord", async (req) => {
+        const oTx = cds.tx(req);
+        const { sRecordId } = req.data;
+        const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
+
+        if (!oEmp) {
+            return req.error(404, `No employee data found.`);
+        }
+
+        const oDescriptor = resolveDocDescriptor(sRecordId);
+
+        // update header status
+        try {
+            await UpdateHeader.updateHeaderStatus(sRecordId, Constant.Status.CANCELLED, oTx);
+        } catch (error) {
+            await oTx.rollback();
+            return req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
+        }
+
+        // remove approval log
+        await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
+
+        // insert record history
+        try {
+            await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is cancelled by ${oEmp.NAME}.`);
+        } catch (error) {
+            await oTx.rollback();
+            return req.reject(500, `Failed to write cancellation log for ${sRecordId}: ${error.message}`);
+        }
+
+        return true;
+    });
 }

@@ -123,7 +123,10 @@ sap.ui.define([
                     oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);
                     oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
                     oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
+                    oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
 
+                    // userType is a single display label - priority order
+                    // determines which one shows when a user has multiple roles.
                     if (oUserRoles.isDTDAdmin) {
                         oSessionModel.setProperty("/userType", "DTD Admin");
                         oRoleModel.setProperty("/Admin_role", true);
@@ -134,12 +137,34 @@ sap.ui.define([
                         oRoleModel.setProperty("/JKEW_role", true);
                     } else if (oUserRoles.isAdminCC) {
                         oSessionModel.setProperty("/userType", "GA Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
                         oRoleModel.setProperty("/GA_role", true);
+                    } else if (oUserRoles.isCCCAdmin) {
+                        oSessionModel.setProperty("/userType", "CCC Admin");
                     } else if (oUserRoles.isApprover) {
                         oSessionModel.setProperty("/userType", "Approver");
                     } else {
                         oSessionModel.setProperty("/userType", "Claimant");
+                    }
+
+                    // Role-visibility flags are independent - a user can hold
+                    // multiple admin roles at once (e.g. Admin_CC AND
+                    // CCC_Admin), so each flag must be set on its own
+                    // condition rather than an else-if chain that stops at
+                    // the first match and silently skips the rest.
+                    if (oUserRoles.isDTDAdmin) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                        oRoleModel.setProperty("/DTDAdmin_role", true);
+                    }
+                    if (oUserRoles.isAdminSystem) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                        oRoleModel.setProperty("/DTD_JKEW_role", true);
+                    }
+                    if (oUserRoles.isAdminCC) {
+                        oRoleModel.setProperty("/Admin_role", true);
+                    }
+                    if (oUserRoles.isCCCAdmin) {
+                        oRoleModel.setProperty("/CCC_Admin", true);
                     }
 
                     this._fnRolesLoaded();
@@ -316,80 +341,6 @@ sap.ui.define([
                 window.location.href = "/claima/do/logout";
             },
 
-            // get backend data
-            async _getEmpIdDetail(sEMAIL) {
-                const oListBinding = this.getModel().bindList("/ZEMP_MASTER", null, null, [
-                    new Filter({
-                        path: "EMAIL",
-                        operator: FilterOperator.EQ,
-                        value1: sEMAIL,
-                        caseSensitive: false
-                    }) // non case-sensitive search
-                ]);
-
-                try {
-                    const aContexts = await oListBinding.requestContexts(0, 1);
-
-                    if (aContexts.length > 0) {
-                        const oData = aContexts[0].getObject();
-                        return {
-                            eeid: oData.EEID,
-                            name: oData.NAME,
-                            grade: oData.GRADE,
-                            cc: oData.CC,
-                            pos: oData.POS,
-                            dep: oData.DEP,
-                            unit_section: oData.UNIT_SECTION,
-                            b_place: oData.B_PLACE,
-                            marital: oData.MARITAL,
-                            job_group: oData.JOB_GROUP,
-                            office_location: oData.OFFICE_LOCATION,
-                            address_line1: oData.ADDRESS_LINE1,
-                            address_line2: oData.ADDRESS_LINE2,
-                            address_line3: oData.ADDRESS_LINE3,
-                            postcode: oData.POSTCODE,
-                            state: oData.STATE,
-                            country: oData.COUNTRY,
-                            contact_no: oData.CONTACT_NO,
-                            email: oData.EMAIL,
-                            direct_supperior: oData.DIRECT_SUPPERIOR,
-                            role: oData.ROLE,
-                            user_type: oData.USER_TYPE,
-                            mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
-                            mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
-                            employee_type: oData.EMPLOYEE_TYPE,
-                            position_name: oData.POSITION_NAME,
-                            position_start_date: oData.POSITION_START_DATE,
-                            position_event_reason: oData.POSITION_EVENT_REASON,
-                            confirmation_date: oData.CONFIRMATION_DATE,
-                            effective_date: oData.EFFECTIVE_DATE,
-                            updated_date: oData.UPDATED_DATE,
-                            inserted_date: oData.INSERTED_DATE,
-                            medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
-                            descr: {
-                                cc: null,
-                                dep: null,
-                                unit_section: null,
-                                marital: null,
-                                job_group: null,
-                                state: null,
-                                country: null,
-                                direct_supperior: null,
-                                role: null,
-                                user_type: null,
-                                employee_type: null
-                            }
-                        };
-                    } else {
-                        console.warn("No employee found with email: " + sEMAIL);
-                        return null;
-                    }
-                } catch (oError) {
-                    console.error("Error fetching employee detail", oError);
-                    return null; // Return null so the app doesn't crash
-                }
-            },
-
             destroy: function () {
                 this.stopInactivityTimer();
                 // UIComponent.prototype.destroy.apply(this, arguments);
@@ -429,7 +380,8 @@ sap.ui.define([
                 this._oRolesLoadedPromise.then(function () {
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
-                                  oRoleModel.getProperty("/isAdminCC");
+                                  oRoleModel.getProperty("/isAdminCC") || 
+                                  oRoleModel.getProperty("/isCCCAdmin") ;
                     // restriction for manual url change to Analytics and Configuration without admin role
                     if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");

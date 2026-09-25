@@ -69,13 +69,15 @@ sap.ui.define([
         * Attachments Post to MDF
         * ======================================================= */
 
-        async postMDF(reqID, attachment1, attachment2) {
+        async postMDF(reqID, attachment1, attachment2, attachment3, attachment4) {
 
 			var sDestination = this._getSrvLink();
 			const sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
+			const hasAttachment3 = attachment3 && String(attachment3).trim().length > 0;
+			const hasAttachment4 = attachment4 && String(attachment4).trim().length > 0;
 
 			const payload = {
 				__metadata: {
@@ -96,6 +98,22 @@ sap.ui.define([
 				payload.cust_Parent_attachment2Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment2}')`
+					}
+				};
+			}
+
+			if (hasAttachment3) {
+				payload.cust_Parent_attachment3Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment3}')`
+					}
+				};
+			}
+
+			if (hasAttachment4) {
+				payload.cust_Parent_attachment4Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment4}')`
 					}
 				};
 			}
@@ -129,13 +147,15 @@ sap.ui.define([
         * Attachments Post to Child MDF
         * ======================================================= */
 
-		async postMDFChild(reqID, reqSubID, attachment1, attachment2) {
+		async postMDFChild(reqID, reqSubID, attachment1, attachment2, attachment3, attachment4 ) {
 			
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
+			const hasAttachment3 = attachment3 && String(attachment3).trim().length > 0;
+			const hasAttachment4 = attachment4 && String(attachment4).trim().length > 0;
 
 			const payload = {
 				__metadata: {
@@ -157,6 +177,22 @@ sap.ui.define([
 				payload.cust_attachment2Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment2}')`
+					}
+				};
+			}
+
+			if (hasAttachment3) {
+				payload.cust_attachment3Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment3}')`
+					}
+				};
+			}
+
+			if (hasAttachment4) {
+				payload.cust_attachment4Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment4}')`
 					}
 				};
 			}
@@ -225,6 +261,18 @@ sap.ui.define([
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
 							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
+
+					if (sTarget === "attachment_file_3") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
+						}
+	
+					if (sTarget === "attachment_file_4") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
+						}
 						break;
 						
 					case Constants.SubmissionTypePrefix.REQUEST:
@@ -236,6 +284,17 @@ sap.ui.define([
 						}
 						if (sTarget === "doc2") {
 							this._oView.byId("i_attachment_2_file")?.clear();
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+						}
+						if (sTarget === "doc3") {
+							this._oView.byId("i_attachment_3_file")?.clear();
+							this._oView.byId("i_attachment_3_file").setRequired(true);
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+						}
+						if (sTarget === "doc4") {
+							this._oView.byId("i_attachment_4_file")?.clear();
 							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
 								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}

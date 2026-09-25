@@ -1,4 +1,5 @@
 using { ECLAIM } from '../db/eclaim';
+using { eclaim_srv } from './eclaim_srv';
 
 type ApproverActionRequest {
     Id              : String;
@@ -20,6 +21,7 @@ service workflow {
         Area                : String;
         Message             : String;
         AutoApproved        : Boolean;
+        EligibilityResults  : many eclaim_srv.EligibilityPayload;
     };
     action processApproval(
         request : ApproverActionRequest

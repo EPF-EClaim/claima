@@ -25,6 +25,10 @@
     {
       "name": "$XSAPPNAME.Technical",
       "description": "Technical"
+    },
+    {
+      "name": "$XSAPPNAME.CCC_Admin",
+      "description": "CCC_Admin"
     }
   ],
   "attributes": [],
@@ -74,6 +78,14 @@
       "description": "generated",
       "scope-references": [
         "$XSAPPNAME.Technical"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "CCC_Admin",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.CCC_Admin"
       ],
       "attribute-references": []
     }

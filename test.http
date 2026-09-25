@@ -309,11 +309,17 @@
 #     ]
 # }
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpsertCompanyInfo
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpsertCompanyInfo
+# Content-Type: application/json
+# Authorization: Basic alice
+ 
+# {
+#     "entityName": "ZCASH_ADVANCE_CATEGORY",
+#     "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
+# }
+
+
+GET    http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder
 Content-Type: application/json
 Authorization: Basic alice
  
-{
-    "entityName": "ZCASH_ADVANCE_CATEGORY",
-    "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
-}

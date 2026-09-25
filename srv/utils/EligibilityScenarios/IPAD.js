@@ -138,16 +138,6 @@ module.exports = {
 
         switch (oPayload.ClaimTypeItem) {
             case Constant.ClaimTypeItem.I_PAD:
-                // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
-                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                if (iIndex == -1) return;
-                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-                    oPayload.CheckFields[iIndex].result = true;
-                } else {
-                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
-                }
-
-                iIndex = null;
                 // I-PAD - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
@@ -164,6 +154,18 @@ module.exports = {
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }
+
+                iIndex = null;
+
+                // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
+                iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
+                if (iIndex == -1) return;
+                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
+                    oPayload.CheckFields[iIndex].result = true;
+                } else {
+                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
+                }
+
                 break;
         }
     }

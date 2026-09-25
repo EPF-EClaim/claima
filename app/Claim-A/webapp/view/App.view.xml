@@ -171,14 +171,14 @@
                     <tnt:NavigationListGroup 
                         text="Configuration" 
                         expanded="false"
-                        visible="{= ${roleModel>/Admin_role}}">
+                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
 
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
-                            visible="{= ${roleModel>/Admin_role}}"
+                            visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -331,7 +331,7 @@
                                 <tnt:NavigationListItem
                                     key="ZBUDGET"
                                     text="{i18n>budget_data}"
-                                    visible="{= ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
+                                    visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"
@@ -342,6 +342,16 @@
                                     key="ZROLEHIERARCHY"
                                     text="{i18n>rolehierarchy}"
                                     visible="{roleModel>/DTDAdmin_role}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="ZCORPORATE_CARD"
+                                    text="{i18n>corporateCard}"
+                                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
+                                />  
+                                <tnt:NavigationListItem
+                                    key="ZCORPORATE_CARD_ADVANCED"
+                                    text="{i18n>corporateCardAdv}"
+                                    visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
@@ -494,6 +504,11 @@
                                     text="{i18n>housing}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                 <tnt:NavigationListItem
+                                    key="ZCLAIM_TYPE_ITEM_CHARGING_CC"
+                                    text="{i18n>chargingCostCenter}"
+                                    visible="{roleModel>/JKEW_role}"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
@@ -501,7 +516,7 @@
                             icon="sap-icon://action-settings"
                             enabled="true"
                             expanded="false"
-                            visible="{roleModel>/DTDAdmin_role}"
+                            visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role}}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -537,7 +552,7 @@
                                 <tnt:NavigationListItem
                                     key="ZPROJECT_HDR"
                                     text="{i18n>prjcode}"
-                                    visible="{roleModel>/DTDAdmin_role}"
+                                    visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZWORKFLOW_RULE"
@@ -548,7 +563,8 @@
                                     key="ZWORKFLOW_STEP"
                                     text="{i18n>workflowstep}"
                                     visible="{roleModel>/DTDAdmin_role}"
-                                />                                 
+                                />
+                                                               
                             </tnt:items>
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>

@@ -39,9 +39,9 @@ entity ZEMP_MASTER : managed {
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
         JOB_GRADE                     : String(4)     @Common.Label: 'Job Grade';
         DIVISION                      : String(10)    @Common.Label: 'Division';
-        HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
-        HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
-        UNIVERSITY_NAME               : String(30)    @Common.Label: 'University Name';
+        HIGHEST_EDU_LEVEL             : String(250)   @Common.Label: 'Highest Education Level';
+        HIGHEST_EDU_COURSE            : String(250)   @Common.Label: 'Highest Education Course';
+        UNIVERSITY_NAME               : String(250)   @Common.Label: 'University Name';
         HIRE_DATE                     : Date          @Common.Label: 'Hire Date';
         RETIREMENT_DATE               : Date          @Common.Label: 'Retirement Date';
         CONTRACT_END_DATE             : Date          @Common.Label: 'Contract End Date';
@@ -244,9 +244,9 @@ entity ZREQUEST_ITEM : managed {
         ENTITLED_BREAKFAST              : Integer        @Common.Label: 'Entitled Breakfast';
         ENTITLED_LUNCH                  : Integer        @Common.Label: 'Entitled Lunch';
         ENTITLED_DINNER                 : Integer        @Common.Label: 'Entitled Dinner';
-        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        DAILY_ALLOWANCE                 : Decimal(9, 2)  @Common.Label: 'Daily Allowance';
         CURRENCY_CODE                   : String         @Common.Label: 'Currency Code';
-        CURRENCY_RATE                   : Decimal(6, 2)  @Common.Label: 'Currency Rate';
+        CURRENCY_RATE                   : Decimal(16, 4) @Common.Label: 'Currency Rate';
         TYPE_OF_PROFESSIONAL_BODY       : String(3)      @Common.Label: 'Type of Professional Body';
         TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';
         ROUND_TRIP                      : Boolean        @Common.Label: 'Round Trip';
@@ -574,7 +574,7 @@ entity ZCLAIM_ITEM : managed {
         TRAVEL_DAYS_ID                  : String(2)      @Common.Label: 'Number of Days Category (Travel Insurance)';
         METER_CUBE_ENTITLED             : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
         METER_CUBE_ACTUAL               : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
-        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        DAILY_ALLOWANCE                 : Decimal(9, 2)  @Common.Label: 'Daily Allowance';
         TIPS                            : Integer        @Common.Label: 'Tips';
         EXCLUDE_TIPS                    : Boolean        @Common.Label: 'Exclude Tips';
         TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';
@@ -711,6 +711,7 @@ entity ZCLAIM_TYPE_ITEM : managed {
         FREQUENCY            : Integer    @Common.Label: 'Frequency';
         PERIOD               : Integer    @Common.Label: 'Period';
         PERIOD_UNIT          : String(24) @Common.Label: 'Period Unit';
+        COST_CENTER          : String(9)  @Common.Label    : 'Cost Center';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
         ZRISK                : Association to ZRISK
@@ -719,6 +720,8 @@ entity ZCLAIM_TYPE_ITEM : managed {
                                    on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
         ZINDIV_GROUP         : Association to ZINDIV_GROUP
                                    on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER         : Association to ZCOST_CENTER
+                                   on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
 }
 
 entity ZBUDGET : managed {
@@ -1043,6 +1046,8 @@ entity ZEMP_DEPENDENT : managed {
         START_DATE                        : Date          @Common.Label: 'Effective Date';
         UPDATED_DATE                      : Date          @Common.Label: 'Updated Date';
         INSERTED_DATE                     : Date          @Common.Label: 'Inserted Date';
+        DISABLED                          : Boolean       @Common.Label: 'Disabled';
+        MEDICAL_BENEFICIARY               : Boolean       @Common.Label: 'Medical Beneficiary';  
 }
 
 
@@ -1562,26 +1567,26 @@ entity ZCONFIG_VARIABLE : managed {
 }
 
 entity ZCORPORATE_CARD : managed {
-    key CARD_NO         : String(16)  @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID   : String      @mandatory  @Common.Label: 'Cardholder Employee ID';
-    key PRINCIPLE       : Boolean     @mandatory  @Common.Label: 'Principle';
-        START_DATE      : Date        @Common.Label: 'Start Date';
-        END_DATE        : Date        @Common.Label: 'End Date';
-        CARDHOLDER_NAME : String(200) @Common.Label: 'Cardholder Name';
-        STATEMENT_DATE  : Integer     @Common.Label: 'Statement Date (Day)';
-        DUE_DATE        : Integer     @Common.Label: 'Statement Due Date (Day)';
-        EXPIRY_DATA     : String(5)   @Common.Label: 'Card Expiry Date (MM/YY)';
-        REMARKS         : String(500) @Common.Label: 'Remarks';
+    key CARD_NO        : String(16)   @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID  : String       @mandatory  @Common.Label: 'Cardholder Employee ID';
+    PRINCIPLE          : Boolean      @Common.Label: 'Principle';
+    START_DATE         : Date         @Common.Label: 'Start Date';
+    END_DATE           : Date         @Common.Label: 'End Date';
+    CARDHOLDER_NAME    : String(200)  @Common.Label: 'Cardholder Name';
+    STATEMENT_DATE     : Integer      @Common.Label: 'Statement Date (Day)';
+    DUE_DATE           : Integer      @Common.Label: 'Statement Due Date (Day)';
+    EXPIRY_DATA        : String(5)    @Common.Label: 'Card Expiry Date (MM/YY)';
+    REMARKS            : String(500)  @Common.Label: 'Remarks';
 }
 
 entity ZCORPORATE_CARD_ADVANCED : managed {
-    key CARD_NO                  : String(16)     @mandatory  @Common.Label: 'Credit Card No';
-    key CARDHOLDER_ID            : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
-        STATUS                   : String         @Common.Label: 'Status';
-        MONTHLY_ADVANCED_AMT     : Decimal(16, 2) @Common.Label: 'Monthly Advanced Amount';
-        COMMIT_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Commitment Offset Amount';
-        ACTUAL_OFFSET_AMT        : Decimal(16, 2) @Common.Label: 'Actual Offset Amount';
-        CURRENT_ADVANCED_BALANCE : Decimal(16, 2) @Common.Label: 'Current Advanced Balance';
+    key CARD_NO                 : String(16)      @mandatory  @Common.Label: 'Credit Card No';
+    key CARDHOLDER_ID           : String         @mandatory  @Common.Label: 'Cardholder Employee ID';
+    STATUS                      : String          @Common.Label: 'Status';
+    MONTHLY_ADVANCED_AMT        : Decimal(16, 2)  @Common.Label: 'Monthly Advanced Amount';
+    COMMIT_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Commitment Offset Amount';
+    ACTUAL_OFFSET_AMT           : Decimal(16, 2)  @Common.Label: 'Actual Offset Amount';
+    CURRENT_ADVANCED_BALANCE    : Decimal(16, 2)  @Common.Label: 'Current Advanced Balance';
 }
 
 entity ZREQ_ITEM_CCC_PART : managed {
@@ -1593,6 +1598,9 @@ entity ZREQ_ITEM_CCC_PART : managed {
         CASHBACK            : Decimal(16, 2) @Common.Label: 'Cashback';
         MERCHANT_REFUND_AMT : Decimal(16, 2) @Common.Label: 'Merchant Refund';
         MERCHANT_REFUND_ARR : String         @Common.Label: 'Merchant Refund List';
+        GL_CODE             : String         @Common.Label: 'GL Code';
+        MATERIAL_CODE       : String         @Common.Label: 'Material Code';
+        COST_CENTER         : String         @Common.Label: 'Cost Center';
 }
 
 entity ZINSURANCE_MEDICAL_PROVIDER : managed {

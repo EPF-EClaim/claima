@@ -69,6 +69,11 @@ sap.ui.define([
                                 return;
                             }
 
+                            // Cash advance is not allowed when the trip start date is in the past
+                            if ( !this.validateCashAdvanceTripStartDate(oInputModel) ) {
+                                return;
+                            }
+
                             // Bind to existing claim header
                             const oContext = await RequestUtility.getReqHeader(oODataModel, sReqID);
 
@@ -99,6 +104,9 @@ sap.ui.define([
                             oContext.setProperty("EVENT_END_DATE",
                                 DateUtility.getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
                             );
+                            oContext.setProperty("PAYMENT_DUE_DATE",
+                                DateUtility.getHanaDate(oInputModel.getProperty("/req_header/cccduedate"))
+                            );
 
                             var oProject = this._oView.byId("select_request_project_code");
 
@@ -114,6 +122,7 @@ sap.ui.define([
 
                             await oODataModel.submitBatch("$auto");
 
+                            const oController =this._oView.getController();
                             await this.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this._oView.getModel("editButtonModel").getProperty("/state"));
                             MessageToast.show(
                                 Utility.getText("msg_claimheader_updated", [sReqID])
@@ -195,18 +204,33 @@ sap.ui.define([
                             }
 
                             await oODataModel.submitBatch("$auto");
-                            
+                
                             // Update all claim item cost centers after header save
                             var itemCc =
                                 oInputModel.getProperty("/claim_header/alternate_cost_center") ||
                                 oInputModel.getProperty("/claim_header/cost_center") ||
                                 null;
-
+         
                             var aClaimItems = oInputModel.getProperty("/claim_items") || [];
-                            aClaimItems.forEach(function (oItem, i) {
-                                oInputModel.setProperty("/claim_items/" + i + "/cost_center", itemCc);
-                            });
-   
+
+                            for (let i = 0; i < aClaimItems.length; i++) {
+
+                                const oItem = aClaimItems[i];
+
+                                const sDefaultChargingCostCenter =
+                                    await Utility.getDefaultChargingCostCenter(
+                                        oODataModel,
+                                        oItem.claim_type_id,
+                                        oItem.claim_type_item_id
+                                    );
+
+                                if (sDefaultChargingCostCenter) {
+                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",sDefaultChargingCostCenter);
+                                } else {
+                                    oInputModel.setProperty("/claim_items/" + i + "/cost_center",itemCc);
+                                }
+                            }
+
                             //calling from claim submission controller to update claim items after header save
                             const oController = this._oView.getController();
                             await oController._updateClaimItems();
@@ -230,6 +254,59 @@ sap.ui.define([
                     }
                     break;
             }
+		},
+
+		/**
+		 * Whether the request has a cash-advance item — either already saved, or
+		 * currently being created/edited with the cash-advance switch on.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean}
+		 */
+		hasCashAdvanceItem: function (oReqModel) {
+			const aReqItems = oReqModel.getProperty("/req_item_rows") || [];
+			// CASH_ADVANCE is a Boolean on the item entity, but the employee view
+			// exposes it as "YES"/"NO", so accept both shapes.
+			const bSavedCashAdvanceItem = aReqItems.some((oItem) =>
+				oItem.CASH_ADVANCE === true || String(oItem.CASH_ADVANCE).toUpperCase() === "YES"
+			);
+
+			// Only count the item form's switch while the form is actually open
+			const sView = oReqModel.getProperty("/view");
+			const bItemFormOpen = sView === Constants.PARMode.CREATE || sView === Constants.PARMode.EDIT;
+			const bInProgressCashAdvance = bItemFormOpen && !!oReqModel.getProperty("/req_item/cash_advance");
+
+			return bSavedCashAdvanceItem || bInProgressCashAdvance;
+		},
+
+		/**
+		 * Whether the header's trip start date is before today.
+		 * Compares local YYYY-MM-DD strings (the same conversion used when the
+		 * header is saved) so time-of-day can't skew the result.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean}
+		 */
+		isTripStartDateBackdated: function (oReqModel) {
+			const sTripStart = DateUtility.getHanaDate(oReqModel.getProperty("/req_header/tripstartdate"));
+			const sToday = DateUtility.getHanaDate(new Date());
+			return !!sTripStart && sTripStart < sToday;
+		},
+
+		/**
+		 * Cash advance is not allowed for a backdated trip. If the request has a
+		 * cash-advance item and the header's trip start date is before today,
+		 * show an error and report that the header must not be saved.
+		 * @public
+         * @param {sap.ui.model.json.JSONModel} oReqModel the "request" model
+         * @returns {boolean} true if the header may be saved, false if blocked
+		 */
+		validateCashAdvanceTripStartDate: function (oReqModel) {
+			if (this.hasCashAdvanceItem(oReqModel) && this.isTripStartDateBackdated(oReqModel)) {
+				MessageBox.error(Utility.getText("msg_cash_advance_not_allow"));
+				return false;
+			}
+			return true;
 		},
 
 		/**
@@ -326,7 +403,7 @@ sap.ui.define([
                         oEditableFields.setProperty("/comment", !bEdit);
                         oEditableFields.setProperty("/saveHeader", !bEdit);
 
-                        if ( sReqTypeID == Constants.RequestType.TRAVEL ) {
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.CORP_CC ) {
                             oEditableFields.setProperty("/startEvent", bEdit);
                             oEditableFields.setProperty("/endEvent", bEdit);
                             RequestUtility.init(this._oOwnerComponent, this._oView);
@@ -335,7 +412,7 @@ sap.ui.define([
                                 oEditableFields.setProperty("/endEventRequired", bEdit);
                             }
                         }
-                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT ) {
+                        if ( sReqTypeID == Constants.RequestType.TRAVEL || sReqTypeID == Constants.RequestType.REIMBURSEMENT || sReqTypeID == Constants.RequestType.CORP_CC ) {
                             oEditableFields.setProperty("/startTrip", bEdit);
                             oEditableFields.setProperty("/endTrip", bEdit);
                             oEditableFields.setProperty("/location", bEdit);
@@ -344,6 +421,7 @@ sap.ui.define([
                                 oEditableFields.setProperty("/altCostCenter", bEdit);
                             }
                         }
+
                         oEditableFields.setProperty("/comment", bEdit);
                         
                         const sAltCC = oReqModel.getProperty("/req_header/altcostcenter");
@@ -401,7 +479,12 @@ sap.ui.define([
             await this._removeFragment(oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage);
             const oFragment = await this._loadFragment(oHeaderConfiguration, sLoadFragment);
 
-            oSubmissionTypePage.insertContent(oFragment, 0);
+            const aContent = oSubmissionTypePage.getContent();
+            const bHasOwnerDetail = aContent[0]?.getId()?.includes("claimant_detail");
+            oSubmissionTypePage.insertContent(
+                oFragment,
+                bHasOwnerDetail ? 1 : 0
+            );
         },
 
         /**

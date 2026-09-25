@@ -86,6 +86,8 @@ sap.ui.define([
 					comment:        oData.REMARK || "",
 					doc1:           oData.ATTACHMENT1 || "",
 					doc2:           oData.ATTACHMENT2 || "",
+					doc3:           oData.ATTACHMENT3 || "",
+					doc4:           oData.ATTACHMENT4 || "",
 					claimtype:      oData.CLAIM_TYPE_ID || "",
 					claimtypedesc:  oData.CLAIM_TYPE_DESC || "",
 					reqdate:        oData.REQUEST_DATE,
@@ -96,8 +98,8 @@ sap.ui.define([
 					transferfamilynowlater: 	oData.TRAVEL_FAMILY_NOW_LATER || "",
 					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || "",
 					projectcode:    oData.PROJECT_CODE || "",
-					projectdesc:    oData.PROJECT_DESC || ""
-
+					projectdesc:    oData.PROJECT_DESC || "",
+					cccduedate : 	oData.PAYMENT_DUE_DATE || ""
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
@@ -130,6 +132,14 @@ sap.ui.define([
 				{ $$ownRequest: true, $count: true }
 			);
 
+			const oCCModel = oController.getOwnerComponent().getModel('employee');
+			const oCCListBinding = oCCModel.bindList(
+				"/ZCORPORATE_CARD",
+				null,
+				null,
+				null
+			)
+
 			const oDateTimeFormatter = DateFormat.getDateTimeInstance({
 				pattern: "dd MMM yyyy HH:mm"
 			});
@@ -142,7 +152,8 @@ sap.ui.define([
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				
+				const aCCCtx = await oCCListBinding.requestContexts(0, Infinity);
+
 				const aItems = aCtx.map((ctx) => {
 					const oItem = ctx.getObject();
 					return {
@@ -155,6 +166,15 @@ sap.ui.define([
 						DEPENDENT: 		JSON.parse(oItem.DEPENDENT) || []
 					};
 				});
+
+				const aCCItems = aCCCtx.map((CCctx) => {
+					const oCCItem = CCctx.getObject();
+					return{
+						...oCCItem
+					}
+				});
+
+				oReq.setProperty("/corpo_cards", aCCItems);
 				oReq.setProperty("/req_item_rows", aItems);
 				oReq.setProperty("/list_count", aItems.length);
 
@@ -235,14 +255,8 @@ sap.ui.define([
 						case oController._oConstant.RequestStatus.REJECTED:			// rejected
 						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
 						case oController._oConstant.RequestStatus.APPROVED:			// approved
-							bShowBackScr	= true;
-							break;
-
 						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
-							bShowBack   	= true;
-							bShowDelete 	= true;
-							bShowSubmit 	= true;
-							oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.LIST);
+							bShowBackScr	= true;
 							break;
 
 						default:
@@ -251,15 +265,17 @@ sap.ui.define([
 					}
 					break;
 				
-				case oController._oConstant.PARMode.VIEWAPPR:		// i_edit
-					bShowBackScr	= true;
-					oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+				case oController._oConstant.PARMode.VIEWAPPR:  // i_edit
+					bShowBackScr = true;
+
+					if (sReqStatus !== oController._oConstant.RequestStatus.SEND_BACK) {
+						oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+					}
 					break;
-				
+
 				default:
 					break;
 			}
-
 
 			if (oBtnBackScr) oBtnBackScr.setVisible(bShowBackScr);
 			if (oBtnBack) oBtnBack.setVisible(bShowBack);
@@ -288,6 +304,71 @@ sap.ui.define([
 			}
 
 			oController._oReqModel.setProperty("/view", sState);
+		},
+		sumColumn: function (aRows, sFieldName) {
+			if (!Array.isArray(aRows)) {
+				return 0;
+			}
+			var fSum = aRows.reduce(function (fSum, oRow) {
+				var fValue = parseFloat(oRow[sFieldName]);
+				return fSum + (isNaN(fValue) ? 0 : fValue);
+			}, 0);
+			return Math.round(fSum * 100) / 100;
+		},
+		/**
+		 * Calculates the payment-due amount for Corporate Credit Card requests
+		 * @param {sap.ui.model.odata.v4.ODataModel} oDataModel OData V4 model
+		 * @param {Array<Object>} aItems Request header rows
+		 * @param {string} sRequestIdField Field containing REQUEST_ID 
+		 * @returns {Promise<Array<Object>>} returns aItems Request header rows
+		 */
+		async computeCorpoCCTotalPaymentDue(oDataModel, aItems, sRequestIdField) {
+			const aCorpoCCRequestIds = aItems
+				.filter((it) => String(it.REQUEST_TYPE_ID) === String(Constants.RequestType.CORP_CC))
+				.map((it) => it[sRequestIdField]);
+
+			if (aCorpoCCRequestIds.length === 0) {
+				return aItems;
+			}
+
+			const oPartListBinding = oDataModel.bindList(
+				"/ZREQ_ITEM_CCC_PART",
+				null,
+				null,
+				new Filter({
+					filters: aCorpoCCRequestIds.map((sReqId) => new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)),
+					and: false
+				}),
+				{
+					$$ownRequest: true,
+					$select: "REQUEST_ID,STATEMENT_DUE_AMT,CASHBACK"
+				}
+			);
+			const aPartCtx = await oPartListBinding.requestContexts(0, Infinity);
+
+			const mTotalByRequestId = {};
+			aPartCtx.forEach((ctx) => {
+				const oPart = ctx.getObject();
+				const sReqId = oPart.REQUEST_ID;
+				mTotalByRequestId[sReqId] = (mTotalByRequestId[sReqId] || 0)
+					+ (Number(oPart.STATEMENT_DUE_AMT) || 0)
+					- (Number(oPart.CASHBACK) || 0);
+			});
+
+			aItems.forEach((it) => {
+				if (String(it.REQUEST_TYPE_ID) === String(Constants.RequestType.CORP_CC)) {
+					it.TOTAL_PAYMENT_DUE_AMOUNT = Math.round((mTotalByRequestId[it[sRequestIdField]] || 0) * 100) / 100;
+				}
+			});
+
+			return aItems;
+		},
+
+		formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+			var fAmount = (String(sRequestTypeId) === String(Constants.RequestType.CORP_CC))
+				? Number(fTotalPaymentDueAmount) || 0
+				: fPreapprovalAmount;
+			return (Number(fAmount) || 0).toFixed(2);
 		}
 
 	};
