@@ -630,7 +630,7 @@
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
 						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
-						<core:CustomData key="customMaxnDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
 					</customData>
 				</DatePicker>
 
