@@ -171,7 +171,13 @@ module.exports = {
         try {
             let sHeaderField = ""; 
             let sStatusField = ""; 
-            let aStatus = [Constant.Status.APPROVED, Constant.Status.PENDING_APPROVAL];
+            // status to be checked on historical data: PENDING APPROVAL, APPROVED, COMPLETED DISBURSEMENT, MIGRATED DATA
+            let aStatus = [
+                Constant.Status.APPROVED, 
+                Constant.Status.PENDING_APPROVAL,
+                Constant.Status.COMPLETED_DISBURSEMENT,
+                Constant.Status.MIGRATED_DATA
+            ];
 
             if (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) { 
                 sHeaderField = Constant.EntitiesFields.CLAIMID; 
