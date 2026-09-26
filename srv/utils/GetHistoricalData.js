@@ -167,6 +167,22 @@ module.exports = {
         );
     },
 
+    /**
+     * Retrieves item-level historical data for eligibility/limit checks.
+     *
+     * Fetches items from the given item table that belong to headers in a
+     * "historical" status (Approved, Pending Approval, Completed Disbursement,
+     * Migrated Data), filtered further by the caller-supplied item condition.
+     *
+     * NOTE: Currently used for the Mobile Phone claim only.
+     *
+     * @param {string} sHeaderTable   - Header entity name (e.g. ZCLAIM_HEADER or ZREQUEST_HEADER table).
+     * @param {string} sItemTable     - Item entity name to query for historical records.
+     * @param {object} sItemcondition - WHERE condition applied to the item table
+     * @param {object} tx             - CAP transaction object used to run the queries.
+     * @returns {Promise<Array|number>} Array of matching historical item records,
+     *                                  or 0 if no valid headers are found or an error occurs.
+     */
     getHistoricalItemData: async function (sHeaderTable, sItemTable, sItemcondition, tx) {
         try {
             let sHeaderField = ""; 
