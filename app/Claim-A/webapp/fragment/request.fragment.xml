@@ -300,10 +300,17 @@
 				/>
 				<DatePicker
 					id="req_eventstartdate"
-					displayFormat="dd MMM yyyy"
-					valueFormat="yyyy-MM-dd"
 					placeholder="eg: 01 Jan 1990"
-					value="{reqDialog>/eventstartdate}"
+					value="{
+						path: 'reqDialog>/eventstartdate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd MMM yyyy'
+						}
+					}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
@@ -328,11 +335,23 @@
 							{ value: 'null' },
 							'reqDialog>/',
 							{ value: 'null' },
-							'reqDialog>/eventenddate'
+							'reqDialog>/eventenddate',
+							'reqDialog>/tripenddate'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-					/>
+				>
+					<customData>
+						<core:CustomData
+							key="customMinDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+					</customData>
+				</DatePicker>
 
 				<Label
 					text="{i18n>req_eventenddate} {i18n>icon_info}"
@@ -340,10 +359,17 @@
 				/>
 				<DatePicker
 					id="req_eventenddate"
-					displayFormat="dd MMM yyyy"
-					valueFormat="yyyy-MM-dd"
 					placeholder="eg: 01 Jan 1990"
-					value="{reqDialog>/eventenddate}"
+					value="{
+						path: 'reqDialog>/eventenddate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd MMM yyyy'
+						}
+					}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
@@ -356,7 +382,8 @@
 							{ value: 'null' },
 							'reqDialog>/',
 							{ value: 'null' },
-							'reqDialog>/eventstartdate'
+							'reqDialog>/eventstartdate',
+							'reqDialog>/tripstartdate'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -372,7 +399,18 @@
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-					/>
+				>
+					<customData>
+						<core:CustomData
+							key="customMinDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+					</customData>
+				</DatePicker>
 
 				<Label text="{i18n>req_corp_reference_no}" />
 				<Select

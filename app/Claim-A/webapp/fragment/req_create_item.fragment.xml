@@ -574,7 +574,8 @@
                                                     'request>/req_header/claimtype',
                                                     'request>/req_item/claim_type_item_id',
                                                     'request>/req_header',
-                                                    'request>/req_item'
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripstartdate'
                                                 ],
                                                 formatter: '.DateUtility.determineMinDate'
                                             }"
@@ -585,15 +586,15 @@
                                                     'request>/req_header/claimtype',
                                                     'request>/req_item/claim_type_item_id',
                                                     'request>/req_header',
-                                                    'request>/req_item'
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripenddate'
                                                 ],
                                                 formatter: '.DateUtility.determineMaxDate'
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/START_DATE/customErrorMessage}" />
-                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/START_DATE/customMinDateError}" />						
-                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/START_DATE/customMaxDateError}" />						
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
@@ -626,7 +627,8 @@
                                                     'request>/req_header/claimtype',
                                                     'request>/req_item/claim_type_item_id',
                                                     'request>/req_header',
-                                                    'request>/req_item'
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripstartdate'
                                                 ],
                                                 formatter: '.DateUtility.determineMinDate'
                                             }"
@@ -637,15 +639,15 @@
                                                     'request>/req_header/claimtype',
                                                     'request>/req_item/claim_type_item_id',
                                                     'request>/req_header',
-                                                    'request>/req_item'
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripenddate'
                                                 ],
                                                 formatter: '.DateUtility.determineMaxDate'
                                             }"
                                         >
                                             <customData>
-                                                <core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
-                                                <core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
-                                                <core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/END_DATE/customMaxDateError}" />						
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
                                             </customData>
                                         </DatePicker>
                                     </form:fields>
@@ -1345,14 +1347,51 @@
                                             id="i_trip_start_date" >
                                     <form:fields>
                                         <DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/trip_start_date}"
+                                            value="{
+                                                path: 'request>/req_item/trip_start_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             textAlign="Begin"
                                             required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            change=".onInputAllocatedAmount"/>
+                                            change=".onInputAllocatedAmount"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripstartdate'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/START_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripenddate'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1362,14 +1401,51 @@
                                             id="i_trip_end_date" >
                                     <form:fields>
                                         <DatePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
-                                            value="{request>/req_item/trip_end_date}"
+                                            value="{
+                                                path: 'request>/req_item/trip_end_date',
+                                                type: 'sap.ui.model.type.Date',
+                                                formatOptions:{
+                                                    source:{
+                                                        pattern:'yyyy-MM-dd'
+                                                    },
+                                                    pattern:'dd MMM yyyy'
+                                                }
+                                            }"
                                             textAlign="Begin"
                                             required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            change=".onInputAllocatedAmount"/>
+                                            change=".onInputAllocatedAmount"
+                                            minDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripstartdate'
+                                                ],
+                                                formatter: '.DateUtility.determineMinDate'
+                                            }"
+                                            maxDate="{
+                                                parts: [
+                                                    'constant>/EntitiesFields/END_DATE',
+                                                    'constant>/SubmissionTypePrefix/REQUEST',
+                                                    'request>/req_header/claimtype',
+                                                    'request>/req_item/claim_type_item_id',
+                                                    'request>/req_header',
+                                                    'request>/req_item',
+                                                    'request>/req_header/tripenddate'
+                                                ],
+                                                formatter: '.DateUtility.determineMaxDate'
+                                            }"
+                                        >
+                                            <customData>
+                                                <core:CustomData key="customMinDateError" value="{i18n>error_req_item_date_range}" />
+                                                <core:CustomData key="customMaxDateError" value="{i18n>error_req_item_date_range}" />
+                                            </customData>
+                                        </DatePicker>
                                     </form:fields>
                                 </form:FormElement>
 
