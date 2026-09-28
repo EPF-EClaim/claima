@@ -278,7 +278,16 @@
                            tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
-                        value="{claimsubmission_input>/claim_header/event_start_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/event_start_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions: {
+                                source: {
+                                    pattern: 'yyyy-MM-dd'
+                                },
+                                pattern: 'dd MMM yyyy'
+                            }
+                        }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
@@ -315,7 +324,16 @@
                            tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
-                        value="{claimsubmission_input>/claim_header/event_end_date}"
+                        value="{
+                            path: 'claimsubmission_input>/claim_header/event_end_date',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions: {
+                                source: {
+                                    pattern: 'yyyy-MM-dd'
+                                },
+                                pattern: 'dd MMM yyyy'
+                            }
+                        }"
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
@@ -424,7 +442,7 @@
                             }
                         }"
                         showCurrentDateButton="true"
-                        displayFormat="yyyy-MM-dd" 
+                        displayFormat="dd MMM yyyy" 
                         visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                         minDate="{

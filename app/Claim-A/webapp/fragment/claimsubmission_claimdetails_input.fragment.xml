@@ -920,8 +920,8 @@
                     selectedKey="{claimitem_input>/claim_item/vehicle_ownership_id}"
                     change="onSelect_ClaimDetails_VehicleOwnership"
                     liveChange="onSelect_ClaimDetails_VehicleOwnership"
-                    visible="false"
-                    required="true"
+                    visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/SEWAPETAK} }"
+                    required="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/SEWAPETAK} }"
 				>
 				</Select>
 
