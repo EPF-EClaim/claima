@@ -365,6 +365,17 @@ sap.ui.define([
                             }
                         }
 
+                        // if claim is tied to a course code, trip start/end dates come from the
+                        // selected course session and must not be edited
+                        if (oClaimModel.getProperty("/claim_header/course_code")) {
+                            if (oClaimModel.getProperty("/claim_header/trip_start_date")) {
+                                oEditableFields.setProperty("/startTrip", false);
+                            }
+                            if (oClaimModel.getProperty("/claim_header/trip_end_date")) {
+                                oEditableFields.setProperty("/endTrip", false);
+                            }
+                        }
+
                         oEditableFields.setProperty("/location", bEdit);
                         oEditableFields.setProperty("/comment", bEdit);
                       
