@@ -106,7 +106,8 @@ sap.ui.define([
             "SERV_TAX" : "SERV_TAX",
             "MERCH_RETURN" : "MERCH_RETURN",
             "PERSONAL_EXP" : "PERSONAL_EXPENSE",
-            "POTONGAN_ELAUN" : "POTONGAN_ELAUN"
+            "POTONGAN_ELAUN" : "POTONGAN_ELAUN",
+            'SEWAPETAK': "SEWAPETAK"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",

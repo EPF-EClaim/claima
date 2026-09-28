@@ -44,7 +44,16 @@
                             <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_start} : ${i18n>req_tripstartdate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <DatePicker 
-                                        value="{request>/req_header/tripstartdate}" 
+                                        value="{
+                                            path: 'request>/req_header/tripstartdate',
+                                            type: 'sap.ui.model.type.Date',
+                                            formatOptions: {
+                                                source: {
+                                                    pattern: 'yyyy-MM-dd'
+                                                },
+                                                pattern: 'dd MMM yyyy'
+                                            }
+                                        }" 
                                         required="true" 
                                         editable="{reqHeaderEditableModel>/startTrip}"
                                         minDate="{
@@ -77,7 +86,16 @@
                             <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_end} : ${i18n>req_tripenddate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <DatePicker 
-                                        value="{request>/req_header/tripenddate}" 
+                                        value="{
+                                            path: 'request>/req_header/tripenddate',
+                                            type: 'sap.ui.model.type.Date',
+                                            formatOptions: {
+                                                source: {
+                                                    pattern: 'yyyy-MM-dd'
+                                                },
+                                                pattern: 'dd MMM yyyy'
+                                            }
+                                        }" 
                                         required="true" 
                                         editable="{reqHeaderEditableModel>/endTrip}"
                                         minDate="{
@@ -110,7 +128,16 @@
                             <form:FormElement label="{i18n>req_corp_cc_payment_due_date}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} }">
                                 <form:fields>
                                     <DatePicker 
-                                        value="{request>/req_header/cccduedate}" 
+                                        value="{
+                                            path: 'request>/req_header/cccduedate',
+                                            type: 'sap.ui.model.type.Date',
+                                            formatOptions: {
+                                                source: {
+                                                    pattern: 'yyyy-MM-dd'
+                                                },
+                                                pattern: 'dd MMM yyyy'
+                                            }
+                                        }" 
                                         required="true" 
                                         />
                                 </form:fields>
@@ -118,7 +145,16 @@
                             <form:FormElement label="{i18n>req_eventstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
                                 <form:fields>
                                     <DatePicker 
-                                        value="{request>/req_header/eventstartdate}" 
+                                        value="{
+                                            path: 'request>/req_header/eventstartdate',
+                                            type: 'sap.ui.model.type.Date',
+                                            formatOptions: {
+                                                source: {
+                                                    pattern: 'yyyy-MM-dd'
+                                                },
+                                                pattern: 'dd MMM yyyy'
+                                            }
+                                        }" 
                                         required="{reqHeaderEditableModel>/startEventRequired}" 
                                         editable="{reqHeaderEditableModel>/startEvent}" 
                                         minDate="{
@@ -141,7 +177,7 @@
                                                 { value: 'null' },
                                                 'request>/',
                                                 { value: 'null' },
-                                                'request>/req_header/eventenddate'
+                                                'request>/req_header/tripenddate'
                                             ],
                                             formatter: '.DateUtility.determineMaxDate'
                                         }"
@@ -151,7 +187,16 @@
                             <form:FormElement label="{i18n>req_eventenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_eventdate}">
                                 <form:fields>
                                     <DatePicker 
-                                        value="{request>/req_header/eventenddate}" 
+                                        value="{
+                                            path: 'request>/req_header/eventenddate',
+                                            type: 'sap.ui.model.type.Date',
+                                            formatOptions: {
+                                                source: {
+                                                    pattern: 'yyyy-MM-dd'
+                                                },
+                                                pattern: 'dd MMM yyyy'
+                                            }
+                                        }" 
                                         required="{reqHeaderEditableModel>/endEventRequired}" 
                                         editable="{reqHeaderEditableModel>/endEvent}" 
                                         minDate="{
