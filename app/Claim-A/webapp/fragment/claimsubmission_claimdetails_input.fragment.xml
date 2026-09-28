@@ -1460,9 +1460,12 @@
                 <Input
                     id="input_claimdetails_input_provided_breakfast"
                     value="{
-						path: 'claimitem_input>/claim_item/provided_breakfast',
-						type: 'Integer'
-					}"
+                        path: 'claimitem_input>/claim_item/provided_breakfast',
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
+                    }"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
                 />
@@ -1473,7 +1476,10 @@
                     id="input_claimdetails_input_provided_lunch"
                     value="{
 						path: 'claimitem_input>/claim_item/provided_lunch',
-						type: 'Integer'
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1485,7 +1491,10 @@
                     id="input_claimdetails_input_provided_dinner"
                     value="{
 						path: 'claimitem_input>/claim_item/provided_dinner',
-						type: 'Integer'
+                        type: 'sap.ui.model.type.Integer',
+                        formatOptions: {
+                            emptyString: null
+                        }
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_ProvidedMeals"
@@ -1524,9 +1533,14 @@
                 <Label text="{i18n>label_claimdetails_input_daily_allowance}" />
                 <Input
                     id="input_claimdetails_input_daily_allowance"
-                    value="{ path: 'claimitem_input>/claim_item/daily_allowance',
-							 type: 'Integer'
-						}"
+                    value="{
+                        path: 'claimitem_input>/claim_item/daily_allowance',
+                        type: 'sap.ui.model.type.Float',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2
+                            }
+                        }"
                     visible="false"
                     editable="false"
                 />

@@ -2363,43 +2363,20 @@ annotate service.ZPROJECT_HDR with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },
-            {
-                $Type            : 'UI.DataField',
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BUFFER_FIELD1,
-                ![@UI.Importance]: #High,
-                Label            : 'Buffer Field 1'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BUFFER_FIELD2,
-                ![@UI.Importance]: #High,
-                Label            : 'Buffer Field 2'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
             }
         ]
     }
 );
+
+annotate service.ZPROJECT_HDR with {
+    PROJECT_CODE_IO @mandatory;
+    PROJECT_DESC    @mandatory;
+    GL_ACCOUNT      @mandatory;
+    STATUS          @mandatory;
+};
 
 annotate service.ZBRANCH with @(
     cds.autoexpose,

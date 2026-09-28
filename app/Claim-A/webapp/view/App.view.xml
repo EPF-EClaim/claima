@@ -516,7 +516,7 @@
                             icon="sap-icon://action-settings"
                             enabled="true"
                             expanded="false"
-                            visible="{roleModel>/DTDAdmin_role}"
+                            visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role}}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -552,7 +552,7 @@
                                 <tnt:NavigationListItem
                                     key="ZPROJECT_HDR"
                                     text="{i18n>prjcode}"
-                                    visible="{roleModel>/DTDAdmin_role}"
+                                    visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZWORKFLOW_RULE"

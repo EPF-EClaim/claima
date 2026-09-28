@@ -244,7 +244,7 @@ entity ZREQUEST_ITEM : managed {
         ENTITLED_BREAKFAST              : Integer        @Common.Label: 'Entitled Breakfast';
         ENTITLED_LUNCH                  : Integer        @Common.Label: 'Entitled Lunch';
         ENTITLED_DINNER                 : Integer        @Common.Label: 'Entitled Dinner';
-        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        DAILY_ALLOWANCE                 : Decimal(9, 2)  @Common.Label: 'Daily Allowance';
         CURRENCY_CODE                   : String         @Common.Label: 'Currency Code';
         CURRENCY_RATE                   : Decimal(16, 4) @Common.Label: 'Currency Rate';
         TYPE_OF_PROFESSIONAL_BODY       : String(3)      @Common.Label: 'Type of Professional Body';
@@ -574,7 +574,7 @@ entity ZCLAIM_ITEM : managed {
         TRAVEL_DAYS_ID                  : String(2)      @Common.Label: 'Number of Days Category (Travel Insurance)';
         METER_CUBE_ENTITLED             : Decimal(6, 2)  @Common.Label: 'Meter Cube (Entitled)';
         METER_CUBE_ACTUAL               : Decimal(6, 2)  @Common.Label: 'Meter Cube (Actual)';
-        DAILY_ALLOWANCE                 : Integer        @Common.Label: 'Daily Allowance';
+        DAILY_ALLOWANCE                 : Decimal(9, 2)  @Common.Label: 'Daily Allowance';
         TIPS                            : Integer        @Common.Label: 'Tips';
         EXCLUDE_TIPS                    : Boolean        @Common.Label: 'Exclude Tips';
         TOTAL_TRAVELLER                 : Integer        @Common.Label: 'Total Traveller';

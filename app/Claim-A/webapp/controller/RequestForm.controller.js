@@ -321,9 +321,11 @@ sap.ui.define([
 				if (
 					sReqStatus === this._oConstant.RequestStatus.SEND_BACK &&
 					bCurrentUserIsApprover &&
-					sRequestOwnerId != sCurrentUserId
+					sRequestOwnerId !== sCurrentUserId
 				) {
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				} else if (sRequestOwnerId === sCurrentUserId) {
+					PARequestSharedFunction.getCurrentState(this);
 				} else {
 					var bPendingApprover = false;
 
@@ -556,8 +558,8 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
+										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
+										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
 
 										var aMessages = [];
 										if (aInsufficientItems.length > 0) {
@@ -680,6 +682,11 @@ sap.ui.define([
 		 * 3. Enable or disable header fields to be editable
 		 */
 		onEditHeaderPress: async function () {
+			// Approvers (including after they push a request back) must never edit the header
+			const sViewMode = this._oReqModel.getProperty("/view");
+			if (sViewMode === this._oConstant.PARMode.VIEWAPPR || sViewMode === this._oConstant.PARMode.APPROVER) {
+				return;
+			}
 			Common.init(this.getOwnerComponent(), this.getView());
 			await Common.editHeaderChange(Constants.SubmissionTypePrefix.REQUESTHEADER, !this.getView().getModel("editButtonModel").getProperty("/state"));
 		},
@@ -881,11 +888,11 @@ sap.ui.define([
 			}
 
 			const sState = this._oReqModel.getProperty("/view");
-			if (sState != this._oConstant.PARMode.APPROVER) {
+			if (sState != this._oConstant.PARMode.APPROVER && sState != this._oConstant.PARMode.VIEWAPPR) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 				this._getClaimTypeItemSelection();
 			} else {
-				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 			}
 			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
@@ -1512,7 +1519,7 @@ sap.ui.define([
                     TRIP_END_DATE:                oReqItem.trip_end_date || null,
                     TRIP_START_TIME:              oReqItem.trip_start_time || null,
                     TRIP_END_TIME:                oReqItem.trip_end_time || null,
-                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
+                    DAILY_ALLOWANCE:              parseFloat(oReqItem.daily_allowance || 0),
                     ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
                     ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
                     ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0,
@@ -2841,7 +2848,7 @@ sap.ui.define([
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
 
-					window.location.reload(true);
+					this._oRouter.navTo("MyApproval");
 
 				} catch (e) {
 					MessageBox.error(e.message);
@@ -2899,7 +2906,7 @@ sap.ui.define([
 					this._sendBackDialog.close();
 				}
 
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
@@ -2936,7 +2943,7 @@ sap.ui.define([
 
 				this._rejectDialog && this._rejectDialog.close();
 
-				window.location.reload(true);
+				this._oRouter.navTo("MyApproval");
 
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));

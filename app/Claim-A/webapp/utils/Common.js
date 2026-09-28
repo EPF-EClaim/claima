@@ -479,7 +479,12 @@ sap.ui.define([
             await this._removeFragment(oHeaderConfiguration, sDestroyFragment, oSubmissionTypePage);
             const oFragment = await this._loadFragment(oHeaderConfiguration, sLoadFragment);
 
-            oSubmissionTypePage.insertContent(oFragment, 0);
+            const aContent = oSubmissionTypePage.getContent();
+            const bHasOwnerDetail = aContent[0]?.getId()?.includes("claimant_detail");
+            oSubmissionTypePage.insertContent(
+                oFragment,
+                bHasOwnerDetail ? 1 : 0
+            );
         },
 
         /**

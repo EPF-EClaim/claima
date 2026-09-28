@@ -230,10 +230,10 @@ sap.ui.define([
 
 					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
 					let sErrorMsg;
-
+					
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							if (oField.result) {
+							if (typeof oField.result === "number" || (typeof oField.result === "object" && oField.result !== null)) {
 								if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
 									sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
 								} else {
@@ -273,6 +273,11 @@ sap.ui.define([
 								sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
 							}
 							break;
+
+						case Constants.EntitiesFields.TRAVEL_HOURS:
+							sErrorMsg = Utility.getText("eligibility_validation_travel_hours_insufficient", [oField.result]);
+							break;
+
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
