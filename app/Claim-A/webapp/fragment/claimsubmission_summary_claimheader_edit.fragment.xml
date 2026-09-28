@@ -115,7 +115,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
 					}"
                     minDate="{
@@ -160,7 +160,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
 					}"
 
@@ -201,8 +201,32 @@
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_start_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_START_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                        }"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_START_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"
                 />
 
                 <!-- Event End Date -->
@@ -216,8 +240,32 @@
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_end_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_END_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/event_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                        }"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_END_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"
                 />
 
                 <!-- Loan Scheme -->
@@ -249,7 +297,7 @@
                     text="{
 						path: 'claimsubmission_input>/claim_header/move_in_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                 />

@@ -167,37 +167,55 @@ module.exports = {
         );
     },
 
+    /**
+    * Retrieves item-level historical records for eligibility/limit checks.
+    *
+    * Returns items whose parent header is in a "historical" status
+    * (Approved, Pending Approval, Completed Disbursement, Migrated Data),
+    * narrowed by the caller-supplied item condition.
+    *
+    * @param {string} sHeaderTable   - Header entity (ZCLAIM_HEADER | ZREQUEST_HEADER).
+    * @param {string} sItemTable     - Item entity to query.
+    * @param {string} sItemCondition - WHERE fragment applied to the item table.
+    * @param {object} tx             - CAP transaction.
+    * @returns {Promise<Array>} Matching items; an EMPTY ARRAY when none.
+    *          Never returns a scalar — callers rely on `.length`.
+    */
     getHistoricalItemData: async function (sHeaderTable, sItemTable, sItemcondition, tx) {
-        try {
-            let sHeaderField = ""; 
-            let sStatusField = ""; 
-            let aStatus = [Constant.Status.APPROVED, Constant.Status.PENDING_APPROVAL];
-
-            if (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) { 
-                sHeaderField = Constant.EntitiesFields.CLAIMID; 
-                sStatusField = Constant.EntitiesFields.CLAIM_STATUS; 
-            } else { 
-                sHeaderField = Constant.EntitiesFields.REQUESTID; 
-                sStatusField = Constant.EntitiesFields.STATUS; }
-
-            let aHeaderCondition = { [sStatusField]: { in: aStatus } }; 
-
-            const sHeaderCondition = BuildSelectWhereConditions.buildWhereCondition(aHeaderCondition);
-
-            const aValidHeaders = await tx.run(SELECT.from(sHeaderTable).columns(sHeaderField).where(sHeaderCondition));
-
-            const aValidHeaderIds = aValidHeaders.map(h => h[sHeaderField]);
-
-            if (aValidHeaderIds.length === 0) { 
-                return 0; 
-            }
-            const sItemHeaderForeignKey = (sHeaderTable === Constant.Entities.ZCLAIM_HEADER) ? "CLAIM_ID" : "REQUEST_ID";
-
-            const aItemCountData = await tx.run(SELECT.from(sItemTable).where(sItemcondition).and({ [sItemHeaderForeignKey]: { in: aValidHeaderIds } }));            
-            
-            return aItemCountData;
-        } catch (error) { 
-            return 0; 
-        }
-    }
+        const aStatus = [
+            Constant.Status.APPROVED,
+            Constant.Status.PENDING_APPROVAL,
+            Constant.Status.COMPLETED_DISBURSEMENT,
+            Constant.Status.MIGRATED_DATA,
+        ];
+    
+        const bIsClaim     = sHeaderTable === Constant.Entities.ZCLAIM_HEADER;
+        const sHeaderField = bIsClaim ? Constant.EntitiesFields.CLAIMID
+                                    : Constant.EntitiesFields.REQUESTID;
+        const sStatusField = bIsClaim ? Constant.EntitiesFields.CLAIM_STATUS
+                                    : Constant.EntitiesFields.STATUS;
+        const sItemFK      = bIsClaim ? "CLAIM_ID" : "REQUEST_ID";
+    
+        // 1. Items matching the caller's condition (already narrowed by employee,
+        //    claim type and date range, so this set is small).
+        const aItems = await tx.run(SELECT.from(sItemTable).where(sItemcondition));
+        if (aItems.length === 0) return [];
+    
+        // 2. Distinct parent header IDs — read from the ITEM's foreign key.
+        const aHeaderIds = [...new Set(aItems.map(o => o[sItemFK]).filter(Boolean))];
+        if (aHeaderIds.length === 0) return [];
+    
+        // 3. Of those, which headers are in a historical status?
+        const aValidHeaders = await tx.run(
+            SELECT.from(sHeaderTable).columns(sHeaderField)
+                .where({ [sStatusField]: { in: aStatus },
+                        [sHeaderField]: { in: aHeaderIds } })
+        );
+        if (aValidHeaders.length === 0) return [];
+    
+        // 4. Keep only items whose header survived the status filter.
+        const oValidIds = new Set(aValidHeaders.map(h => h[sHeaderField]));
+        return aItems.filter(o => oValidIds.has(o[sItemFK]));
+    },
+    
 };
