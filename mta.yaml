@@ -145,6 +145,7 @@ resources:
             - "x509"
           redirect-uris:
             - https://*~{app-api/app-uri}/**
+            - https://employees-provident-fund-board-epf-sf-is-nonprod-space-4b4c6e07.cfapps.ap11.hana.ondemand.com/**
     requires:
       - name: app-api
   - name: claima-backend-db
