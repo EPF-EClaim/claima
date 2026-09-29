@@ -1,5 +1,5 @@
 {
-  "welcomeFile": "/claima/index.html",
+  "welcomeFile": "/claimatest/index.html",
   "authenticationMethod": "route",
   "logout": {
     "logoutEndpoint": "/do/logout",

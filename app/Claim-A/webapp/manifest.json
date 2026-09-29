@@ -1,7 +1,7 @@
 {
     "_version": "1.81.0",
     "sap.app": {
-        "id": "claima",
+        "id": "claima.test",
         "title": "",
         "type": "application",
         "i18n": "i18n/i18n.properties",
@@ -5754,6 +5754,6 @@
     },
     "sap.cloud": {
         "public": true,
-        "service": "claimabackend.service"
+        "service": "claimabackend-test.service"
     }
 }
