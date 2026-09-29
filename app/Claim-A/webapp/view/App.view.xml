@@ -22,7 +22,7 @@
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
                 menuButtonPressed="onMenuButtonPress"
-                title="eClaim TEST Budget"
+                title="eClaims TEST BUDGET"
             >
                 <f:profile>
                     <Avatar
