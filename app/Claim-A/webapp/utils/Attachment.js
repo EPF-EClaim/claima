@@ -273,6 +273,7 @@ sap.ui.define([
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
 							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
+					oItemModel.refresh(true);
 						break;
 						
 					case Constants.SubmissionTypePrefix.REQUEST:
@@ -301,7 +302,6 @@ sap.ui.define([
 						oItemModel.setProperty(`/req_item/${sTarget}_filename`, null);
 						break;
 				}
-				oItemModel.refresh(true);
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("msg_attachment_delete_error"));
 			}

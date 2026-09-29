@@ -110,10 +110,15 @@
                 <Text
                     id="text_claimsummary_claimheader_tripstartdate"
                     text="{
-						path: 'claimsubmission_input>/claim_header/trip_start_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
-					}"
+                        path: 'claimsubmission_input>/claim_header/trip_start_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
                 />
 
                 <!-- Trip End Date -->
@@ -125,10 +130,15 @@
                 <Text
                     id="text_claimsummary_claimheader_tripenddate"
                     text="{
-						path: 'claimsubmission_input>/claim_header/trip_end_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
-					}"
+                        path: 'claimsubmission_input>/claim_header/trip_end_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
                 />
 
                 <!-- Event Start Date -->
@@ -139,10 +149,15 @@
                 <Text
                     id="text_claimsummary_claimheader_eventstartdate"
                     text="{
-						path: 'claimsubmission_input>/claim_header/event_start_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
-					}"
+                        path: 'claimsubmission_input>/claim_header/event_start_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
                 />
 
                 <!-- Event End Date -->
@@ -153,10 +168,15 @@
                 <Text
                     id="text_claimsummary_claimheader_eventenddate"
                     text="{
-						path: 'claimsubmission_input>/claim_header/event_end_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
-					}"
+                        path: 'claimsubmission_input>/claim_header/event_end_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
                 />
 
                 <!-- Loan Scheme -->
@@ -186,10 +206,15 @@
                 <Text
                     id="text_claimsummary_claimheader_move_in_date"
                     text="{
-						path: 'claimsubmission_input>/claim_header/move_in_date',
-						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
-					}"
+                        path: 'claimsubmission_input>/claim_header/move_in_date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            source: {
+                                pattern: 'yyyy-MM-dd'
+                            },
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                 />
 

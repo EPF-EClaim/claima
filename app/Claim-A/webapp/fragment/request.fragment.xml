@@ -328,7 +328,7 @@
 							{ value: 'null' },
 							'reqDialog>/',
 							{ value: 'null' },
-							'reqDialog>/eventenddate'
+							'reqDialog>/tripenddate'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
