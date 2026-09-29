@@ -163,7 +163,7 @@
                                                 'constant>/SubmissionTypePrefix/REQUEST',
                                                 'request>/req_header/claimtype',
                                                 { value: 'null' },
-                                                'request>/',
+                                                'request>/req_header',
                                                 { value: 'null' },
                                                 'request>/req_header/tripstartdate'
                                             ],
@@ -175,8 +175,9 @@
                                                 'constant>/SubmissionTypePrefix/REQUEST',
                                                 'request>/req_header/claimtype',
                                                 { value: 'null' },
-                                                'request>/',
+                                                'request>/req_header',
                                                 { value: 'null' },
+                                                'request>/req_header/eventenddate',
                                                 'request>/req_header/tripenddate'
                                             ],
                                             formatter: '.DateUtility.determineMaxDate'
@@ -205,9 +206,10 @@
                                                 'constant>/SubmissionTypePrefix/REQUEST',
                                                 'request>/req_header/claimtype',
                                                 { value: 'null' },
-                                                'request>/',
+                                                'request>/req_header',
                                                 { value: 'null' },
-                                                'request>/req_header/eventstartdate'
+                                                'request>/req_header/eventstartdate',
+                                                'request>/req_header/tripstartdate'
                                             ],
                                             formatter: '.DateUtility.determineMinDate'
                                             }"
@@ -217,7 +219,7 @@
                                                 'constant>/SubmissionTypePrefix/REQUEST',
                                                 'request>/req_header/claimtype',
                                                 { value: 'null' },
-                                                'request>/',
+                                                'request>/req_header',
                                                 { value: 'null' },
                                                 'request>/req_header/tripenddate'
                                             ],
