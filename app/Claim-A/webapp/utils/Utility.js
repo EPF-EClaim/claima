@@ -641,16 +641,23 @@ sap.ui.define([
         },
 
         setFieldEditableState: function (sField, sAltCC, sProjectCode, bEmailApprove, sSubmissionType) {
+            var aRestrictedTypes = [
+                Constants.SubmissionType.PRE_APPROVE,
+                Constants.SubmissionType.CASH_REPAYMENT,
+                Constants.SubmissionType.CURR_SUBSIDY
+            ];
+            var bIsRestrictedType = aRestrictedTypes.indexOf(sSubmissionType) > -1;
+
             switch (sField) {
                 case Constants.EntitiesFields.ALT_CC:
-                    if(sProjectCode || (!bEmailApprove && sSubmissionType == Constants.SubmissionType.PRE_APPROVE)){
+                    if(sProjectCode || (!bEmailApprove && bIsRestrictedType)){
                         return 'ReadOnly';
                     }
                     else{
                         return 'Editable';
                     }
                 case Constants.EntitiesFields.PROJECT_CODE:
-                    if(sAltCC || (!bEmailApprove && sSubmissionType == Constants.SubmissionType.PRE_APPROVE)){
+                    if(sAltCC || (!bEmailApprove && bIsRestrictedType)){
                         return false;
                     }else{
                         return true;
