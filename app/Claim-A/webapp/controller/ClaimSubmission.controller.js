@@ -3113,7 +3113,7 @@ sap.ui.define([
 					TRIP_START_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_item/trip_start_time")),
 					COST_CENTER: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? null
-									: (oInputModel.getProperty("/claim_item/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center")),
+									: (oInputModel.getProperty("/claim_item/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center")),
 					GL_ACCOUNT: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP || oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? this._oConstant.StatementDueInfo.GL_CODE
 									: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.CASH_REPAY ? this._oConstant.Default.CASH_REPAY_GL : oInputModel.getProperty("/claim_item/gl_account")),
