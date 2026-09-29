@@ -86,12 +86,7 @@ sap.ui.define([
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     var oPropertyModel = this._oView.getModel("claimitem_property");
-
-                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
-                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0) {
-                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
-                        bCanProceed = false;
-                    }
+                    var bSpecificError = false;
 
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
@@ -104,6 +99,7 @@ sap.ui.define([
                             case Constants.ClaimTypeItem.MATAWANG:
                                 if(!oInputModel.getProperty("/claim_item/amount")) {
                                     MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                    bSpecificError = true;
                                     bCanProceed = false;
                                 }
                                 break;
@@ -114,9 +110,25 @@ sap.ui.define([
 
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.KM:
+                                if(oInputModel.getProperty("/claim_item/km") < 0.01){
+                                    MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"));
+                                    bSpecificError = true;
+                                    bCanProceed = false;
+
+                                }
+                                break;    
                             default:
                                 break;
                         }
+                    }
+
+                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+                    // added condition where if there is specific case error, populate instead of general amount error so that there is no multiple error of the same kind.
+                    if ((parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined ) 
+                        && !bSpecificError )  {
+                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                        bCanProceed = false;
                     }
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
@@ -267,15 +279,6 @@ sap.ui.define([
                             } else if (!!sActiveStatus && sActiveStatus !== Constants.ClaimStatus.CANCELLED && sActiveStatus !== Constants.ClaimStatus.REJECTED) {
                                 MessageBox.error(Utility.getText("error_msg_active_course_claim"));
                                 bCanProceed = false;
-                            }
-                        }
-
-                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                        for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount <= 0){
-                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                bCanProceed = false;
-                                break;
                             }
                         }
                     }

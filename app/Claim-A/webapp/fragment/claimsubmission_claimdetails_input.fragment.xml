@@ -372,7 +372,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: 0
 						}
 					}"
                     visible="false"
@@ -389,7 +390,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: 0
 						}
 					}"
 					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
@@ -1137,7 +1139,8 @@
 
                 <!-- Kilometer -->
                 <Label text="{i18n>label_claimdetails_input_km}" 
-                  required="{claimitem_property>/km/is_required}"
+                  required="{= !${claimsubmission_input>/view_only} &amp;&amp;
+                                ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER} }"
                   labelFor="input_claimdetails_input_km"/>
                 <Input
                     id="input_claimdetails_input_km"
@@ -1148,7 +1151,8 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 6,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: 0
                         },
                         constraints: { minimum: 0.01 }
 					}"
@@ -1336,7 +1340,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+                            emptyString: 0
 						},
                         constraints: { minimum: 0.01 }
 					}"
