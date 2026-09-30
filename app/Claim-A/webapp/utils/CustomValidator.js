@@ -47,25 +47,6 @@ sap.ui.define([
                     var oReqModel = this._oOwnerComponent.getModel("request");
                     var sClaimType = oReqModel.getProperty("/req_header/claimtype");
                     var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
-                    
-                    // HANDPHONE | TELEFON_B
-                    if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
-                        
-                        var aParticipants = oReqModel.getProperty("/participant") || [];
-                        var fMaxLimit = 100.00;
-
-                        for (var p = 0; p < aParticipants.length; p++) {
-                            var fEnteredAmount = parseFloat(aParticipants[p].ALLOCATED_AMOUNT || 0);
-
-                            if (fEnteredAmount > fMaxLimit) {
-                                MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
-                                bCanProceed = false; 
-                            } else if (fEnteredAmount < 0.00) {
-                                MessageBox.error(Utility.getText("req_d_e_neg_amount"));
-                                bCanProceed = false; 
-                            }
-                        }
-                    }
 
                     // check number of traveller
                     if (sClaimType === Constants.ClaimType.ELAUN_TUKAR) {
@@ -99,8 +80,9 @@ sap.ui.define([
                             case Constants.ClaimTypeItem.MATAWANG:
                                 if(!oInputModel.getProperty("/claim_item/amount")) {
                                     MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                    bSpecificError = true;
                                     bCanProceed = false;
+                                    return;
+
                                 }
                                 break;
                             case Constants.ClaimTypeItem.MKN_LOAN:
@@ -113,8 +95,8 @@ sap.ui.define([
                             case Constants.ClaimTypeItem.KM:
                                 if(oInputModel.getProperty("/claim_item/km") < 0.01){
                                     MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"));
-                                    bSpecificError = true;
                                     bCanProceed = false;
+                                    return;
 
                                 }
                                 break;    
@@ -124,11 +106,11 @@ sap.ui.define([
                     }
 
                     // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
-                    // added condition where if there is specific case error, populate instead of general amount error so that there is no multiple error of the same kind.
-                    if ((parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined ) 
-                        && !bSpecificError )  {
+                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined )  {
                         MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
                         bCanProceed = false;
+                        return;
+                        
                     }
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {

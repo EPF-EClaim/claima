@@ -2864,12 +2864,21 @@ sap.ui.define([
 					break;
 			}
 		},
+
+		/**
+		* Save Claim Item Details
+		* @public
+		* Validation Order (Critical):
+		* 1. Required fields (this.getOwnerComponent().getValidator())
+		* 2. Custom business rules (CustomValidator.validate())
+		* Reason: Required fields must be populated before passing to backend validator
+		*/
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			// Validate required fields, moved to top of onSave to validate mandatory fields first before CustomValidator
+			// Validate required fields, priority for mandatory fields first before custom validation
 			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
