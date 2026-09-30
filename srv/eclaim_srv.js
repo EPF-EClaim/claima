@@ -2018,11 +2018,12 @@ module.exports = (srv) => {
     async function getLoggedInEmployee(tx, req, entities) {
         const { ZEMP_MASTER } = entities;
         const sUserEmail =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id;
+            "jefry.yap@my.ey.com";
+            // req.user?.attr?.email ||
+            // req.user?.attr?.mail ||
+            // req.user?.attr?.user_name ||
+            // req.user?.attr?.login_name ||
+            // req.user?.id;
 
         if (!sUserEmail) {
             req.error(401, "Unable to determine logged-in user");

@@ -413,6 +413,11 @@
                                     text="{i18n>trncourseprt}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                <tnt:NavigationListItem
+                                    key="ZJOB_CODE_MAPPING"
+                                    text="{i18n>jobgrp}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem

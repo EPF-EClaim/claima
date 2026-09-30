@@ -34,7 +34,7 @@ module.exports = {
     const aParticipantList = aPayload.map((d) => d.EmpId);
 
     // Get Employee Data
-    const aEmpData = await tx.run(
+    let aEmpData = await tx.run(
       SELECT.from(Constant.Entities.ZEMP_MASTER).where({
         EEID: { in: aParticipantList }
       })
@@ -43,6 +43,8 @@ module.exports = {
     aEmpData.sort(function (a, b) {
       return a.GRADE - b.GRADE;
     });
+
+    aEmpData = await this._mapJobCodeToOldJobGroup(aEmpData, tx);
 
     // Get employee grade
     let aPersonalGrade = aEmpData.map((d) => d.GRADE);
@@ -86,7 +88,7 @@ module.exports = {
     };
 
     // Claim Type Item that requires LODGING_CATEGORY filtering
-    if(
+    if (
       aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.LODG_O
     ) {
       const iFieldIndex = aPayload[0].CheckFields.findIndex(
@@ -143,7 +145,7 @@ module.exports = {
       if (iFieldIndex !== -1) {
         aEligibilityCondition[Constant.EntitiesFields.VEHICLE_OWNERSHIP_ID] = aPayload[0].CheckFields[iFieldIndex].value;
       }
-    };    
+    };
 
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
     // Get Eligibility Rules
@@ -152,7 +154,7 @@ module.exports = {
         `${sEligibilityCondition}`
       )
     );
-    
+
     let oReturnPayload = [];
     // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {
@@ -318,7 +320,7 @@ module.exports = {
             aFilteredEligibility,
             tx
           );
-          break;          
+          break;
 
         default:
           oReturnPayload = aPayload[i];
@@ -335,74 +337,99 @@ module.exports = {
     const ZCLAIM_ITEM = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
 
     const oHeader = await tx.run(
-        SELECT.one.from(ZCLAIM_HEADER)
-            .columns('EMP_ID', 'CLAIM_TYPE_ID')
-            .where({ CLAIM_ID: sClaimId })
+      SELECT.one.from(ZCLAIM_HEADER)
+        .columns('EMP_ID', 'CLAIM_TYPE_ID')
+        .where({ CLAIM_ID: sClaimId })
     );
     if (!oHeader) {
-        return [];
+      return [];
     }
 
     const aItems = await tx.run(SELECT.from(ZCLAIM_ITEM).where({ CLAIM_ID: sClaimId }));
 
     return aItems.map((oItem) => {
-        const sAmountField = oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.PEM_PINDAH ? 'ACTUAL_AMOUNT' : 'AMOUNT';
-        const sReceiptDateField = oItem.RECEIPT_DATE ? 'RECEIPT_DATE' : 'BILL_DATE';
+      const sAmountField = oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.PEM_PINDAH ? 'ACTUAL_AMOUNT' : 'AMOUNT';
+      const sReceiptDateField = oItem.RECEIPT_DATE ? 'RECEIPT_DATE' : 'BILL_DATE';
 
-        // Mirrors the flight-duration calculation done on save in
-        // ClaimSubmission.controller.js#onSave_ClaimDetails_Input
-        let vTravelHours;
-        if (oItem.DEPARTURE_TIME && oItem.ARRIVAL_TIME) {
-            const iDiffMs = new Date(oItem.ARRIVAL_TIME).getTime() - new Date(oItem.DEPARTURE_TIME).getTime();
-            vTravelHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
-        }
+      // Mirrors the flight-duration calculation done on save in
+      // ClaimSubmission.controller.js#onSave_ClaimDetails_Input
+      let vTravelHours;
+      if (oItem.DEPARTURE_TIME && oItem.ARRIVAL_TIME) {
+        const iDiffMs = new Date(oItem.ARRIVAL_TIME).getTime() - new Date(oItem.DEPARTURE_TIME).getTime();
+        vTravelHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+      }
 
-        const oMapping = {
-            [sAmountField]: 'ELIGIBLE_AMOUNT',
-            NO_OF_DAYS: 'TRAVEL_DAYS_ID',
-            FARE_TYPE_ID: 'FARE_TYPE_ID',
-            VEHICLE_CLASS_ID: 'TRANSPORT_CLASS',
-            FLIGHT_CLASS: 'FLIGHT_CLASS_ID',
-            ROOM_TYPE: 'ROOM_TYPE_ID',
-            MOBILE_CATEGORY_PURPOSE_ID: 'MOBILE_PHONE_BILL',
-            [sReceiptDateField]: 'RECEIPT_DATE',
-            REGION: 'REGION_ID',
-            TOTAL_TRAVELLER: 'TOTAL_TRAVELLER',
-            LODGING_CATEGORY: 'LODGING_CATEGORY',
-            FUNERAL_TRANSPORTATION: 'FUNERAL_TRANSPORTATION',
-            DEPENDENT_TYPE_ID: 'DEPENDENT_TYPE',
-            VEHICLE_OWNERSHIP_ID: 'VEHICLE_OWNERSHIP_ID',
-            COUNTRY: 'COUNTRY',
-            INSURANCE_PACKAGE_ID: 'INSURANCE_PACKAGE_ID',
-            DEPENDENT: 'DEPENDENT',
-            PHONE_NO: 'PHONE_NO',
-            TO_STATE_ID: 'TO_STATE_ID',
-            DEPENDENT_NATIONAL_ID: 'DEPENDENT_NATIONAL_ID',
-            POLICY_START_DATE: 'POLICY_START_DATE',
-            POLICY_YEAR: 'POLICY_YEAR'
-        };
+      const oMapping = {
+        [sAmountField]: 'ELIGIBLE_AMOUNT',
+        NO_OF_DAYS: 'TRAVEL_DAYS_ID',
+        FARE_TYPE_ID: 'FARE_TYPE_ID',
+        VEHICLE_CLASS_ID: 'TRANSPORT_CLASS',
+        FLIGHT_CLASS: 'FLIGHT_CLASS_ID',
+        ROOM_TYPE: 'ROOM_TYPE_ID',
+        MOBILE_CATEGORY_PURPOSE_ID: 'MOBILE_PHONE_BILL',
+        [sReceiptDateField]: 'RECEIPT_DATE',
+        REGION: 'REGION_ID',
+        TOTAL_TRAVELLER: 'TOTAL_TRAVELLER',
+        LODGING_CATEGORY: 'LODGING_CATEGORY',
+        FUNERAL_TRANSPORTATION: 'FUNERAL_TRANSPORTATION',
+        DEPENDENT_TYPE_ID: 'DEPENDENT_TYPE',
+        VEHICLE_OWNERSHIP_ID: 'VEHICLE_OWNERSHIP_ID',
+        COUNTRY: 'COUNTRY',
+        INSURANCE_PACKAGE_ID: 'INSURANCE_PACKAGE_ID',
+        DEPENDENT: 'DEPENDENT',
+        PHONE_NO: 'PHONE_NO',
+        TO_STATE_ID: 'TO_STATE_ID',
+        DEPENDENT_NATIONAL_ID: 'DEPENDENT_NATIONAL_ID',
+        POLICY_START_DATE: 'POLICY_START_DATE',
+        POLICY_YEAR: 'POLICY_YEAR'
+      };
 
-        const aCheckFields = Object.entries(oMapping).map(([sColumn, sTargetName]) => ({
-            fieldName: sTargetName,
-            value: String(oItem[sColumn]),
-            result: null
-        }));
+      const aCheckFields = Object.entries(oMapping).map(([sColumn, sTargetName]) => ({
+        fieldName: sTargetName,
+        value: String(oItem[sColumn]),
+        result: null
+      }));
 
-        aCheckFields.push({
-            fieldName: 'TRAVEL_HOURS',
-            value: String(vTravelHours),
-            result: null
-        });
+      aCheckFields.push({
+        fieldName: 'TRAVEL_HOURS',
+        value: String(vTravelHours),
+        result: null
+      });
 
-        return {
-            EmpId: oHeader.EMP_ID,
-            RecordId: sClaimId,
-            RecordSubId: oItem.CLAIM_SUB_ID,
-            ClaimType: oHeader.CLAIM_TYPE_ID,
-            ClaimTypeItem: oItem.CLAIM_TYPE_ITEM_ID,
-            CheckFields: aCheckFields
-        };
+      return {
+        EmpId: oHeader.EMP_ID,
+        RecordId: sClaimId,
+        RecordSubId: oItem.CLAIM_SUB_ID,
+        ClaimType: oHeader.CLAIM_TYPE_ID,
+        ClaimTypeItem: oItem.CLAIM_TYPE_ITEM_ID,
+        CheckFields: aCheckFields
+      };
     });
+  },
+
+  _mapJobCodeToOldJobGroup: async function (aEmpData, oTx) {
+    const ZJOB_CODE_MAPPING = cds.entities['eclaim_srv.ZJOB_CODE_MAPPING'];
+
+    const aJobCodes = [
+      ...new Set(aEmpData.map(d => d.JOB_GROUP).filter(Boolean))
+    ];
+
+    const oMapping = await oTx.run(
+      SELECT.one.from(ZJOB_CODE_MAPPING)
+        .columns('JOB_GROUP_ID', 'JOB_CODE_ID')
+        .where({
+          JOB_CODE_ID: { in: aJobCodes }
+        })
+    );
+    
+    if (oMapping) {
+      aEmpData.forEach(emp => {
+        emp.JOB_GROUP = oMapping.JOB_GROUP_ID || emp.JOB_GROUP;
+      });
+    }
+
+    return aEmpData;
   }
+
 
 };

@@ -39,9 +39,9 @@ entity ZEMP_MASTER : managed {
         INSERTED_DATE                 : Date          @Common.Label: 'Inserted Date';
         JOB_GRADE                     : String(4)     @Common.Label: 'Job Grade';
         DIVISION                      : String(10)    @Common.Label: 'Division';
-        HIGHEST_EDU_LEVEL             : String(20)    @Common.Label: 'Highest Education Level';
-        HIGHEST_EDU_COURSE            : String(30)    @Common.Label: 'Highest Education Course';
-        UNIVERSITY_NAME               : String(30)    @Common.Label: 'University Name';
+        HIGHEST_EDU_LEVEL             : String(250)   @Common.Label: 'Highest Education Level';
+        HIGHEST_EDU_COURSE            : String(250)   @Common.Label: 'Highest Education Course';
+        UNIVERSITY_NAME               : String(250)   @Common.Label: 'University Name';
         HIRE_DATE                     : Date          @Common.Label: 'Hire Date';
         RETIREMENT_DATE               : Date          @Common.Label: 'Retirement Date';
         CONTRACT_END_DATE             : Date          @Common.Label: 'Contract End Date';
@@ -868,11 +868,12 @@ entity ZSTATE : managed {
 }
 
 entity ZJOB_GROUP : managed {
-    key JOB_GROUP_ID   : String(8)  @mandatory  @Common.Label: 'Job Group ID';
-        JOB_GROUP_DESC : String     @Common.Label: 'Job Group ID';
-        START_DATE     : Date       @Common.Label: 'Start Date';
-        END_DATE       : Date       @Common.Label: 'End Date';
-        STATUS         : String(10) @Common.Label: 'Status';
+    key JOB_GROUP_ID    : String(8)  @mandatory  @Common.Label: 'Job Group ID';
+        JOB_GROUP_DESC  : String     @Common.Label: 'Job Group ID';
+        START_DATE      : Date       @Common.Label: 'Start Date';
+        END_DATE        : Date       @Common.Label: 'End Date';
+        STATUS          : String(10) @Common.Label: 'Status';
+        ELIGIBILITY_USE : Boolean    @Common.Label: 'Used for Eligibility Checking';
 }
 
 entity ZDEPARTMENT : managed {
@@ -1633,4 +1634,11 @@ entity ZPOSITION : managed {
         STATUS        : String(10)  @Common.Label: 'Status';
  
 }
- 
+
+entity ZJOB_CODE_MAPPING : managed {
+    key JOB_CODE_ID   : String(8);
+    key JOB_GROUP_ID  : String(8);
+        JOB_CODE_DESC : String(250);
+        ZJOB_GROUP    : Association to one ZJOB_GROUP
+                          on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP_ID;
+}
