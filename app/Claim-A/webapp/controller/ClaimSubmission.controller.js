@@ -2877,7 +2877,7 @@ sap.ui.define([
 
 			// Eligibility Checking
 			try {
-				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+				var oPayload = await EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
 				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 			} catch (error) {

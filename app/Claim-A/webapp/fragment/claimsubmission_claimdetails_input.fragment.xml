@@ -1535,15 +1535,12 @@
                     id="input_claimdetails_input_daily_allowance"
                     value="{
                         path: 'claimitem_input>/claim_item/daily_allowance',
-                        type: 'sap.ui.model.type.Float',
-                        formatOptions: {
-                            minFractionDigits: 2,
-                            maxFractionDigits: 2
-                            }
-                        }"
+                        type: 'sap.ui.model.type.Integer'
+                    }"
                     visible="false"
                     editable="false"
                 />
+
                 
                 <!-- Checkbox: Exclude Tips -->
                 <Label text="{i18n>label_claimdetails_input_exclude_tips}" />

@@ -16,7 +16,7 @@ module.exports = {
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
         var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp, tx);
         return oPayload;
     },
     /**
@@ -127,14 +127,16 @@ module.exports = {
     },
 
     /**
-    * Validates claim item against eligibility rule
-    * @private
-    * @param {Object} oRule - matched eligibility rule from aRules
-    * @param {Object} oPayload - original payload from user input
-    * @param {Integer} iExistingFreq - Date frequency count
-    * @param {Integer} iAllowedFreq - Rules Frequency Count
-    */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
+     * Validates a claim item against its matched eligibility rule.
+     * @private
+     * @param {Object}  oRule         - Matched eligibility rule (from aRules)
+     * @param {Object}  oPayload      - Claim item payload from user input
+     * @param {number}  iExistingFreq - Number of claims the employee has already made
+     * @param {number}  iAllowedFreq  - Maximum number of claims the rule allows
+     * @param {Object}  oEmp          - Employee master data
+     * @param {Object}  oTx           - Active CAP transaction
+     */
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp, oTx) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -171,7 +173,7 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (oEmp.STATE_OF_ORIGIN &&
                     oPayload.CheckFields[iIndex].value) {
-                    if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
+                    if (oPayload.CheckFields[iIndex].value === oEmp.STATE_OF_ORIGIN) {
                         oPayload.CheckFields[iIndex].result = true;
                     }
                     else {
@@ -185,5 +187,5 @@ module.exports = {
 
                 break;
         }
-    }
+    },
 };
