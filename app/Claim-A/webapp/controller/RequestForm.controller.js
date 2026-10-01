@@ -1310,8 +1310,10 @@ sap.ui.define([
 		},
 
 		async onSaveAddAnother(oEvent) {
-			await this.onSave(oEvent, true);
-
+			const bSaved = await this.onSave(oEvent, true);
+			if (!bSaved){
+				return;
+			}
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -1329,6 +1331,15 @@ sap.ui.define([
 			this._oReqModel.setData(oData);
 		},
 
+
+		/**
+		* Save Request Item Details
+		* @public
+		* Validation Order (Critical):
+		* 1. Required fields (this.getOwnerComponent().getValidator())
+		* 2. Custom business rules (CustomValidator.validate())
+		* Reason: Required fields must be populated before passing to backend validator
+		*/
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
 			const oEditButtonModel = this.getView().getModel("editButtonModel");
@@ -1342,6 +1353,15 @@ sap.ui.define([
 			const sReqId = String(oData.req_header.reqid || "").trim();
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
+			var bSaved = false;
+
+			// validate mandatory fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 
@@ -1383,14 +1403,6 @@ sap.ui.define([
 			};
 
 			if (!bCanProceed) return;
-
-			// validate mandatory fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
 
 			BusyIndicator.show(0);
 
@@ -1645,6 +1657,7 @@ sap.ui.define([
 				}
 
 				MessageToast.show("Success");
+				bSaved = true;
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
@@ -1660,6 +1673,8 @@ sap.ui.define([
 				BusyIndicator.hide();
 				this._resetReqItemInputs();
 			}
+			
+			return bSaved;
 		},
 
 		onImportChange1(oEvent) {
