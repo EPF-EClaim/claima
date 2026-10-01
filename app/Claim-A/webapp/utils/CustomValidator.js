@@ -67,7 +67,6 @@ sap.ui.define([
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
                     var oPropertyModel = this._oView.getModel("claimitem_property");
-                    var bSpecificError = false;
 
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
