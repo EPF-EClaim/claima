@@ -1567,11 +1567,7 @@
                                     <form:fields>
                                         <Text text="{
                                             path: 'request>/req_item/daily_allowance',
-                                            type: 'sap.ui.model.type.Float',
-                                            formatOptions: {
-                                                minFractionDigits: 2,
-                                                maxFractionDigits: 2
-                                                }
+                                            type: 'sap.ui.model.type.Integer'
                                             }"/>
                                     </form:fields>
                                 </form:FormElement>

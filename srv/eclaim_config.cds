@@ -1411,6 +1411,12 @@ annotate service.ZJOB_GROUP with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ELIGIBILITY_USE,
+                ![@UI.Importance]: #High,
+                Label            : 'Use for Eligibility Checking'
             }
         ]
     }
@@ -8855,4 +8861,34 @@ annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with {
 
 };
 
+annotate eclaim_srv.ZJOB_CODE_MAPPING with @(
+    UI.HeaderInfo: {
+        TypeName      : 'Job Code Mapping',
+        TypeNamePlural: 'Job Code Mappings'
+    },
+    UI.LineItem: [
+        { Value: JOB_CODE_ID,       Label: 'Job Code' },
+        { Value: JOB_CODE_DESC,     Label: 'Job Code Description' },
+        { Value: JOB_GROUP_ID,      Label: 'Job Group' },
+        { Value: JOB_GROUP_DESC,    Label: 'Job Group Description' }
+    ]
+) {
+    JOB_CODE_ID   @title: 'Job Code'             @mandatory;
+    JOB_CODE_DESC @title: 'Job Code Description' @mandatory;
+    JOB_GROUP_ID  @title: 'Job Group'  @mandatory
+        @Common.ValueListWithFixedValues
+        @Common.ValueList: {
+            CollectionPath: 'ZJOB_GROUP_VH',
+            Parameters    : [
+                { $Type: 'Common.ValueListParameterInOut',
+                LocalDataProperty: JOB_GROUP_ID, ValueListProperty: 'JOB_GROUP_ID' },
+                { $Type: 'Common.ValueListParameterDisplayOnly',
+                ValueListProperty: 'JOB_GROUP_DESC' }
+            ]
+        };
+};
 
+annotate eclaim_srv.ZJOB_CODE_MAPPING with {
+    JOB_CODE_ID     @Search.fuzzinessThreshold: 1;
+    JOB_GROUP_ID    @Search.fuzzinessThreshold: 1;
+};

@@ -49,9 +49,6 @@
       "lean_draft": true,
       "bypass_draft": true
     },
-    "hana": {
-      "deploy-format": "flat"
-    },
     "requires": {
       "IS_Conn": { 
         "kind": "odata",

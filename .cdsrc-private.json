@@ -10,7 +10,7 @@
           "instance": "claima-backend-db",
           "key": "claima-backend-db-key"
         },
-        "kind": "hana-cloud",
+        "kind": "hana",
         "vcap": {
           "name": "db"
         }

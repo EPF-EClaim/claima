@@ -726,6 +726,11 @@
                     "pattern": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
                     "name": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
                     "target": "ZCLAIM_TYPE_ITEM_CHARGING_CC"
+                },
+                {
+                    "pattern": "ZJOB_CODE_MAPPING",
+                    "name": "ZJOB_CODE_MAPPING",
+                    "target": "ZJOB_CODE_MAPPING"
                 }
             ],
             
@@ -1917,12 +1922,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
+                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS,ELIGIBILITY_USE"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS,ELIGIBILITY_USE"
                                         }
                                     },
                                     "actions": {
@@ -5718,7 +5723,70 @@
                             }
                         }
                     }
+                },
+                "ZJOB_CODE_MAPPING": {
+                    "type": "Component",
+                    "id": "ZJOB_CODE_MAPPING",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZJOB_CODE_MAPPING",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "JOB_CODE_ID,JOB_CODE_DESC,JOB_GROUP_ID"
+                                        },
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "JOB_CODE_ID,JOB_CODE_DESC,JOB_GROUP_ID"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+
             }
         },
         "rootView": {

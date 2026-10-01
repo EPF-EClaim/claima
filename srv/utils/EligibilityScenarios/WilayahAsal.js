@@ -127,13 +127,14 @@ module.exports = {
     },
 
     /**
-    * Validates claim item against eligibility rule
-    * @private
-    * @param {Object} oRule - matched eligibility rule from aRules
-    * @param {Object} oPayload - original payload from user input
-    * @param {Integer} iExistingFreq - Date frequency count
-    * @param {Integer} iAllowedFreq - Rules Frequency Count
-    */
+     * Validates a claim item against its matched eligibility rule.
+     * @private
+     * @param {Object}  oRule         - Matched eligibility rule (from aRules)
+     * @param {Object}  oPayload      - Claim item payload from user input
+     * @param {number}  iExistingFreq - Number of claims the employee has already made
+     * @param {number}  iAllowedFreq  - Maximum number of claims the rule allows
+     * @param {Object}  oEmp          - Employee master data
+     */
     _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
         var iIndex;
 
@@ -171,7 +172,7 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (oEmp.STATE_OF_ORIGIN &&
                     oPayload.CheckFields[iIndex].value) {
-                    if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
+                    if (oPayload.CheckFields[iIndex].value === oEmp.STATE_OF_ORIGIN) {
                         oPayload.CheckFields[iIndex].result = true;
                     }
                     else {
@@ -185,5 +186,5 @@ module.exports = {
 
                 break;
         }
-    }
+    },
 };
