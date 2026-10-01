@@ -120,7 +120,7 @@ sap.ui.define([
 
 			// State-of-origin mapping applies to WILAYAH_ASAL only
 			let sMappedState;
-			if (sClaimType === 'WILAYAH_ASAL') {
+			if (sClaimType === Constants.ClaimType.WILAYAH_ASAL) {
 				sMappedState = await this._mapStateOfOrigin(oController, oItemData[sStateKey]);
 			}
 

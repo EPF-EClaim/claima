@@ -16,7 +16,7 @@ module.exports = {
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
         var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp, tx);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp);
         return oPayload;
     },
     /**
@@ -134,9 +134,8 @@ module.exports = {
      * @param {number}  iExistingFreq - Number of claims the employee has already made
      * @param {number}  iAllowedFreq  - Maximum number of claims the rule allows
      * @param {Object}  oEmp          - Employee master data
-     * @param {Object}  oTx           - Active CAP transaction
      */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp, oTx) {
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {

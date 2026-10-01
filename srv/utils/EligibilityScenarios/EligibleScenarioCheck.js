@@ -353,7 +353,7 @@ module.exports = {
     const aItems = await tx.run(SELECT.from(ZCLAIM_ITEM).where({ CLAIM_ID: sClaimId }));
 
     // State-of-origin mapping applies to WILAYAH_ASAL claims only
-    const bMapState = oHeader.CLAIM_TYPE_ID === 'WILAYAH_ASAL';
+    const bMapState = oHeader.CLAIM_TYPE_ID === Constant.ClaimType.WILAYAH_ASAL;
 
     // Map each unique TO_STATE_ID once (skipped for other claim types)
     const mStateMap = new Map();
