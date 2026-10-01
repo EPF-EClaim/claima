@@ -4820,11 +4820,7 @@ module.exports = (srv) => {
             ] || 0
         );
 
-        const fRemaining = fEligibleAmount - fConsumedAmount;
-
-        console.log("fEligibleAmount:", fEligibleAmount);
-        console.log("fConsumedAmount:", fConsumedAmount);
-        console.log("fRemaining:", fRemaining);
+        const fRemaining = (fEligibleAmount - fConsumedAmount).toFixed(2);
 
         return {
             entitlement: fEligibleAmount,

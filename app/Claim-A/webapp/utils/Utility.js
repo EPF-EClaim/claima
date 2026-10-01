@@ -1047,6 +1047,30 @@ sap.ui.define([
                 console.error("Error fetching employee detail", oError);
                 return null;
             }
+        },
+
+        /**
+         * Formats the Alternate Cost Center display value.
+         * Combines the cost center and description into a single string
+         * in the format:
+         * Cost Center (Description)
+         * @param {string|null|undefined} sAltCC - Alternate Cost Center code.
+         * @param {string|null|undefined} sAltCCDesc - Alternate Cost Center description.
+         * @returns {string} Formatted Alternate Cost Center display value.
+         */ 
+        setAlternateCostCenter: async function (sAltCC, sAltCCDesc) {
+            const sCostCenter = sAltCC || "";
+            const sDescription = sAltCCDesc || "";
+            
+            if (sCostCenter && sDescription) {
+                return `${sCostCenter} (${sDescription})`;
+            }else if (sCostCenter) {
+                return sCostCenter;
+            }else if (sDescription) {
+                return sDescription;
+            }else {
+                return "";
+            }
         }
 
     };

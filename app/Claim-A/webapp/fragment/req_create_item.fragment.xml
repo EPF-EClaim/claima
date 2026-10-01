@@ -1684,7 +1684,7 @@
                                     searchKeys: ['EEID', 'NAME', 'CC'],
                                     columns: [
                                         '{i18n>valuehelp_claiminput_altcc_col_id}',
-                                        '{i18n>valuehelp_claiminput_altcc_col_name}',
+                                        '{i18n>valuehelp_claiminput_participant_name}',
                                         'Cost Center'
                                     ],
                                     openOnClick: true
