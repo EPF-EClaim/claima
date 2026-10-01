@@ -2789,16 +2789,34 @@ sap.ui.define([
 					break;
 			}
 		},
+
+		/**
+		* Save Claim Item Details
+		* @public
+		* Validation Order (Critical):
+		* 1. Required fields (this.getOwnerComponent().getValidator())
+		* 2. Custom business rules (CustomValidator.validate())
+		* Reason: Required fields must be populated before passing to backend validator
+		*/
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
+			// Validate required fields, priority for mandatory fields first before custom validation
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
+
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 			if (!bCanProceed) {
 				return;
 			}
+
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
 			//this is needed for the eligibility check for the flight class of the employee
 			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
@@ -2869,7 +2887,7 @@ sap.ui.define([
 			if (bIsKilometerClaimItem &&
 				!!oInputModel.getProperty("/claim_item/receipt_date") &&
 				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
-				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+				MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
@@ -2888,13 +2906,7 @@ sap.ui.define([
 
 			if (!bCanProceed) return;
 
-			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
-				MessageBox.error(Utility.getText("msg_claiminput_required"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
+
 
 			// Check for existing MataWang
 			if (oInputModel.getProperty("/is_new") &&
