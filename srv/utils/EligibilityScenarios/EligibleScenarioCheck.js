@@ -34,7 +34,7 @@ module.exports = {
     const aParticipantList = aPayload.map((d) => d.EmpId);
 
     // Get Employee Data
-    const aEmpData = await tx.run(
+    let aEmpData = await tx.run(
       SELECT.from(Constant.Entities.ZEMP_MASTER).where({
         EEID: { in: aParticipantList }
       })
@@ -43,6 +43,8 @@ module.exports = {
     aEmpData.sort(function (a, b) {
       return a.GRADE - b.GRADE;
     });
+
+    aEmpData = await this._mapJobCodeToOldJobGroup(aEmpData, tx);
 
     // Get employee grade
     let aPersonalGrade = aEmpData.map((d) => d.GRADE);
@@ -330,13 +332,32 @@ module.exports = {
     }
   },
 
-  /**
- * Builds the eligibility-check payload for every item in a claim.
- * For WILAYAH_ASAL claims, TO_STATE_ID is mapped to the eClaim STATE_ID via ZSTATE.
- * @param {string} sClaimId - Claim ID
- * @param {Object} tx       - Active CAP transaction
- * @returns {Promise<Object[]>} One payload per claim item; empty array if header not found
- */
+  /*******************************************************
+   * Builds the payload sent to the eligibility engine for
+   * every item under a given claim.
+   *
+   * Steps:
+   * 1. Load claim header (EMP_ID, CLAIM_TYPE_ID).
+   * 2. Load all claim items under the claim.
+   * 3. For each item:
+   *    - Pick correct amount field (ACTUAL_AMOUNT for
+   *      PEM_PINDAH, else AMOUNT).
+   *    - Pick correct receipt date field (RECEIPT_DATE if
+   *      present, else BILL_DATE).
+   *    - Derive TRAVEL_HOURS from DEPARTURE_TIME/
+   *      ARRIVAL_TIME (mirrors UI calculation in
+   *      ClaimSubmission.controller.js#onSave_ClaimDetails_Input).
+   *    - Map item columns to eligibility CheckFields names.
+   *    - For WILAYAH_ASAL claims, TO_STATE_ID is mapped to the 
+   *      eClaim STATE_ID via ZSTATE.
+   * 4. Return one eligibility record per claim item.
+   *
+   * @param {string} sClaimId - Claim ID to generate payload for
+   * @param {object} tx - Active CDS transaction
+   * @returns {Promise<Array<object>>} Array of eligibility
+   *          check payloads, one per claim item. Empty array
+   *          if claim header not found.
+   *******************************************************/
   generateEligibilityPayload: async function (sClaimId, tx) {
     const ZCLAIM_HEADER = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
     const ZCLAIM_ITEM = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
@@ -427,6 +448,38 @@ module.exports = {
         CheckFields: aCheckFields
       };
     });
+  },
+
+  /**
+   * Maps employee JOB_GROUP values to legacy JOB_GROUP_ID
+   * using ZJOB_CODE_MAPPING.
+   *
+   * @param {Array<object>} aEmpData - Employee records (updated in place)
+   * @param {object} oTx - CDS transaction
+   * @returns {Promise<Array<object>>} Employee records with mapped JOB_GROUP
+   */
+  _mapJobCodeToOldJobGroup: async function (aEmpData, oTx) {
+    const ZJOB_CODE_MAPPING = cds.entities['eclaim_srv.ZJOB_CODE_MAPPING'];
+
+    const aJobCodes = [
+      ...new Set(aEmpData.map(d => d.JOB_GROUP).filter(Boolean))
+    ];
+
+    const oMapping = await oTx.run(
+      SELECT.one.from(ZJOB_CODE_MAPPING)
+        .columns('JOB_GROUP_ID', 'JOB_CODE_ID')
+        .where({
+          JOB_CODE_ID: { in: aJobCodes }
+        })
+    );
+    
+    if (oMapping) {
+      aEmpData.forEach(emp => {
+        emp.JOB_GROUP = oMapping.JOB_GROUP_ID || emp.JOB_GROUP;
+      });
+    }
+
+    return aEmpData;
   },
 
   /**
