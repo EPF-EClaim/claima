@@ -86,7 +86,7 @@ module.exports = {
     };
 
     // Claim Type Item that requires LODGING_CATEGORY filtering
-    if(
+    if (
       aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.LODG_O
     ) {
       const iFieldIndex = aPayload[0].CheckFields.findIndex(
@@ -143,7 +143,7 @@ module.exports = {
       if (iFieldIndex !== -1) {
         aEligibilityCondition[Constant.EntitiesFields.VEHICLE_OWNERSHIP_ID] = aPayload[0].CheckFields[iFieldIndex].value;
       }
-    };    
+    };
 
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
     // Get Eligibility Rules
@@ -152,7 +152,7 @@ module.exports = {
         `${sEligibilityCondition}`
       )
     );
-    
+
     let oReturnPayload = [];
     // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {
@@ -318,7 +318,7 @@ module.exports = {
             aFilteredEligibility,
             tx
           );
-          break;          
+          break;
 
         default:
           oReturnPayload = aPayload[i];
@@ -330,79 +330,126 @@ module.exports = {
     }
   },
 
+  /**
+ * Builds the eligibility-check payload for every item in a claim.
+ * For WILAYAH_ASAL claims, TO_STATE_ID is mapped to the eClaim STATE_ID via ZSTATE.
+ * @param {string} sClaimId - Claim ID
+ * @param {Object} tx       - Active CAP transaction
+ * @returns {Promise<Object[]>} One payload per claim item; empty array if header not found
+ */
   generateEligibilityPayload: async function (sClaimId, tx) {
     const ZCLAIM_HEADER = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
     const ZCLAIM_ITEM = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
 
     const oHeader = await tx.run(
-        SELECT.one.from(ZCLAIM_HEADER)
-            .columns('EMP_ID', 'CLAIM_TYPE_ID')
-            .where({ CLAIM_ID: sClaimId })
+      SELECT.one.from(ZCLAIM_HEADER)
+        .columns('EMP_ID', 'CLAIM_TYPE_ID')
+        .where({ CLAIM_ID: sClaimId })
     );
     if (!oHeader) {
-        return [];
+      return [];
     }
 
     const aItems = await tx.run(SELECT.from(ZCLAIM_ITEM).where({ CLAIM_ID: sClaimId }));
 
+    // State-of-origin mapping applies to WILAYAH_ASAL claims only
+    const bMapState = oHeader.CLAIM_TYPE_ID === Constant.ClaimType.WILAYAH_ASAL;
+
+    // Map each unique TO_STATE_ID once (skipped for other claim types)
+    const mStateMap = new Map();
+    if (bMapState) {
+      const aStates = [...new Set(aItems.map(o => o.TO_STATE_ID).filter(Boolean))];
+      const aMappedStates = await Promise.all(aStates.map(s => module.exports._mapStateOfOrigin(s, tx)));
+      aStates.forEach((s, i) => mStateMap.set(s, aMappedStates[i]));
+    }
+
     return aItems.map((oItem) => {
-        const sAmountField = oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.PEM_PINDAH ? 'ACTUAL_AMOUNT' : 'AMOUNT';
-        const sReceiptDateField = oItem.RECEIPT_DATE ? 'RECEIPT_DATE' : 'BILL_DATE';
+      const sAmountField = oItem.CLAIM_TYPE_ITEM_ID === Constant.ClaimTypeItem.PEM_PINDAH ? 'ACTUAL_AMOUNT' : 'AMOUNT';
+      const sReceiptDateField = oItem.RECEIPT_DATE ? 'RECEIPT_DATE' : 'BILL_DATE';
 
-        // Mirrors the flight-duration calculation done on save in
-        // ClaimSubmission.controller.js#onSave_ClaimDetails_Input
-        let vTravelHours;
-        if (oItem.DEPARTURE_TIME && oItem.ARRIVAL_TIME) {
-            const iDiffMs = new Date(oItem.ARRIVAL_TIME).getTime() - new Date(oItem.DEPARTURE_TIME).getTime();
-            vTravelHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
-        }
+      // Mirrors the flight-duration calculation done on save in
+      // ClaimSubmission.controller.js#onSave_ClaimDetails_Input
+      let vTravelHours;
+      if (oItem.DEPARTURE_TIME && oItem.ARRIVAL_TIME) {
+        const iDiffMs = new Date(oItem.ARRIVAL_TIME).getTime() - new Date(oItem.DEPARTURE_TIME).getTime();
+        vTravelHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+      }
 
-        const oMapping = {
-            [sAmountField]: 'ELIGIBLE_AMOUNT',
-            NO_OF_DAYS: 'TRAVEL_DAYS_ID',
-            FARE_TYPE_ID: 'FARE_TYPE_ID',
-            VEHICLE_CLASS_ID: 'TRANSPORT_CLASS',
-            FLIGHT_CLASS: 'FLIGHT_CLASS_ID',
-            ROOM_TYPE: 'ROOM_TYPE_ID',
-            MOBILE_CATEGORY_PURPOSE_ID: 'MOBILE_PHONE_BILL',
-            [sReceiptDateField]: 'RECEIPT_DATE',
-            REGION: 'REGION_ID',
-            TOTAL_TRAVELLER: 'TOTAL_TRAVELLER',
-            LODGING_CATEGORY: 'LODGING_CATEGORY',
-            FUNERAL_TRANSPORTATION: 'FUNERAL_TRANSPORTATION',
-            DEPENDENT_TYPE_ID: 'DEPENDENT_TYPE',
-            VEHICLE_OWNERSHIP_ID: 'VEHICLE_OWNERSHIP_ID',
-            COUNTRY: 'COUNTRY',
-            INSURANCE_PACKAGE_ID: 'INSURANCE_PACKAGE_ID',
-            DEPENDENT: 'DEPENDENT',
-            PHONE_NO: 'PHONE_NO',
-            TO_STATE_ID: 'TO_STATE_ID',
-            DEPENDENT_NATIONAL_ID: 'DEPENDENT_NATIONAL_ID',
-            POLICY_START_DATE: 'POLICY_START_DATE',
-            POLICY_YEAR: 'POLICY_YEAR'
-        };
+      // WILAYAH_ASAL: use mapped STATE_ID; other claim types: original value
+      const oSource = {
+        ...oItem,
+        TO_STATE_ID: mStateMap.get(oItem.TO_STATE_ID) ?? oItem.TO_STATE_ID
+      };
 
-        const aCheckFields = Object.entries(oMapping).map(([sColumn, sTargetName]) => ({
-            fieldName: sTargetName,
-            value: String(oItem[sColumn]),
-            result: null
-        }));
+      const oMapping = {
+        [sAmountField]: 'ELIGIBLE_AMOUNT',
+        NO_OF_DAYS: 'TRAVEL_DAYS_ID',
+        FARE_TYPE_ID: 'FARE_TYPE_ID',
+        VEHICLE_CLASS_ID: 'TRANSPORT_CLASS',
+        FLIGHT_CLASS: 'FLIGHT_CLASS_ID',
+        ROOM_TYPE: 'ROOM_TYPE_ID',
+        MOBILE_CATEGORY_PURPOSE_ID: 'MOBILE_PHONE_BILL',
+        [sReceiptDateField]: 'RECEIPT_DATE',
+        REGION: 'REGION_ID',
+        TOTAL_TRAVELLER: 'TOTAL_TRAVELLER',
+        LODGING_CATEGORY: 'LODGING_CATEGORY',
+        FUNERAL_TRANSPORTATION: 'FUNERAL_TRANSPORTATION',
+        DEPENDENT_TYPE_ID: 'DEPENDENT_TYPE',
+        VEHICLE_OWNERSHIP_ID: 'VEHICLE_OWNERSHIP_ID',
+        COUNTRY: 'COUNTRY',
+        INSURANCE_PACKAGE_ID: 'INSURANCE_PACKAGE_ID',
+        DEPENDENT: 'DEPENDENT',
+        PHONE_NO: 'PHONE_NO',
+        TO_STATE_ID: 'TO_STATE_ID',
+        DEPENDENT_NATIONAL_ID: 'DEPENDENT_NATIONAL_ID',
+        POLICY_START_DATE: 'POLICY_START_DATE',
+        POLICY_YEAR: 'POLICY_YEAR'
+      };
 
-        aCheckFields.push({
-            fieldName: 'TRAVEL_HOURS',
-            value: String(vTravelHours),
-            result: null
-        });
+      const aCheckFields = Object.entries(oMapping).map(([sColumn, sTargetName]) => ({
+        fieldName: sTargetName,
+        value: String(oSource[sColumn]),
+        result: null
+      }));
 
-        return {
-            EmpId: oHeader.EMP_ID,
-            RecordId: sClaimId,
-            RecordSubId: oItem.CLAIM_SUB_ID,
-            ClaimType: oHeader.CLAIM_TYPE_ID,
-            ClaimTypeItem: oItem.CLAIM_TYPE_ITEM_ID,
-            CheckFields: aCheckFields
-        };
+      aCheckFields.push({
+        fieldName: 'TRAVEL_HOURS',
+        value: String(vTravelHours),
+        result: null
+      });
+
+      return {
+        EmpId: oHeader.EMP_ID,
+        RecordId: sClaimId,
+        RecordSubId: oItem.CLAIM_SUB_ID,
+        ClaimType: oHeader.CLAIM_TYPE_ID,
+        ClaimTypeItem: oItem.CLAIM_TYPE_ITEM_ID,
+        CheckFields: aCheckFields
+      };
     });
-  }
+  },
 
+  /**
+   * Maps an incoming state value (e.g. from the employee master / SuccessFactors)
+   * to the eClaim STATE_ID using the mapping column in ZSTATE.
+   * @param {string} sStateId - Incoming state value to map.
+   * @param {object} oTx    - Active CAP transaction (cds.tx / req context).
+   * @returns {Promise<string>} Mapped STATE_ID, or the original value if unmapped.
+   */
+  _mapStateOfOrigin: async function (sStateId, oTx) {
+    // 1. Guard: nothing to map
+    if (!sStateId) return sStateId;
+
+    const ZSTATE = cds.entities['eclaim_srv.ZSTATE'];
+    const sValue = String(sStateId).trim();
+
+    // 2. If the value is already a valid STATE_ID, keep it
+    const oMapped = await oTx.run(
+      SELECT.one.from(ZSTATE)
+        .columns('STATE_ID')
+        .where({ STATE_OF_ORIGIN_ID: sValue })
+    );
+
+    return oMapped?.STATE_ID ?? sStateId;
+  }
 };
