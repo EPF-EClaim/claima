@@ -208,8 +208,7 @@ sap.ui.define([
 						"ROOM_TYPE_ID": "i_room_type",
 						"FLIGHT_CLASS_ID": "i_flight_class",
 						"MARRIAGE_CATEGORY": "i_marriage_cat",
-						"TRANSPORT_CLASS": "i_vehicle_class",
-						"VEHICLE_OWNERSHIP_ID": "i_vehicle_ownership"
+						"TRANSPORT_CLASS": "i_vehicle_class"
 					};
 					break;
 

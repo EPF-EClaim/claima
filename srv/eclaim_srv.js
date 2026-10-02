@@ -4820,16 +4820,10 @@ module.exports = (srv) => {
             ] || 0
         );
 
-        const fRemaining = fEligibleAmount - fConsumedAmount;
-
-        console.log("fEligibleAmount:", fEligibleAmount);
-        console.log("fConsumedAmount:", fConsumedAmount);
-        console.log("fRemaining:", fRemaining);
-
         return {
             entitlement: fEligibleAmount,
             approved: fConsumedAmount,
-            remaining: Math.max(0, fRemaining)
+            remaining: Math.max(0, (fEligibleAmount - fConsumedAmount).toFixed(2))
         };
     });
 
