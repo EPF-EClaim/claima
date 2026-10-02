@@ -3121,10 +3121,9 @@ sap.ui.define([
 				this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
 			});
 
-			// set attachment 1 field to be required (mandatory)
-			var bIsCorpoCCReset = String(this._oReqModel.getProperty("/req_header/claimtype")) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
-			this.byId("i_attachment_1_file").setRequired(!bIsCorpoCCReset);
-
+			// attachment 1 "required" state is driven by the expression binding in req_create_item.fragment.xml
+			// (not mandatory for Corporate CC, or for KWSP Office location without toll)
+			this._oReqModel.refresh(true);
 		},
 
 		/**
