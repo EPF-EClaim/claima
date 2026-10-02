@@ -279,7 +279,7 @@ sap.ui.define([
 					case Constants.SubmissionTypePrefix.REQUEST:
 						if (sTarget === "doc1") {
 							this._oView.byId("i_attachment_1_file")?.clear();
-							this._oView.byId("i_attachment_1_file").setRequired(true);
+							// required state is handled by the expression binding (KWSP Office / toll rule)
 							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
 								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}
