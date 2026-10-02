@@ -1058,7 +1058,7 @@ sap.ui.define([
          * @param {string|null|undefined} sAltCCDesc - Alternate Cost Center description.
          * @returns {string} Formatted Alternate Cost Center display value.
          */ 
-        setAlternateCostCenter: async function (sAltCC, sAltCCDesc) {
+        setAlternateCostCenter: function (sAltCC, sAltCCDesc) {
             const sCostCenter = sAltCC || "";
             const sDescription = sAltCCDesc || "";
             
