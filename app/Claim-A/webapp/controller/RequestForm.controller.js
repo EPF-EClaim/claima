@@ -558,20 +558,8 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
-
-										var aMessages = [];
-										if (aInsufficientItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-										if (aNotFoundItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-
-										if (aMessages.length > 0) {
-											MessageBox.error(aMessages.join("\n"));
-										}
+										// Message is built on the server (srv/workflow/workflow-helper.js > buildBudgetErrorMessage): 'Budget not found' and/or 'Insufficient budget'
+										MessageBox.error(oResponse.Message || Utility.getText("req_tm_e_budget_check_failed"));
 										break;
 
 									default:
