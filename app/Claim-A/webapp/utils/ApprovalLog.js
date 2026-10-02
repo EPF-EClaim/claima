@@ -72,12 +72,17 @@ sap.ui.define([
 					}
 				});
 
-				if (submission_type == Constants.WorkflowType.CLAIM) {
-					if (
-						sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH ||
-						sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL
-					) {
-						a[0].LEVEL = Constants.SpecialApprover.VERIFIER;
+				// For Elaun Pindah / Wilayah Asal, the first approver is the Verifier.
+				// Applies to both Claim (CLM) and Pre-Approval Request (REQ).
+				if (
+					(submission_type == Constants.WorkflowType.CLAIM ||
+						submission_type == Constants.WorkflowType.REQUEST) &&
+					(sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH ||
+						sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL)
+				) {
+					const oFirstApprover = a.find((item) => Number(item.LEVEL) === 1);
+					if (oFirstApprover) {
+						oFirstApprover.LEVEL = Constants.SpecialApprover.VERIFIER;
 					}
 				}
 
