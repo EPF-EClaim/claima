@@ -356,6 +356,42 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         return err;
     }
 }
+/**
+ * Builds a readable error message from budget checking results, distinguishing
+ * budget records that were not found from budgets with insufficient balance.
+ *
+ * Used by:
+ *  - pre-workflow-checks.js (request/claim submission)
+ *  - ../workflow-srv.js (auto-approval, final approval, reject, push back)
+ *
+ * @param {Array} aBudgetResults - results returned by performBudgetChecking
+ *                                 (each with STATUS and CLAIM_TYPE_ITEM)
+ * @returns {string|null} error message, or null when there is no budget error
+ */
+function buildBudgetErrorMessage(aBudgetResults) {
+    if (!Array.isArray(aBudgetResults)) {
+        return null;
+    }
+
+    const fnItems = (sStatus) => [...new Set(
+        aBudgetResults
+            .filter(r => r.STATUS === sStatus)
+            .map(r => r.CLAIM_TYPE_ITEM || "-")
+    )].join(", ");
+
+    const aMessages = [];
+    const sNotFoundItems = fnItems(Constant.BudgetCheckStatus.NOT_FOUND);
+    const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
+
+    if (sNotFoundItems) {
+        aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
+    }
+    if (sInsufficientItems) {
+        aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
+    }
+
+    return aMessages.length ? aMessages.join("\n") : null;
+}
 async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     let aApproversContext = [];
     const aApproversDetails = await cds.run(
@@ -432,6 +468,7 @@ module.exports = {
     retrieveItems,
     generateReturnMessage,
     performBudgetChecking,
+    buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRoleRank,
     retrieveRejectReasonDesc,

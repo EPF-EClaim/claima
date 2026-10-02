@@ -17,6 +17,7 @@ const {
 const {
     retrieveBudgetContext,
     performBudgetChecking,
+    buildBudgetErrorMessage,
     generateReturnMessage
 } = require("./workflow-helper");
 
@@ -61,10 +62,11 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
         aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
 
-        const oInvalidBudget = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND || r.STATUS === Constant.BudgetCheckStatus.INSUFFICIENT);
-        if (oInvalidBudget) {
+        // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
+        const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
+        if (sBudgetError) {
             await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, aBudgetCheckReturn, false);
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
         }
     } catch (oError) {
         await oTx.rollback();

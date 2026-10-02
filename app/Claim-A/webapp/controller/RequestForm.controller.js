@@ -558,20 +558,8 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
-
-										var aMessages = [];
-										if (aInsufficientItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-										if (aNotFoundItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-
-										if (aMessages.length > 0) {
-											MessageBox.error(aMessages.join("\n"));
-										}
+										// Message is built on the server (srv/workflow/workflow-helper.js > buildBudgetErrorMessage): 'Budget not found' and/or 'Insufficient budget'
+										MessageBox.error(oResponse.Message || Utility.getText("req_tm_e_budget_check_failed"));
 										break;
 
 									default:
@@ -2379,9 +2367,13 @@ sap.ui.define([
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE),
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
 						new Filter("CATEGORY_ID", FilterOperator.NE, "X"),			// filter out claim type item that is not required for PAR
-						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)	// POTONGAN_ELAUN is not selectable on a pre-approval request
-						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
-						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
+						new Filter({
+							filters: [
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN),
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.TIPS)
+							],
+							and: true
+						})
 					],
 					{
 						$$ownRequest: true,
@@ -3121,10 +3113,9 @@ sap.ui.define([
 				this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
 			});
 
-			// set attachment 1 field to be required (mandatory)
-			var bIsCorpoCCReset = String(this._oReqModel.getProperty("/req_header/claimtype")) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
-			this.byId("i_attachment_1_file").setRequired(!bIsCorpoCCReset);
-
+			// attachment 1 "required" state is driven by the expression binding in req_create_item.fragment.xml
+			// (not mandatory for Corporate CC, or for KWSP Office location without toll)
+			this._oReqModel.refresh(true);
 		},
 
 		/**

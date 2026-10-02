@@ -13,6 +13,7 @@ const {
     retrieveBudgetContext,
     generateReturnMessage,
     performBudgetChecking,
+    buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
     logWorkflowHistory
@@ -76,10 +77,10 @@ module.exports = (srv) => {
                 throw new Error(`Error encountered during Budget Actualization\n${oError.message}`);
             }
 
-            var oReturn = aBudgetCheckReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            if (oReturn) {
+            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
+            if (sBudgetError) {
                 await oTx.rollback();
-                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, 'Error encountered during Budget Checking', false);
+                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, `Error encountered during Budget Checking\n${sBudgetError}`, false);
             }
 
             // If successful, update Header table with approved status and timestamp
@@ -203,10 +204,10 @@ module.exports = (srv) => {
             console.log("aBudgetContext: ", aBudgetContext);
             const aReturn = await performBudgetChecking(oTx, aBudgetContext);
             console.log("aReturn: ", aReturn);
-            const oReturn = aReturn.find(r => r.STATUS === Constant.BudgetCheckStatus.NOT_FOUND);
-            if (oReturn) {
+            const sBudgetError = buildBudgetErrorMessage(aReturn);
+            if (sBudgetError) {
                 bStatus = false;
-                throw new Error('Error encountered during Budget Checking')
+                throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
             }
             console.log("Budget Checking Status: ", bStatus);
         }

@@ -331,24 +331,16 @@
                                         required="{=
                                             !${request>/req_item/doc1_filename}
                                             &amp;&amp;
+                                            ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD}
+                                            &amp;&amp;
                                             (
+                                                ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
+                                                ||
                                                 (
-                                                    ${request>/req_item/doc1} === null
+                                                    parseFloat(${request>/req_item/toll_amt}) > 0.00
                                                     &amp;&amp;
-                                                    (
-                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
-                                                        ||
-                                                        (
-                                                            parseFloat(${request>/req_item/toll_amt}) > 0.00
-                                                            &amp;&amp;
-                                                            ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}
-                                                        )
-                                                    )
+                                                    ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}
                                                 )
-                                                ||
-                                                ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}
-                                                ||
-                                                ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD}
                                             )
                                         }"
                                         maximumFileSize="5.0"
@@ -1773,7 +1765,7 @@
                                     searchKeys: ['EEID', 'NAME', 'CC'],
                                     columns: [
                                         '{i18n>valuehelp_claiminput_altcc_col_id}',
-                                        '{i18n>valuehelp_claiminput_altcc_col_name}',
+                                        '{i18n>valuehelp_claiminput_participant_name}',
                                         'Cost Center'
                                     ],
                                     openOnClick: true

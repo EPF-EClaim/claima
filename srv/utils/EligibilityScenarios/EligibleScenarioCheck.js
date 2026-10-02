@@ -44,7 +44,9 @@ module.exports = {
       return a.GRADE - b.GRADE;
     });
 
-    aEmpData = await this._mapJobCodeToOldJobGroup(aEmpData, tx);
+    // Called via module.exports (not this) because callers such as
+    // workflow/pre-workflow-checks.js destructure onEligibilityCheck, which loses `this`
+    aEmpData = await module.exports._mapJobCodeToOldJobGroup(aEmpData, tx);
 
     // Get employee grade
     let aPersonalGrade = aEmpData.map((d) => d.GRADE);
