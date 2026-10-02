@@ -29,7 +29,7 @@ sap.ui.define([
             let submission_type = sId.substring(0,3);
             let oListBinding;
 
-            if (submission_type === "REQ") {
+            if (submission_type === Constants.SubmissionTypePrefix.REQUEST) {
                 oListBinding = oViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
                     null,[new Filter("PREAPPROVAL_ID", "EQ", sId)],
                     {
@@ -38,7 +38,7 @@ sap.ui.define([
                         $$updateGroupId: "$auto"
                     }
                 );
-            } else if (submission_type === "CLM") {
+            } else if (submission_type === Constants.SubmissionTypePrefix.CLAIM) {
                 oListBinding = oViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
                     null,[new Filter("CLAIM_ID", "EQ", sId)],
                     {
