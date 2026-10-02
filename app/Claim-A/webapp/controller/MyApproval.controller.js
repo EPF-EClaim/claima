@@ -7,7 +7,8 @@ sap.ui.define([
     "sap/ui/model/Sorter",
     "claima/utils/Utility",
     "claima/utils/PARequestSharedFunction",
-	"claima/utils/ClaimUtility"
+	"claima/utils/ClaimUtility",
+	"claima/utils/DateUtility"
 ], function (Controller,
 	MessageToast,
 	JSONModel,
@@ -16,7 +17,8 @@ sap.ui.define([
 	Sorter,
 	Utility,
 	PARequestSharedFunction,
-    ClaimUtility) {
+    ClaimUtility,
+	DateUtility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -318,6 +320,9 @@ sap.ui.define([
                 aItems.forEach((it) => {
                     if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
                     if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+                    // DB value is UTC; convert to local time in the DateTimePicker's format
+                    it.DEPARTURE_TIME = DateUtility.formatDate(it.DEPARTURE_TIME, "dd MMM yyyy HH:mm") || null;
+                    it.ARRIVAL_TIME = DateUtility.formatDate(it.ARRIVAL_TIME, "dd MMM yyyy HH:mm") || null;
                 });
 
                 // Recompute the amounts (same logic you had)
@@ -625,13 +630,13 @@ sap.ui.define([
                     material_code: it.MATERIAL_CODE,
                     vehicle_ownership_id: it.VEHICLE_OWNERSHIP_ID,
                     actual_amount: it.ACTUAL_AMOUNT,
-                    arrival_time: it.ARRIVAL_TIME,
+                    arrival_time: DateUtility.formatDate(it.ARRIVAL_TIME, "dd MMM yyyy HH:mm") || null,
                     claim_type_id: it.CLAIM_TYPE_ID,
                     course_title: it.COURSE_TITLE,
                     currency_amount: it.CURRENCY_AMOUNT,
                     currency_code: it.CURRENCY_CODE,
                     currency_rate: it.CURRENCY_RATE,
-                    departure_time: it.DEPARTURE_TIME,
+                    departure_time: DateUtility.formatDate(it.DEPARTURE_TIME, "dd MMM yyyy HH:mm") || null,
                     dependent: it.DEPENDENT,
                     emp_id: it.EMP_ID,
                     fare_type_id: it.FARE_TYPE_ID,
