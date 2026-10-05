@@ -2,8 +2,9 @@ sap.ui.define([
   "sap/m/MessageToast",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter"
-], function (MessageToast, Filter, FilterOperator, Sorter) {
+  "sap/ui/model/Sorter",
+  "claima/utils/DateUtility"
+], function (MessageToast, Filter, FilterOperator, Sorter, DateUtility) {
   "use strict";
 
   // ---- Pure helpers (no UI) ----
@@ -68,6 +69,9 @@ sap.ui.define([
     a.forEach(it => {
       if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
       if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+      // DB value is UTC; convert to local time in the DateTimePicker's format
+      it.DEPARTURE_TIME = DateUtility.formatDate(it.DEPARTURE_TIME, "dd MMM yyyy HH:mm") || null;
+      it.ARRIVAL_TIME = DateUtility.formatDate(it.ARRIVAL_TIME, "dd MMM yyyy HH:mm") || null;
     });
     return a;
   }
