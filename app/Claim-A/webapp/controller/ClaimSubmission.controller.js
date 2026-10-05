@@ -2276,7 +2276,7 @@ sap.ui.define([
 				//changes here
 				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				} else if (!!oInputModel.getProperty("/claim_item/dependent")) {
+				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
