@@ -305,7 +305,8 @@ sap.ui.define([
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT;
 			if (bApproval) {
-				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
+				var sClaimTypeId = this._oReqModel.getProperty("/req_header/claimtype");
+				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId, sClaimTypeId);
 
 				var sCurrentUserId = this._oSessionModel.getProperty("/userId");
 				var sRequestOwnerId = this._oReqModel.getProperty("/req_header/empid");
@@ -1310,7 +1311,8 @@ sap.ui.define([
 					PARTICIPANTS_ID: oData.user.emp_id,
 					PARTICIPANT_NAME: oData.user.name,
 					PARTICIPANT_COST_CENTER: oData.user.cost_center,
-					ALLOCATED_AMOUNT: ""
+					ALLOCATED_AMOUNT: "",
+					_EDIT_MODE: "Display"
 				}];
 			} else {
 				oData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
