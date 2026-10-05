@@ -2699,6 +2699,62 @@ sap.ui.define([
 						and: true
 					})
 
+				case this._oConstant.ClaimTypeItem.KEMATIAN:
+					// Bantuan Kebajikan Kematian - only Spouse (01), Additional Spouse (07) and eligible Child (02)
+					// Child is eligible if:
+					//   (a) below 18 years old AND not employed, OR
+					//   (b) below 24 years old AND a student
+					var d18YearsAgo = DateUtility.today();
+					d18YearsAgo.setFullYear(d18YearsAgo.getFullYear() - 18);
+					var s18YearsAgo = d18YearsAgo.toLocaleDateString("en-CA");
+
+					var d24YearsAgo = DateUtility.today();
+					d24YearsAgo.setFullYear(d24YearsAgo.getFullYear() - 24);
+					var s24YearsAgo = d24YearsAgo.toLocaleDateString("en-CA");
+
+					var oKematianSpouseFilter = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.ADDITIONAL_SPOUSE)
+						],
+						and: false
+					});
+
+					// Child below 18 and not employed (EMPLOYED = false)
+					var oKematianChildBelow18 = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, s18YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.EMPLOYED, FilterOperator.EQ, false)
+						],
+						and: true
+					});
+
+					// Child below 24 and a student
+					var oKematianChildStudent = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, s24YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oKematianSpouseFilter,
+									oKematianChildBelow18,
+									oKematianChildStudent
+								],
+								and: false
+							})
+						],
+						and: true
+					})
+
 				default:
 					return new Filter({
 						filters: [
