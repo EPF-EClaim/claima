@@ -2276,7 +2276,7 @@ sap.ui.define([
 				//changes here
 				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
+				} else if (!!oInputModel.getProperty("/claim_item/dependent")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
@@ -3351,29 +3351,52 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_Input_Attachment: function (oEvent, fieldNumber) {
-			// check if file can be uploaded
-			var fileName = oEvent.getSource().getValue();
-			var domRef = oEvent.getSource().getFocusDomRef();
-			var file = domRef.files[0];
-			var reader = new FileReader();
+		/**
+		 * Stores the selected attachment (base64) in the input model, or discards it
+		 * when the selection is cleared via the FileUploader's clear ("X") icon
+		 * @public
+		 * @param {sap.ui.base.Event} oEvent - FileUploader change event
+		 * @param {String} sFieldNumber - Attachment field number ("1" - "4")
+		 */
+		onChange_ClaimDetails_Input_Attachment: function (oEvent, sFieldNumber) {
 			const oInputModel = this.getView().getModel("claimitem_input");
+			const oFileUploader = oEvent.getSource();
+			const sAttachmentPath = "/attachments/attachment" + sFieldNumber;
+			const sDeletePath = "/claim_item/attachment_file_" + sFieldNumber + "_delete";
 
-			reader.addEventListener("load", () => {
-				if (oInputModel) {
-					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileName", fileName);
-					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
-					
+			const sFileName = oEvent.getParameter("newValue");
+			const aFiles = oEvent.getParameter("files") || [];
+			const oFile = aFiles[0];
+
+			if (!oInputModel) {
+				return;
+			}
+
+			// File removed via the FileUploader's clear ("X") icon -> discard the pending upload
+			if (!sFileName || !oFile) {
+				oInputModel.setProperty(sAttachmentPath + "/fileName", null);
+				oInputModel.setProperty(sAttachmentPath + "/fileContent", null);
+				return;
+			}
+
+			// New file selected -> cancel any pending deletion of the existing attachment
+			if (oInputModel.getProperty(sDeletePath)) {
+				oInputModel.setProperty(sDeletePath, null);
+			}
+
+			const oFileReader = new FileReader();
+
+			oFileReader.addEventListener("load", () => {
+				// Ignore stale reads if the selection was cleared/changed while reading
+				if (oFileUploader.getValue() !== sFileName) {
+					return;
 				}
+				const sFileContent = oFileReader.result.replace("data:" + oFile.type + ";base64,", "");
+				oInputModel.setProperty(sAttachmentPath + "/fileName", sFileName);
+				oInputModel.setProperty(sAttachmentPath + "/fileContent", sFileContent);
 			});
 
-			if (oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber + "_delete")) {
-				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber + "_delete", null)
-			}
-
-			if (file) {
-				reader.readAsDataURL(file);
-			}
+			oFileReader.readAsDataURL(oFile);
 		},
 
 		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
@@ -4264,8 +4287,8 @@ sap.ui.define([
 				}
  
 				// clear fileuploader fields
-				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+				for (let i = 1; i <= 4; i++) { // 4 attachment fields per claim item
+					this.byId("fileuploader_claimdetails_input_attachment_file_" + i)?.clear();
 				}
  
 				oPage.removeContent(oClaimItemFragment);
