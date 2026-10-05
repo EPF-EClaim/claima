@@ -762,11 +762,6 @@ sap.ui.define([
             "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
             "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         },
-        "RelationshipType": {
-            "SPOUSE": "01",
-            "CHILD": "02",
-            "ADDITIONAL_SPOUSE": "07"
-        },
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"

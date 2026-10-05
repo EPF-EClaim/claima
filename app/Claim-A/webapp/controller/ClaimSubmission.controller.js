@@ -2514,8 +2514,22 @@ sap.ui.define([
 
 		},
 
+		/**
+		* Build the filter used for the Dependent selection fields (single Select and MultiComboBox)
+		* in the claim item detail screen. Dependents are always restricted to the claimant
+		* (claim header EMP_ID), with extra eligibility rules depending on the selected claim type item:
+		* - POST_EDUCATION_ASSISTANCE (PEDU): children only
+		* - FLIGHT_WIL: spouse, children below 18, or children aged 19-25 who are students
+		*   (ages are calculated from 1 January of the current year)
+		* - LAUT: spouse, child or additional spouse
+		* - INSURANCE / MED_ADVANCE: medical beneficiaries only, i.e. spouse / additional spouse,
+		*   children aged 25 and below who are students, or disabled children (no age/student check)
+		* - Others (e.g. KEMATIAN): all dependents of the claimant
+		* @private
+		* @returns {sap.ui.model.Filter} combined filter to apply on the ZEMP_DEPENDENT items binding
+		*/
 		_getDependentFilters: function () {
-			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
@@ -2586,9 +2600,9 @@ sap.ui.define([
 				case this._oConstant.ClaimTypeItem.LAUT: 
 					var oDependentRuleFilter = new Filter({
 						filters: [
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.SPOUSE),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.CHILD),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.ADDITIONAL_SPOUSE)
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.ADDITIONAL_SPOUSE)
 						],
 						and: false
 					});
