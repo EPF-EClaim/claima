@@ -568,7 +568,7 @@
                         uploadComplete="onUploadComplete_ClaimInput_Attachment"
                         maximumFileSize='5.0'
                         fileSizeExceed="onFileSizeExceed_ClaimInput_Attachment"
-                        mimeType="application/pdf,image/png,image/jpeg"
+                        fileType="jpg, pdf, png"
                         typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
                         multiple="false"
                         style="Emphasized"

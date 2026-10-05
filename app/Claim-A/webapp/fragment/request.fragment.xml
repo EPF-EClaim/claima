@@ -542,7 +542,7 @@
 				<unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
-					mimeType="application/pdf,image/png,image/jpeg"
+					fileType="jpg, pdf, png"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
 					visible="false"
@@ -551,7 +551,7 @@
 				<unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
-					mimeType="application/pdf,image/png,image/jpeg"
+					fileType="jpg, pdf, png"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc2}"
 					visible="false"

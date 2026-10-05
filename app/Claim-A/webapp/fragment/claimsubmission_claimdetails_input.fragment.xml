@@ -1751,7 +1751,7 @@
                     uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
                     maximumFileSize='5.0'
                     fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
+                    fileType="jpg, pdf, png"
                     typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
                     multiple="false"
                     style="Emphasized"
@@ -1815,7 +1815,7 @@
                     uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
                     maximumFileSize='5.0'
                     fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
+                    fileType="jpg, pdf, png"
                     typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
                     multiple="false"
                     style="Emphasized"
@@ -1897,7 +1897,7 @@
                     uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
                     maximumFileSize='5.0'
                     fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
+                    fileType="jpg, pdf, png"
                     typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
                     multiple="false"
                     style="Emphasized"
@@ -1946,7 +1946,7 @@
                     uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
                     maximumFileSize='5.0'
                     fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
+                    fileType="jpg, pdf, png"
                     typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
                     multiple="false"
                     style="Emphasized"
