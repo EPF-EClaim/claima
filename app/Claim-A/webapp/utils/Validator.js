@@ -33,7 +33,7 @@ sap.ui.define(
 				"cells",
 				"_page"
 			];
-			this._aValidateProperties = ["value", "selectedKey", "selectedKeys", "text", "dateValue"]; // yes, I want to validate Select and Text controls too
+			this._aValidateProperties = ["value", "selectedKey", "selectedKeys", "text", "dateValue", "selected"]; // yes, I want to validate Select and Text controls too | added CheckBox validation.
 			this._oMessageModel = new JSONModel();
 		};
 
@@ -102,7 +102,8 @@ sap.ui.define(
 						oControl instanceof sap.m.Select ||
 						oControl instanceof sap.m.Input ||
 						oControl instanceof sap.ui.unified.FileUploader ||
-						oControl instanceof sap.m.IconTabFilter) &&
+						oControl instanceof sap.m.IconTabFilter ||
+						oControl instanceof sap.m.CheckBox) &&
 					oControl.getVisible()
 				)) {
 				return;
