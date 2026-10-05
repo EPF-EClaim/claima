@@ -3307,9 +3307,10 @@ sap.ui.define([
 			const oFileUploader = oEvent.getSource();
 			const sAttachmentPath = "/attachments/attachment" + sFieldNumber;
 			const sDeletePath = "/claim_item/attachment_file_" + sFieldNumber + "_delete";
-			const sFileName = oEvent.getParameter("newValue") ?? oFileUploader.getValue();
-			const aFiles = oEvent.getParameter("files");
-			const oFile = (aFiles && aFiles[0]) || oFileUploader.getFocusDomRef()?.files?.[0];
+
+			const sFileName = oEvent.getParameter("newValue");
+			const aFiles = oEvent.getParameter("files") || [];
+			const oFile = aFiles[0];
 
 			if (!oInputModel) {
 				return;
