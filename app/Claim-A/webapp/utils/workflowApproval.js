@@ -57,7 +57,6 @@ sap.ui.define([
                 BusyIndicator.hide();
             }
             
-            console.log(oResponse);
             return oResponse
         },
 
@@ -82,7 +81,6 @@ sap.ui.define([
                 BusyIndicator.hide();
             }
             
-            console.log(oResponse);
             return oResponse
         },
     }    

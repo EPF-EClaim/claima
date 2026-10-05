@@ -39,7 +39,6 @@ function resolveDocDescriptor(sId) {
     const sPrefix = sId.slice(0,3);
 
     const oDescriptor = aEntityTableByPrefix[sPrefix]
-    //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
     return oDescriptor
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
@@ -418,13 +417,11 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
         if(!oEmployeeDetails) {
             return null;
         }
-        console.log("Employee Details: ", oEmployeeDetails);
         if(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]){
             oSubEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID]);
             sSubEEID = oSubEmployeeDetails ?? null;
             sSubName = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.NAME] : null;
             sSubEmail = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.EMAIL] : null;
-            console.log("Substitute Employee Details: ", oSubEmployeeDetails);  
         }
         aApproversContext.push({
             APPROVER_EEID   : oEmployeeDetails[Constant.EntitiesFields.EEID],

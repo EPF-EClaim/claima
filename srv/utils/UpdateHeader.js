@@ -291,7 +291,7 @@ module.exports = {
                             break;
                     }
                 } catch (error) {
-                    console.error(`Background task failed for Request ID ${sRequestId}: ${error.message}`);
+                    return req.err(`Background task failed for Request ID ${sRequestId}: ${error.message}`);
                 }
             });
         }

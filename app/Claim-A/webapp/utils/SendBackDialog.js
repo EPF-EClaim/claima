@@ -68,9 +68,6 @@ sap.ui.define([
         new Filter("REASON_TYPE", FilterOperator.EQ, "SENDBACK"),
         new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
       ]);
-    } else {
-      // eslint-disable-next-line no-console
-      console.warn("[SendBackDialog] items binding not found on sendBackReasonSelect.");
     }
   }
 

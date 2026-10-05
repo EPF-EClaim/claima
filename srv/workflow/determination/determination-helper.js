@@ -94,7 +94,6 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
     let sEEID = "";
 
     // Fetch data
-    console.log("Start Budget check");
     oBudgetContext = await cds.run(
         SELECT
             .one
@@ -141,7 +140,6 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
     let sEEID = "";
 
     // Fetch data
-    console.log("Start Project Code check");
     oBudgetContext = await cds.run(
         SELECT
             .one
@@ -599,7 +597,6 @@ async function sendClaimBatch(sId){
         return { message: "Approved claim batch sent", oResponse };
 
     } catch (oError) {
-        console.log(500, `sendApprovedClaimBatch failed: ${oError?.message || oError}`);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
         await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);

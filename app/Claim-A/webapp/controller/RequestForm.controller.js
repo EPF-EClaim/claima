@@ -121,7 +121,6 @@ sap.ui.define([
 
 			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) { }
 
-			console.log("Deep-link request ID:", sRequestId);
 			const bAllowed = await Utility.checkClaimAccess(sRequestId);
 			if (!bAllowed) {
 				return;
@@ -176,7 +175,7 @@ sap.ui.define([
 					this._computeCorpoCardTotals();
 				}
 			} catch (error) {
-				console.log(error);
+				MessageBox.error(error);
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -204,7 +203,7 @@ sap.ui.define([
 				this._oReqModel.setProperty("/corpo_cards", aEnrichedCards);
 
 			} catch (e) {
-				console.error("Load corpo cards failed:", e);
+				this._oReqModel.setProperty("/corpo_cards", []);
 			}
 		},
 
@@ -944,7 +943,6 @@ sap.ui.define([
 						: [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }]
 				);
 			} catch (e) {
-				console.error("Load participants failed:", e);
 				setEmpty();
 			}
 		},
@@ -1124,7 +1122,6 @@ sap.ui.define([
 				return true;
 		
 			} catch (e) {
-				console.error("Delete item cascade failed:", e);
 				throw e;
 			}
 		},
@@ -2302,7 +2299,6 @@ sap.ui.define([
 				});
 
 			} catch (e) {
-				console.error("Excel export failed:", e);
 				MessageBox.error(Utility.getText("req_d_e_excel_export_failed"));
 			} finally {
 				oView.setBusy(false);
@@ -2330,7 +2326,6 @@ sap.ui.define([
 				const a = aCtx.map((ctx) => ctx.getObject());
 				return a;
 			} catch (err) {
-				console.error("OData V4 bindList failed:", err);
 				return [];
 			}
 		},
@@ -2391,7 +2386,6 @@ sap.ui.define([
 				return a;
 
 			} catch (err) {
-				console.error("ODataV4 load claim type items failed:", err);
 				this._oReqModel.setProperty("/claim_type_items", []);
 				return [];
 			} finally {
@@ -2406,7 +2400,9 @@ sap.ui.define([
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
 				this._oReqModel.setProperty('/ZEMP_DEPENDENT', aData);
-			}).catch(err => console.error("RequestType Load Failed", err));
+			}).catch(err => {
+				this._oReqModel.setProperty('/ZEMP_DEPENDENT', []);
+			});
 		},
 
 		calculateNumberOfHours() {
@@ -2507,7 +2503,7 @@ sap.ui.define([
 					RequestUtility.populateAllocatedAmount();
 				}
 			} catch (oError) {
-				console.error("Error fetching Rate Per KM detail", oError);
+				return;
 			}
 		},
 
@@ -2520,7 +2516,6 @@ sap.ui.define([
 			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
 			if (!sClaimTypeItem) {
-				console.warn("No claim type item found yet.");
 				return;
 			}
 
@@ -2547,7 +2542,6 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, 1);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for claim type item:", sClaimTypeItem);
 					this._setAllControlsVisible(false);
 					return;
 				}
@@ -2564,8 +2558,6 @@ sap.ui.define([
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
 							control.setVisible(true);
-						} else {
-							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
@@ -2599,8 +2591,6 @@ sap.ui.define([
 									const control = this._resolveControl(id, "request");
 									if (control && typeof control.setVisible === "function") {
 										control.setVisible(true);
-									} else {
-										console.warn("Control not found or not visible-capable:", id);
 									}
 								});
 							}
@@ -2630,7 +2620,7 @@ sap.ui.define([
 				}
 
 			} catch (err) {
-				console.error("OData bindList failed:", err);
+				return;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -2751,7 +2741,7 @@ sap.ui.define([
 					this._oDisclaimerGalakanDialog.open();
 
 				} catch (oError) {
-					console.error("Failed to load Disclaimer Galakan Dialog:", oError);
+					return;
 				}
 
 				return;
@@ -2851,7 +2841,7 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : ""
 					}
-					console.log("Payload for approval:", oPayload);
+					
 					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 					// 2. Close dialog
@@ -2898,17 +2888,15 @@ sap.ui.define([
 					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
-
-
 				// 1) Update approval rows + header, build dataset & email payloads
 				const oPayload = {
-						Id				: sReqId,
-						UserId			: sUserId,
-						ApproverAction	: Constants.ClaimStatus.SEND_BACK,
-						Comments		: sComment,
-						RejectionReason : sReason
-					}
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+					Id				: sReqId,
+					UserId			: sUserId,
+					ApproverAction	: Constants.ClaimStatus.SEND_BACK,
+					Comments		: sComment,
+					RejectionReason : sReason
+				}
+				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				// 3) Close dialog
 				if (this._sendBackDialog) {
@@ -2942,12 +2930,12 @@ sap.ui.define([
 				const sReqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
 				const oPayload = {
-						Id				: sReqId,
-						UserId			: this._oSessionModel.getProperty("/userId"),
-						ApproverAction	: Constants.ClaimStatus.REJECTED,
-						Comments		: sComment,
-						RejectionReason : sReason
-					}
+					Id				: sReqId,
+					UserId			: this._oSessionModel.getProperty("/userId"),
+					ApproverAction	: Constants.ClaimStatus.REJECTED,
+					Comments		: sComment,
+					RejectionReason : sReason
+				}
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				this._rejectDialog && this._rejectDialog.close();

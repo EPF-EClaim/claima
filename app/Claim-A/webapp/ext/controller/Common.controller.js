@@ -102,8 +102,6 @@ sap.ui.define([
 
 			if (sRouteName === "ZSUBSTITUTION_RULES_CONFIG") {
 
-				console.log("Entered ZSUBSTITUTION_RULES_CONFIG");
-
 				setTimeout(() => {
 
 					const oView = this.base && this.base.getView && this.base.getView();
@@ -125,7 +123,6 @@ sap.ui.define([
 					}
 
 					if (oTable._bEditOnCellClickAttachedV6) {
-						console.log("attachCellClick handler already attached V6");
 						return;
 					}
 
@@ -163,12 +160,9 @@ sap.ui.define([
 
 					const fnClearAllSelections = async function () {
 
-						console.log("ENTER fnClearAllSelections");
-
 						const oBinding = oTable.getBinding("rows");
 
 						if (!oBinding) {
-							console.log("Rows binding not found");
 							return;
 						}
 
@@ -182,9 +176,6 @@ sap.ui.define([
 
 						if (oHeaderContext && oHeaderContext.setSelected) {
 							await Promise.resolve(oHeaderContext.setSelected(false));
-							console.log("Header context selection cleared");
-						} else {
-							console.log("Header context setSelected not available");
 						}
 
 						/*
@@ -199,24 +190,18 @@ sap.ui.define([
 							aContexts = oBinding.getContexts(0, oTable.getVisibleRowCount && oTable.getVisibleRowCount());
 						}
 
-						console.log("Visible contexts found for fallback clear:", aContexts.length);
-
 						for (let i = 0; i < aContexts.length; i++) {
 							const oContext = aContexts[i];
 
 							if (oContext && oContext.setSelected) {
 								await Promise.resolve(oContext.setSelected(false));
-								console.log("Visible context deselected:", oContext.getPath && oContext.getPath());
 							}
 						}
 					};
 
 					const fnOpenStandardEditPopup = async function (oContext) {
 
-						console.log("ENTER fnOpenStandardEditPopup V6");
-
 						if (oTable._bOpeningStandardEditPopup) {
-							console.log("Edit popup already opening, skip duplicate click");
 							return;
 						}
 
@@ -224,11 +209,8 @@ sap.ui.define([
 
 						try {
 							if (!oContext) {
-								console.log("No context passed");
 								return;
 							}
-
-							console.log("Target context path:", oContext.getPath && oContext.getPath());
 
 							/*
 							 * Clear all old selections first.
@@ -244,9 +226,7 @@ sap.ui.define([
 							 */
 							if (oContext.setSelected) {
 								await Promise.resolve(oContext.setSelected(true));
-								console.log("Target row selected");
 							} else {
-								console.log("oContext.setSelected is not available");
 								return;
 							}
 
@@ -255,22 +235,16 @@ sap.ui.define([
 							const oEditButton = fnFindEditButton();
 
 							if (!oEditButton) {
-								console.log("No enabled Edit button found");
 								return;
 							}
 
-							console.log("Firing Edit button:", oEditButton.getId && oEditButton.getId());
-
 							oEditButton.firePress();
-
-							console.log("Edit button fired");
 
 						} catch (oError) {
 							console.error("Error opening standard edit popup:", oError);
 						} finally {
 							setTimeout(function () {
 								oTable._bOpeningStandardEditPopup = false;
-								console.log("Edit popup opening lock released");
 							}, 1000);
 						}
 					};

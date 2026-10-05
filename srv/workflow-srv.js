@@ -160,7 +160,6 @@ module.exports = (srv) => {
     });
 
     srv.on('processApproval', async req => {
-        console.log("Request Payload: ", req.data);
         const {
             Id: sRecordId,
             UserId: sUserId,
@@ -177,39 +176,31 @@ module.exports = (srv) => {
         if (!oActionDescriptor) {
             throw new Error(`Unsupported workflow action: ${sAction}`);
         }
-        console.log("ActionDescriptor: ", oActionDescriptor);
         // Verify if Approver is correct approver        
         bStatus = await verifyCorrectApproverForAction(sRecordId, sUserId, oDescriptor);
         if (!bStatus) {
             //Return error message
             throw new Error(`Invalid Approver ${sUserId} for Document ${sRecordId}`);
         }
-        console.log("Approver Validation: ", bStatus);
         // Check if approver is last level approver
         const oLastLevelApproverStatus = await determineLastApproverLevel(sRecordId, sUserId, oDescriptor);
 
-        console.log("Final Approver Context: ", oLastLevelApproverStatus);
         // Once Approver is validated, perform action
-        console.log("Rejection Reason: ", sRejectionReason);
         bStatus = await updateApproverDetailsTable(oTx, sRecordId, sUserId, oActionDescriptor, sComments, sRejectionReason, oDescriptor);
         if (!bStatus) {
             //Return error message
             throw new Error(`Error Encountered during action: ${sAction} for Document ${sRecordId}`);
         }
-        console.log("Approver Action Completed: ", bStatus);
 
         // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
         if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
             const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
-            console.log("aBudgetContext: ", aBudgetContext);
             const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            console.log("aReturn: ", aReturn);
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
                 bStatus = false;
                 throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
             }
-            console.log("Budget Checking Status: ", bStatus);
         }
 
         // update PEDU entitlement usage if action is reject
@@ -221,7 +212,6 @@ module.exports = (srv) => {
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
         if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
             const sStatus = await UpdateHeader.updateApproverActionToHeader(sRecordId, oActionDescriptor.actionValue, oTx);
-            console.log("Header table update: ", sStatus);
         }
 
         // Notify claimant/next level approver
@@ -235,7 +225,6 @@ module.exports = (srv) => {
             if (!sRejectionReasonDesc) {
                 throw new Error('Rejection reason is required for rejection or push back action');
             }
-            console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
             try {
                 await updateCorpoCardAdvance(oTx, sRecordId, oActionDescriptor.actionValue);
             } catch (oAdvErr) {
@@ -253,31 +242,25 @@ module.exports = (srv) => {
             }
 
             //trigger final approval process to send batch claim to IS 
-            console.log("Final approval Start");
             const oSendClaimBatch = await sendClaimBatch(sRecordId);
-            console.log("Final Approval: ", oSendClaimBatch);
 
             // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
             if (sAction === Constant.Status.APPROVED && sRecordId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
-                console.log("Sending final approve CCC email")
                 await notifyCardholdersOfRequestApproval(oTx, sRecordId);
                 await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);
 
                 const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sRecordId);
-                console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
 
             }
             bStatus = await sendEmailToClaimant(sRecordId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
         }
         else {
-            const aApproversContext = await getApproverContextByLevel(sRecordId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
-            console.log("Approver context for next level approver: ", aApproversContext);
+            const aApproversContext = await getApproverContextByLevel(sRecordId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL);
             bStatus = await sendEmailToApprover(aApproversContext, sRecordId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
         }
         if (!bStatus) {
             throw new Error('Error encountered during Email Notification');
         }
-        console.log("Approver Action Status: ", bStatus);
 
         const mActionText = {
             APPROVE: "approved",

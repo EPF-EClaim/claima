@@ -35,8 +35,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     let aUniqueApproversDetails = [];
     let aFullApproversDetails = [];
 
-    console.log("Start")
-    
     const sSystemDate = new Date();
     const sSystemYear = new Date(sSystemDate).getFullYear();
     
@@ -46,13 +44,11 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     const sFinalCC = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeader[Constant.EntitiesFields.COST_CENTER] ?? null;
     const sProjectCode = oHeader[Constant.EntitiesFields.PROJECT_CODE]
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
-    //console.log(oClaimantDetails);
     
     const sLevels = Number(oWorkflowStepContext.WORKFLOW_APPROVAL_LEVELS) || 0;
     const sWorkflowName = oWorkflowStepContext.WORKFLOW_NAME;
     const aFIDep = await retrieveFromConstantTable(oTx, 'FI_DEP');
     const sFIDep = aFIDep[0].VALUE;
-    //console.log(sFIDep);
     aWorkflowApprStep = 
         sLevels > 1 
             ? sWorkflowName.split("-").map(s => s.trim())
@@ -84,18 +80,13 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             if(oCurrOutcome != null && oClaimantDetails.ROLE === Constant.Role.CEO){
                 oWorkflowApprStep = Constant.Role.CEO_FI;
                 oCurrOutcome = null;
-            }        
-            console.log("Approver Search: ", oWorkflowApprStep)
-            console.log("oCurrOutcome: ", oCurrOutcome)
+            }
             if(oCurrOutcome == null){
                 // Block to check for Special Approver within ZCONSTANTS table and budget approver
                 switch(oWorkflowApprStep){
                     case Constant.Role.BUDGET:  
                         if(sFinalCC){
-                            console.log("FinalCC: ", sFinalCC);
-                            console.log("System Year: ", sSystemYear);
                             oBudgetDetails = await retrieveBudgetDetails(sFinalCC, sSystemYear);
-                            console.log("Budget Details: ", oBudgetDetails);
                             if(!oBudgetDetails){
                                 return false;
                             }
@@ -104,18 +95,13 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Budget Approver: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
                         break;
                     case Constant.Role.PROJECT_OWNER:
                         if(sProjectCode){
-                            console.log("Project Code: ", sProjectCode);
-                            console.log("System Year: ", sSystemYear);
                             oProjectDetails = await retrieveProjectOwnerDetails(sProjectCode, sSystemYear);
-                            console.log("Project Details: ", oProjectDetails);
                             if(!oProjectDetails){
                                 return false;
                             }
@@ -124,8 +110,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Project Owner: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
@@ -142,32 +126,25 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                     case Constant.Role.CCC_APPROVER2:
                         // Possible multiple approvers retrieved from ZCONSTANTS table
                         aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
-                        console.log("aConstantValues", aConstantValues)
                         if(aConstantValues.length > 1){
                             oApproverDetails = await retrieveEmployeeDetails(aConstantValues[0].VALUE);
-                            console.log("oApproverDetails", oApproverDetails)
                             oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                            console.log("oPopulatedEmployee", oPopulatedEmployee)
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }else{
                                 return [];
                             }
-                            console.log("Constant Approver: ", oPopulatedEmployee)
                         }
                         else{
                             for(const oId of aConstantValues){
                                 if(oId.VALUE){
                                     oApproverDetails = await retrieveEmployeeDetails(oId.VALUE);
-                                    console.log("oApproverDetails", oApproverDetails)
                                     oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                                    console.log("oPopulatedEmployee", oPopulatedEmployee)
                                     if(oPopulatedEmployee){
                                         aApproversDetails.push(oPopulatedEmployee);
                                     }else{
                                         return [];
                                     }
-                                    console.log("Constant Approver: ", oPopulatedEmployee)
                                 }else{
                                     return [];
                                 }
@@ -184,24 +161,19 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                         // SpecialMultipleConstantApproverList lookup further down,
                         // not a second parallel approver here.
                         aConstantValues = await retrieveFromConstantTable(oTx, oWorkflowApprStep);
-                        console.log("aConstantValues (CCC_APPROVER1)", aConstantValues)
                         var aEligibleConstantValues = aConstantValues.filter(
                             oCandidate => oCandidate.VALUE !== oHeader[Constant.EntitiesFields.EMP_ID]
                         );
-                        console.log("aEligibleConstantValues (requestor excluded)", aEligibleConstantValues)
                         if(aEligibleConstantValues.length === 0){
                             return [];
                         }
                         oApproverDetails = await retrieveEmployeeDetails(aEligibleConstantValues[0].VALUE);
-                        console.log("oApproverDetails", oApproverDetails)
                         oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
-                        console.log("oPopulatedEmployee", oPopulatedEmployee)
                         if(oPopulatedEmployee){
                             aApproversDetails.push(oPopulatedEmployee);
                         }else{
                             return [];
                         }
-                        console.log("CCC_APPROVER1 Approver: ", oPopulatedEmployee)
                         break;
                     default:
                 }
@@ -223,7 +195,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 }else{
                     return [];
                 }
-                console.log("Standard Approver: ", oPopulatedEmployee)
             } 
             // Check if approver is found. If approver not found, do not store approver rank and current outcome
             if(oApproverDetails){
@@ -233,7 +204,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         }
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
-    //console.log("aUniqueApproversDetails", aUniqueApproversDetails);
     var test = ["MED_REVIEWER", "MED_APPROVER", "WILAYAH_ASAL_VERIFIER" , "ELAUN_PINDAH_VERIFIER"];
     // Retrieve substitute for approvers
     for (const [iIndex, oApprover] of aUniqueApproversDetails.entries()){
@@ -254,12 +224,8 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 const aOtherConstantAppr = aConstantValues.filter(
                     item => item.VALUE !== oApprover.EEID && item.VALUE !== oHeader[Constant.EntitiesFields.EMP_ID]
                 );
-                console.log("sApproverStep", sApproverStep);
-                console.log("aConstantValues", aConstantValues);
-                console.log("aOtherConstantAppr", aOtherConstantAppr);
                 if(aOtherConstantAppr.length > 0){
                     oSubstituteDetails = await retrieveEmployeeDetails(aOtherConstantAppr[0].VALUE);
-                    console.log("oSubstituteDetails", oSubstituteDetails);
                     if(oSubstituteDetails){
                         sSubstitute_eeid = oSubstituteDetails.EEID;
                         sSubstitute_name = oSubstituteDetails.NAME;
@@ -292,7 +258,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
             SUB_EMAIL       : sSubstitute_email
         });
     }
-    console.log("Full Approvers: ", aFullApproversDetails);
     return aFullApproversDetails;
 }
 
@@ -327,7 +292,6 @@ async function determineApprovers(oTx, sId, oWorkflowContext) {
     }
 
     const oWorkflowStepContext = await determineWorkflowStepContext(oTx, oWorkflowContext.OUTCOME_WORKFLOW_CODE, oDescriptor)
-    console.log('[approver-determination/determineApprovers] oWorkflowStepContext:', oWorkflowStepContext)
 
     if(!oWorkflowStepContext){
         return null;

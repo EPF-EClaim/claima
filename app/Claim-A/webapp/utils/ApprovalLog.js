@@ -90,7 +90,6 @@ sap.ui.define([
 
 				return a;
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				oApprovalLogModel.setProperty("/approval", []);
 				return [];
 			}

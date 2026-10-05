@@ -1394,13 +1394,11 @@ sap.ui.define([
 				}
 				else {
 					row = oCtx.getObject();
-					console.warn(`Claim ${oCtx.CLAIM_ID} already exists in DB, please update number range`);
 					result = 'X';
 					return { result, current };
 				}
 
 			} catch (err) {
-				console.error("Error fetching number range:", err);
 				return null;
 			}
 		},
@@ -1428,7 +1426,6 @@ sap.ui.define([
 				return { CURRENT: nextNumber };
 
 			} catch (err) {
-				console.error("Error updating number range:", err);
 				return null;
 			}
 		},
@@ -1690,7 +1687,6 @@ sap.ui.define([
 			const sReqType = oEvent?.getSource?.().getSelectedKey?.();
 
 			if (!sReqType) {
-				console.warn("No request type found.");
 				return;
 			}
 
@@ -1706,7 +1702,6 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, 1);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for req_type:", sReqType);
 					this._setAllHeaderControlsVisible(false);
 					return;
 				}
@@ -1723,8 +1718,6 @@ sap.ui.define([
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
 							control.setVisible(true);
-						} else {
-							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
 				}
@@ -1732,7 +1725,6 @@ sap.ui.define([
 				this._loadClaimTypeSelectionData(sReqType);
 
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				this._setAllHeaderControlsVisible(false);
 			} finally {
 				switch (sReqType) {
@@ -2120,7 +2112,6 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				console.error("Failed to check corporate card ownership:", e);
 				oInputModel.setProperty("/claimtype/has_ccc", false);
 				oInputModel.setProperty("/claim_header/card_no", null);
 				oInputModel.setProperty("/claimtype/card_advance", null);

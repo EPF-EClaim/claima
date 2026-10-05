@@ -82,7 +82,7 @@ module.exports = (srv) => {
                     sOrigin = oToken.origin;
                 }
             } catch (e) {
-                console.log("Token parsing failed:", e.message);
+                return req.err(`Token parsing failed: ${e.message}`);
             }
 
             const oRoles = {
@@ -556,7 +556,6 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
 
         const isCorpoCC = String(req.data.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
-        console.log("req.data.REQTYPEID", req.data)
         const range_id = isCorpoCC
             ? Constant.NumberRange.REQUEST_CCC
             : Constant.NumberRange.REQUEST;
@@ -594,8 +593,6 @@ module.exports = (srv) => {
                 .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
-
-        console.log(`[HANA] Assigned ID: ${req.data.REQUEST_ID}`);
     });
 
     srv.before('CREATE', 'ZREQUEST_ITEM', async (req) => {
@@ -671,8 +668,6 @@ module.exports = (srv) => {
                 .set(oUpdateVariables)
                 .where({ RANGE_ID: String(range_id) })
         );
-
-        console.log(`[HANA] Assigned ID: ${req.data.CLAIM_ID}`);
     });
 
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
@@ -761,7 +756,6 @@ module.exports = (srv) => {
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
-        console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
     }
 
     async function updateHeaderTotals(req, sRequestId, tx) {
@@ -940,7 +934,6 @@ module.exports = (srv) => {
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
-            console.log(aPayloadToCreateApproverDetailsTable);
             if (!aPayloadToCreateApproverDetailsTable || aPayloadToCreateApproverDetailsTable.length === 0) {
                 throw new Error('No Data Sent')
             }
@@ -1240,7 +1233,6 @@ module.exports = (srv) => {
         } catch (err) {
             req.error(400, "Failed to retrieve entitlement information");
         }
-        console.log(entitlement);
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
@@ -1399,7 +1391,6 @@ module.exports = (srv) => {
                     })
                 }
             } catch (error) {
-                console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
                 req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
                 continue;
             }
@@ -1427,7 +1418,6 @@ module.exports = (srv) => {
                 })
 
             } catch (error) {
-                console.log(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
                 req.info(`Error processing request ${oRequest15.PAYMENT_DATE}:`, error.message);
                 continue;
             }
@@ -1455,7 +1445,6 @@ module.exports = (srv) => {
                 })
 
             } catch (error) {
-                console.log(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
                 req.info(`Error processing request ${oRequest30.PAYMENT_DATE}:`, error.message);
                 continue;
             }
@@ -2227,7 +2216,6 @@ module.exports = (srv) => {
             if (!oEligibilityRule) {
                 req.error(404, `Eligibility not found.`);
             }
-            console.log(oEligibilityRule);
             const fCalculatedAmount = parseFloat(fKilometer) * parseFloat(oEligibilityRule.RATE);
             const fMinimumEligibleAmount = parseFloat(oEligibilityRule.ELIGIBLE_AMOUNT);
 
@@ -2458,7 +2446,6 @@ module.exports = (srv) => {
                         request.TRAVEL_FAMILY_NOW_LATER === Constant.TravelWithFamilyNowOrLater.LATER) {
                         sFinalStatus = Constant.ElaunTukarStatus.ALLOWED_FAMILY_NOW_ONLY;
                     } else {
-                        console.log("here_req", request)
                         return Constant.ElaunTukarStatus.NOT_ALLOWED;
                     }
                 }
@@ -3046,7 +3033,6 @@ module.exports = (srv) => {
         );
 
         if (!oHeader?.PROJECT_CODE) {
-            console.log("PROJECT_CODE is empty. Skip INTERNAL_ORDER update.");
             return;
         }
 
@@ -3316,7 +3302,6 @@ module.exports = (srv) => {
                 aEmailResults.forEach((res, idx) => {
                     if (res.status === Constant.EmailStatus.REJECTED) {
                         const item = aPendingEmailsToAsyncSend[idx];
-                        console.error(`Email failed for ${item.type} ${item.recordId}:`, res.reason);
                         aFailedEmailLogs.push({
                             TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
                             RECORD_ID: item.recordId,
@@ -3334,7 +3319,6 @@ module.exports = (srv) => {
                 }
             }
         } catch (oError) {
-            console.error("Substitution assignment log error:", oError);
             req.warn(500, `Substitution rule saved, but failed to update existing records: ${oError.message}`);
 
             try {
@@ -3351,7 +3335,7 @@ module.exports = (srv) => {
                     });
                 }
             } catch (oFallbackError) {
-                console.error("Critical fallback logger failure:", oFallbackError);
+                req.warn(500, `Log Table update failed: ${oFallbackError.message}`);
             }
         }
     });
@@ -3480,7 +3464,7 @@ module.exports = (srv) => {
                             sSubstituteID = oActiveSubstitution.SUBSTITUTE_ID;
                         }
                     } catch (oSubError) {
-                        console.error(`Substitution lookup failed for record ${ID}:`, oSubError);
+                        return req.err(`Substitution lookup failed for record ${ID}: ${oSubError.message}`);
                     }
                 }
 
@@ -3590,8 +3574,6 @@ module.exports = (srv) => {
                 }
             });
 
-            console.log("aLogsToInsert", aLogsToInsert);
-
             if (aLogsToInsert.length > 0) {
                 await cds.tx(async (oLogTx) => {
                     await oLogTx.run(INSERT.into(Constant.Entities.ZLOG).entries(aLogsToInsert));
@@ -3660,7 +3642,6 @@ module.exports = (srv) => {
                                         RecipientName: oApproverRecord.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3683,7 +3664,6 @@ module.exports = (srv) => {
                                         RecipientName: oOldApproverRecord.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3708,7 +3688,6 @@ module.exports = (srv) => {
                                         RecipientName: oNewSubstitute.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3733,7 +3712,6 @@ module.exports = (srv) => {
                                         RecipientName: oOldSubstitute.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Claim ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3789,7 +3767,6 @@ module.exports = (srv) => {
                                         RecipientName: oApproverRecord.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3812,7 +3789,6 @@ module.exports = (srv) => {
                                         RecipientName: oOldApproverRecord.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3837,7 +3813,6 @@ module.exports = (srv) => {
                                         RecipientName: oNewSubstitute.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3862,7 +3837,6 @@ module.exports = (srv) => {
                                         RecipientName: oOldSubstitute.NAME
                                     });
                                 } catch (oEmailError) {
-                                    console.error(`Email failed for Pre-Approval ${ID}`, oEmailError);
                                     aBackgroundLogs.push({
                                         TIMESTAMP: new Date(),
                                         RECORD_ID: ID,
@@ -3875,7 +3849,7 @@ module.exports = (srv) => {
                             }
                         }
                     } catch (oLoopError) {
-                        console.error(`Critical loop processing breakdown for record ${ID}: `, oLoopError);
+                        return req.err(`Critical loop processing breakdown for record ${ID}: ${oLoopError.message}`);
                     }
                 }
                 // Write any background warnings to the Log table if email attempts failed
@@ -3897,7 +3871,6 @@ module.exports = (srv) => {
             return true;
 
         } catch (oError) {
-            console.error("Batch reassignment error:", oError);
             return req.error(500, "Database error occurred during batch reassignment.");
         }
     });
@@ -3983,7 +3956,6 @@ module.exports = (srv) => {
                         .where({ RANGE_ID: Constant.NumberRange.SUBSTITUTION_RULE })
                 );
             } catch (err) {
-                console.error("Number Range Assignment Error:", err);
                 return req.error(500, "Failed to automatically generate a unique Substitution Rule ID sequence.");
             }
         }
@@ -4222,7 +4194,6 @@ module.exports = (srv) => {
             // =======================================================================
             if (bValidToChanged) {
                 if (sNewValidTo > sOldValidToStr) {
-                    console.log(">>> Extension detected on VALID_TO. Processing new assignments...");
                     await handleNewAssignments(tx, srv.entities, {
                         sUserID, sSubstituteID,
                         VALID_FROM: sOldValidToStr, // Target newly expanded upper window
@@ -4230,7 +4201,6 @@ module.exports = (srv) => {
                         oCurrentUser
                     });
                 } else if (sNewValidTo < sOldValidToStr) {
-                    console.log(">>> Shortening detected on VALID_TO. Processing de-delegations...");
                     await handleDeDelegations(tx, srv.entities, {
                         sUserID, sSubstituteID,
                         VALID_FROM: sNewValidTo,   // Target removed upper window
@@ -4245,7 +4215,6 @@ module.exports = (srv) => {
             // =======================================================================
             if (bValidFromChanged) {
                 if (sNewValidFrom < sOldValidFromStr) {
-                    console.log(">>> Extension detected on VALID_FROM (started earlier). Processing new assignments...");
                     await handleNewAssignments(tx, srv.entities, {
                         sUserID, sSubstituteID,
                         VALID_FROM: sNewValidFrom,   // Target newly expanded lower window
@@ -4253,7 +4222,6 @@ module.exports = (srv) => {
                         oCurrentUser
                     });
                 } else if (sNewValidFrom > sOldValidFromStr) {
-                    console.log(">>> Shortening detected on VALID_FROM (started later). Processing de-delegations...");
 
                     // Subtract 1 day from sNewValidFrom for the upper bound
                     let dNewValidFrom = new Date(sNewValidFrom);
@@ -4270,7 +4238,6 @@ module.exports = (srv) => {
             }
 
         } catch (oError) {
-            console.error("Substitution update processing runtime error:", oError);
             req.warn(500, `Substitution rule updated, but post-processing failed: ${oError.message}`);
         }
     });
@@ -4408,7 +4375,6 @@ module.exports = (srv) => {
                 if (res.status === Constant.EmailStatus.REJECTED) {
                     const item = aPendingEmails[idx];
                     const oError = res.reason;
-                    console.error(`Revoke email failed for ${item.type} ${item.recordId}:`, oError);
                     aEmailFailedLogs.push({
                         TIMESTAMP: new Date(iBaseTime + (iLogIndexCounter++)),
                         RECORD_ID: item.recordId,
@@ -4562,7 +4528,6 @@ module.exports = (srv) => {
                 if (res.status === Constant.EmailStatus.REJECTED) {
                     const item = aPendingEmails[idx];
                     const oError = res.reason;
-                    console.error(`Email failed for ${item.type} ${item.recordId}:`, oError);
                     aEmailFailedLogs.push({
                         TIMESTAMP: new Date(ibaseTime + (ilogIndexCounter++)),
                         RECORD_ID: item.recordId,
@@ -4628,7 +4593,6 @@ module.exports = (srv) => {
         );
 
         if (NEW_VALID_TO > OLD_VALID_TO) {
-            console.log(">>> Extension detected. Processing new assignments...");
             // Pass the original validation start as oldDate to only look at the expanded window gap
             await handleNewAssignments(tx, srv.entities, {
                 sUserID: USER_ID,
@@ -4637,7 +4601,6 @@ module.exports = (srv) => {
                 VALID_TO: NEW_VALID_TO, oCurrentUser
             });
         } else if (NEW_VALID_TO < OLD_VALID_TO) {
-            console.log(">>> Shortening detected. Processing de-delegations...");
             await handleDeDelegations(tx, srv.entities, {
                 sUserID: USER_ID,
                 sSubstituteID: SUBSTITUTE_ID,
@@ -4727,13 +4690,10 @@ module.exports = (srv) => {
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
                 });
- 
-            console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
     
             return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
     
         } catch (error) {
-            console.error('[getMonthlyAdvanceAmount] Query failed:', error);
             req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
         }
     });
@@ -4756,8 +4716,6 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
         const { empId } = req.data;
 
-        console.log("empId:", empId);
-
         const oEmployee = await tx.run(
             SELECT.one
                 .from(Constant.Entities.ZEMP_MASTER)
@@ -4770,8 +4728,6 @@ module.exports = (srv) => {
                     [Constant.EntitiesFields.EEID]: empId
                 })
         );
-
-        console.log("oEmployee:", JSON.stringify(oEmployee, null, 2));
 
         if (!oEmployee) {
             return {
@@ -4802,8 +4758,6 @@ module.exports = (srv) => {
         );
 
         const oRule = aFilteredRules[0];
-
-        console.log("Selected Rule:", oRule);
 
         if (!oRule) {
             return {
@@ -4871,7 +4825,6 @@ module.exports = (srv) => {
         * @returns {Integer} number of records updated in header table
         */
     srv.on('clearMedicalEntitlement', async (req) => {
-        console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
         try {
             const { ZEMP_MEDICAL_ENT_HISTORY } = srv.entities;
 
@@ -4918,10 +4871,8 @@ module.exports = (srv) => {
                     iHistoryCount
                 };
             });
-            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
             return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
         } catch (error) {
-            console.error('[JOB ERROR] Annual entitlement reset failed:', error);
             return req.error(500, `Job execution failed: ${error.message}`);
         }
     });
@@ -5034,7 +4985,6 @@ module.exports = (srv) => {
             return true;
     
         } catch (error) {
-            console.error('[deleteItemCascade] Failed:', error);
             req.error(500, `Failed to delete item: ${error.message}`);
         }
     });
@@ -5138,7 +5088,7 @@ module.exports = (srv) => {
                         mCardMasterByCardNo[oCardMaster.CARD_NO] = oCardMaster;
                     });
                 } catch (error) {
-                    console.error('Failed to load card master validity/principle info:', error);
+                    return req.err(`Failed to load card master validity/principle info: ${error.message}`);
                 }
             }
 
@@ -5238,10 +5188,11 @@ module.exports = (srv) => {
             return JSON.stringify(aCorpoCards);
 
         } catch (error) {
-            console.error('getCorpoCardsForItem failed:', error);
-            req.error(500, 'An error occurred while loading corporate cards for the item.');
+            return req.error(500, 'An error occurred while loading corporate cards for the item.');
         }
-    });    /**
+    });    
+    
+    /**
      * Retrieve policy information for selected dependent.
      * Policy lookup and year filtering 
      * @private
