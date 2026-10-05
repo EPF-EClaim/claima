@@ -313,7 +313,7 @@ sap.ui.define([
 		 * Set fields to be editable
 		 * if there is a request tied to claim, do not allow editing for start and end trip dates
 		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
-		 * if tthere is a request, do not allow editing for alternate cost center
+		 * if there is a request, do not allow editing for alternate cost center
 		 * @public
          * @param {string} sClaimType Claim submission or Pre Approval Request claim type
 		 * @param {boolean} bEdit edit toggle
