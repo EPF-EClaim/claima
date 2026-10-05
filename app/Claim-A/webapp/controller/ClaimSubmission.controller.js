@@ -2273,16 +2273,18 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer", true)
 				}
-				//changes here
-				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				} else if (!!oInputModel.getProperty("/claim_item/dependent")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
-				}
-
+				// parse dependent first: items without a dependent are stored as the string "null"
 				var sDependent = oInputModel.getProperty("/claim_item/dependent");
 				if (sDependent) {
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
+				}
+
+				//changes here
+				var vDependent = oInputModel.getProperty("/claim_item/dependent");
+				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
+				} else if (vDependent && vDependent.length > 0) {
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
 				if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
