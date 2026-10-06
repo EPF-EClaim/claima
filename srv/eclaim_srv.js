@@ -5448,9 +5448,6 @@ module.exports = (srv) => {
             return req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
         }
 
-        // remove approval log
-        await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
-
         // insert record history
         try {
             await logWorkflowHistory(oTx, sRecordId, `${sRecordId} is cancelled by ${oEmp.NAME}.`);
