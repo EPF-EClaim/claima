@@ -313,6 +313,7 @@ sap.ui.define([
          * item Start/End Date pickers allow for Kursus (see DateUtility.determineMaxDate):
          * Kursus Dlm Negara +1 day, Kursus Luar Negara +2 days.
          * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
+         * @returns {Date} return the receipt date
          * @private
          */
         _getMaxReceiptDate: function (oClaimSubmissionModel) {
