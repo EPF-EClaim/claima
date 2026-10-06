@@ -1182,27 +1182,43 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             STATUS;
 
     entity ZCLM_COURSE_VIEW               as
-        projection on ECLAIM.ZTRAIN_COURSE_PART {
-            key COURSE_ID || '|' || SESSION_NUMBER || '|' || cast(
-                    START_DATE as String
-                ) || '|' || cast(
-                    END_DATE as String
-                ) as COURSE_SESSION_KEY : String,
-                COURSE_ID,
-                PARTICIPANT_ID,
-                COURSE_DESC,
-                COURSE_SESSION_STAT,
-                ATTENDENCE_STATUS,
+        select from ECLAIM.ZTRAIN_COURSE_PART AS course {
+            key course.COURSE_ID || '|' || course.SESSION_NUMBER || '|' || CAST(course.START_DATE AS String) || '|' || CAST(course.END_DATE AS String) AS COURSE_SESSION_KEY : String,
+                course.COURSE_ID,
+                course.PARTICIPANT_ID,
+                course.COURSE_DESC,
+                course.COURSE_SESSION_STAT,
+                course.ATTENDENCE_STATUS
         }
-        group by
-            COURSE_ID,
-            PARTICIPANT_ID,
-            COURSE_DESC,
-            COURSE_SESSION_STAT,
-            ATTENDENCE_STATUS,
-            SESSION_NUMBER,
-            START_DATE,
-            END_DATE;
+        where EXISTS (
+            select 1
+            from ECLAIM.ZCLAIM_HEADER AS header
+            WHERE header.EMP_ID = course.PARTICIPANT_ID
+            AND header.COURSE_CODE = course.COURSE_ID
+            AND header.STATUS_ID IN ('STAT04', 'STAT07')
+            )
+        AND NOT EXISTS (
+            select 1
+            from ECLAIM.ZCLAIM_HEADER AS header
+            WHERE header.EMP_ID = course.PARTICIPANT_ID
+            AND header.COURSE_CODE = course.COURSE_ID
+            AND header.COURSE_CODE IS NOT NULL
+            AND header.STATUS_ID IN ('STAT01', 'STAT02', 'STAT03', 'STAT05', 'STAT06', 'STAT08')
+            )
+
+            GROUP BY
+                course.COURSE_ID,
+                course.PARTICIPANT_ID,
+                course.COURSE_DESC,
+                course.COURSE_SESSION_STAT,
+                course.ATTENDENCE_STATUS,
+                course.SESSION_NUMBER,
+                course.START_DATE,
+                course.END_DATE
+
+            ORDER BY
+                course.END_DATE DESC,
+                course.START_DATE DESC;
 
     entity ZEMP_ACCESS               as
         projection on ECLAIM.ZEMP_MASTER {
