@@ -312,16 +312,15 @@ sap.ui.define([
          * Latest allowed receipt date (YYYY-MM-DD) = header End Date, plus the same extra days the
          * item Start/End Date pickers allow for Kursus (see DateUtility.determineMaxDate):
          * Kursus Dlm Negara +1 day, Kursus Luar Negara +2 days.
+         * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
          * @private
          */
         _getMaxReceiptDate: function (oClaimSubmissionModel) {
             var dMax = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"));
             var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
-            if (sClaimType === Constants.ClaimType.KURSUS_DLM_NEGARA) {
-                dMax.setDate(dMax.getDate() + 1);
-            } else if (sClaimType === Constants.ClaimType.KURSUS_LUAR_NEGARA) {
-                dMax.setDate(dMax.getDate() + 2);
-            }
+            var iExtraDays = Constants.ClaimType.KURSUS_DLM_NEGARA === sClaimType ? 1 : Constants.ClaimType.KURSUS_LUAR_NEGARA === sClaimType ? 2 : 0;
+            dMax.setDate(dMax.getDate() + iExtraDays);
+
             return DateUtility.toYMD(dMax);
         },
 
