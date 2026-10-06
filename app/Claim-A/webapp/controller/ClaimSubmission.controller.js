@@ -2516,8 +2516,30 @@ sap.ui.define([
 
 		},
 
+		/**
+		* Build the filter for the dependent selection fields (Select "select_claimdetails_input_dependent_name"
+		* and MultiComboBox "combo_claimdetails_input_dependent") based on the current claim type item.
+		* Every filter is restricted to the claimant's own dependents (EMP_ID), then narrowed by
+		* the eligibility rules of the claim type item:
+		*  - POST_EDUCATION_ASSISTANCE : Child (02) only
+		*  - FLIGHT_WIL                : Spouse (01);
+		*                                Child (02) aged 18 and below;
+		*                                Child (02) aged 19 to 25 who is a student
+		*  - LAUT                      : Spouse (01), Child (02), Additional Spouse (07)
+		*  - INSURANCE / MED_ADVANCE   : Spouse (01) / Additional Spouse (07) who is a medical beneficiary;
+		*                                Child (02) aged 25 and below who is a medical beneficiary and a student;
+		*                                Child (02) who is a medical beneficiary and disabled (student and age checks bypassed)
+		*  - KEMATIAN                  : Spouse (01), Additional Spouse (07);
+		*                                Child (02) below 18 (17 and below) who is not employed;
+		*                                Child (02) below 24 (23 and below) who is a student
+		*  - Others                    : all dependents of the claimant (no eligibility rule)
+		* Age is determined by birth year (current year - birth year) via DateUtility.getDateNYearsAgo,
+		* not by the exact birthday.
+		* @private
+		* @returns {sap.ui.model.Filter} combined filter to apply to the "items" binding of the dependent fields
+		*/
 		_getDependentFilters: function () {
-			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
@@ -2541,28 +2563,27 @@ sap.ui.define([
 					})
 
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
-					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
-					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
-					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
-
-					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					// Age by birth year: 18 and below / 19 to 25
+					var s18YearsAgo = DateUtility.getDateNYearsAgo(18);
+					var s25YearsAgo = DateUtility.getDateNYearsAgo(25);
 
 					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
 
+					// Child aged 18 and below this year
 					var oChildBelow18 = new Filter({
 						filters: [
 							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s18YearsAgo)
 						],
 						and: true
 					})
 
+					// Child aged 19 to 25 this year and a student
 					var oChildStudying = new Filter({
 						filters: [
 							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s25YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.LT, s18YearsAgo),
 							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
 						],
 						and: true
@@ -2588,9 +2609,9 @@ sap.ui.define([
 				case this._oConstant.ClaimTypeItem.LAUT: 
 					var oDependentRuleFilter = new Filter({
 						filters: [
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.SPOUSE),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.CHILD),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.ADDITIONAL_SPOUSE)
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.ADDITIONAL_SPOUSE)
 						],
 						and: false
 					});
@@ -2605,10 +2626,7 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-					var d25YearsAndBelow = DateUtility.today();
-					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
-
-					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
+					var s25YearsAndBelow = DateUtility.getDateNYearsAgo(25);
 
 					// Spouse / Additional Spouse
 					var oSpouseFilter = new Filter({
@@ -2694,6 +2712,58 @@ sap.ui.define([
 									oSpouseFilter,
 									oEligibleChildFilter,
 									oDisabledChildFilter
+								],
+								and: false
+							})
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.KEMATIAN:
+					// Bantuan Kebajikan Kematian - only Spouse (01), Additional Spouse (07) and eligible Child (02)
+					// Child is eligible if:
+					//   (a) below 18 years old AND not employed, OR
+					//   (b) below 24 years old AND a student
+					// Age by birth year: below 18 = 17 and below this year, below 24 = 23 and below this year
+					var s17YearsAgo = DateUtility.getDateNYearsAgo(17);
+					var s23YearsAgo = DateUtility.getDateNYearsAgo(23);
+
+					var oKematianSpouseFilter = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.ADDITIONAL_SPOUSE)
+						],
+						and: false
+					});
+
+					// Child below 18 and not employed (EMPLOYED = false)
+					var oKematianChildBelow18 = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s17YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.EMPLOYED, FilterOperator.EQ, false)
+						],
+						and: true
+					});
+
+					// Child below 24 and a student
+					var oKematianChildStudent = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s23YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oKematianSpouseFilter,
+									oKematianChildBelow18,
+									oKematianChildStudent
 								],
 								and: false
 							})

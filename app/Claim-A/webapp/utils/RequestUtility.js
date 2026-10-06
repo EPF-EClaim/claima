@@ -597,9 +597,9 @@ sap.ui.define([
                     case Constants.ClaimType.ELAUN_TUKAR: 
 					var oDependentRuleFilter = new Filter({
 						filters: [
-							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.RelationshipType.SPOUSE),
-							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.RelationshipType.CHILD),
-							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.RelationshipType.ADDITIONAL_SPOUSE)
+							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.SPOUSE),
+							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.CHILD),
+							new Filter(Constants.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,Constants.Relationship.ADDITIONAL_SPOUSE)
 						],
 						and: false
 					});
