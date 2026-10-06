@@ -90,7 +90,8 @@
                             sorter: [
                                 { path: 'COURSE_SESSION_KEY' },
                                 { path: 'COURSE_DESC' }
-                            ]
+                            ],
+                            length: 1000
                         }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
                             ${claimsubmission_input>/claimtype/item} !== null
