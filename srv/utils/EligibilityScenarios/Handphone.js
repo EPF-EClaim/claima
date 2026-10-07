@@ -106,6 +106,7 @@ module.exports = {
     return {
       freqValue: iDefaultFreq,
       isExceptionGrade: false
+    };
   },
 
   /**
