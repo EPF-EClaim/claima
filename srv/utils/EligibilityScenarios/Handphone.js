@@ -102,7 +102,10 @@ module.exports = {
         freqValue: parseInt(sExcFreqValue, 10),
         isExceptionGrade: true
       };
-    };
+    }
+    return {
+      freqValue: iDefaultFreq,
+      isExceptionGrade: false
   },
 
   /**
