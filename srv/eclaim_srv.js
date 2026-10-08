@@ -1513,83 +1513,87 @@ module.exports = (srv) => {
             if (!sRequestId) return;
 
             cds.spawn({ user: req.user }, async (tx) => {
-                switch (oRequestRecord.CLAIM_TYPE_ID) {
-                    case Constant.ClaimType.HANDPHONE:
-                        try {
-                            var result;
-                            const aReqItem = await tx.run(
-                                SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({
-                                    REQUEST_ID: sRequestId
-                                })
-                            );
-
-                            const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
-                            const aParticipantData = await tx.run(
-                                SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
-                                    REQUEST_ID: sRequestId,
-                                    REQUEST_SUB_ID: { in: aReqSubId }
-                                })
-                            );
-                            for (let i = 0; i < aParticipantData.length; i++) {
-                                var aPartReqItem = aReqItem.filter(function (item) {
-                                    return item.REQUEST_SUB_ID === aParticipantData[i].REQUEST_SUB_ID;
-                                });
-                                result = await tx.run(
-                                    INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
-                                        EMP_ID: aParticipantData[i].PARTICIPANTS_ID,
-                                        CLAIM_TYPE_ID: aPartReqItem[0].CLAIM_TYPE_ID,
-                                        START_DATE: aPartReqItem[0].START_DATE,
-                                        END_DATE: aPartReqItem[0].END_DATE,
-                                        ELIGIBLE_AMOUNT: aParticipantData[i].ALLOCATED_AMOUNT
+                try{
+                    switch (oRequestRecord.CLAIM_TYPE_ID) {
+                        case Constant.ClaimType.HANDPHONE:
+                            try {
+                                var result;
+                                const aReqItem = await tx.run(
+                                    SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({
+                                        REQUEST_ID: sRequestId
                                     })
                                 );
-                            };
 
-                        } catch (error) {
-                            req.error(400, `Failed inserting records for Exception List Table: ${error.message}`);
-                        }
-                        break;
+                                const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
+                                const aParticipantData = await tx.run(
+                                    SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
+                                        REQUEST_ID: sRequestId,
+                                        REQUEST_SUB_ID: { in: aReqSubId }
+                                    })
+                                );
+                                for (let i = 0; i < aParticipantData.length; i++) {
+                                    var aPartReqItem = aReqItem.filter(function (item) {
+                                        return item.REQUEST_SUB_ID === aParticipantData[i].REQUEST_SUB_ID;
+                                    });
+                                    result = await tx.run(
+                                        INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
+                                            EMP_ID: aParticipantData[i].PARTICIPANTS_ID,
+                                            CLAIM_TYPE_ID: aPartReqItem[0].CLAIM_TYPE_ID,
+                                            START_DATE: aPartReqItem[0].START_DATE,
+                                            END_DATE: aPartReqItem[0].END_DATE,
+                                            ELIGIBLE_AMOUNT: aParticipantData[i].ALLOCATED_AMOUNT
+                                        })
+                                    );
+                                };
 
-                    default:
-                        try {
-                            const oCashAdvanceItem = await tx.run(
-                                SELECT.one.from('ZREQUEST_ITEM').where({
-                                    REQUEST_ID: sRequestId,
-                                    CASH_ADVANCE: true
-                                })
-                            );
+                            } catch (error) {
+                                req.error(400, `Failed inserting records for Exception List Table: ${error.message}`);
+                            }
+                            break;
 
-                            if (!oCashAdvanceItem) return;
+                        default:
+                            try {
+                                const oCashAdvanceItem = await tx.run(
+                                    SELECT.one.from('ZREQUEST_ITEM').where({
+                                        REQUEST_ID: sRequestId,
+                                        CASH_ADVANCE: true
+                                    })
+                                );
 
-                            const sEmpId = oRequestRecord.EMP_ID;
-                            const sTripStartDate = oRequestRecord.TRIP_START_DATE;
+                                if (!oCashAdvanceItem) return;
 
-                            const oExistingCashAdvRecords = await tx.run(
-                                SELECT.one.from('ZEMP_CA_PAYMENT').where({
-                                    REQUEST_ID: sRequestId,
-                                    EMP_ID: sEmpId
-                                })
-                            );
+                                const sEmpId = oRequestRecord.EMP_ID;
+                                const sTripStartDate = oRequestRecord.TRIP_START_DATE;
 
-                            if (oExistingCashAdvRecords) return;
+                                const oExistingCashAdvRecords = await tx.run(
+                                    SELECT.one.from('ZEMP_CA_PAYMENT').where({
+                                        REQUEST_ID: sRequestId,
+                                        EMP_ID: sEmpId
+                                    })
+                                );
 
-                            let dDate = new Date(sTripStartDate);
-                            dDate.setDate(dDate.getDate() - 14);
-                            const sDisbursementDate = dDate.toISOString().split('T')[0];
+                                if (oExistingCashAdvRecords) return;
 
-                            await tx.run(
-                                INSERT.into('ZEMP_CA_PAYMENT').entries({
-                                    REQUEST_ID: sRequestId,
-                                    EMP_ID: sEmpId,
-                                    DISBURSEMENT_DATE: sDisbursementDate,
-                                    DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
-                                })
-                            );
+                                let dDate = new Date(sTripStartDate);
+                                dDate.setDate(dDate.getDate() - 14);
+                                const sDisbursementDate = dDate.toISOString().split('T')[0];
 
-                        } catch (error) {
-                            req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
-                        }
-                        break;
+                                await tx.run(
+                                    INSERT.into('ZEMP_CA_PAYMENT').entries({
+                                        REQUEST_ID: sRequestId,
+                                        EMP_ID: sEmpId,
+                                        DISBURSEMENT_DATE: sDisbursementDate,
+                                        DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
+                                    })
+                                );
+
+                            } catch (error) {
+                                req.error(400, `Failed inserting records for Cash Advance Table: ${error.message}`);
+                            }
+                            break;
+                    }
+                } catch (error) {
+                    req.error(400, `Failed inserting records into Table: ${error.message}`);
                 }
             });
         }
