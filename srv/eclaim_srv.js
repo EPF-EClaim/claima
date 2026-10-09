@@ -702,7 +702,8 @@ module.exports = (srv) => {
                     .from('ZCLAIM_ITEM')
                     .where(
                         'CLAIM_ID =', sClaimId,
-                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                        "and CLAIM_TYPE_ITEM_ID <> 'POTONGAN_ELAUN' " +
+                        "and (CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY' OR CHARGED_TO_CCC = false)"
                     )
             );
             totalClaimAmount = totalResult.TotalClaimAmount || 0;
