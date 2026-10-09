@@ -56,18 +56,14 @@ sap.ui.define([
             const json = await res.json();
             const id = json?.d[0]?.key || json?.key || "";
             const attachmentNumber = id.split('=')[1];
-            return attachmentNumber;
 
-			if (!attachmentNumber) {
-				console.log("Attachment Number not assigned:", attachmentNumber);
-				throw new Error("Attachment Number not assigned");
-			}
-
-			if (!res.ok) {
+			if (!res.ok || !attachmentNumber) {
                 const errText = await res.text().catch(() => "");
                 console.log("Body:", await res.text());
                 throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
             }
+			
+			return attachmentNumber;
 
         },
 
