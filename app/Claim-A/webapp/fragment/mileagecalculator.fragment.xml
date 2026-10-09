@@ -5,7 +5,7 @@
   id="mileagecalculator">
 
   <Dialog
-    id="helloDialog"
+    id="mileageCalcDialog"
     title="Mileage Calculator"
     contentWidth="900px"
 
