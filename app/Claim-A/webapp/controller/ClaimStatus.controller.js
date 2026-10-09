@@ -55,7 +55,6 @@ sap.ui.define([
 				_oReq.setProperty("/claim_header_list", oContextItems);
 				_oReq.setProperty("/claim_header_count", oContextItems.length);
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				_oReq.setProperty("/claim_header_list", []);
 				_oReq.setProperty("/claim_header_count", 0);
 			}

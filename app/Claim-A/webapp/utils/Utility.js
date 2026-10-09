@@ -764,7 +764,6 @@ sap.ui.define([
                 return "";
 
             } catch (oError) {
-                console.error("Error fetching charging cost center", oError);
                 return "";
             }
         },
@@ -974,10 +973,8 @@ sap.ui.define([
                     };
                 }
 
-                console.warn(`No employee found with ${sFieldName}: ${sValue}`);
                 return null;
             } catch (oError) {
-                console.error("Error fetching employee detail", oError);
                 return null;
             }
         },

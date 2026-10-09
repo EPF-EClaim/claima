@@ -56,7 +56,6 @@ sap.ui.define([
 			try {
 				const aCtx = await oListBinding.requestContexts(0, 1);
 				if (aCtx.length === 0) {
-					console.warn(`Request ID ${sReqId} not found`);
 					return [];
 				}
 
@@ -107,7 +106,6 @@ sap.ui.define([
 				Utility.mapOwnerDetail(oController.getOwnerComponent().getModel("owner_detail"), oData, Constants.SubmissionOwnerType.REQUESTOR);
 
 			} catch (err) {
-				console.error("Header fetch failed:", err);
 				oReqModel.setProperty("/req_header", {});
 			}
 		},
@@ -179,7 +177,6 @@ sap.ui.define([
 				oReq.setProperty("/list_count", aItems.length);
 
 			} catch (err) {
-				console.error("Item list fetch failed:", err);
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
 			}

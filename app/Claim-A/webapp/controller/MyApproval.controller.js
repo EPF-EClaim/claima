@@ -101,7 +101,6 @@ sap.ui.define([
 
                 return aRequestList;
             } catch (err) {
-                console.error("OData bindList failed:", err);
                 this._oReqStatusModel.setProperty("/req_header_list", []);
                 this._oReqStatusModel.setProperty("/req_header_count", 0);
                 return [];
@@ -151,7 +150,6 @@ sap.ui.define([
 
                 return a;
             } catch (err) {
-                console.error("OData bindList failed:", err);
                 this._oClaimStatusModel.setProperty("/claim_header_list", []);
                 this._oClaimStatusModel.setProperty("/claim_header_count", 0);
                 return [];
@@ -344,7 +342,6 @@ sap.ui.define([
 
                 return { header: oHeader, items: aItems };
             } catch (err) {
-                console.error("Failed to load header/items:", err);
                 this._oReqModel.setProperty("/req_header", {});
                 this._oReqModel.setProperty("/req_item_rows", []);
                 this._oReqModel.setProperty("/list_count", 0);
@@ -434,7 +431,6 @@ sap.ui.define([
                 this.getView().getModel("claimsubmission_input").setProperty("/from_my_approval", true);
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
-                console.log("openItemFromClaimList failed:", e);
                 MessageToast.show(Utility.getText("msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
@@ -728,7 +724,6 @@ sap.ui.define([
 
                 return { header: oHeaderRaw, items: aItems };
             } catch (err) {
-                console.error("Failed to load claim header/items:", err);
                 oClaimInputModel.setProperty("/claim_header", {});
                 oClaimInputModel.setProperty("/claim_items", []);
                 oClaimInputModel.setProperty("/claim_items_count", 0);

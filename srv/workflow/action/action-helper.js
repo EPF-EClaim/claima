@@ -29,8 +29,6 @@ const aApproverActions = {
 }
 
 function resolveActionDescriptor(sAction) {
-    console.log("Resolving action descriptor for action: ", sAction);
-    console.log("Approver Actions: ", aApproverActions);
     return aApproverActions[sAction];
 }
 
@@ -42,7 +40,6 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
         if(!aApproversDetails.length) {
             return false;
         }
-        console.log("Approvers Retrieved");
         // Set PENDING APPROVAL Status to the Approver action for the provided User ID
         let iUpdatedRows = await oTx.run(
             UPDATE(oDescriptor.entityApprovers)
@@ -58,10 +55,8 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
                     })
         )
         if(iUpdatedRows === 0) {
-            console.log("Failed to update approver action");
             return false;
-        }   
-        console.log("Updated approver action");
+        }
 
         // Clear all other PENDING STATUS statuses
         iUpdatedRows = await oTx.run(
@@ -77,15 +72,12 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
         )
         if(iUpdatedRows === 0) {
             // return false;
-            console.log("No other approvers found with status PENDING APPROVAL");
         }
         // If action = APPROVE, check for next level to set status to PENDING APPROVAL
         if(oActionDescriptor.approverActionValue === Constant.ApproverActions.APPROVE) {
-            const oLastLevelApproverStatus = isLastApproverLevel(aApproversDetails, sUserId)
-            console.log("LastLevelApproverContext: ", oLastLevelApproverStatus);
+            const oLastLevelApproverStatus = isLastApproverLevel(aApproversDetails, sUserId);
             // If last level, return true - Approver action ends. No need to update next level
             if(oLastLevelApproverStatus.ISLASTLEVEL) {
-                console.log("Approver is at last level, no next level approver to update");
                 return true;
             }
             // If not last level, update next level to PENDING APPROVAL status
@@ -94,10 +86,8 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
             );
             // If not last level, but cannot find next level, something went wrong.
             if(!oNextApproverDetails){
-                console.log("Next level approver details not found, something went wrong"); 
                 return false;
             }
-            console.log("Next level approver: ", oNextApproverDetails);
             iUpdatedRows = await oTx.run(
                 UPDATE(oDescriptor.entityApprovers)
                     .set({
@@ -109,15 +99,12 @@ async function updateApproverDetailsTable(oTx, sId, sUserId, oActionDescriptor, 
                     })
             );
             if(iUpdatedRows === 0) {
-                console.log("Failed to update next level approver to PENDING APPROVAL");
                 return false;
             }
-            console.log("Updated next level approver to PENDING APPROVAL");
         }
         return true;
     }
     catch(oError) {
-        console.log("Error found: ", oError);
         const iStatusCode = oError?.status || oError?.statusCode || oError?.code || "500";
         const sMessage = oError?.message || "No Message";
         await sendFinalApproveLog(sId, "", "APPROVAL_PROCESS" ,iStatusCode, sMessage);
@@ -140,9 +127,7 @@ async function verifyCorrectApproverForAction(sId, sUserId, oDescriptor) {
                 'SUBSTITUTE_APPROVER_ID'
             )
     );
-    console.log(oApproverLine);
     var bExists = Object.values(oApproverLine).includes(sUserId);
-    console.log("Approver ", bExists)
     return bExists;
     
 }
@@ -220,7 +205,6 @@ async function getApproversDetails(sId, oDescriptor) {
 }
 
 async function updateCorpoCardAdvance(oTx, sId, sStatus) {
-    console.log("Start Update Corpo Card Advance");
     const bIsApproved = sStatus === Constant.Status.APPROVED;
     const bIsPushBack = sStatus === Constant.Status.PUSH_BACK;
     const bIsRejected = sStatus === Constant.Status.REJECTED;
@@ -231,7 +215,6 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
     }
  
     const sPrefix = sId.slice(0,3);
-    console.log("sPrefix",sPrefix)
     const bIsRequest = sPrefix === Constant.WorkflowType.REQUEST;
  
     // Requests only care about approval (establishes the monthly advance).
@@ -242,7 +225,6 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
     }
  
     if (bIsRequest) {
-        console.log("Update Corpo Card Advance REQUEST");
         const aItemParts = await oTx.run(
             SELECT.from('ZREQ_ITEM_CCC_PART')
                 .where({ REQUEST_ID: sId })
@@ -253,7 +235,6 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
         return _applyCorpoCardAdvanceUpdates(oTx, _sumRequestPartsByCard(aItemParts), { bIsApproved, bIsPushBack: false, bIsRejected: false, bIsPendingApproval: false, bIsRequest: true }, _sumMerchantRefundByCard(aItemParts));
  
     } else if (sPrefix === Constant.WorkflowType.CLAIM) {
-        console.log("Update Corpo Card Advance CLAIM");
         const aClaimItems = await oTx.run(
             SELECT.from('ZCLAIM_ITEM')
                 .where({ CLAIM_ID: sId, CHARGED_TO_CCC: true })
@@ -267,7 +248,6 @@ async function updateCorpoCardAdvance(oTx, sId, sStatus) {
         return _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest: false });
  
     } else {
-        console.warn(`Unrecognized ID format, cannot determine Request vs Claim: ${sId}`);
         return true;
     }
 }
@@ -326,7 +306,6 @@ async function _resolveCardNoForEmployees(oTx, mAmountByEmp) {
 }
 
 async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, bIsPushBack, bIsRejected, bIsPendingApproval, bIsRequest }, mMerchantRefundByCard = {}) {
-    console.log("Starintg apply corpo card advance");
     const aCards = await oTx.run(
         SELECT.from('ZCORPORATE_CARD')
             .where({ CARD_NO: Object.keys(mAmountByCard) })
@@ -405,15 +384,12 @@ async function _applyCorpoCardAdvanceUpdates(oTx, mAmountByCard, { bIsApproved, 
                 })
             );
         }
- 
-        console.log("Completed apply corpo card advance");
     }
  
     return true;
 }
 
 async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
-    console.log("Starintg apply cardholder email");
     try {
         const oRequest = await oTx.run(
             SELECT.one.from('ZREQUEST_HEADER')
@@ -447,7 +423,6 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
  
         const aCardNos = Object.keys(mTotalsByCard);
         if (aCardNos.length === 0) return;
-        console.log("aCardNos", aCardNos);
  
         // Resolve cardholder(s) for each card from ZCORPORATE_CARD (a card can
         // have more than one cardholder - e.g. principal + supplementary)
@@ -456,8 +431,6 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                 .where({ CARD_NO: { in: aCardNos } })
                 .columns('CARD_NO', 'CARDHOLDER_ID')
         );
- 
-        console.log("aCardholderRows", aCardholderRows);
  
         const aFoundCardNos = new Set(aCardholderRows.map((oRow) => oRow.CARD_NO));
         aCardNos.forEach((sCardNo) => {
@@ -469,16 +442,13 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
         for (const oCardRow of aCardholderRows) {
             const oTotals = mTotalsByCard[oCardRow.CARD_NO];
             if (!oTotals) {
-                console.log(`[CCC_ADVANCE_EMAIL] No item totals found for Card ${oCardRow.CARD_NO}, skipping`);
                 continue;
             }
  
             const fAdvanceAmount = oTotals.currentBalance - oTotals.serviceTax + oTotals.merchantRefund;
-            console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} / Cardholder ${oCardRow.CARDHOLDER_ID}: currentBalance=${oTotals.currentBalance} serviceTax=${oTotals.serviceTax} merchantRefund=${oTotals.merchantRefund} -> fAdvanceAmount=${fAdvanceAmount}`);
- 
+            
             // Only notify when THIS request's own advance amount is positive
             if (!(fAdvanceAmount > 0)) {
-                console.log(`[CCC_ADVANCE_EMAIL] Card ${oCardRow.CARD_NO} advance amount ${fAdvanceAmount} is not positive, skipping notification`);
                 continue;
             }
  
@@ -509,11 +479,7 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                     CardAdvanceAmt: String(fAdvanceAmount)
                 };
  
-                console.log(`[CCC_ADVANCE_EMAIL] Email payload for cardholder ${oCardRow.CARDHOLDER_ID}:`, oEmailPayload);
- 
                 await sendEmailInternal(oEmailPayload);
- 
-                console.log(`[CCC_ADVANCE_EMAIL] Advance notification sent for Request ${sRequestId} to cardholder ${oCardRow.CARDHOLDER_ID} (${oCardholder.EMAIL})`);
  
             } catch (oEmailError) {
                 console.error(`[CCC_ADVANCE_EMAIL] Failed to send advance notification for Request ${sRequestId}, cardholder ${oCardRow.CARDHOLDER_ID}`, oEmailError);
@@ -532,7 +498,6 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
                     console.error('[CCC_ADVANCE_EMAIL] Failed to write background log', oLogError);
                 }
             }
-            console.log("Completed cardholder email");
         }
  
     } catch (oError) {
@@ -541,7 +506,6 @@ async function notifyCardholdersOfRequestApproval(oTx, sRequestId) {
 }
 
 async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
-    console.log("Starintg email CCC maker");
     try {
         const oRequest = await oTx.run(
             SELECT.one.from('ZREQUEST_HEADER')
@@ -620,12 +584,9 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
                 ClaimType: 'Corporate Credit Card Request',
                 CardAdvanceAmt: String(fRequestAdvanceAmount)
             });
-
-            console.log(`[CCC_MAKER_EMAIL] Approved Transfer notification sent for Request ${sRequestId} to CCC_MAKER ${oMaker.EEID} (${oMaker.EMAIL})`);
         }
  
     } catch (oError) {
-        console.error(`[CCC_MAKER_EMAIL] Failed to send CCC_MAKER notification for Request ${sRequestId}`, oError);
         try {
             await oTx.run(
                 INSERT.into(Constant.Entities.ZLOG).entries({
@@ -641,7 +602,6 @@ async function notifyCCCMakerOfApproval(oTx, sRequestId, sApproverId) {
             console.error('[CCC_MAKER_EMAIL] Failed to write background log', oLogError);
         }
     }
-    console.log("Completed email CCC maker");
 }
 
 function _sumMerchantRefundByCard(aItemParts) {
@@ -823,11 +783,6 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
         },
         cust_EPF_CCC_Child: aPayload
     };
-
-    console.log(
-        "JSON BEFORE ISservice.send:",
-        JSON.stringify(oFinalPayload, null, 2)
-    );
 
     try {
         const ISservice = await cds.connect.to('IS_Conn');

@@ -43,10 +43,7 @@ async function fetchHeaderForWorkflow(sId, oDescriptor) {
             ]
         }
     }
-    console.log('[workflow-determination/fetchHeaderForWorkflow] oMapping:', oMapping)
-    console.log('[workflow-determination/fetchHeaderForWorkflow] oDescriptor.entityPrefix:', oDescriptor.entityPrefix)
     const oConfig = oMapping[oDescriptor.entityPrefix];
-    console.log('[workflow-determination/fetchHeaderForWorkflow] oConfig:', oConfig)
 
     const oHeader =  await cds.run(
         SELECT
@@ -58,7 +55,6 @@ async function fetchHeaderForWorkflow(sId, oDescriptor) {
             ])
             .where( { [oDescriptor.idField]:sId })
     );
-    //console.log('[workflow-determination/fetchHeaderForWorkflow] oHeader:', oHeader)
     
     return oHeader;
 }
@@ -73,7 +69,6 @@ async function fetchItemsForWorkflow(oTx, sId, oDescriptor) {
             )
             .where( { [oDescriptor.idField]:sId })
     );
-    //console.log('[workflow-determination/fetchItemsForWorkflow] aItems:', aItems)
    
     return aItems;
 }
@@ -85,7 +80,6 @@ async function retrieveWorkflow(oTx, sId, oDescriptor, sEmpId) {
     
     // Before retrieving workflow from ZWORKFLOW_RULE, we need to normalize the Submission Type/ Request Type ID field to workflowRequestType
     const oWorkflowRequestType = await normalizeWorkflowRequestType(oTx,sId,oDescriptor);
-    console.log('[workflow-determination/retrieveWorkflow] oWorkflowRequestType:', oWorkflowRequestType)
 
     // We need to retrieve workflow rules based on priority:
     // 1. Workflow Type + Request Type + Claim Type + Role + Division   (Phase 2)
@@ -98,26 +92,21 @@ async function retrieveWorkflow(oTx, sId, oDescriptor, sEmpId) {
         let aWorkflowContext = [];
         // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role / division
         aWorkflowContext = await retrieveWorkflowByClaimTypeRoleAndDivision(sId, oDescriptor, sEmpId);
-        console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type, role and division:', aWorkflowContext)
         if(!aWorkflowContext.length) {
             // Retrieve workflow rules by workflow type/workflow request type/ claim type/ role
             aWorkflowContext = await retrieveWorkflowByClaimTypeAndRole(sId, oDescriptor, sEmpId);
-            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type and role:', aWorkflowContext)
         }
         if(!aWorkflowContext.length) {
             // Retrieve workflow rules by workflow type/workflow request type/ claim type/ division
             aWorkflowContext = await retrieveWorkflowByClaimTypeAndDivision(sId, oDescriptor, sEmpId);
-            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type and division:', aWorkflowContext)
         }
         if(!aWorkflowContext.length) {
             // Retrieve workflow rules by workflow type/workflow request type/ claim type
             aWorkflowContext = await retrieveWorkflowByClaimType(sId, oDescriptor);
-            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by claim type:', aWorkflowContext)
         }
         if(!aWorkflowContext.length) {
              // Retrieve workflow rules by workflow type/workflow request type
             aWorkflowContext = await retrieveWorkflowByDefault(sId, oDescriptor);
-            console.log('[workflow-determination/retrieveWorkflow] aWorkflowContext by default:', aWorkflowContext)
         }
         if(!aWorkflowContext.length) {
             return null;
@@ -189,7 +178,6 @@ async function determineRiskLevel(sId, oDescriptor) {
             .columns('ZCLAIM_TYPE_ITEM.RISK')
     )
 
-    //console.log('[workflow-determination/determineRiskLevel] sOverallRiskLevel:', sOverallRiskLevel)
     return sOverallRiskLevel ? Constant.RiskLevels.HIGH : Constant.RiskLevels.LOW
 
 }
@@ -374,8 +362,6 @@ function validateWorkflowRule(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateThresholdAmount oWorkflowContext.THRESHOLD_VALUE: ", oWorkflowContext.THRESHOLD_VALUE);
-    console.log("evaluateThresholdAmount oDocumentRulesContext.maxThresholdAmt: ",  oDocumentRulesContext.maxThresholdAmt);
     if(!oWorkflowContext.THRESHOLD_VALUE){
         return true;
     }
@@ -395,8 +381,6 @@ function evaluateThresholdAmount(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateRiskLevel oWorkflowContext.RISK_LEVEL: ", oWorkflowContext.RISK_LEVEL);
-    console.log("evaluateRiskLevel oDocumentRulesContext.riskLevel: ",  oDocumentRulesContext.riskLevel);
     if(!oWorkflowContext.RISK_LEVEL) {
         return true;
     }
@@ -404,8 +388,6 @@ function evaluateRiskLevel(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateReceiptDate oWorkflowContext.RECEIPT_AGE: ", oWorkflowContext.RECEIPT_AGE);
-    console.log("evaluateReceiptDate oDocumentRulesContext.agingDays: ",  oDocumentRulesContext.agingDays);
     if(!oWorkflowContext.RECEIPT_AGE){
         return true;
     }
@@ -422,8 +404,6 @@ function evaluateReceiptDate(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateCostCenter oWorkflowContext.EMPLOYEE_COST_CENTER: ", oWorkflowContext.EMPLOYEE_COST_CENTER);
-    console.log("evaluateCostCenter oDocumentRulesContext.costCenter: ",  oDocumentRulesContext.costCenter);
     if(!oWorkflowContext.EMPLOYEE_COST_CENTER){
         return true;
     }
@@ -431,8 +411,6 @@ function evaluateCostCenter(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateCashAdvance oWorkflowContext.CASH_ADVANCE: ", oWorkflowContext.CASH_ADVANCE);
-    console.log("evaluateCashAdvance oDocumentRulesContext.isCashAdvance: ",  oDocumentRulesContext.isCashAdvance);
     switch(oWorkflowContext.CASH_ADVANCE) {
         case true:
             return (oDocumentRulesContext.isCashAdvance);
@@ -446,8 +424,6 @@ function evaluateCashAdvance(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateProjectCode oWorkflowContext.PROJECT_CODE: ", oWorkflowContext.PROJECT_CLAIM);
-    console.log("evaluateProjectCode oDocumentRulesContext.isProjectCode: ",  oDocumentRulesContext.isProjectCode);
     switch(oWorkflowContext.PROJECT_CLAIM) {
         case true:
             return (oDocumentRulesContext.isProjectCode);
@@ -461,8 +437,6 @@ function evaluateProjectCode(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateClaimType oWorkflowContext.CLAIM_TYPE_ID: ", oWorkflowContext.CLAIM_TYPE_ID);
-    console.log("evaluateClaimType oDocumentRulesContext.CLAIM_TYPE_ID: ",  oDocumentRulesContext.claimTypeId);
     if(oWorkflowContext.CLAIM_TYPE_ID == 'NULL') {
         return true;
     }
@@ -471,8 +445,6 @@ function evaluateClaimType(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateTripStartDate oWorkflowContext.TRIP_START_DATE: ", oWorkflowContext.TRIP_START_DATE);
-    console.log("evaluateTripStartDate oDocumentRulesContext.tripStartDate: ",  oDocumentRulesContext.tripStartDate);
     if(!oWorkflowContext.TRIP_START_DATE){
         return true;
     }
@@ -497,8 +469,6 @@ function evaluateTripStartDate(oDocumentRulesContext, oWorkflowContext) {
     }
 }
 function evaluateLocationType(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateLocationType oWorkflowContext.LOCATION_TYPE: ", oWorkflowContext.LOCATION_TYPE);
-    console.log("evaluateLocationType oDocumentRulesContext.locationType: ",  oDocumentRulesContext.locationType);
     if(!oWorkflowContext.LOCATION_TYPE){
         return true;
     }
@@ -506,8 +476,6 @@ function evaluateLocationType(oDocumentRulesContext, oWorkflowContext) {
 }
 
 function evaluateClaimItem(oDocumentRulesContext, oWorkflowContext) {
-    console.log("evaluateClaimItem oWorkflowContext.CLAIM_TYPE_ITEM_ID: ", oWorkflowContext.CASH_REPAYMENT);
-    console.log("evaluateClaimItem oDocumentRulesContext.isCashRepayment: ",  oDocumentRulesContext.isCashRepayment);
     switch(oWorkflowContext.CASH_REPAYMENT) {
         case true:
             return (oDocumentRulesContext.isCashRepayment);
@@ -606,13 +574,10 @@ async function determineWorkflow(oTx, sId) {
         isCashRepayment : bCashRepayment
     }
 
-    console.log('[workflow-determination/determineWorkflow] oDocumentRulesContext:', oDocumentRulesContext)
-
     //4. Retrieve Workflow rules based on header/item details
     //4.1 Retrieve Workflow as normal based on Submission Type/Request Type
     if(!aWorkflowContext.length){
         aWorkflowContext = await retrieveWorkflow(oTx, sId, oDescriptor, oHeader[Constant.EntitiesFields.EMP_ID]);
-        console.log("Workflow by Submission Type: ", aWorkflowContext);
     }
 
     if(!aWorkflowContext.length){
@@ -625,11 +590,9 @@ async function determineWorkflow(oTx, sId) {
         for (const oWorkflowContext of aWorkflowContext) {
             // run the rule validator
             // validator will return true if all rules were successful
-            console.log("Validating workflow rules for workflow context: ", oWorkflowContext.OUTCOME_WORKFLOW_CODE);
             let bIsValidatedRule = validateWorkflowRule(oDocumentRulesContext, oWorkflowContext);
             if(bIsValidatedRule) {
                 oDeterminedWorkflowContext = oWorkflowContext;
-                console.log('[workflow-determination/determineWorkflow] oWorkflowContext:', oWorkflowContext)
                 break;
             }
         }

@@ -196,7 +196,6 @@ sap.ui.define([
         const subNo = `${prefix}${String(current).padStart(7, "0")}`;
         return { subNo, current };
       } catch (err) {
-        console.error("Number Range Error:", err);
         return null;
       }
     },
@@ -209,7 +208,6 @@ sap.ui.define([
         await oContext.setProperty("CURRENT", String(currentNumber + 1));
         return true;
       } catch (e) {
-        console.error("Update Failed", e);
         return false;
       }
     },
@@ -231,11 +229,9 @@ sap.ui.define([
 						name: oData.NAME
 					};
 				} else {
-					console.warn("No employee found with email: " + sEMAIL);
 					return null;
 				}
 			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
 				return null; // Return null so the app doesn't crash
 			}
 		},
@@ -523,7 +519,6 @@ sap.ui.define([
         }
         return aCtx[0].getObject();
       } catch (e) {
-        console.error("ZEMP_MASTER lookup failed", e);
         throw e;
       }
     },

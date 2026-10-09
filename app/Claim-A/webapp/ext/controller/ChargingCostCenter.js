@@ -317,10 +317,6 @@ sap.ui.define([
                 );
 
             } catch (oError) {
-                console.error(
-                    "Charging Cost Center update failed",
-                    oError
-                );
 
                 var sMessage =
                     oError?.message ||

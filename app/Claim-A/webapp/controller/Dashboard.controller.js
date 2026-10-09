@@ -41,7 +41,9 @@ sap.ui.define([
 				.then(aContexts => {
 					this._oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
 				})
-				.catch(err => console.log("claims error:", err));
+				.catch(err => {
+					this._oDashboardModel.setProperty("/claims", []);
+				});
 
 			_oEmployeeViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", null, [
 				new Sorter("modifiedAt", true)
@@ -49,14 +51,15 @@ sap.ui.define([
 				.then(aContexts => {
 					this._oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
 				})
-				.catch(err => console.log("requests error:", err));
+				.catch(err => {
+					this._oDashboardModel.setProperty("/requests", []);
+				});
 
 			_oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
 				.then(aContexts => {
 					this._oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => {
-					console.log("approvals not available for this role");
 					this._oDashboardModel.setProperty("/approvals", []);
 				});
 			// Hide indicator once everything is loaded

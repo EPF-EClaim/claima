@@ -27,11 +27,10 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn(Utility.getText("budget_w_claim_type_not_found"));
 					return "";
 				}
 			} catch (oError) {
-				console.error("Error fetching Claim Type detail", oError);
+				return;
 			}
 
 		},
@@ -50,11 +49,10 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.MATERIAL_CODE;
 				} else {
-					console.warn(Utility.getText("budget_w_claim_type_item_not_found"));
 					return "";
 				}
 			} catch (oError) {
-				console.error("Error fetching Claim Type Item detail", oError);
+				return;
 			}
 
 		},
@@ -139,7 +137,6 @@ sap.ui.define([
 				const aResults = oResponse.value[0].results;
 				return aResults;
 			} catch (err) {
-				console.error("Budget check failed", err);
 				return false;
 			}
 		},

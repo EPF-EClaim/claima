@@ -409,7 +409,6 @@ sap.ui.define([
 
             } catch (e) {
                 // eslint-disable-next-line no-console
-                console.error(e);
                 MessageToast.show("Failed to calculate routes");
             }
         },

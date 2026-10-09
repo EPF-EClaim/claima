@@ -11,7 +11,6 @@ const {
 } = require("./notification-helper");
 
 async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction, sLevel = 1) {    
-    console.log(`Preparing to send email to approver(s) for document ${sId} at level ${sLevel} with action ${sAction}`);
     let oResponse = null;
     try{
 
@@ -20,22 +19,17 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         let sSubmittedDate = new Date().toISOString().split('T')[0];
 
         // Retrieve Header context
-        console.log
         const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
         if(!oHeaderContext){
-            console.log(`No header context found for document ${sId}`);
             return false;
         }
         // Retrieve Claimant Context
-        console.log("Retrieving claimant context for employee: ", oHeaderContext[Constant.EntitiesFields.EMP_ID]);
         const oClaimantContext = await retrieveEmployeeDetails(oHeaderContext[Constant.EntitiesFields.EMP_ID]);    
         if(!oClaimantContext) {
-            console.log(`No claimant context found for employee ${oHeaderContext[Constant.EntitiesFields.EMP_ID]}`);
             return false;
         }
         let oEmailPayload = null;
        
-        console.log(`Looping through approvers context to send email for document ${sId} at level ${sLevel} with action ${sAction}`);
         for(const oApproverContext of aApproversContext){
             if(oApproverContext.LEVEL = sLevel) {
                 oEmailPayload = generateEmailPayload(
@@ -48,9 +42,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                     sAction,
                     oApproverContext.APPROVER_EMAIL
                 )
-                console.log("Generated email payload approver: ", oEmailPayload);
                 oResponse = await sendEmailViaSAPIS(oEmailPayload);
-                console.log(oResponse);
                 if(oApproverContext.SUB_NAME) {
                     oEmailPayload = generateEmailPayload(
                         oApproverContext.SUB_NAME,
@@ -62,9 +54,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
                         sAction,
                         oApproverContext.SUB_EMAIL
                     )
-                    console.log("Generated email payload sub: ", oEmailPayload);
                     oResponse = await sendEmailViaSAPIS(oEmailPayload);
-                    console.log(oResponse);
                 }
                 return true;
             }
@@ -72,7 +62,6 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         return true;
     }
     catch(oError){
-        console.log("Email sending failed with error: ", oError);
         return false;
     }
     

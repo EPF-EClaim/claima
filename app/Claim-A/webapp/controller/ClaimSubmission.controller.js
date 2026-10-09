@@ -419,7 +419,6 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission!");
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
@@ -469,7 +468,6 @@ sap.ui.define([
 				}
 				
 			} catch (err) {
-				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
@@ -1777,7 +1775,6 @@ sap.ui.define([
 						RejectionReason : ""
 					}
 					
-					console.log("Payload Send Back: ", oPayload);
 					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
 					if (this._oApproveDialog) {
@@ -1841,7 +1838,7 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload); 
+				
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 
 				//MessageToast.show(sMessageKey);
@@ -1896,7 +1893,7 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload);
+					
 				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
 
 				//MessageToast.show(sMessageKey);
@@ -2008,7 +2005,7 @@ sap.ui.define([
 					return "";
 				}
 			} catch (oError) {
-				console.error("Error fetching Claim Type detail", oError);
+				return null;
 			}
 
 		},
@@ -4535,7 +4532,6 @@ sap.ui.define([
 					}
 				}
 			} catch (e) {
-				console.log(e.message);
 				BusyIndicator.hide();
 				return false;
 			}
@@ -4661,9 +4657,7 @@ sap.ui.define([
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 						var oContext = oListBinding.create(oBody.getData());
-						await oContext.created().then(() => {
-							console.log("New claim item created");
-						});
+						await oContext.created();
 					}
 					else {
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
@@ -4690,12 +4684,9 @@ sap.ui.define([
 							}
 
 							await oModel.submitBatch("$auto");
-
-							console.log("Save claim item success");
 						}
 					}
 				} catch (e) {
-					console.error(e.message);
 					BusyIndicator.hide();
 					return false;
 				}
@@ -4722,11 +4713,8 @@ sap.ui.define([
 					var aCtx = await oListBinding.requestContexts(0, 1);
 					var oCtx = aCtx[0];
 
-					await oCtx.delete().then(function () {
-						console.log("Claim item deleted");
-					});
+					await oCtx.delete();
 				} catch (e) {
-					console.error(e.message);
 					BusyIndicator.hide();
 					return false;
 				}
@@ -4818,7 +4806,6 @@ sap.ui.define([
 				}
 				else {
 					row = oCtx.getObject();
-					console.warn(`Claim ${oCtx.CLAIM_ID} already exists in DB, please update number range`);
 					result = 'X';
 					return { result, current };
 				}
@@ -4852,7 +4839,6 @@ sap.ui.define([
 				return { CURRENT: nextNumber };
 
 			} catch (err) {
-				console.error("Error updating number range:", err);
 				return null;
 			}
 		},
@@ -4940,7 +4926,6 @@ sap.ui.define([
 			const sClaim_type_item = sClaimTypeItemFromModel;
 
 			if (!sClaim_type_item) {
-				console.warn("No claim item found.");
 				return;
 			}
 
@@ -4970,8 +4955,6 @@ sap.ui.define([
 						const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
 						if (control && typeof control.setVisible === "function") {
 							control.setVisible(true);
-						} else {
-							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
 				} else {
@@ -5134,7 +5117,6 @@ sap.ui.define([
 			var screenArray = oInputModel.getProperty("/screen_array");
 
 			if (!screenArray) {
-				console.warn("Cannot get field list for claim items");
 				this._setAllControlsEditable(true);
 				return;
 			}
@@ -5145,7 +5127,6 @@ sap.ui.define([
 					const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
 
 					if (!control) {
-						console.warn("Control not found or not editable-capable:", id);
 						return;
 					}
 
@@ -5242,8 +5223,6 @@ sap.ui.define([
 				const c = this._resolveControl(id, "claimsubmission_claimdetails_input");
 				if (c && typeof c.setEditable === "function") {
 					c.setEditable(bEditable);
-				} else {
-					console.warn("Control not found or not editable-capable:", id);
 				}
 			});
 		},
@@ -5298,7 +5277,6 @@ sap.ui.define([
 
 				return a;
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				oReq.setProperty("/req_header_list", []);
 				oReq.setProperty("/req_header_count", 0);
 				return [];
@@ -5354,7 +5332,6 @@ sap.ui.define([
 
 				return a;
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				oReq.setProperty("/claim_header_list", []);
 				oReq.setProperty("/claim_header_count", 0);
 				return [];

@@ -55,7 +55,6 @@ sap.ui.define([
 
             if (!res.ok) {
                 const errText = await res.text().catch(() => "");
-                console.log("Body:", await res.text());
                 throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
             }
 
@@ -134,11 +133,9 @@ sap.ui.define([
 					throw new Error(`HTTP ${response.status}: ${message}`);
 				}
 
-				console.log("MDF Updated successfully");
 				return true;
 
 			} catch (error) {
-				console.error("Error creating MDF:", error);
 				return false;
 			}
 		},
@@ -213,12 +210,9 @@ sap.ui.define([
 					throw new Error(`HTTP ${response.status}: ${message}`);
 				}
 
-				console.log("Child MDF Updated successfully");
 				return true;
 
 			} catch (error) {
-				console.log("Error creating Child MDF: " + error);
-				// MessageToast.show("Error creating Child MDF: " + error);
 				return false;
 			}
 		},
@@ -335,20 +329,17 @@ sap.ui.define([
 				// Check XML parsing errors
 				const parseError = xmlDoc.querySelector("parsererror");
 				if (parseError) {
-					console.log("Failed to parse XML response.")
 					throw new Error("Failed to parse XML response.");
 				}
 
 				// get content from xmlDoc
 				const content = xmlDoc.querySelector("content");
 				if (!content) {
-					console.log("No attachment details found (missing <content>).")
 					throw new Error("No attachment details found (missing <content>).");
 				}
 
 				const props = content.querySelector("properties");
 				if (!props) {
-					console.log("No attachment details found (missing <properties>).")
 					throw new Error("No attachment details found (missing <properties>).");
 				}
 
@@ -403,8 +394,6 @@ sap.ui.define([
 						}
 					});
 				}
-
-				console.log(pdfUrl);
 
 				that._PDFViewer.setSource(pdfUrl);
 

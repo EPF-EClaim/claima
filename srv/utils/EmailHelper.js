@@ -10,7 +10,6 @@ module.exports = {
                 CardAdvanceAmt: 0,
                 ...emailData
             };
-            console.log("sendEmailInternal", oPayload)
 
             const response = await ISservice.send({
                 method: 'POST',

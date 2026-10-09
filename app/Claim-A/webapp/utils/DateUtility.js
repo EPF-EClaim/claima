@@ -1171,7 +1171,6 @@ sap.ui.define([
             let oBaseDate = new Date(dDate);
 
             if (isNaN(oBaseDate.getTime())) {
-                console.error("Invalid Date format received:", dDate);
                 return oBaseDate;
             }
 

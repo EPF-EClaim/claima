@@ -87,7 +87,6 @@ sap.ui.define([
 
 				return oContextItems;
 			} catch (err) {
-				console.error("OData bindList failed:", err);
 				oReqStatusModel.setProperty("/req_header_list", []);
 				oReqStatusModel.setProperty("/req_header_count", 0);
 				return [];
