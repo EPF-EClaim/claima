@@ -8,6 +8,9 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/m/HBox",
 	"sap/m/VBox",
+	"sap/m/Avatar",
+	"sap/m/Title",
+	"sap/m/Toolbar",
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/Fragment",
@@ -37,6 +40,9 @@ sap.ui.define([
 	MessageBox,
 	HBox,
 	VBox,
+	Avatar,
+	Title,
+	Toolbar,
 	Controller,
 	JSONModel,
 	Fragment,
@@ -1856,6 +1862,11 @@ sap.ui.define([
 			this.oDialog.open();
 		},
 
+		/**
+		 * Opens or closes the avatar popover.
+		 * Shows the employee profile, or a warning when the employee is not found.
+		 * @param {sap.ui.base.Event} oEvent - Avatar press event
+		 */
 		onAvatarPress: function (oEvent) {
 			const oAvatar = oEvent.getSource();
 
@@ -1863,108 +1874,130 @@ sap.ui.define([
 				this._oAvatarPopover = new Popover({
 					placement: "Bottom",
 					showHeader: false,
+					contentWidth: "20rem",
 					content: [
 						new VBox({
-							class: "sapUiSmallMargin",
 							items: [
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiTinyMarginTop",
+								this._createProfileHeader(),
+								this._createNotFoundBox(),
+
+								// Employee details
+								new VBox({
+									visible: "{= !${session>/sessionFailed} }",
 									items: [
-										new Icon({
-											src: "sap-icon://employee",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/userId}" })
+										this._createInfoRow("sap-icon://employee", "Employee ID", "{session>/userId}"),
+										this._createInfoRow("sap-icon://employee-pane", "Grade", "{session>/grade}"),
+										this._createInfoRow("sap-icon://business-card", "Department", "{session>/department}"),
+										this._createInfoRow("sap-icon://email", "Email", "{session>/email}")
 									]
-								}),
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiTinyMarginTop",
-									items: [
-										new Icon({
-											src: "sap-icon://person-placeholder",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/userName}" })
-									]
-								}),
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiMediumMarginTopBottom",
-									items: [
-										new Icon({
-											src: "sap-icon://employee-pane",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/grade}" })
-									]
-								}),
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiMediumMarginTopBottom",
-									items: [
-										new Icon({
-											src: "sap-icon://suitcase",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/position}" })
-									]
-								}),
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiMediumMarginTopBottom",
-									items: [
-										new Icon({
-											src: "sap-icon://business-card",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/department}" })
-									]
-								}),
-								new HBox({
-									alignItems: "Center",
-									width: "100%",
-									class: "sapUiTinyMarginTop",
-									items: [
-										new Icon({
-											src: "sap-icon://email",
-											width: "1rem",
-											class: "sapUiLargeMarginBeginEnd"
-										}),
-										new Text({ text: "{session>/email}" })
-									]
-								}),
-								new Button({
-									icon: "sap-icon://log",
-									text: "Sign Out",
-									type: "Transparent",
-									width: "100%",
-									press: function () {
-										window.location.href = "/claima/do/logout";
-									}
 								})
 							]
-						})
-					]
+						}).addStyleClass("sapUiSmallMargin")
+					],
+					// Built-in footer, which already has a separator line
+					footer: new Toolbar({
+						content: [
+							new Button({
+								icon: "sap-icon://log",
+								text: "Sign Out",
+								type: "Reject",
+								width: "100%",
+								press: this._onSignOut.bind(this)
+							})
+						]
+					})
 				});
+
 				this.getView().addDependent(this._oAvatarPopover);
 			}
+
 			if (this._oAvatarPopover.isOpen()) {
 				this._oAvatarPopover.close();
 			} else {
 				this._oAvatarPopover.openBy(oAvatar);
 			}
+		},
+
+		/**
+		 * Creates the profile header with initials, name and position.
+		 * @private
+		 * @returns {sap.m.HBox} Profile header
+		 */
+		_createProfileHeader: function () {
+			return new HBox({
+				alignItems: "Center",
+				visible: "{= !${session>/sessionFailed} }",
+				items: [
+					new Avatar({
+						initials: "{session>/initials}",
+						displaySize: "S"
+					}).addStyleClass("sapUiSmallMarginEnd"),
+					new VBox({
+						items: [
+							new Title({ text: "{session>/userName}", level: "H5", wrapping: true }),
+							new Label({ text: "{session>/position}", wrapping: true })
+						]
+					})
+				]
+			}).addStyleClass("sapUiSmallMarginBottom");
+		},
+
+		/**
+		 * Creates the warning shown when the employee record is not found.
+		 * @private
+		 * @returns {sap.m.HBox} Warning box
+		 */
+		_createNotFoundBox: function () {
+			return new HBox({
+				alignItems: "Center",
+				visible: "{= !!${session>/sessionFailed} }",
+				items: [
+					new Icon({ src: "sap-icon://warning", size: "1.25rem", color: "Critical" })
+						.addStyleClass("sapUiSmallMarginEnd"),
+					new Text({ text: "Employee not found" })
+				]
+			});
+		},
+
+		/**
+		 * Creates one detail row with an icon, a label and a value.
+		 * @private
+		 * @param {string} sIcon - Icon URI
+		 * @param {string} sLabel - Field label
+		 * @param {string} sValue - Binding path for the value
+		 * @returns {sap.m.HBox} Detail row
+		 */
+		_createInfoRow: function (sIcon, sLabel, sValue) {
+			return new HBox({
+				alignItems: "Start",
+				items: [
+					new Icon({ src: sIcon, size: "1rem" })
+						.addStyleClass("sapUiSmallMarginEnd sapUiTinyMarginTop"),
+					new VBox({
+						items: [
+							new Label({ text: sLabel }),
+							new Text({ text: sValue, wrapping: true })
+						]
+					})
+				]
+			}).addStyleClass("sapUiTinyMarginTopBottom");
+		},
+
+		/**
+		 * Asks the user to confirm, then signs them out.
+		 * @private
+		 */
+		_onSignOut: function () {
+			this._oAvatarPopover?.close();
+			MessageBox.confirm("Are you sure you want to sign out?", {
+				title: "Sign Out",
+				emphasizedAction: MessageBox.Action.OK,
+				onClose: function (sAction) {
+					if (sAction === MessageBox.Action.OK) {
+						window.location.href = "/claima/do/logout";
+					}
+				}
+			});
 		},
 
 		_proceedClaim: async function () {

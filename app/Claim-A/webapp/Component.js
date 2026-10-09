@@ -11,7 +11,8 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
-	"claima/utils/RequestUtility"
+	"claima/utils/RequestUtility",
+    "sap/ui/core/mvc/XMLView"
 ],
     (AppComponent,
 	models,
@@ -25,7 +26,8 @@ sap.ui.define([
     MessageBox,
 	Validator,
 	CustomValidator,
-	RequestUtility) => {
+	RequestUtility,
+    XMLView) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -187,7 +189,10 @@ sap.ui.define([
 
                 } catch (oError) {
                     console.error("User Session Initialization Failed:", oError);
+                    this._bSessionFailed = true;
+                    this.getModel("session").setProperty("/sessionFailed", true);
                     this._fnRolesLoaded();
+                    this._showEmployeeNotFound();
                 }
             },
 
@@ -378,6 +383,12 @@ sap.ui.define([
                 var oRouter = this.getRouter();
 
                 this._oRolesLoadedPromise.then(function () {
+                    // Block all routes if the user session failed to load
+                    if (this._bSessionFailed) {
+                        this._showEmployeeNotFound();
+                        return;
+                    }
+
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
                                   oRoleModel.getProperty("/isAdminCC") || 
@@ -390,6 +401,40 @@ sap.ui.define([
                         oRouter.navTo(sRoute, {}, true);
                     }
                 }.bind(this));
+            },
+
+            /**
+             * Shows the Employee Not Found page and blocks all other navigation.
+             * Places the view directly into pageContainer instead of using the router.
+             * @private
+             */
+            _showEmployeeNotFound: async function () {
+                // Stop the router so URL changes can't open other pages
+                this.getRouter().stop();
+
+                // Wait until App.view (which contains pageContainer) is ready
+                await this.rootControlLoaded();
+                const oRoot = this.getRootControl();
+                const oNav = oRoot.byId("pageContainer");
+                if (!oNav) {
+                    console.error("pageContainer not found in root view");
+                    return;
+                }
+
+                // Collapse the side navigation
+                oRoot.byId("toolPage")?.setSideExpanded(false);
+                oRoot.byId("toolPage")?.addStyleClass("zSessionFailed");
+
+                // Create the view only once, then show it
+                let oView = oRoot.byId("employeeNotFoundView");
+                if (!oView) {
+                    oView = await this.runAsOwner(() => XMLView.create({
+                        id: oRoot.createId("employeeNotFoundView"),
+                        viewName: "claima.view.UserNotFound"
+                    }));
+                    oNav.addPage(oView);
+                }
+                oNav.to(oView, "show");
             }
 
         });

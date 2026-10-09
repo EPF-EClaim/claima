@@ -70,6 +70,7 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+            if (!oEmp) return;
 
             let sOrigin = null;
             try {
@@ -2040,13 +2041,13 @@ module.exports = (srv) => {
             req.user?.id;
 
         if (!sUserEmail) {
-            req.error(401, "Unable to determine logged-in user");
+            return req.error(401, "Unable to determine logged-in user");
         }
         const oEmp = await tx.run(
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
         if (!oEmp) {
-            req.error(404, "Employee record not found");
+            return req.error(404, "Employee record not found");
         }
 
         return oEmp;
