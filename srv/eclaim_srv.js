@@ -702,7 +702,8 @@ module.exports = (srv) => {
                     .from('ZCLAIM_ITEM')
                     .where(
                         'CLAIM_ID =', sClaimId,
-                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                        "and CLAIM_TYPE_ITEM_ID <> 'POTONGAN_ELAUN' " +
+                        "and (CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY' OR CHARGED_TO_CCC = false)"
                     )
             );
             totalClaimAmount = totalResult.TotalClaimAmount || 0;
@@ -1528,45 +1529,51 @@ module.exports = (srv) => {
             if (!sRequestId) return;
 
             cds.spawn({ user: req.user }, async (tx) => {
-                switch (oRequestRecord.CLAIM_TYPE_ID) {
-                    case Constant.ClaimType.HANDPHONE:
-                        try {
-                            var result;
+                try {
+                    switch (oRequestRecord.CLAIM_TYPE_ID) {
+                        case Constant.ClaimType.HANDPHONE: {
                             const aReqItem = await tx.run(
                                 SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({
                                     REQUEST_ID: sRequestId
                                 })
                             );
 
-                            const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
+                            const aReqSubId = aReqItem.map(d => d.REQUEST_SUB_ID);
+
                             const aParticipantData = await tx.run(
                                 SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
                                     REQUEST_ID: sRequestId,
                                     REQUEST_SUB_ID: { in: aReqSubId }
                                 })
                             );
-                            for (let i = 0; i < aParticipantData.length; i++) {
-                                var aPartReqItem = aReqItem.filter(function (item) {
-                                    return item.REQUEST_SUB_ID === aParticipantData[i].REQUEST_SUB_ID;
-                                });
-                                result = await tx.run(
+
+                            for (const oParticipant of aParticipantData) {
+                                const oReqItem = aReqItem.find(
+                                    item => item.REQUEST_SUB_ID === oParticipant.REQUEST_SUB_ID
+                                );
+                                if (!oReqItem) {
+                                    req.warn?.(
+                                        400,
+                                        `Skipping participant ${oParticipant.PARTICIPANTS_ID}: no matching request item found for REQUEST_SUB_ID ${oParticipant.REQUEST_SUB_ID}.`
+                                    );
+                                    continue;
+                                }
+
+                                await tx.run(
                                     INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
-                                        EMP_ID: aParticipantData[i].PARTICIPANTS_ID,
-                                        CLAIM_TYPE_ID: aPartReqItem[0].CLAIM_TYPE_ID,
-                                        START_DATE: aPartReqItem[0].START_DATE,
-                                        END_DATE: aPartReqItem[0].END_DATE,
-                                        ELIGIBLE_AMOUNT: aParticipantData[i].ALLOCATED_AMOUNT
+                                        EMP_ID: oParticipant.PARTICIPANTS_ID,
+                                        CLAIM_TYPE_ID: oReqItem.CLAIM_TYPE_ID,
+                                        START_DATE: oReqItem.START_DATE,
+                                        END_DATE: oReqItem.END_DATE,
+                                        ELIGIBLE_AMOUNT: oParticipant.ALLOCATED_AMOUNT
                                     })
                                 );
-                            };
+                            }
 
-                        } catch (error) {
-                            req.error(400, `Failed inserting records for Exception List Table: ${error.message}`);
+                            break;
                         }
-                        break;
 
-                    default:
-                        try {
+                        default: {
                             const oCashAdvanceItem = await tx.run(
                                 SELECT.one.from('ZREQUEST_ITEM').where({
                                     REQUEST_ID: sRequestId,
@@ -1574,7 +1581,10 @@ module.exports = (srv) => {
                                 })
                             );
 
-                            if (!oCashAdvanceItem) return;
+                            if (!oCashAdvanceItem) {
+                                req.info(`No cash advance item found for request ${sRequestId}; skipping cash advance payment creation.`);
+                                return;
+                            }
 
                             const sEmpId = oRequestRecord.EMP_ID;
                             const sTripStartDate = oRequestRecord.TRIP_START_DATE;
@@ -1586,10 +1596,15 @@ module.exports = (srv) => {
                                 })
                             );
 
-                            if (oExistingCashAdvRecords) return;
+                            if (oExistingCashAdvRecords) {
+                                req.info(`Cash advance payment already exists for request ${sRequestId} and employee ${sEmpId}; skipping.`);
 
-                            let dDate = new Date(sTripStartDate);
+                                return;
+                            }
+
+                            const dDate = new Date(sTripStartDate);
                             dDate.setDate(dDate.getDate() - 14);
+
                             const sDisbursementDate = dDate.toISOString().split('T')[0];
 
                             await tx.run(
@@ -1601,10 +1616,14 @@ module.exports = (srv) => {
                                 })
                             );
 
-                        } catch (error) {
-                            req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                            break;
                         }
-                        break;
+                    }
+                } catch (error) {
+                    req.error(
+                        400,
+                        `Failed processing request ${sRequestId}: ${error.message}`
+                    );
                 }
             });
         }
@@ -2365,8 +2384,8 @@ module.exports = (srv) => {
         // ---------------------------------------------------------
         // 1. Current Checking (Position & Date Logic)
         // ---------------------------------------------------------
-        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
-        const sPositionStartDate = oEmp.POSITION_START_DATE;
+        const sPositionEvent = oEmp.ELAUN_TUKAR_REASON;
+        const sPositionStartDate = oEmp.ELAUN_TUKAR_START_DATE;
 
         if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
@@ -2385,7 +2404,7 @@ module.exports = (srv) => {
         const dCurrentDate = new Date();
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
-        if (dCurrentDate <= dEligibleDate) {
+        if (dCurrentDate > dEligibleDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
@@ -5447,9 +5466,6 @@ module.exports = (srv) => {
             await oTx.rollback();
             return req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
         }
-
-        // remove approval log
-        await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
 
         // insert record history
         try {

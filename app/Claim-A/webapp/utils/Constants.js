@@ -326,6 +326,7 @@ sap.ui.define([
             "POLICY_START_DATE" : "POLICY_START_DATE",
             "DISABLED" : "DISABLED",
             "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY",
+            "EMPLOYED" : "EMPLOYED",
             "COST_CENTER_ID": "COST_CENTER_ID",
             "COST_CENTER_DESC": "COST_CENTER_DESC",
             "DEPARTMENT_ID": "DEPARTMENT_ID",
@@ -760,11 +761,6 @@ sap.ui.define([
         "SuccessFactorCompanyCode": {
             "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
             "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
-        },
-        "RelationshipType": {
-            "SPOUSE": "01",
-            "CHILD": "02",
-            "ADDITIONAL_SPOUSE": "07"
         },
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",

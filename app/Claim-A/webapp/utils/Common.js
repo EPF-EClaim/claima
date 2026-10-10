@@ -313,6 +313,7 @@ sap.ui.define([
 		 * Set fields to be editable
 		 * if there is a request tied to claim, do not allow editing for start and end trip dates
 		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
+		 * if there is a request, do not allow editing for alternate cost center
 		 * @public
          * @param {string} sClaimType Claim submission or Pre Approval Request claim type
 		 * @param {boolean} bEdit edit toggle
@@ -347,12 +348,6 @@ sap.ui.define([
                             }
                             if (!oRequestData.eventEnd) {
                                 oEditableFields.setProperty("/endEvent", bEdit);
-                            }
-                            if (!oRequestData.altcc) {
-                                const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-                                if ( !sDefaultCostCenter && sDefaultCostCenter != null ){
-                                    oEditableFields.setProperty("/altCostCenter", bEdit);
-                                }
                             }
                         } else {
                             oEditableFields.setProperty("/startTrip", bEdit);

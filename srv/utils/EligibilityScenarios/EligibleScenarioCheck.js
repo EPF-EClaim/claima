@@ -501,10 +501,10 @@ module.exports = {
     // 2. If the value is already a valid STATE_ID, keep it
     const oMapped = await oTx.run(
       SELECT.one.from(ZSTATE)
-        .columns('STATE_ID')
-        .where({ STATE_OF_ORIGIN_ID: sValue })
+        .columns('STATE_OF_ORIGIN_ID')
+        .where({ STATE_ID: sValue })
     );
 
-    return oMapped?.STATE_ID ?? sStateId;
+    return oMapped?.STATE_OF_ORIGIN_ID ?? sStateId;
   }
 };
