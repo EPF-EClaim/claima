@@ -53,16 +53,18 @@ sap.ui.define([
                 })
             });
 
-            if (!res.ok) {
+            const json = await res.json();
+            const id = json?.d[0]?.key || json?.key || "";
+            const attachmentNumber = id.split('=')[1];
+
+			if (!res.ok || !attachmentNumber) {
                 const errText = await res.text().catch(() => "");
                 console.log("Body:", await res.text());
                 throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
             }
+			
+			return attachmentNumber;
 
-            const json = await res.json();
-            const id = json?.d[0]?.key || json?.key || "";
-            const attachmentNumber = id.split('=')[1];
-            return attachmentNumber;
         },
 
         /* =========================================================
