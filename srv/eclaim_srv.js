@@ -1816,7 +1816,7 @@ module.exports = (srv) => {
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
             if (!oEmp) {
-                req.error(404, `No employee data found.`);
+                return req.reject(404, "Employee record not found");
             }
             else {
                 const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -2063,7 +2063,7 @@ module.exports = (srv) => {
             req.user?.id;
 
         if (!sUserEmail) {
-            return req.error(401, "Unable to determine logged-in user");
+            return req.reject(401, "Unable to determine logged-in user");
         }
         const oEmp = await tx.run(
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
@@ -2097,6 +2097,8 @@ module.exports = (srv) => {
                 srv.entities,
                 selectedDependents
             );
+        } else {
+            return req.reject(404, "Employee record not found");
         }
 
     });
@@ -2197,6 +2199,8 @@ module.exports = (srv) => {
                 );
             }
             return aDependent.length + 1;
+        } else {
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2260,7 +2264,7 @@ module.exports = (srv) => {
                 bMinimum: fCalculatedAmount < fMinimumEligibleAmount
             };
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2331,6 +2335,8 @@ module.exports = (srv) => {
                     fPercentage: oEligibilityRule.SUBSIDISED_RATE,
                     fFinalAmount: fFinalAmount
                 }
+            } else {
+                return req.reject(404, "Employee record not found");
             }
 
         } catch (error) {
@@ -2382,7 +2388,7 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, 'Employee not found');
+            return req.reject(404, "Employee record not found");
         }
 
         // ---------------------------------------------------------
@@ -2532,7 +2538,7 @@ module.exports = (srv) => {
             }
             return sMarriageCategory;
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2752,7 +2758,7 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) {
                 req.query.where('1 = 0');
-                return;
+                return req.reject(404, "Employee record not found");
             }
 
             const aDeptRecords = await tx.run(
@@ -2958,7 +2964,7 @@ module.exports = (srv) => {
                 return false;
             }
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -3050,7 +3056,7 @@ module.exports = (srv) => {
                 req.error(404, `Amount not found.`);
             }
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -3133,7 +3139,7 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) {
                 req.query.where('1 = 0');
-                return;
+                return req.reject(404, "Employee record not found");
             }
 
             const aDeptRecords = await tx.run(
@@ -5458,7 +5464,7 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, `No employee data found.`);
+            return req.reject(404, "Employee record not found");
         }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
