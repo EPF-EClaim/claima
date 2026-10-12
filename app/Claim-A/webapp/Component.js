@@ -11,8 +11,7 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
-	"claima/utils/RequestUtility",
-    "sap/ui/core/mvc/XMLView"
+	"claima/utils/RequestUtility"
 ],
     (AppComponent,
 	models,
@@ -26,8 +25,7 @@ sap.ui.define([
     MessageBox,
 	Validator,
 	CustomValidator,
-	RequestUtility,
-    XMLView) => {
+	RequestUtility) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
