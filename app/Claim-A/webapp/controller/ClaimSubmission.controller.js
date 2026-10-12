@@ -170,12 +170,17 @@ sap.ui.define([
 
 			// refresh data
 			this.currentHash = null;
+			// invalidate any claim load still in flight for the claim we are leaving,
+			// so its late response cannot overwrite the next claim being opened
+			this._iClaimLoadSeq = (this._iClaimLoadSeq || 0) + 1;
 			this.getOwnerComponent().getModel("employee")?.refresh();
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
 
 			if (!this._clearExit) {
 				// return from claim detail input screen
-				this.onCancel_ClaimDetails_Input();
+				// (leaving the page: only reset the UI, do NOT reload the old claim -
+				// _onMatched rebuilds and reloads everything when the page is shown again)
+				this.onCancel_ClaimDetails_Input(null, true);
 
 				let oSideNav = true;
 				this.onBack_ClaimSubmission(oSideNav);
@@ -204,6 +209,11 @@ sap.ui.define([
 			const _oRouter = this.getOwnerComponent().getRouter();
 			this.currentHash = _oRouter.getHashChanger().getHash();
 
+			// every match gets a sequence number; if the user navigates again while
+			// this one is still awaiting the backend, the older run stops
+			const iNavSeq = this._iNavSeq = (this._iNavSeq || 0) + 1;
+			const fnIsStale = () => iNavSeq !== this._iNavSeq;
+
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
 			try {
@@ -216,30 +226,31 @@ sap.ui.define([
 				return;
 			}
 			const bAllowed = await Utility.checkClaimAccess(sClaimId);
-			if (!bAllowed) {
+			if (!bAllowed || fnIsStale()) {
 				return;
 			}
 
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = await this._getNewClaimSubmissionModel("claimsubmission_input");
-				await this._loadClaimById(String(sClaimId));
-				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
-					// unable to load claim details
-					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
-					this._onNavBack();
-				}
 			}
-			else if (oClaimSubmissionModel.getProperty("/claim_header/claim_id") !== sClaimId) {
-				await this._loadClaimById(String(sClaimId));
-				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
+			// Always load the claim named in the URL from the backend. The in-memory
+			// model can belong to a different claim (e.g. the view keeps its own copy
+			// of the last claim opened, which shadows the one App.controller just created).
+			{
+				const bLoaded = await this._loadClaimById(String(sClaimId));
+				if (fnIsStale()) {
+					// user already navigated elsewhere - don't touch the page
+					return;
+				}
+				if (!bLoaded) {
 					// unable to load claim details
-					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
+					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]));
 					this._onNavBack();
+					return;
 				}
 			}
 			// set view-only
-			// TODO: Revisit to make sure the claim is reloaded everytime
 			Common.init(this.getOwnerComponent(), this.getView());
 			if (
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
@@ -268,7 +279,13 @@ sap.ui.define([
 				}
 			}
 			this._oClaimFragments = Object.create(null);
+			if (fnIsStale()) {
+				return;
+			}
 			await this._showInitFormFragment();
+			if (fnIsStale()) {
+				return;
+			}
 			await this._afterLoadFragments();
 		},
 
@@ -381,7 +398,19 @@ sap.ui.define([
 			
 
 		},
+		/**
+		 * Loads a claim (header + items) into claimsubmission_input.
+		 * Only the most recently started load is allowed to write to the model:
+		 * if another load starts (or the user leaves the page) while this one is
+		 * waiting on the backend, this one is discarded.
+		 *
+		 * @param {string} sClaimId
+		 * @returns {Promise<boolean|null>} true = loaded, false = not found / failed,
+		 *      null = superseded by a newer load (nothing was written)
+		 */
 		_loadClaimById: async function (sClaimId) {
+			const iLoadSeq = this._iClaimLoadSeq = (this._iClaimLoadSeq || 0) + 1;
+			const fnIsStale = () => iLoadSeq !== this._iClaimLoadSeq;
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
@@ -415,18 +444,25 @@ sap.ui.define([
 					oHeaderBinding.requestContexts(0, 1),
 					oItemBinding.requestContexts(0, Infinity)
 				]);
+				if (fnIsStale()) {
+					return null;
+				}
 
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission!");
+					// claim not found - let the caller decide where to go
+					console.error("Failed to load claim submission!", sId);
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-					this.getOwnerComponent().getRouter().navTo("ClaimStatus", {}, {}, true);
+					return false;
 				}
 
 				const oHeader = await this._applyClaimHeader(oHeaderRaw);
+				if (fnIsStale()) {
+					return null;
+				}
 
 				// Items
 				const aRawItems = aItemCtx.map(ctx => ctx.getObject());
@@ -444,6 +480,9 @@ sap.ui.define([
 
 				// Employee master
 				await this._loadEmployeeMasterData();
+				if (fnIsStale()) {
+					return null;
+				}
 
 				// check is approver
 				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
@@ -454,6 +493,9 @@ sap.ui.define([
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
 				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+				if (fnIsStale()) {
+					return null;
+				}
 
 				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
 				const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
@@ -467,12 +509,17 @@ sap.ui.define([
 				} else if (sClaimOwnerId !== sCurrentUserId) {
 					oClaimSubmissionModel.setProperty("/view_only", true);
 				}
-				
+
+				return true;
 			} catch (err) {
+				if (fnIsStale()) {
+					return null;
+				}
 				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
+				return false;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -4285,7 +4332,13 @@ sap.ui.define([
 			}.bind(this));
 		},
 
-		onCancel_ClaimDetails_Input: async function () {
+		/**
+		 * @param {sap.ui.base.Event} [oEvent] - press event (unused)
+		 * @param {boolean} [bLeavingPage] - true when called because the user is
+		 *      navigating away; only resets the item screen, without re-rendering
+		 *      the summary or reloading the claim (which would race with the next claim)
+		 */
+		onCancel_ClaimDetails_Input: async function (oEvent, bLeavingPage) {
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -4308,11 +4361,19 @@ sap.ui.define([
 				}
  
 				oPage.removeContent(oClaimItemFragment);
- 
+
+				if (bLeavingPage) {
+					return;
+				}
+
 				await this._showInitFormFragment();
 				await this._afterLoadFragments();
 				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				const sClaimId = oClaimSubmissionModel.getProperty("/claim_header/claim_id");
+				if (await this._loadClaimById(sClaimId) === null) {
+					// superseded by a newer load (e.g. user opened another claim)
+					return;
+				}
 				this._calculateCardAdvanceAmount();
 
 				this._refreshActionState("SUMMARY");	// footer button control
