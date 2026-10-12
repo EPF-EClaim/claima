@@ -190,7 +190,6 @@ sap.ui.define([
                 } catch (oError) {
                     console.error("User Session Initialization Failed:", oError);
                     this._bSessionFailed = true;
-                    this.getModel("session").setProperty("/sessionFailed", true);
                     this._fnRolesLoaded();
                     this._showEmployeeNotFound();
                 }
