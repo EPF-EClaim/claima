@@ -18,7 +18,7 @@
         <tnt:header>
             <f:ShellBar
                 id="shellbar"
-                showMenuButton="{= !${session>/sessionFailed} }"
+                showMenuButton="{= !${session>/userId} }"
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
                 menuButtonPressed="onMenuButtonPress">
@@ -35,7 +35,7 @@
         <tnt:sideContent>
             <tnt:SideNavigation
                 id="sideNavigation"
-                visible="{= !${session>/sessionFailed} }"
+                visible="{= !${session>/userId} }"
                 expanded="true"
                 itemPress=".onNavItemPress"
                 selectedKey="dashboard"

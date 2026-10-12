@@ -70,7 +70,10 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-            if (!oEmp) return;
+            if (!oEmp) { 
+                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id }); 
+                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.'); 
+            }
 
             let sOrigin = null;
             try {
@@ -2047,7 +2050,7 @@ module.exports = (srv) => {
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
         if (!oEmp) {
-            return req.error(404, "Employee record not found");
+            return req.reject(404, "Employee record not found");
         }
 
         return oEmp;
