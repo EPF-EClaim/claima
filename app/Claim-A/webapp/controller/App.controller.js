@@ -1125,14 +1125,14 @@ sap.ui.define([
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
 				try {
-						const attachmentNumber = await Attachment.postAttachment(
+						const sAttachmentNumber = await Attachment.postAttachment(
 							oInputModel.getProperty("/attachment/fileName"),
 							oInputModel.getProperty("/attachment/fileContent"),
 							this._oSessionModel.getProperty("/userId")
 						);
 
-						if (attachmentNumber) {
-							oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+						if (sAttachmentNumber) {
+							oInputModel.setProperty("/claim_header/attachment_email_approver", sAttachmentNumber);
 							oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
 							BusyIndicator.hide();
 						}else{
@@ -1143,8 +1143,7 @@ sap.ui.define([
 						}
 
 					} catch (oError) {
-						console.error("Attachment upload failed:", oError);
-
+						
 						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 
 						// Don't proceed claim item if upload throws an exception
