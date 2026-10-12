@@ -16,7 +16,3 @@ clickableInput {
 
 /* Make container chains actually fill available height */
 .fullheight { height: 100%; }
-
-.zSessionFailed .sapTntToolPageAside {
-    display: none;
-}

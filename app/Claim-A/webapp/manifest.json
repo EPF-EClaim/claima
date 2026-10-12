@@ -731,11 +731,6 @@
                     "pattern": "ZJOB_CODE_MAPPING",
                     "name": "ZJOB_CODE_MAPPING",
                     "target": "ZJOB_CODE_MAPPING"
-                },
-                {
-                    "name": "UserNotFound",
-                    "pattern": "UserNotFound",
-                    "target": "UserNotFound"
                 }
             ],
             
@@ -5790,16 +5785,7 @@
                             }
                         }
                     }
-                },
-                "UserNotFound": {
-                    "type": "View",
-                    "viewType": "XML",
-                    "name": "claima.view.UserNotFound",
-                    "id": "UserNotFound",
-                    "controlId": "pageContainer",
-                    "controlAggregation": "pages"
                 }
-
             }
         },
         "rootView": {

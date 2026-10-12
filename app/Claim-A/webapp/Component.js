@@ -189,9 +189,17 @@ sap.ui.define([
 
                 } catch (oError) {
                     console.error("User Session Initialization Failed:", oError);
-                    this._bSessionFailed = true;
                     this._fnRolesLoaded();
-                    this._showEmployeeNotFound();
+                    // this._showEmployeeNotFound();
+                    MessageBox.error(Utility.getText("user_not_found_desc", []), {
+                        title: Utility.getText("user_not_found_title", []),
+                        actions: [MessageBox.Action.CLOSE],
+                        emphasizedAction: MessageBox.Action.CLOSE,
+                        onClose: () => {
+                            // Log out through the approuter
+						    window.location.href = "/claima/do/logout";
+                        }
+                    });
                 }
             },
 
@@ -379,21 +387,21 @@ sap.ui.define([
             _onBeforeRouteMatched: function (oEvent) {
                 var sRoute = oEvent.getParameter("name");
                 var oRoleModel = this.getModel("roleModel");
+                var oSessionModel = this.getModel("session");
                 var oRouter = this.getRouter();
 
                 this._oRolesLoadedPromise.then(function () {
-                    // Block all routes if the user session failed to load
-                    if (this._bSessionFailed) {
-                        this._showEmployeeNotFound();
-                        return;
-                    }
-
                     const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
                                   oRoleModel.getProperty("/isDTDAdmin") ||
                                   oRoleModel.getProperty("/isAdminCC") || 
                                   oRoleModel.getProperty("/isCCCAdmin") ;
+                    // Block all routes if the user session failed to load
+                    if (!SessionModel.getProperty("/userId")) {
+                        // this._showEmployeeNotFound();
+                        MessageBox.alert(Utility.getText("user_not_found", []));
+                        return;
                     // restriction for manual url change to Analytics and Configuration without admin role
-                    if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
+                    } else if((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");
                         MessageBox.error(Utility.getText("msg_unauthorized_role"));
                     } else {
