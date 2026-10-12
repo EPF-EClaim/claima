@@ -4439,6 +4439,18 @@ sap.ui.define([
 						return;
 					}
 
+					 // Cash Repayment (not charged to CCC) Validation checking:
+					// when the claim has a CASH_REPAY item that is not charged to the CCC,
+					// the employee must not end up receiving money (Final Amount to Receive <= 0)
+					var bHasCashRepayNotCcc = aItems.some((it) =>
+						it.claim_type_item_id === this._oConstant.ClaimTypeItem.CASH_REPAY && !it.charged_to_ccc);
+					if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCashRepayNotCcc &&
+						Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) > 0) {
+						MessageBox.error(Utility.getText("msg_error_cash_repay_final_amount_positive"));
+						BusyIndicator.hide();
+						return;
+					}
+
 					switch (oAction) {
 						case this._oConstant.Claim_Action.DRAFT:
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
@@ -5638,11 +5650,13 @@ sap.ui.define([
 
 			if (bHasCard && bIsTravelClaimType) {
 				// Total Claim Amount includes everything except POTONGAN_ELAUN and
-				// CASH_REPAY, regardless of charged_to_ccc status.
+				// CASH_REPAY items charged to the CCC. CASH_REPAY items NOT charged
+				// to the CCC are included (and so also flow into Final Amount to Receive).
 				var nTotal = aClaimItems
-					.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
-						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
-					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+				&& !(it.claim_type_item_id === this._oConstant.ClaimTypeItem.CASH_REPAY && it.charged_to_ccc))
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
 
 				// Final Amount to Receive additionally excludes charged_to_ccc items
 				// (they get settled via the corporate card advance offset instead) -
