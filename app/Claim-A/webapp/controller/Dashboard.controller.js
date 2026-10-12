@@ -16,7 +16,6 @@ sap.ui.define([
 		DateUtility: DateUtility,
 		onInit: function () {
 			this._oRouter = this.getOwnerComponent().getRouter();
-			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oDashboardModel = new JSONModel({
 				claims: [],
 				requests: [],
