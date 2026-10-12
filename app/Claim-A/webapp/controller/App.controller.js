@@ -1883,7 +1883,7 @@ sap.ui.define([
 
 								// Employee details
 								new VBox({
-									visible: "{= !${session>/userId} }",
+									visible: "{= !!${session>/userId} }",
 									items: [
 										this._createInfoRow("sap-icon://employee", "Employee ID", "{session>/userId}"),
 										this._createInfoRow("sap-icon://employee-pane", "Grade", "{session>/grade}"),
@@ -1926,7 +1926,7 @@ sap.ui.define([
 		_createProfileHeader: function () {
 			return new HBox({
 				alignItems: "Center",
-				visible: "{= !${session>/userId} }",
+				visible: "{= !!${session>/userId} }",
 				items: [
 					new Avatar({
 						initials: "{session>/initials}",
@@ -1950,7 +1950,7 @@ sap.ui.define([
 		_createNotFoundBox: function () {
 			return new HBox({
 				alignItems: "Center",
-				visible: "{= !!${session>/userId} }",
+				visible: "{= !${session>/userId} }",
 				items: [
 					new Icon({ src: "sap-icon://warning", size: "1.25rem", color: "Critical" })
 						.addStyleClass("sapUiSmallMarginEnd"),
