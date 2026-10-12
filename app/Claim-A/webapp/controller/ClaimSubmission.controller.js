@@ -4350,6 +4350,9 @@ sap.ui.define([
 
 					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
+					// claim item amount check
+					await CustomDuplicationCheck.CheckAllItemsAmount(this);
+
 					// Cash Advance Repayment Validation checking
 					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
 						MessageBox.error(Utility.getText(bTravelWithCard
