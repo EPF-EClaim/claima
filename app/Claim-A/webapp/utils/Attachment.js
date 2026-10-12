@@ -32,11 +32,8 @@ sap.ui.define([
 		},
 
         async postAttachment(fileName, fileBase64, emp_id) {
-
-			var sDestination = this._getSrvLink();
-			const sServiceUrl = sDestination + "/upsert";
 			
-            const res = await fetch(sServiceUrl, {
+            const res = await fetch(this._getSrvLink() + '/upsert', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -53,16 +50,19 @@ sap.ui.define([
                 })
             });
 
-            const json = await res.json();
-            const id = json?.d[0]?.key || json?.key || "";
-            const attachmentNumber = id.split('=')[1];
+			const body = await res.text().catch(() => "");
+			let result;
+			try {
+				result = JSON.parse(body)?.d?.[0];
+			} catch {
+				// non-JSON body (e.g. HTML error page); handled below
+			}
 
-			if (!res.ok || !attachmentNumber) {
-                const errText = await res.text().catch(() => "");
-                console.log("Body:", await res.text());
-                throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
-            }
-			
+			const attachmentNumber = result?.key?.split("=")[1];
+
+			if (!res.ok || result?.status === "ERROR" || !attachmentNumber) {
+				throw new Error(`Attachment POST failed (HTTP ${res.status}): ${result?.message || body.slice(0, 500)}`);
+			}
 			return attachmentNumber;
 
         },
