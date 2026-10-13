@@ -96,11 +96,11 @@
                     <tnt:NavigationListGroup 
                         text="{i18n>nav_analytics}" 
                         expanded="false" 
-                        visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
+                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"
-                            text="Claim Report"
+                            text="{i18n>nav_claimreport}"
                             enabled="true"
                         >
                         <tnt:items>
@@ -117,7 +117,7 @@
 
                         <tnt:NavigationListItem
                             icon="sap-icon://manager-insight"
-                            text="Pre-Approval Report"
+                            text="{i18n>nav_pareport}"
                             enabled="true"
                         >
                         <tnt:items>
@@ -133,9 +133,10 @@
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
                             icon="sap-icon://money-bills"
-                            text="Cash Advance"
+                            text="{i18n>nav_cashadvance}"
                             enabled="true"
                             key="cashadvance_summary"
+                            visible="{= ${roleModel>/JKEW_role} }"
                         >
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
@@ -169,13 +170,13 @@
                     </tnt:NavigationListGroup>                                                               
 
                     <tnt:NavigationListGroup 
-                        text="Configuration" 
+                        text="{i18n>nav_configuration}" 
                         expanded="false"
                         visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
 
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
-                            text="Master Data"
+                            text="{i18n>nav_masterdata}"
                             enabled="true"
                             expanded="false"
                             visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
@@ -415,7 +416,7 @@
                                 />
                                 <tnt:NavigationListItem
                                     key="ZJOB_CODE_MAPPING"
-                                    text="{i18n>jobgrp}"
+                                    text="{i18n>jobcodemapping}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                             </tnt:items>
