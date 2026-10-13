@@ -18,7 +18,7 @@
         <tnt:header>
             <f:ShellBar
                 id="shellbar"
-                showMenuButton="true"
+                showMenuButton="{= !!${session>/userId} }"
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
                 menuButtonPressed="onMenuButtonPress"
@@ -37,6 +37,7 @@
         <tnt:sideContent>
             <tnt:SideNavigation
                 id="sideNavigation"
+                visible="{= !!${session>/userId} }"
                 expanded="true"
                 itemPress=".onNavItemPress"
                 selectedKey="dashboard"
@@ -412,6 +413,11 @@
                                 <tnt:NavigationListItem
                                     key="ZTRAIN_COURSE_PART"
                                     text="{i18n>trncourseprt}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="ZJOB_CODE_MAPPING"
+                                    text="{i18n>jobgrp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                             </tnt:items>

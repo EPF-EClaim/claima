@@ -112,6 +112,21 @@ sap.ui.define([
         },
 
         /**
+         * Get 1 January of the year N years before the current year, in HANA date format (yyyy-MM-dd).
+         * Age is determined by birth year (current year - birth year), not by the exact birthday.
+         * Usage for age-based DOB filters:
+         *  - age N or below this year : DOB >= getDateNYearsAgo(N)
+         *  - age above N this year    : DOB <  getDateNYearsAgo(N)
+         * e.g. in 2026, getDateNYearsAgo(18) returns "2008-01-01"
+         * @public
+         * @param {integer} iYears - number of years to go back from the current year
+         * @return {string} 1 January of (current year - iYears) in 'yyyy-MM-dd' format
+         */
+        getDateNYearsAgo: function (iYears) {
+            return (this.today().getFullYear() - iYears) + "-01-01";
+        },
+
+        /**
          * Get Hana Date format for binding calls, used for passing dates when upserting records
          * @public
          * @param {date} dDateInput - date value to be transformed
@@ -746,7 +761,7 @@ sap.ui.define([
                                 // maximum date = item end date
                                 // if item end date not set, use header item end date if set, otherwise header trip end date
                                 // (whichever is earlier), so Start Date can never exceed End Date
-                                var dHeaderEnd = oItem?.end_date || oHeader?.trip_end_date;
+                                var dHeaderEnd = new Date(oItem?.end_date) || new Date(oHeader?.trip_end_date);
                                 var dItemEnd = (oItem && oItem["end_date"]) ? new Date(oItem["end_date"]) : null;
                                 if (!!dItemEnd && !isNaN(dItemEnd.getTime()) &&
                                     (isNaN(dHeaderEnd.getTime()) || dItemEnd <= dHeaderEnd)) {

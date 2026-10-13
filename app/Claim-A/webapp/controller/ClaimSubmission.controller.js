@@ -2273,16 +2273,18 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer", true)
 				}
-				//changes here
-				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
-					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
-				}
-
+				// parse dependent first: items without a dependent are stored as the string "null"
 				var sDependent = oInputModel.getProperty("/claim_item/dependent");
 				if (sDependent) {
 					oInputModel.setProperty("/claim_item/dependent", JSON.parse(sDependent));
+				}
+
+				//changes here
+				var vDependent = oInputModel.getProperty("/claim_item/dependent");
+				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
+				} else if (vDependent && vDependent.length > 0) {
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
 				if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == this._oConstant.ClaimType.ELAUN_TUKAR){
@@ -2514,8 +2516,30 @@ sap.ui.define([
 
 		},
 
+		/**
+		* Build the filter for the dependent selection fields (Select "select_claimdetails_input_dependent_name"
+		* and MultiComboBox "combo_claimdetails_input_dependent") based on the current claim type item.
+		* Every filter is restricted to the claimant's own dependents (EMP_ID), then narrowed by
+		* the eligibility rules of the claim type item:
+		*  - POST_EDUCATION_ASSISTANCE : Child (02) only
+		*  - FLIGHT_WIL                : Spouse (01);
+		*                                Child (02) aged 18 and below;
+		*                                Child (02) aged 19 to 25 who is a student
+		*  - LAUT                      : Spouse (01), Child (02), Additional Spouse (07)
+		*  - INSURANCE / MED_ADVANCE   : Spouse (01) / Additional Spouse (07) who is a medical beneficiary;
+		*                                Child (02) aged 25 and below who is a medical beneficiary and a student;
+		*                                Child (02) who is a medical beneficiary and disabled (student and age checks bypassed)
+		*  - KEMATIAN                  : Spouse (01), Additional Spouse (07);
+		*                                Child (02) below 18 (17 and below) who is not employed;
+		*                                Child (02) below 24 (23 and below) who is a student
+		*  - Others                    : all dependents of the claimant (no eligibility rule)
+		* Age is determined by birth year (current year - birth year) via DateUtility.getDateNYearsAgo,
+		* not by the exact birthday.
+		* @private
+		* @returns {sap.ui.model.Filter} combined filter to apply to the "items" binding of the dependent fields
+		*/
 		_getDependentFilters: function () {
-			var oInputModel = this.getView().getModel("claimitem_input"); ("claimitem_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
 			const sClaimTypeItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const sClaimantEmpId = oClaimSubmissionModel.getProperty("/claim_header/emp_id");
@@ -2539,28 +2563,27 @@ sap.ui.define([
 					})
 
 				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
-					var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - 18;
-					var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - 19;
-					var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - 25;
-
-					d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-					d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+					// Age by birth year: 18 and below / 19 to 25
+					var s18YearsAgo = DateUtility.getDateNYearsAgo(18);
+					var s25YearsAgo = DateUtility.getDateNYearsAgo(25);
 
 					var oSpouseFilter = new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE);
 
+					// Child aged 18 and below this year
 					var oChildBelow18 = new Filter({
 						filters: [
 							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s18YearsAgo)
 						],
 						and: true
 					})
 
+					// Child aged 19 to 25 this year and a student
 					var oChildStudying = new Filter({
 						filters: [
 							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
-							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s25YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.LT, s18YearsAgo),
 							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true),
 						],
 						and: true
@@ -2586,9 +2609,9 @@ sap.ui.define([
 				case this._oConstant.ClaimTypeItem.LAUT: 
 					var oDependentRuleFilter = new Filter({
 						filters: [
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.SPOUSE),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.CHILD),
-							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.RelationshipType.ADDITIONAL_SPOUSE)
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP,FilterOperator.EQ,this._oConstant.Relationship.ADDITIONAL_SPOUSE)
 						],
 						and: false
 					});
@@ -2603,10 +2626,7 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-					var d25YearsAndBelow = DateUtility.today();
-					d25YearsAndBelow.setFullYear(d25YearsAndBelow.getFullYear() - 25);
-
-					var s25YearsAndBelow = d25YearsAndBelow.toLocaleDateString("en-CA");
+					var s25YearsAndBelow = DateUtility.getDateNYearsAgo(25);
 
 					// Spouse / Additional Spouse
 					var oSpouseFilter = new Filter({
@@ -2692,6 +2712,58 @@ sap.ui.define([
 									oSpouseFilter,
 									oEligibleChildFilter,
 									oDisabledChildFilter
+								],
+								and: false
+							})
+						],
+						and: true
+					})
+
+				case this._oConstant.ClaimTypeItem.KEMATIAN:
+					// Bantuan Kebajikan Kematian - only Spouse (01), Additional Spouse (07) and eligible Child (02)
+					// Child is eligible if:
+					//   (a) below 18 years old AND not employed, OR
+					//   (b) below 24 years old AND a student
+					// Age by birth year: below 18 = 17 and below this year, below 24 = 23 and below this year
+					var s17YearsAgo = DateUtility.getDateNYearsAgo(17);
+					var s23YearsAgo = DateUtility.getDateNYearsAgo(23);
+
+					var oKematianSpouseFilter = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.SPOUSE),
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.ADDITIONAL_SPOUSE)
+						],
+						and: false
+					});
+
+					// Child below 18 and not employed (EMPLOYED = false)
+					var oKematianChildBelow18 = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s17YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.EMPLOYED, FilterOperator.EQ, false)
+						],
+						and: true
+					});
+
+					// Child below 24 and a student
+					var oKematianChildStudent = new Filter({
+						filters: [
+							new Filter(this._oConstant.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, this._oConstant.Relationship.CHILD),
+							new Filter(this._oConstant.EntitiesFields.DOB, FilterOperator.GE, s23YearsAgo),
+							new Filter(this._oConstant.EntitiesFields.STUDENT, FilterOperator.EQ, true)
+						],
+						and: true
+					});
+
+					return new Filter({
+						filters: [
+							oEmpFilter,
+							new Filter({
+								filters: [
+									oKematianSpouseFilter,
+									oKematianChildBelow18,
+									oKematianChildStudent
 								],
 								and: false
 							})
@@ -2789,16 +2861,34 @@ sap.ui.define([
 					break;
 			}
 		},
+
+		/**
+		* Save Claim Item Details
+		* @public
+		* Validation Order (Critical):
+		* 1. Required fields (this.getOwnerComponent().getValidator())
+		* 2. Custom business rules (CustomValidator.validate())
+		* Reason: Required fields must be populated before passing to backend validator
+		*/
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
+			// Validate required fields, priority for mandatory fields first before custom validation
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
+
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 			if (!bCanProceed) {
 				return;
 			}
+
 			//if departure time and arrival time exist, it will do a calculation for the flight duration
 			//this is needed for the eligibility check for the flight class of the employee
 			//setting the flight hours into the no_of_hours field in the model to allow the eligibility payload generation code to retrieve the flight hours value
@@ -2869,7 +2959,7 @@ sap.ui.define([
 			if (bIsKilometerClaimItem &&
 				!!oInputModel.getProperty("/claim_item/receipt_date") &&
 				parseFloat(oInputModel.getProperty("/claim_item/amount")) === 0) {
-				MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"), {
+				MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
@@ -2877,7 +2967,7 @@ sap.ui.define([
 
 			// Eligibility Checking
 			try {
-				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+				var oPayload = await EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
 				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 			} catch (error) {
@@ -2888,13 +2978,7 @@ sap.ui.define([
 
 			if (!bCanProceed) return;
 
-			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
-				MessageBox.error(Utility.getText("msg_claiminput_required"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
+
 
 			// Check for existing MataWang
 			if (oInputModel.getProperty("/is_new") &&
@@ -3283,29 +3367,52 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_Input_Attachment: function (oEvent, fieldNumber) {
-			// check if file can be uploaded
-			var fileName = oEvent.getSource().getValue();
-			var domRef = oEvent.getSource().getFocusDomRef();
-			var file = domRef.files[0];
-			var reader = new FileReader();
+		/**
+		 * Stores the selected attachment (base64) in the input model, or discards it
+		 * when the selection is cleared via the FileUploader's clear ("X") icon
+		 * @public
+		 * @param {sap.ui.base.Event} oEvent - FileUploader change event
+		 * @param {String} sFieldNumber - Attachment field number ("1" - "4")
+		 */
+		onChange_ClaimDetails_Input_Attachment: function (oEvent, sFieldNumber) {
 			const oInputModel = this.getView().getModel("claimitem_input");
+			const oFileUploader = oEvent.getSource();
+			const sAttachmentPath = "/attachments/attachment" + sFieldNumber;
+			const sDeletePath = "/claim_item/attachment_file_" + sFieldNumber + "_delete";
 
-			reader.addEventListener("load", () => {
-				if (oInputModel) {
-					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileName", fileName);
-					oInputModel.setProperty("/attachments/attachment" + fieldNumber + "/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
-					
+			const sFileName = oEvent.getParameter("newValue");
+			const aFiles = oEvent.getParameter("files") || [];
+			const oFile = aFiles[0];
+
+			if (!oInputModel) {
+				return;
+			}
+
+			// File removed via the FileUploader's clear ("X") icon -> discard the pending upload
+			if (!sFileName || !oFile) {
+				oInputModel.setProperty(sAttachmentPath + "/fileName", null);
+				oInputModel.setProperty(sAttachmentPath + "/fileContent", null);
+				return;
+			}
+
+			// New file selected -> cancel any pending deletion of the existing attachment
+			if (oInputModel.getProperty(sDeletePath)) {
+				oInputModel.setProperty(sDeletePath, null);
+			}
+
+			const oFileReader = new FileReader();
+
+			oFileReader.addEventListener("load", () => {
+				// Ignore stale reads if the selection was cleared/changed while reading
+				if (oFileUploader.getValue() !== sFileName) {
+					return;
 				}
+				const sFileContent = oFileReader.result.replace("data:" + oFile.type + ";base64,", "");
+				oInputModel.setProperty(sAttachmentPath + "/fileName", sFileName);
+				oInputModel.setProperty(sAttachmentPath + "/fileContent", sFileContent);
 			});
 
-			if (oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber + "_delete")) {
-				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber + "_delete", null)
-			}
-
-			if (file) {
-				reader.readAsDataURL(file);
-			}
+			oFileReader.readAsDataURL(oFile);
 		},
 
 		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
@@ -4196,8 +4303,8 @@ sap.ui.define([
 				}
  
 				// clear fileuploader fields
-				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+				for (let i = 1; i <= 4; i++) { // 4 attachment fields per claim item
+					this.byId("fileuploader_claimdetails_input_attachment_file_" + i)?.clear();
 				}
  
 				oPage.removeContent(oClaimItemFragment);
@@ -4332,6 +4439,18 @@ sap.ui.define([
 						return;
 					}
 
+					 // Cash Repayment (not charged to CCC) Validation checking:
+					// when the claim has a CASH_REPAY item that is not charged to the CCC,
+					// the employee must not end up receiving money (Final Amount to Receive <= 0)
+					var bHasCashRepayNotCcc = aItems.some((it) =>
+						it.claim_type_item_id === this._oConstant.ClaimTypeItem.CASH_REPAY && !it.charged_to_ccc);
+					if (oAction === this._oConstant.Claim_Action.SUBMIT && bHasCashRepayNotCcc &&
+						Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) > 0) {
+						MessageBox.error(Utility.getText("msg_error_cash_repay_final_amount_positive"));
+						BusyIndicator.hide();
+						return;
+					}
+
 					switch (oAction) {
 						case this._oConstant.Claim_Action.DRAFT:
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
@@ -4357,20 +4476,8 @@ sap.ui.define([
 
 										// Handling for Budget checking/locking error
 										case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-											var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
-											var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
-
-											var aMessages = [];
-											if (aInsufficientItems.length > 0) {
-												aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
-											}
-											if (aNotFoundItems.length > 0) {
-												aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
-											}
-
-											if (aMessages.length > 0) {
-												MessageBox.error(aMessages.join("\n"));
-											}
+											// Message is built on the server (srv/workflow/workflow-helper.js > buildBudgetErrorMessage): 'Budget not found' and/or 'Insufficient budget'
+											MessageBox.error(oResponse.Message || Utility.getText("req_tm_e_budget_check_failed"));
 											break;
 
 										default:
@@ -5543,11 +5650,13 @@ sap.ui.define([
 
 			if (bHasCard && bIsTravelClaimType) {
 				// Total Claim Amount includes everything except POTONGAN_ELAUN and
-				// CASH_REPAY, regardless of charged_to_ccc status.
+				// CASH_REPAY items charged to the CCC. CASH_REPAY items NOT charged
+				// to the CCC are included (and so also flow into Final Amount to Receive).
 				var nTotal = aClaimItems
-					.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
-						&& it.claim_type_item_id !== this._oConstant.ClaimTypeItem.CASH_REPAY)
-					.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+				.filter((it) => it.claim_type_item_id !== this._oConstant.ClaimTypeItem.POTONGAN_ELAUN
+				&& !(it.claim_type_item_id === this._oConstant.ClaimTypeItem.CASH_REPAY && it.charged_to_ccc))
+				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
 
 				// Final Amount to Receive additionally excludes charged_to_ccc items
 				// (they get settled via the corporate card advance offset instead) -

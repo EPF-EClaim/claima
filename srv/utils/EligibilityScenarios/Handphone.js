@@ -65,8 +65,19 @@ module.exports = {
     return oPayload;
   },
 
+  /**
+* Determines the frequency based on the employee's job grade.
+* Retrieves configured exception job grades and frequency values from ZCONSTANTS.
+* If the employee grade matches a configured exception grade, the exception
+* frequency is returned; else, the default frequency is used.
+* @private
+* @param {string} sEmpGrade Employee job grade.
+* @param {number} iDefaultFreq Default HP frequency value.
+* @param {object} tx CDS transaction instance.
+* @returns {Promise<{freqValue: number, isExceptionGrade: boolean}>}
+*/
   _getCustomFrequencyException: async function (sEmpGrade, iDefaultFreq, tx) {
-    if (!sEmpGrade) return iDefaultFreq;
+    if (!sEmpGrade) return {freqValue: iDefaultFreq, isExceptionGrade: false};
     const aConfigs = await tx.run(
       SELECT.from(Constant.Entities.ZCONSTANTS).where({
         ID: { in: [Constant.ConstantId.EXCEPTION_HP_FREQUENCY_JOB_GRADE, Constant.ConstantId.EXCEPTION_HP_FREQUENCY] }

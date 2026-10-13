@@ -70,6 +70,10 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+            if (!oEmp) { 
+                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id }); 
+                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.'); 
+            }
 
             let sOrigin = null;
             try {
@@ -336,6 +340,20 @@ module.exports = (srv) => {
                     .limit(1);
 
                 if (!existing.length) {
+
+                    original_budget = Number(row.ORIGINAL_BUDGET) || 0;
+                    virement_in = Number(row.VIREMENT_IN) || 0;
+                    virement_out = Number(row.VIREMENT_OUT) || 0;
+                    supplement = Number(row.SUPPLEMENT) || 0;
+                    return_value = Number(row.RETURN) || 0;
+                    consumed = Number(row.CONSUMED) || 0;
+
+                    var currentBudget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var budgetBalance = currentBudget + consumed;
+
+                    row.CURRENT_BUDGET = currentBudget.toFixed(2);
+                    row.BUDGET_BALANCE = budgetBalance.toFixed(2);
+
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
 
                     results.push({
@@ -364,13 +382,13 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN);
-                    original_budget = original_budget === 0 ? Number(existing[0].ORIGINAL_BUDGET) : original_budget;
+                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
                     // the system need to take the existing amount from the table and add on the amount maintained inside the upload file
                     // Current Budget field should take in latest amount from Original Budget, Virement In, Virement Out, Supplement, Return
-                    var total_budget = original_budget + new_virement_in + new_virement_out + new_supplement + new_return;
+                    var total_budget = newOriginalBudget + new_virement_in + new_virement_out + new_supplement + new_return;
                     var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
@@ -378,6 +396,7 @@ module.exports = (srv) => {
                     updatePayload.VIREMENT_OUT = new_virement_out.toFixed(2);
                     updatePayload.SUPPLEMENT = new_supplement.toFixed(2);
                     updatePayload.RETURN = new_return.toFixed(2);
+                    updatePayload.ORIGINAL_BUDGET = newOriginalBudget.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -687,7 +706,8 @@ module.exports = (srv) => {
                     .from('ZCLAIM_ITEM')
                     .where(
                         'CLAIM_ID =', sClaimId,
-                        "and CLAIM_TYPE_ITEM_ID not in ('POTONGAN_ELAUN', 'CASH_REPAY')"
+                        "and CLAIM_TYPE_ITEM_ID <> 'POTONGAN_ELAUN' " +
+                        "and (CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY' OR CHARGED_TO_CCC = false)"
                     )
             );
             totalClaimAmount = totalResult.TotalClaimAmount || 0;
@@ -1277,7 +1297,7 @@ module.exports = (srv) => {
 
                 return {
                     amount: total_meal_allowance,
-                    daily_allowance: daily_allowance,
+                    daily_allowance: daily_allowance > 0 ? 1 : 0,
                     currency_code: entitlement.CURRENCY,
                     tips_amount: total_tips
                 }
@@ -1513,45 +1533,51 @@ module.exports = (srv) => {
             if (!sRequestId) return;
 
             cds.spawn({ user: req.user }, async (tx) => {
-                switch (oRequestRecord.CLAIM_TYPE_ID) {
-                    case Constant.ClaimType.HANDPHONE:
-                        try {
-                            var result;
+                try {
+                    switch (oRequestRecord.CLAIM_TYPE_ID) {
+                        case Constant.ClaimType.HANDPHONE: {
                             const aReqItem = await tx.run(
                                 SELECT.from(Constant.Entities.ZREQUEST_ITEM).where({
                                     REQUEST_ID: sRequestId
                                 })
                             );
 
-                            const aReqSubId = aReqItem.map((d) => d.REQUEST_SUB_ID);
+                            const aReqSubId = aReqItem.map(d => d.REQUEST_SUB_ID);
+
                             const aParticipantData = await tx.run(
                                 SELECT.from(Constant.Entities.ZREQ_ITEM_PART).where({
                                     REQUEST_ID: sRequestId,
                                     REQUEST_SUB_ID: { in: aReqSubId }
                                 })
                             );
-                            for (let i = 0; i < aParticipantData.length; i++) {
-                                var aPartReqItem = aReqItem.filter(function (item) {
-                                    return item.REQUEST_SUB_ID === aParticipantData[i].REQUEST_SUB_ID;
-                                });
-                                result = await tx.run(
+
+                            for (const oParticipant of aParticipantData) {
+                                const oReqItem = aReqItem.find(
+                                    item => item.REQUEST_SUB_ID === oParticipant.REQUEST_SUB_ID
+                                );
+                                if (!oReqItem) {
+                                    req.warn?.(
+                                        400,
+                                        `Skipping participant ${oParticipant.PARTICIPANTS_ID}: no matching request item found for REQUEST_SUB_ID ${oParticipant.REQUEST_SUB_ID}.`
+                                    );
+                                    continue;
+                                }
+
+                                await tx.run(
                                     INSERT.into('ZCLM_TYPE_EXCEPTION_LIST').entries({
-                                        EMP_ID: aParticipantData[i].PARTICIPANTS_ID,
-                                        CLAIM_TYPE_ID: aPartReqItem[0].CLAIM_TYPE_ID,
-                                        START_DATE: aPartReqItem[0].START_DATE,
-                                        END_DATE: aPartReqItem[0].END_DATE,
-                                        ELIGIBLE_AMOUNT: aParticipantData[i].ALLOCATED_AMOUNT
+                                        EMP_ID: oParticipant.PARTICIPANTS_ID,
+                                        CLAIM_TYPE_ID: oReqItem.CLAIM_TYPE_ID,
+                                        START_DATE: oReqItem.START_DATE,
+                                        END_DATE: oReqItem.END_DATE,
+                                        ELIGIBLE_AMOUNT: oParticipant.ALLOCATED_AMOUNT
                                     })
                                 );
-                            };
+                            }
 
-                        } catch (error) {
-                            req.error(400, `Failed inserting records for Exception List Table: ${error.message}`);
+                            break;
                         }
-                        break;
 
-                    default:
-                        try {
+                        default: {
                             const oCashAdvanceItem = await tx.run(
                                 SELECT.one.from('ZREQUEST_ITEM').where({
                                     REQUEST_ID: sRequestId,
@@ -1559,7 +1585,10 @@ module.exports = (srv) => {
                                 })
                             );
 
-                            if (!oCashAdvanceItem) return;
+                            if (!oCashAdvanceItem) {
+                                req.info(`No cash advance item found for request ${sRequestId}; skipping cash advance payment creation.`);
+                                return;
+                            }
 
                             const sEmpId = oRequestRecord.EMP_ID;
                             const sTripStartDate = oRequestRecord.TRIP_START_DATE;
@@ -1571,10 +1600,15 @@ module.exports = (srv) => {
                                 })
                             );
 
-                            if (oExistingCashAdvRecords) return;
+                            if (oExistingCashAdvRecords) {
+                                req.info(`Cash advance payment already exists for request ${sRequestId} and employee ${sEmpId}; skipping.`);
 
-                            let dDate = new Date(sTripStartDate);
+                                return;
+                            }
+
+                            const dDate = new Date(sTripStartDate);
                             dDate.setDate(dDate.getDate() - 14);
+
                             const sDisbursementDate = dDate.toISOString().split('T')[0];
 
                             await tx.run(
@@ -1586,10 +1620,14 @@ module.exports = (srv) => {
                                 })
                             );
 
-                        } catch (error) {
-                            req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                            break;
                         }
-                        break;
+                    }
+                } catch (error) {
+                    req.error(
+                        400,
+                        `Failed processing request ${sRequestId}: ${error.message}`
+                    );
                 }
             });
         }
@@ -1778,7 +1816,7 @@ module.exports = (srv) => {
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
             if (!oEmp) {
-                req.error(404, `No employee data found.`);
+                return req.reject(404, "Employee record not found");
             }
             else {
                 const sTodayDate = new Date().toISOString().slice(0, 10);
@@ -2025,13 +2063,13 @@ module.exports = (srv) => {
             req.user?.id;
 
         if (!sUserEmail) {
-            req.error(401, "Unable to determine logged-in user");
+            return req.reject(401, "Unable to determine logged-in user");
         }
         const oEmp = await tx.run(
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: String(sUserEmail).trim().toLowerCase() })
         );
         if (!oEmp) {
-            req.error(404, "Employee record not found");
+            return req.reject(404, "Employee record not found");
         }
 
         return oEmp;
@@ -2059,6 +2097,8 @@ module.exports = (srv) => {
                 srv.entities,
                 selectedDependents
             );
+        } else {
+            return req.reject(404, "Employee record not found");
         }
 
     });
@@ -2159,6 +2199,8 @@ module.exports = (srv) => {
                 );
             }
             return aDependent.length + 1;
+        } else {
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2222,7 +2264,7 @@ module.exports = (srv) => {
                 bMinimum: fCalculatedAmount < fMinimumEligibleAmount
             };
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2293,6 +2335,8 @@ module.exports = (srv) => {
                     fPercentage: oEligibilityRule.SUBSIDISED_RATE,
                     fFinalAmount: fFinalAmount
                 }
+            } else {
+                return req.reject(404, "Employee record not found");
             }
 
         } catch (error) {
@@ -2344,14 +2388,14 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, 'Employee not found');
+            return req.reject(404, "Employee record not found");
         }
 
         // ---------------------------------------------------------
         // 1. Current Checking (Position & Date Logic)
         // ---------------------------------------------------------
-        const sPositionEvent = oEmp.POSITION_EVENT_REASON;
-        const sPositionStartDate = oEmp.POSITION_START_DATE;
+        const sPositionEvent = oEmp.ELAUN_TUKAR_REASON;
+        const sPositionStartDate = oEmp.ELAUN_TUKAR_START_DATE;
 
         if (!Object.values(Constant.PositionEventId).includes(sPositionEvent) || !sPositionStartDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
@@ -2370,7 +2414,7 @@ module.exports = (srv) => {
         const dCurrentDate = new Date();
         dCurrentDate.setUTCHours(0, 0, 0, 0);
 
-        if (dCurrentDate <= dEligibleDate) {
+        if (dCurrentDate > dEligibleDate) {
             return Constant.ElaunTukarStatus.NOT_ALLOWED;
         }
 
@@ -2494,7 +2538,7 @@ module.exports = (srv) => {
             }
             return sMarriageCategory;
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -2714,7 +2758,7 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) {
                 req.query.where('1 = 0');
-                return;
+                return req.reject(404, "Employee record not found");
             }
 
             const aDeptRecords = await tx.run(
@@ -2920,7 +2964,7 @@ module.exports = (srv) => {
                 return false;
             }
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -3012,7 +3056,7 @@ module.exports = (srv) => {
                 req.error(404, `Amount not found.`);
             }
         } else {
-            req.error(404, `Employee Not Found.`);
+            return req.reject(404, "Employee record not found");
         }
     });
 
@@ -3095,7 +3139,7 @@ module.exports = (srv) => {
 
             if (!oEmp || !oEmp.DEP) {
                 req.query.where('1 = 0');
-                return;
+                return req.reject(404, "Employee record not found");
             }
 
             const aDeptRecords = await tx.run(
@@ -4820,16 +4864,10 @@ module.exports = (srv) => {
             ] || 0
         );
 
-        const fRemaining = fEligibleAmount - fConsumedAmount;
-
-        console.log("fEligibleAmount:", fEligibleAmount);
-        console.log("fConsumedAmount:", fConsumedAmount);
-        console.log("fRemaining:", fRemaining);
-
         return {
             entitlement: fEligibleAmount,
             approved: fConsumedAmount,
-            remaining: Math.max(0, fRemaining)
+            remaining: Math.max(0, (fEligibleAmount - fConsumedAmount).toFixed(2))
         };
     });
 
@@ -5426,7 +5464,7 @@ module.exports = (srv) => {
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
 
         if (!oEmp) {
-            return req.error(404, `No employee data found.`);
+            return req.reject(404, "Employee record not found");
         }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
@@ -5438,9 +5476,6 @@ module.exports = (srv) => {
             await oTx.rollback();
             return req.reject(500, `Failed to update status for ${sRecordId}: ${error.message}`);
         }
-
-        // remove approval log
-        await DeleteApproverDetails(oDescriptor.entityApprovers, oDescriptor.approverIdField, sRecordId, oTx);
 
         // insert record history
         try {

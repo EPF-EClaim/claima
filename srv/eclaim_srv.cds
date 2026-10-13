@@ -1781,4 +1781,25 @@ service eclaim_srv @(requires: 'authenticated-user') {
         ) returns Boolean;
 
     action cancelRecord(sRecordId: String) returns Boolean;
+
+    @odata.draft.enabled
+    @cds.search: { JOB_CODE_ID, JOB_GROUP_ID, JOB_CODE_DESC }
+    entity ZJOB_CODE_MAPPING as
+        projection on ECLAIM.ZJOB_CODE_MAPPING {
+            key JOB_CODE_ID,
+            key JOB_GROUP_ID,
+                JOB_CODE_DESC,
+                @readonly
+                ZJOB_GROUP.JOB_GROUP_DESC as JOB_GROUP_DESC
+        };
+    
+    @readonly
+    @cds.redirection.target: false
+    entity ZJOB_GROUP_VH as
+        projection on ECLAIM.ZJOB_GROUP {
+            key JOB_GROUP_ID,
+                JOB_GROUP_DESC
+        }
+        where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
+
 };

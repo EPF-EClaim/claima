@@ -305,7 +305,8 @@ sap.ui.define([
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT;
 			if (bApproval) {
-				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
+				var sClaimTypeId = this._oReqModel.getProperty("/req_header/claimtype");
+				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId, sClaimTypeId);
 
 				var sCurrentUserId = this._oSessionModel.getProperty("/userId");
 				var sRequestOwnerId = this._oReqModel.getProperty("/req_header/empid");
@@ -558,20 +559,8 @@ sap.ui.define([
 										break;
 
 									case this._oConstant.WorkflowArea.BUDGET_CHECKING:
-										var aInsufficientItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.INSUFFICIENT);
-										var aNotFoundItems = oResponse.Message.filter(r => r.STATUS === this._oConstant.BudgetCheckStatus.NOT_FOUND);
-
-										var aMessages = [];
-										if (aInsufficientItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_inform_cc_owner", aInsufficientItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-										if (aNotFoundItems.length > 0) {
-											aMessages.push(Utility.getText("req_tm_w_budget_not_found", aNotFoundItems.map(r => r.CLAIM_TYPE_ITEM)));
-										}
-
-										if (aMessages.length > 0) {
-											MessageBox.error(aMessages.join("\n"));
-										}
+										// Message is built on the server (srv/workflow/workflow-helper.js > buildBudgetErrorMessage): 'Budget not found' and/or 'Insufficient budget'
+										MessageBox.error(oResponse.Message || Utility.getText("req_tm_e_budget_check_failed"));
 										break;
 
 									default:
@@ -1310,8 +1299,10 @@ sap.ui.define([
 		},
 
 		async onSaveAddAnother(oEvent) {
-			await this.onSave(oEvent, true);
-
+			const bSaved = await this.onSave(oEvent, true);
+			if (!bSaved){
+				return;
+			}
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -1320,7 +1311,8 @@ sap.ui.define([
 					PARTICIPANTS_ID: oData.user.emp_id,
 					PARTICIPANT_NAME: oData.user.name,
 					PARTICIPANT_COST_CENTER: oData.user.cost_center,
-					ALLOCATED_AMOUNT: ""
+					ALLOCATED_AMOUNT: "",
+					_EDIT_MODE: "Display"
 				}];
 			} else {
 				oData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
@@ -1329,6 +1321,15 @@ sap.ui.define([
 			this._oReqModel.setData(oData);
 		},
 
+
+		/**
+		* Save Request Item Details
+		* @public
+		* Validation Order (Critical):
+		* 1. Required fields (this.getOwnerComponent().getValidator())
+		* 2. Custom business rules (CustomValidator.validate())
+		* Reason: Required fields must be populated before passing to backend validator
+		*/
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
 			const oEditButtonModel = this.getView().getModel("editButtonModel");
@@ -1342,6 +1343,15 @@ sap.ui.define([
 			const sReqId = String(oData.req_header.reqid || "").trim();
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
+			var bSaved = false;
+
+			// validate mandatory fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 
@@ -1374,7 +1384,7 @@ sap.ui.define([
 
 			// Eligibility Checking
 			try {
-				var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
+				var aPayload = await EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
 				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 			} catch (error) {
@@ -1383,14 +1393,6 @@ sap.ui.define([
 			};
 
 			if (!bCanProceed) return;
-
-			// validate mandatory fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
-					closeOnBrowserNavigation: false
-				});
-				return;
-			}
 
 			BusyIndicator.show(0);
 
@@ -1645,6 +1647,7 @@ sap.ui.define([
 				}
 
 				MessageToast.show("Success");
+				bSaved = true;
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
 					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
@@ -1660,6 +1663,8 @@ sap.ui.define([
 				BusyIndicator.hide();
 				this._resetReqItemInputs();
 			}
+			
+			return bSaved;
 		},
 
 		onImportChange1(oEvent) {
@@ -2364,9 +2369,13 @@ sap.ui.define([
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE),
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
 						new Filter("CATEGORY_ID", FilterOperator.NE, "X"),			// filter out claim type item that is not required for PAR
-						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)	// POTONGAN_ELAUN is not selectable on a pre-approval request
-						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
-						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
+						new Filter({
+							filters: [
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN),
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.TIPS)
+							],
+							and: true
+						})
 					],
 					{
 						$$ownRequest: true,
@@ -3106,10 +3115,9 @@ sap.ui.define([
 				this._oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`, "");
 			});
 
-			// set attachment 1 field to be required (mandatory)
-			var bIsCorpoCCReset = String(this._oReqModel.getProperty("/req_header/claimtype")) === String(this._oConstant.ClaimType.CORPO_CRED_CARD);
-			this.byId("i_attachment_1_file").setRequired(!bIsCorpoCCReset);
-
+			// attachment 1 "required" state is driven by the expression binding in req_create_item.fragment.xml
+			// (not mandatory for Corporate CC, or for KWSP Office location without toll)
+			this._oReqModel.refresh(true);
 		},
 
 		/**

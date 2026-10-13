@@ -49,25 +49,6 @@ sap.ui.define([
                     var oReqModel = this._oOwnerComponent.getModel("request");
                     var sClaimType = oReqModel.getProperty("/req_header/claimtype");
                     var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
-                    
-                    // HANDPHONE | TELEFON_B
-                    if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
-                        
-                        var aParticipants = oReqModel.getProperty("/participant") || [];
-                        var fMaxLimit = 100.00;
-
-                        for (var p = 0; p < aParticipants.length; p++) {
-                            var fEnteredAmount = parseFloat(aParticipants[p].ALLOCATED_AMOUNT || 0);
-
-                            if (fEnteredAmount > fMaxLimit) {
-                                MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
-                                bCanProceed = false; 
-                            } else if (fEnteredAmount < 0.00) {
-                                MessageBox.error(Utility.getText("req_d_e_neg_amount"));
-                                bCanProceed = false; 
-                            }
-                        }
-                    }
 
                     // check number of traveller
                     if (sClaimType === Constants.ClaimType.ELAUN_TUKAR) {
@@ -101,6 +82,8 @@ sap.ui.define([
                                 if(!oInputModel.getProperty("/claim_item/amount")) {
                                     MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
                                     bCanProceed = false;
+                                    return;
+
                                 }
                                 break;
                             case Constants.ClaimTypeItem.MKN_LOAN:
@@ -110,9 +93,25 @@ sap.ui.define([
 
                                 }
                                 break;
+                            case Constants.ClaimTypeItem.KM:
+                                if(oInputModel.getProperty("/claim_item/km") < 0.01){
+                                    MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"));
+                                    bCanProceed = false;
+                                    return;
+
+                                }
+                                break;    
                             default:
                                 break;
                         }
+                    }
+
+                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined )  {
+                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                        bCanProceed = false;
+                        return;
+                        
                     }
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
@@ -143,7 +142,7 @@ sap.ui.define([
                     }
 
                     if(!!oInputModel?.getProperty("/claim_item/receipt_date") && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
-                        var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+                        var dTripEndDate = this._getMaxReceiptDate(oClaimSubmissionModel);
                         var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
                         if (dReceiptDate > dTripEndDate) {
@@ -208,6 +207,16 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
+                    // validate item date + time range (end must not be earlier than start)
+                    var oItem = oInputModel.getProperty("/claim_item");
+                    if ((oItem.start_date && oItem.start_time && oItem.end_date && oItem.end_time &&
+                            DateUtility.parseDateTime(oItem.end_date, oItem.end_time) < DateUtility.parseDateTime(oItem.start_date, oItem.start_time)) ||
+                        (oItem.trip_start_date && oItem.trip_start_time && oItem.trip_end_date && oItem.trip_end_time &&
+                            DateUtility.parseDateTime(oItem.trip_end_date, oItem.trip_end_time) < DateUtility.parseDateTime(oItem.trip_start_date, oItem.trip_start_time))) {
+                        MessageBox.error(Utility.getText("req_d_e_end_date_less_then_start_date"));
+                        return false;
+                    }
+
                     // // validate item date range
                     if (!!oInputModel?.getProperty("/claim_item/start_date") || !!oInputModel?.getProperty("/claim_item/end_date")) {
                         if (!this._isValidDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("/claim_item/end_date"))) {
@@ -219,11 +228,15 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
-                    if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
-                        // stop claim submission if incomplete
-                        bCanProceed = false;
-                    }
                     RequestUtility.init(this._oOwnerComponent, this._oView)
+                    //// trip start/end date (mandatory only when editable - see Common.setHeaderEditable)
+                    if (this._oView.getModel("reqHeaderEditableModel").getProperty("/startTrip") ||
+                        oReqModel.getProperty("/req_header/tripstartdate") || oReqModel.getProperty("/req_header/tripenddate")) {
+                        if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                    }
                     const bIsEventDateRequired = RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"));
                     //// event start/end date (optional)
                     if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
@@ -272,15 +285,6 @@ sap.ui.define([
                                 bCanProceed = false;
                             }
                         }
-
-                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                        for(var i = 0; i < aItems.length; i++){
-                            if(aItems[i].amount == 0){
-                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                bCanProceed = false;
-                                break;
-                            }
-                        }
                     }
                     break;
             }
@@ -309,6 +313,23 @@ sap.ui.define([
         },
 
         /**
+         * Latest allowed receipt date (YYYY-MM-DD) = header End Date, plus the same extra days the
+         * item Start/End Date pickers allow for Kursus (see DateUtility.determineMaxDate):
+         * Kursus Dlm Negara +1 day, Kursus Luar Negara +2 days.
+         * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
+         * @returns {Date} return the receipt date
+         * @private
+         */
+        _getMaxReceiptDate: function (oClaimSubmissionModel) {
+            var dMax = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"));
+            var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id");
+            var iExtraDays = Constants.ClaimType.KURSUS_DLM_NEGARA === sClaimType ? 1 : Constants.ClaimType.KURSUS_LUAR_NEGARA === sClaimType ? 2 : 0;
+            dMax.setDate(dMax.getDate() + iExtraDays);
+
+            return DateUtility.toYMD(dMax);
+        },
+
+        /**
          * Check that the receipt date of every claim item is not later than the header End Date.
          * @private
          * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel claimsubmission_input model
@@ -322,10 +343,11 @@ sap.ui.define([
                 return true;
             }
 
+            var sMaxReceiptDate = this._getMaxReceiptDate(oClaimSubmissionModel);
             var aInvalidItems = [];
             (oClaimSubmissionModel.getProperty("/claim_items") || []).forEach(function (oItem) {
                 var sReceiptDate = DateUtility.toYMD(oItem.receipt_date);
-                if (sReceiptDate && sReceiptDate > sHeaderEnd) {
+                if (sReceiptDate && sReceiptDate > sMaxReceiptDate) {
                     aInvalidItems.push("\u2022 " + oItem.claim_sub_id + " (" + DateUtility.formatDate(sReceiptDate, "dd-MMM-yyyy") + ")");
                 }
             });
