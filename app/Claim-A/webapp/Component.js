@@ -188,6 +188,15 @@ sap.ui.define([
                 } catch (oError) {
                     console.error("User Session Initialization Failed:", oError);
                     this._fnRolesLoaded();
+                    MessageBox.error(Utility.getText("user_not_found_desc", []), {
+                        title: Utility.getText("user_not_found_title", []),
+                        actions: [MessageBox.Action.CLOSE],
+                        emphasizedAction: MessageBox.Action.CLOSE,
+                        onClose: () => {
+                            // Log out through the approuter
+						    window.location.href = "/claima/do/logout";
+                        }
+                    });
                 }
             },
 
@@ -375,6 +384,7 @@ sap.ui.define([
             _onBeforeRouteMatched: function (oEvent) {
                 var sRoute = oEvent.getParameter("name");
                 var oRoleModel = this.getModel("roleModel");
+                var oSessionModel = this.getModel("session");
                 var oRouter = this.getRouter();
 
                 this._oRolesLoadedPromise.then(function () {
@@ -383,7 +393,7 @@ sap.ui.define([
                                   oRoleModel.getProperty("/isAdminCC") || 
                                   oRoleModel.getProperty("/isCCCAdmin") ;
                     // restriction for manual url change to Analytics and Configuration without admin role
-                    if ((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
+                    if((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
                         oRouter.navTo("Dashboard");
                         MessageBox.error(Utility.getText("msg_unauthorized_role"));
                     } else {
