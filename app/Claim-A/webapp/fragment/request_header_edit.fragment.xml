@@ -54,7 +54,7 @@
                                                 pattern: 'dd MMM yyyy'
                                             }
                                         }" 
-                                        required="true" 
+                                        required="{reqHeaderEditableModel>/startTrip}" 
                                         editable="{reqHeaderEditableModel>/startTrip}"
                                         minDate="{
                                             parts: [
@@ -96,7 +96,7 @@
                                                 pattern: 'dd MMM yyyy'
                                             }
                                         }" 
-                                        required="true" 
+                                        required="{reqHeaderEditableModel>/endTrip}" 
                                         editable="{reqHeaderEditableModel>/endTrip}"
                                         minDate="{
                                             parts: [

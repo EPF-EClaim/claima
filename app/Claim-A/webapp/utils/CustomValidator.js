@@ -228,11 +228,15 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
-                    if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
-                        // stop claim submission if incomplete
-                        bCanProceed = false;
-                    }
                     RequestUtility.init(this._oOwnerComponent, this._oView)
+                    //// trip start/end date (mandatory only when editable - see Common.setHeaderEditable)
+                    if (this._oView.getModel("reqHeaderEditableModel").getProperty("/startTrip") ||
+                        oReqModel.getProperty("/req_header/tripstartdate") || oReqModel.getProperty("/req_header/tripenddate")) {
+                        if (!this._isValidDateRange(oReqModel.getProperty("/req_header/tripstartdate"), oReqModel.getProperty("/req_header/tripenddate"))) {
+                            // stop claim submission if incomplete
+                            bCanProceed = false;
+                        }
+                    }
                     const bIsEventDateRequired = RequestUtility.getEventDateRequired(oReqModel.getProperty("/req_header/reqtypeid"));
                     //// event start/end date (optional)
                     if (oReqModel.getProperty("/req_header/eventstartdate") || oReqModel.getProperty("/req_header/eventenddate") || bIsEventDateRequired) {
