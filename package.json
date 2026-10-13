@@ -67,22 +67,13 @@
       "app-front": true,
       "html5-repo": true,
       "destinations": true,
-      "CE_API_EARMARKEDFUNDSDOCUMENT_0001": {
-        "kind": "odata",
-        "model": "srv/external/CE_API_EARMARKEDFUNDSDOCUMENT_0001",
-        "credentials": {
-          "destination": "IFAMS_S4_QAS",
-          "path": "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001"
-        }
-      },
       "sap_s4_OP_API_EARMARKEDFUNDS_SRV_0001_v1": {
         "kind": "odata",
         "model": "srv/external/sap-s4-OP_API_EARMARKEDFUNDS_SRV_0001-v1",
         "credentials": {
           "destination": "IFAMS_S4_QAS",
-          "path": "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001",
-          "requestTimeout": 30000
-        }
+          "path": "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001"        
+        }        
       }
     }
   },

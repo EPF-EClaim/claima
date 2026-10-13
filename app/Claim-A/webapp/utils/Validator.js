@@ -140,7 +140,8 @@ sap.ui.define(
 			}
 			if ( isValid &&
 				oControl.getValueState &&
-				oControl.getValueState() === ValueState.Error
+				oControl.getValueState() === ValueState.Error && 
+				oControl.getValueStateText() !== "Please fill this mandatory field!"
 			) {
 				// Control custom validation
 				isValid = false;

@@ -43,10 +43,10 @@ sap.ui.define([
         },
 
         open: function () {
-            this.byId("helloDialog").open();
+            this.byId("mileageCalcDialog").open();
         },
         close: function () {
-            var dlg = this.byId("helloDialog");
+            var dlg = this.byId("mileageCalcDialog");
             if (dlg) dlg.close();
         },
 
