@@ -32,29 +32,7 @@ sap.ui.define([
                 await this._checkBackendDuplicate(oController, oItem);
             }
         },
-
-         /**
-         * Checks all claim items for amount to be not zero.
-         * @public
-         * @param {object} oController the controller containing the claim models
-         * @returns {Promise<void>} throws an error if item amount zero is found
-         */
-        async CheckAllItemsAmount(oController) {
-
-            const oSubmissionModel = oController.getView().getModel("claimsubmission_input");
-            const aItems = oSubmissionModel.getProperty("/claim_items") || [];
-
-            for (let iIndex = 0; iIndex < aItems.length; iIndex++) {
-
-                const oItem = aItems[iIndex];
-
-                if(oItem.amount <= 0){
-                    throw new Error(Utility.getText("msg_claimdetails_item_amount_zero"));
-                    return false;
-                } 
-            }
-        },
-
+        
         /**
          * Checks a claim item for duplication within the local list.
          * @public

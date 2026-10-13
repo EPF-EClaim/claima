@@ -4326,6 +4326,8 @@ sap.ui.define([
 					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
 					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
+					// claim item amount check
+					await CustomValidator.CheckAllItemsAmount(this);
 					if (!bCanProceed) {
 						return;
 					}
@@ -4351,7 +4353,6 @@ sap.ui.define([
 					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
 					// claim item amount check
-					await CustomDuplicationCheck.CheckAllItemsAmount(this);
 
 					// Cash Advance Repayment Validation checking
 					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
@@ -5461,7 +5462,7 @@ sap.ui.define([
 				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
 				this._oConstant.ClaimTypeItem.MATAWANG;
 
-			if (bIsEditingMatawang) {
+			if (bIsEditingMatawang && aClaimItems.length > 1 ) {
 				return false;
 			}
 			await ClaimUtility.calculateMatawangAmount();
