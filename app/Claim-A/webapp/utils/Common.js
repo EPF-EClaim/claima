@@ -54,7 +54,11 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     oInputModel = this._oView.getModel("request");
 
-                    if ( DateUtility.getHanaDate(oInputModel.getProperty("/req_header/tripstartdate")) && DateUtility.getHanaDate(oInputModel.getProperty("/req_header/tripenddate")) ) {
+                    // Trip dates are only mandatory when editable (set in setHeaderEditable)
+                    const bTripDateRequired = this._oView.getModel("reqHeaderEditableModel").getProperty("/startTrip");
+                    const bHasTripDates = DateUtility.getHanaDate(oInputModel.getProperty("/req_header/tripstartdate")) && DateUtility.getHanaDate(oInputModel.getProperty("/req_header/tripenddate"));
+
+                    if ( !bTripDateRequired || bHasTripDates ) {
                         try {
                             BusyIndicator.show(0);
 
