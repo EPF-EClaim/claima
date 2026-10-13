@@ -50,6 +50,46 @@ module.exports = (srv) => {
 
         let bStatus = false;    // default to false, will be set to true
 
+        // testing on API call
+        // const oEarmarksfund = await cds.connect.to('CE_API_EARMARKEDFUNDSDOCUMENT_0001');
+        // const response = await oEarmarksfund.send({
+        //     method: 'GET',
+        //     path: '/EarmarkedFundsDocument?$top=5'
+        // });
+        // try {
+        //     const srv = await cds.connect.to('CE_API_EARMARKEDFUNDSDOCUMENT_0001');
+        // } catch (e) {
+        //     console.dir(e, { depth: null });
+        //     console.dir(e.cause, { depth: null });
+        // }
+        // var test = srv;
+        try {
+            const srv = await cds.connect.to('sap_s4_OP_API_EARMARKEDFUNDS_SRV_0001_v1');
+            const response = await srv.send({
+                        method: 'GET',
+                        path: '/'
+            });
+            console.log(response);
+        } catch (e) {
+            console.dir(e, { depth: null });
+            console.dir(e.reason, { depth: null });
+            console.dir(e.cause, { depth: null });
+        }
+
+        try {
+            const test = await cds.connect.to('CE_API_EARMARKEDFUNDSDOCUMENT_0001');
+            const responsetest = await test.send({
+                        method: 'GET',
+                        path: '/'
+            });
+            console.log(response);
+        } catch (e) {
+            console.dir(e, { depth: null });
+            console.dir(e.reason, { depth: null });
+            console.dir(e.cause, { depth: null });
+        }
+        // end test on API call
+
         const oDescriptor = resolveDocDescriptor(sRecordId);
         if (!oDescriptor) {
             return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sRecordId}`, false);

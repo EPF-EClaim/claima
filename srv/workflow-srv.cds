@@ -1,5 +1,7 @@
 using { ECLAIM } from '../db/eclaim';
 using { eclaim_srv } from './eclaim_srv';
+using {CE_API_EARMARKEDFUNDSDOCUMENT_0001 as external} from './external/CE_API_EARMARKEDFUNDSDOCUMENT_0001';
+using { sap_s4_OP_API_EARMARKEDFUNDS_SRV_0001_v1 as budget_api } from './external/sap-s4-OP_API_EARMARKEDFUNDS_SRV_0001-v1';
 
 type ApproverActionRequest {
     Id              : String;
@@ -31,5 +33,13 @@ service workflow {
         Area                : String;
         Message             : String;
     };
+
+    
+    entity API_EARMARKSFUND_HEADER as projection on external.EarmarkedFundsDocument;
+
+    entity API_EARMARKSFUND_ITEM as projection on external.EarmarkedFundsDocumentItem;
+
+    entity EARMARKEDFUNDS as projection on budget_api.EarmarkedFundsDocument;
+
 
 }
