@@ -2627,23 +2627,27 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0');
+                return req.reject(404, "Employee record not found");
             }
 
-            const sUserCC = oEmp.CC;
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC')
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
+            );
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
+            if (aCostCenters.length > 0) {
+
+                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
+
             } else {
-                req.query.where(ccFilter);
+                req.query.where('1 = 0');
             }
 
         } catch (error) {
@@ -2660,23 +2664,27 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0');
+                return req.reject(404, "Employee record not found");
             }
 
-            const sUserCC = oEmp.CC;
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC')
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
+            );
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
+            if (aCostCenters.length > 0) {
+
+                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
+
             } else {
-                req.query.where(ccFilter);
+                req.query.where('1 = 0');
             }
 
         } catch (error) {
@@ -2693,23 +2701,27 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0');
+                return req.reject(404, "Employee record not found");
             }
 
-            const sUserCC = oEmp.CC;
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC', 'DEP')
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
+            );
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
+            if (aCostCenters.length > 0) {
+
+                req.query.where({ CHARGING_COST_CENTER: { 'in': aCostCenters } });
+
             } else {
-                req.query.where(ccFilter);
+                req.query.where('1 = 0');
             }
 
         } catch (error) {
@@ -2726,23 +2738,27 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
+            if (!oEmp || !oEmp.DEP) {
+                req.query.where('1 = 0');
+                return req.reject(404, "Employee record not found");
             }
 
-            const sUserCC = oEmp.CC;
+            const aDeptRecords = await tx.run(
+                SELECT.distinct('CC')
+                    .from('ZEMP_MASTER')
+                    .where({ DEP: oEmp.DEP })
+            );
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+            const aCostCenters = aDeptRecords
+                .map(record => record.CC)
+                .filter(cc => cc !== null && cc !== undefined && cc !== '');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
+            if (aCostCenters.length > 0) {
+
+                req.query.where({ CHARGING_COST_CENTER: { 'in': aCostCenters } });
+
             } else {
-                req.query.where(ccFilter);
+                req.query.where('1 = 0');
             }
 
         } catch (error) {
