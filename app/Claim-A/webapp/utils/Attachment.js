@@ -50,18 +50,18 @@ sap.ui.define([
                 })
             });
 
-			const body = await oRes.text().catch(() => "");
-			let result;
+			const oBody = await oRes.text().catch(() => "");
+			let oResult;
 			try {
-				result = JSON.parse(body)?.d?.[0];
+				oResult = JSON.parse(oBody)?.d?.[0];
 			} catch {
 				// non-JSON body (e.g. HTML error page); handled below
 			}
 
-			const sAttachmentNumber = result?.key?.split("=")[1];
+			const sAttachmentNumber = oResult?.key?.split("=")[1];
 
-			if (!oRes.ok || result?.status === "ERROR" || !sAttachmentNumber) {
-				throw new Error(`Attachment POST failed (HTTP ${oRes.status}): ${result?.message || body.slice(0, 500)}`);
+			if (!oRes.ok || oResult?.status === "ERROR" || !sAttachmentNumber) {
+				throw new Error(`Attachment POST failed (HTTP ${oRes.status}): ${oResult?.message || oBody.slice(0, 500)}`);
 			}
 			return sAttachmentNumber;
 

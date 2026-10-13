@@ -1143,12 +1143,9 @@ sap.ui.define([
 						}
 
 					} catch (oError) {
-						
 						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-
 						// Don't proceed claim item if upload throws an exception
 						return;
-
 					} finally {
 						BusyIndicator.hide();
 					}
