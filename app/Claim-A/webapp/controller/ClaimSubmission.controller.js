@@ -174,6 +174,9 @@ sap.ui.define([
 
 			// refresh data
 			this.currentHash = null;
+			// invalidate any claim load still in flight for the claim we are leaving,
+			// so its late response cannot overwrite the next claim being opened
+			this._iClaimLoadSeq = (this._iClaimLoadSeq || 0) + 1;
 			this.getOwnerComponent().getModel("employee")?.refresh();
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
 
@@ -218,6 +221,11 @@ sap.ui.define([
 		_onMatched: async function (oEvent) {
 			const _oRouter = this.getOwnerComponent().getRouter();
 			this.currentHash = _oRouter.getHashChanger().getHash();
+
+			// every match gets a sequence number; if the user navigates again while
+			// this one is still awaiting the backend, the older run stops
+			const iNavSeq = this._iNavSeq = (this._iNavSeq || 0) + 1;
+			const fnIsStale = () => iNavSeq !== this._iNavSeq;
 
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
@@ -473,6 +481,9 @@ sap.ui.define([
 					oHeaderBinding.requestContexts(0, 1),
 					oItemBinding.requestContexts(0, Infinity)
 				]);
+				if (fnIsStale()) {
+					return null;
+				}
 
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
@@ -481,6 +492,7 @@ sap.ui.define([
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
+					return false;
 					return false;
 				}
 
@@ -512,6 +524,9 @@ sap.ui.define([
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
 				await ApprovalLog.getApproverList(this._oApprovalLog, oEmployeeViewModel, sClaimId, sClaimTypeId);
+				if (fnIsStale()) {
+					return null;
+				}
 
 				const aApprovalList = this._oApprovalLog.getProperty("/approval") || [];
 				const bCurrentUserIsApprover = aApprovalList.some((oApproval) =>
@@ -528,6 +543,9 @@ sap.ui.define([
 
 				return true;
 			} catch (err) {
+				if (fnIsStale()) {
+					return null;
+				}
 				console.error("Failed to load claim header/items:", err);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
