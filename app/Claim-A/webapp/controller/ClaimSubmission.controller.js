@@ -3197,6 +3197,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 				}
 
+				// "Charged to CCC" is only offered on travel claims of corporate card holders
+				const bCccAllowed = this._isTravelClaimWithCard(
+					oClaimSubmissionModel.getProperty("/claim_header/card_no"),
+					oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")
+				);
+
 				// set body for update
 				var oBody = new JSONModel({
 					CLAIM_ID: oInputModel.getProperty("/claim_item/claim_id"),
@@ -3314,11 +3320,8 @@ sap.ui.define([
 					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? true
-									// the switch is only shown on travel claims with a card - don't save a hidden value
-									: this._isTravelClaimWithCard(
-										this.getView().getModel("claimsubmission_input").getProperty("/claim_header/card_no"),
-										this.getView().getModel("claimsubmission_input").getProperty("/claim_header/claim_type_id")
-									) && !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
+									// the switch is hidden on other claims - don't save a hidden value
+									: bCccAllowed && !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
 					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
