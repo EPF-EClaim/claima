@@ -329,9 +329,9 @@ module.exports = {
           break;
       }
       aPayload[i] = oReturnPayload; //Update Payload with Result value
-
-      return aPayload;
     }
+    
+    return aPayload;
   },
 
   /*******************************************************
