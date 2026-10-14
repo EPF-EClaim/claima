@@ -69,6 +69,7 @@ module.exports = (srv) => {
         // 6.4 update ccc advance value
         let aBudgetContext, aBudgetCheckReturn;
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
+            var bAutoApprove = true;
             try {
                 aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, Constant.ApproverActions.APPROVE);
                 aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
@@ -85,7 +86,7 @@ module.exports = (srv) => {
 
             // If successful, update Header table with approved status and timestamp
             try {
-                await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.APPROVED, oTx);
+                await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.APPROVED, oTx, bAutoApprove);
             } catch (oError) {
                 await oTx.rollback();
                 throw new Error(`Error encountered while updating claim status to Approved\n${oError.message}`);
