@@ -364,7 +364,6 @@ sap.ui.define([
          * Checks all claim items for amount to be not zero.
          * @public
          * @param {object} oController the controller containing the claim models
-         * @returns {Promise<void>} throws an error if item amount zero is found
          */
         async CheckAllItemsAmount(oController) {
 
