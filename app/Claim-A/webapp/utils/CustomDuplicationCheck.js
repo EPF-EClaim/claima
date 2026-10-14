@@ -32,7 +32,6 @@ sap.ui.define([
                 await this._checkBackendDuplicate(oController, oItem);
             }
         },
-        
         /**
          * Checks a claim item for duplication within the local list.
          * @public
@@ -69,8 +68,6 @@ sap.ui.define([
                 }
             }
         },
-
-
 
         /**
          * Checks a claim item for duplication in the backend.

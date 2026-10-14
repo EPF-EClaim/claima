@@ -4326,11 +4326,12 @@ sap.ui.define([
 					// Custom Validation Checking
 					CustomValidator.init(this.getOwnerComponent(), this.getView());
 					var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIMHEADER);
-					// claim item amount check
-					await CustomValidator.CheckAllItemsAmount(this);
 					if (!bCanProceed) {
 						return;
 					}
+
+					// claim item amount check
+					await CustomValidator.CheckAllItemsAmount(this);
 
 					// Total Claim Amount Validation checking
 					var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
@@ -4352,7 +4353,6 @@ sap.ui.define([
 
 					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
-					// claim item amount check
 
 					// Cash Advance Repayment Validation checking
 					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
@@ -5454,7 +5454,7 @@ sap.ui.define([
 					this._oConstant.ClaimTypeItem.MATAWANG
 			);
 			if (iMatawangIndex === -1) {
-				return false;
+				return;
 			}
 			const bIsSaveFlow = !!oInputModel?.getProperty("/claim_item/claim_sub_id");
 			const bIsEditingMatawang =
@@ -5463,11 +5463,11 @@ sap.ui.define([
 				this._oConstant.ClaimTypeItem.MATAWANG;
 
 			if (bIsEditingMatawang && aClaimItems.length > 1 ) {
-				return false;
+				return;
 			}
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
-			return true;
+			return;
 		},
 		/**
 		 * Handles checkbox toggle for RoundTrip function. Multiply by 2 if active.

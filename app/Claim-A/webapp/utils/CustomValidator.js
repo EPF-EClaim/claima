@@ -377,7 +377,6 @@ sap.ui.define([
 
                 if(oItem.amount <= 0){
                     throw new Error(Utility.getText("msg_claimdetails_item_amount_zero"));
-                    return;
                 } 
             }
         },
