@@ -2618,152 +2618,77 @@ module.exports = (srv) => {
         };
     });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+    /**
+     * Cost center filter column for each report entity.
+     * Key   = entity name (without the service prefix).
+     * Value = column used to limit rows to the user's department cost centers.
+     *
+     * To protect a new report, add one line here. The handler below registers itself from these keys.
+     */
+    const mCostCenterFilterField = {
+        ZEMP_CLAIM_REPORT_SUMMARY:   'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS:   'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
+        ZEMP_CC_BUDGET_REPORT:       'FUND_CENTER'
+    };
+
+    /**
+     * Restricts report data for Admin_CC users to their own department's cost centers.
+     * - Cost centers found    -> only matching rows are returned.
+     * - No cost centers found -> no rows are returned (Fiori shows "No data").
+     * - Employee or DEP missing -> 404 "Employee record not found".
+     * - Unexpected error      -> 500 "Internal server error while checking permissions".
+     *
+     * @param {import('@sap/cds').Request} req - Incoming READ request
+     */
+    srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
+        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
+
+        // Only Admin_CC users are filtered. Other roles are not affected by this handler.
         if (!isAdminCC)
             return;
 
+        const sEntityName = req.target.name.split('.').pop();
+        const sFilterField = mCostCenterFilterField[sEntityName];
+
+        if (!sFilterField)
+            return req.reject(500, `No cost center filter field configured for ${sEntityName}`);
+
+        let oEmp;
         try {
             const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
 
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
+            // Get the logged-in user's employee record
+            oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+
+            if (oEmp && oEmp.DEP) {
+                // Get all distinct cost centers that belong to the user's department
+                const aDeptRecords = await tx.run(
+                    SELECT.distinct('CC')
+                        .from('ZEMP_MASTER')
+                        .where({ DEP: oEmp.DEP })
+                );
+
+                // Remove empty cost centers (null, undefined, '')
+                const aCostCenters = aDeptRecords
+                    .map(record => record.CC)
+                    .filter(cc => cc !== null && cc !== undefined && cc !== '');
+
+                if (aCostCenters.length > 0) {
+                    req.query.where({ [sFilterField]: { in: aCostCenters } });
+                } else {
+                    req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
+                }
             }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-
         } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
+            console.error('Permission check failed:', error);
+            return req.reject(500, 'Internal server error while checking permissions');
         }
-    });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC', 'DEP')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ CHARGING_COST_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ CHARGING_COST_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
+        // Kept outside the try block so the 404 is not caught and turned into a 500
+        if (!oEmp || !oEmp.DEP)
+            return req.reject(404, 'Employee record not found');
     });
 
     srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
@@ -3145,37 +3070,6 @@ module.exports = (srv) => {
                     REQUEST_ID: sRequestId
                 })
         );
-    });
-
-    srv.before('READ', 'ZEMP_CC_BUDGET_REPORT', async (req) => {
-
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-        }
     });
 
     /**
