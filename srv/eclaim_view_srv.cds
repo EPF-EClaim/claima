@@ -1191,10 +1191,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 coalesce(cast(course.START_DATE     as String), '') || '|' ||
                 coalesce(cast(course.END_DATE       as String), '')   as COURSE_SESSION_KEY : String,
                 course.COURSE_ID,
-                course.PARTICIPANT_ID,
+            key course.PARTICIPANT_ID,
                 course.COURSE_DESC,
                 course.COURSE_SESSION_STAT,
-                course.ATTENDENCE_STATUS,
+            key course.ATTENDENCE_STATUS,
                 course.SESSION_NUMBER,
                 course.START_DATE,
                 course.END_DATE
