@@ -2635,60 +2635,54 @@ module.exports = (srv) => {
 
     /**
      * Restricts report data for Admin_CC users to their own department's cost centers.
-     * - Cost centers found    -> only matching rows are returned.
-     * - No cost centers found -> no rows are returned (Fiori shows "No data").
-     * - Employee or DEP missing -> 404 "Employee record not found".
-     * - Unexpected error      -> 500 "Internal server error while checking permissions".
+     * Other roles are not affected.
+     *
+     * Outcomes:
+     * - Cost centers found         -> only rows with those cost centers are returned.
+     * - No cost centers found      -> no rows are returned (Fiori shows "No data").
+     * - Employee record not found  -> 401/404 from getLoggedInEmployee.
+     * - Employee has no DEP        -> 404 "Employee record not found".
+     * - Entity not configured      -> 500 "Report access is not configured".
+     * - Unexpected/DB error        -> CAP's standard 500 (details hidden in production).
      *
      * @param {import('@sap/cds').Request} req - Incoming READ request
      */
     srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
-        var isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-
-        // Only Admin_CC users are filtered. Other roles are not affected by this handler.
-        if (!isAdminCC)
-            return;
+        // Only Admin_CC users are filtered
+        if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
         const sEntityName = req.target.name.split('.').pop();
         const sFilterField = mCostCenterFilterField[sEntityName];
+        if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
-        if (!sFilterField)
-            return req.reject(500, `No cost center filter field configured for ${sEntityName}`);
+        const tx = cds.tx(req);
 
-        let oEmp;
-        try {
-            const tx = cds.tx(req);
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (!oEmp?.DEP) return req.reject(404, 'Employee record not found');
 
-            // Get the logged-in user's employee record
-            oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        const aCostCenters = await getDepartmentCostCenters(tx, oEmp.DEP);
 
-            if (oEmp && oEmp.DEP) {
-                // Get all distinct cost centers that belong to the user's department
-                const aDeptRecords = await tx.run(
-                    SELECT.distinct('CC')
-                        .from('ZEMP_MASTER')
-                        .where({ DEP: oEmp.DEP })
-                );
-
-                // Remove empty cost centers (null, undefined, '')
-                const aCostCenters = aDeptRecords
-                    .map(record => record.CC)
-                    .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-                if (aCostCenters.length > 0) {
-                    req.query.where({ [sFilterField]: { in: aCostCenters } });
-                } else {
-                    req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
-                }
-            }
-        } catch (error) {
-            return req.reject(500, `Internal server error while checking permissions\n${error.message}`);
+        if (aCostCenters.length) {
+            req.query.where({ [sFilterField]: { in: aCostCenters } });
+        } else {
+            req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
         }
-
-        // Kept outside the try block so the 404 is not caught and turned into a 500
-        if (!oEmp || !oEmp.DEP)
-            return req.reject(404, 'Employee record not found');
     });
+
+    /**
+     * Returns the distinct, non-empty cost centers for a department.
+     *
+     * @param {Object} tx - CAP transaction
+     * @param {string} sDep - Department ID
+     * @returns {Promise<string[]>} Cost centers; empty array if none are found
+     */
+    async function getDepartmentCostCenters(tx, sDep) {
+        const aRows = await tx.run(
+            SELECT.distinct('CC').from('ZEMP_MASTER').where({ DEP: sDep })
+        );
+        // Remove null, undefined and '' values
+        return aRows.map(r => r.CC).filter(Boolean);
+    }
 
     srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
 
