@@ -7,10 +7,11 @@ module.exports = {
         * @param {String} sRecordId - Claims / Request Record ID
         * @param {String} sStatus - Status to be updated into header tables
         * @param {Object} tx - CDS Transaction
+        * @param {Boolean} bAutoApprove - flag to determine if it is auto approval flow
         * @returns {Integer} result number of records updated in header tables
         */
-    updateApproverActionToHeader: async function (sRecordId, sStatus, tx) {
-        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField, sStatusField;
+    updateApproverActionToHeader: async function (sRecordId, sStatus, tx, bAutoApprove) {
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField, sStatusField, sAdditionalDateField;
 
         // Build Where Condition
         switch (sRecordId.substring(0, 3)) {
@@ -73,6 +74,9 @@ module.exports = {
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_APPROVED_TIME;
+                if(bAutoApprove){
+                sAdditionalDateField = Constant.EntitiesFields.SUBMITTED_DATE;   //added in SUBMITTED_DATE field for auto approve scenarios
+                }
                 break;
 
             case Constant.Status.REJECTED:
@@ -100,7 +104,12 @@ module.exports = {
             [sTimeField]: tTime,
             [sStatusField]: sStatus // caters for both par and claim
         };
-
+        
+        // for scenarios which require additional date field
+        if (sAdditionalDateField){
+            oToUpdateFields[sAdditionalDateField] =  dDate;
+        }
+        
         // Reject and Push back has reason ID fields
         if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.PUSH_BACK)) {
             oToUpdateFields[sReasonIdField] =  sReasonId;

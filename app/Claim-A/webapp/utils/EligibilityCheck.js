@@ -343,7 +343,10 @@ sap.ui.define([
 			const bIsEligible = aErrorMessages.length === 0;
 
 			if (!bIsEligible) {
-				const sFormattedErrors = "• " + aErrorMessages[0];
+				// Build one bullet per error, each on its own line
+				const sFormattedErrors = aErrorMessages
+					.map(sMsg => "• " + sMsg)
+					.join("\n");
 				MessageBox.error(Utility.getText("req_e_validation_msg") + sFormattedErrors, {
 					title: Utility.getText("req_e_validation_title"),
 					actions: [MessageBox.Action.CLOSE]
