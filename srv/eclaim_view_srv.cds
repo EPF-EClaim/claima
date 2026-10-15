@@ -1015,7 +1015,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZCLAIM_ITEM.CHARGED_TO_CCC,
             ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
             CARD_NO,
-            CLAIM_TYPE_ID
+            CLAIM_TYPE_ID,
+            EARMARKED_FUNDS_DOC_ID,
+            EARMARKED_FUNDS_DOC_YEAR,
+            EARMARKED_FUNDS_DOC_COMP_CODE
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
