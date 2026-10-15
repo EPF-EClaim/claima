@@ -34,11 +34,12 @@ async function getBudgetRecord(oCondition) {
     return oBudgetRecord;
 }
 
-async function executeIFAMSRequest(sMethod, sPath, data = undefined) {
-    const IFAMS_Service = await getIFAMSConnection();
+async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
+    if(!_ifamsConnection) const IFAMS_Service = await getIFAMSConnection();
     var aRecords = await IFAMS_Service.send({
         method: sMethod,
-        path: sPath
+        path: sPath, 
+        data: oData
     });
     return aRecords;
 }
@@ -57,7 +58,7 @@ async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction) {
 
             if (oEarmarkedFundsDocument.length > 0) {
                 var oResponse;
-                for (const item of oEarmarkedFundsDocument._EarmarkedFundsDocumentItem) {
+                for (const item of oEarmarkedFundsDocument[0]._EarmarkedFundsDocumentItem) {
                     sPath = Constant.IFAMS_API_PATH.RELEASE_EARMARKEDFUNDS
                         .replace('{DOC_NO}', sRecordID)
                         .replace('{ITEM_NO}', item.EarmarkedFundsDocumentItem);
@@ -81,6 +82,7 @@ async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction) {
             FundsCenter: '100050500',
             CommitmentItem: '721000'
         }];
+        // testing on API 
 
         oEarMarkedFundsPayload = {
             ...
@@ -88,7 +90,6 @@ async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction) {
             EarmarkedFundsHeaderText: sRecordID,
             _EarmarkedFundsDocumentItem:
                 aItems //aEarmakedFundItems
-
         };
 
         oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
