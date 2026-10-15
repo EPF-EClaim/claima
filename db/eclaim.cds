@@ -431,6 +431,12 @@ entity ZCLAIM_HEADER : managed {
         PUSH_BACK_REASON_ID            : String(3)      @Common.Label: 'Push Back Reason ID';
         CARD_NO                        : String(16)     @Common.Label: 'Corporate Credit Card Number';
         CCC_ADV_AMT                    : Decimal(16,2)  @Common.Label: 'Corporate Credit Card Advance Amount';
+        EARMARKED_FUNDS_DOC_ID         : String(10)     @Common.Label: 'Earmarked Funds Document ID';
+        EARMARKED_FUNDS_DOC_YEAR       : String(4)      @Common.Label: 'Earmarked Funds Document Year';
+        EARMARKED_FUNDS_DOC_COMP_CODE  : String(4)      @Common.Label: 'Earmarked Funds Company Code';
+        FI_DOCUMENT_NUMBER            : String(10)      @Common.Label: 'FI Document Number';
+        FI_DOCUMENT_YEAR              : String(4)       @Common.Label: 'FI Document Year';
+        FI_DOCUMENT_COMP_CODE         : String(4)       @Common.Label: 'FI Company Code';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -1063,6 +1069,7 @@ entity ZPROJECT_HDR : managed {
         BUFFER_FIELD2   : String    @Common.Label: 'Buffer Field 2';
         START_DATE      : Date      @Common.Label: 'Start Date';
         END_DATE        : Date      @Common.Label: 'End Date';
+        IO_WBS_IND      : String(3) @Common.Label: 'IO Code / WBS Code Indicator';
         ZGL_ACCOUNT     : Association to ZGL_ACCOUNT
                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZCOST_CENTER    : Association to ZCOST_CENTER

@@ -1015,7 +1015,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZCLAIM_ITEM.CHARGED_TO_CCC,
             ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
             CARD_NO,
-            CLAIM_TYPE_ID
+            CLAIM_TYPE_ID,
+            EARMARKED_FUNDS_DOC_ID,
+            EARMARKED_FUNDS_DOC_YEAR,
+            EARMARKED_FUNDS_DOC_COMP_CODE
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
@@ -1188,7 +1191,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 course.PARTICIPANT_ID,
                 course.COURSE_DESC,
                 course.COURSE_SESSION_STAT,
-                course.ATTENDENCE_STATUS
+                course.ATTENDENCE_STATUS,
+                course.SESSION_NUMBER,
+                course.START_DATE,
+                course.END_DATE
         }
         where EXISTS (
             select 1
