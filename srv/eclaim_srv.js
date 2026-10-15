@@ -2682,8 +2682,7 @@ module.exports = (srv) => {
                 }
             }
         } catch (error) {
-            console.error('Permission check failed:', error);
-            return req.reject(500, 'Internal server error while checking permissions');
+            return req.reject(500, `Internal server error while checking permissions\n${error.message}`);
         }
 
         // Kept outside the try block so the 404 is not caught and turned into a 500
