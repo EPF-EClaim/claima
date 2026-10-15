@@ -35,7 +35,7 @@ async function getBudgetRecord(oCondition) {
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
-    if(!_ifamsConnection) const IFAMS_Service = await getIFAMSConnection();
+    const IFAMS_Service = await getIFAMSConnection();
     var aRecords = await IFAMS_Service.send({
         method: sMethod,
         path: sPath, 
