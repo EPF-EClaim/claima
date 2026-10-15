@@ -656,6 +656,9 @@ sap.ui.define([
 			const oMatawangItem = {
 				...aClaimItems[iMatawangIndex]
 			};
+			if (oMatawangItem.dependent) {
+				oMatawangItem.dependent = JSON.parse(oMatawangItem.dependent);
+			}
 			oInputModel.setProperty("/claim_item", oMatawangItem);
 			oInputModel.setProperty("/is_new", false);
 			await fnSaveClaimItem();
