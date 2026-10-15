@@ -583,6 +583,27 @@ const Constant = {
     "CashAdvanceInfo": {
         "COST_CENTER": "100000000",
         "GL_ACCOUNT": "214005"
+    }, 
+    IFAMS_API_PATH: {
+        EARMARKEDFUNDS: '/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocument',
+        BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'" +
+                   "and FundCenter eq '{FUND_CENTER}'" +
+                   "and CommitmentItem eq '{COMMITMENT_ITEM}'" +
+                   "and MaterialGroup eq '{MATERIAL_GROUP}'" +
+                   "and Io eq '{INTERNAL_ORDER}'"    
+    },
+    EarmarkedFundPosting_DocHeader: {
+        CompanyCode: '1000',
+        EarmarkedFundsDocumentType: '11',
+        TransactionCurrency: 'MYR',
+        CompanyCodeCurrency: 'MYR',
+        EarmarkedFundsDocumentCategory: '30',
+        EarmarkedFundsIsCompleted: false
+    },
+    EarmarkedFundPosting_Item: {
+        CompanyCode: '1000',
+        TransactionCurrency: 'MYR',
+        CompanyCodeCurrency: 'MYR',
     }
 
 };

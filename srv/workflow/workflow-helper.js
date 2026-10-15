@@ -2,6 +2,7 @@ const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
+const { getBudgetRecord, performPostEarmarkedfunds } = require('../ifams/ifams-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -271,8 +272,10 @@ async function performBudgetChecking(oTx, aBudgetContext) {
             }
 
             let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
-                ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
-                : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
+                // ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
+                // : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
+                ? await performPostEarmarkedfunds(condition)
+                : await getBudgetRecord(condition);
 
             if (!budgetRecord) {
                 error = true;
@@ -286,7 +289,7 @@ async function performBudgetChecking(oTx, aBudgetContext) {
 
             if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
                 (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
+                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);//(budgetRecord.BudgetBalance);
                 if (!bSufficient) {
                     error = true;
                     errorResults.push({

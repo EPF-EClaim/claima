@@ -67,12 +67,11 @@
       "app-front": true,
       "html5-repo": true,
       "destinations": true,
-      "sap_s4_OP_API_EARMARKEDFUNDS_SRV_0001_v1": {
+      "IFAMS_S4_QAS": {
         "kind": "odata",
-        "model": "srv/external/sap-s4-OP_API_EARMARKEDFUNDS_SRV_0001-v1",
+        "csrf": true,
         "credentials": {
-          "destination": "IFAMS_S4_QAS",
-          "path": "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001"        
+          "destination": "IFAMS_S4_QAS"        
         }        
       }
     }

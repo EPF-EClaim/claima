@@ -1,6 +1,6 @@
 using {
     sap_s4_OP_API_EARMARKEDFUNDS_SRV_0001_v1 as budget
-} from './external/sap-s4-OP_API_EARMARKEDFUNDS_SRV_0001-v1';
+} from '../external/sap-s4-OP_API_EARMARKEDFUNDS_SRV_0001-v1';
 
 @path: 'budget'
 service BudgetService {
