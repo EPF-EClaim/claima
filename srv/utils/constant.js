@@ -590,7 +590,10 @@ const Constant = {
                    "and FundCenter eq '{FUND_CENTER}'" +
                    "and CommitmentItem eq '{COMMITMENT_ITEM}'" +
                    "and MaterialGroup eq '{MATERIAL_GROUP}'" +
-                   "and Io eq '{INTERNAL_ORDER}'"    
+                   "and Io eq '{INTERNAL_ORDER}'",
+        RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
+                   "EarmarkedFundsDocument='{DOC_NO}'," +
+                   "EarmarkedFundsDocumentItem='{ITEM_NO}'" +")"  
     },
     EarmarkedFundPosting_DocHeader: {
         CompanyCode: '1000',
@@ -604,6 +607,11 @@ const Constant = {
         CompanyCode: '1000',
         TransactionCurrency: 'MYR',
         CompanyCodeCurrency: 'MYR',
+    },
+    API_REQUEST_METHOD: {
+        GET: 'GET',
+        POST: 'POST',
+        PATCH: 'PATCH'
     }
 
 };

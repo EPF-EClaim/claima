@@ -13,7 +13,6 @@ async function getBudgetRecord(oCondition) {
     var oBudgetRecord;
 
     try {
-        const IFAMS_Service = await getIFAMSConnection();
         const sPath = Constant.IFAMS_API_PATH.BUDGET_SF
             .replace('{YEAR}', oCondition.YEAR)
             .replace('{FUND_CENTER}', oCondition?.FUND_CENTER)
@@ -21,10 +20,7 @@ async function getBudgetRecord(oCondition) {
             .replace('{MATERIAL_GROUP}', oCondition?.MATERIAL_GROUP)
             .replace('{INTERNAL_ORDER}', oCondition.INTERNAL_ORDER === Constant.Wildcard.NA ? '' : oCondition.INTERNAL_ORDER);
 
-        const aBudgetRecords = await IFAMS_Service.send({
-            method: 'GET',
-            path: sPath
-        });
+        const aBudgetRecords = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
         // further filter on the returned records
         oBudgetRecord = aBudgetRecords.find(record => String(record.FundCenter.trim() === String(oCondition.FUND_CENTER).trim() &&
@@ -38,42 +34,65 @@ async function getBudgetRecord(oCondition) {
     return oBudgetRecord;
 }
 
-async function performPostEarmarkedfunds(aEarmakedFundItems, sClaimID) {
-    
-    var oEarmarkedFundsDocument;
+async function executeIFAMSRequest(sMethod, sPath, data = undefined) {
+    const IFAMS_Service = await getIFAMSConnection();
+    var aRecords = await IFAMS_Service.send({
+        method: sMethod,
+        path: sPath
+    });
+    return aRecords;
+}
 
-    try{
-        const IFAMS_Service = await getIFAMSConnection();
+async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction) {
+    var oEarmarkedFundsDocument;
+    var oEarMarkedFundsPayload
+
+    try {
+        sAction = Constant.Status.PUSH_BACK; // testing pushback
+        sRecordID = '200000143';
+
+        if (sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED) {
+            var sPath = `${Constant.IFAMS_API_PATH.EARMARKEDFUNDS}` + `?$filter=EarmarkedFundsDocument eq '${sRecordID}'` + `&$expand=_EarmarkedFundsDocumentItem`;
+            oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+
+            if (oEarmarkedFundsDocument.length > 0) {
+                var oResponse;
+                for (const item of oEarmarkedFundsDocument._EarmarkedFundsDocumentItem) {
+                    sPath = Constant.IFAMS_API_PATH.RELEASE_EARMARKEDFUNDS
+                        .replace('{DOC_NO}', sRecordID)
+                        .replace('{ITEM_NO}', item.EarmarkedFundsDocumentItem);
+
+                    oEarMarkedFundsPayload = {
+                        FundsCenter: item.FundsCenter,
+                        CommitmentItem: item.CommitmentItem,
+                        EmrkdFndsItmIsCompleted: true
+                    }
+
+                    oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
+                }
+                return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}` }
+            }
+        }
+
         // testing on API 
         var aItems = [{
-                    ...Constant.EarmarkedFundPosting_Item,
-                    EmrkdFndsAmountInTransCrcy:10000000.00,
-                    FundsCenter: '100050500',
-                    CommitmentItem: '721000'
-                },
-                {
-                    ...Constant.EarmarkedFundPosting_Item,
-                    EmrkdFndsAmountInTransCrcy:10.00,
-                    FundsCenter: '100050500',
-                    CommitmentItem: '721000'
-                }
-            ];
-        // API testing
-        
-        var oEarMarkedFundsPayload = {
+            ...Constant.EarmarkedFundPosting_Item,
+            EmrkdFndsAmountInTransCrcy: 1000000.00,
+            FundsCenter: '100050500',
+            CommitmentItem: '721000'
+        }];
+
+        oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
-            EarmarkedFundsHeaderText: sClaimID,
-            _EarmarkedFundsDocumentItem: 
+            EarmarkedFundsHeaderText: sRecordID,
+            _EarmarkedFundsDocumentItem:
                 aItems //aEarmakedFundItems
-            
+
         };
 
-        oEarmarkedFundsDocument = await IFAMS_Service.send({
-            method: 'POST',
-            path: Constant.IFAMS_API_PATH.EARMARKEDFUNDS,
-            data: oEarMarkedFundsPayload
-        })
+        oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
+
     } catch (error) {
         return generateReturnMessage(false, sClaimID, Constant.WorkflowArea.WORKFLOW_DETERMINATION, error.message, false);
     }
@@ -88,5 +107,5 @@ async function performPostEarmarkedfunds(aEarmakedFundItems, sClaimID) {
 
 module.exports = {
     getBudgetRecord,
-    performPostEarmarkedfunds
+    processEarmarkedFunds
 }
