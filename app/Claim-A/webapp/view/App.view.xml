@@ -21,7 +21,9 @@
                 showMenuButton="{= !!${session>/userId} }"
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
-                menuButtonPressed="onMenuButtonPress">
+                menuButtonPressed="onMenuButtonPress"
+                title="eClaims TEST BUDGET"
+            >
                 <f:profile>
                     <Avatar
                         id="userAvatar"

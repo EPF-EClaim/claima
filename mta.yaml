@@ -1,7 +1,7 @@
 _schema-version: 3.3.0
-ID: claima-backend
+ID: claima-backend-test
 version: 1.0.0
-description: "A simple CAP project."
+description: "EPF eClaim Application - Budget API Test"
 parameters:
   enable-parallel-deployments: true
   deploy_mode: html5-repo
@@ -13,7 +13,8 @@ build-parameters:
         - npx cds build --production
         - mkdir -p resources
 modules:
-  - name: claima-backend-srv
+  # ---------------- CAP backend (test) ----------------
+  - name: claima-backend-srv-test
     type: nodejs
     path: gen/srv
     parameters:
@@ -22,7 +23,7 @@ modules:
     build-parameters:
       builder: npm-ci
     provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      - name: srv-api-test
         properties:
           srv-url: ${default-url}
     requires:
@@ -31,14 +32,11 @@ modules:
       - name: claima-backend-connectivity
       - name: claima-backend-destination
 
-  - name: claima-backend-db-deployer
-    type: hdb
-    path: gen/db
-    parameters:
-      buildpack: nodejs_buildpack
-    requires:
-      - name: claima-backend-db
-  - name: claima-backend
+  # NOTE: db-deployer removed on purpose.
+  # The test app shares claima-backend-db with the main app.
+
+  # ---------------- Approuter (test) ----------------
+  - name: claima-backend-test
     type: approuter.nodejs
     path: app/router
     parameters:
@@ -46,21 +44,18 @@ modules:
       disk-quota: 256M
       memory: 256M
     requires:
-      - name: srv-api
+      - name: srv-api-test
         group: destinations
         properties:
-          name: srv-api # must be used in xs-app.json as well
+          name: srv-api # must match xs-app.json
           url: ~{srv-url}
           forwardAuthToken: true
       - name: claima-backend-auth
       - name: claima-backend-html5-runtime
       - name: claima-backend-destination
-    provides:
-      - name: app-api
-        properties:
-          app-protocol: ${protocol}
-          app-uri: ${default-uri}
-  - name: claimabackendClaimA
+
+  # ---------------- UI build (test) ----------------
+  - name: claimabackendClaimA-test
     type: html5
     path: app/Claim-A
     build-parameters:
@@ -69,21 +64,20 @@ modules:
       commands:
         - npm ci
         - npm run build
-      supported-platforms:
-        []
+      supported-platforms: []
 
-  - name: claima-backend-destinations
+  # ---------------- Destination content (test) ----------------
+  - name: claima-backend-destinations-test
     type: com.sap.application.content
     requires:
       - name: claima-backend-auth
         parameters:
           service-key:
-            name: claima-backend-auth-key
-      - name: claima-backend-html5-repo-host
+            name: claima-backend-auth-key-test
+      - name: claima-backend-html5-repo-host-test
         parameters:
           service-key:
-            name: claima-backend-html5-repo-host-key
-      - name: srv-api
+            name: claima-backend-html5-repo-host-key-test
       - name: claima-backend-destination
         parameters:
           content-target: true
@@ -94,23 +88,24 @@ modules:
         instance:
           existing_destinations_policy: update
           destinations:
-            - Name: claima-backend-html5-repository
-              ServiceInstanceName: claima-backend-html5-repo-host
-              ServiceKeyName: claima-backend-html5-repo-host-key
-              sap.cloud.service: claimabackend.service
-            - Name: claima-backend-auth
+            - Name: claima-backend-html5-repository-test
+              ServiceInstanceName: claima-backend-html5-repo-host-test
+              ServiceKeyName: claima-backend-html5-repo-host-key-test
+              sap.cloud.service: claimabackend-test.service
+            - Name: claima-backend-auth-test
               Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: claima-backend-auth
-              ServiceKeyName: claima-backend-auth-key
-              sap.cloud.service: claimabackend.service
+              ServiceKeyName: claima-backend-auth-key-test
+              sap.cloud.service: claimabackend-test.service
 
-  - name: claima-backend-app-deployer
+  # ---------------- UI deployer (test) ----------------
+  - name: claima-backend-app-deployer-test
     type: com.sap.application.content
     path: app
     requires:
       - name: claima-backend-auth
-      - name: srv-api
-      - name: claima-backend-html5-repo-host
+      - name: srv-api-test
+      - name: claima-backend-html5-repo-host-test
         parameters:
           content-target: true
           config:
@@ -118,7 +113,7 @@ modules:
     build-parameters:
       build-result: app/
       requires:
-        - name: claimabackendClaimA
+        - name: claimabackendClaimA-test
           artifacts:
             - Claim-A.zip
           target-path: app/
@@ -126,66 +121,31 @@ modules:
       config:
         destinations:
           - name: srv-api
-            url: ~{srv-api/srv-url}
+            url: ~{srv-api-test/srv-url}
             forwardAuthToken: true
           - name: ui5
             url: https://ui5.sap.com
+
 resources:
+  # Shared - owned by main MTA. Test MTA will NOT change its config.
   - name: claima-backend-auth
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: xsuaa
-      service-plan: application
-      path: ./xs-security.json
-      config:
-        tenant-mode: dedicated
-        oauth2-configuration:
-          credential-types:
-            - "binding-secret"
-            - "x509"
-          redirect-uris:
-            - https://*~{app-api/app-uri}/**
-    requires:
-      - name: app-api
+    type: org.cloudfoundry.existing-service
+
   - name: claima-backend-db
-    type: com.sap.xs.hdi-container
-    parameters:
-      service: hana
-      service-plan: hdi-shared
+    type: org.cloudfoundry.existing-service
+
   - name: claima-backend-connectivity
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: connectivity
-      service-plan: lite
+    type: org.cloudfoundry.existing-service
+
   - name: claima-backend-destination
-    type: org.cloudfoundry.managed-service
-    parameters:
-      keep-existing: true
-      service: destination
-      service-plan: lite
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            existing_destinations_policy: update
-            destinations:
-              - Name: srv-api
-                URL: ~{srv-api/srv-url}
-                Authentication: NoAuthentication
-                Type: HTTP
-                ProxyType: Internet
-                HTML5.ForwardAuthToken: true
-                HTML5.DynamicDestination: true
-    requires:
-      - name: srv-api
-  - name: claima-backend-html5-repo-host
+    type: org.cloudfoundry.existing-service
+
+  - name: claima-backend-html5-runtime
+    type: org.cloudfoundry.existing-service
+
+  # Test-only - separate UI repository so UIs don't overwrite each other
+  - name: claima-backend-html5-repo-host-test
     type: org.cloudfoundry.managed-service
     parameters:
       service: html5-apps-repo
       service-plan: app-host
-  - name: claima-backend-html5-runtime
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-plan: app-runtime
- 
