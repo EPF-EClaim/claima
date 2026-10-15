@@ -1188,7 +1188,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 course.PARTICIPANT_ID,
                 course.COURSE_DESC,
                 course.COURSE_SESSION_STAT,
-                course.ATTENDENCE_STATUS
+                course.ATTENDENCE_STATUS,
+                course.SESSION_NUMBER,
+                course.START_DATE,
+                course.END_DATE
         }
         where EXISTS (
             select 1
