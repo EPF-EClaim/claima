@@ -18,11 +18,10 @@
         <tnt:header>
             <f:ShellBar
                 id="shellbar"
-                showMenuButton="true"
+                showMenuButton="{= !!${session>/userId} }"
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
-                menuButtonPressed="onMenuButtonPress"
-            >
+                menuButtonPressed="onMenuButtonPress">
                 <f:profile>
                     <Avatar
                         id="userAvatar"
@@ -36,6 +35,7 @@
         <tnt:sideContent>
             <tnt:SideNavigation
                 id="sideNavigation"
+                visible="{= !!${session>/userId} }"
                 expanded="true"
                 itemPress=".onNavItemPress"
                 selectedKey="dashboard"
