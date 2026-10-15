@@ -77,9 +77,15 @@ module.exports = {
     };
 
     // Claim Type that requires additional Job Group filtering
+    // These Claim Type and Claim Type Item are for all in aPayload, using index 0 is ok here.
     if (
-      aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
-      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TELEFON_B
+      (
+        aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
+        aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TELEFON_B
+      ) || (
+        aPayload[0].ClaimType == Constant.ClaimType.BEG_BIMBIT &&
+        aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.BEG_BIMBIT
+      )
     ) {
       let aEmpJobGrp = aEmpData.map((d) => d.JOB_GROUP);
       aEmpJobGrp.push(Constant.Wildcard.NA);
@@ -98,30 +104,6 @@ module.exports = {
       );
       if (iFieldIndex !== -1) {
         aEligibilityCondition[Constant.EntitiesFields.LODGING_CATEGORY] = aPayload[0].CheckFields[iFieldIndex].value;
-      }
-    };
-
-    // Claim Type Item that requires Funeral Transportation filtering
-    if (
-      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.JENAZAH
-    ) {
-      const iFieldIndex = aPayload[0].CheckFields.findIndex(
-        field => field.fieldName === Constant.EntitiesFields.FUNERAL_TRANSPORTATION
-      );
-      if (iFieldIndex !== -1) {
-        aEligibilityCondition[Constant.EntitiesFields.TRANSPORT_PASSING_ID] = aPayload[0].CheckFields[iFieldIndex].value;
-      }
-    };
-
-    // Claim Type Item that requires Dependent Type filtering
-    if (
-      aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.KEMATIAN
-    ) {
-      const iFieldIndex = aPayload[0].CheckFields.findIndex(
-        field => field.fieldName === Constant.EntitiesFields.DEPENDENT_TYPE
-      );
-      if (iFieldIndex !== -1) {
-        aEligibilityCondition[Constant.EntitiesFields.DEPENDENT_TYPE_ID] = aPayload[0].CheckFields[iFieldIndex].value;
       }
     };
 
@@ -161,7 +143,10 @@ module.exports = {
     // Proceed to each Claim Type
     for (let i = 0; i < aPayload.length; i++) {
       aFilteredEligibility = aEligibilityRules.filter(function (data) {
-        return (data.CLAIM_TYPE_ID == aPayload[i].ClaimType);
+        return (
+          data.CLAIM_TYPE_ID == aPayload[i].ClaimType &&
+          data.CLAIM_TYPE_ITEM_ID === aPayload[i].ClaimTypeItem
+        );
       });
       switch (aPayload[i].ClaimType) {
         case Constant.ClaimType.DLM_NEGARA:
