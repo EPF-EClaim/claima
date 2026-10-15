@@ -77,9 +77,15 @@ module.exports = {
     };
 
     // Claim Type that requires additional Job Group filtering
+    // These Claim Type and Claim Type Item are for all in aPayload, using index 0 is ok here.
     if (
+      (
       aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
       aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.TELEFON_B
+      ) || (
+        aPayload[0].ClaimType == Constant.ClaimType.BEG_BIMBIT &&
+        aPayload[0].ClaimTypeItem == Constant.ClaimTypeItem.BEG_BIMBIT
+      )
     ) {
       let aEmpJobGrp = aEmpData.map((d) => d.JOB_GROUP);
       aEmpJobGrp.push(Constant.Wildcard.NA);
