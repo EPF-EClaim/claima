@@ -1875,7 +1875,6 @@
                     visible="{
                         parts: [
                             'claimsubmission_input>/claim_header/card_no',
-                            'claimsubmission_input>/claim_header/claim_type_id',
                             'claimitem_input>/claim_item/claim_type_item_id'
                         ],
                         formatter: '.formatCCCSwitchVisibility'
