@@ -3110,7 +3110,11 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
+			var vDependent = oInputModel.getProperty("/claim_item/dependent");
+			var sDependentList = (vDependent === null || vDependent === undefined || vDependent === "null")
+			? null
+			: JSON.stringify(vDependent);
+
 
 			try {
 				BusyIndicator.show(0);
