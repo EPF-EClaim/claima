@@ -9,8 +9,6 @@ module.exports = {
      *
      * @public
      * @param {Object} oPayload - User input sent from the frontend
-     * @param {string} oPayload.ClaimTypeItem - Selected claim type item ID
-     * @param {Array<{fieldName: string, value: *, result?: boolean}>} oPayload.CheckFields - Fields to check
      * @param {Array<Object>} aRules - Eligibility rules for this claim type item (from ZELIGIBILITY_RULE)
      * @returns {Object} The same payload, with `result` set on each validated field
      */
@@ -36,7 +34,7 @@ module.exports = {
      * @param {string} sItem - Claim type item ID
      * @param {Array<Object>} aRules - Eligibility rules for this claim type item
      * @param {Object} oParsed - Parsed user input from _parsePayload
-     * @returns {Object} The matching rule, or undefined if none matches
+     * @returns {Object|undefined} The matching rule, or undefined if none matches
      */
     _findRule: function (sItem, aRules, oParsed) {
         switch (sItem) {
