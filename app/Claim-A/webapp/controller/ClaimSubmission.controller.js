@@ -3250,7 +3250,6 @@ sap.ui.define([
 									? true
 									// the switch is hidden on other claims - don't save a hidden value
 									: bCccAllowed && !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
 					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
 					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
@@ -5610,10 +5609,13 @@ sap.ui.define([
 		 * for travel claim items. The item alone is not enough: items such as TAMBANG,
 		 * PARKING or MISC also exist under non-travel claim types, and card_no is stored
 		 * on every claim of a card holder regardless of claim type.
+		 * @param {string} sCardNo - claim header card_no
+		 * @param {string} sClaimTypeId - claim header claim_type_id
+		 * @param {string} sClaimTypeItemId - claim header claim_type_item_id
+		 * @returns {boolean} true or false for CCC switch visibility
 		 */
 		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeId, sClaimTypeItemId) {
 			return this._isTravelClaimWithCard(sCardNo, sClaimTypeId) &&
-				!!sClaimTypeItemId &&
 				!!this._oConstant.TravelClaimItems[sClaimTypeItemId];
 		},
 
@@ -5639,6 +5641,7 @@ sap.ui.define([
 
 			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sClaimTypeItemId !== this._oConstant.ClaimTypeItem.CASH_REPAY) {
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", true);
 				return;
 			}
 
