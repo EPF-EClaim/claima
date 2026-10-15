@@ -3125,6 +3125,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 				}
 
+				// "Charged to CCC" is only offered on travel claims of corporate card holders
+				const bCccAllowed = this._isTravelClaimWithCard(
+					oClaimSubmissionModel.getProperty("/claim_header/card_no"),
+					oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")
+				);
+
 				// set body for update
 				var oBody = new JSONModel({
 					CLAIM_ID: oInputModel.getProperty("/claim_item/claim_id"),
@@ -3242,7 +3248,8 @@ sap.ui.define([
 					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? true
-									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
+									// the switch is hidden on other claims - don't save a hidden value
+									: bCccAllowed && !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
 					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
@@ -5598,9 +5605,25 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
 		},
-		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
-			if (!sCardNo || !sClaimTypeItemId) return false;
-			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		/**
+		 * "Charged to CCC" is only offered on travel claims of corporate card holders,
+		 * for travel claim items. The item alone is not enough: items such as TAMBANG,
+		 * PARKING or MISC also exist under non-travel claim types, and card_no is stored
+		 * on every claim of a card holder regardless of claim type.
+		 */
+		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeId, sClaimTypeItemId) {
+			return this._isTravelClaimWithCard(sCardNo, sClaimTypeId) &&
+				!!sClaimTypeItemId &&
+				!!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		/**
+		 * @param {string} sCardNo - claim header card_no
+		 * @param {string} sClaimTypeId - claim header claim_type_id
+		 * @returns {boolean} true for a travel claim type of a corporate card holder
+		 */
+		_isTravelClaimWithCard: function (sCardNo, sClaimTypeId) {
+			return !!sCardNo && !!sClaimTypeId && !!this._oConstant.TravelClaimType[sClaimTypeId];
 		},
 
 		/**
@@ -5619,9 +5642,11 @@ sap.ui.define([
 				return;
 			}
 
-			// Only applies to corporate credit card holders
-			var sCardNo = oClaimSubmissionModel.getProperty("/claim_header/card_no");
-			if (!sCardNo) {
+			// Only applies to travel claims of corporate credit card holders
+			if (!this._isTravelClaimWithCard(
+				oClaimSubmissionModel.getProperty("/claim_header/card_no"),
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")
+			)) {
 				return;
 			}
 
