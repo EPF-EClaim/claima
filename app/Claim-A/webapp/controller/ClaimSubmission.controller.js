@@ -5462,9 +5462,6 @@ sap.ui.define([
 				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
 				this._oConstant.ClaimTypeItem.MATAWANG;
 
-			if (bIsEditingMatawang && aClaimItems.length > 1 ) {
-				return;
-			}
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return;
