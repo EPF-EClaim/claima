@@ -344,6 +344,7 @@
                                             )
                                         }"
                                         maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
                                         fileType="jpeg,jpg,pdf,png"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc1}"
@@ -420,6 +421,7 @@
                                                         &amp;&amp; !${request>/req_item/doc2_filename}
                                                     }"
                                             maximumFileSize='5.0'
+                                            mimeType="application/pdf,image/png,image/jpeg"
                                             fileType="jpeg,jpg,pdf,png"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
@@ -461,6 +463,7 @@
                                         enabled="{= ${request>/view} !== 'view' }"
                                         required="true"
                                         maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
                                         fileType="jpeg,jpg,pdf,png"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc3}"
@@ -508,6 +511,7 @@
                                         enabled="{= ${request>/view} !== 'view' }"
                                         required="false"
                                         maximumFileSize="5.0"
+                                        mimeType="application/pdf,image/png,image/jpeg"
                                         fileType="jpeg,jpg,pdf,png"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc4}"
