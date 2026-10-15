@@ -5456,12 +5456,7 @@ sap.ui.define([
 			if (iMatawangIndex === -1) {
 				return;
 			}
-			const bIsSaveFlow = !!oInputModel?.getProperty("/claim_item/claim_sub_id");
-			const bIsEditingMatawang =
-				bIsSaveFlow &&
-				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
-				this._oConstant.ClaimTypeItem.MATAWANG;
-
+			
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return;
