@@ -1750,7 +1750,7 @@
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
                     uploadComplete="onAttachmentUploadComplete"
-                    maximumFileSize='5.0'
+                    maximumFileSize="5.0"
                     fileSizeExceed="onAttachmentFileSizeExceed"
                     mimeType="application/pdf,image/png,image/jpeg"
                     fileType="jpeg,jpg,pdf,png"
@@ -1815,7 +1815,7 @@
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
                     uploadComplete="onAttachmentUploadComplete"
-                    maximumFileSize='5.0'
+                    maximumFileSize="5.0"
                     fileSizeExceed="onAttachmentFileSizeExceed"
                     mimeType="application/pdf,image/png,image/jpeg"
                     fileType="jpeg,jpg,pdf,png"
@@ -1899,7 +1899,7 @@
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'3')"
                     uploadComplete="onAttachmentUploadComplete"
-                    maximumFileSize='5.0'
+                    maximumFileSize="5.0"
                     fileSizeExceed="onAttachmentFileSizeExceed"
                     fileType="jpeg,jpg,pdf,png"
                     typeMissmatch="onAttachmentTypeMissmatch"
@@ -1948,7 +1948,7 @@
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'4')"
                     uploadComplete="onAttachmentUploadComplete"
-                    maximumFileSize='5.0'
+                    maximumFileSize="5.0"
                     fileSizeExceed="onAttachmentFileSizeExceed"
                     fileType="jpeg,jpg,pdf,png"
                     typeMissmatch="onAttachmentTypeMissmatch"
