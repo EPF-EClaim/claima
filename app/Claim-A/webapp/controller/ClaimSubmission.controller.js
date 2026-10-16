@@ -2987,9 +2987,7 @@ sap.ui.define([
 						}
 					});
 				}
-
 				///Check to recalculate Mata Wang if it is required
-				console.log (oInputModel.getProperty("/claim_item/claim_type_item_id"));
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItem.MATAWANG) {
 					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
 				}
