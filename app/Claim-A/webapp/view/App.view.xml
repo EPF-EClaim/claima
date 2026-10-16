@@ -131,6 +131,25 @@
                                 />
                     </tnt:items>
                         </tnt:NavigationListItem>
+                        
+                        <tnt:NavigationListItem
+                            icon="sap-icon://payment-approval"
+                            text="{i18n>nav_paymentreconreport}"
+                            enabled="true"
+                            visible="{= ${roleModel>/isAdminSystem} === true }"
+                        >
+                        <tnt:items>
+                                <tnt:NavigationListItem
+                                    key="pay_report"
+                                    text="{i18n>ana_title_paymentreport}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="post_report"
+                                    text="{i18n>ana_title_postingreport}"
+                                />
+                        </tnt:items>
+                        </tnt:NavigationListItem>
+
                         <tnt:NavigationListItem
                             icon="sap-icon://money-bills"
                             text="Cash Advance"
