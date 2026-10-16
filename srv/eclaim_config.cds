@@ -8226,6 +8226,171 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
     );
 };
 
+annotate service.ZEMP_PAYMENT_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Payment Report',
+            TypeNamePlural: 'Payment Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High,
+                Label            : 'Final Amount To Receive'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance Amount'
+            }
+        ]
+    }
+) {
+    CLAIM_ID                @Common.Label: 'Claim ID';
+    EMP_ID                  @Common.Label: 'Employee Number';
+    NAME                    @Common.Label: 'Employee Name';
+    FINAL_AMOUNT_TO_RECEIVE @Common.Label: 'Final Amount To Receive';
+    CASH_ADVANCE            @Common.Label: 'Cash Advance Amount';
+};
+
+annotate service.ZEMP_POSTING_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Posting Report',
+            TypeNamePlural: 'Posting Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                },
+                {
+                    Property  : CLAIM_SUB_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_SUB_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Sub ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'GL Account'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Material Group'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INTERNAL_ORDER,
+                ![@UI.Importance]: #High,
+                Label            : 'Internal Order'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGED_TO_CCC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charged To CCC'
+            }
+        ]
+    }
+) {
+    CLAIM_ID       @Common.Label: 'Claim ID';
+    CLAIM_SUB_ID   @Common.Label: 'Claim Sub ID';
+    EMP_ID         @Common.Label: 'Employee Number';
+    NAME           @Common.Label: 'Employee Name';
+    AMOUNT         @Common.Label: 'Amount';
+    COST_CENTER    @Common.Label: 'Cost Center';
+    GL_ACCOUNT     @Common.Label: 'GL Account';
+    MATERIAL_GROUP @Common.Label: 'Material Group';
+    INTERNAL_ORDER @Common.Label: 'Internal Order';
+    CHARGED_TO_CCC @Common.Label: 'Charged To CCC';
+};
+
 annotate service.ZEMP_CC_BUDGET_REPORT with @(
     cds.autoexpose,
     Capabilities: {
