@@ -1019,7 +1019,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             EARMARKED_FUNDS_DOC_ID,
             EARMARKED_FUNDS_DOC_YEAR,
             EARMARKED_FUNDS_DOC_COMP_CODE,
-            EARMARKED_FUNDS_DOC_ITEM_ID
+            ZCLAIM_ITEM.EARMARKED_FUNDS_DOC_ITEM_ID
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as

@@ -437,7 +437,6 @@ entity ZCLAIM_HEADER : managed {
         FI_DOCUMENT_NUMBER             : String(10)     @Common.Label: 'FI Document Number';
         FI_DOCUMENT_YEAR               : String(4)      @Common.Label: 'FI Document Year';
         FI_DOCUMENT_COMP_CODE          : String(4)      @Common.Label: 'FI Company Code';
-        EARMARKED_FUNDS_DOC_ITEM_ID    : String(3)      @Common.Lable: 'Earmarked Funds Document Item ID';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -597,6 +596,7 @@ entity ZCLAIM_ITEM : managed {
         INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
         INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Name';
         ATTACHMENT_FILE_4               : String         @Common.Label: 'Attachment 4';
+        EARMARKED_FUNDS_DOC_ITEM_ID     : String(3)      @Common.Lable: 'Earmarked Funds Document Item ID';
         ZCLAIM_HEADER                   : Association to ZCLAIM_HEADER
                                               on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY                 : Association to ZCLAIM_CATEGORY
