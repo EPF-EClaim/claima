@@ -200,7 +200,7 @@ module.exports = (srv) => {
         console.log("Approver Action Completed: ", bStatus);
 
         // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
-        if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
+        if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK) {
             const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
             console.log("aBudgetContext: ", aBudgetContext);
             const aReturn = await performBudgetChecking(oTx, aBudgetContext);
