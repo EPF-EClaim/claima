@@ -1015,7 +1015,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZCLAIM_ITEM.CHARGED_TO_CCC,
             ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
             CARD_NO,
-            CLAIM_TYPE_ID
+            CLAIM_TYPE_ID,
+            EARMARKED_FUNDS_DOC_ID,
+            EARMARKED_FUNDS_DOC_YEAR,
+            EARMARKED_FUNDS_DOC_COMP_CODE
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
@@ -1181,44 +1184,33 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC,
             STATUS;
 
-    entity ZCLM_COURSE_VIEW               as
-        select from ECLAIM.ZTRAIN_COURSE_PART AS course {
-            key course.COURSE_ID || '|' || course.SESSION_NUMBER || '|' || CAST(course.START_DATE AS String) || '|' || CAST(course.END_DATE AS String) AS COURSE_SESSION_KEY : String,
+    entity ZCLM_COURSE_VIEW as
+        select from ECLAIM.ZTRAIN_COURSE_PART as course distinct {
+            key course.COURSE_ID || '|' ||
+                coalesce(cast(course.SESSION_NUMBER as String), '') || '|' ||
+                coalesce(cast(course.START_DATE     as String), '') || '|' ||
+                coalesce(cast(course.END_DATE       as String), '')   as COURSE_SESSION_KEY : String,
+            key course.PARTICIPANT_ID,
                 course.COURSE_ID,
-                course.PARTICIPANT_ID,
-                course.COURSE_DESC,
-                course.COURSE_SESSION_STAT,
-                course.ATTENDENCE_STATUS
-        }
-        where EXISTS (
-            select 1
-            from ECLAIM.ZCLAIM_HEADER AS header
-            WHERE header.EMP_ID = course.PARTICIPANT_ID
-            AND header.COURSE_CODE = course.COURSE_ID
-            AND header.STATUS_ID IN ('STAT04', 'STAT07')
-            )
-        AND NOT EXISTS (
-            select 1
-            from ECLAIM.ZCLAIM_HEADER AS header
-            WHERE header.EMP_ID = course.PARTICIPANT_ID
-            AND header.COURSE_CODE = course.COURSE_ID
-            AND header.COURSE_CODE IS NOT NULL
-            AND header.STATUS_ID IN ('STAT01', 'STAT02', 'STAT03', 'STAT05', 'STAT06', 'STAT08')
-            )
-
-            GROUP BY
-                course.COURSE_ID,
-                course.PARTICIPANT_ID,
                 course.COURSE_DESC,
                 course.COURSE_SESSION_STAT,
                 course.ATTENDENCE_STATUS,
                 course.SESSION_NUMBER,
                 course.START_DATE,
                 course.END_DATE
-
-            ORDER BY
-                course.END_DATE DESC,
-                course.START_DATE DESC;
+        }
+        where course.ATTENDENCE_STATUS = true
+        and not exists (
+            select 1 from ECLAIM.ZCLAIM_HEADER as header
+            where trim(header.EMP_ID)      = trim(course.PARTICIPANT_ID)
+                and trim(header.COURSE_CODE) = trim(course.COURSE_ID)
+                and (   header.SESSION_NUMBER = course.SESSION_NUMBER
+                    or header.SESSION_NUMBER is null )
+                and header.STATUS_ID in ('STAT01', 'STAT02', 'STAT03', 'STAT05', 'STAT06', 'STAT08')
+        )
+        order by
+            course.END_DATE   desc,
+            course.START_DATE desc;
 
     entity ZEMP_ACCESS               as
         projection on ECLAIM.ZEMP_MASTER {

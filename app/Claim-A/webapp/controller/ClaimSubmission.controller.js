@@ -1844,8 +1844,11 @@ sap.ui.define([
 						RejectionReason : ""
 					}
 					
-					console.log("Payload Send Back: ", oPayload);
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					// Backend error already shown by onProcessApproval - stay on the claim
+					if (!oResult || oResult.Success === false) {
+						return;
+					}
 
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
@@ -1908,8 +1911,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload); 
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
@@ -1963,8 +1969,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload);
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
@@ -3182,7 +3191,11 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
-			var sDependentList = JSON.stringify(oInputModel.getProperty("/claim_item/dependent"));
+			var vDependent = oInputModel.getProperty("/claim_item/dependent");
+			var sDependentList = (vDependent === null || vDependent === undefined || vDependent === "null")
+			? null
+			: JSON.stringify(vDependent);
+
 
 			try {
 				BusyIndicator.show(0);
@@ -3196,6 +3209,12 @@ sap.ui.define([
 
 					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
 				}
+
+				// "Charged to CCC" is only offered on travel claims of corporate card holders
+				const bCccAllowed = this._isTravelClaimWithCard(
+					oClaimSubmissionModel.getProperty("/claim_header/card_no"),
+					oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")
+				);
 
 				// set body for update
 				var oBody = new JSONModel({
@@ -3314,8 +3333,8 @@ sap.ui.define([
 					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 									? true
-									: !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
-					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
+									// the switch is hidden on other claims - don't save a hidden value
+									: bCccAllowed && !!oInputModel.getProperty("/claim_item/charged_to_ccc"),
 					POLICY_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_start_date")),
 					POLICY_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_item/policy_end_date")),
 					DEPENDENT_NATIONAL_ID: oInputModel.getProperty("/claim_item/dependent_national_id"),
@@ -4634,8 +4653,8 @@ sap.ui.define([
 						delItems.push(oCtx);
 					}
 				}
-			} catch (e) {
-				console.log(e.message);
+			} catch (oError) {
+				MessageBox.error(oError.message);
 				BusyIndicator.hide();
 				return false;
 			}
@@ -4761,9 +4780,7 @@ sap.ui.define([
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 						var oContext = oListBinding.create(oBody.getData());
-						await oContext.created().then(() => {
-							console.log("New claim item created");
-						});
+						await oContext.created();
 					}
 					else {
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
@@ -4790,8 +4807,6 @@ sap.ui.define([
 							}
 
 							await oModel.submitBatch("$auto");
-
-							console.log("Save claim item success");
 						}
 					}
 				} catch (e) {
@@ -4822,11 +4837,10 @@ sap.ui.define([
 					var aCtx = await oListBinding.requestContexts(0, 1);
 					var oCtx = aCtx[0];
 
-					await oCtx.delete().then(function () {
-						console.log("Claim item deleted");
-					});
-				} catch (e) {
-					console.error(e.message);
+					await oCtx.delete();
+
+				} catch (oError) {
+					MessageBox.error(oError.message);
 					BusyIndicator.hide();
 					return false;
 				}
@@ -5686,9 +5700,28 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/amount", fEligibleAmount);
 			}
 		},
-		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeItemId) {
-			if (!sCardNo || !sClaimTypeItemId) return false;
-			return !!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		/**
+		 * "Charged to CCC" is only offered on travel claims of corporate card holders,
+		 * for travel claim items. The item alone is not enough: items such as TAMBANG,
+		 * PARKING or MISC also exist under non-travel claim types, and card_no is stored
+		 * on every claim of a card holder regardless of claim type.
+		 * @param {string} sCardNo - claim header card_no
+		 * @param {string} sClaimTypeId - claim header claim_type_id
+		 * @param {string} sClaimTypeItemId - claim header claim_type_item_id
+		 * @returns {boolean} true or false for CCC switch visibility
+		 */
+		formatCCCSwitchVisibility: function (sCardNo, sClaimTypeId, sClaimTypeItemId) {
+			return this._isTravelClaimWithCard(sCardNo, sClaimTypeId) &&
+				!!this._oConstant.TravelClaimItems[sClaimTypeItemId];
+		},
+
+		/**
+		 * @param {string} sCardNo - claim header card_no
+		 * @param {string} sClaimTypeId - claim header claim_type_id
+		 * @returns {boolean} true for a travel claim type of a corporate card holder
+		 */
+		_isTravelClaimWithCard: function (sCardNo, sClaimTypeId) {
+			return !!sCardNo && !!sClaimTypeId && !!this._oConstant.TravelClaimType[sClaimTypeId];
 		},
 
 		/**
@@ -5704,12 +5737,15 @@ sap.ui.define([
 
 			var sClaimTypeItemId = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sClaimTypeItemId !== this._oConstant.ClaimTypeItem.CASH_REPAY) {
+				oPropertyModel.setProperty("/charged_to_ccc/is_editable", true);
 				return;
 			}
 
-			// Only applies to corporate credit card holders
-			var sCardNo = oClaimSubmissionModel.getProperty("/claim_header/card_no");
-			if (!sCardNo) {
+			// Only applies to travel claims of corporate credit card holders
+			if (!this._isTravelClaimWithCard(
+				oClaimSubmissionModel.getProperty("/claim_header/card_no"),
+				oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")
+			)) {
 				return;
 			}
 
