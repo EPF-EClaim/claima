@@ -1251,7 +1251,11 @@ sap.ui.define([
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then(async () => {
+					// wait for the backend to confirm the new claim before moving on, so the
+					// busy indicator stays up (no double clicks / other navigation meanwhile)
+					// and a failed save lands in the catch below
+					await oContext.created();
+					{
 						claimSaved = true;
 
 						// assign report number to new claim
@@ -1269,7 +1273,7 @@ sap.ui.define([
 								content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
 								endButton: new Button({
 									text: Utility.getText("endbutton_claiminput_claimid"),
-									press: function () {
+									press: () => {
 										this.oDialog.close();
 									}
 								})
@@ -1292,7 +1296,7 @@ sap.ui.define([
 
 						// load Claim Submission page
 						this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
-					});
+					}
 				}
 
 			} catch (e) {
