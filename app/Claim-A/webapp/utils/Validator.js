@@ -30,6 +30,7 @@ sap.ui.define(
 				"sections",
 				"subSections",
 				"_grid",
+				"rows", // sap.ui.table.Table rows
 				"cells",
 				"_page"
 			];
@@ -92,6 +93,13 @@ sap.ui.define(
 			var i,
 				isValidatedControl = false,
 				isValid = true;
+
+			// sap.ui.table.Row is an Element (not a Control) without a 'visible' property,
+			// so step straight into its cells; otherwise inputs inside grid tables are never validated
+			if (oControl && oControl.isA && oControl.isA("sap.ui.table.Row")) {
+				this._recursiveCall(oControl, this._validate);
+				return;
+			}
 
 			// only validate controls and elements which have a 'visible' property
 			// and are visible controls (invisible controls make no sense checking)
