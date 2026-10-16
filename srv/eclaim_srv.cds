@@ -1802,4 +1802,122 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
 
+    entity ZREQUEST_SF_SENT_SUM          as
+        select from ZREQUEST_ITEM {
+            key REQUEST_ID,
+                count(
+                    REQUEST_SUB_ID
+                ) as SF_ITEM_COUNT : Integer
+        }
+        where
+            SEND_TO_SF = true
+        group by
+            REQUEST_ID;
+
+    entity ZEMP_PAYMENT_REPORT           as
+            select from ECLAIM.ZCLAIM_HEADER as CH {
+                key cast(
+                        CH.CLAIM_ID as String
+                    )                    as CLAIM_ID                : String,
+                    CH.EMP_ID,
+                    CH.ZEMP_MASTER.NAME,
+                    cast(
+                        CH.FINAL_AMOUNT_TO_RECEIVE as Decimal(16, 2)
+                    )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
+                    cast(
+                        null as Decimal(16, 2)
+                    )                    as CASH_ADVANCE            : Decimal(16, 2)
+            }
+            where
+                CH.STATUS_ID = 'STAT05'
+        union all
+            select from ECLAIM.ZREQUEST_HEADER as RH
+            inner join ZREQUEST_SF_SENT_SUM as SF
+                on SF.REQUEST_ID = RH.REQUEST_ID
+            {
+                key cast(
+                        RH.REQUEST_ID as String
+                    )                    as CLAIM_ID                : String,
+                    RH.EMP_ID,
+                    RH.ZEMP_MASTER.NAME,
+                    cast(
+                        null as Decimal(16, 2)
+                    )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
+                    cast(
+                        RH.CASH_ADVANCE as Decimal(16, 2)
+                    )                    as CASH_ADVANCE            : Decimal(16, 2)
+            }
+            where
+                RH.STATUS = 'STAT05';
+
+    entity ZEMP_POSTING_REPORT           as
+            select from ECLAIM.ZCLAIM_ITEM as CI
+            inner join ECLAIM.ZCLAIM_HEADER as CH
+                on CH.CLAIM_ID = CI.CLAIM_ID
+            {
+                key cast(
+                        CI.CLAIM_ID as String
+                    )                    as CLAIM_ID       : String,
+                key cast(
+                        CI.CLAIM_SUB_ID as String
+                    )                    as CLAIM_SUB_ID   : String,
+                    CH.EMP_ID,
+                    CH.ZEMP_MASTER.NAME,
+                    cast(
+                        CI.AMOUNT as Decimal(16, 2)
+                    )                    as AMOUNT         : Decimal(16, 2),
+                    cast(
+                        CI.COST_CENTER as String
+                    )                    as COST_CENTER    : String,
+                    cast(
+                        CI.GL_ACCOUNT as String(6)
+                    )                    as GL_ACCOUNT     : String(6),
+                    cast(
+                        CI.MATERIAL_CODE as String
+                    )                    as MATERIAL_GROUP : String,
+                    cast(
+                        CI.INTERNAL_ORDER as String
+                    )                    as INTERNAL_ORDER : String,
+                    CI.CHARGED_TO_CCC
+            }
+            where
+                CH.STATUS_ID = 'STAT05'
+        union all
+            select from ECLAIM.ZREQUEST_ITEM as RI
+            inner join ECLAIM.ZREQUEST_HEADER as RH
+                on RH.REQUEST_ID = RI.REQUEST_ID
+            {
+                key cast(
+                        RI.REQUEST_ID as String
+                    )                    as CLAIM_ID       : String,
+                key cast(
+                        RI.REQUEST_SUB_ID as String
+                    )                    as CLAIM_SUB_ID   : String,
+                    RH.EMP_ID,
+                    RH.ZEMP_MASTER.NAME,
+                    cast(
+                        RI.EST_AMOUNT as Decimal(16, 2)
+                    )                    as AMOUNT         : Decimal(16, 2),
+                    cast(
+                        RI.COST_CENTER as String
+                    )                    as COST_CENTER    : String,
+                    cast(
+                        RI.GL_ACCOUNT as String(6)
+                    )                    as GL_ACCOUNT     : String(6),
+                    cast(
+                        RI.MATERIAL_CODE as String
+                    )                    as MATERIAL_GROUP : String,
+                    cast(
+                        RI.INTERNAL_ORDER as String
+                    )                    as INTERNAL_ORDER : String,
+                    // ZREQUEST_ITEM has no CHARGED_TO_CCC field
+                    cast(
+                        null as Boolean
+                    )                    as CHARGED_TO_CCC : Boolean
+            }
+            where
+                    RH.STATUS     = 'STAT05'
+                and RI.SEND_TO_SF = true;
+ 
+
 };
