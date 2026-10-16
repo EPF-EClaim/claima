@@ -2851,7 +2851,6 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : ""
 					}
-					console.log("Payload for approval:", oPayload);
 					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 					// Backend error already shown by onProcessApproval - stay on the request
 					if (!oResult || oResult.Success === false) {

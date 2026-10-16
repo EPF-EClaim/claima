@@ -1777,7 +1777,6 @@ sap.ui.define([
 						RejectionReason : ""
 					}
 					
-					console.log("Payload Send Back: ", oPayload);
 					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 					// Backend error already shown by onProcessApproval - stay on the claim
 					if (!oResult || oResult.Success === false) {
@@ -1845,7 +1844,6 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload); 
 				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 				// Backend error already shown by onProcessApproval - stay on the claim
 				if (!oResult || oResult.Success === false) {
@@ -1904,7 +1902,6 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload);
 				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
 				// Backend error already shown by onProcessApproval - stay on the claim
 				if (!oResult || oResult.Success === false) {
@@ -4568,8 +4565,8 @@ sap.ui.define([
 						delItems.push(oCtx);
 					}
 				}
-			} catch (e) {
-				console.log(e.message);
+			} catch (oError) {
+				MessageBox.error(oError.message);
 				BusyIndicator.hide();
 				return false;
 			}
@@ -4695,9 +4692,7 @@ sap.ui.define([
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 						var oContext = oListBinding.create(oBody.getData());
-						await oContext.created().then(() => {
-							console.log("New claim item created");
-						});
+						await oContext.created();
 					}
 					else {
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
@@ -4724,8 +4719,6 @@ sap.ui.define([
 							}
 
 							await oModel.submitBatch("$auto");
-
-							console.log("Save claim item success");
 						}
 					}
 				} catch (e) {
@@ -4756,11 +4749,10 @@ sap.ui.define([
 					var aCtx = await oListBinding.requestContexts(0, 1);
 					var oCtx = aCtx[0];
 
-					await oCtx.delete().then(function () {
-						console.log("Claim item deleted");
-					});
-				} catch (e) {
-					console.error(e.message);
+					await oCtx.delete();
+
+				} catch (oError) {
+					MessageBox.error(oError.message);
 					BusyIndicator.hide();
 					return false;
 				}
