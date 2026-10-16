@@ -361,22 +361,17 @@ sap.ui.define([
 		},
 
         /**
-         * Checks all claim items for amount to be not zero.
+         * Checks that every claim item has an amount greater than zero.
          * @public
-         * @param {object} oController the controller containing the claim models
+         * @throws {Error} if any item amount is missing, non-numeric or <= 0
          */
-        async CheckAllItemsAmount(oController) {
+        CheckAllItemsAmount() {
 
-            const oSubmissionModel = oController.getView().getModel("claimsubmission_input");
-            const aItems = oSubmissionModel.getProperty("/claim_items") || [];
+            const aItems = this._oView.getModel("claimsubmission_input").getProperty("/claim_items") || [];
+            const oInvalid = aItems.find((oItem) => !(Number(oItem.amount) > 0));
 
-            for (let iIndex = 0; iIndex < aItems.length; iIndex++) {
-
-                const oItem = aItems[iIndex];
-
-                if(oItem.amount <= 0){
-                    throw new Error(Utility.getText("msg_claimdetails_item_amount_zero"));
-                } 
+            if (oInvalid) {
+            throw new Error(Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
     };
