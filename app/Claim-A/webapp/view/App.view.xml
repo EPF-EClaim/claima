@@ -131,7 +131,6 @@
                                 />
                     </tnt:items>
                         </tnt:NavigationListItem>
-
                         
                         <tnt:NavigationListItem
                             icon="sap-icon://payment-approval"
