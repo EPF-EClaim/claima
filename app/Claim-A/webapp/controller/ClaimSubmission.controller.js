@@ -4331,7 +4331,7 @@ sap.ui.define([
 					}
 
 					// claim item amount check
-					CustomValidator.CheckAllItemsAmount(this);
+					CustomValidator.checkAllItemsAmount();
 
 					// Total Claim Amount Validation checking
 					var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");

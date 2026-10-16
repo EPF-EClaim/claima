@@ -365,13 +365,11 @@ sap.ui.define([
          * @public
          * @throws {Error} if any item amount is missing, non-numeric or <= 0
          */
-        CheckAllItemsAmount() {
-
+        checkAllItemsAmount: function () {
             const aItems = this._oView.getModel("claimsubmission_input").getProperty("/claim_items") || [];
             const oInvalid = aItems.find((oItem) => !(Number(oItem.amount) > 0));
-
             if (oInvalid) {
-            throw new Error(Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
+                throw new Error(Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
     };
