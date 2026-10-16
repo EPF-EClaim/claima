@@ -2987,9 +2987,13 @@ sap.ui.define([
 						}
 					});
 				}
+
 				///Check to recalculate Mata Wang if it is required
-				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
- 				
+				console.log (oInputModel.getProperty("/claim_item/claim_type_item_id"));
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItem.MATAWANG) {
+					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
+				}
+
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -5456,7 +5460,7 @@ sap.ui.define([
 			if (iMatawangIndex === -1) {
 				return;
 			}
-			
+
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
 			return;
