@@ -1338,7 +1338,7 @@ sap.ui.define([
 			});
 		
 			///Check to recalculate Mata Wang if it is required
-			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
+			await this._recalculateMatawangIfNeeded(oInputModel, this._updateClaimItems.bind(this));
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
 			if (!updateSuccess) {
@@ -2987,9 +2987,9 @@ sap.ui.define([
 						}
 					});
 				}
-				///Check to recalculate Mata Wang if it is required
-				if (oInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItem.MATAWANG) {
-					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
+				///Matawang is already calculated when its own item is opened/saved; only recalculate when another item is changed
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
+					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, this._saveClaimItem.bind(this));
 				}
 
 				this.onCancel_ClaimDetails_Input();
@@ -5441,12 +5441,11 @@ sap.ui.define([
 		 * Handles recalculation check for 3% Matawang. 
 		 * Private function
 		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim Input model
 		 * @param {function} fnSaveClaimItem - Function to Create or Update item
+		 * @returns {Promise<void>} Resolves after the Matawang amount has been recalculated
 		 */
 		_recalculateMatawangIfNeeded: async function (
 			oSubmissionModel,
-			oInputModel,
 			fnSaveClaimItem
 		) {
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
@@ -5461,7 +5460,6 @@ sap.ui.define([
 
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
-			return;
 		},
 		/**
 		 * Handles checkbox toggle for RoundTrip function. Multiply by 2 if active.
