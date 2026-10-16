@@ -1308,7 +1308,6 @@ sap.ui.define([
 		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oInputClaimModel = this.getView().getModel("claimitem_input");
 			var tempItems = {
 				claim_items: oInputModel.getProperty("/claim_items"),
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
@@ -1337,7 +1336,7 @@ sap.ui.define([
 				);
 			});
 		
-			///Check to recalculate Mata Wang if it is required
+			//Check to recalculate Mata Wang if it is required
 			await this._recalculateMatawangIfNeeded(oInputModel, this._updateClaimItems.bind(this));
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
@@ -2987,7 +2986,7 @@ sap.ui.define([
 						}
 					});
 				}
-				///Matawang is already calculated when its own item is opened/saved; only recalculate when another item is changed
+				//Matawang is already calculated when its own item is opened/saved; only recalculate when another item is changed
 				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
 					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, this._saveClaimItem.bind(this));
 				}
