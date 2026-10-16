@@ -145,7 +145,7 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (!!!oRule) {
                     throw new Error("You are not eligible for this claim.");
-                } else if (iExistingFreq > iAllowedFreq) {
+                } else if (iExistingFreq >= iAllowedFreq) {
                     throw new Error("Claim Type has exceeded allowed eligibility frequency.");
                 } else {
                     oPayload.CheckFields[iIndex].result = true;
