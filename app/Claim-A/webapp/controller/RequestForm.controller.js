@@ -2851,8 +2851,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : ""
 					}
-					console.log("Payload for approval:", oPayload);
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					// Backend error already shown by onProcessApproval - stay on the request
+					if (!oResult || oResult.Success === false) {
+						return;
+					}
 
 					// 2. Close dialog
 					this._approveDialog && this._approveDialog.close();
@@ -2908,7 +2911,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					// Backend error already shown by onProcessApproval - stay on the request
+					if (!oResult || oResult.Success === false) {
+						return;
+					}
 
 				// 3) Close dialog
 				if (this._sendBackDialog) {
@@ -2948,7 +2955,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the request
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				this._rejectDialog && this._rejectDialog.close();
 

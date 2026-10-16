@@ -1716,6 +1716,7 @@
                                 <Input 
                                     id="alloc_amount" 
                                     textAlign="End" 
+                                    required="true"
                                     value="{
                                         path: 'request>ALLOCATED_AMOUNT',
                                         type: 'sap.ui.model.type.Float',
