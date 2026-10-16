@@ -1778,7 +1778,11 @@ sap.ui.define([
 					}
 					
 					console.log("Payload Send Back: ", oPayload);
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					// Backend error already shown by onProcessApproval - stay on the claim
+					if (!oResult || oResult.Success === false) {
+						return;
+					}
 
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
@@ -1842,7 +1846,11 @@ sap.ui.define([
 						RejectionReason : sReason
 					}
 				console.log("Payload Send Back: ", oPayload); 
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
@@ -1897,7 +1905,11 @@ sap.ui.define([
 						RejectionReason : sReason
 					}
 				console.log("Payload Send Back: ", oPayload);
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
