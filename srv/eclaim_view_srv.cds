@@ -1190,19 +1190,22 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 coalesce(cast(course.SESSION_NUMBER as String), '') || '|' ||
                 coalesce(cast(course.START_DATE     as String), '') || '|' ||
                 coalesce(cast(course.END_DATE       as String), '')   as COURSE_SESSION_KEY : String,
-                course.COURSE_ID,
             key course.PARTICIPANT_ID,
+                course.COURSE_ID,
                 course.COURSE_DESC,
                 course.COURSE_SESSION_STAT,
-            key course.ATTENDENCE_STATUS,
+                course.ATTENDENCE_STATUS,
                 course.SESSION_NUMBER,
                 course.START_DATE,
                 course.END_DATE
         }
-        where not exists (
+        where course.ATTENDENCE_STATUS = true
+        and not exists (
             select 1 from ECLAIM.ZCLAIM_HEADER as header
             where trim(header.EMP_ID)      = trim(course.PARTICIPANT_ID)
                 and trim(header.COURSE_CODE) = trim(course.COURSE_ID)
+                and (   header.SESSION_NUMBER = course.SESSION_NUMBER
+                    or header.SESSION_NUMBER is null )
                 and header.STATUS_ID in ('STAT01', 'STAT02', 'STAT03', 'STAT05', 'STAT06', 'STAT08')
         )
         order by
