@@ -1825,7 +1825,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         CH.FINAL_AMOUNT_TO_RECEIVE as Decimal(16, 2)
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
                     cast(
-                        null as Decimal(16, 2)
+                        CH.CASH_ADVANCE_AMOUNT as Decimal(16, 2)
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
@@ -1841,10 +1841,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     RH.EMP_ID,
                     RH.ZEMP_MASTER.NAME,
                     cast(
-                        null as Decimal(16, 2)
+                        RH.CASH_ADVANCE as Decimal(16, 2)
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
                     cast(
-                        RH.CASH_ADVANCE as Decimal(16, 2)
+                        null as Decimal(16, 2)
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
@@ -1910,7 +1910,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     cast(
                         RI.INTERNAL_ORDER as String
                     )                    as INTERNAL_ORDER : String,
-                    // ZREQUEST_ITEM has no CHARGED_TO_CCC field
                     cast(
                         null as Boolean
                     )                    as CHARGED_TO_CCC : Boolean
@@ -1919,5 +1918,4 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     RH.STATUS     = 'STAT05'
                 and RI.SEND_TO_SF = true;
  
-
 };

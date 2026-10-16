@@ -434,9 +434,10 @@ entity ZCLAIM_HEADER : managed {
         EARMARKED_FUNDS_DOC_ID         : String(10)     @Common.Label: 'Earmarked Funds Document ID';
         EARMARKED_FUNDS_DOC_YEAR       : String(4)      @Common.Label: 'Earmarked Funds Document Year';
         EARMARKED_FUNDS_DOC_COMP_CODE  : String(4)      @Common.Label: 'Earmarked Funds Company Code';
-        FI_DOCUMENT_NUMBER            : String(10)      @Common.Label: 'FI Document Number';
-        FI_DOCUMENT_YEAR              : String(4)       @Common.Label: 'FI Document Year';
-        FI_DOCUMENT_COMP_CODE         : String(4)       @Common.Label: 'FI Company Code';
+        FI_DOCUMENT_NUMBER             : String(10)     @Common.Label: 'FI Document Number';
+        FI_DOCUMENT_YEAR               : String(4)      @Common.Label: 'FI Document Year';
+        FI_DOCUMENT_COMP_CODE          : String(4)      @Common.Label: 'FI Company Code';
+        EARMARKED_FUNDS_DOC_ITEM_ID    : String(3)      @Common.Lable: 'Earmarked Funds Document Item ID';
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
