@@ -318,10 +318,12 @@ module.exports = {
             (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
           );
           if (iIndex == -1) return;
-          if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-            oPayload.CheckFields[iIndex].result = true;
+          if (!!!oRule) {
+              throw new Error("You are not eligible for this claim.");
+          } else if (iExistingFreq > iAllowedFreq) {
+              throw new Error("Claim Type has exceeded allowed eligibility frequency.");
           } else {
-            throw new Error("Claim Type has exceeded allowed eligibility frequency.");
+              oPayload.CheckFields[iIndex].result = true;
           }
         }
 
@@ -331,9 +333,7 @@ module.exports = {
           (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
         );
         if (iIndex == -1) return;
-        if (!oRule) {
-          oPayload.CheckFields[iIndex].result = false;
-        } else {
+        if (!!oRule) {
           // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
           // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
           if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
