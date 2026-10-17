@@ -5149,6 +5149,18 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : COST_CENTER,
                 ![@UI.Importance]: #High,
                 Label            : 'Cost Center Code'
@@ -5249,7 +5261,7 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Approval Duration (Days)'
             }
-        ],
+        ]
     }
 ) {
     ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
@@ -5458,6 +5470,30 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: NAME,
                     ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
                 }
             ]
         }
@@ -5694,6 +5730,18 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6569,6 +6617,31 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             ]
         }
     );
+    
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
@@ -6789,6 +6862,18 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Pre-Approval Request Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7414,6 +7499,30 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             ]
         }
     );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
@@ -7649,6 +7758,18 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7967,6 +8088,30 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: NAME,
                     ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
                 }
             ]
         }

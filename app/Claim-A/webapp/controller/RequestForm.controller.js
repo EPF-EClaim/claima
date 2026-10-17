@@ -3771,6 +3771,14 @@ sap.ui.define([
 				oAction.getBoundContext().getObject().value;
 
 			this._oReqModel.setProperty("/req_item/dependent_national_id",sNationalId);
+		},
+
+		onAttachmentFileSizeExceed: function (oEvent) {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
+		},
+
+		onAttachmentTypeMissmatch: function (oEvent) {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		}
 
 	});
