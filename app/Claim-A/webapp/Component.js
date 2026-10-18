@@ -38,8 +38,8 @@ sap.ui.define([
     const DialogType = mLibrary.DialogType;
 
     // ---- Constants (created once, not on every call) ----
-    const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;  // Total idle time before logout
-    const WARNING_BEFORE_MS     = 5 * 60 * 1000;   // Show warning when this much time is left
+    const INACTIVITY_TIMEOUT_MS = 0.5 * 60 * 1000;  // Total idle time before logout
+    const WARNING_BEFORE_MS     = 0.5 * 60 * 1000;   // Show warning when this much time is left
     const CHECK_INTERVAL_MS     = 10 * 1000;       // How often the idle timer is checked
     const LOGOUT_URL            = "/claima/do/logout";
     const REAUTH_FLAG           = "claima_reauth";
@@ -104,8 +104,12 @@ sap.ui.define([
             this._initActivityTracking();
             this.startInactivityTimer();
 
-            // Load Excel libraries when the browser is idle, so they don't slow down the first screen
-            this._scheduleIdle(() => this.loadExternalLibraries());
+            // Pre-load Excel libraries when the browser is idle (errors are only logged here)
+            this._scheduleIdle(() => {
+                this.loadExternalLibraries().catch((oError) => {
+                    console.warn("Excel library pre-load failed, will retry on use:", oError);
+                });
+            });
 
             const oRouter = this.getRouter();
             oRouter.attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
@@ -277,11 +281,15 @@ sap.ui.define([
 
         /**
          * Loads the Excel libraries (jszip, xlsx) once.
-         * Can be awaited before an export: await this.getOwnerComponent().loadExternalLibraries();
+         * Await this before using XLSX: await this.getOwnerComponent().loadExternalLibraries();
          * @public
-         * @returns {Promise<void>} Resolves when all libraries are loaded
+         * @returns {Promise<void>} Resolves when loaded, rejects if loading fails
          */
         loadExternalLibraries: function () {
+            // Already loaded (e.g. by the idle pre-warm)
+            if (window.XLSX) {
+                return Promise.resolve();
+            }
             if (!this._oLibsPromise) {
                 // Load in order: xlsx needs jszip first
                 this._oLibsPromise = EXTERNAL_LIBS.reduce(
@@ -289,7 +297,7 @@ sap.ui.define([
                     Promise.resolve()
                 ).catch((oError) => {
                     this._oLibsPromise = null; // Allow a retry next time
-                    console.error("Failed to load external library:", oError);
+                    throw oError;              // Let the caller show an error
                 });
             }
             return this._oLibsPromise;
@@ -535,13 +543,18 @@ sap.ui.define([
             if (bStay) {
                 this._resumeSession();
             } else {
-                this._doLogout();
+                MessageBox.warning(Utility.getText("session_logout_msg"), {
+                    title: Utility.getText("session_expired_title"),
+                    actions: [MessageBox.Action.OK],
+                    emphasizedAction: MessageBox.Action.OK,
+                    onClose: () => this._doLogout()
+                });
             }
         },
 
         /**
          * Checks that the server session is still valid, then restarts the idle timer.
-         * Logs out if the session has already expired.
+         * If the session has expired, shows a message and logs out when it is closed.
          * @private
          */
         _resumeSession: async function () {
@@ -557,10 +570,15 @@ sap.ui.define([
                 this.resetInactivityTimeout();
                 this.startInactivityTimer();
             } catch (oError) {
-                MessageToast.show(Utility.getText("session_logout_msg"));
-                this._doLogout();
+                MessageBox.warning(Utility.getText("session_logout_msg"), {
+                    title: Utility.getText("session_expired_title"),
+                    actions: [MessageBox.Action.OK],
+                    emphasizedAction: MessageBox.Action.OK,
+                    onClose: () => this._doLogout()
+                });
             }
         },
+
 
         /**
          * Stops all timers and listeners, then logs out through the approuter.
