@@ -7,8 +7,7 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Sorter",
-    "claima/utils/Constants",
-	"claima/utils/Utility"
+    "claima/utils/Constants"
 ], function (
 	MessageBox,
 	MessageToast,
@@ -18,8 +17,7 @@ sap.ui.define([
 	FilterOperator,
 	JSONModel,
 	Sorter,
-	Constants,
-    Utility
+	Constants
 ) {
     "use strict";
 
@@ -1004,7 +1002,23 @@ sap.ui.define([
             }else {
                 return "";
             }
-        }
+        },
+
+		/**
+		 * Shows a MessageBox error when the selected file is larger than the allowed size.
+		 * @param {sap.ui.base.Event} oEvent - fileSizeExceed event from FileUploader
+		 */
+		onAttachmentFileSizeExceed_MessageBox: function (oEvent) {
+			MessageBox.error(this.getText("msg_claiminput_attachment_upload_filesize", []));
+		},
+
+		/**
+		 * Shows a MessageBox error when the selected file type isn't allowed.
+		 * @param {sap.ui.base.Event} oEvent - typeMissmatch event from FileUploader
+		 */
+		onAttachmentTypeMissmatch_MessageBox: function (oEvent) {
+			MessageBox.error(this.getText("msg_claiminput_attachment_upload_mismatch", []));
+		}
 
     };
 });

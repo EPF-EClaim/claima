@@ -3774,11 +3774,11 @@ sap.ui.define([
 		},
 
 		onAttachmentFileSizeExceed: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
+			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
 		},
 
 		onAttachmentTypeMissmatch: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
 		}
 
 	});

@@ -1330,11 +1330,11 @@ sap.ui.define([
 		},
 
 		onAttachmentFileSizeExceed: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
+			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
 		},
 
 		onAttachmentTypeMissmatch: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
 		},
 
 		onCancel_ClaimInput: function () {

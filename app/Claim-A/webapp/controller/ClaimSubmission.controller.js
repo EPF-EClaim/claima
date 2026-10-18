@@ -3442,11 +3442,11 @@ sap.ui.define([
 		},
 
 		onAttachmentFileSizeExceed: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
+			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
 		},
 
 		onAttachmentTypeMissmatch: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
 		},
 
 		/**
@@ -4075,7 +4075,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 
-			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+			if (oInputModel.getProperty("/claim_item/location_typeRonAttachmentFileSizeExceed") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
 				oPropertyModel.setProperty("/to_location/is_visible", false);
 				oPropertyModel.setProperty("/from_location/is_visible", false);
