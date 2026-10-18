@@ -3436,33 +3436,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Shows a MessageToast when the selected file is successfully uploaded.
-		 * @param {sap.ui.base.Event} oEvent - uploadComplete event from FileUploader
-		 */
-		onAttachmentUploadComplete: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		/**
-		 * Shows a MessageBox error when the selected file is larger than the allowed size.
-		 * @param {sap.ui.base.Event} oEvent - fileSizeExceed event from FileUploader
-		 */
-		onAttachmentFileSizeExceed: function (oEvent) {
-			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
-		},
-
-		/**
-		 * Shows a MessageBox error when the selected file type isn't allowed.
-		 * @param {sap.ui.base.Event} oEvent - typeMissmatch event from FileUploader
-		 */
-		onAttachmentTypeMissmatch: function (oEvent) {
-			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
-		},
-
-		/**
 		 * Deletes the selected claim attachment after user confirmation
 		 * @public
 		 */
@@ -4088,7 +4061,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 
-			if (oInputModel.getProperty("/claim_item/location_typeRonAttachmentFileSizeExceed") === this._oConstant.LocationType.KWSP) {
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
 				oPropertyModel.setProperty("/to_location/is_visible", false);
 				oPropertyModel.setProperty("/from_location/is_visible", false);

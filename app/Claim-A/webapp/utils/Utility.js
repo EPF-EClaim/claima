@@ -21,7 +21,7 @@ sap.ui.define([
 ) {
     "use strict";
 
-    return {
+    const Utility = {
         /**
          * Initialize the Utility 
          * @public
@@ -1005,20 +1005,31 @@ sap.ui.define([
         },
 
 		/**
-		 * Shows a MessageBox error when the selected file is larger than the allowed size.
-		 * @param {sap.ui.base.Event} oEvent - fileSizeExceed event from FileUploader
+		 * Shows a MessageToast when the selected file is successfully uploaded.
+		 * @param {sap.ui.base.Event} oEvent - uploadComplete event from FileUploader
 		 */
-		onAttachmentFileSizeExceed_MessageBox: function (oEvent) {
-			MessageBox.error(this.getText("msg_claiminput_attachment_upload_filesize", []));
+		showAttachmentUploadComplete: function (oEvent) {
+			var iHttpStatusCode = oEvent.getParameters("status");
+			var sResponse = oEvent.getParameters("response");
+			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+			MessageToast.show(sMessage);
+		},
+
+		/**
+		 * Shows a MessageBox error when the selected file is larger than the allowed size.
+		 */
+		showAttachmentFileSizeExceed: function () {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize", [Constants.AttachmentConfig.MAX_FILE_SIZE]));
 		},
 
 		/**
 		 * Shows a MessageBox error when the selected file type isn't allowed.
-		 * @param {sap.ui.base.Event} oEvent - typeMissmatch event from FileUploader
 		 */
-		onAttachmentTypeMissmatch_MessageBox: function (oEvent) {
-			MessageBox.error(this.getText("msg_claiminput_attachment_upload_mismatch", []));
+		showAttachmentTypeMissmatch: function () {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch", [Constants.AttachmentConfig.ALLOWED_FILE_TYPES.join(", ")]));
 		}
 
     };
+
+    return Utility;
 });

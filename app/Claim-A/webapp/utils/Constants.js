@@ -825,8 +825,8 @@ sap.ui.define([
         },
         "AttachmentConfig": {
             "MAX_FILE_SIZE": 5.0,
-            "MIME_TYPES": "image/jpeg,image/png,application/pdf", 
-            "ALLOWED_FILE_TYPES": "jpg,jpeg,png,pdf"
+            "MIME_TYPES": ["image/jpeg", "image/png", "application/pdf"],
+            "ALLOWED_FILE_TYPES": ["jpg", "jpeg", "png", "pdf"]
         }
 
     }

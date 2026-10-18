@@ -3771,22 +3771,6 @@ sap.ui.define([
 				oAction.getBoundContext().getObject().value;
 
 			this._oReqModel.setProperty("/req_item/dependent_national_id",sNationalId);
-		},
-
-		/**
-		 * Shows a MessageBox error when the selected file is larger than the allowed size.
-		 * @param {sap.ui.base.Event} oEvent - fileSizeExceed event from FileUploader
-		 */
-		onAttachmentFileSizeExceed: function (oEvent) {
-			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
-		},
-
-		/**
-		 * Shows a MessageBox error when the selected file type isn't allowed.
-		 * @param {sap.ui.base.Event} oEvent - typeMissmatch event from FileUploader
-		 */
-		onAttachmentTypeMissmatch: function (oEvent) {
-			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
 		}
 
 	});
