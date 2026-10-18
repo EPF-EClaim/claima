@@ -38,8 +38,8 @@ sap.ui.define([
     const DialogType = mLibrary.DialogType;
 
     // ---- Constants (created once, not on every call) ----
-    const INACTIVITY_TIMEOUT_MS = 0.5 * 60 * 1000;  // Total idle time before logout
-    const WARNING_BEFORE_MS     = 0.5 * 60 * 1000;   // Show warning when this much time is left
+    const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;  // Total idle time before logout
+    const WARNING_BEFORE_MS     = 5 * 60 * 1000;   // Show warning when this much time is left
     const CHECK_INTERVAL_MS     = 10 * 1000;       // How often the idle timer is checked
     const LOGOUT_URL            = "/claima/do/logout";
     const REAUTH_FLAG           = "claima_reauth";
