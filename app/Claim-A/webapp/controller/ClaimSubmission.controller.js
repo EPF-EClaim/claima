@@ -3435,6 +3435,10 @@ sap.ui.define([
 			oFileReader.readAsDataURL(oFile);
 		},
 
+		/**
+		 * Shows a MessageToast when the selected file is successfully uploaded.
+		 * @param {sap.ui.base.Event} oEvent - uploadComplete event from FileUploader
+		 */
 		onAttachmentUploadComplete: function (oEvent) {
 			var iHttpStatusCode = oEvent.getParameters("status");
 			var sResponse = oEvent.getParameters("response");
@@ -3442,10 +3446,18 @@ sap.ui.define([
 			MessageToast.show(sMessage);
 		},
 
+		/**
+		 * Shows a MessageBox error when the selected file is larger than the allowed size.
+		 * @param {sap.ui.base.Event} oEvent - fileSizeExceed event from FileUploader
+		 */
 		onAttachmentFileSizeExceed: function (oEvent) {
 			Utility.onAttachmentFileSizeExceed_MessageBox(oEvent);
 		},
 
+		/**
+		 * Shows a MessageBox error when the selected file type isn't allowed.
+		 * @param {sap.ui.base.Event} oEvent - typeMissmatch event from FileUploader
+		 */
 		onAttachmentTypeMissmatch: function (oEvent) {
 			Utility.onAttachmentTypeMissmatch_MessageBox(oEvent);
 		},
