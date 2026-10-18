@@ -68,6 +68,8 @@ sap.ui.define([
          * @public
          */
         init() {
+            this.loadExternalLibraries();
+
             AppComponent.prototype.init.apply(this, arguments);
 
             this._oReqModel = this.getModel("request");
@@ -103,13 +105,6 @@ sap.ui.define([
             this.setInactivityTimeout(INACTIVITY_TIMEOUT_MS);
             this._initActivityTracking();
             this.startInactivityTimer();
-
-            // Pre-load Excel libraries when the browser is idle (errors are only logged here)
-            this._scheduleIdle(() => {
-                this.loadExternalLibraries().catch((oError) => {
-                    console.warn("Excel library pre-load failed, will retry on use:", oError);
-                });
-            });
 
             const oRouter = this.getRouter();
             oRouter.attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
@@ -280,27 +275,21 @@ sap.ui.define([
         // ================================================================
 
         /**
-         * Loads the Excel libraries (jszip, xlsx) once.
+         * Loads the Excel libraries (jszip, xlsx) once. Started at app start in init().
          * Await this before using XLSX: await this.getOwnerComponent().loadExternalLibraries();
          * @public
          * @returns {Promise<void>} Resolves when loaded, rejects if loading fails
          */
         loadExternalLibraries: function () {
-            // Already loaded (e.g. by the idle pre-warm)
-            if (window.XLSX) {
-                return Promise.resolve();
-            }
-            if (!this._oLibsPromise) {
-                // Load in order: xlsx needs jszip first
-                this._oLibsPromise = EXTERNAL_LIBS.reduce(
-                    (oPrev, sSrc) => oPrev.then(() => this._loadScript(sSrc)),
-                    Promise.resolve()
-                ).catch((oError) => {
-                    this._oLibsPromise = null; // Allow a retry next time
-                    throw oError;              // Let the caller show an error
-                });
-            }
-            return this._oLibsPromise;
+            const aLibs = [
+                'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js'
+            ];
+            aLibs.forEach(src => {
+                const script = document.createElement('script');
+                script.setAttribute('src', src);
+                document.head.appendChild(script);
+            });
         },
 
         /**
@@ -317,19 +306,6 @@ sap.ui.define([
                 oScript.onerror = () => reject(new Error("Unable to load " + sSrc));
                 document.head.appendChild(oScript);
             });
-        },
-
-        /**
-         * Runs a function when the browser is idle (falls back to a short delay).
-         * @private
-         * @param {Function} fnTask - Function to run
-         */
-        _scheduleIdle: function (fnTask) {
-            if (window.requestIdleCallback) {
-                window.requestIdleCallback(fnTask, { timeout: 3000 });
-            } else {
-                setTimeout(fnTask, 1000);
-            }
         },
 
         // ================================================================
