@@ -1446,4 +1446,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     end as Decimal(16, 2)
                 ) as BALANCE
         };
+    
+        /**
+        * Stage 4 – Current-year balance, one row per employee.
+        */
+        @readonly
+        entity ZMED_ENTITLEMENT_BAL_CY as
+            select from ZMED_ENTITLEMENT_BAL as b
+            {
+                key b.EEID,
+                    b.ENTITLEMENT_YEAR,
+                    b.ENTITLED_AMOUNT,
+                    b.CLAIMED_AMOUNT,
+                    b.PENDING_REQUEST_AMOUNT,
+                    b.BALANCE
+            }
+            where b.ENTITLEMENT_YEAR = year(add_seconds(current_timestamp, 28800));
 }
