@@ -10,7 +10,6 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
-const UpdateMedical = require('./utils/UpdateMedical');
 const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
@@ -4833,28 +4832,6 @@ module.exports = (srv) => {
             approved: fConsumedAmount,
             remaining: Math.max(0, (fEligibleAmount - fConsumedAmount).toFixed(2))
         };
-    });
-
-    /**
-        * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('updateMedicalUsedAmount', async (req) => {
-        try {
-            const oPayload = req.data;
-            if (!oPayload || oPayload.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            var sRecordId = oPayload.sRecordId;
-            var sStatus = oPayload.sStatus;
-            const tx = cds.tx(req);
-
-            var result = await UpdateMedical.updateUsedMedicalAmount(sRecordId, sStatus, tx);
-            return result;
-        } catch (error) {
-            return req.reject(400, `Fail processing records: ${error.message}`);
-        }
     });
 
     /**

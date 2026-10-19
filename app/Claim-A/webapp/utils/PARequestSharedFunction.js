@@ -113,7 +113,7 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(oController, req_id) {
+		async getItemList(oController, req_id) {
 			const oReq = oController._oReqModel;
 
 			if (!req_id) {
