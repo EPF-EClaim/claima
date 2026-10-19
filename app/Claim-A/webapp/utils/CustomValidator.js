@@ -141,10 +141,10 @@ sap.ui.define([
                         }
                     }
 
-                    if(!!oInputModel?.getProperty("/claim_item/receipt_date") && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
+                    if(!!oInputModel?.getProperty("/claim_item/receipt_date") && this._oView.byId("datepicker_claimdetails_input_receipt_date").getVisible() && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
                         var dTripEndDate = this._getMaxReceiptDate(oClaimSubmissionModel);
                         var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
+                        
                         if (dReceiptDate > dTripEndDate) {
                             MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
                             bCanProceed = false;
