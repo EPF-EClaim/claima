@@ -1358,6 +1358,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where
             RH.CASH_ADVANCE > 0;
 
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
     entity ZREQUEST_SF_SENT_SUM          as
         select from ZREQUEST_ITEM {
             key REQUEST_ID,
@@ -1370,6 +1374,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
         group by
             REQUEST_ID;
 
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
     entity ZEMP_PAYMENT_REPORT           as
             select from ECLAIM.ZCLAIM_HEADER as CH {
                 key cast(
@@ -1377,11 +1385,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     )                    as CLAIM_ID                : String,
                     CH.EMP_ID,
                     CH.ZEMP_MASTER.NAME,
-                    cast(
-                        CH.FINAL_AMOUNT_TO_RECEIVE as Decimal(16, 2)
+                    coalesce(
+                        CH.FINAL_AMOUNT_TO_RECEIVE, 0
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
-                    cast(
-                        CH.CASH_ADVANCE_AMOUNT as Decimal(16, 2)
+                    coalesce(
+                        CH.CASH_ADVANCE_AMOUNT, 0
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
@@ -1396,16 +1404,20 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     )                    as CLAIM_ID                : String,
                     RH.EMP_ID,
                     RH.ZEMP_MASTER.NAME,
-                    cast(
-                        RH.CASH_ADVANCE as Decimal(16, 2)
+                    coalesce(
+                        RH.CASH_ADVANCE, 0
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
                     cast(
-                        null as Decimal(16, 2)
+                        0 as Decimal(16, 2)
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
                 RH.STATUS = 'STAT05';
 
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
     entity ZEMP_POSTING_REPORT           as
             select from ECLAIM.ZCLAIM_ITEM as CI
             inner join ECLAIM.ZCLAIM_HEADER as CH
@@ -1419,8 +1431,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     )                    as CLAIM_SUB_ID   : String,
                     CH.EMP_ID,
                     CH.ZEMP_MASTER.NAME,
-                    cast(
-                        CI.AMOUNT as Decimal(16, 2)
+                    coalesce(
+                        CI.AMOUNT, 0
                     )                    as AMOUNT         : Decimal(16, 2),
                     cast(
                         CI.COST_CENTER as String
@@ -1451,8 +1463,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     )                    as CLAIM_SUB_ID   : String,
                     RH.EMP_ID,
                     RH.ZEMP_MASTER.NAME,
-                    cast(
-                        RI.EST_AMOUNT as Decimal(16, 2)
+                    coalesce(
+                        RI.EST_AMOUNT, 0
                     )                    as AMOUNT         : Decimal(16, 2),
                     cast(
                         RI.COST_CENTER as String

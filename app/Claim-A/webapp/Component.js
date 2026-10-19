@@ -117,7 +117,7 @@ sap.ui.define([
                         name: oUserData.name,
                         cost_center: oUserData.costcenters
                     });
-
+oUserRoles.isAdminSystem=true
                     oRoleModel.setProperty("/isClaimant", oUserRoles.isClaimant);
                     oRoleModel.setProperty("/isApprover", oUserRoles.isApprover);
                     oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);

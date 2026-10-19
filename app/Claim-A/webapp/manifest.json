@@ -4897,7 +4897,6 @@
                                         "createMode": "None",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
                                             "column": true,
@@ -4944,7 +4943,6 @@
                                         "createMode": "None",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
                                         "selectionMode": "None",
                                         "personalization": {
                                             "column": true,

@@ -8252,32 +8252,27 @@ annotate service.ZEMP_PAYMENT_REPORT with @(
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim ID'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMP_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Employee Number'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : NAME,
-                ![@UI.Importance]: #High,
-                Label            : 'Employee Name'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : FINAL_AMOUNT_TO_RECEIVE,
-                ![@UI.Importance]: #High,
-                Label            : 'Final Amount To Receive'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : CASH_ADVANCE,
-                ![@UI.Importance]: #High,
-                Label            : 'Cash Advance Amount'
+                ![@UI.Importance]: #High
             }
         ]
     }
@@ -8319,62 +8314,52 @@ annotate service.ZEMP_POSTING_REPORT with @(
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim ID'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_SUB_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Sub ID'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMP_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Employee Number'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : NAME,
-                ![@UI.Importance]: #High,
-                Label            : 'Employee Name'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : AMOUNT,
-                ![@UI.Importance]: #High,
-                Label            : 'Amount'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : GL_ACCOUNT,
-                ![@UI.Importance]: #High,
-                Label            : 'GL Account'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : MATERIAL_GROUP,
-                ![@UI.Importance]: #High,
-                Label            : 'Material Group'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : INTERNAL_ORDER,
-                ![@UI.Importance]: #High,
-                Label            : 'Internal Order'
+                ![@UI.Importance]: #High
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : CHARGED_TO_CCC,
-                ![@UI.Importance]: #High,
-                Label            : 'Charged To CCC'
+                ![@UI.Importance]: #High
             }
         ]
     }

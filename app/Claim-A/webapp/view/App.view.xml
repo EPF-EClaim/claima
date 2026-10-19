@@ -136,7 +136,7 @@
                             icon="sap-icon://payment-approval"
                             text="{i18n>nav_paymentreconreport}"
                             enabled="true"
-                            visible="{= ${roleModel>/isAdminSystem} === true }"
+                            visible="{roleModel>/isAdminSystem}"
                         >
                         <tnt:items>
                                 <tnt:NavigationListItem
