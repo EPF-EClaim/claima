@@ -1350,6 +1350,109 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where
             RH.CASH_ADVANCE > 0;
 
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
+    entity ZREQUEST_SF_SENT_SUM          as
+        select from ZREQUEST_ITEM {
+            key REQUEST_ID,
+                count(
+                    REQUEST_SUB_ID
+                ) as SF_ITEM_COUNT : Integer
+        }
+        where
+            SEND_TO_SF = true
+        group by
+            REQUEST_ID;
+
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
+    entity ZEMP_PAYMENT_REPORT           as
+            select from ECLAIM.ZCLAIM_HEADER as CH {
+                key CH.CLAIM_ID,
+                    CH.EMP_ID,
+                    CH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        CH.FINAL_AMOUNT_TO_RECEIVE, 0
+                    )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
+                    coalesce(
+                        CH.CASH_ADVANCE_AMOUNT, 0
+                    )                    as CASH_ADVANCE            : Decimal(16, 2)
+            }
+            where
+                CH.STATUS_ID = 'STAT05'
+        union all
+            select from ECLAIM.ZREQUEST_HEADER as RH
+            inner join ZREQUEST_SF_SENT_SUM as SF
+                on SF.REQUEST_ID = RH.REQUEST_ID
+            {
+                key RH.REQUEST_ID        as CLAIM_ID,
+                    RH.EMP_ID,
+                    RH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    // Request cash advance is shown as the amount to receive
+                    coalesce(
+                        RH.CASH_ADVANCE, 0
+                    )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
+                    cast(
+                        0 as Decimal(16, 2)
+                    )                    as CASH_ADVANCE            : Decimal(16, 2)
+            }
+            where
+                RH.STATUS = 'STAT05';
+
+    @restrict: [{
+        grant: 'READ',
+        to   : 'Admin_System'
+    }]
+    entity ZEMP_POSTING_REPORT           as
+            select from ECLAIM.ZCLAIM_ITEM as CI
+            inner join ECLAIM.ZCLAIM_HEADER as CH
+                on CH.CLAIM_ID = CI.CLAIM_ID
+            {
+                key CI.CLAIM_ID,
+                key CI.CLAIM_SUB_ID,
+                    CH.EMP_ID,
+                    CH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        CI.AMOUNT, 0
+                    )                    as AMOUNT         : Decimal(16, 2),
+                    CI.COST_CENTER,
+                    CI.GL_ACCOUNT,
+                    CI.MATERIAL_CODE     as MATERIAL_GROUP,
+                    CI.INTERNAL_ORDER,
+                    coalesce(
+                        CI.CHARGED_TO_CCC, false
+                    )                    as CHARGED_TO_CCC : Boolean
+            }
+            where
+                CH.STATUS_ID = 'STAT05'
+        union all
+            select from ECLAIM.ZREQUEST_ITEM as RI
+            inner join ECLAIM.ZREQUEST_HEADER as RH
+                on RH.REQUEST_ID = RI.REQUEST_ID
+            {
+                key RI.REQUEST_ID        as CLAIM_ID,
+                key RI.REQUEST_SUB_ID    as CLAIM_SUB_ID,
+                    RH.EMP_ID,
+                    RH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        RI.EST_AMOUNT, 0
+                    )                    as AMOUNT         : Decimal(16, 2),
+                    RI.COST_CENTER,
+                    RI.GL_ACCOUNT,
+                    RI.MATERIAL_CODE     as MATERIAL_GROUP,
+                    RI.INTERNAL_ORDER,
+                    cast(
+                        null as Boolean
+                    )                    as CHARGED_TO_CCC : Boolean
+            }
+            where
+                    RH.STATUS     = 'STAT05'
+                and RI.SEND_TO_SF = true;
+
     entity ZEMP_COURSE_VALUE_HELP        as
         projection on ZTRAIN_COURSE_PART {
             key COURSE_ID,
