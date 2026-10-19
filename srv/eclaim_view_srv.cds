@@ -28,12 +28,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_REQUEST_VIEW              as
         select from ECLAIM.ZREQUEST_HEADER
-        mixin {
-            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
-                          on MED_BAL.EEID = ZREQUEST_HEADER.EMP_ID;
-        }
-        into {
-            key REQUEST_ID,
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZREQUEST_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZREQUEST_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZREQUEST_HEADER.REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
@@ -88,17 +90,19 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ATTACHMENT3,
                 ATTACHMENT4,
                 PAYMENT_DUE_DATE,
-                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_REQUEST_EE_VIEW          as
         select from ECLAIM.ZREQUEST_HEADER
-        mixin {
-            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
-                          on MED_BAL.EEID = ZREQUEST_HEADER.EMP_ID;
-        }
-        into {
-            key REQUEST_ID,
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZREQUEST_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZREQUEST_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZREQUEST_HEADER.REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
@@ -149,7 +153,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.JOB_GROUP,
                 ATTACHMENT3,
                 ATTACHMENT4,
-                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
 
@@ -266,12 +270,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_EE_VIEW            as
         select from ECLAIM.ZCLAIM_HEADER
-        mixin {
-            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
-                          on MED_BAL.EEID = ZCLAIM_HEADER.EMP_ID;
-        }
-        into {
-            key CLAIM_ID,
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZCLAIM_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZCLAIM_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZCLAIM_HEADER.CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
@@ -320,17 +326,19 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
                 modifiedAt,
-                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW         as
         select from ECLAIM.ZCLAIM_HEADER
-        mixin {
-            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
-                          on MED_BAL.EEID = ZCLAIM_HEADER.EMP_ID;
-        }
-        into {
-            key CLAIM_ID,
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZCLAIM_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZCLAIM_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZCLAIM_HEADER.CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
@@ -392,7 +400,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 CARD_NO,
                 CCC_ADV_AMT,
-                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -1328,8 +1336,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
 
     /**
-     * Stage 1 – Line-level medical usage.
-     * LINE_ID = unique key per line (C = claim item, R = request item, E = employee anchor)
+     * Stage 1 – Line-level medical usage (years in MYT).
+     * LINE_ID = unique key per line (C = claim item, R = request item, E/EC/ER = employee anchors)
      */
     @readonly
     entity ZMED_USAGE_LINES as
@@ -1337,11 +1345,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         inner join ECLAIM.ZCLAIM_HEADER as h
             on h.CLAIM_ID = i.CLAIM_ID
         {
-            key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255)) as LINE_ID,
-                h.EMP_ID                                  as EEID,
-                cast(year(h.SUBMITTED_DATE) as Integer)   as ENTITLEMENT_YEAR,
-                cast(i.AMOUNT as Decimal(16, 2))          as CLAIMED_AMOUNT,
-                cast(0 as Decimal(16, 2))                 as PENDING_REQUEST_AMOUNT
+            key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255))     as LINE_ID,
+                h.EMP_ID                                                            as EEID,
+                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as Integer)         as ENTITLEMENT_YEAR,
+                cast(i.AMOUNT as Decimal(16, 2))                                    as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
         where h.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
           and i.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
@@ -1358,10 +1366,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             on c.REQUEST_ID = rh.REQUEST_ID
         {
             key cast('R|' || ri.REQUEST_ID || '|' || ri.REQUEST_SUB_ID as String(255)) as LINE_ID,
-                rh.EMP_ID                                 as EEID,
-                cast(year(rh.SUBMITTED_DATE) as Integer)  as ENTITLEMENT_YEAR,
-                cast(0 as Decimal(16, 2))                 as CLAIMED_AMOUNT,
-                cast(ri.EST_AMOUNT as Decimal(16, 2))     as PENDING_REQUEST_AMOUNT
+                rh.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(rh.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
         }
         where rh.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
           and ri.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
@@ -1371,14 +1379,45 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
         union all
 
+        // Anchor: current year (MYT) for every employee
         select from ECLAIM.ZEMP_MASTER as e
         {
-            key cast('E|' || e.EEID as String(255))       as LINE_ID,
-                e.EEID                                    as EEID,
-                cast(year(current_date) as Integer)       as ENTITLEMENT_YEAR,
-                cast(0 as Decimal(16, 2))                 as CLAIMED_AMOUNT,
-                cast(0 as Decimal(16, 2))                 as PENDING_REQUEST_AMOUNT
-        };
+            key cast('E|' || e.EEID as String(255))                                 as LINE_ID,
+                e.EEID                                                              as EEID,
+                cast(year(add_seconds(current_timestamp, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+
+        union all
+
+        // Anchor: every year an employee submitted a claim (MYT)
+        select from ECLAIM.ZCLAIM_HEADER as ch
+        {
+            key cast('EC|' || ch.EMP_ID || '|'
+                     || cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
+                ch.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+        where ch.SUBMITTED_DATE is not null
+        group by ch.EMP_ID, year(add_seconds(ch.SUBMITTED_DATE, 28800))
+
+        union all
+
+        // Anchor: every year an employee submitted a request (MYT)
+        select from ECLAIM.ZREQUEST_HEADER as rq
+        {
+            key cast('ER|' || rq.EMP_ID || '|'
+                     || cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
+                rq.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+        where rq.SUBMITTED_DATE is not null
+        group by rq.EMP_ID, year(add_seconds(rq.SUBMITTED_DATE, 28800));
 
     /**
      * Stage 2 – Usage per employee per year.
