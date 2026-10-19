@@ -30,8 +30,9 @@ module.exports = {
 
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistFreq = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
+        var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
 
-        this._validateClaimItem(oRule, oPayload, iHistFreq, oDateRange.iItemFreq);
+        this._validateClaimItem(oRule, oPayload, iHistFreq, oDateRange.iItemFreq, oCurrentRecordItemData.fTotalAmount);
         return oPayload;
     },
 
@@ -42,8 +43,9 @@ module.exports = {
     * @param {Object} oPayload - original payload from user input
     * @param {Integer} iExistingFreq - Date frequency count
     * @param {Integer} iAllowedFreq - Rules Frequency Count
+    * @param {Number} fTotalAmount - Total amount of other S_K.KELAB items in the same claim/request
     */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, fTotalAmount) {
         var iIndex;
 
         // S_K.KELAB - reject if there is historical claims within same Period based on frequency
@@ -62,7 +64,11 @@ module.exports = {
                         oPayload.CheckFields[iIndex].result = true;
                     } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                        // current payload amount + total amount from other items in the same claim/request
+                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount || 0);
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            fCurrentTotal,
+                            parseFloat(oRule.ELIGIBLE_AMOUNT));
                     }
                 }
                 break;
@@ -127,6 +133,51 @@ module.exports = {
             tx);
 
         return iHistoricalData;
+    },
+
+    /**
+         * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+         * @private
+         * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Object} dDateTo - Date To Range
+         * @param {Object} dDateFrom - Date From Range
+         * @param {Object} tx - CDS Transaction
+         * @returns {Object} oPayload - return original payload but with result field filled
+         */
+    _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
+        var sHeaderField, sItemField, sItemTable, sDateField;
+        // get Current Items Data
+        // Map Headers and ClaimID or RequestID based on which ItemTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderField = Constant.EntitiesFields.CLAIMID;
+            sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+            sDateField = Constant.EntitiesFields.RECEIPT_DATE;
+        } else {
+            sHeaderField = Constant.EntitiesFields.REQUESTID;
+            sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+            sDateField = Constant.EntitiesFields.TRIP_START_DATE;
+        }
+
+        const aCurrentItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [sHeaderField]: oPayload.RecordId,
+            [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem
+        };
+
+        // for frequencies other than once per service, date range needed
+        if ((!!dDateFrom) && (!!dDateTo)) {
+            aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+        }
+
+        const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+
+        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+            sCurrentItemcondition,
+            tx);
     }
 
 };
