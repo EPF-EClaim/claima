@@ -143,10 +143,10 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (!!!oRule) {
                     throw new Error("You are not eligible for this claim.");
-                } else if (iExistingFreq >= iAllowedFreq) {
-                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
-                } else {
+                } else if (iExistingFreq < iAllowedFreq) {
                     oPayload.CheckFields[iIndex].result = true;
+                } else {
+                    throw new Error("Claim Type has exceeded allowed eligibility frequency.");
                 }
                 iIndex = null;
                 // BEG_BIMBIT - return true if claim amount is less than eligible amount
