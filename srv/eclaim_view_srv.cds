@@ -27,7 +27,12 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
 
     entity ZEMP_REQUEST_VIEW              as
-        projection on ECLAIM.ZREQUEST_HEADER {
+        select from ECLAIM.ZREQUEST_HEADER
+        mixin {
+            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
+                          on MED_BAL.EEID = ZREQUEST_HEADER.EMP_ID;
+        }
+        into {
             key REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
@@ -82,11 +87,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 ATTACHMENT3,
                 ATTACHMENT4,
-                PAYMENT_DUE_DATE
+                PAYMENT_DUE_DATE,
+                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_REQUEST_EE_VIEW          as
-        projection on ECLAIM.ZREQUEST_HEADER {
+        select from ECLAIM.ZREQUEST_HEADER
+        mixin {
+            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
+                          on MED_BAL.EEID = ZREQUEST_HEADER.EMP_ID;
+        }
+        into {
             key REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
@@ -137,7 +148,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 ATTACHMENT3,
-                ATTACHMENT4
+                ATTACHMENT4,
+                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
 
@@ -253,7 +265,12 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_EE_VIEW            as
-        projection on ECLAIM.ZCLAIM_HEADER {
+        select from ECLAIM.ZCLAIM_HEADER
+        mixin {
+            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
+                          on MED_BAL.EEID = ZCLAIM_HEADER.EMP_ID;
+        }
+        into {
             key CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
@@ -302,11 +319,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW         as
-        projection on ECLAIM.ZCLAIM_HEADER {
+        select from ECLAIM.ZCLAIM_HEADER
+        mixin {
+            MED_BAL : Association to one ZMED_ENTITLEMENT_BAL_CY
+                          on MED_BAL.EEID = ZCLAIM_HEADER.EMP_ID;
+        }
+        into {
             key CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
@@ -368,7 +391,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PROJECT_CODE,
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 CARD_NO,
-                CCC_ADV_AMT
+                CCC_ADV_AMT,
+                MED_BAL.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -1413,4 +1437,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     end as Decimal(16, 2)
                 ) as BALANCE
         };
+    
+        /**
+        * Stage 4 – Current-year balance, one row per employee.
+        */
+        @readonly
+        entity ZMED_ENTITLEMENT_BAL_CY as
+            select from ZMED_ENTITLEMENT_BAL as b
+            {
+                key b.EEID,
+                    b.ENTITLEMENT_YEAR,
+                    b.ENTITLED_AMOUNT,
+                    b.CLAIMED_AMOUNT,
+                    b.PENDING_REQUEST_AMOUNT,
+                    b.BALANCE
+            }
+            where b.ENTITLEMENT_YEAR = year(add_seconds(current_timestamp, 28800));
 }
