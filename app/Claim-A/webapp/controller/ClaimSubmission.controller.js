@@ -1308,7 +1308,6 @@ sap.ui.define([
 		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oInputClaimModel = this.getView().getModel("claimitem_input");
 			var tempItems = {
 				claim_items: oInputModel.getProperty("/claim_items"),
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
@@ -1337,8 +1336,8 @@ sap.ui.define([
 				);
 			});
 		
-			///Check to recalculate Mata Wang if it is required
-			await this._recalculateMatawangIfNeeded(oInputModel, oInputClaimModel, this._updateClaimItems.bind(this));
+			//Check to recalculate Mata Wang if it is required
+			await this._recalculateMatawangIfNeeded(oInputModel, this._updateClaimItems.bind(this));
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
 			if (!updateSuccess) {
@@ -1777,8 +1776,11 @@ sap.ui.define([
 						RejectionReason : ""
 					}
 					
-					console.log("Payload Send Back: ", oPayload);
-					await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+					// Backend error already shown by onProcessApproval - stay on the claim
+					if (!oResult || oResult.Success === false) {
+						return;
+					}
 
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
@@ -1841,8 +1843,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload); 
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
@@ -1896,8 +1901,11 @@ sap.ui.define([
 						Comments		: sComment,
 						RejectionReason : sReason
 					}
-				console.log("Payload Send Back: ", oPayload);
-				await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload)
+				const oResult = await workflowApproval.onProcessApproval(this._oWorkflowModel, oPayload);
+				// Backend error already shown by onProcessApproval - stay on the claim
+				if (!oResult || oResult.Success === false) {
+					return;
+				}
 
 				//MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
@@ -3059,9 +3067,11 @@ sap.ui.define([
 						}
 					});
 				}
-				///Check to recalculate Mata Wang if it is required
-				await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, oInputModel, this._saveClaimItem.bind(this));
- 				
+				//Matawang is already calculated when its own item is opened/saved; only recalculate when another item is changed
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") !== this._oConstant.ClaimTypeItem.MATAWANG) {
+					await this._recalculateMatawangIfNeeded(oClaimSubmissionModel, this._saveClaimItem.bind(this));
+				}
+
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
@@ -4412,6 +4422,9 @@ sap.ui.define([
 						return;
 					}
 
+					// claim item amount check
+					CustomValidator.checkAllItemsAmount();
+
 					// Total Claim Amount Validation checking
 					var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 					var sCardNo = oInputModel.getProperty("/claim_header/card_no");
@@ -4432,6 +4445,7 @@ sap.ui.define([
 
 					// Duplication check 
 					await CustomDuplicationCheck.CheckAllItems(this);
+
 					// Cash Advance Repayment Validation checking
 					if (Number(oInputModel.getProperty("/claim_header/final_amount_to_receive")) < 0) {
 						MessageBox.error(Utility.getText(bTravelWithCard
@@ -4556,8 +4570,8 @@ sap.ui.define([
 						delItems.push(oCtx);
 					}
 				}
-			} catch (e) {
-				console.log(e.message);
+			} catch (oError) {
+				MessageBox.error(oError.message);
 				BusyIndicator.hide();
 				return false;
 			}
@@ -4683,9 +4697,7 @@ sap.ui.define([
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 						var oContext = oListBinding.create(oBody.getData());
-						await oContext.created().then(() => {
-							console.log("New claim item created");
-						});
+						await oContext.created();
 					}
 					else {
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
@@ -4712,8 +4724,6 @@ sap.ui.define([
 							}
 
 							await oModel.submitBatch("$auto");
-
-							console.log("Save claim item success");
 						}
 					}
 				} catch (e) {
@@ -4744,11 +4754,10 @@ sap.ui.define([
 					var aCtx = await oListBinding.requestContexts(0, 1);
 					var oCtx = aCtx[0];
 
-					await oCtx.delete().then(function () {
-						console.log("Claim item deleted");
-					});
-				} catch (e) {
-					console.error(e.message);
+					await oCtx.delete();
+
+				} catch (oError) {
+					MessageBox.error(oError.message);
 					BusyIndicator.hide();
 					return false;
 				}
@@ -5529,12 +5538,11 @@ sap.ui.define([
 		 * Handles recalculation check for 3% Matawang. 
 		 * Private function
 		 * @param {sap.ui.model.json.JSONModel} oSubmissionModel - Claim Submission model
-		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim Input model
 		 * @param {function} fnSaveClaimItem - Function to Create or Update item
+		 * @returns {Promise<void>} Resolves after the Matawang amount has been recalculated
 		 */
 		_recalculateMatawangIfNeeded: async function (
 			oSubmissionModel,
-			oInputModel,
 			fnSaveClaimItem
 		) {
 			const aClaimItems = oSubmissionModel.getProperty("/claim_items") || [];
@@ -5544,20 +5552,11 @@ sap.ui.define([
 					this._oConstant.ClaimTypeItem.MATAWANG
 			);
 			if (iMatawangIndex === -1) {
-				return false;
+				return;
 			}
-			const bIsSaveFlow = !!oInputModel?.getProperty("/claim_item/claim_sub_id");
-			const bIsEditingMatawang =
-				bIsSaveFlow &&
-				oInputModel.getProperty("/claim_item/claim_type_item_id") ===
-				this._oConstant.ClaimTypeItem.MATAWANG;
 
-			if (bIsEditingMatawang) {
-				return false;
-			}
 			await ClaimUtility.calculateMatawangAmount();
 			await ClaimUtility.saveUpdatedMatawang(fnSaveClaimItem);
-			return true;
 		},
 		/**
 		 * Handles checkbox toggle for RoundTrip function. Multiply by 2 if active.
