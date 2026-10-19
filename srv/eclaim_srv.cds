@@ -1845,7 +1845,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
             }
             where
                 RH.STATUS = 'STAT05';
-    
+
     entity ZEMP_POSTING_REPORT           as
             select from ECLAIM.ZCLAIM_ITEM as CI
             inner join ECLAIM.ZCLAIM_HEADER as CH
@@ -1862,7 +1862,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     CI.GL_ACCOUNT,
                     CI.MATERIAL_CODE     as MATERIAL_GROUP,
                     CI.INTERNAL_ORDER,
-                    CI.CHARGED_TO_CCC
+                    coalesce(
+                        CI.CHARGED_TO_CCC, false
+                    )                    as CHARGED_TO_CCC : Boolean
             }
             where
                 CH.STATUS_ID = 'STAT05'
@@ -1883,11 +1885,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     RI.MATERIAL_CODE     as MATERIAL_GROUP,
                     RI.INTERNAL_ORDER,
                     cast(
-                        false as Boolean
+                        null as Boolean
                     )                    as CHARGED_TO_CCC : Boolean
             }
             where
                     RH.STATUS     = 'STAT05'
                 and RI.SEND_TO_SF = true;
+ 
+    entity ZEMP_YEARLY_MEDICAL_ENTITLEMENT  as
+        select 
  
 };
