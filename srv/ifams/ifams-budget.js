@@ -1,4 +1,3 @@
-const { setForwardedAuthTokenIfNeeded } = require("@sap-cloud-sdk/connectivity/dist/scp-cf");
 const { Constant } = require("../utils/constant");
 
 let _ifamsConnection;
@@ -101,7 +100,7 @@ async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction, oEm
 
                 oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
             }
-            return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}` }
+            return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${sRecordID}` }
         
         } 
 
