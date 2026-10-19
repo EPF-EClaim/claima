@@ -3,7 +3,6 @@ sap.ui.define([
     "claima/model/models",
     "claima/utils/Utility",
     "claima/utils/PARequestSharedFunction",
-    "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/m/Dialog",
     "sap/m/Button",
@@ -19,7 +18,6 @@ sap.ui.define([
     models,
     Utility,
     PARequestSharedFunction,
-    MessageToast,
     MessageBox,
     Dialog, 
     Button, 
@@ -44,10 +42,6 @@ sap.ui.define([
     const LOGOUT_URL            = "/claima/do/logout";
     const REAUTH_FLAG           = "claima_reauth";
     const ACTIVITY_EVENTS       = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-    const EXTERNAL_LIBS         = [
-        "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js"
-    ];
     const ROUTE_TO_NAV_KEY = {
         "Dashboard": "dashboard",
         "RequestFormStatus": "myrequest",
@@ -276,9 +270,7 @@ sap.ui.define([
 
         /**
          * Loads the Excel libraries (jszip, xlsx) once. Started at app start in init().
-         * Await this before using XLSX: await this.getOwnerComponent().loadExternalLibraries();
          * @public
-         * @returns {Promise<void>} Resolves when loaded, rejects if loading fails
          */
         loadExternalLibraries: function () {
             const aLibs = [
@@ -289,22 +281,6 @@ sap.ui.define([
                 const script = document.createElement('script');
                 script.setAttribute('src', src);
                 document.head.appendChild(script);
-            });
-        },
-
-        /**
-         * Adds a script tag and resolves when it has loaded.
-         * @private
-         * @param {string} sSrc - Script URL
-         * @returns {Promise<void>}
-         */
-        _loadScript: function (sSrc) {
-            return new Promise((resolve, reject) => {
-                const oScript = document.createElement("script");
-                oScript.src = sSrc;
-                oScript.onload = () => resolve();
-                oScript.onerror = () => reject(new Error("Unable to load " + sSrc));
-                document.head.appendChild(oScript);
             });
         },
 
@@ -327,7 +303,7 @@ sap.ui.define([
                 document.addEventListener(sEvent, this._fnResetActivity, { capture: true, passive: true });
             });
 
-            sap.ui.getCore().getEventBus().subscribe("sap.ui", "interaction", this._fnResetActivity, this);
+            this.getEventBus().subscribe("sap.ui", "interaction", this._fnResetActivity, this);
         },
 
         /**
@@ -340,7 +316,7 @@ sap.ui.define([
             ACTIVITY_EVENTS.forEach((sEvent) => {
                 document.removeEventListener(sEvent, this._fnResetActivity, { capture: true });
             });
-            sap.ui.getCore().getEventBus().unsubscribe("sap.ui", "interaction", this._fnResetActivity, this);
+            this.getEventBus().unsubscribe("sap.ui", "interaction", this._fnResetActivity, this);
         },
 
         /**
