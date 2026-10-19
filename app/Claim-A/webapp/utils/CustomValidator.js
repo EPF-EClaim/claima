@@ -180,33 +180,6 @@ sap.ui.define([
                             }
                         }
                     }
-                    ///Validate PEA total Amount exceeds 25k. 
-                    if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.POST_EDUCATION_ASSISTANCE) {
-
-                        try {
-                            const oContext = this._oView.getModel().bindContext("/validatePEATotal(...)");
-                            const nHeaderTotal = Number(oClaimSubmissionModel.getProperty("/claim_header/total_claim_amount")) || 0;
-                            const nCurrentAmount = Number(oInputModel.getProperty("/claim_item/amount")) || 0;
-
-                            let nOldAmount = 0;
-                            if (!oInputModel.getProperty("/is_new")) {
-                                const sSubId = oInputModel.getProperty("/claim_item/claim_sub_id");
-                                const oExistingItem = (oClaimSubmissionModel.getProperty("/claim_items") || []).find(it => it.claim_sub_id === sSubId);
-                                nOldAmount = Number(oExistingItem?.amount) || 0;
-                            }
-                            oContext.setParameter("headerTotal", nHeaderTotal);
-                            oContext.setParameter("currentAmount", nCurrentAmount);
-                            oContext.setParameter("isNew", oInputModel.getProperty("/is_new"));
-                            oContext.setParameter("oldAmount", nOldAmount);
-                            await oContext.execute();
-                        } catch (oError) {
-                            const sMessage =
-                                oError?.message ||
-                                Utility.getText("msg_claimdetails_pedu_total_exceed_limit");
-                            MessageBox.error(sMessage);
-                            bCanProceed = false;
-                        }
-                    }
                     // validate item date + time range (end must not be earlier than start)
                     var oItem = oInputModel.getProperty("/claim_item");
                     if ((oItem.start_date && oItem.start_time && oItem.end_date && oItem.end_time &&

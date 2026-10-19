@@ -516,14 +516,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
                                             sTravelAloneFamily: String,
                                             sTravelFamilyNowLater: String)                               returns PemPindahAmount;
 
-    type PEAValidationResult {
-        canProceed : Boolean;
-    }
-
-    function validatePEATotal(headerTotal: Decimal(15, 2),
-                              currentAmount: Decimal(15, 2),
-                              isNew: Boolean,
-                              oldAmount: Decimal(15, 2))                                                 returns PEAValidationResult;
 
     type JenazahEligibleAmount {
         iAmount : Decimal(16, 2);
