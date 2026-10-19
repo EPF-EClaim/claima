@@ -156,14 +156,14 @@ sap.ui.define([
 
 				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
-				if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
+				// if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
 
-					await Utility.getRemainingMedicalEntitlement(
-						this._oReqModel,
-						this._oReqModel.getProperty("/req_header/empid"),
-						"/req_header/medical_remaining"
-					);
-				}
+				// 	await Utility.getRemainingMedicalEntitlement(
+				// 		this._oReqModel,
+				// 		this._oReqModel.getProperty("/req_header/empid"),
+				// 		"/req_header/medical_remaining"
+				// 	);
+				// }
 
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showHeaderFragment();
