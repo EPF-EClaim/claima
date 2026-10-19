@@ -1340,6 +1340,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
      * LINE_ID = unique key per line (C = claim item, R = request item, E/EC/ER = employee anchors)
      */
     @readonly
+    @cds.autoexpose: false
     entity ZMED_USAGE_LINES as
         select from ECLAIM.ZCLAIM_ITEM as i
         inner join ECLAIM.ZCLAIM_HEADER as h
@@ -1423,6 +1424,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
      * Stage 2 – Usage per employee per year.
      */
     @readonly
+    @cds.autoexpose: false
     entity ZMED_USAGE_SUM as
         select from ZMED_USAGE_LINES as l
         {
