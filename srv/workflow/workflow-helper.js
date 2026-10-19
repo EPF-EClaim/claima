@@ -2,7 +2,7 @@ const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
-const { getBudgetRecord, processEarmarkedFunds } = require('../ifams/ifams-budget');
+const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -244,16 +244,22 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
 async function performBudgetChecking(oTx, aBudgetContext) {
-    const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
-
-    const toNum = (v) => Number(v) || 0;
-    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
     try {
         let error = false;
         let errorResults = [];
         let successResults = [];
         let condition;
+
+        // determine upper cost center, incase for no budget allocation for each item
+        let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
+        var oEmployeeRollupCC;
+
+        if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD && 
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD && 
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+                oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+            }
 
         for (const entry of aBudgetContext) {
             if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
@@ -271,11 +277,8 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                 };   
             }
 
-            let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
-                // ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
-                // : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
-                ? await processEarmarkedFunds(condition)
-                : await getBudgetRecord(condition);
+            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+            let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
 
             if (!budgetRecord) {
                 error = true;
@@ -287,9 +290,7 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                 continue;
             }
 
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
-                (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);//(budgetRecord.BudgetBalance);
+                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
                 if (!bSufficient) {
                     error = true;
                     errorResults.push({
@@ -301,9 +302,9 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                     });
                     continue;
                 }
+            } else {
+                let budgetRecord = await processEarmarkedFunds(aBudgetContext, null, null, oEmployeeRollupCC);
             }
-
-            if (error) continue;
 
             if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
                 successResults.push({
@@ -313,40 +314,6 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                 });
                 continue;
             }
-
-            let newCommitment = toNum(budgetRecord.COMMITMENT);
-            let newActual = toNum(budgetRecord.ACTUAL);
-            const amount = toNum(entry.AMOUNT);
-            if (entry.ACTION === Constant.BudgetProcessingAction.SUBMIT) {
-                newCommitment = round2(newCommitment - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.APPROVE) {
-                newCommitment = round2(newCommitment + amount);
-                newActual = round2(newActual - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.REJECT) {
-                newCommitment = round2(newCommitment + amount);
-            }
-
-            const newConsumed = round2(newCommitment + newActual);
-            const newBudgetBalance = round2(toNum(budgetRecord.CURRENT_BUDGET) + newConsumed);
-
-            await oTx.run(
-                UPDATE(ZBUDGET)
-                    .set({
-                        CONSUMED: newConsumed.toFixed(2),
-                        COMMITMENT: newCommitment.toFixed(2),
-                        BUDGET_BALANCE: newBudgetBalance.toFixed(2),
-                        ACTUAL: newActual.toFixed(2)
-                    })
-                    .where(condition)
-            );
-
-            successResults.push({
-                ...condition,
-                STATUS: Constant.BudgetCheckStatus.UPDATED,
-                CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                NEW_CONSUMED: newConsumed,
-                NEW_BUDGETBALANCE: newBudgetBalance
-            });
         }
 
         if (error) {
@@ -359,6 +326,87 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         return err;
     }
 }
+// Comment off since not ready yet - Claim Submission
+// async function performBudgetChecking(oTx, aBudgetContext, sId) {
+//     try {
+
+//         let condition;
+//         let oBudgetCheckResult;
+
+//         // determine upper cost center, incase for no budget allocation for each item
+//         let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
+//         var oEmployeeRollupCC;
+
+//         const { INDICATOR: sIndicator, ACTION: sAction } = aBudgetContext[0];
+
+//         if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
+//             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
+//             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+//             oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+//         }
+
+//         if (sIndicator === Constant.BudgetSubmissionType.REQUEST) {
+//             for (const entry of aBudgetContext) {
+//                 if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
+//                     condition = {
+//                         YEAR: entry.YEAR,
+//                         INTERNAL_ORDER: entry.INTERNAL_ORDER,
+//                     };
+//                 } else {
+//                     condition = {
+//                         YEAR: entry.YEAR,
+//                         INTERNAL_ORDER: entry.INTERNAL_ORDER,
+//                         FUND_CENTER: entry.FUND_CENTER,
+//                         MATERIAL_GROUP: entry.MATERIAL_GROUP,
+//                         COMMITMENT_ITEM: entry.COMMITMENT_ITEM
+//                     };
+//                 }
+//                 oBudgetCheckResult = await getBudgetRecord(condition, oEmployeeRollupCC);
+//             }
+//         }
+
+//         if (sIndicator === Constant.BudgetSubmissionType.CLAIM) {
+//             const aItems = aBudgetContext.map((oBudgetContext) => ({
+//                 ...Constant.EarmarkedFundPosting_Item,
+//                 EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+//                 FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+//                 CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+//                 ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
+//                     oBudgetContext.INTERNAL_ORDER && {
+//                     InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
+//                 })
+//             }));
+
+//             oBudgetCheckResult = await processEarmarkedFunds(aItems, sId, sAction);
+
+//             if (oBudgetCheckResult?.Error) {
+//                 return {
+//                     Error: true,
+//                     Message: oBudgetCheckResult?.Message
+//                 }
+//             } else {
+//                 const oEarmarkedFundsDocument = oBudgetCheckResult?.oEarmarkedFundsDocument;
+//                 if (oEarmarkedFundsDocument?.EarmarkedFundsDocument) {
+//                     await updateEarmarkedFundDetails(
+//                         oTx,
+//                         sId,
+//                         oEarmarkedFundsDocument,
+//                         oBudgetCheckResult?.Message
+//                     );
+//                 }
+//                 return {
+//                     Error: false,
+//                     Message: oBudgetCheckResult?.Message
+//                 }
+//             }
+//         }
+//     } catch (err) {
+//         return {
+//             Error: true,
+//             Message: err.message
+//         }
+//     }
+// }
 /**
  * Builds a readable error message from budget checking results, distinguishing
  * budget records that were not found from budgets with insufficient balance.
@@ -453,17 +501,17 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
  * @param {string} [sStatusCode='200']
  * @returns {Promise<void>}
  */
-async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200') {
+async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200', sProgram = 'WORKFLOW') {
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: sProgram,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
     }));
 }
-module.exports = { 
+module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
     retrieveEmployeeDetails,

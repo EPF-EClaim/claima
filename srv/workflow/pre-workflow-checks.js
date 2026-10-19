@@ -56,7 +56,35 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         }
     }
 
-    // 2. Budget Locking (return full list of claim type item that failed)
+    // 2. Determine workflow
+    let oWorkflowContext;
+    try {
+        oWorkflowContext = await determineWorkflow(oTx, sId);
+
+        if (!oWorkflowContext) {
+            await oTx.rollback();
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No workflow rule matched for ${sId}`, false);
+        }
+    } catch (oError) {
+        await oTx.rollback();
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Workflow Determination: ${oError.message}`, false);
+    }
+
+    // 3. Determine approvers and substitutes
+    let aApproversContext;
+    try {
+        aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
+
+        if (!aApproversContext?.length) {
+            await oTx.rollback();
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No approvers determined for ${sId}`, false);
+        }
+    } catch (oError) {
+        await oTx.rollback();
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Approver Determination: ${oError.message}`, false);
+    }
+
+    // 4. Budget Locking (return full list of claim type item that failed)
     let aBudgetContext, aBudgetCheckReturn;
     try {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
@@ -71,34 +99,6 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     } catch (oError) {
         await oTx.rollback();
         return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during submission budget checking: ${oError.message}`, false);
-    }
-
-    // 3. Determine workflow
-    let oWorkflowContext;
-    try {
-        oWorkflowContext = await determineWorkflow(oTx, sId);
-
-        if (!oWorkflowContext) {
-            await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No workflow rule matched for ${sId}`, false);
-        }
-    } catch (oError) {
-        await oTx.rollback();
-        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Workflow Determination: ${oError.message}`, false);
-    }
-
-    // 4. Determine approvers and substitutes
-    let aApproversContext;
-    try {
-        aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
-
-        if (!aApproversContext?.length) {
-            await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No approvers determined for ${sId}`, false);
-        }
-    } catch (oError) {
-        await oTx.rollback();
-        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Approver Determination: ${oError.message}`, false);
     }
 
     // 5. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table

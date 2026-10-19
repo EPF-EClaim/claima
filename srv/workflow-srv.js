@@ -63,26 +63,12 @@ module.exports = (srv) => {
         }
         const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
-        // 6.1 Perform budget actualization for auto approve ===
+        // 6.1 Perform budget actualization for auto approve === this function is removed since no actualization made in eClaim app
         // 6.2 update header status
         // 6.3 update entitlement amount 
         // 6.4 update ccc advance value
-        let aBudgetContext, aBudgetCheckReturn;
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             var bAutoApprove = true;
-            try {
-                aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, Constant.ApproverActions.APPROVE);
-                aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-            } catch (oError) {
-                await oTx.rollback();
-                throw new Error(`Error encountered during Budget Actualization\n${oError.message}`);
-            }
-
-            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-            if (sBudgetError) {
-                await oTx.rollback();
-                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, `Error encountered during Budget Checking\n${sBudgetError}`, false);
-            }
 
             // If successful, update Header table with approved status and timestamp
             try {

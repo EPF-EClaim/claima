@@ -612,7 +612,15 @@ const Constant = {
         GET: 'GET',
         POST: 'POST',
         PATCH: 'PATCH'
-    }
+    },
+    BudgetLog: {
+        PROGRAM: {
+            RELEASE: "RELEASE_BUDGET",
+            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK"
+        },
+        MESSAGE_TYPE: "B"
+    },
+
 
 };
 
