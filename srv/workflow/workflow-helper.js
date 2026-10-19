@@ -213,7 +213,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC],
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
-            ACTION          : sAction //SUBMIT, REJECT, APPROVE;
+            ACTION          : sAction, //SUBMIT, REJECT, APPROVE;
+            EMP_ID          : oHeaderContext.EMP_ID // to be used for cost center roll up
         })
     }
     return aBudgetContexts
