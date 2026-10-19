@@ -587,9 +587,9 @@ const Constant = {
     IFAMS_API_PATH: {
         EARMARKEDFUNDS: '/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocument',
         BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'" +
-                   "and FundCenter eq '{FUND_CENTER}'" +
+                //    "and FundCenter eq '{FUND_CENTER}'" +
                    "and CommitmentItem eq '{COMMITMENT_ITEM}'" +
-                   "and MaterialGroup eq '{MATERIAL_GROUP}'" +
+                //    "and MaterialGroup eq '{MATERIAL_GROUP}'" +
                    "and Io eq '{INTERNAL_ORDER}'",
         RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
                    "EarmarkedFundsDocument='{DOC_NO}'," +
