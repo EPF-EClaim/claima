@@ -1148,22 +1148,31 @@ sap.ui.define([
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
-				var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachment/fileName"),
-					oInputModel.getProperty("/attachment/fileContent"),
-					this._oSessionModel.getProperty("/userId")
-				);
-				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
-					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
-				}
+				try {
+						const sAttachmentNumber = await Attachment.postAttachment(
+							oInputModel.getProperty("/attachment/fileName"),
+							oInputModel.getProperty("/attachment/fileContent"),
+							this._oSessionModel.getProperty("/userId")
+						);
+
+						if (sAttachmentNumber) {
+							oInputModel.setProperty("/claim_header/attachment_email_approver", sAttachmentNumber);
+							oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+							BusyIndicator.hide();
+						}else{
+							MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
+							// Don't proceed claim item if attachment upload fails
+							BusyIndicator.hide();
+							return;
+						}
+
+					} catch (oError) {
+						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
+						// Don't proceed claim item if upload throws an exception
+						return;
+					} finally {
+						BusyIndicator.hide();
+					}
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
