@@ -4920,7 +4920,7 @@
                                             "press": "claima.ext.controller.ListReportHeader.onClickBack",
                                             "visible": true,
                                             "enabled": true,
-                                            "text": "Back"
+                                            "text": "{i18n>back}"
                                         }
                                     }
                                 }
@@ -4966,7 +4966,7 @@
                                             "press": "claima.ext.controller.ListReportHeader.onClickBack",
                                             "visible": true,
                                             "enabled": true,
-                                            "text": "Back"
+                                            "text": "{i18n>back}"
                                         }
                                     }
                                 }

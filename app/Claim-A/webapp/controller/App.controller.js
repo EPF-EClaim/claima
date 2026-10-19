@@ -188,8 +188,7 @@ sap.ui.define([
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("ZEMP_PAYMENT_REPORT");
 					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
 					}
 					break;
 				case "post_report":
@@ -198,8 +197,7 @@ sap.ui.define([
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("ZEMP_POSTING_REPORT");
 					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
 					}
 					break;
 				case "cashadvance_summary":
@@ -1150,31 +1148,22 @@ sap.ui.define([
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
-				try {
-						const sAttachmentNumber = await Attachment.postAttachment(
-							oInputModel.getProperty("/attachment/fileName"),
-							oInputModel.getProperty("/attachment/fileContent"),
-							this._oSessionModel.getProperty("/userId")
-						);
-
-						if (sAttachmentNumber) {
-							oInputModel.setProperty("/claim_header/attachment_email_approver", sAttachmentNumber);
-							oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
-							BusyIndicator.hide();
-						}else{
-							MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-							// Don't proceed claim item if attachment upload fails
-							BusyIndicator.hide();
-							return;
-						}
-
-					} catch (oError) {
-						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-						// Don't proceed claim item if upload throws an exception
-						return;
-					} finally {
-						BusyIndicator.hide();
-					}
+				var attachmentNumber = await Attachment.postAttachment(
+					oInputModel.getProperty("/attachment/fileName"),
+					oInputModel.getProperty("/attachment/fileContent"),
+					this._oSessionModel.getProperty("/userId")
+				);
+				if (attachmentNumber) {
+					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					BusyIndicator.hide();
+				}
+				else {
+					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
+					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
+					return;
+				}
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());

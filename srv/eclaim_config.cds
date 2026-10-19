@@ -8261,7 +8261,7 @@ annotate service.ZEMP_PAYMENT_REPORT with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : NAME,
+                Value            : EMP_NAME,
                 ![@UI.Importance]: #High
             },
             {
@@ -8279,7 +8279,7 @@ annotate service.ZEMP_PAYMENT_REPORT with @(
 ) {
     CLAIM_ID                @Common.Label: 'Claim ID';
     EMP_ID                  @Common.Label: 'Employee Number';
-    NAME                    @Common.Label: 'Employee Name';
+    EMP_NAME                @Common.Label: 'Employee Name';
     FINAL_AMOUNT_TO_RECEIVE @Common.Label: 'Final Amount To Receive';
     CASH_ADVANCE            @Common.Label: 'Cash Advance Amount';
 };
@@ -8328,7 +8328,7 @@ annotate service.ZEMP_POSTING_REPORT with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : NAME,
+                Value            : EMP_NAME,
                 ![@UI.Importance]: #High
             },
             {
@@ -8367,7 +8367,7 @@ annotate service.ZEMP_POSTING_REPORT with @(
     CLAIM_ID       @Common.Label: 'Claim ID';
     CLAIM_SUB_ID   @Common.Label: 'Claim Sub ID';
     EMP_ID         @Common.Label: 'Employee Number';
-    NAME           @Common.Label: 'Employee Name';
+    EMP_NAME       @Common.Label: 'Employee Name';
     AMOUNT         @Common.Label: 'Amount';
     COST_CENTER    @Common.Label: 'Cost Center';
     GL_ACCOUNT     @Common.Label: 'GL Account';
