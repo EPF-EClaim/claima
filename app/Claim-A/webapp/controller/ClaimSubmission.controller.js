@@ -494,15 +494,15 @@ sap.ui.define([
 
 			oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 
-			if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
-				oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL_ADVANCE
-			) {
-				await Utility.getRemainingMedicalEntitlement(
-					oClaimSubmissionModel,
-					oHeader.emp_id,
-					"/claim_header/medical_remaining"
-				);
-			}
+			// if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
+			// 	oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL_ADVANCE
+			// ) {
+			// 	await Utility.getRemainingMedicalEntitlement(
+			// 		oClaimSubmissionModel,
+			// 		oHeader.emp_id,
+			// 		"/claim_header/medical_remaining"
+			// 	);
+			// }
 
 			await Utility.applyClaimHeaderDataDescr(oClaimSubmissionModel);
 
