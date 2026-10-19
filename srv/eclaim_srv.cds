@@ -1816,16 +1816,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZEMP_PAYMENT_REPORT           as
             select from ECLAIM.ZCLAIM_HEADER as CH {
-                key cast(
-                        CH.CLAIM_ID as String
-                    )                    as CLAIM_ID                : String,
+                key CH.CLAIM_ID,
                     CH.EMP_ID,
-                    CH.ZEMP_MASTER.NAME,
-                    cast(
-                        CH.FINAL_AMOUNT_TO_RECEIVE as Decimal(16, 2)
+                    CH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        CH.FINAL_AMOUNT_TO_RECEIVE, 0
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
-                    cast(
-                        CH.CASH_ADVANCE_AMOUNT as Decimal(16, 2)
+                    coalesce(
+                        CH.CASH_ADVANCE_AMOUNT, 0
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
@@ -1835,49 +1833,35 @@ service eclaim_srv @(requires: 'authenticated-user') {
             inner join ZREQUEST_SF_SENT_SUM as SF
                 on SF.REQUEST_ID = RH.REQUEST_ID
             {
-                key cast(
-                        RH.REQUEST_ID as String
-                    )                    as CLAIM_ID                : String,
+                key RH.REQUEST_ID        as CLAIM_ID,
                     RH.EMP_ID,
-                    RH.ZEMP_MASTER.NAME,
-                    cast(
-                        RH.CASH_ADVANCE as Decimal(16, 2)
+                    RH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        RH.CASH_ADVANCE, 0
                     )                    as FINAL_AMOUNT_TO_RECEIVE : Decimal(16, 2),
                     cast(
-                        null as Decimal(16, 2)
+                        0 as Decimal(16, 2)
                     )                    as CASH_ADVANCE            : Decimal(16, 2)
             }
             where
                 RH.STATUS = 'STAT05';
-
+    
     entity ZEMP_POSTING_REPORT           as
             select from ECLAIM.ZCLAIM_ITEM as CI
             inner join ECLAIM.ZCLAIM_HEADER as CH
                 on CH.CLAIM_ID = CI.CLAIM_ID
             {
-                key cast(
-                        CI.CLAIM_ID as String
-                    )                    as CLAIM_ID       : String,
-                key cast(
-                        CI.CLAIM_SUB_ID as String
-                    )                    as CLAIM_SUB_ID   : String,
+                key CI.CLAIM_ID,
+                key CI.CLAIM_SUB_ID,
                     CH.EMP_ID,
-                    CH.ZEMP_MASTER.NAME,
-                    cast(
-                        CI.AMOUNT as Decimal(16, 2)
+                    CH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        CI.AMOUNT, 0
                     )                    as AMOUNT         : Decimal(16, 2),
-                    cast(
-                        CI.COST_CENTER as String
-                    )                    as COST_CENTER    : String,
-                    cast(
-                        CI.GL_ACCOUNT as String(6)
-                    )                    as GL_ACCOUNT     : String(6),
-                    cast(
-                        CI.MATERIAL_CODE as String
-                    )                    as MATERIAL_GROUP : String,
-                    cast(
-                        CI.INTERNAL_ORDER as String
-                    )                    as INTERNAL_ORDER : String,
+                    CI.COST_CENTER,
+                    CI.GL_ACCOUNT,
+                    CI.MATERIAL_CODE     as MATERIAL_GROUP,
+                    CI.INTERNAL_ORDER,
                     CI.CHARGED_TO_CCC
             }
             where
@@ -1887,31 +1871,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
             inner join ECLAIM.ZREQUEST_HEADER as RH
                 on RH.REQUEST_ID = RI.REQUEST_ID
             {
-                key cast(
-                        RI.REQUEST_ID as String
-                    )                    as CLAIM_ID       : String,
-                key cast(
-                        RI.REQUEST_SUB_ID as String
-                    )                    as CLAIM_SUB_ID   : String,
+                key RI.REQUEST_ID        as CLAIM_ID,
+                key RI.REQUEST_SUB_ID    as CLAIM_SUB_ID,
                     RH.EMP_ID,
-                    RH.ZEMP_MASTER.NAME,
-                    cast(
-                        RI.EST_AMOUNT as Decimal(16, 2)
+                    RH.ZEMP_MASTER.NAME  as EMP_NAME,
+                    coalesce(
+                        RI.EST_AMOUNT, 0
                     )                    as AMOUNT         : Decimal(16, 2),
+                    RI.COST_CENTER,
+                    RI.GL_ACCOUNT,
+                    RI.MATERIAL_CODE     as MATERIAL_GROUP,
+                    RI.INTERNAL_ORDER,
                     cast(
-                        RI.COST_CENTER as String
-                    )                    as COST_CENTER    : String,
-                    cast(
-                        RI.GL_ACCOUNT as String(6)
-                    )                    as GL_ACCOUNT     : String(6),
-                    cast(
-                        RI.MATERIAL_CODE as String
-                    )                    as MATERIAL_GROUP : String,
-                    cast(
-                        RI.INTERNAL_ORDER as String
-                    )                    as INTERNAL_ORDER : String,
-                    cast(
-                        null as Boolean
+                        false as Boolean
                     )                    as CHARGED_TO_CCC : Boolean
             }
             where
