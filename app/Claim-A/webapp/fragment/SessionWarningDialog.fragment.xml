@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="sessionWarningDialog"
+        type="Message"
+        state="Warning"
+        title="{i18n>session_warning_title}"
+        contentWidth="24rem"
+        afterClose=".onAfterClose">
+        <content>
+            <VBox>
+                <Text text="{timeout>/message}" />
+                <ProgressIndicator
+                    class="sapUiSmallMarginTop"
+                    showValue="false"
+                    height="0.5rem"
+                    width="100%"
+                    percentValue="{timeout>/percent}"
+                    state="{timeout>/state}" />
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="{i18n>session_btn_stay}"
+                type="Emphasized"
+                press=".onStay" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="{i18n>session_btn_logout}"
+                press=".onLogout" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

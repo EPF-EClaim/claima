@@ -1,29 +1,19 @@
 sap.ui.define([
     "sap/ui/base/Object",
     "sap/m/MessageBox",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Text",
-    "sap/m/ProgressIndicator",
-    "sap/m/VBox",
+    "sap/ui/core/Fragment",
+    "sap/ui/model/json/JSONModel",
     "sap/ui/core/library",
-    "sap/m/library",
     "claima/utils/Utility"
 ], (BaseObject,
     MessageBox,
-    Dialog,
-    Button,
-    Text,
-    ProgressIndicator,
-    VBox,
+    Fragment,
+    JSONModel,
     coreLibrary,
-    mLibrary,
     Utility) => {
     "use strict";
 
     const ValueState = coreLibrary.ValueState;
-    const ButtonType = mLibrary.ButtonType;
-    const DialogType = mLibrary.DialogType;
 
     // ---- Constants ----
     const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;  // Total idle time before logout
@@ -34,6 +24,8 @@ sap.ui.define([
     const REAUTH_FLAG           = "claima_reauth";
     const CURRENT_USER_URL      = "/user-api/currentUser";
     const ACTIVITY_EVENTS       = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const DIALOG_FRAGMENT       = "claima.fragment.SessionWarningDialog";
+    const DIALOG_FRAGMENT_ID    = "sessionWarning";
 
     /**
      * Handles the user session: idle tracking, the timeout warning dialog,
@@ -44,7 +36,7 @@ sap.ui.define([
     return BaseObject.extend("claima.utils.SessionManager", {
 
         /**
-         * @param {sap.ui.core.UIComponent} oComponent - The owner component (its event bus is used)
+         * @param {sap.ui.core.UIComponent} oComponent - Owner component (provides the i18n model)
          */
         constructor: function (oComponent) {
             BaseObject.apply(this);
@@ -56,7 +48,7 @@ sap.ui.define([
          * @public
          */
         start: function () {
-            this.setInactivityTimeout(INACTIVITY_TIMEOUT_MS);
+            this._iLastActivity = Date.now();
             this._initActivityTracking();
             this.startInactivityTimer();
         },
@@ -138,8 +130,6 @@ sap.ui.define([
                 // passive: true lets the browser scroll without waiting for this handler
                 document.addEventListener(sEvent, this._fnResetActivity, { capture: true, passive: true });
             });
-
-            this._oComponent.getEventBus().subscribe("sap.ui", "interaction", this._fnResetActivity, this);
         },
 
         /**
@@ -152,38 +142,6 @@ sap.ui.define([
             ACTIVITY_EVENTS.forEach((sEvent) => {
                 document.removeEventListener(sEvent, this._fnResetActivity, { capture: true });
             });
-            this._oComponent.getEventBus().unsubscribe("sap.ui", "interaction", this._fnResetActivity, this);
-        },
-
-        // ================================================================
-        // Inactivity timer
-        // ================================================================
-
-        /**
-         * Returns the time left (ms) before the user is logged out for inactivity.
-         * @public
-         * @returns {number} Remaining time in ms
-         */
-        getInactivityTimeout: function () {
-            return Math.max(0, this._iTimeoutMs - (Date.now() - this._iLastActivity));
-        },
-
-        /**
-         * Sets the total idle time before logout and restarts the count.
-         * @public
-         * @param {number} iTimeoutMs - Idle time in ms
-         */
-        setInactivityTimeout: function (iTimeoutMs) {
-            this._iTimeoutMs = iTimeoutMs;
-            this._iLastActivity = Date.now();
-        },
-
-        /**
-         * Restarts the idle count from now.
-         * @public
-         */
-        resetInactivityTimeout: function () {
-            this._iLastActivity = Date.now();
         },
 
         /**
@@ -211,7 +169,7 @@ sap.ui.define([
          * @private
          */
         _checkInactivity: function () {
-            const iRemaining = this.getInactivityTimeout();
+            const iRemaining = INACTIVITY_TIMEOUT_MS - (Date.now() - this._iLastActivity);
 
             if (iRemaining <= 0) {
                 this.logout();
@@ -229,73 +187,91 @@ sap.ui.define([
          * Logs out automatically when the countdown reaches zero.
          * @private
          */
-        _showSessionWarning: function () {
+        _showSessionWarning: async function () {
             this.stopInactivityTimer();
 
-            // Fixed end time, so the countdown stays correct even if the tab was in the background
+            // Idle limit already passed (e.g. tab was in the background): end the session now
+            if (this._iLastActivity + INACTIVITY_TIMEOUT_MS <= Date.now()) {
+                this._showSessionExpiredMessage();
+                return;
+            }
+
+            // Full 5-minute countdown from when the warning opens
             this._iWarningDeadline = Date.now() + WARNING_BEFORE_MS;
 
-            const oDialog = this._getSessionDialog();
-            this._updateSessionCountdown();
+            let oDialog;
+            try {
+                oDialog = await this._getSessionDialog();
+            } catch (oError) {
+                console.error("Session warning dialog failed to load:", oError);
+                this._showSessionExpiredMessage();
+                return;
+            }
+            if (this._bDestroyed) {
+                return;
+            }
 
-            // Update the countdown every second while the dialog is open
+            this._updateSessionCountdown();
+            this._clearCountdown();
             this._iCountdownHandle = setInterval(() => this._updateSessionCountdown(), COUNTDOWN_INTERVAL_MS);
             oDialog.open();
         },
 
         /**
-         * Creates the session warning dialog once and reuses it.
+         * Loads the warning dialog fragment once and reuses it.
          * @private
-         * @returns {sap.m.Dialog} The dialog
+         * @returns {Promise<sap.m.Dialog>} The dialog
          */
         _getSessionDialog: function () {
-            if (this._oSessionDialog) {
-                return this._oSessionDialog;
+            if (!this._pSessionDialog) {
+                this._oCountdownModel = new JSONModel({
+                    message: "",
+                    time: "",
+                    percent: 100,
+                    state: ValueState.Success
+                });
+
+                this._pSessionDialog = Fragment.load({
+                    id: DIALOG_FRAGMENT_ID,
+                    name: DIALOG_FRAGMENT,
+                    controller: {
+                        onStay: () => this._closeSessionDialog(true),
+                        onLogout: () => this._closeSessionDialog(false),
+                        onAfterClose: () => this._clearCountdown()
+                    }
+                }).then((oDialog) => {
+                    if (this._bDestroyed) {
+                        oDialog.destroy();
+                        return oDialog;
+                    }
+                    oDialog.setModel(this._oComponent.getModel("i18n"), "i18n");
+                    oDialog.setModel(this._oCountdownModel, "timeout");
+
+                    // Esc = "Stay Logged In"; we close the dialog ourselves, so cancel the default close
+                    oDialog.setEscapeHandler((oPromise) => {
+                        this._closeSessionDialog(true);
+                        oPromise.reject();
+                    });
+
+                    this._oSessionDialog = oDialog;
+                    return oDialog;
+                }).catch((oError) => {
+                    this._pSessionDialog = null; // Allow a retry next time
+                    throw oError;
+                });
             }
-
-            this._oSessionText = new Text();
-            this._oSessionProgress = new ProgressIndicator({
-                showValue: false,
-                height: "0.5rem",
-                width: "100%"
-            }).addStyleClass("sapUiSmallMarginTop");
-
-            this._oSessionDialog = new Dialog({
-                type: DialogType.Message,
-                state: ValueState.Warning,
-                title: Utility.getText("session_warning_title"),
-                contentWidth: "24rem",
-                content: new VBox({
-                    items: [this._oSessionText, this._oSessionProgress]
-                }),
-                beginButton: new Button({
-                    text: Utility.getText("session_btn_stay"),
-                    type: ButtonType.Emphasized,
-                    press: () => this._closeSessionDialog(true)
-                }),
-                endButton: new Button({
-                    text: Utility.getText("session_btn_logout"),
-                    press: () => this._closeSessionDialog(false)
-                }),
-                // Esc counts as "Stay Logged In"
-                escapeHandler: (oPromise) => {
-                    this._closeSessionDialog(true);
-                    oPromise.resolve();
-                }
-            });
-
-            return this._oSessionDialog;
+            return this._pSessionDialog;
         },
 
         /**
-         * Updates the countdown text and progress bar. Logs out when time is up.
+         * Updates the countdown text and progress bar. Ends the session when time is up.
          * @private
          */
         _updateSessionCountdown: function () {
             const iRemaining = Math.max(0, this._iWarningDeadline - Date.now());
 
             if (iRemaining === 0) {
-                this._closeSessionDialog(false);
+                this._closeSessionDialog(false, true);
                 return;
             }
 
@@ -303,12 +279,14 @@ sap.ui.define([
             const sTime = Math.floor(iSeconds / 60) + ":" + String(iSeconds % 60).padStart(2, "0");
             const fPercent = (iRemaining / WARNING_BEFORE_MS) * 100;
 
-            this._oSessionText.setText(Utility.getText("session_warning_msg", [sTime]));
-            this._oSessionProgress
-                .setPercentValue(fPercent)
-                .setState(fPercent > 50 ? ValueState.Success
-                        : fPercent > 20 ? ValueState.Warning
-                        : ValueState.Error);
+            this._oCountdownModel.setData({
+                message: Utility.getText("session_warning_msg", [sTime]),
+                time: sTime,
+                percent: fPercent,
+                state: fPercent > 50 ? ValueState.Success
+                     : fPercent > 20 ? ValueState.Warning
+                     : ValueState.Error
+            });
         },
 
         /**
@@ -321,11 +299,12 @@ sap.ui.define([
         },
 
         /**
-         * Closes the dialog and either resumes the session or logs out.
+         * Closes the dialog and resumes the session, ends it with a message, or logs out.
          * @private
-         * @param {boolean} bStay - true = stay logged in, false = log out
+         * @param {boolean} bStay - true = stay logged in
+         * @param {boolean} [bTimedOut] - true = countdown reached zero (show the expired message)
          */
-        _closeSessionDialog: function (bStay) {
+        _closeSessionDialog: function (bStay, bTimedOut) {
             this._clearCountdown();
 
             if (this._oSessionDialog && this._oSessionDialog.isOpen()) {
@@ -334,8 +313,10 @@ sap.ui.define([
 
             if (bStay) {
                 this._resumeSession();
-            } else {
+            } else if (bTimedOut) {
                 this._showSessionExpiredMessage();
+            } else {
+                this.logout();
             }
         },
 
@@ -354,7 +335,7 @@ sap.ui.define([
                     throw new Error("Session expired");
                 }
 
-                this.resetInactivityTimeout();
+                this._iLastActivity = Date.now();
                 this.startInactivityTimer();
             } catch (oError) {
                 this._showSessionExpiredMessage();
@@ -385,11 +366,16 @@ sap.ui.define([
         _releaseResources: function () {
             this.stopInactivityTimer();
             this._clearCountdown();
+            this._removeActivityTracking();
             if (this._oSessionDialog) {
                 this._oSessionDialog.destroy();
                 this._oSessionDialog = null;
             }
-            this._removeActivityTracking();
+            this._pSessionDialog = null;
+            if (this._oCountdownModel) {
+                this._oCountdownModel.destroy();
+                this._oCountdownModel = null;
+            }
         },
 
         /**
@@ -406,6 +392,7 @@ sap.ui.define([
          * @public
          */
         destroy: function () {
+            this._bDestroyed = true;
             this._releaseResources();
             this._oComponent = null;
             BaseObject.prototype.destroy.apply(this, arguments);

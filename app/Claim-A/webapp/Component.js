@@ -52,9 +52,9 @@ sap.ui.define([
          * @public
          */
         init() {
-            this.loadExternalLibraries();
 
             AppComponent.prototype.init.apply(this, arguments);
+            this.loadExternalLibraries();
 
             this._oReqModel = this.getModel("request");
 
@@ -150,7 +150,6 @@ sap.ui.define([
                     this.getRouter().navTo("Dashboard", {}, true);
                 }
             } catch (oError) {
-                console.error("User Session Initialization Failed:", oError);
                 this._fnRolesLoaded();
                 this._oSessionManager.handleSessionError(oError);
             } finally {
@@ -249,42 +248,6 @@ sap.ui.define([
                 this._oValidator = new Validator();
             }
             return this._oValidator;
-        },
-
-        /**
-         * Returns the session manager.
-         * @public
-         * @returns {claima.utils.SessionManager} The session manager
-         */
-        getSessionManager: function () {
-            return this._oSessionManager;
-        },
-
-        // ---- Kept so existing callers keep working; they pass through to SessionManager ----
-
-        /** @public @returns {number} Remaining idle time in ms */
-        getInactivityTimeout: function () {
-            return this._oSessionManager.getInactivityTimeout();
-        },
-
-        /** @public @param {number} iTimeoutMs - Idle time in ms */
-        setInactivityTimeout: function (iTimeoutMs) {
-            this._oSessionManager.setInactivityTimeout(iTimeoutMs);
-        },
-
-        /** @public */
-        resetInactivityTimeout: function () {
-            this._oSessionManager.resetInactivityTimeout();
-        },
-
-        /** @public */
-        startInactivityTimer: function () {
-            this._oSessionManager.startInactivityTimer();
-        },
-
-        /** @public */
-        stopInactivityTimer: function () {
-            this._oSessionManager.stopInactivityTimer();
         },
 
         /**
