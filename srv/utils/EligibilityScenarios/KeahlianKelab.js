@@ -60,7 +60,7 @@ module.exports = {
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 } else {
-                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                    if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
                     } else {
                         // total = current item amount + other S_K.KELAB items in the same claim/request
