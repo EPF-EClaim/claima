@@ -3437,21 +3437,6 @@ sap.ui.define([
 			oFileReader.readAsDataURL(oFile);
 		},
 
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
-		},
-
 		/**
 		 * Deletes the selected claim attachment after user confirmation
 		 * @public
