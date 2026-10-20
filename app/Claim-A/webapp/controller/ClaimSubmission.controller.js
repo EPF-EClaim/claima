@@ -162,7 +162,7 @@ sap.ui.define([
 			this.getView().setModel(models.createEditButtonModel(), "editButtonModel");
 		},
 
-		_beforeRouteMatched: async function (oEvent) {
+		_beforeRouteMatched: function (oEvent) {
 			// Any navigation ends the current claim route. A _onMatched run that is
 			// still waiting on the backend sees this and stops without touching the page.
 			this._oActiveClaimRoute = null;
@@ -210,10 +210,10 @@ sap.ui.define([
 		 * Route handler for ClaimSubmission/{claim_id}.
 		 *
 		 * The claim_id in the URL is the single source of truth for what this page
-		 * shows. Every match loads that claim from the backend into a new model owned
-		 * by this navigation, and attaches it to the view only if the user is still
-		 * on this route when the load finishes. Nothing left in memory by other
-		 * screens or earlier navigations is trusted.
+		 * shows. Every match puts a fresh claimsubmission_input model on the view and
+		 * loads that claim from the backend into it. Nothing left in memory by other
+		 * screens or earlier navigations is trusted, and a load that finishes after
+		 * the user has moved on only writes into its own (no longer displayed) model.
 		 */
 		_onMatched: async function (oEvent) {
 			const _oRouter = this.getOwnerComponent().getRouter();
@@ -240,11 +240,13 @@ sap.ui.define([
 				return;
 			}
 
-			// load the claim in the URL into a model that belongs to this navigation only
-			const oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input", true);
+			// The page always uses its own view-level model, so the models of the
+			// same name set by App (create dialog) or MyApproval can no longer leak in.
+			const oClaimSubmissionModel = this._getNewClaimSubmissionModel();
 			this._applyCreateContext(oClaimSubmissionModel, sClaimId);
+			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
 
-			const bLoaded = await this._loadClaimById(sClaimId, oClaimSubmissionModel);
+			const bLoaded = await this._loadClaimById(sClaimId);
 			if (!fnIsActive()) {
 				// user moved on while this was loading - discard the result
 				return;
@@ -255,10 +257,6 @@ sap.ui.define([
 				this._onNavBack();
 				return;
 			}
-
-			// The page always uses its own view-level model, so the models of the
-			// same name set by App (create dialog) or MyApproval can no longer leak in.
-			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
 
 			// set view-only
 			Common.init(this.getOwnerComponent(), this.getView());
@@ -430,17 +428,18 @@ sap.ui.define([
 		/**
 		 * Loads a claim (header + items) from the backend.
 		 *
-		 * Writes only into the model instance it is given (default: the model currently
-		 * on the view). A load that finishes after the page has moved to another claim
-		 * therefore writes into a model that is no longer displayed, and cannot change
-		 * what the user sees. It does not navigate; the caller decides what to do.
+		 * Writes into the claimsubmission_input model that is on the view when the load
+		 * starts. Every navigation puts a new model on the view, so a load that finishes
+		 * after the page has moved to another claim writes into a model that is no longer
+		 * displayed, and cannot change what the user sees. It does not navigate; the
+		 * caller decides what to do.
 		 *
-		 * @param {string} sClaimId
-		 * @param {sap.ui.model.json.JSONModel} [oTargetModel]
+		 * @param {string} sClaimId - claim ID to load
 		 * @returns {Promise<boolean>} true if loaded, false if not found or failed
 		 */
-		_loadClaimById: async function (sClaimId, oTargetModel) {
-			var oClaimSubmissionModel = oTargetModel || this.getView().getModel("claimsubmission_input");
+		_loadClaimById: async function (sClaimId) {
+			// resolve the model once, before any await, and use only this instance below
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
@@ -477,7 +476,6 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission!", sId);
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
@@ -545,10 +543,10 @@ sap.ui.define([
 		 * lookup, the view-only flag, and resets is_approver.
 		 *
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
 		 * @returns {Promise<object>} the mapped header
 		 */
-		_applyClaimHeader: async function (oHeaderRaw, oTargetModel) {
-			var oClaimSubmissionModel = oTargetModel || this.getView().getModel("claimsubmission_input");
+		_applyClaimHeader: async function (oHeaderRaw, oClaimSubmissionModel) {
 			const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
 			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 
@@ -580,9 +578,12 @@ sap.ui.define([
 		/**
 		 * If the header had no total_claim_amount, derives it from non-CCC-charged
 		 * items and writes it back onto the model.
+		 *
+		 * @param {object} oHeader - mapped claim header (from _applyClaimHeader)
+		 * @param {object[]} aItems - mapped claim items
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
 		 */
-		_applyItemTotalsFallback: function (oHeader, aItems, oTargetModel) {
-			var oClaimSubmissionModel = oTargetModel || this.getView().getModel("claimsubmission_input");
+		_applyItemTotalsFallback: function (oHeader, aItems, oClaimSubmissionModel) {
 			if (oHeader.total_claim_amount) {
 				return;
 			}
@@ -596,9 +597,11 @@ sap.ui.define([
 		/**
 		 * Loads the current user's ZEMP_MASTER record and its resolved
 		 * descriptions onto /emp_master, when found.
+		 *
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
+		 * @returns {Promise<void>}
 		 */
-		_loadEmployeeMasterData: async function (oTargetModel) {
-			var oClaimSubmissionModel = oTargetModel || this.getView().getModel("claimsubmission_input");
+		_loadEmployeeMasterData: async function (oClaimSubmissionModel) {
 			const emp_data = await Utility.getEmpIdDetail(
 				this._oModel,
 				Constants.EntitiesFields.EEID,
@@ -772,10 +775,12 @@ sap.ui.define([
 		},
 
 		/**
-		 * @param {string} modelName
-		 * @param {boolean} [bDetached] - true: return the new model without setting it on the view
+		 * Creates a new, empty claimsubmission_input model. It is not set on the
+		 * view; the caller (_onMatched) does that.
+		 *
+		 * @returns {sap.ui.model.json.JSONModel} the new claim submission model
 		 */
-		_getNewClaimSubmissionModel: function (modelName, bDetached) {
+		_getNewClaimSubmissionModel: function () {
 			// Employee Model
 			var oEmployeeModel = this._getNewEmployeeModel("emp_current");
 
@@ -916,12 +921,7 @@ sap.ui.define([
 					"fileContent": null
 				}
 			});
-			//// set input
-			if (bDetached) {
-				return oClaimSubmissionModel;
-			}
-			this.getView().setModel(oClaimSubmissionModel, modelName);
-			return this.getView().getModel(modelName);
+			return oClaimSubmissionModel;
 		},
 
 		_getNewClaimItemModel: function (modelName) {
@@ -4413,7 +4413,7 @@ sap.ui.define([
 				await this._showInitFormFragment();
 				await this._afterLoadFragments();
 				// Reload when item cancellation
-				if (!(await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"), oClaimSubmissionModel))) {
+				if (!(await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id")))) {
 					this._goToClaimList();
 					return;
 				}
@@ -4615,7 +4615,7 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 				// reload; a deleted claim is no longer found -> back to the claim list
-				if (!(await this._loadClaimById(String(oHeader.claim_id), oInputModel))) {
+				if (!(await this._loadClaimById(String(oHeader.claim_id)))) {
 					this._goToClaimList();
 				} else {
 					this._afterLoadFragments();
