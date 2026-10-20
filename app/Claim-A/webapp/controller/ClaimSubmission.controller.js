@@ -104,8 +104,10 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
+			this.getOwnerComponent().loadExternalLibraries();
+			const XLSX = window.XLSX;
 			// declare excel export utility
-			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
+			ExcelExport.init(this.getOwnerComponent(), this.getView(), XLSX);
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());
@@ -3433,21 +3435,6 @@ sap.ui.define([
 			});
 
 			oFileReader.readAsDataURL(oFile);
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		/**
