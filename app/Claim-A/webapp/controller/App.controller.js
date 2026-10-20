@@ -568,17 +568,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
 				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
 
-				// if (
-				// 	oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL ||
-				// 	oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL_ADVANCE
-				// ) {
-				// 	await Utility.getRemainingMedicalEntitlement(
-				// 		oInputModel,
-				// 		this._oSessionModel.getProperty("/userId"),
-				// 		"/claim_header/medical_remaining"
-				// 	);
-				// }
-
 				// if claim type is not project claim, reset project code value
 				if (!oClaimTypeData.PROJECT_CLAIM) {
 					oInputModel.setProperty("/claimtype/requestform/project_code", null);

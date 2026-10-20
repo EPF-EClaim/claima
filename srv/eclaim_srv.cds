@@ -1777,20 +1777,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 REQUEST_TYPE_ID             =  'RT0005'
             and RequestHeader.CLAIM_TYPE_ID =  'MEDICAL_ADVANCE'
             and CASH_ADVANCE                >  0
-            and CLAIM_ID                    is null;    
-
-    type MedicalEntitlementBalance {
-        entitlement : Decimal(16, 2);
-        approved    : Decimal(16, 2);
-        remaining   : Decimal(16, 2);
-    };
-
-    action   getRemainingMedicalEntitlement(empId: String)                                               returns MedicalEntitlementBalance;
-
-    action   updateMedicalUsedAmount(sRecordId: String,
-                                     sStatus: String)                                                    returns Response;
-
-    action   clearMedicalEntitlement()                                                                   returns String;
+            and CLAIM_ID                    is null;
 
     function getMedicalReminderEmail()                                                                   returns array of reminders;
 
