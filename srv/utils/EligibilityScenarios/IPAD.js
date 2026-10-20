@@ -141,7 +141,8 @@ module.exports = {
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 if (iIndex == -1) return;
-                if (!!!oRule) {
+                //reject if no rule, then accept if frequency not exceeded, else error
+                if (!oRule) {
                     throw new Error("You are not eligible for this claim.");
                 } else if (iExistingFreq < iAllowedFreq) {
                     oPayload.CheckFields[iIndex].result = true;
@@ -153,7 +154,7 @@ module.exports = {
                 // I-PAD - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
-                if (!!oRule) {
+                if (oRule) {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
