@@ -1050,7 +1050,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             CLAIM_TYPE_ID,
             EARMARKED_FUNDS_DOC_ID,
             EARMARKED_FUNDS_DOC_YEAR,
-            EARMARKED_FUNDS_DOC_COMP_CODE
+            EARMARKED_FUNDS_DOC_COMP_CODE,
+            EARMARKED_FUNDS_DOC_ITEM_ID
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
@@ -1340,7 +1341,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
      * LINE_ID = unique key per line (C = claim item, R = request item, E/EC/ER = employee anchors)
      */
     @readonly
-    @cds.autoexpose: false
     entity ZMED_USAGE_LINES as
         select from ECLAIM.ZCLAIM_ITEM as i
         inner join ECLAIM.ZCLAIM_HEADER as h
@@ -1424,7 +1424,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
      * Stage 2 – Usage per employee per year.
      */
     @readonly
-    @cds.autoexpose: false
     entity ZMED_USAGE_SUM as
         select from ZMED_USAGE_LINES as l
         {
@@ -1478,20 +1477,4 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     end as Decimal(16, 2)
                 ) as BALANCE
         };
-    
-        /**
-        * Stage 4 – Current-year balance, one row per employee.
-        */
-        @readonly
-        entity ZMED_ENTITLEMENT_BAL_CY as
-            select from ZMED_ENTITLEMENT_BAL as b
-            {
-                key b.EEID,
-                    b.ENTITLEMENT_YEAR,
-                    b.ENTITLED_AMOUNT,
-                    b.CLAIMED_AMOUNT,
-                    b.PENDING_REQUEST_AMOUNT,
-                    b.BALANCE
-            }
-            where b.ENTITLEMENT_YEAR = year(add_seconds(current_timestamp, 28800));
 }
