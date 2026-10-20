@@ -1,13 +1,12 @@
 <core:FragmentDefinition
 	xmlns:unified="sap.ui.unified"
-	xmlns:l="sap.ui.layout"
 	xmlns:core="sap.ui.core"
-	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:mdc="sap.ui.mdc"
 	xmlns:mdcvh="sap.ui.mdc.valuehelp"
 	xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+	core:require="{ Utility: 'claima/utils/Utility' }"
 >
 	<Dialog
 		title="{i18n>req_po_title}"
@@ -542,7 +541,11 @@
 				<unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
-					mimeType="application/pdf,image/png,image/jpeg"
+					maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+					fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+					mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+					fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+					typeMissmatch="Utility.showAttachmentTypeMissmatch"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
 					visible="false"
@@ -551,7 +554,11 @@
 				<unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
-					mimeType="application/pdf,image/png,image/jpeg"
+					maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+					fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+					mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+					fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+					typeMissmatch="Utility.showAttachmentTypeMissmatch"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc2}"
 					visible="false"
