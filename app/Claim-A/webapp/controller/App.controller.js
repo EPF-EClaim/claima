@@ -182,6 +182,24 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
+				case "pay_report":
+					// Payment Recon Report - JKEW Admin (Admin_System) only
+					if (bAdminSystem) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_PAYMENT_REPORT");
+					} else {
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
+					}
+					break;
+				case "post_report":
+					// Payment Recon Report - JKEW Admin (Admin_System) only
+					if (bAdminSystem) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_POSTING_REPORT");
+					} else {
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
+					}
+					break;
 				case "cashadvance_summary":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
@@ -1320,21 +1338,6 @@ sap.ui.define([
 			if (file) {
 				reader.readAsDataURL(file);
 			}
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onCancel_ClaimInput: function () {

@@ -7,8 +7,7 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Sorter",
-    "claima/utils/Constants",
-	"claima/utils/Utility"
+    "claima/utils/Constants"
 ], function (
 	MessageBox,
 	MessageToast,
@@ -18,12 +17,11 @@ sap.ui.define([
 	FilterOperator,
 	JSONModel,
 	Sorter,
-	Constants,
-    Utility
+	Constants
 ) {
     "use strict";
 
-    return {
+    const Utility = {
         /**
          * Initialize the Utility 
          * @public
@@ -1004,7 +1002,34 @@ sap.ui.define([
             }else {
                 return "";
             }
-        }
+        },
+
+		/**
+		 * Shows a MessageToast when the selected file is successfully uploaded.
+		 * @param {sap.ui.base.Event} oEvent - uploadComplete event from FileUploader
+		 */
+		showAttachmentUploadComplete: function (oEvent) {
+			var iHttpStatusCode = oEvent.getParameter("status");
+			var sResponse = oEvent.getParameter("response");
+			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+			MessageToast.show(sMessage);
+		},
+
+		/**
+		 * Shows a MessageBox error when the selected file is larger than the allowed size.
+		 */
+		showAttachmentFileSizeExceed: function () {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize", [Constants.AttachmentConfig.MAX_FILE_SIZE]));
+		},
+
+		/**
+		 * Shows a MessageBox error when the selected file type isn't allowed.
+		 */
+		showAttachmentTypeMissmatch: function () {
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch", [Constants.AttachmentConfig.ALLOWED_FILE_TYPES.join(", ")]));
+		}
 
     };
+
+    return Utility;
 });

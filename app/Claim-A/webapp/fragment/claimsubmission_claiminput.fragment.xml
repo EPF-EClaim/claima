@@ -1,13 +1,12 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
 	xmlns:u="sap.ui.unified"
     xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+	core:require="{ Utility: 'claima/utils/Utility' }"
 >
     <Dialog id="dialog_claiminput" title="{i18n>dialog_claiminput}" contentWidth="50em">
 
@@ -565,12 +564,12 @@
                         placeholder="{i18n>text_claiminput_attachment_filetypes}"
                         uploadUrl="SuccessFactors_API/odata/v2/Attachment"
                         change="onChange_ClaimInput_Attachment"
-                        uploadComplete="onUploadComplete_ClaimInput_Attachment"
-                        maximumFileSize='5.0'
-                        fileSizeExceed="onFileSizeExceed_ClaimInput_Attachment"
-                        
-                        fileType="jpg, pdf, png"
-                        typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
+                        uploadComplete="Utility.showAttachmentUploadComplete"
+                        maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                        fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                        mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                        fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                        typeMissmatch="Utility.showAttachmentTypeMissmatch"
                         multiple="false"
                         style="Emphasized"
                         visible="{= ( ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/PRE_APPROVE} ||

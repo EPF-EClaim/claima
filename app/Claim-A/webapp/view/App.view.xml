@@ -98,11 +98,11 @@
                     <tnt:NavigationListGroup 
                         text="{i18n>nav_analytics}" 
                         expanded="false" 
-                        visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
+                        visible="{= ${roleModel>/JKEW_role} || ${roleModel>/GA_role} }"
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://doc-attachment"
-                            text="Claim Report"
+                            text="{i18n>nav_claimreport}"
                             enabled="true"
                         >
                         <tnt:items>
@@ -119,7 +119,7 @@
 
                         <tnt:NavigationListItem
                             icon="sap-icon://manager-insight"
-                            text="Pre-Approval Report"
+                            text="{i18n>nav_pareport}"
                             enabled="true"
                         >
                         <tnt:items>
@@ -133,11 +133,31 @@
                                 />
                     </tnt:items>
                         </tnt:NavigationListItem>
+                        
+                        <tnt:NavigationListItem
+                            icon="sap-icon://payment-approval"
+                            text="{i18n>nav_paymentreconreport}"
+                            enabled="true"
+                            visible="{roleModel>/isAdminSystem}"
+                        >
+                        <tnt:items>
+                                <tnt:NavigationListItem
+                                    key="pay_report"
+                                    text="{i18n>ana_title_paymentreport}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="post_report"
+                                    text="{i18n>ana_title_postingreport}"
+                                />
+                        </tnt:items>
+                        </tnt:NavigationListItem>
+
                         <tnt:NavigationListItem
                             icon="sap-icon://money-bills"
-                            text="Cash Advance"
+                            text="{i18n>nav_cashadvance}"
                             enabled="true"
                             key="cashadvance_summary"
+                            visible="{= ${roleModel>/JKEW_role} }"
                         >
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
@@ -156,14 +176,14 @@
                     >
                         <tnt:NavigationListItem
                             icon="sap-icon://add-contact"
-                            text="{i18n>reroute_delegate}"
+                            text="{i18n>nav_reroute_delegate}"
                             key="ZSUBSTITUTION_RULES_CONFIG"
                             enabled="true"
                         >
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
                             icon="sap-icon://customer-order-entry"
-                            text="{i18n>reroute_reassign}"
+                            text="{i18n>nav_reroute_reassign}"
                             key="ZEMP_PENDING_LIST"
                             enabled="true"
                         >
@@ -171,13 +191,13 @@
                     </tnt:NavigationListGroup>                                                               
 
                     <tnt:NavigationListGroup 
-                        text="Configuration" 
+                        text="{i18n>nav_configuration}" 
                         expanded="false"
                         visible="{= ${roleModel>/JKEW_role} || ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }">
 
                         <tnt:NavigationListItem
                             icon="sap-icon://database"
-                            text="Master Data"
+                            text="{i18n>nav_masterdata}"
                             enabled="true"
                             expanded="false"
                             visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
@@ -185,180 +205,180 @@
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZRISK"
-                                    text="{i18n>risklevel}"
+                                    text="{i18n>nav_risklevel}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREQUEST_TYPE"
-                                    text="{i18n>partype}"
+                                    text="{i18n>nav_partype}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_TYPE"
-                                    text="{i18n>claimtyp}"
+                                    text="{i18n>nav_claimtyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTATUS"
-                                    text="{i18n>claimstat}"
+                                    text="{i18n>nav_claimstat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCOUNTRY"
-                                    text="{i18n>country}"
+                                    text="{i18n>nav_country}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZAREA"
-                                    text="{i18n>region}"
+                                    text="{i18n>nav_region}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_TYPE"
-                                    text="{i18n>vehicletyp}"
+                                    text="{i18n>nav_vehicletyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTATE"
-                                    text="{i18n>state}"
+                                    text="{i18n>nav_state}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDEPARTMENT"
-                                    text="{i18n>dept}"
+                                    text="{i18n>nav_dept}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREGION"
-                                    text="{i18n>region_ss}"
+                                    text="{i18n>nav_region_ss}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZBRANCH"
-                                    text="{i18n>branch}"
+                                    text="{i18n>nav_branch}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMARITAL_CAT"
-                                    text="{i18n>mrgcat}"
+                                    text="{i18n>nav_mrgcat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINDIV_GROUP"
-                                    text="{i18n>indgrp}"
+                                    text="{i18n>nav_indgrp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMATERIAL_GROUP"
-                                    text="{i18n>matgrp}"
+                                    text="{i18n>nav_matgrp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZLOC_TYPE"
-                                    text="{i18n>loctyp}"
+                                    text="{i18n>nav_loctyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZOFFICE_DISTANCE"
-                                    text="{i18n>officedist}"
+                                    text="{i18n>nav_officedist}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZOFFICE_LOCATION"
-                                    text="{i18n>officeloc}"
+                                    text="{i18n>nav_officeloc}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCURRENCY"
-                                    text="{i18n>curr}"
+                                    text="{i18n>nav_curr}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_OWNERSHIP"
-                                    text="{i18n>vehicle_ownership}"
+                                    text="{i18n>nav_vehicle_ownership}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPOSITION_EVENT_REASON"
-                                    text="{i18n>positionreason}"
+                                    text="{i18n>nav_positionreason}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZFAMILY_TIMING"
-                                    text="{i18n>family_timing}"
+                                    text="{i18n>nav_family_timing}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZTRANSPORT_PASSING"
-                                    text="{i18n>transport_passing}"
+                                    text="{i18n>nav_transport_passing}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRANSFER_MODE"
-                                    text="{i18n>transfer_mode}"
+                                    text="{i18n>nav_transfer_mode}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTUDY_LEVELS"
-                                    text="{i18n>study_lvl}"
+                                    text="{i18n>nav_study_lvl}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPROFESIONAL_BODY"
-                                    text="{i18n>prof_body}"
+                                    text="{i18n>nav_prof_body}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINSURANCE_PACKAGE"
-                                    text="{i18n>ins_pkg}"
+                                    text="{i18n>nav_ins_pkg}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINSURANCE_PROVIDER"
-                                    text="{i18n>ins_pvd}"
+                                    text="{i18n>nav_ins_pvd}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_CLASS"
-                                    text="{i18n>vehicle_class}"
+                                    text="{i18n>nav_vehicle_class}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMOBILE_CATEGORY_PURPOSE"
-                                    text="{i18n>mobilecat}"
+                                    text="{i18n>nav_mobilecat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZBUDGET"
-                                    text="{i18n>budget_data}"
+                                    text="{i18n>nav_budget_data}"
                                     visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"
-                                    text="{i18n>structure}"
+                                    text="{i18n>nav_structure}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROLEHIERARCHY"
-                                    text="{i18n>rolehierarchy}"
+                                    text="{i18n>nav_rolehierarchy}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCORPORATE_CARD"
-                                    text="{i18n>corporateCard}"
+                                    text="{i18n>nav_corporate_card}"
                                     visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
                                 />  
                                 <tnt:NavigationListItem
                                     key="ZCORPORATE_CARD_ADVANCED"
-                                    text="{i18n>corporateCardAdv}"
+                                    text="{i18n>nav_corporate_card_adv}"
                                     visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            text="{i18n>hr_employee_setup}"
+                            text="{i18n>nav_hr_employee_setup}"
                             icon="sap-icon://employee"
                             enabled="true"
                             expanded="false"
@@ -367,63 +387,63 @@
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZEMP_MASTER"
-                                    text="{i18n>empmaster}"
+                                    text="{i18n>nav_empmaster}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_DEPENDENT"
-                                    text="{i18n>empldep}"
+                                    text="{i18n>nav_empldep}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_DEPENDENT_TYPE"
-                                    text="{i18n>deptype}"
+                                    text="{i18n>nav_deptype}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_TYPE"
-                                    text="{i18n>empstat}"
+                                    text="{i18n>nav_empstat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMARITAL_STAT"
-                                    text="{i18n>marital}"
+                                    text="{i18n>nav_marital}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_RELATIONSHIP"
-                                    text="{i18n>relationship}"
+                                    text="{i18n>nav_relationship}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROLE"
-                                    text="{i18n>role}"
+                                    text="{i18n>nav_role}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZUSER_TYPE"
-                                    text="{i18n>usertyp}"
+                                    text="{i18n>nav_usertyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZJOB_GROUP"
-                                    text="{i18n>jobgrp}"
+                                    text="{i18n>nav_jobgrp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRAIN_COURSE_PART"
-                                    text="{i18n>trncourseprt}"
+                                    text="{i18n>nav_trncourseprt}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZJOB_CODE_MAPPING"
-                                    text="{i18n>jobgrp}"
+                                    text="{i18n>nav_jobcodemapping}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            text="{i18n>travel_claim_setup}"
+                            text="{i18n>nav_travel_claim_setup}"
                             icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
@@ -432,94 +452,94 @@
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZLODGING_CAT"
-                                    text="{i18n>lodgingcat}"
+                                    text="{i18n>nav_lodgingcat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_CA_PAYMENT"
-                                    text="{i18n>cashadv}"
+                                    text="{i18n>nav_cashadv}"
                                     visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROOM_TYPE"
-                                    text="{i18n>hoteltyp}"
+                                    text="{i18n>nav_hoteltyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRAVEL_DAYS"
-                                    text="{i18n>traveldays}"
+                                    text="{i18n>nav_traveldays}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRAVEL_TYPE"
-                                    text="{i18n>travel_type}"
+                                    text="{i18n>nav_travel_type}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZFARE_TYPE"
-                                    text="{i18n>faretyp}"
+                                    text="{i18n>nav_faretyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZHOTEL_LODGING"
-                                    text="{i18n>hotellodging}"
+                                    text="{i18n>nav_hotellodging}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_BASIS"
-                                    text="{i18n>claimbasis}"
+                                    text="{i18n>nav_claimbasis}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZRATE_KM"
-                                    text="{i18n>rartekm}"
+                                    text="{i18n>nav_ratekm}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZPERDIEM_ENT"
-                                    text="{i18n>perdiem}"
+                                    text="{i18n>nav_perdiem}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_CATEGORY"
-                                    text="{i18n>claimcat}"
+                                    text="{i18n>nav_claimcat}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMETER_CUBE"
-                                    text="{i18n>metercube}"
+                                    text="{i18n>nav_metercube}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZFLIGHT_CLASS"
-                                    text="{i18n>flightclass}"
+                                    text="{i18n>nav_flightclass}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZLENDER_NAME"
-                                    text="{i18n>loan}"
+                                    text="{i18n>nav_loan}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSPORTS_REPRESENTATION"
-                                    text="{i18n>sportrep}"
+                                    text="{i18n>nav_sportrep}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZHOUSING_LOAN_SCHEME"
-                                    text="{i18n>housing}"
+                                    text="{i18n>nav_housing}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                  <tnt:NavigationListItem
                                     key="ZCLAIM_TYPE_ITEM_CHARGING_CC"
-                                    text="{i18n>chargingCostCenter}"
+                                    text="{i18n>nav_charging_cost_center}"
                                     visible="{roleModel>/JKEW_role}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            text="{i18n>system_workflow_setup}"
+                            text="{i18n>nav_system_workflow_setup}"
                             icon="sap-icon://action-settings"
                             enabled="true"
                             expanded="false"
@@ -528,47 +548,47 @@
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZNUM_RANGE"
-                                    text="{i18n>claimsq}"
+                                    text="{i18n>nav_claimsq}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSUBMISSION_TYPE"
-                                    text="{i18n>subtyp}"
+                                    text="{i18n>nav_subtyp}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREJECT_REASON"
-                                    text="{i18n>rejreason}"
+                                    text="{i18n>nav_rejreason}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZELIGIBILITY_RULE"
-                                    text="{i18n>eligibility_rule}"
+                                    text="{i18n>nav_eligibility_rule}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCONSTANTS"
-                                    text="{i18n>constants}"
+                                    text="{i18n>nav_constants}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDISBURSEMENT_STATUS"
-                                    text="{i18n>disbursement}"
+                                    text="{i18n>nav_disbursement}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPROJECT_HDR"
-                                    text="{i18n>prjcode}"
+                                    text="{i18n>nav_prjcode}"
                                     visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZWORKFLOW_RULE"
-                                    text="{i18n>workflowrule}"
+                                    text="{i18n>nav_workflowrule}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZWORKFLOW_STEP"
-                                    text="{i18n>workflowstep}"
+                                    text="{i18n>nav_workflowstep}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
                                                                
