@@ -90,7 +90,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ATTACHMENT3,
                 ATTACHMENT4,
                 PAYMENT_DUE_DATE,
-                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_REQUEST_EE_VIEW          as
@@ -153,7 +153,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.JOB_GROUP,
                 ATTACHMENT3,
                 ATTACHMENT4,
-                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
 
@@ -326,7 +326,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
                 modifiedAt,
-                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW         as
@@ -400,7 +400,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 CARD_NO,
                 CCC_ADV_AMT,
-                bal.BALANCE as MED_ENTITLEMENT_BALANCE : Decimal(16, 2)
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -1354,7 +1354,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         }
         where h.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
           and i.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
-          and (i.CLAIM_TYPE_ITEM_ID is null or i.CLAIM_TYPE_ITEM_ID <> 'CASH_REPAY')
+          and coalesce(i.CLAIM_TYPE_ITEM_ID,'') <> 'CASH_REPAY'
           and h.STATUS_ID      in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
           and h.SUBMITTED_DATE is not null
 
@@ -1373,7 +1373,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
         }
         where rh.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
-          and ri.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
           and rh.STATUS         in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
           and rh.SUBMITTED_DATE is not null
           and c.CLAIM_ID        is null
