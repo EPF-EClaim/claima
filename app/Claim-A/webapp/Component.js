@@ -28,9 +28,9 @@ sap.ui.define([
     // ---- Constants ----
     const DEFAULT_NAV_KEY = "dashboard";
     const DATE_PATTERN    = "dd MMM yyyy";
-    const EXTERNAL_LIBS   = [
-        "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js"
+    const EXTERNAL_LIBS = [
+        sap.ui.require.toUrl("claima/libs/xlsx.full.min.js"),
+        sap.ui.require.toUrl("claima/libs/jszip.js")
     ];
     const ROUTE_TO_NAV_KEY = {
         "Dashboard": "dashboard",
@@ -51,10 +51,9 @@ sap.ui.define([
          * Sets up models, utilities, the user session, idle tracking and routing guards.
          * @public
          */
-        init() {
-
+        init: function() {
             AppComponent.prototype.init.apply(this, arguments);
-            this.loadExternalLibraries();
+            this.loadExternalLibraries().catch(() => {});
 
             this._oReqModel = this.getModel("request");
 
@@ -227,9 +226,51 @@ sap.ui.define([
          * @public
          */
         loadExternalLibraries: function () {
-            EXTERNAL_LIBS.forEach((sSrc) => {
+            if (!this._oLibsPromise) {
+                this._oLibsPromise = EXTERNAL_LIBS
+                    .reduce((p, sSrc) => p.then(() => this._loadScript(sSrc)), Promise.resolve())
+                    .catch((oError) => {
+                        this._oLibsPromise = null; // allow retry
+                        throw oError;
+                    });
+            }
+            return this._oLibsPromise;
+        },
+
+        /**
+         * Loads one script and resolves when it has executed.
+         * Re-uses an existing <script> tag instead of adding a duplicate.
+         * @private
+         * @param {string} sSrc - Script URL
+         * @returns {Promise<void>} Resolves on load, rejects on error
+         */
+        _loadScript: function (sSrc) {
+            return new Promise((resolve, reject) => {
+                const oExisting = document.querySelector(`script[src="${sSrc}"]`);
+
+                if (oExisting) {
+                    // Already finished loading
+                    if (oExisting.dataset.loaded === "true") {
+                        resolve();
+                        return;
+                    }
+                    // Still loading: wait for it
+                    oExisting.addEventListener("load", () => resolve(), { once: true });
+                    oExisting.addEventListener("error", () => reject(new Error(`Failed to load ${sSrc}`)), { once: true });
+                    return;
+                }
+
                 const oScript = document.createElement("script");
-                oScript.setAttribute("src", sSrc);
+                oScript.src = sSrc;
+                oScript.async = false; // keep execution order
+                oScript.onload = () => {
+                    oScript.dataset.loaded = "true";
+                    resolve();
+                };
+                oScript.onerror = () => {
+                    oScript.remove(); // so a retry can add it again
+                    reject(new Error(`Failed to load ${sSrc}`));
+                };
                 document.head.appendChild(oScript);
             });
         },

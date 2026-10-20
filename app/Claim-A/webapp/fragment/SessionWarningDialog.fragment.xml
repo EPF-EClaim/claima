@@ -7,7 +7,8 @@
         state="Warning"
         title="{i18n>session_warning_title}"
         contentWidth="24rem"
-        afterClose=".onAfterClose">
+        afterClose=".onAfterClose"
+        closeOnNavigation="false">
         <content>
             <VBox>
                 <Text text="{timeout>/message}" />

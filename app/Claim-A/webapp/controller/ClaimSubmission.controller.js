@@ -104,6 +104,8 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
+			this.getOwnerComponent().loadExternalLibraries();
+			const XLSX = window.XLSX;
 			// declare excel export utility
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 

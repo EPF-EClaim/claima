@@ -28,6 +28,53 @@ sap.ui.define([
     const DIALOG_FRAGMENT_ID    = "sessionWarning";
 
     /**
+     * Safe wrapper around sessionStorage.
+     * Storage access can throw (blocked storage, private mode, quota exceeded),
+     * so every call is guarded and fails silently.
+     * @private
+     */
+    const SafeSessionStorage = {
+        /**
+         * @param {string} sKey
+         * @returns {string|null} Stored value, or null if missing or storage is blocked
+         */
+        get: function (sKey) {
+            try {
+                return window.sessionStorage.getItem(sKey);
+            } catch (e) {
+                return null;
+            }
+        },
+
+        /**
+         * @param {string} sKey
+         * @param {string} sValue
+         * @returns {boolean} true if the value was stored
+         */
+        set: function (sKey, sValue) {
+            try {
+                window.sessionStorage.setItem(sKey, sValue);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        },
+
+        /**
+         * @param {string} sKey
+         * @returns {boolean} true if the call completed without error
+         */
+        remove: function (sKey) {
+            try {
+                window.sessionStorage.removeItem(sKey);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+    };
+
+    /**
      * Handles the user session: idle tracking, the timeout warning dialog,
      * session checks, session errors and logout.
      * @class
@@ -49,6 +96,7 @@ sap.ui.define([
          */
         start: function () {
             this._iLastActivity = Date.now();
+            this._bExpiredShown = false;
             this._initActivityTracking();
             this.startInactivityTimer();
         },
@@ -62,7 +110,7 @@ sap.ui.define([
          * @public
          */
         clearReauthFlag: function () {
-            sessionStorage.removeItem(REAUTH_FLAG);
+            SafeSessionStorage.remove(REAUTH_FLAG);
         },
 
         /**
@@ -87,13 +135,13 @@ sap.ui.define([
             }
 
             // The flag stops an endless reload loop if the backend is down
-            if (this._isSessionExpiredError(oError) && !sessionStorage.getItem(REAUTH_FLAG)) {
-                sessionStorage.setItem(REAUTH_FLAG, "X");
+            if (this._isSessionExpiredError(oError) && !SafeSessionStorage.get(REAUTH_FLAG)) {
+                SafeSessionStorage.set(REAUTH_FLAG, "X");
                 window.location.reload();
                 return;
             }
 
-            sessionStorage.removeItem(REAUTH_FLAG);
+            SafeSessionStorage.remove(REAUTH_FLAG);
             MessageBox.error(Utility.getText("msg_failed_generic_error", [oError.message]));
         },
 
@@ -172,7 +220,8 @@ sap.ui.define([
             const iRemaining = INACTIVITY_TIMEOUT_MS - (Date.now() - this._iLastActivity);
 
             if (iRemaining <= 0) {
-                this.logout();
+                this.stopInactivityTimer(); 
+                this._showSessionExpiredMessage();
             } else if (iRemaining <= WARNING_BEFORE_MS) {
                 this._showSessionWarning();
             }
@@ -235,9 +284,23 @@ sap.ui.define([
                     id: DIALOG_FRAGMENT_ID,
                     name: DIALOG_FRAGMENT,
                     controller: {
-                        onStay: () => this._closeSessionDialog(true),
-                        onLogout: () => this._closeSessionDialog(false),
-                        onAfterClose: () => this._clearCountdown()
+                        onStay: () => {
+                            this._bClosing = true;
+                            this._closeSessionDialog(true);
+                        },
+                        onLogout: () => {
+                            this._bClosing = true;
+                            this._closeSessionDialog(false);
+                        },
+                        onAfterClose: () => { 
+                            this._clearCountdown(); 
+                            if (!this._bClosing) {
+                                // closed by something other than our own handlers 
+                                this._resumeSession(); 
+                            } 
+                            this._bClosing = false; 
+                        } 
+                        // _closeSessionDialog: set this._bClosing = true before close()
                     }
                 }).then((oDialog) => {
                     if (this._bDestroyed) {
@@ -249,6 +312,7 @@ sap.ui.define([
 
                     // Esc = "Stay Logged In"; we close the dialog ourselves, so cancel the default close
                     oDialog.setEscapeHandler((oPromise) => {
+                        this._bClosing = true;
                         this._closeSessionDialog(true);
                         oPromise.reject();
                     });
@@ -271,6 +335,7 @@ sap.ui.define([
             const iRemaining = Math.max(0, this._iWarningDeadline - Date.now());
 
             if (iRemaining === 0) {
+                this._bClosing = true;
                 this._closeSessionDialog(false, true);
                 return;
             }
@@ -308,6 +373,7 @@ sap.ui.define([
             this._clearCountdown();
 
             if (this._oSessionDialog && this._oSessionDialog.isOpen()) {
+                this._bClosing = true;
                 this._oSessionDialog.close();
             }
 
@@ -347,11 +413,23 @@ sap.ui.define([
          * @private
          */
         _showSessionExpiredMessage: function () {
+            if (this._bExpiredShown || this._bDestroyed) {
+                return;
+            }
+            this._bExpiredShown = true;
+
+            // Nothing else may fire while the user reads the message
+            this.stopInactivityTimer();
+            this._clearCountdown();
+
             MessageBox.warning(Utility.getText("session_logout_msg"), {
                 title: Utility.getText("session_expired_title"),
                 actions: [MessageBox.Action.OK],
                 emphasizedAction: MessageBox.Action.OK,
-                onClose: () => this.logout()
+                onClose: () => {
+                    this._bExpiredShown = false;   // reset in case logout is blocked or the page stays
+                    this.logout();
+                }
             });
         },
 
