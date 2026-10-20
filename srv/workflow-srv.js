@@ -189,14 +189,16 @@ module.exports = (srv) => {
         if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
             const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
             console.log("aBudgetContext: ", aBudgetContext);
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            console.log("aReturn: ", aReturn);
-            const sBudgetError = buildBudgetErrorMessage(aReturn);
-            if (sBudgetError) {
-                bStatus = false;
-                throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
+            if (aBudgetContext?.length > 0) {
+                const aReturn = await performBudgetChecking(oTx, aBudgetContext);
+                console.log("aReturn: ", aReturn);
+                const sBudgetError = buildBudgetErrorMessage(aReturn);
+                if (sBudgetError) {
+                    bStatus = false;
+                    throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
+                }
+                console.log("Budget Checking Status: ", bStatus);
             }
-            console.log("Budget Checking Status: ", bStatus);
         }
 
         // update PEDU entitlement usage if action is reject

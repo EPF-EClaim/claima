@@ -244,7 +244,9 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     )
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
-async function performBudgetChecking(oTx, aBudgetContext) {
+async function performBudgetChecking(oTx, aBudgetContext, sId) {
+
+    const toNum = (v) => Number(v) || 0;
 
     try {
         let error = false;
@@ -256,64 +258,95 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
         var oEmployeeRollupCC;
 
-        if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD && 
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD && 
+        const { INDICATOR: sIndicator, ACTION: sAction } = aBudgetContext[0];
+
+        if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
-                oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-            }
+            oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+        }
 
-        for (const entry of aBudgetContext) {
-            if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
-                condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                };
-            }else{
-                condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                    FUND_CENTER: entry.FUND_CENTER,
-                    MATERIAL_GROUP: entry.MATERIAL_GROUP,
-                    COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-                };   
-            }
+        if (sIndicator.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+            for (const entry of aBudgetContext) {
+                if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
+                    condition = {
+                        YEAR: entry.YEAR,
+                        INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                    };
+                } else {
+                    condition = {
+                        YEAR: entry.YEAR,
+                        INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                        FUND_CENTER: entry.FUND_CENTER,
+                        MATERIAL_GROUP: entry.MATERIAL_GROUP,
+                        COMMITMENT_ITEM: entry.COMMITMENT_ITEM
+                    };
+                }
 
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-            let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
+                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+                    let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
 
-            if (!budgetRecord) {
-                error = true;
-                errorResults.push({
-                    ...condition,
-                    STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
-                });
-                continue;
-            }
+                    if (!budgetRecord) {
+                        error = true;
+                        errorResults.push({
+                            ...condition,
+                            STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
+                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                        });
+                        continue;
+                    }
 
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
-                if (!bSufficient) {
-                    error = true;
-                    errorResults.push({
+                    const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
+                    if (!bSufficient) {
+                        error = true;
+                        errorResults.push({
+                            ...condition,
+                            STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
+                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                            AMOUNT: entry.AMOUNT,
+                            AVAILABLE: budgetRecord.BUDGET_BALANCE
+                        });
+                        continue;
+                    }
+                }
+
+                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+                    successResults.push({
                         ...condition,
-                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        AMOUNT: entry.AMOUNT,
-                        AVAILABLE: budgetRecord.BUDGET_BALANCE
+                        STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
                     });
                     continue;
                 }
-            } else {
-                let budgetRecord = await processEarmarkedFunds(aBudgetContext, null, null, oEmployeeRollupCC);
             }
+        } else {
+            const aItems = aBudgetContext.map((oBudgetContext) => ({
+                ...Constant.EarmarkedFundPosting_Item,
+                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+                FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
+                    oBudgetContext.INTERNAL_ORDER && {
+                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
+                })
+            }));
 
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                successResults.push({
-                    ...condition,
-                    STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+            let budgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC);
+
+            if (budgetRecord.Error) {
+                error = true;
+                errorResults.push({
+                    STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                    LOCK_BUDGET: true,
+                    ERROR_MESSAGE: budgetRecord?.Message
                 });
-                continue;
+            } else {
+                await updateEarmarkedFundDetails(
+                    oTx,
+                    sId,
+                    budgetRecord?.oEarmarkedFundsDocument,
+                    budgetRecord?.Message
+                );
             }
         }
 
@@ -327,87 +360,6 @@ async function performBudgetChecking(oTx, aBudgetContext) {
         return err;
     }
 }
-// Comment off since not ready yet - Claim Submission
-// async function performBudgetChecking(oTx, aBudgetContext, sId) {
-//     try {
-
-//         let condition;
-//         let oBudgetCheckResult;
-
-//         // determine upper cost center, incase for no budget allocation for each item
-//         let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
-//         var oEmployeeRollupCC;
-
-//         const { INDICATOR: sIndicator, ACTION: sAction } = aBudgetContext[0];
-
-//         if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
-//             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-//             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
-//             oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-//         }
-
-//         if (sIndicator === Constant.BudgetSubmissionType.REQUEST) {
-//             for (const entry of aBudgetContext) {
-//                 if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
-//                     condition = {
-//                         YEAR: entry.YEAR,
-//                         INTERNAL_ORDER: entry.INTERNAL_ORDER,
-//                     };
-//                 } else {
-//                     condition = {
-//                         YEAR: entry.YEAR,
-//                         INTERNAL_ORDER: entry.INTERNAL_ORDER,
-//                         FUND_CENTER: entry.FUND_CENTER,
-//                         MATERIAL_GROUP: entry.MATERIAL_GROUP,
-//                         COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-//                     };
-//                 }
-//                 oBudgetCheckResult = await getBudgetRecord(condition, oEmployeeRollupCC);
-//             }
-//         }
-
-//         if (sIndicator === Constant.BudgetSubmissionType.CLAIM) {
-//             const aItems = aBudgetContext.map((oBudgetContext) => ({
-//                 ...Constant.EarmarkedFundPosting_Item,
-//                 EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-//                 FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
-//                 CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-//                 ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
-//                     oBudgetContext.INTERNAL_ORDER && {
-//                     InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
-//                 })
-//             }));
-
-//             oBudgetCheckResult = await processEarmarkedFunds(aItems, sId, sAction);
-
-//             if (oBudgetCheckResult?.Error) {
-//                 return {
-//                     Error: true,
-//                     Message: oBudgetCheckResult?.Message
-//                 }
-//             } else {
-//                 const oEarmarkedFundsDocument = oBudgetCheckResult?.oEarmarkedFundsDocument;
-//                 if (oEarmarkedFundsDocument?.EarmarkedFundsDocument) {
-//                     await updateEarmarkedFundDetails(
-//                         oTx,
-//                         sId,
-//                         oEarmarkedFundsDocument,
-//                         oBudgetCheckResult?.Message
-//                     );
-//                 }
-//                 return {
-//                     Error: false,
-//                     Message: oBudgetCheckResult?.Message
-//                 }
-//             }
-//         }
-//     } catch (err) {
-//         return {
-//             Error: true,
-//             Message: err.message
-//         }
-//     }
-// }
 /**
  * Builds a readable error message from budget checking results, distinguishing
  * budget records that were not found from budgets with insufficient balance.
@@ -422,7 +374,7 @@ async function performBudgetChecking(oTx, aBudgetContext) {
  */
 function buildBudgetErrorMessage(aBudgetResults) {
     if (!Array.isArray(aBudgetResults)) {
-        return null;
+        return `Budget check failed: ${aBudgetResults?.message ?? 'unknown error'}`;
     }
 
     const fnItems = (sStatus) => [...new Set(
@@ -435,11 +387,16 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const sNotFoundItems = fnItems(Constant.BudgetCheckStatus.NOT_FOUND);
     const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
 
+    const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
+
     if (sNotFoundItems) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
     }
     if (sInsufficientItems) {
         aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
+    }
+    if (aBudgetLockErrors.length) {
+        aMessages.push(aBudgetLockErrors[0].ERROR_MESSAGE ||'Failed to lock budget in IFAMS.');
     }
 
     return aMessages.length ? aMessages.join("\n") : null;

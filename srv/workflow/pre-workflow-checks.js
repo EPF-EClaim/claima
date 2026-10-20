@@ -88,13 +88,15 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     let aBudgetContext, aBudgetCheckReturn;
     try {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
-        aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
+        if (aBudgetContext?.length > 0) {
+            aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext, sId);
 
-        // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
-        const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-        if (sBudgetError) {
-            await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
+            // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
+            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
+            if (sBudgetError) {
+                await oTx.rollback();
+                return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
+            }
         }
     } catch (oError) {
         await oTx.rollback();
