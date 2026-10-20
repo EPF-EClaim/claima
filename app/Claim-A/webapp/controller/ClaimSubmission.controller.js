@@ -107,7 +107,7 @@ sap.ui.define([
 			this.getOwnerComponent().loadExternalLibraries();
 			const XLSX = window.XLSX;
 			// declare excel export utility
-			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
+			ExcelExport.init(this.getOwnerComponent(), this.getView(), XLSX);
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());

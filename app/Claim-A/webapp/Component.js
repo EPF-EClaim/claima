@@ -51,7 +51,7 @@ sap.ui.define([
          * Sets up models, utilities, the user session, idle tracking and routing guards.
          * @public
          */
-        init: function() {
+        init: function () {
             AppComponent.prototype.init.apply(this, arguments);
             this.loadExternalLibraries().catch(() => {});
 
