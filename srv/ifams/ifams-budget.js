@@ -14,26 +14,37 @@ async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
     let oBudget;
 
     try {
-        const esc = v => String(v === Constant.Wildcard.NA ? '' : (v ?? '')).replace(/'/g, "''");
+        const norm = v => {
+            const s = String(v ?? '').trim();
+            return s === Constant.Wildcard.NA ? '' : s;
+        };
+
+        const esc = v => norm(v).replace(/'/g, "''");
 
         const sPath = Constant.IFAMS_API_PATH.BUDGET_SF
             .replace('{YEAR}', esc(oCondition.YEAR))
-            .replace('{COMMITMENT_ITEM}', esc(oCondition?.COMMITMENT_ITEM))
             .replace('{INTERNAL_ORDER}', esc(oCondition.INTERNAL_ORDER));
 
         const aBudgetRecords = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
-        const norm = v => String(v ?? '').trim();
-        const fnFind = fc => aBudgetRecords.find(r => norm(r.FundCenter) === norm(fc)
-            && norm(r.CommitmentItem) === norm(oCondition.COMMITMENT_ITEM)
-            && norm(r.MaterialGroup) === norm(oCondition.MATERIAL_GROUP));
+        const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
+        const fnFind = fc => aBudgetRecords.find(r =>
+            eq(r.FundCenter, fc)
+            && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
+            && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
 
         oBudget = fnFind(oCondition.FUND_CENTER);
-        if (!oBudget && Object.keys(oEmployeeRollupCC).length > 0) oBudget = [oEmployeeRollupCC.HOS_CC, oEmployeeRollupCC.HOB_CC, oEmployeeRollupCC.HOD_CC].filter(Boolean).map(fnFind).find(Boolean);
+
+        if (!oBudget && norm(oCondition.FUND_CENTER) && oEmployeeRollupCC && Object.keys(oEmployeeRollupCC).length > 0) {
+            oBudget = [oEmployeeRollupCC.HOS_CC, oEmployeeRollupCC.HOB_CC, oEmployeeRollupCC.HOD_CC]
+                .filter(cc => norm(cc))
+                .map(fnFind)
+                .find(Boolean);
+        }
     } catch (error) {
-        return;
+        return { error: true, data: oBudget, message: error.message};
     }
-    return oBudget;
+    return { error: false, data: oBudget };
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
@@ -88,7 +99,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
         if (!oEarmarkedFundsDocument && Object.keys(oEmployeeRollupCC).length > 0) {
             var aNewCCItems = [];
             var iCount = 2;
-            let sCostCenter = Constant.RollUp_CostCenter.HOS_CostCenter;
+            let sCostCenter = Constant.RollUp_CostCenter.HOS_COSTCENTER;
 
             while (iCount > 0) {
                 iCount--;
@@ -117,10 +128,10 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
 
                     if (oEarmarkedFundsDocument) break;
                 }
-                if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOB_CostCenter]) {
-                    sCostCenter = Constant.RollUp_CostCenter.HOB_CostCenter;
-                } else if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOD_CostCenter]) {
-                    sCostCenter = Constant.RollUp_CostCenter.HOD_CostCenter;
+                if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOB_COSTCENTER]) {
+                    sCostCenter = Constant.RollUp_CostCenter.HOB_COSTCENTER;
+                } else if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOD_COSTCENTER]) {
+                    sCostCenter = Constant.RollUp_CostCenter.HOD_COSTCENTER;
                 }
             }
         }
@@ -151,7 +162,6 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
 async function rollUpCostCenter(oEmployeeDetails) {
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
     const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
-    const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
 
     let sDirectSuperior = oEmployeeDetails[Constant.EntitiesFields.DIRECT_SUPERIOR];
     let iCounter = 20;
@@ -159,6 +169,7 @@ async function rollUpCostCenter(oEmployeeDetails) {
     let sRank;
 
     try {
+        const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
         while (iCounter > 0) {
             iCounter--;
 

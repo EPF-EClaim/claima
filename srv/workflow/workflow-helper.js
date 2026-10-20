@@ -49,12 +49,12 @@ async function retrieveHeaderDetails(sId, oDescriptor) {
             .one
             .from(oDescriptor.entityHeader)
             .columns(   oDescriptor.idField,
-                        oDescriptor.typeField,
-                        oDescriptor.entityTypeDesc,
-                        Constant.EntitiesFields.EMP_ID,
-                        Constant.EntitiesFields.COST_CENTER,
-                        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                        Constant.EntitiesFields.PROJECT_CODE
+                oDescriptor.typeField,
+                oDescriptor.entityTypeDesc,
+                Constant.EntitiesFields.EMP_ID,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+                Constant.EntitiesFields.PROJECT_CODE
             )
             .where( { [oDescriptor.idField]:sId })
     );
@@ -79,9 +79,9 @@ async function retrieveEmployeeDetails(sId, sEmail){
         sWhereClause = {
             [Constant.EntitiesFields.EMAIL]     : sEmail
         };
-    }    
+    }
     const oEmployeeContext =  await cds.run(
-        SELECT  
+        SELECT
             .one
             .from(sEmpMasterTable)
             .where(sWhereClause)
@@ -120,8 +120,8 @@ async function retrieveRoleRank(sRole) {
     let sQuery = SELECT
         .from(sRoleHierarchyTable)
         .columns(
-                Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.RANK
+            Constant.EntitiesFields.ROLE,
+            Constant.EntitiesFields.RANK
         );
     if(sRole) {
         sQuery = sQuery.where({
@@ -147,6 +147,11 @@ async function retrieveItems(sId, oDescriptor) {
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
+    }
+
+    // Only ZCLAIM_ITEM has the IFAMS item number
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        aColumns.push('EARMARKED_FUNDS_DOC_ITEM_ID');
     }
 
     let oQuery = SELECT
@@ -203,7 +208,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
         return aBudgetContexts;
     }
     for(const oItemContext of aItemsContext) {
-        
+
         aBudgetContexts.push({
             YEAR            : dSubmittedYear,
             INTERNAL_ORDER  : sInternalOrder,
@@ -214,7 +219,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             ACTION          : sAction, //SUBMIT, REJECT, APPROVE;
-            EMP_ID          : oHeaderContext.EMP_ID // to be used for cost center roll up
+            EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
+            EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID // Budget release
         })
     }
     return aBudgetContexts
@@ -244,7 +250,7 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     )
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
-async function performBudgetChecking(oTx, aBudgetContext, sId) {
+async function performBudgetChecking(oTx, aBudgetContext, sId, sEarmarkedFundsDocId, sAction) {
 
     const toNum = (v) => Number(v) || 0;
 
@@ -258,7 +264,7 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
         let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
         var oEmployeeRollupCC;
 
-        const { INDICATOR: sIndicator, ACTION: sAction } = aBudgetContext[0];
+        const sIndicator = aBudgetContext[0].INDICATOR;
 
         if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
             oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
@@ -266,7 +272,7 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
             oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
         }
 
-        if (sIndicator.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+        if (sIndicator === Constant.BudgetSubmissionType.REQUEST) {
             for (const entry of aBudgetContext) {
                 if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
                     condition = {
@@ -290,8 +296,9 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
                         error = true;
                         errorResults.push({
                             ...condition,
-                            STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
-                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                            STATUS: oBudget.message ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
+                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                            MESSAGE: oBudget.message ? oBudget.message : null
                         });
                         continue;
                     }
@@ -304,13 +311,11 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
                             STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                             CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                             AMOUNT: entry.AMOUNT,
-                            AVAILABLE: budgetRecord.BUDGET_BALANCE
+                            AVAILABLE: budgetRecord.BudgetBalance
                         });
                         continue;
                     }
-                }
 
-                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
                     successResults.push({
                         ...condition,
                         STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
@@ -320,20 +325,33 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
                 }
             }
         } else {
-            const aItems = aBudgetContext.map((oBudgetContext) => ({
-                ...Constant.EarmarkedFundPosting_Item,
-                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-                FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
-                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
-                    oBudgetContext.INTERNAL_ORDER && {
-                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
-                })
-            }));
 
-            let budgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC);
+            // CLAIM: Submit = create document, Reject/Push Back = release document
+            const bRelease = sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK;
 
-            if (budgetRecord.Error) {
+            const aItems = bRelease
+                ? aBudgetContext
+                    .filter(oBudgetContext => oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID)
+                    .map(oBudgetContext => ({
+                        EarmarkedFundsDocumentItem: String(oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
+                        FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                        CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
+                    }))
+
+                : aBudgetContext.map((oBudgetContext) => ({
+                    ...Constant.EarmarkedFundPosting_Item,
+                    EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+                    FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                    CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                    ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
+                        oBudgetContext.INTERNAL_ORDER && {
+                        InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
+                    })
+                }));
+
+            let budgetRecord = await processEarmarkedFunds(aItems, bRelease ? sEarmarkedFundsDocId : sId, bRelease ? sAction : null, oEmployeeRollupCC);
+
+            if (budgetRecord?.Error) {
                 error = true;
                 errorResults.push({
                     STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
@@ -345,7 +363,8 @@ async function performBudgetChecking(oTx, aBudgetContext, sId) {
                     oTx,
                     sId,
                     budgetRecord?.oEarmarkedFundsDocument,
-                    budgetRecord?.Message
+                    budgetRecord?.Message,
+                    sAction
                 );
             }
         }
@@ -380,7 +399,11 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const fnItems = (sStatus) => [...new Set(
         aBudgetResults
             .filter(r => r.STATUS === sStatus)
-            .map(r => r.CLAIM_TYPE_ITEM || "-")
+            .map(r => {
+            const sItem = r.CLAIM_TYPE_ITEM || "-";
+            const sMsg = String(r.MESSAGE ?? '').trim();
+            return sMsg ? `${sItem} (${sMsg})` : sItem;
+        })
     )].join(", ");
 
     const aMessages = [];
@@ -388,6 +411,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
 
     const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
+    const sBudgetError = fnItems(Constant.BudgetCheckStatus.ERROR);
 
     if (sNotFoundItems) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
@@ -396,8 +420,11 @@ function buildBudgetErrorMessage(aBudgetResults) {
         aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
     }
     if (aBudgetLockErrors.length) {
-        aMessages.push(aBudgetLockErrors[0].ERROR_MESSAGE ||'Failed to lock budget in IFAMS.');
+        aMessages.push(aBudgetLockErrors[0].ERROR_MESSAGE || 'Failed to lock budget in IFAMS.');
     }
+    if (sBudgetError) {
+        aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
+    }    
 
     return aMessages.length ? aMessages.join("\n") : null;
 }
@@ -433,7 +460,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
             sSubEEID = oSubEmployeeDetails ?? null;
             sSubName = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.NAME] : null;
             sSubEmail = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.EMAIL] : null;
-            console.log("Substitute Employee Details: ", oSubEmployeeDetails);  
+            console.log("Substitute Employee Details: ", oSubEmployeeDetails);
         }
         aApproversContext.push({
             APPROVER_EEID   : oEmployeeDetails[Constant.EntitiesFields.EEID],
