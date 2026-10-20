@@ -480,8 +480,7 @@ sap.ui.define([
 
 		/**
 		 * Maps the raw header row to the form shape, sets owner detail, replaces
-		 * claimsubmission_input with a fresh model instance, applies medical
-		 * entitlement lookup (MEDICAL/MEDICAL_ADVANCE only), header description
+		 * claimsubmission_input with a fresh model instance, header description
 		 * lookup, the view-only flag, and resets is_approver.
 		 *
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
