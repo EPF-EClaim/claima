@@ -1009,8 +1009,8 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - uploadComplete event from FileUploader
 		 */
 		showAttachmentUploadComplete: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
+			var iHttpStatusCode = oEvent.getParameter("status");
+			var sResponse = oEvent.getParameter("response");
 			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
 			MessageToast.show(sMessage);
 		},
