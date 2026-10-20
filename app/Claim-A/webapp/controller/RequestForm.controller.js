@@ -1918,6 +1918,8 @@ sap.ui.define([
 			oReader.onload = async (e) => {
 				try {
 					var oData = new Uint8Array(e.target.result);
+					await this.getOwnerComponent().loadExternalLibraries(); 
+					const XLSX = window.XLSX;
 					var oWorkbook = XLSX.read(oData, { type: "array" });
 					var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
 					var aJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
@@ -2050,6 +2052,7 @@ sap.ui.define([
 
 		async onDownloadExcelReport() {
 			const oView = this.getView();
+			await this.getOwnerComponent().loadExternalLibraries();
 			const XLSX = window.XLSX;
 			const that = this;
 
