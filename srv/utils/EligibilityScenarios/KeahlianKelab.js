@@ -62,10 +62,11 @@ module.exports = {
                 } else {
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
                         oPayload.CheckFields[iIndex].result = true;
-                    } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
-                        // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                        // current payload amount + total amount from other items in the same claim/request
-                        var fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount || 0);
+                    } else {
+                        // total = current item amount + other S_K.KELAB items in the same claim/request
+                        // if total 100 while Rules table has max amount 300, return true
+                        // if total 1000 while Rules table has max amount 300, return max amount (300)
+                        const fCurrentTotal = parseFloat(oPayload.CheckFields[iIndex].value) + parseFloat(fTotalAmount || 0);
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
                             fCurrentTotal,
                             parseFloat(oRule.ELIGIBLE_AMOUNT));
@@ -80,13 +81,13 @@ module.exports = {
          * @private
          * @param {Object} oPayload - payload contains user input passed from frontend
          * @param {Object} tx - CDS Transaction
-         * @returns {Array} aDatetoFrom - Array filled with Date From and Date To
+         * @returns {Promise<{oDatetoFrom: {dDateFrom: string, dDateTo: string}, iItemFreq: number}>} Date range and allowed frequency
          */
     _getDateRange: async function (oPayload, tx) {
         // get Date Range
-        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+        const iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
         if (iIndex == -1) return;
-        return aDatetoFrom = await GetHistoricalData.getDateRange(
+        return await GetHistoricalData.getDateRange(
             oPayload.ClaimType,
             oPayload.ClaimTypeItem,
             0,
@@ -116,20 +117,20 @@ module.exports = {
             sDateField = Constant.EntitiesFields.TRIP_START_DATE;
         }
 
-        const aItemcondition = {
+        const oItemCondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType
         };
 
         // for frequencies other than once per service, date range needed
         if ((!!dDateFrom) && (!!dDateTo)) {
-            aItemcondition[sDateField] = { between: [dDateFrom, dDateTo] }
+            oItemCondition[sDateField] = { between: [dDateFrom, dDateTo] }
         }
 
-        const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
+        const sItemCondition = BuildSelectWhereConditions.buildWhereCondition(oItemCondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
             sItemTable,
-            sItemcondition,
+            sItemCondition,
             tx);
 
         return iHistoricalData;
@@ -142,7 +143,7 @@ module.exports = {
          * @param {Object} dDateTo - Date To Range
          * @param {Object} dDateFrom - Date From Range
          * @param {Object} tx - CDS Transaction
-         * @returns {Object} oPayload - return original payload but with result field filled
+         * @returns {Promise<{iItemCount: number, fTotalAmount: number}>} Count and total amount of other items in the same claim/request
          */
     _getCurrentRecordItemData: async function (oPayload, dDateTo, dDateFrom, tx) {
         var sHeaderField, sItemField, sItemTable, sDateField;
@@ -160,7 +161,7 @@ module.exports = {
             sDateField = Constant.EntitiesFields.TRIP_START_DATE;
         }
 
-        const aCurrentItemcondition = {
+        const oCurrentItemCondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [sHeaderField]: oPayload.RecordId,
             [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
@@ -170,13 +171,13 @@ module.exports = {
 
         // for frequencies other than once per service, date range needed
         if ((!!dDateFrom) && (!!dDateTo)) {
-            aCurrentItemcondition[sDateField]= { between: [dDateFrom, dDateTo] }
+            oCurrentItemCondition[sDateField] = { between: [dDateFrom, dDateTo] }
         }
 
-        const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+        const sCurrentItemCondition = BuildSelectWhereConditions.buildWhereCondition(oCurrentItemCondition);
 
-        return oCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
-            sCurrentItemcondition,
+        return await GetHistoricalData.getCurrentItemData(sItemTable,
+            sCurrentItemCondition,
             tx);
     }
 
