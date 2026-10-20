@@ -2344,42 +2344,6 @@ module.exports = (srv) => {
         }
     });
 
-    /**
-     * Validate PEA total amount by calculating:
-     * - existing PEA header total
-     * - new or updated line item amount
-     * 
-     * Ensures the final adjusted total does not exceed RM25,000.
-     *
-     * @public
-     * @return {Object} - return validation result indicating whether processing can proceed
-     */
-    srv.on('validatePEATotal', async (req) => {
-
-        const {
-            headerTotal,
-            currentAmount,
-            isNew,
-            oldAmount
-        } = req.data;
-
-        const nHeaderTotal = Number(headerTotal) || 0;
-        const nCurrentAmount = Number(currentAmount) || 0;
-        const nOldAmount = Number(oldAmount) || 0;
-        const bIsNew = Boolean(isNew);
-
-        let nAdjustedTotal = nHeaderTotal + nCurrentAmount;
-        // Editing existing item → subtract old amount first
-        if (!bIsNew) {
-            nAdjustedTotal = nHeaderTotal - nOldAmount + nCurrentAmount;
-        }
-        if (nAdjustedTotal > 25000) {
-            // Business validation error (NOT technical)
-            req.error(400, 'Total amount exceeds RM25,000');
-        }
-        return { canProceed: true };
-    });
-
     srv.on('checkElaunTukarEligible', async (req) => {
         const tx = cds.tx(req);
 
