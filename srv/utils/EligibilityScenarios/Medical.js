@@ -291,27 +291,35 @@ module.exports = {
             tx
         );
 
-        const oEntitlementUsed = await tx.run(
+        // Unlimited rule: skip the balance lookup
+        if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
+            oPayload.CheckFields[iIndex].result = true;
+            return;
+        }
+
+        // The view groups usage by the year of SUBMITTED_DATE in MYT.
+        // This item will be counted in the year it is submitted (now, in MYT).
+        const iEntitlementYear = new Date(Date.now() + 8 * 60 * 60 * 1000).getUTCFullYear();
+
+        const oEntitlementBal = await tx.run(
             SELECT.one
-                .from(Constant.Entities.ZEMP_MASTER)
-                .columns(Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT)
-                .where({ EEID: oEmp.EEID })
+                .from(Constant.Entities.ZMED_ENTITLEMENT_BAL)
+                .columns(Constant.EntitiesFields.BALANCE)
+                .where({
+                    [Constant.EntitiesFields.EEID]: oEmp.EEID,
+                    [Constant.EntitiesFields.ENTITLEMENT_YEAR]: iEntitlementYear
+                })
         );
 
-        const iTotalClaimedAmount =
-            Number(oEntitlementUsed?.MEDICAL_INSURANCE_ENTITLEMENT || 0) +
-            iNetClaimAmount;
+        // No row for this year means nothing used yet, so the full rule amount is available
+        const fRemainingEntitlement = oEntitlementBal
+            ? Number(oEntitlementBal[Constant.EntitiesFields.BALANCE] || 0)
+            : parseFloat(oRule.ELIGIBLE_AMOUNT);
 
-        let bResult = false;
-
-        if (oRule) {
-            bResult =
-                oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount ||
-                ComparisonOperators.LesserEquals(
-                    iTotalClaimedAmount,
-                    parseFloat(oRule.ELIGIBLE_AMOUNT)
-                );
-        }
+        const bResult = ComparisonOperators.LesserEquals(
+            iNetClaimAmount,
+            fRemainingEntitlement
+        );
 
         oPayload.CheckFields[iIndex].result = bResult;
     },
