@@ -822,6 +822,11 @@ sap.ui.define([
             "BUDGET_CHECKING"           : "BUDGET_CHECKING",
             "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
             "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
+        },
+        "AttachmentConfig": {
+            "MAX_FILE_SIZE": 5.0,
+            "MIME_TYPES": ["image/jpeg", "image/png", "application/pdf"],
+            "ALLOWED_FILE_TYPES": ["jpg", "jpeg", "png", "pdf"]
         }
 
     }

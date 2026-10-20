@@ -67,6 +67,9 @@
       "app-front": true,
       "html5-repo": true,
       "destinations": true
+    },
+    "hana": {
+      "fuzzy": false
     }
   },
   "workspaces": [
