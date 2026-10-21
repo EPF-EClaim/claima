@@ -1,5 +1,5 @@
 const { Constant } = require("../utils/constant");
-const { generateReturnMessage } = require('../workflow/workflow-helper');
+const cds = require('@sap/cds');
 
 let _ifamsConnection;
 async function getIFAMSConnection() {
@@ -9,104 +9,212 @@ async function getIFAMSConnection() {
     return _ifamsConnection;
 }
 
-async function getBudgetRecord(oCondition) {
+async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
     var oBudgetRecord;
+    let oBudget;
 
     try {
+        const norm = v => {
+            const s = String(v ?? '').trim();
+            return s === Constant.Wildcard.NA ? '' : s;
+        };
+
+        const esc = v => norm(v).replace(/'/g, "''");
+
         const sPath = Constant.IFAMS_API_PATH.BUDGET_SF
-            .replace('{YEAR}', oCondition.YEAR)
-            .replace('{FUND_CENTER}', oCondition?.FUND_CENTER)
-            .replace('{COMMITMENT_ITEM}', oCondition?.COMMITMENT_ITEM)
-            .replace('{MATERIAL_GROUP}', oCondition?.MATERIAL_GROUP)
-            .replace('{INTERNAL_ORDER}', oCondition.INTERNAL_ORDER === Constant.Wildcard.NA ? '' : oCondition.INTERNAL_ORDER);
+            .replace('{YEAR}', esc(oCondition.YEAR))
+            .replace('{INTERNAL_ORDER}', esc(oCondition.INTERNAL_ORDER));
 
         const aBudgetRecords = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
-        // further filter on the returned records
-        oBudgetRecord = aBudgetRecords.find(record => String(record.FundCenter.trim() === String(oCondition.FUND_CENTER).trim() &&
-            String(record.CommitmentItem.trim() === String(oCondition.COMMITMENT_ITEM.trim()))));
+        const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
+        const fnFind = fc => aBudgetRecords.find(r =>
+            eq(r.FundCenter, fc)
+            && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
+            && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
 
+        oBudget = fnFind(oCondition.FUND_CENTER);
 
+        if (!oBudget && norm(oCondition.FUND_CENTER) && oEmployeeRollupCC && Object.keys(oEmployeeRollupCC).length > 0) {
+            oBudget = [oEmployeeRollupCC.HOS_CC, oEmployeeRollupCC.HOB_CC, oEmployeeRollupCC.HOD_CC]
+                .filter(cc => norm(cc))
+                .map(fnFind)
+                .find(Boolean);
+        }
     } catch (error) {
-        console.log(error);
+        return { error: true, data: oBudget, message: error.message};
     }
-
-    return oBudgetRecord;
+    return { error: false, data: oBudget };
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
     const IFAMS_Service = await getIFAMSConnection();
     var aRecords = await IFAMS_Service.send({
         method: sMethod,
-        path: sPath, 
+        path: sPath,
         data: oData
     });
     return aRecords;
 }
 
-async function processEarmarkedFunds(aEarmakedFundItems, sRecordID, sAction) {
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oEmployeeRollupCC) {
     var oEarmarkedFundsDocument;
-    var oEarMarkedFundsPayload
+    var oEarMarkedFundsPayload;
+    var sPath;
+    var sMessage;
 
     try {
-        sAction = Constant.Status.PUSH_BACK; // testing pushback
-        sRecordID = '200000143';
+        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED) && aEarmarkedFundItems.length > 0) {
+            var oResponse;
+            for (const item of aEarmarkedFundItems) {
+                sPath = Constant.IFAMS_API_PATH.RELEASE_EARMARKEDFUNDS
+                    .replace('{DOC_NO}', sRecordID)
+                    .replace('{ITEM_NO}', item.EarmarkedFundsDocumentItem);
 
-        if (sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED) {
-            var sPath = `${Constant.IFAMS_API_PATH.EARMARKEDFUNDS}` + `?$filter=EarmarkedFundsDocument eq '${sRecordID}'` + `&$expand=_EarmarkedFundsDocumentItem`;
-            oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
-
-            if (oEarmarkedFundsDocument.length > 0) {
-                var oResponse;
-                for (const item of oEarmarkedFundsDocument[0]._EarmarkedFundsDocumentItem) {
-                    sPath = Constant.IFAMS_API_PATH.RELEASE_EARMARKEDFUNDS
-                        .replace('{DOC_NO}', sRecordID)
-                        .replace('{ITEM_NO}', item.EarmarkedFundsDocumentItem);
-
-                    oEarMarkedFundsPayload = {
-                        FundsCenter: item.FundsCenter,
-                        CommitmentItem: item.CommitmentItem,
-                        EmrkdFndsItmIsCompleted: true
-                    }
-
-                    oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
+                oEarMarkedFundsPayload = {
+                    FundsCenter: item.FundsCenter,
+                    CommitmentItem: item.CommitmentItem,
+                    EmrkdFndsItmIsCompleted: true
                 }
-                return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}` }
+
+                oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
             }
+            return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${sRecordID}` }
         }
 
-        // testing on API 
-        var aItems = [{
+        // testing 
+        aEarmarkedFundItems = [{
             ...Constant.EarmarkedFundPosting_Item,
-            EmrkdFndsAmountInTransCrcy: 1000000.00,
-            FundsCenter: '100050500',
+            EmrkdFndsAmountInTransCrcy: 900.00,
+            FundsCenter: '1SS50500',
             CommitmentItem: '721000'
         }];
-        // testing on API 
+        // testing
 
         oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
             EarmarkedFundsHeaderText: sRecordID,
             _EarmarkedFundsDocumentItem:
-                aItems //aEarmakedFundItems
+                aEarmarkedFundItems
         };
 
         oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
 
+        // if no budget allocation, use budget lookup to higher hierarchy
+        if (!oEarmarkedFundsDocument && Object.keys(oEmployeeRollupCC).length > 0) {
+            var aNewCCItems = [];
+            var iCount = 2;
+            let sCostCenter = Constant.RollUp_CostCenter.HOS_CostCenter;
+
+            while (iCount > 0) {
+                iCount--;
+                aNewCCItems = []; // clear item for next iteration
+                if (oEmployeeRollupCC[sCostCenter]) {
+                    // rebuild payload
+                    for (const item of aEarmarkedFundItems) {
+                        aNewCCItems.push({
+                            ...
+                            Constant.EarmarkedFundPosting_Item,
+                            EmrkdFndsAmountInTransCrcy: item.EmrkdFndsAmountInTransCrcy,
+                            FundsCenter: oEmployeeRollupCC[sCostCenter],
+                            CommitmentItem: item.CommitmentItem
+                        });
+                    }
+
+                    oEarMarkedFundsPayload = {
+                        ...
+                        Constant.EarmarkedFundPosting_DocHeader,
+                        EarmarkedFundsHeaderText: sRecordID,
+                        _EarmarkedFundsDocumentItem:
+                            aNewCCItems
+                    }
+
+                    oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
+
+                    if (oEarmarkedFundsDocument) break;
+                }
+                if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOB_CostCenter]) {
+                    sCostCenter = Constant.RollUp_CostCenter.HOB_CostCenter;
+                } else if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOD_CostCenter]) {
+                    sCostCenter = Constant.RollUp_CostCenter.HOD_CostCenter;
+                }
+            }
+        }
+
     } catch (error) {
-        return generateReturnMessage(false, sClaimID, Constant.WorkflowArea.WORKFLOW_DETERMINATION, error.message, false);
+        return {
+            Error: true,
+            oEarmarkedFundsDocument, // undefined
+            Message: error.message
+        }
     }
 
+    if (!oEarmarkedFundsDocument) {
+        sMessage = 'Budget not found';
+    } else {
+        sMessage = `EarmarkedFunds Document created. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}`;
+    }
     return {
+        Error: false,
         oEarmarkedFundsDocument,
-        Message: `EarmarkedFunds Document created. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}`
+        Message: sMessage
     }
 }
 
 
+async function rollUpCostCenter(oEmployeeDetails) {
+    const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
+    const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
+    const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
+
+    let sDirectSuperior = oEmployeeDetails[Constant.EntitiesFields.DIRECT_SUPERIOR];
+    let iCounter = 20;
+    var oEmployeeRollupCC = {};
+    let sRank;
+
+    try {
+        while (iCounter > 0) {
+            iCounter--;
+
+            var oDirectSuperior = await cds.run(SELECT.one.from(sEmpMasterTable).
+                where({ [Constant.EntitiesFields.EEID]: sDirectSuperior }));
+
+            if (!oDirectSuperior) break;
+
+            sRank = (aRoleHierarchy.find(role => role.ROLE === oDirectSuperior.ROLE))?.RANK;
+
+            if (sRank > (aRoleHierarchy.find(role => role.ROLE === Constant.Role.HOD)).RANK) {
+                break;
+            }
+
+            switch (oDirectSuperior.ROLE) {
+                case (Constant.Role.HOS):
+                    oEmployeeRollupCC.HOS_CC = oDirectSuperior.CC;
+                    break;
+                case (Constant.Role.HOB):
+                    oEmployeeRollupCC.HOB_CC = oDirectSuperior.CC;
+                    break;
+                case (Constant.Role.HOD):
+                    oEmployeeRollupCC.HOD_CC = oDirectSuperior.CC;
+                    break;
+                default:
+                    break;
+            }
+
+            sDirectSuperior = oDirectSuperior[Constant.EntitiesFields.DIRECT_SUPERIOR];
+
+            if (oEmployeeRollupCC.HOD_CC || oEmployeeRollupCC.HOB_CC) break;
+        }
+
+        return oEmployeeRollupCC;
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 module.exports = {
     getBudgetRecord,
-    processEarmarkedFunds
+    processEarmarkedFunds,
+    rollUpCostCenter
 }
