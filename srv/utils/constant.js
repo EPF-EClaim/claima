@@ -23,7 +23,8 @@ const Constant = {
         SUFFICIENT: "OK",
         UPDATED: "RECORD UPDATED",
         LOCK_ERROR: "BUDGET LOCK ERROR",
-        ERROR: "ERROR IN BUDGET CHECKING"
+        ERROR: "ERROR IN BUDGET CHECKING",
+        RELEASE_ERROR: "BUDGET RELEASE ERROR",
     },
     NumberRange: {
         REQUEST: "NR01",

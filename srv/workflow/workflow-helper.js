@@ -256,12 +256,6 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
         let errorResults = [];
         let successResults = [];
 
-        // determine upper cost center, incase for no budget allocation for each item
-        let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
-        var oEmployeeRollupCC;
-
-        const bRelease = sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK;
-
         const aItems =
             aBudgetContext
                 .filter(oBudgetContext => oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID)
@@ -271,21 +265,21 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
                     CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
                 }))
 
-        let budgetRecord = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction, oEmployeeRollupCC);
+        const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
 
-        if (budgetRecord?.Error) {
+        if (oReleaseResult?.Error) {
             error = true;
             errorResults.push({
-                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
-                LOCK_BUDGET: true,
-                ERROR_MESSAGE: budgetRecord?.Message
+                STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+                RELEASE_ERROR: true,
+                ERROR_MESSAGE: oReleaseResult?.Message
             });
         } else {
             await updateEarmarkedFundDetails(
                 oTx,
                 sId,
-                budgetRecord?.oEarmarkedFundsDocument,
-                budgetRecord?.Message,
+                oReleaseResult?.oEarmarkedFundsDocument,
+                oReleaseResult?.Message,
                 sAction
             );
         }
@@ -472,6 +466,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
 
     const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
+    const aBudgetReleaseErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.RELEASE_ERROR);
     const sBudgetError = fnItems(Constant.BudgetCheckStatus.ERROR);
 
     if (sNotFoundItems) {
@@ -482,6 +477,9 @@ function buildBudgetErrorMessage(aBudgetResults) {
     }
     if (aBudgetLockErrors.length) {
         aMessages.push(aBudgetLockErrors[0].ERROR_MESSAGE || 'Failed to lock budget in IFAMS.');
+    }
+    if (aBudgetReleaseErrors.length) {
+        aMessages.push(aBudgetReleaseErrors[0].ERROR_MESSAGE || 'Failed to release budget in IFAMS.');
     }
     if (sBudgetError) {
         aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
