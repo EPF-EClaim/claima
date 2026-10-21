@@ -205,7 +205,7 @@ async function rollUpCostCenter(oEmployeeDetails) {
 
         return oEmployeeRollupCC;
     } catch (oError) {
-        console.log(oError.message);
+        return { error: true, message: oError.message };
     }
 }
 

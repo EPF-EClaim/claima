@@ -300,7 +300,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
 
             aSuccessResults.push({
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-            });             
+            });
         }
 
         if (bError) {
@@ -330,12 +330,21 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
 
     try {
         let bError = false;
-        let aErrorResults  = [];
+        let aErrorResults = [];
         let aSuccessResults = [];
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
-            oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        if (oEmployeeRollupCC.error) {
+            error = true;
+            errorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            })
+
+            return errorResults;
+        }
 
         const aItems =
             aBudgetContext.map((oBudgetContext) => ({
@@ -368,7 +377,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
 
             aSuccessResults.push({
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-            });            
+            });
         }
 
         if (bError) {
@@ -407,7 +416,16 @@ async function checkRequestBudget(aBudgetContext) {
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
-            oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        if (oEmployeeRollupCC.error) {
+            error = true;
+            errorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            });
+
+            return errorResults;
+        }
 
         for (const entry of aBudgetContext) {
             if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
@@ -425,32 +443,32 @@ async function checkRequestBudget(aBudgetContext) {
                 };
             }
 
-                let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC);
-                let oBudgetData = oBudgetRecord.data;
+            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC);
+            let oBudgetData = oBudgetRecord.data;
 
-                if (!oBudgetData) {
-                    bError = true;
-                    aErrorResults.push({
-                        ...condition,
-                        STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        MESSAGE: oBudgetRecord.error ? oBudgetRecord.message: null
-                    });
-                    continue;
-                }
+            if (!oBudgetData) {
+                bError = true;
+                aErrorResults.push({
+                    ...condition,
+                    STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                    MESSAGE: oBudgetRecord.error ? oBudgetRecord.message : null
+                });
+                continue;
+            }
 
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(oBudgetData.BudgetBalance);
-                if (!bSufficient) {
-                    bError = true;
-                    aErrorResults.push({
-                        ...condition,
-                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        AMOUNT: entry.AMOUNT,
-                        AVAILABLE: oBudgetData.BudgetBalance
-                    });
-                    continue;
-                }
+            const bSufficient = toNum(entry.AMOUNT) <= toNum(oBudgetData.BudgetBalance);
+            if (!bSufficient) {
+                bError = true;
+                aErrorResults.push({
+                    ...condition,
+                    STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                    AMOUNT: entry.AMOUNT,
+                    AVAILABLE: oBudgetData.BudgetBalance
+                });
+                continue;
+            }
 
             aSuccessResults.push({
                 ...condition,
@@ -593,17 +611,17 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
     }));
 }
 
-async function getRollUpCostCenter (sEmpID) {
+async function getRollUpCostCenter(sEmpID) {
     var oEmployeeRollupCC;
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
 
-    if (oEmployeeDetails && 
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
-            oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-        }
-    
+    if (oEmployeeDetails &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+        oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+    }
+
     return oEmployeeRollupCC;
 }
 
