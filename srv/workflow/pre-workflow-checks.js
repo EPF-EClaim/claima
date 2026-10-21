@@ -16,7 +16,6 @@ const {
 } = require("./determination/determination-helper");
 const {
     retrieveBudgetContext,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     generateReturnMessage
 } = require("./workflow-helper");
@@ -89,7 +88,12 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     try {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
         if (aBudgetContext?.length > 0) {
-            aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext, sId);
+
+            if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+                aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
+            } else {
+                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext)
+            }
 
             // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
             const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
