@@ -43,7 +43,7 @@ async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
     } catch (oError) {
         return { error: true, data: oBudget, message: oError.message};
     }
-    return { error: false, data: oBudget };
+    return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
