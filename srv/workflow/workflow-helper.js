@@ -288,20 +288,21 @@ async function performBudgetChecking(oTx, aBudgetContext, sId, sEarmarkedFundsDo
                     };
                 }
 
-                let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
+                let oBudgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
+                let oBudgetData = oBudgetRecord.data;
 
-                if (!budgetRecord) {
+                if (!oBudgetData) {
                     error = true;
                     errorResults.push({
                         ...condition,
-                        STATUS: oBudget.message ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
+                        STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        MESSAGE: oBudget.message ? oBudget.message : null
+                        MESSAGE: oBudgetRecord.error ? oBudgetRecord.message: null
                     });
                     continue;
                 }
 
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
+                const bSufficient = toNum(entry.AMOUNT) <= toNum(oBudgetData.BudgetBalance);
                 if (!bSufficient) {
                     error = true;
                     errorResults.push({
@@ -309,7 +310,7 @@ async function performBudgetChecking(oTx, aBudgetContext, sId, sEarmarkedFundsDo
                         STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                         AMOUNT: entry.AMOUNT,
-                        AVAILABLE: budgetRecord.BudgetBalance
+                        AVAILABLE: oBudgetData.BudgetBalance
                     });
                     continue;
                 }
