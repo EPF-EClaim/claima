@@ -1897,4 +1897,22 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
 
+    type DocumentData {
+        CLAIM_ID      : String;
+        FI_DOC_ID     : String;
+        FI_DOC_YEAR   : String;
+        FI_DOC_COCODE : String;
+        STATUS_CODE   : String;
+    };
+
+    type ReleaseLog {
+        CLAIM_ID               : String;
+        EARMARKED_FUNDS_DOC_ID : String;
+        STATUS_CODE            : String;
+    };
+
+    action   batchUpdateFIDoc(aDocument: many DocumentData)                                              returns Response;
+
+    action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;        
+
 };

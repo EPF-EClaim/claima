@@ -31,5 +31,4 @@ service workflow {
         Area                : String;
         Message             : String;
     };
-
 }

@@ -12,11 +12,11 @@ const {
     resolveDocDescriptor,
     retrieveBudgetContext,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    releaseClaimBudget
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -63,26 +63,11 @@ module.exports = (srv) => {
         }
         const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
-        // 6.1 Perform budget actualization for auto approve ===
-        // 6.2 update header status
-        // 6.3 update entitlement amount 
-        // 6.4 update ccc advance value
-        let aBudgetContext, aBudgetCheckReturn;
+        // 6.1 update header status
+        // 6.2 update entitlement amount 
+        // 6.3 update ccc advance value
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             var bAutoApprove = true;
-            try {
-                aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, Constant.ApproverActions.APPROVE);
-                aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-            } catch (oError) {
-                await oTx.rollback();
-                throw new Error(`Error encountered during Budget Actualization\n${oError.message}`);
-            }
-
-            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-            if (sBudgetError) {
-                await oTx.rollback();
-                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, `Error encountered during Budget Checking\n${sBudgetError}`, false);
-            }
 
             // If successful, update Header table with approved status and timestamp
             try {
@@ -199,18 +184,43 @@ module.exports = (srv) => {
         }
         console.log("Approver Action Completed: ", bStatus);
 
-        // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
-        if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
+        // REJECT / PUSH BACK:
+        // Release Earmarked Funds reservation in IFAMS,
+        // log the successful release and clear the local IFAMS references.
+        if (
+            oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM &&
+            (
+                oActionDescriptor.actionValue === Constant.Status.REJECTED ||
+                oActionDescriptor.actionValue === Constant.Status.PUSH_BACK
+            )
+        ) {
             const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
-            console.log("aBudgetContext: ", aBudgetContext);
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            console.log("aReturn: ", aReturn);
+            // Earmarked Funds Document ID must be available
+            const oClaimHeader = await oTx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZCLAIM_HEADER)
+                    .columns("EARMARKED_FUNDS_DOC_ID")
+                    .where({
+                        CLAIM_ID: sRecordId
+                    })
+            );
+            const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
+            if (!sEarmarkedFundsDocId) {
+                bStatus = false;
+                throw new Error(
+                    `Earmarked Funds Document ID not found for ${sRecordId}`
+                );
+            }
+
+            // Call IFAMS to release the budget
+            const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
                 bStatus = false;
-                throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
+                throw new Error(
+                    `Error encountered during IFAMS Budget Release\n${sBudgetError}`
+                );
             }
-            console.log("Budget Checking Status: ", bStatus);
         }
 
         // update PEDU entitlement usage if action is reject

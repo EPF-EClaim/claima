@@ -70,9 +70,9 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-            if (!oEmp) { 
-                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id }); 
-                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.'); 
+            if (!oEmp) {
+                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id });
+                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.');
             }
 
             let sOrigin = null;
@@ -382,7 +382,7 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var new_return = return_value + Number(existing[0].RETURN);
                     var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
@@ -771,13 +771,13 @@ module.exports = (srv) => {
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-    
+
         const oHeaderResult = await tx.run(
             SELECT.one.from('ZREQUEST_HEADER')
                 .where({ REQUEST_ID: sRequestId })
                 .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
         );
-    
+
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -786,15 +786,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-    
+
         let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-    
+
         const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
         if (bIsCorpoCC && totalEstAmount < 0) {
             totalEstAmount = 0;
         }
-    
+
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -1511,13 +1511,13 @@ module.exports = (srv) => {
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
         const tx = cds.tx(req);
-        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
+        const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
 
         if (sRequestId) {
-            await updateRequestItemCostCenters(tx,sRequestId);
+            await updateRequestItemCostCenters(tx, sRequestId);
         }
         const sStatus = data.STATUS || req.data.STATUS;
-        
+
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -2590,11 +2590,11 @@ module.exports = (srv) => {
      * To protect a new report, add one line here. The handler below registers itself from these keys.
      */
     const mCostCenterFilterField = {
-        ZEMP_CLAIM_REPORT_SUMMARY:   'CHARGING_COST_CENTER',
-        ZEMP_CLAIM_REPORT_DETAILS:   'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
-        ZEMP_CC_BUDGET_REPORT:       'FUND_CENTER'
+        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER'
     };
 
     /**
@@ -4613,7 +4613,7 @@ module.exports = (srv) => {
     srv.on('getMonthlyAdvanceAmount', async (req) => {
         const { sCardNo, sCardholderId } = req.data;
         if (!sCardNo || !sCardholderId) return 0.00;
-    
+
         try {
             const oCardAdvance = await SELECT
                 .one
@@ -4623,11 +4623,11 @@ module.exports = (srv) => {
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
                 });
- 
+
             console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
-    
+
             return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
-    
+
         } catch (error) {
             console.error('[getMonthlyAdvanceAmount] Query failed:', error);
             req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
@@ -4914,21 +4914,21 @@ module.exports = (srv) => {
 
     srv.on('deleteItemCascade', async (req) => {
         const { sReqId, sReqSubId } = req.data;
-    
+
         if (!sReqId || !sReqSubId) {
             req.error(400, 'sReqId and sReqSubId are required');
             return;
         }
-    
+
         const tx = cds.tx(req);
-    
+
         try {
             await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
-    
+
             return true;
-    
+
         } catch (error) {
             console.error('[deleteItemCascade] Failed:', error);
             req.error(500, `Failed to delete item: ${error.message}`);
@@ -4959,7 +4959,7 @@ module.exports = (srv) => {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
             const tx = cds.tx(req);
-        
+
             for (const row of budget) {
                 const key = {
                     YEAR: row.YEAR,
@@ -5300,21 +5300,21 @@ module.exports = (srv) => {
         };
     });
 
-    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) => {
         const tx = cds.tx(req);
         try {
             var oStatus = await tx.run(SELECT.one
-                                    .from(Constant.Entities.ZCLAIM_HEADER)
-                                    .where({
-                                        CLAIM_ID: req.data.sClaimID
-                                    })
+                .from(Constant.Entities.ZCLAIM_HEADER)
+                .where({
+                    CLAIM_ID: req.data.sClaimID
+                })
             )
 
-            return { sStatus: oStatus.STATUS_ID}
-        }catch(oError){
+            return { sStatus: oStatus.STATUS_ID }
+        } catch (oError) {
             throw new Error(oError)
         }
-        
+
     });
 
     /**
@@ -5353,5 +5353,90 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+    srv.on('batchUpdateFIDoc', async (req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        try {
+            const { aDocument } = req.data;
+            if (!aDocument || aDocument.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            for (var i = 0; i < aDocument.length; i++) {
+                var oFIDocument = aDocument[i];
+                if (!oFIDocument.FI_DOC_ID) continue;
+
+                if (oFIDocument.STATUS_CODE === Constant.StatusCode.SUCCESS) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
+                                FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
+                                FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
+                            })
+                            .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    })
+
+    srv.on('batchUpdateReleaseLog', async (req) => {
+        const { ZLOG } = srv.entities;
+
+        try {
+            const { aReleaseLog } = req.data;
+
+            if (!aReleaseLog || aReleaseLog.length === 0) {
+                throw new Error('No Data Sent');
+            }
+
+            const tx = cds.tx(req);
+            const aReleaseLogUpdates = [];
+
+            for (let i = 0; i < aReleaseLog.length; i++) {
+                const oReleaseLog = aReleaseLog[i];
+
+                if (!oReleaseLog.CLAIM_ID) continue;
+
+                const bSuccess = oReleaseLog.STATUS_CODE === Constant.StatusCode.SUCCESS;
+
+                aReleaseLogUpdates.push({
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: oReleaseLog.CLAIM_ID,
+                    PROGRAM: Constant.BudgetLog.PROGRAM.RELEASE,
+                    MESSAGE_TYPE: Constant.BudgetLog.MESSAGE_TYPE,
+                    STATUS_CODE: oReleaseLog.STATUS_CODE,
+                    MESSAGE: bSuccess
+                        ? `Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} successfully released for Claim ${oReleaseLog.CLAIM_ID}.`
+                        : `Failed to release Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} for Claim ${oReleaseLog.CLAIM_ID}.`
+                });
+            }
+
+            if (aReleaseLogUpdates.length > 0) {
+                await tx.run(
+                    INSERT.into(ZLOG).entries(aReleaseLogUpdates)
+                );
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
     });
 }

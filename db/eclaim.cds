@@ -596,6 +596,7 @@ entity ZCLAIM_ITEM : managed {
         INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
         INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Name';
         ATTACHMENT_FILE_4               : String         @Common.Label: 'Attachment 4';
+        EARMARKED_FUNDS_DOC_ITEM_ID     : String(3)      @Common.Label: 'Earmarked Funds Document Item ID';
         ZCLAIM_HEADER                   : Association to ZCLAIM_HEADER
                                               on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY                 : Association to ZCLAIM_CATEGORY

@@ -50,7 +50,7 @@
       "bypass_draft": true
     },
     "requires": {
-      "IS_Conn": { 
+      "IS_Conn": {
         "kind": "odata",
         "credentials": {
           "destination": "IS_Conn"
@@ -66,7 +66,14 @@
       },
       "app-front": true,
       "html5-repo": true,
-      "destinations": true
+      "destinations": true,
+      "IFAMS_S4_QAS": {
+        "kind": "odata",
+        "csrf": true,
+        "credentials": {
+          "destination": "IFAMS_S4_QAS"        
+        }        
+      }
     },
     "hana": {
       "fuzzy": false

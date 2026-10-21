@@ -2,6 +2,7 @@ const cds = require('@sap/cds');
 const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
+const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -48,12 +49,12 @@ async function retrieveHeaderDetails(sId, oDescriptor) {
             .one
             .from(oDescriptor.entityHeader)
             .columns(   oDescriptor.idField,
-                        oDescriptor.typeField,
-                        oDescriptor.entityTypeDesc,
-                        Constant.EntitiesFields.EMP_ID,
-                        Constant.EntitiesFields.COST_CENTER,
-                        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                        Constant.EntitiesFields.PROJECT_CODE
+                oDescriptor.typeField,
+                oDescriptor.entityTypeDesc,
+                Constant.EntitiesFields.EMP_ID,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+                Constant.EntitiesFields.PROJECT_CODE
             )
             .where( { [oDescriptor.idField]:sId })
     );
@@ -78,9 +79,9 @@ async function retrieveEmployeeDetails(sId, sEmail){
         sWhereClause = {
             [Constant.EntitiesFields.EMAIL]     : sEmail
         };
-    }    
+    }
     const oEmployeeContext =  await cds.run(
-        SELECT  
+        SELECT
             .one
             .from(sEmpMasterTable)
             .where(sWhereClause)
@@ -119,8 +120,8 @@ async function retrieveRoleRank(sRole) {
     let sQuery = SELECT
         .from(sRoleHierarchyTable)
         .columns(
-                Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.RANK
+            Constant.EntitiesFields.ROLE,
+            Constant.EntitiesFields.RANK
         );
     if(sRole) {
         sQuery = sQuery.where({
@@ -146,6 +147,11 @@ async function retrieveItems(sId, oDescriptor) {
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
+    }
+
+    // Only ZCLAIM_ITEM has the IFAMS item number
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        aColumns.push('EARMARKED_FUNDS_DOC_ITEM_ID');
     }
 
     let oQuery = SELECT
@@ -202,7 +208,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
         return aBudgetContexts;
     }
     for(const oItemContext of aItemsContext) {
-        
+
         aBudgetContexts.push({
             YEAR            : dSubmittedYear,
             INTERNAL_ORDER  : sInternalOrder,
@@ -212,7 +218,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC],
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
-            ACTION          : sAction //SUBMIT, REJECT, APPROVE;
+            EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
+            EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID // Budget release
         })
     }
     return aBudgetContexts
@@ -242,118 +249,243 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     )
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
-async function performBudgetChecking(oTx, aBudgetContext) {
-    const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
-
-    const toNum = (v) => Number(v) || 0;
-    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+/**
+ * Releases the previously locked claim budget by processing the associated
+ * earmarked fund document items.
+ *
+ * Only budget context entries containing an earmarked fund document item ID
+ * are included in the release request. When the release succeeds, the
+ * earmarked fund details are updated in the database.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the earmarked fund item details
+ * @param {string} sId - Claim 
+ * @param {string} sEarmarkedFundsDocId - Earmarked funds document ID to be released
+ * @param {string} sAction - Claim workflow action
+ * @returns {Promise<Array<object>|Error>} Release error results, an empty array on success, or the caught error
+ */
+async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId, sAction) {
 
     try {
-        let error = false;
-        let errorResults = [];
-        let successResults = [];
-        let condition;
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
+
+        const aItems =
+            aBudgetContext
+                .filter(oBudgetContext => oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID)
+                .map(oBudgetContext => ({
+                    EarmarkedFundsDocumentItem: String(oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
+                    FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                    CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
+                }))
+
+        const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
+
+        if (oReleaseResult?.Error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+                RELEASE_ERROR: true,
+                ERROR_MESSAGE: oReleaseResult?.Message
+            });
+        } else {
+            await updateEarmarkedFundDetails(
+                oTx,
+                sId,
+                oReleaseResult?.oEarmarkedFundsDocument,
+                oReleaseResult?.Message,
+                sAction
+            );
+
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.RELEASED,
+            });
+        }
+
+        if (bError) {
+            return aErrorResults;
+        }
+
+        return aSuccessResults;
+
+    } catch (oError) {
+        return oError;
+    }
+}
+/**
+ * Locks the required claim budget by creating an earmarked funds document.
+ *
+ * For employees outside the RD, HOD, and CXO roles, the function determines
+ * the applicable upper-level cost center before processing the earmarked
+ * funds request. When the lock succeeds, the generated earmarked fund details
+ * are updated in the database.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the amount and account assignment details
+ * @param {string} sId - Claim or record ID used for the earmarked funds request
+ * @returns {Promise<Array<object>|Error>} Lock error results, an empty array on success, or the caught error
+ */
+async function lockClaimBudget(oTx, aBudgetContext, sId) {
+
+    try {
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
+        var oEmployeeRollupCC;
+
+        // determine upper cost center, incase for no budget allocation for each item
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        if (oEmployeeRollupCC.error) {
+            bError = true;
+            errorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            })
+
+            return errorResults;
+        }
+
+        const aItems =
+            aBudgetContext.map((oBudgetContext) => ({
+                ...Constant.EarmarkedFundPosting_Item,
+                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+                FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
+                    oBudgetContext.INTERNAL_ORDER && {
+                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
+                })
+            }));
+
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC.oEmployeeRollupCC);
+
+        if (oBudgetRecord?.Error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_MESSAGE: oBudgetRecord?.Message
+            });
+        } else {
+            await updateEarmarkedFundDetails(
+                oTx,
+                sId,
+                oBudgetRecord?.oEarmarkedFundsDocument,
+                oBudgetRecord?.Message
+            );
+
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+            });
+        }
+
+        if (bError) {
+            return aErrorResults;
+        }
+
+        return aSuccessResults;
+
+    } catch (oError) {
+        return oError;
+    }
+}
+/**
+ * Checks whether sufficient budget is available for each request item.
+ *
+ * The applicable budget record is retrieved using the internal order or the
+ * relevant fund center, material group, and commitment item combination.
+ * For employees outside the RD, HOD, and CXO roles, the upper-level cost
+ * center may be used when retrieving the budget record.
+ *
+ * If any item fails the check, only the failed results are returned.
+ * Otherwise, the function returns the successful results for all items.
+ *
+ * @param {Array<object>} aBudgetContext - Request budget context containing employee, amount, and account assignment details
+ * @returns {Promise<Array<object>|Error>} Budget-check results or the caught error
+ */
+async function checkRequestBudget(aBudgetContext) {
+
+    const toNum = (v) => Number(v) || 0;
+
+    try {
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
+        let sCondition;
+        var oEmployeeRollupCC;
+
+        // determine upper cost center, incase for no budget allocation for each item
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
+        if (oEmployeeRollupCC.error) {
+            bError = true;
+            errorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            });
+
+            return errorResults;
+        }
 
         for (const entry of aBudgetContext) {
-            if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
-                condition = {
+            if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
+                sCondition = {
                     YEAR: entry.YEAR,
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 };
-            }else{
-                condition = {
+            } else {
+                sCondition = {
                     YEAR: entry.YEAR,
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                     FUND_CENTER: entry.FUND_CENTER,
                     MATERIAL_GROUP: entry.MATERIAL_GROUP,
                     COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-                };   
+                };
             }
 
-            let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
-                ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
-                : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
+            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC.oEmployeeRollupCC);
+            let oBudgetData = oBudgetRecord.data;
 
-            if (!budgetRecord) {
-                error = true;
-                errorResults.push({
+            if (!oBudgetData) {
+                bError = true;
+                aErrorResults.push({
                     ...condition,
-                    STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                    STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                    MESSAGE: oBudgetRecord.error ? oBudgetRecord.message : null
                 });
                 continue;
             }
 
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
-                (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
-                if (!bSufficient) {
-                    error = true;
-                    errorResults.push({
-                        ...condition,
-                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        AMOUNT: entry.AMOUNT,
-                        AVAILABLE: budgetRecord.BUDGET_BALANCE
-                    });
-                    continue;
-                }
-            }
-
-            if (error) continue;
-
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                successResults.push({
+            const bSufficient = toNum(entry.AMOUNT) <= toNum(oBudgetData.BudgetBalance);
+            if (!bSufficient) {
+                bError = true;
+                aErrorResults.push({
                     ...condition,
-                    STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                    STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                    AMOUNT: entry.AMOUNT,
+                    AVAILABLE: oBudgetData.BudgetBalance
                 });
                 continue;
             }
 
-            let newCommitment = toNum(budgetRecord.COMMITMENT);
-            let newActual = toNum(budgetRecord.ACTUAL);
-            const amount = toNum(entry.AMOUNT);
-            if (entry.ACTION === Constant.BudgetProcessingAction.SUBMIT) {
-                newCommitment = round2(newCommitment - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.APPROVE) {
-                newCommitment = round2(newCommitment + amount);
-                newActual = round2(newActual - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.REJECT) {
-                newCommitment = round2(newCommitment + amount);
-            }
-
-            const newConsumed = round2(newCommitment + newActual);
-            const newBudgetBalance = round2(toNum(budgetRecord.CURRENT_BUDGET) + newConsumed);
-
-            await oTx.run(
-                UPDATE(ZBUDGET)
-                    .set({
-                        CONSUMED: newConsumed.toFixed(2),
-                        COMMITMENT: newCommitment.toFixed(2),
-                        BUDGET_BALANCE: newBudgetBalance.toFixed(2),
-                        ACTUAL: newActual.toFixed(2)
-                    })
-                    .where(condition)
-            );
-
-            successResults.push({
+            aSuccessResults.push({
                 ...condition,
-                STATUS: Constant.BudgetCheckStatus.UPDATED,
-                CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                NEW_CONSUMED: newConsumed,
-                NEW_BUDGETBALANCE: newBudgetBalance
+                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
             });
+            continue;
         }
 
-        if (error) {
-            return errorResults;
+        if (bError) {
+            return aErrorResults;
         }
 
-        return successResults;
+        return aSuccessResults;
 
-    } catch (err) {
-        return err;
+    } catch (oError) {
+        return oError;
     }
 }
 /**
@@ -364,30 +496,48 @@ async function performBudgetChecking(oTx, aBudgetContext) {
  *  - pre-workflow-checks.js (request/claim submission)
  *  - ../workflow-srv.js (auto-approval, final approval, reject, push back)
  *
- * @param {Array} aBudgetResults - results returned by performBudgetChecking
+ * @param {Array} aBudgetResults - results returned by checkRequestBudget
+ *                                 lockClaimBudget and releaseClaimBudget
  *                                 (each with STATUS and CLAIM_TYPE_ITEM)
  * @returns {string|null} error message, or null when there is no budget error
  */
 function buildBudgetErrorMessage(aBudgetResults) {
     if (!Array.isArray(aBudgetResults)) {
-        return null;
+        return `Budget check failed: ${aBudgetResults?.message ?? 'unknown error'}`;
     }
 
     const fnItems = (sStatus) => [...new Set(
         aBudgetResults
             .filter(r => r.STATUS === sStatus)
-            .map(r => r.CLAIM_TYPE_ITEM || "-")
+            .map(r => {
+                const sItem = r.CLAIM_TYPE_ITEM || "-";
+                const sMsg = String(r.MESSAGE ?? '').trim();
+                return sMsg ? `${sItem} (${sMsg})` : sItem;
+            })
     )].join(", ");
 
     const aMessages = [];
     const sNotFoundItems = fnItems(Constant.BudgetCheckStatus.NOT_FOUND);
     const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
 
+    const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
+    const aBudgetReleaseErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.RELEASE_ERROR);
+    const sBudgetError = fnItems(Constant.BudgetCheckStatus.ERROR);
+
     if (sNotFoundItems) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
     }
     if (sInsufficientItems) {
         aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
+    }
+    if (aBudgetLockErrors.length) {
+        aMessages.push(aBudgetLockErrors[0].ERROR_MESSAGE || 'Failed to lock budget in IFAMS.');
+    }
+    if (aBudgetReleaseErrors.length) {
+        aMessages.push(aBudgetReleaseErrors[0].ERROR_MESSAGE || 'Failed to release budget in IFAMS.');
+    }
+    if (sBudgetError) {
+        aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
     }
 
     return aMessages.length ? aMessages.join("\n") : null;
@@ -424,7 +574,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
             sSubEEID = oSubEmployeeDetails ?? null;
             sSubName = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.NAME] : null;
             sSubEmail = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.EMAIL] : null;
-            console.log("Substitute Employee Details: ", oSubEmployeeDetails);  
+            console.log("Substitute Employee Details: ", oSubEmployeeDetails);
         }
         aApproversContext.push({
             APPROVER_EEID   : oEmployeeDetails[Constant.EntitiesFields.EEID],
@@ -450,27 +600,44 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
  * @param {string} [sStatusCode='200']
  * @returns {Promise<void>}
  */
-async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200') {
+async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200', sProgram = 'WORKFLOW') {
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: sProgram,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
     }));
 }
-module.exports = { 
+
+async function getRollUpCostCenter(sEmpID) {
+    var oEmployeeRollupCC;
+    let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
+
+    if (oEmployeeDetails &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+        oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+    }
+
+    return oEmployeeRollupCC;
+}
+
+module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
     retrieveEmployeeDetails,
     retrieveBudgetContext,
     retrieveItems,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRoleRank,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    checkRequestBudget,
+    lockClaimBudget,
+    releaseClaimBudget
 };
