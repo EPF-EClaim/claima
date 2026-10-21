@@ -525,8 +525,8 @@ sap.ui.define([
 				}
 
 				return true;
-			} catch (err) {
-				console.error("Failed to load claim header/items:", err);
+			} catch (oError) {
+				MessageBox.error("Failed to load claim header/items:", oError);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
