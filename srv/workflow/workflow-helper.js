@@ -267,9 +267,9 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
 async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId, sAction) {
 
     try {
-        let error = false;
-        let errorResults = [];
-        let successResults = [];
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
 
         const aItems =
             aBudgetContext
@@ -283,8 +283,8 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
         const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
 
         if (oReleaseResult?.Error) {
-            error = true;
-            errorResults.push({
+            bError = true;
+            aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
                 RELEASE_ERROR: true,
                 ERROR_MESSAGE: oReleaseResult?.Message
@@ -297,16 +297,20 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
                 oReleaseResult?.Message,
                 sAction
             );
+
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+            });             
         }
 
-        if (error) {
-            return errorResults;
+        if (bError) {
+            return aErrorResults;
         }
 
-        return successResults;
+        return aSuccessResults;
 
-    } catch (err) {
-        return err;
+    } catch (oError) {
+        return oError;
     }
 }
 /**
@@ -325,9 +329,9 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
 async function lockClaimBudget(oTx, aBudgetContext, sId) {
 
     try {
-        let error = false;
-        let errorResults = [];
-        let successResults = [];
+        let bError = false;
+        let aErrorResults  = [];
+        let aSuccessResults = [];
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
@@ -348,8 +352,8 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC);
 
         if (oBudgetRecord?.Error) {
-            error = true;
-            errorResults.push({
+            bError = true;
+            aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
                 LOCK_BUDGET: true,
                 ERROR_MESSAGE: oBudgetRecord?.Message
@@ -361,16 +365,20 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 oBudgetRecord?.oEarmarkedFundsDocument,
                 oBudgetRecord?.Message
             );
+
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+            });            
         }
 
-        if (error) {
-            return errorResults;
+        if (bError) {
+            return aErrorResults;
         }
 
-        return successResults;
+        return aSuccessResults;
 
-    } catch (err) {
-        return err;
+    } catch (oError) {
+        return oError;
     }
 }
 /**
@@ -392,10 +400,10 @@ async function checkRequestBudget(aBudgetContext) {
     const toNum = (v) => Number(v) || 0;
 
     try {
-        let error = false;
-        let errorResults = [];
-        let successResults = [];
-        let condition;
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
+        let sCondition;
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
@@ -403,12 +411,12 @@ async function checkRequestBudget(aBudgetContext) {
 
         for (const entry of aBudgetContext) {
             if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
-                condition = {
+                sCondition = {
                     YEAR: entry.YEAR,
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 };
             } else {
-                condition = {
+                sCondition = {
                     YEAR: entry.YEAR,
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                     FUND_CENTER: entry.FUND_CENTER,
@@ -417,12 +425,12 @@ async function checkRequestBudget(aBudgetContext) {
                 };
             }
 
-                let oBudgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
+                let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC);
                 let oBudgetData = oBudgetRecord.data;
 
                 if (!oBudgetData) {
-                    error = true;
-                    errorResults.push({
+                    bError = true;
+                    aErrorResults.push({
                         ...condition,
                         STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
@@ -433,8 +441,8 @@ async function checkRequestBudget(aBudgetContext) {
 
                 const bSufficient = toNum(entry.AMOUNT) <= toNum(oBudgetData.BudgetBalance);
                 if (!bSufficient) {
-                    error = true;
-                    errorResults.push({
+                    bError = true;
+                    aErrorResults.push({
                         ...condition,
                         STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
@@ -444,7 +452,7 @@ async function checkRequestBudget(aBudgetContext) {
                     continue;
                 }
 
-            successResults.push({
+            aSuccessResults.push({
                 ...condition,
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
                 CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
@@ -452,14 +460,14 @@ async function checkRequestBudget(aBudgetContext) {
             continue;
         }
 
-        if (error) {
-            return errorResults;
+        if (bError) {
+            return aErrorResults;
         }
 
-        return successResults;
+        return aSuccessResults;
 
-    } catch (err) {
-        return err;
+    } catch (oError) {
+        return oError;
     }
 }
 /**
