@@ -15,7 +15,8 @@ const {
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    releaseClaimBudget
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
