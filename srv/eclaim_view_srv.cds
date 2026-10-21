@@ -1018,7 +1018,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             CLAIM_TYPE_ID,
             EARMARKED_FUNDS_DOC_ID,
             EARMARKED_FUNDS_DOC_YEAR,
-            EARMARKED_FUNDS_DOC_COMP_CODE
+            EARMARKED_FUNDS_DOC_COMP_CODE,
+            ZCLAIM_ITEM.EARMARKED_FUNDS_DOC_ITEM_ID
     };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as

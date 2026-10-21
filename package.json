@@ -74,6 +74,9 @@
           "destination": "IFAMS_S4_QAS"        
         }        
       }
+    },
+    "hana": {
+      "fuzzy": false
     }
   },
   "workspaces": [

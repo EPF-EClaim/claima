@@ -16,9 +16,10 @@ const {
 } = require("./determination/determination-helper");
 const {
     retrieveBudgetContext,
-    performBudgetChecking,
     buildBudgetErrorMessage,
-    generateReturnMessage
+    generateReturnMessage,
+    lockClaimBudget,
+    checkRequestBudget
 } = require("./workflow-helper");
 
 /**
@@ -56,24 +57,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         }
     }
 
-    // 2. Budget Locking (return full list of claim type item that failed)
-    let aBudgetContext, aBudgetCheckReturn;
-    try {
-        aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
-        aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-
-        // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
-        const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-        if (sBudgetError) {
-            await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
-        }
-    } catch (oError) {
-        await oTx.rollback();
-        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during submission budget checking: ${oError.message}`, false);
-    }
-
-    // 3. Determine workflow
+    // 2. Determine workflow
     let oWorkflowContext;
     try {
         oWorkflowContext = await determineWorkflow(oTx, sId);
@@ -87,7 +71,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Workflow Determination: ${oError.message}`, false);
     }
 
-    // 4. Determine approvers and substitutes
+    // 3. Determine approvers and substitutes
     let aApproversContext;
     try {
         aApproversContext = await determineApprovers(oTx, sId, oWorkflowContext);
@@ -99,6 +83,30 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     } catch (oError) {
         await oTx.rollback();
         return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during Approver Determination: ${oError.message}`, false);
+    }
+
+    // 4. Budget Locking (return full list of claim type item that failed)
+    let aBudgetContext, aBudgetCheckReturn;
+    try {
+        aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
+        if (aBudgetContext?.length > 0) {
+
+            if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+                aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
+            } else {
+                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext)
+            }
+
+            // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
+            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
+            if (sBudgetError) {
+                await oTx.rollback();
+                return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
+            }
+        }
+    } catch (oError) {
+        await oTx.rollback();
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered during submission budget checking: ${oError.message}`, false);
     }
 
     // 5. Populate ZAPPROVER_DETAILS_CLAIMS/ZAPPROVER_DETAILS_PREAPPROVAL table

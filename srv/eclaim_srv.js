@@ -70,9 +70,9 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-            if (!oEmp) { 
-                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id }); 
-                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.'); 
+            if (!oEmp) {
+                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id });
+                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.');
             }
 
             let sOrigin = null;
@@ -382,7 +382,7 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var new_return = return_value + Number(existing[0].RETURN);
                     var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
@@ -771,13 +771,13 @@ module.exports = (srv) => {
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-    
+
         const oHeaderResult = await tx.run(
             SELECT.one.from('ZREQUEST_HEADER')
                 .where({ REQUEST_ID: sRequestId })
                 .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
         );
-    
+
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -786,15 +786,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-    
+
         let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-    
+
         const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
         if (bIsCorpoCC && totalEstAmount < 0) {
             totalEstAmount = 0;
         }
-    
+
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -1511,13 +1511,13 @@ module.exports = (srv) => {
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
         const tx = cds.tx(req);
-        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
+        const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
 
         if (sRequestId) {
-            await updateRequestItemCostCenters(tx,sRequestId);
+            await updateRequestItemCostCenters(tx, sRequestId);
         }
         const sStatus = data.STATUS || req.data.STATUS;
-        
+
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -2344,42 +2344,6 @@ module.exports = (srv) => {
         }
     });
 
-    /**
-     * Validate PEA total amount by calculating:
-     * - existing PEA header total
-     * - new or updated line item amount
-     * 
-     * Ensures the final adjusted total does not exceed RM25,000.
-     *
-     * @public
-     * @return {Object} - return validation result indicating whether processing can proceed
-     */
-    srv.on('validatePEATotal', async (req) => {
-
-        const {
-            headerTotal,
-            currentAmount,
-            isNew,
-            oldAmount
-        } = req.data;
-
-        const nHeaderTotal = Number(headerTotal) || 0;
-        const nCurrentAmount = Number(currentAmount) || 0;
-        const nOldAmount = Number(oldAmount) || 0;
-        const bIsNew = Boolean(isNew);
-
-        let nAdjustedTotal = nHeaderTotal + nCurrentAmount;
-        // Editing existing item → subtract old amount first
-        if (!bIsNew) {
-            nAdjustedTotal = nHeaderTotal - nOldAmount + nCurrentAmount;
-        }
-        if (nAdjustedTotal > 25000) {
-            // Business validation error (NOT technical)
-            req.error(400, 'Total amount exceeds RM25,000');
-        }
-        return { canProceed: true };
-    });
-
     srv.on('checkElaunTukarEligible', async (req) => {
         const tx = cds.tx(req);
 
@@ -2618,137 +2582,71 @@ module.exports = (srv) => {
         };
     });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
+    /**
+     * Cost center filter column for each report entity.
+     * Key   = entity name (without the service prefix).
+     * Value = column used to limit rows to the user's department cost centers.
+     *
+     * To protect a new report, add one line here. The handler below registers itself from these keys.
+     */
+    const mCostCenterFilterField = {
+        ZEMP_CLAIM_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS: 'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
+        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER'
+    };
 
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+    /**
+     * Restricts report data for Admin_CC users to their own department's cost centers.
+     * Other roles are not affected.
+     *
+     * Outcomes:
+     * - Cost centers found         -> only rows with those cost centers are returned.
+     * - No cost centers found      -> no rows are returned (Fiori shows "No data").
+     * - Employee record not found  -> 401/404 from getLoggedInEmployee.
+     * - Employee has no DEP        -> 404 "Employee record not found".
+     * - Entity not configured      -> 500 "Report access is not configured".
+     * - Unexpected/DB error        -> CAP's standard 500 (details hidden in production).
+     *
+     * @param {import('@sap/cds').Request} req - Incoming READ request
+     */
+    srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
+        // Only Admin_CC users are filtered
+        if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
+        const sEntityName = req.target.name.split('.').pop();
+        const sFilterField = mCostCenterFilterField[sEntityName];
+        if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
-            const sUserCC = oEmp.CC;
+        const tx = cds.tx(req);
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (!oEmp?.DEP) return req.reject(404, 'Employee record not found');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
+        const aCostCenters = await getDepartmentCostCenters(tx, oEmp.DEP);
 
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
+        if (aCostCenters.length) {
+            req.query.where({ [sFilterField]: { in: aCostCenters } });
+        } else {
+            req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
         }
     });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
+    /**
+     * Returns the distinct, non-empty cost centers for a department.
+     *
+     * @param {Object} tx - CAP transaction
+     * @param {string} sDep - Department ID
+     * @returns {Promise<string[]>} Cost centers; empty array if none are found
+     */
+    async function getDepartmentCostCenters(tx, sDep) {
+        const aRows = await tx.run(
+            SELECT.distinct('CC').from('ZEMP_MASTER').where({ DEP: sDep })
+        );
+        // Remove null, undefined and '' values
+        return aRows.map(r => r.CC).filter(Boolean);
+    }
 
     srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
 
@@ -3129,37 +3027,6 @@ module.exports = (srv) => {
                     REQUEST_ID: sRequestId
                 })
         );
-    });
-
-    srv.before('READ', 'ZEMP_CC_BUDGET_REPORT', async (req) => {
-
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-        }
     });
 
     /**
@@ -4746,7 +4613,7 @@ module.exports = (srv) => {
     srv.on('getMonthlyAdvanceAmount', async (req) => {
         const { sCardNo, sCardholderId } = req.data;
         if (!sCardNo || !sCardholderId) return 0.00;
-    
+
         try {
             const oCardAdvance = await SELECT
                 .one
@@ -4756,11 +4623,11 @@ module.exports = (srv) => {
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
                 });
- 
+
             console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
-    
+
             return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
-    
+
         } catch (error) {
             console.error('[getMonthlyAdvanceAmount] Query failed:', error);
             req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
@@ -5047,21 +4914,21 @@ module.exports = (srv) => {
 
     srv.on('deleteItemCascade', async (req) => {
         const { sReqId, sReqSubId } = req.data;
-    
+
         if (!sReqId || !sReqSubId) {
             req.error(400, 'sReqId and sReqSubId are required');
             return;
         }
-    
+
         const tx = cds.tx(req);
-    
+
         try {
             await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
-    
+
             return true;
-    
+
         } catch (error) {
             console.error('[deleteItemCascade] Failed:', error);
             req.error(500, `Failed to delete item: ${error.message}`);
@@ -5092,7 +4959,7 @@ module.exports = (srv) => {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
             const tx = cds.tx(req);
-        
+
             for (const row of budget) {
                 const key = {
                     YEAR: row.YEAR,
@@ -5433,21 +5300,21 @@ module.exports = (srv) => {
         };
     });
 
-    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) => {
         const tx = cds.tx(req);
         try {
             var oStatus = await tx.run(SELECT.one
-                                    .from(Constant.Entities.ZCLAIM_HEADER)
-                                    .where({
-                                        CLAIM_ID: req.data.sClaimID
-                                    })
+                .from(Constant.Entities.ZCLAIM_HEADER)
+                .where({
+                    CLAIM_ID: req.data.sClaimID
+                })
             )
 
-            return { sStatus: oStatus.STATUS_ID}
-        }catch(oError){
+            return { sStatus: oStatus.STATUS_ID }
+        } catch (oError) {
             throw new Error(oError)
         }
-        
+
     });
 
     /**
@@ -5486,5 +5353,90 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+    srv.on('batchUpdateFIDoc', async (req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        try {
+            const { aDocument } = req.data;
+            if (!aDocument || aDocument.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            for (var i = 0; i < aDocument.length; i++) {
+                var oFIDocument = aDocument[i];
+                if (!oFIDocument.FI_DOC_ID) continue;
+
+                if (oFIDocument.STATUS_CODE === Constant.StatusCode.SUCCESS) {
+                    aClaimUpdates.push(
+                        UPDATE(ZCLAIM_HEADER)
+                            .set({
+                                FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
+                                FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
+                                FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
+                            })
+                            .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
+                    );
+                }
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    })
+
+    srv.on('batchUpdateReleaseLog', async (req) => {
+        const { ZLOG } = srv.entities;
+
+        try {
+            const { aReleaseLog } = req.data;
+
+            if (!aReleaseLog || aReleaseLog.length === 0) {
+                throw new Error('No Data Sent');
+            }
+
+            const tx = cds.tx(req);
+            const aReleaseLogUpdates = [];
+
+            for (let i = 0; i < aReleaseLog.length; i++) {
+                const oReleaseLog = aReleaseLog[i];
+
+                if (!oReleaseLog.CLAIM_ID) continue;
+
+                const bSuccess = oReleaseLog.STATUS_CODE === Constant.StatusCode.SUCCESS;
+
+                aReleaseLogUpdates.push({
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: oReleaseLog.CLAIM_ID,
+                    PROGRAM: Constant.BudgetLog.PROGRAM.RELEASE,
+                    MESSAGE_TYPE: Constant.BudgetLog.MESSAGE_TYPE,
+                    STATUS_CODE: oReleaseLog.STATUS_CODE,
+                    MESSAGE: bSuccess
+                        ? `Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} successfully released for Claim ${oReleaseLog.CLAIM_ID}.`
+                        : `Failed to release Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} for Claim ${oReleaseLog.CLAIM_ID}.`
+                });
+            }
+
+            if (aReleaseLogUpdates.length > 0) {
+                await tx.run(
+                    INSERT.into(ZLOG).entries(aReleaseLogUpdates)
+                );
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
     });
 }
