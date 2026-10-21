@@ -63,10 +63,9 @@ module.exports = (srv) => {
         }
         const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
-        // 6.1 Perform budget actualization for auto approve === this function is removed since no actualization made in eClaim app
-        // 6.2 update header status
-        // 6.3 update entitlement amount 
-        // 6.4 update ccc advance value
+        // 6.1 update header status
+        // 6.2 update entitlement amount 
+        // 6.3 update ccc advance value
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             var bAutoApprove = true;
 
@@ -190,33 +189,34 @@ module.exports = (srv) => {
         // log the successful release and clear the local IFAMS references.
         if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK) {
             const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue)
+            if (aBudgetContext?.length > 0) {
+                // Earmarked Funds Document ID must be available
+                const oClaimHeader = await oTx.run(
+                    SELECT.one
+                        .from(Constant.Entities.ZCLAIM_HEADER)
+                        .columns("EARMARKED_FUNDS_DOC_ID")
+                        .where({
+                            CLAIM_ID: sRecordId
+                        })
+                )
+                const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
+                if (!sEarmarkedFundsDocId) {
+                    bStatus = false;
+                    throw new Error(`Earmarked Funds Document ID not found for ${sRecordId}`);
+                }
+                // Call IFAMS to release the budget
+                const aReturn = await performBudgetChecking(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
 
-            // Earmarked Funds Document ID must be available
-            const oClaimHeader = await oTx.run(
-                SELECT.one
-                    .from(Constant.Entities.ZCLAIM_HEADER)
-                    .columns("EARMARKED_FUNDS_DOC_ID")
-                    .where({
-                        CLAIM_ID: sRecordId
-                    })
-            )
-            const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
-            if (!sEarmarkedFundsDocId) {
-                bStatus = false;
-                throw new Error(`Earmarked Funds Document ID not found for ${sRecordId}`);
-            }
-            // Call IFAMS to release the budget
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
-
-            // performBudgetChecking returns the Error object from its catch block
-            if (aReturn instanceof Error) {
-                bStatus = false;
-                throw new Error(`Error encountered during IFAMS Budget Release\n${aReturn.message}`);
-            }
-            const sBudgetError = buildBudgetErrorMessage(aReturn);
-            if (sBudgetError) {
-                bStatus = false;
-                throw new Error(`Error encountered during IFAMS Budget Release\n${sBudgetError}`);
+                // performBudgetChecking returns the Error object from its catch block
+                if (aReturn instanceof Error) {
+                    bStatus = false;
+                    throw new Error(`Error encountered during IFAMS Budget Release\n${aReturn.message}`);
+                }
+                const sBudgetError = buildBudgetErrorMessage(aReturn);
+                if (sBudgetError) {
+                    bStatus = false;
+                    throw new Error(`Error encountered during IFAMS Budget Release\n${sBudgetError}`);
+                }
             }
         }
 

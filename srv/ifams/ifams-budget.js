@@ -10,7 +10,6 @@ async function getIFAMSConnection() {
 }
 
 async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
-    var oBudgetRecord;
     let oBudget;
 
     try {
@@ -94,6 +93,8 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
         };
 
         sPath = Constant.IFAMS_API_PATH.EARMARKEDFUNDS;
+        
+        oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
 
         // if no budget allocation, use budget lookup to higher hierarchy
         if (!oEarmarkedFundsDocument && Object.keys(oEmployeeRollupCC).length > 0) {
@@ -204,8 +205,8 @@ async function rollUpCostCenter(oEmployeeDetails) {
         }
 
         return oEmployeeRollupCC;
-    } catch (error) {
-        console.log(error.message);
+    } catch (oError) {
+        console.log(oError.message);
     }
 }
 
@@ -258,7 +259,7 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
 
         // 1. Update ZCLAIM_HEADER
         await oTx.run(
-            UPDATE('ZCLAIM_HEADER')
+            UPDATE(Constant.Entities.ZCLAIM_HEADER)
                 .set({
                     EARMARKED_FUNDS_DOC_COMP_CODE:
                         oEarmarkedFundsDocument.CompanyCode,
@@ -273,7 +274,7 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
         );
 
         const aClaimItems = await oTx.run(
-            SELECT.from('ZCLAIM_ITEM')
+            SELECT.from(Constant.Entities.ZCLAIM_ITEM)
                 .columns('CLAIM_ID', 'CLAIM_SUB_ID')
                 .where({
                     CLAIM_ID: sClaimId
@@ -296,7 +297,7 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
             }
 
             await oTx.run(
-                UPDATE('ZCLAIM_ITEM')
+                UPDATE(Constant.Entities.ZCLAIM_ITEM)
                     .set({
                         EARMARKED_FUNDS_DOC_ITEM_ID:
                             oEarmarkedItem.EarmarkedFundsDocumentItem
