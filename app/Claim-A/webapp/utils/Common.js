@@ -148,7 +148,8 @@ sap.ui.define([
 
                 case Constants.SubmissionTypePrefix.CLAIMHEADER:
                     oInputModel = this._oView.getModel("claimsubmission_input");
-
+                    const oClaimItemModel = this._oView.getModel("claimitem_input");
+                    
                     if ( DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")) && DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")) ) {
                         try {
                             BusyIndicator.show(0);
@@ -235,6 +236,9 @@ sap.ui.define([
                                 }
                             }
 
+                           if (oClaimItemModel?.getProperty("/claim_item")) {
+                                oClaimItemModel.setProperty("/claim_item/cost_center", itemCc);
+                            }
                             //calling from claim submission controller to update claim items after header save
                             const oController = this._oView.getController();
                             await oController._updateClaimItems();
