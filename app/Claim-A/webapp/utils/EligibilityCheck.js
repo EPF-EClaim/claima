@@ -279,6 +279,9 @@ sap.ui.define([
 								} else {
 									sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
 								}
+							} else{
+								// backend found no eligibility rule for the employee (e.g. grade not configured)
+								sErrorMsg = Utility.getText("eligibility_validation_rule_not_found", [sClaimTypeItem]);
 							}
 							break;
 
