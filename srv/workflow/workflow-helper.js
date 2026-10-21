@@ -249,6 +249,21 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     )
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
+/**
+ * Releases the previously locked claim budget by processing the associated
+ * earmarked fund document items.
+ *
+ * Only budget context entries containing an earmarked fund document item ID
+ * are included in the release request. When the release succeeds, the
+ * earmarked fund details are updated in the database.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the earmarked fund item details
+ * @param {string} sId - Claim 
+ * @param {string} sEarmarkedFundsDocId - Earmarked funds document ID to be released
+ * @param {string} sAction - Claim workflow action
+ * @returns {Promise<Array<object>|Error>} Release error results, an empty array on success, or the caught error
+ */
 async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId, sAction) {
 
     try {
@@ -294,6 +309,19 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
         return err;
     }
 }
+/**
+ * Locks the required claim budget by creating an earmarked funds document.
+ *
+ * For employees outside the RD, HOD, and CXO roles, the function determines
+ * the applicable upper-level cost center before processing the earmarked
+ * funds request. When the lock succeeds, the generated earmarked fund details
+ * are updated in the database.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the amount and account assignment details
+ * @param {string} sId - Claim or record ID used for the earmarked funds request
+ * @returns {Promise<Array<object>|Error>} Lock error results, an empty array on success, or the caught error
+ */
 async function lockClaimBudget(oTx, aBudgetContext, sId) {
 
     try {
@@ -345,7 +373,20 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         return err;
     }
 }
-
+/**
+ * Checks whether sufficient budget is available for each request item.
+ *
+ * The applicable budget record is retrieved using the internal order or the
+ * relevant fund center, material group, and commitment item combination.
+ * For employees outside the RD, HOD, and CXO roles, the upper-level cost
+ * center may be used when retrieving the budget record.
+ *
+ * If any item fails the check, only the failed results are returned.
+ * Otherwise, the function returns the successful results for all items.
+ *
+ * @param {Array<object>} aBudgetContext - Request budget context containing employee, amount, and account assignment details
+ * @returns {Promise<Array<object>|Error>} Budget-check results or the caught error
+ */
 async function checkRequestBudget(aBudgetContext) {
 
     const toNum = (v) => Number(v) || 0;
