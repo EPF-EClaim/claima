@@ -300,16 +300,10 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         let error = false;
         let errorResults = [];
         let successResults = [];
-
-        // determine upper cost center, incase for no budget allocation for each item
-        let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
         var oEmployeeRollupCC;
 
-        if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
-            oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-        }
+        // determine upper cost center, incase for no budget allocation for each item
+            oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
 
         const aItems =
             aBudgetContext.map((oBudgetContext) => ({
@@ -351,6 +345,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         return err;
     }
 }
+
 async function checkRequestBudget(aBudgetContext) {
 
     const toNum = (v) => Number(v) || 0;
@@ -360,16 +355,10 @@ async function checkRequestBudget(aBudgetContext) {
         let errorResults = [];
         let successResults = [];
         let condition;
-
-        // determine upper cost center, incase for no budget allocation for each item
-        let oEmployeeDetails = await retrieveEmployeeDetails(aBudgetContext[0].EMP_ID);
         var oEmployeeRollupCC;
 
-        if (oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
-            oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-        }
+        // determine upper cost center, incase for no budget allocation for each item
+            oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
 
         for (const entry of aBudgetContext) {
             if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
@@ -554,6 +543,21 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
         MESSAGE: sMessage
     }));
 }
+
+async function getRollUpCostCenter (sEmpID) {
+    var oEmployeeRollupCC;
+    let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
+
+    if (oEmployeeDetails && 
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
+            oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+            oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
+        }
+    
+    return oEmployeeRollupCC;
+}
+
 module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
