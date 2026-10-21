@@ -1883,5 +1883,5 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 JOB_GROUP_DESC
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
-
+ 
 };
