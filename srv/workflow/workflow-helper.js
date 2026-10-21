@@ -358,7 +358,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 })
             }));
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC);
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC.oEmployeeRollupCC);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -443,7 +443,7 @@ async function checkRequestBudget(aBudgetContext) {
                 };
             }
 
-            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC);
+            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC.oEmployeeRollupCC);
             let oBudgetData = oBudgetRecord.data;
 
             if (!oBudgetData) {

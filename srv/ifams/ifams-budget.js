@@ -41,7 +41,7 @@ async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
                 .find(Boolean);
         }
     } catch (oError) {
-        return { error: true, data: oBudget, message: oError.message};
+        return { error: true, data: oBudget, message: oError.message };
     }
     return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
 }
@@ -203,9 +203,11 @@ async function rollUpCostCenter(oEmployeeDetails) {
             if (oEmployeeRollupCC.HOD_CC || oEmployeeRollupCC.HOB_CC) break;
         }
 
-        return oEmployeeRollupCC;
+        var sMessage = Object.keys(oEmployeeRollupCC).length === 0 ? 'No roll up cost center found' : 'Roll up cost center available';
+
+        return { error: false, message: sMessage, oEmployeeRollupCC };
     } catch (oError) {
-        return { error: true, message: oError.message };
+        return { error: true, message: oError.message, oEmployeeRollupCC };
     }
 }
 
