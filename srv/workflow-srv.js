@@ -38,9 +38,6 @@ const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
 const { message } = require('@sap/cds/lib/log/cds-error');
-const {
-    updateUsedMedicalAmount
-} = require('./utils/UpdateMedical');
 
 module.exports = (srv) => {
 
@@ -106,8 +103,6 @@ module.exports = (srv) => {
                 await updateCorpoCardAdvance(oTx, sRecordId, Constant.Status.PENDING_APPROVAL);
                 // update PEDU entitlement usage
                 await updateUsedEntitlementAmount(sRecordId, Constant.Status.PENDING_APPROVAL, oTx);
-                // update Medical Entitlement usage
-                await updateUsedMedicalAmount(sRecordId, Constant.Status.PENDING_APPROVAL, oTx);
                 // Update Header Status
                 await UpdateHeader.updateApproverActionToHeader(sRecordId, Constant.Status.PENDING_APPROVAL, oTx);
             } catch (oError) {
@@ -215,9 +210,6 @@ module.exports = (srv) => {
 
         // update PEDU entitlement usage if action is reject
         await updateUsedEntitlementAmount(sRecordId, oActionDescriptor.actionValue, oTx);
-
-        // update Medical Entitlement usage if action is reject
-        await updateUsedMedicalAmount(sRecordId, oActionDescriptor.actionValue, oTx);
 
         // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
         if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {

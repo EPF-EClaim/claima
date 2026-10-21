@@ -99,7 +99,8 @@ sap.ui.define([
 					transferfamilynowlaterdesc: oData.FAMILY_TIMING_DESC || "",
 					projectcode:    oData.PROJECT_CODE || "",
 					projectdesc:    oData.PROJECT_DESC || "",
-					cccduedate : 	oData.PAYMENT_DUE_DATE || ""
+					cccduedate : 	oData.PAYMENT_DUE_DATE || "",
+					medical_remaining: oData.MED_ENTITLEMENT_BALANCE || 0
 				};
 
 				oReqModel.setProperty("/req_header", oHeaderMap);
@@ -112,7 +113,7 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(oController, req_id) {
+		async getItemList(oController, req_id) {
 			const oReq = oController._oReqModel;
 
 			if (!req_id) {
