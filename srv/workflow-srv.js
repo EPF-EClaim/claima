@@ -12,7 +12,6 @@ const {
     resolveDocDescriptor,
     retrieveBudgetContext,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
@@ -213,8 +212,8 @@ module.exports = (srv) => {
             }
 
             // Call IFAMS to release the budget
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
-            // performBudgetChecking returns the Error object from its catch block
+            const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
+            // releaseClaimBudget returns the Error object from its catch block
             if (aReturn instanceof Error) {
                 bStatus = false;
                 throw new Error(
