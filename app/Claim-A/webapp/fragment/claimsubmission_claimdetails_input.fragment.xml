@@ -1327,6 +1327,9 @@
                     value="{
 						path: 'claimitem_input>/claim_item/currency_rate',
 						type: 'sap.ui.model.odata.type.Decimal',
+                        formatOptions: {
+                            emptyString: 0
+						},
                         constraints: {
                             scale: 4,
                             precision: 13

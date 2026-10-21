@@ -3759,6 +3759,15 @@ sap.ui.define([
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				this.byId("input_claimdetails_input_travel_duration_hour").setValue("");
 			}
+			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()) {
+				this.byId("input_claimdetails_input_provided_breakfast").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_provided_lunch").getVisible()) {
+				this.byId("input_claimdetails_input_provided_lunch").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_provided_dinner").getVisible()) {
+				this.byId("input_claimdetails_input_provided_dinner").setValue("");
+			}
 			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 				this.byId("input_claimdetails_input_entitled_breakfast").setValue("");
 			}
@@ -4051,19 +4060,14 @@ sap.ui.define([
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//check if there is any input, if yes then recalculate entitled meals 
-			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
-			) {			
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed) {
-					return;
-				}
-					
-				await this._calculatePerDiem();
+			//breakfast meal entitlement		
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
 			}
+					
+			await this._calculatePerDiem();
 
 			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
@@ -5399,7 +5403,16 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_CurrencyRate: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oInputModel.getProperty("/claim_item/currency_rate")) {
+			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && (oInputModel.getProperty("/claim_item/currency_rate") || oInputModel.getProperty("/claim_item/currency_rate") === null )) {
+				if(oInputModel.getProperty("/claim_item/currency_rate") === null){
+					oInputModel.setProperty("/claim_item/currency_rate", 0.0000);
+				}
+				if (oInputModel.getProperty("/claim_item/currency_rate") < 0.0001){
+					this.byId("input_claimdetails_input_currency_rate").setValueState("Error");
+        			this.byId("input_claimdetails_input_currency_rate").setValueStateText("Currency Rate must be at least 0.0001");
+				} else {
+					this.byId("input_claimdetails_input_currency_rate").setValueState("None");
+				}
 				var nAmountMYR = (oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount"));
 				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
 			}
