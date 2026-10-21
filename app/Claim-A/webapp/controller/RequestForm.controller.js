@@ -153,19 +153,7 @@ sap.ui.define([
 			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction.getHeader(this, sReqId);
-
-				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
-
-				if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
-
-					await Utility.getRemainingMedicalEntitlement(
-						this._oReqModel,
-						this._oReqModel.getProperty("/req_header/empid"),
-						"/req_header/medical_remaining"
-					);
-				}
-
-				await PARequestSharedFunction._getItemList(this, sReqId);
+				await PARequestSharedFunction.getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
 
@@ -644,15 +632,15 @@ sap.ui.define([
 			this._oReqModel.setProperty('/req_item', {});
 			this._oReqModel.setProperty('/view', "view");
 		
-			await PARequestSharedFunction._getItemList(this, sReqId);
+			await PARequestSharedFunction.getItemList(this, sReqId);
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
 		
-			// _getItemList() resets /corpo_cards back to the bare card identity
+			// getItemList() resets /corpo_cards back to the bare card identity
 			// list (no amount fields) - re-merge the aggregate totals so the
 			// Corporate Credit Card Summary doesn't appear blank after cancel.
-			// _getItemList() must be awaited above, or this merge runs in a
-			// race and gets silently overwritten once _getItemList resolves.
+			// getItemList() must be awaited above, or this merge runs in a
+			// race and gets silently overwritten once getItemList resolves.
 			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
 				await this._loadCorpoCardsForItem(sReqId);
 				this._computeCorpoCardTotals();
