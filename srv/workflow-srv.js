@@ -214,13 +214,6 @@ module.exports = (srv) => {
 
             // Call IFAMS to release the budget
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
-            // releaseClaimBudget returns the Error object from its catch block
-            if (aReturn instanceof Error) {
-                bStatus = false;
-                throw new Error(
-                    `Error encountered during IFAMS Budget Release\n${aReturn.message}`
-                );
-            }
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
                 bStatus = false;
