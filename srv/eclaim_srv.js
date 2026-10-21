@@ -5385,8 +5385,8 @@ module.exports = (srv) => {
             }
             return 'Records updated successfully';
 
-        } catch (error) {
-            req.error(400, `Fail updating records: ${error.message}`);
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
         }
     })
 
@@ -5430,8 +5430,8 @@ module.exports = (srv) => {
 
             return 'Records updated successfully';
 
-        } catch (error) {
-            req.error(400, `Fail updating records: ${error.message}`);
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
         }
     });
 }
