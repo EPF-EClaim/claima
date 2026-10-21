@@ -97,7 +97,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
         oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
 
         // if no budget allocation, use budget lookup to higher hierarchy
-        if (!oEarmarkedFundsDocument && Object.keys(oEmployeeRollupCC).length > 0) {
+        if (!oEarmarkedFundsDocument && oEmployeeRollupCC && Object.keys(oEmployeeRollupCC).length > 0) {
             var aNewCCItems = [];
             var iCount = 2;
             let sCostCenter = Constant.RollUp_CostCenter.HOS_COSTCENTER;
