@@ -25,6 +25,7 @@ const Constant = {
         LOCK_ERROR: "BUDGET LOCK ERROR",
         ERROR: "ERROR IN BUDGET CHECKING",
         RELEASE_ERROR: "BUDGET RELEASE ERROR",
+        RELEASED: "RELEASED"
     },
     NumberRange: {
         REQUEST: "NR01",

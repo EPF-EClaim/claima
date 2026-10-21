@@ -299,7 +299,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
             );
 
             aSuccessResults.push({
-                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                STATUS: Constant.BudgetCheckStatus.RELEASED,
             });
         }
 
