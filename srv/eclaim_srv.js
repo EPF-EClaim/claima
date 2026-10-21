@@ -1511,10 +1511,10 @@ module.exports = (srv) => {
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
         const tx = cds.tx(req);
-        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
+        const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
 
         if (sRequestId) {
-            await updateRequestItemCostCenters(tx,sRequestId);
+            await updateRequestItemCostCenters(tx, sRequestId);
         }
         const sStatus = data.STATUS || req.data.STATUS;
 
@@ -2590,11 +2590,11 @@ module.exports = (srv) => {
      * To protect a new report, add one line here. The handler below registers itself from these keys.
      */
     const mCostCenterFilterField = {
-        ZEMP_CLAIM_REPORT_SUMMARY:   'CHARGING_COST_CENTER',
-        ZEMP_CLAIM_REPORT_DETAILS:   'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
-        ZEMP_CC_BUDGET_REPORT:       'FUND_CENTER'
+        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER'
     };
 
     /**
@@ -5300,21 +5300,21 @@ module.exports = (srv) => {
         };
     });
 
-    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) => {
         const tx = cds.tx(req);
         try {
             var oStatus = await tx.run(SELECT.one
-                                    .from(Constant.Entities.ZCLAIM_HEADER)
-                                    .where({
-                                        CLAIM_ID: req.data.sClaimID
-                                    })
+                .from(Constant.Entities.ZCLAIM_HEADER)
+                .where({
+                    CLAIM_ID: req.data.sClaimID
+                })
             )
 
-            return { sStatus: oStatus.STATUS_ID}
-        }catch(oError){
+            return { sStatus: oStatus.STATUS_ID }
+        } catch (oError) {
             throw new Error(oError)
         }
-        
+
     });
 
     /**
@@ -5368,7 +5368,7 @@ module.exports = (srv) => {
                 var oFIDocument = aDocument[i];
                 if (!oFIDocument.FI_DOC_ID) continue;
 
-                if (oFIDocument.STATUS_CODE === Constant.StatusCode.SUCCESS) { 
+                if (oFIDocument.STATUS_CODE === Constant.StatusCode.SUCCESS) {
                     aClaimUpdates.push(
                         UPDATE(ZCLAIM_HEADER)
                             .set({
@@ -5383,7 +5383,10 @@ module.exports = (srv) => {
             if (aClaimUpdates.length > 0) {
                 await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
             }
-            return 'Records updated successfully';
+
+            return {
+                message: 'Records updated successfully'
+            }
 
         } catch (oError) {
             req.reject(400, `Fail updating records: ${oError.message}`);
@@ -5428,7 +5431,9 @@ module.exports = (srv) => {
                 );
             }
 
-            return 'Records updated successfully';
+            return {
+                message: 'Records updated successfully'
+            }
 
         } catch (oError) {
             req.reject(400, `Fail updating records: ${oError.message}`);
