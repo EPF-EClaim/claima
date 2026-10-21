@@ -289,40 +289,38 @@ async function performBudgetChecking(oTx, aBudgetContext, sId, sEarmarkedFundsDo
                     };
                 }
 
-                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                    let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
+                let budgetRecord = await getBudgetRecord(condition, oEmployeeRollupCC);
 
-                    if (!budgetRecord) {
-                        error = true;
-                        errorResults.push({
-                            ...condition,
-                            STATUS: oBudget.message ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
-                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                            MESSAGE: oBudget.message ? oBudget.message : null
-                        });
-                        continue;
-                    }
-
-                    const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
-                    if (!bSufficient) {
-                        error = true;
-                        errorResults.push({
-                            ...condition,
-                            STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
-                            CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                            AMOUNT: entry.AMOUNT,
-                            AVAILABLE: budgetRecord.BudgetBalance
-                        });
-                        continue;
-                    }
-
-                    successResults.push({
+                if (!budgetRecord) {
+                    error = true;
+                    errorResults.push({
                         ...condition,
-                        STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                        STATUS: oBudget.message ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                        MESSAGE: oBudget.message ? oBudget.message : null
                     });
                     continue;
                 }
+
+                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BudgetBalance);
+                if (!bSufficient) {
+                    error = true;
+                    errorResults.push({
+                        ...condition,
+                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
+                        AMOUNT: entry.AMOUNT,
+                        AVAILABLE: budgetRecord.BudgetBalance
+                    });
+                    continue;
+                }
+
+                successResults.push({
+                    ...condition,
+                    STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                });
+                continue;
             }
         } else {
 
@@ -400,10 +398,10 @@ function buildBudgetErrorMessage(aBudgetResults) {
         aBudgetResults
             .filter(r => r.STATUS === sStatus)
             .map(r => {
-            const sItem = r.CLAIM_TYPE_ITEM || "-";
-            const sMsg = String(r.MESSAGE ?? '').trim();
-            return sMsg ? `${sItem} (${sMsg})` : sItem;
-        })
+                const sItem = r.CLAIM_TYPE_ITEM || "-";
+                const sMsg = String(r.MESSAGE ?? '').trim();
+                return sMsg ? `${sItem} (${sMsg})` : sItem;
+            })
     )].join(", ");
 
     const aMessages = [];
@@ -424,7 +422,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     }
     if (sBudgetError) {
         aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
-    }    
+    }
 
     return aMessages.length ? aMessages.join("\n") : null;
 }
