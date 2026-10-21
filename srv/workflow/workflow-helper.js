@@ -329,22 +329,21 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 })
             }));
 
-        let budgetRecord = await processEarmarkedFunds(aItems, bRelease ? sEarmarkedFundsDocId : sId, bRelease ? sAction : null, oEmployeeRollupCC);
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC);
 
-        if (budgetRecord?.Error) {
+        if (oBudgetRecord?.Error) {
             error = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
                 LOCK_BUDGET: true,
-                ERROR_MESSAGE: budgetRecord?.Message
+                ERROR_MESSAGE: oBudgetRecord?.Message
             });
         } else {
             await updateEarmarkedFundDetails(
                 oTx,
                 sId,
-                budgetRecord?.oEarmarkedFundsDocument,
-                budgetRecord?.Message,
-                sAction
+                oBudgetRecord?.oEarmarkedFundsDocument,
+                oBudgetRecord?.Message
             );
         }
 

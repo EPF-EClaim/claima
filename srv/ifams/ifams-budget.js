@@ -93,7 +93,6 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
         };
 
         sPath = Constant.IFAMS_API_PATH.EARMARKEDFUNDS;
-        
         oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
 
         // if no budget allocation, use budget lookup to higher hierarchy
