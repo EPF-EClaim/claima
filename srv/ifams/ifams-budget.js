@@ -40,8 +40,8 @@ async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
                 .map(fnFind)
                 .find(Boolean);
         }
-    } catch (error) {
-        return { error: true, data: oBudget, message: error.message};
+    } catch (oError) {
+        return { error: true, data: oBudget, message: oError.message};
     }
     return { error: false, data: oBudget };
 }
@@ -137,11 +137,11 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
             }
         }
 
-    } catch (error) {
+    } catch (oError) {
         return {
             Error: true,
             oEarmarkedFundsDocument,
-            Message: error.message
+            Message: oError.message
         }
     }
 
