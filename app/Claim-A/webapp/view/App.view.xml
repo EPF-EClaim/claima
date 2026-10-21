@@ -40,7 +40,7 @@
                 visible="{= !!${session>/userId} }"
                 expanded="true"
                 itemPress=".onNavItemPress"
-                selectedKey="dashboard"
+                selectedKey="{app>/selectedNavKey}"
                 itemSelect=".onNavItemSelect"
             >
                 <tnt:NavigationList>

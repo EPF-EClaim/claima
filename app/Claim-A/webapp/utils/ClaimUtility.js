@@ -855,6 +855,7 @@ sap.ui.define([
                 card_no: oHeaderRaw.CARD_NO,
                 card_advance_amount: oHeaderRaw.CCC_ADV_AMT,
                 original_card_advance_amount: oHeaderRaw.CCC_ADV_AMT,
+				medical_remaining: oHeaderRaw.MED_ENTITLEMENT_BALANCE,
                 descr: {
                     submission_type: null,
                     alternate_cost_center: oHeaderRaw.ALT_COST_CENTER_DESC,
