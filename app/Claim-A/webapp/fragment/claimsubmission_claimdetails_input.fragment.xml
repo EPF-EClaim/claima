@@ -1307,7 +1307,10 @@
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
-                    display="ValueDescription"
+                    display="{= ${claimitem_input>/claim_item/currency_code}
+                                ? 'ValueDescription'
+                                : 'Value'
+                            }"
                     
                     visible="{=
                         ${claimitem_input>/claim_item/need_foreign_currency} ||
@@ -1332,7 +1335,9 @@
 						},
                         constraints: {
                             scale: 4,
-                            precision: 13
+                            precision: 13,
+                            minimum: '0', 
+                            minimumExclusive: true
                         }
 					}"     
                     visible="{=
