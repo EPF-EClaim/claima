@@ -337,7 +337,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
         if (oEmployeeRollupCC.error) {
-            error = true;
+            bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
                 MESSAGE: oEmployeeRollupCC.message
@@ -418,7 +418,7 @@ async function checkRequestBudget(aBudgetContext) {
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
         if (oEmployeeRollupCC.error) {
-            error = true;
+            bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
                 MESSAGE: oEmployeeRollupCC.message
