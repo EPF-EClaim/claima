@@ -449,7 +449,7 @@ async function checkRequestBudget(aBudgetContext) {
             if (!oBudgetData) {
                 bError = true;
                 aErrorResults.push({
-                    ...condition,
+                    ...sCondition,
                     STATUS: oBudgetRecord.error ? Constant.BudgetCheckStatus.ERROR : Constant.BudgetCheckStatus.NOT_FOUND,
                     CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                     MESSAGE: oBudgetRecord.error ? oBudgetRecord.message : null
@@ -461,7 +461,7 @@ async function checkRequestBudget(aBudgetContext) {
             if (!bSufficient) {
                 bError = true;
                 aErrorResults.push({
-                    ...condition,
+                    ...sCondition,
                     STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                     CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                     AMOUNT: entry.AMOUNT,
@@ -471,7 +471,7 @@ async function checkRequestBudget(aBudgetContext) {
             }
 
             aSuccessResults.push({
-                ...condition,
+                ...sCondition,
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
                 CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
             });
@@ -622,7 +622,7 @@ async function getRollUpCostCenter(sEmpID) {
         oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
     }
 
-    return oEmployeeRollupCC;
+        return oEmployeeRollupCC;
 }
 
 module.exports = {
