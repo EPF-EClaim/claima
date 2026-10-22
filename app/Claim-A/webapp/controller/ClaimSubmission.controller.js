@@ -104,8 +104,10 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
+			this.getOwnerComponent().loadExternalLibraries();
+			const XLSX = window.XLSX;
 			// declare excel export utility
-			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
+			ExcelExport.init(this.getOwnerComponent(), this.getView(), XLSX);
 
 			//declare utility
 			Utility.init(this.getOwnerComponent(), this.getView());
@@ -536,8 +538,7 @@ sap.ui.define([
 
 		/**
 		 * Maps the raw header row to the form shape, sets owner detail, replaces
-		 * claimsubmission_input with a fresh model instance, applies medical
-		 * entitlement lookup (MEDICAL/MEDICAL_ADVANCE only), header description
+		 * claimsubmission_input with a fresh model instance, header description
 		 * lookup, the view-only flag, and resets is_approver.
 		 *
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
@@ -549,16 +550,6 @@ sap.ui.define([
 			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 
 			oClaimSubmissionModel.setProperty("/claim_header", oHeader);
-
-			if (oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL ||
-				oHeader.claim_type_id === this._oConstant.ClaimType.MEDICAL_ADVANCE
-			) {
-				await Utility.getRemainingMedicalEntitlement(
-					oClaimSubmissionModel,
-					oHeader.emp_id,
-					"/claim_header/medical_remaining"
-				);
-			}
 
 			await Utility.applyClaimHeaderDataDescr(oClaimSubmissionModel);
 
@@ -3503,21 +3494,6 @@ sap.ui.define([
 			});
 
 			oFileReader.readAsDataURL(oFile);
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		/**

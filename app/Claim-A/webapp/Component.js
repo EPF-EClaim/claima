@@ -1,406 +1,351 @@
 sap.ui.define([
     "sap/fe/core/AppComponent",
-    "claima/model/models",
-    "sap/ui/core/routing/HashChanger",
-    "claima/utils/Utility",
     "sap/ui/model/json/JSONModel",
-    "claima/utils/PARequestSharedFunction",
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
-    "sap/m/MessageToast",
+    "sap/ui/core/Messaging",
+    "sap/base/i18n/Formatting",
     "sap/m/MessageBox",
+    "claima/model/models",
+    "claima/utils/Utility",
+    "claima/utils/PARequestSharedFunction",
     "claima/utils/Validator",
     "claima/utils/CustomValidator",
-	"claima/utils/RequestUtility"
-],
-    (AppComponent,
-	models,
-	HashChanger,
-	Utility,
-	JSONModel,
-	PARequestSharedFunction,
-	Filter,
-	FilterOperator,
-	MessageToast,
+    "claima/utils/RequestUtility",
+    "claima/utils/SessionManager"
+], (AppComponent,
+    JSONModel,
+    Messaging,
+    Formatting,
     MessageBox,
-	Validator,
-	CustomValidator,
-	RequestUtility) => {
-        "use strict";
+    models,
+    Utility,
+    PARequestSharedFunction,
+    Validator,
+    CustomValidator,
+    RequestUtility,
+    SessionManager) => {
+    "use strict";
 
-        return AppComponent.extend("claima.Component", {
-            metadata: {
-                manifest: "json"
-            },
+    // ---- Constants ----
+    const DEFAULT_NAV_KEY = "dashboard";
+    const DATE_PATTERN    = "dd MMM yyyy";
+    const EXTERNAL_LIBS = [
+        sap.ui.require.toUrl("claima/libs/xlsx.full.min.js"),
+        sap.ui.require.toUrl("claima/libs/jszip.js")
+    ];
+    const ROUTE_TO_NAV_KEY = {
+        "Dashboard": "dashboard",
+        "RequestFormStatus": "myrequest",
+        "ClaimStatus": "myreport",
+        "MyApproval": "approval",
+        "ManageSub": "mysubstitution",
+        "Analytics": "analytics",
+        "Configuration": "config"
+    };
 
-            countdown: 840000,
-            resetCountdown: 840000,
+    return AppComponent.extend("claima.Component", {
+        metadata: {
+            manifest: "json"
+        },
 
-             init() {
-                AppComponent.prototype.init.apply(this, arguments);
+        /**
+         * Sets up models, utilities, the user session, idle tracking and routing guards.
+         * @public
+         */
+        init: function () {
+            AppComponent.prototype.init.apply(this, arguments);
+            this.loadExternalLibraries().catch(() => {});
 
-                this._oReqModel = this.getModel("request");
+            this._oReqModel = this.getModel("request");
 
-                // Initialize the utility 
-                Utility.init(this);
-                // Initialize Custom Validator
-                CustomValidator.init(this);
-                // Initialize Request Utility
-                RequestUtility.init(this);
+            // Initialize shared utilities
+            Utility.init(this);
+            CustomValidator.init(this);
+            RequestUtility.init(this);
 
-                // set the device model
-                this.setModel(models.createDeviceModel(), "device");
-                this.setModel(models.createSessionModel(), "session");
-                this.setModel(models.createUserIdModel(), "userId");
-                this.setModel(models.createImageModel(), "imageModel");
-                this.setModel(models.createRoleModel(), "roleModel");
-                this.setModel(models.createConstantModel(), "constant");
+            // Global models
+            this.setModel(models.createDeviceModel(), "device");
+            this.setModel(models.createSessionModel(), "session");
+            this.setModel(models.createUserIdModel(), "userId");
+            this.setModel(models.createImageModel(), "imageModel");
+            this.setModel(models.createRoleModel(), "roleModel");
+            this.setModel(models.createConstantModel(), "constant");
 
-                const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
-                fmt.setDatePattern("medium", "dd MMM yyyy");
-                fmt.setDatePattern("short", "dd MMM yyyy");
+            // UI state for the shell (side navigation selection)
+            this.setModel(new JSONModel({ selectedNavKey: DEFAULT_NAV_KEY }), "app");
 
-                // enable routing
-                // this.getRouter().initialize();
+            // Global date format
+            Formatting.setDatePattern("medium", DATE_PATTERN);
+            Formatting.setDatePattern("short", DATE_PATTERN);
 
-                // const sHash = HashChanger.getInstance().getHash();
-                // if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
+            PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
-                PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-                
-                this._oRolesLoadedPromise = new Promise((resolve) => {
-                    this._fnRolesLoaded = resolve;
+            // Resolved once roles are known; route guards wait for this
+            this._oRolesLoadedPromise = new Promise((resolve) => {
+                this._fnRolesLoaded = resolve;
+            });
+
+            // Created before the user session call, because its error handling uses it
+            this._oSessionManager = new SessionManager(this);
+
+            this._initializeUserSession();
+
+            // Idle tracking
+            this._oSessionManager.start();
+
+            const oRouter = this.getRouter();
+            oRouter.attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
+            oRouter.attachRouteMatched(this._onRouteMatched, this);
+        },
+
+        // ================================================================
+        // User session
+        // ================================================================
+
+        /**
+         * Gets the logged-in user's details and roles from the backend,
+         * then fills the session, request and role models.
+         * @private
+         */
+        _initializeUserSession: async function () {
+            const oUserTypeContext = this.getModel().bindContext("/getUserType(...)");
+
+            try {
+                await oUserTypeContext.execute();
+                this._oSessionManager.clearReauthFlag();
+
+                const oUserData = oUserTypeContext.getBoundContext().getObject();
+                const oRoles = oUserData.roles || {};
+                const sName = oUserData.name || "";
+
+                // Update each model once (merge), instead of one setProperty per field
+                this.getModel("session").setData({
+                    userId: oUserData.userId || "UNKNOWN",
+                    email: oUserData.id,
+                    initials: sName.substring(0, 2).toUpperCase(),
+                    userName: sName,
+                    position: oUserData.position,
+                    grade: oUserData.grade || "UNKNOWN",
+                    department: oUserData.department || "UNKNOWN",
+                    origin: oUserData.origin,
+                    costCenters: oUserData.costcenters || "UNKNOWN",
+                    userType: this._getUserTypeLabel(oRoles)
+                }, true);
+
+                this._oReqModel.setProperty("/user", {
+                    emp_id: oUserData.userId,
+                    name: oUserData.name,
+                    cost_center: oUserData.costcenters
                 });
 
-                this._loadExternalLibraries();
-                //this._loadCurrentUser();
-                this._initializeUserSession();
-                this.setInactivityTimeout(600000);
-                this._initActivityTracking();
-                this.startInactivityTimer();
+                this.getModel("roleModel").setData(this._buildRoleFlags(oRoles), true);
 
-                this.getRouter().attachBeforeRouteMatched(this._onBeforeRouteMatched, this);
-                this.getRouter().attachRouteMatched(this._onRouteMatched, this);
-            },
+                this._fnRolesLoaded();
 
-            _initializeUserSession: async function () {
-                const oModel = this.getModel();
-                const oUserTypeContext = oModel.bindContext("/getUserType(...)");
+                // Reload data that depends on the user's roles
+                this.getModel().refresh();
 
-                try {
-                    // the backend response
-                    await oUserTypeContext.execute();
-
-                    const oUserData = oUserTypeContext.getBoundContext().getObject();
-                    const oSessionModel = this.getModel("session");
-                    const oRoleModel = this.getModel("roleModel");
-
-                    const oUserRoles = oUserData.roles;
-                    const sEmail = oUserData.id;
-                    const sName = oUserData.name || "";
-                    const sInitials = sName.substring(0, 2).toUpperCase();
-
-                    // populate Session Model
-                    oSessionModel.setProperty("/userId", oUserData.userId || "UNKNOWN");
-                    oSessionModel.setProperty("/email", sEmail);
-                    oSessionModel.setProperty("/initials", sInitials);
-                    oSessionModel.setProperty("/userName", sName);
-                    oSessionModel.setProperty("/position", oUserData.position);
-                    oSessionModel.setProperty("/grade", oUserData.grade || "UNKNOWN");
-                    oSessionModel.setProperty("/department", oUserData.department || "UNKNOWN");
-                    oSessionModel.setProperty("/origin", oUserData.origin);
-                    oSessionModel.setProperty("/costCenters", oUserData.costcenters || "UNKNOWN");
-
-                    // update Request Model
-                    this._oReqModel.setProperty("/user", {
-                        emp_id: oUserData.userId,
-                        name: oUserData.name,
-                        cost_center: oUserData.costcenters
-                    });
-
-                    oRoleModel.setProperty("/isClaimant", oUserRoles.isClaimant);
-                    oRoleModel.setProperty("/isApprover", oUserRoles.isApprover);
-                    oRoleModel.setProperty("/isDTDAdmin", oUserRoles.isDTDAdmin);
-                    oRoleModel.setProperty("/isAdminSystem", oUserRoles.isAdminSystem);
-                    oRoleModel.setProperty("/isAdminCC", oUserRoles.isAdminCC);
-                    oRoleModel.setProperty("/isCCCAdmin", oUserRoles.isCCCAdmin);
-
-                    // userType is a single display label - priority order
-                    // determines which one shows when a user has multiple roles.
-                    if (oUserRoles.isDTDAdmin) {
-                        oSessionModel.setProperty("/userType", "DTD Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/DTDAdmin_role", true);
-                    } else if (oUserRoles.isAdminSystem) {
-                        oSessionModel.setProperty("/userType", "JKEW Admin");
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/JKEW_role", true);
-                    } else if (oUserRoles.isAdminCC) {
-                        oSessionModel.setProperty("/userType", "GA Admin");
-                        oRoleModel.setProperty("/GA_role", true);
-                    } else if (oUserRoles.isCCCAdmin) {
-                        oSessionModel.setProperty("/userType", "CCC Admin");
-                    } else if (oUserRoles.isApprover) {
-                        oSessionModel.setProperty("/userType", "Approver");
-                    } else {
-                        oSessionModel.setProperty("/userType", "Claimant");
-                    }
-
-                    // Role-visibility flags are independent - a user can hold
-                    // multiple admin roles at once (e.g. Admin_CC AND
-                    // CCC_Admin), so each flag must be set on its own
-                    // condition rather than an else-if chain that stops at
-                    // the first match and silently skips the rest.
-                    if (oUserRoles.isDTDAdmin) {
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/DTD_JKEW_role", true);
-                        oRoleModel.setProperty("/DTDAdmin_role", true);
-                    }
-                    if (oUserRoles.isAdminSystem) {
-                        oRoleModel.setProperty("/Admin_role", true);
-                        oRoleModel.setProperty("/DTD_JKEW_role", true);
-                    }
-                    if (oUserRoles.isAdminCC) {
-                        oRoleModel.setProperty("/Admin_role", true);
-                    }
-                    if (oUserRoles.isCCCAdmin) {
-                        oRoleModel.setProperty("/CCC_Admin", true);
-                    }
-
-                    this._fnRolesLoaded();
-
-                    if (this.getModel()) {
-                        this.getModel().refresh();
-                    }
-
-                    var sBrowserHash = window.location.hash || "";
-                    if (sBrowserHash.indexOf("?") > -1) {
-                        sBrowserHash = sBrowserHash.split("?")[0];
-                    }
-                    if (sBrowserHash.endsWith("/")) {
-                        sBrowserHash = sBrowserHash.slice(0, -1);
-                    }
-
-                    if (!sBrowserHash || sBrowserHash === "" || sBrowserHash === "#" || sBrowserHash === "#/") {
-                        this.getRouter().navTo("Dashboard", {}, true);
-                    }
-
-                } catch (oError) {
-                    console.error("User Session Initialization Failed:", oError);
-                    this._fnRolesLoaded();
-                    MessageBox.error(Utility.getText("user_not_found_desc", []), {
-                        title: Utility.getText("user_not_found_title", []),
-                        actions: [MessageBox.Action.CLOSE],
-                        emphasizedAction: MessageBox.Action.CLOSE,
-                        onClose: () => {
-                            // Log out through the approuter
-						    window.location.href = "/claima/do/logout";
-                        }
-                    });
+                // Empty hash: go to the Dashboard
+                if (this._isEmptyHash()) {
+                    this.getRouter().navTo("Dashboard", {}, true);
                 }
-            },
+            } catch (oError) {
+                this._fnRolesLoaded();
+                this._oSessionManager.handleSessionError(oError);
+            } finally {
+                // Free the operation binding; it's no longer needed
+                oUserTypeContext.destroy();
+            }
+        },
 
-            _loadExternalLibraries: function () {
-                const aLibs = [
-                    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js',
-                    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js'
-                ];
-                aLibs.forEach(src => {
-                    const script = document.createElement('script');
-                    script.setAttribute('src', src);
-                    document.head.appendChild(script);
-                });
-            },
+        /**
+         * Checks whether the URL has no route (e.g. "", "#", "#/").
+         * @private
+         * @returns {boolean} true if no route is in the URL
+         */
+        _isEmptyHash: function () {
+            const sHash = (window.location.hash || "").split("?")[0].replace(/\/$/, "");
+            return !sHash || sHash === "#" || sHash === "#/";
+        },
 
-            _initActivityTracking: function () {
-                this._fnResetActivity = () => {
-                    this.resetInactivityTimeout();
-                };
+        /**
+         * Returns the label shown for the user's type.
+         * If the user has several roles, the first match in this order wins.
+         * @private
+         * @param {Object} oRoles - Roles from getUserType
+         * @returns {string} User type label
+         */
+        _getUserTypeLabel: function (oRoles) {
+            if (oRoles.isDTDAdmin)    return "DTD Admin";
+            if (oRoles.isAdminSystem) return "JKEW Admin";
+            if (oRoles.isAdminCC)     return "GA Admin";
+            if (oRoles.isCCCAdmin)    return "CCC Admin";
+            if (oRoles.isApprover)    return "Approver";
+            return "Claimant";
+        },
 
-                ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(sEvent => {
-                    document.addEventListener(sEvent, this._fnResetActivity, true);
-                });
+        /**
+         * Builds all role flags used by the views (e.g. visible="{roleModel>/DTDAdmin_role}").
+         * Only flags that are true are added, matching the original behaviour.
+         * @private
+         * @param {Object} oRoles - Roles from getUserType
+         * @returns {Object} Role flags to merge into roleModel
+         */
+        _buildRoleFlags: function (oRoles) {
+            const oFlags = {
+                // Raw roles from the backend
+                isClaimant: oRoles.isClaimant,
+                isApprover: oRoles.isApprover,
+                isDTDAdmin: oRoles.isDTDAdmin,
+                isAdminSystem: oRoles.isAdminSystem,
+                isAdminCC: oRoles.isAdminCC,
+                isCCCAdmin: oRoles.isCCCAdmin
+            };
 
-                const oModel = this.getModel();
-                if (oModel && oModel.attachEventOnce) {
-                    oModel.attachPropertyChange(this._fnResetActivity, this);
-                }
+            // Independent flags: a user can hold several of these
+            if (oRoles.isDTDAdmin || oRoles.isAdminSystem || oRoles.isAdminCC) oFlags.Admin_role = true;
+            if (oRoles.isDTDAdmin || oRoles.isAdminSystem) oFlags.DTD_JKEW_role = true;
+            if (oRoles.isDTDAdmin) oFlags.DTDAdmin_role = true;
+            if (oRoles.isCCCAdmin) oFlags.CCC_Admin = true;
 
-                sap.ui.getCore().getEventBus().subscribe(
-                    "sap.ui",
-                    "interaction",
-                    this._fnResetActivity,
-                    this
-                );
-            },
-
-            /**
-             * Returns the validator
-             * @public
-             * @return {Validator} returns the validator
-             */
-            getValidator: function () {
-                if (!this._oValidator) {
-                    this._oValidator = new Validator();
-                }
-                return this._oValidator;
-            },
-
-            getInactivityTimeout: function () {
-                return this.countdown;
-            },
-
-            setInactivityTimeout: function (timeout_millisec) {
-                this.countdown = timeout_millisec;
-                this.resetCountdown = this.countdown;
-            },
-
-            resetInactivityTimeout: function () {
-                this.countdown = this.resetCountdown;
-            },
-
-            startInactivityTimer: function () {
-                var self = this;
-                this.intervalHandle = setInterval(function () {
-                    self._inactivityCountdown();
-                }, 10000);
-            },
-
-            stopInactivityTimer: function () {
-                if (this.intervalHandle != null) {
-                    clearInterval(this.intervalHandle);
-                    this.intervalHandle = null;
-                }
-            },
-
-            _inactivityCountdown: function () {
-                this.countdown -= 10000;
-
-                const iFiveMinMs = 5 * 60 * 1000;
-                if (this.countdown === iFiveMinMs) {
-                    this._showSessionWarning();
-                }
-
-                if (this.countdown <= 0) {
-                    this.stopInactivityTimer();
-                    this.resetInactivityTimeout();
-                    this._doLogout();
-                }
-            },
-
-            _showSessionWarning: function () {
-                //countdown another 5 mins if no response to the prompt message
-                //direct force user to logout
-                this.stopInactivityTimer();
-                this._promptExpireHandle = setTimeout(() => {
-                    this._doLogout();
-                }, 5 * 60 * 1000);
-
-                sap.m.MessageBox.warning(
-                    "Session will expire. Click OK to stay logged in.",
-                    {
-                        title: "Session Expiring Soon",
-                        actions: [
-                            sap.m.MessageBox.Action.OK,
-                            "Logout"
-                        ],
-                        emphasizedAction: sap.m.MessageBox.Action.OK,
-                        onClose: (sAction) => {
-                            clearTimeout(this._promptExpireHandle);
-                            this._promptExpireHandle = null;
-                            if (sAction === "Logout") {
-                                this._doLogout();
-                            } else {
-                                this._resumeSession();
-                            }
-                        }
-                    }
-                );
-            },
-
-            _resumeSession: function () {
-                $.ajax({
-                    type: "GET",
-                    url: "/user-api/currentUser",
-                    success: () => {
-                        this.resetInactivityTimeout();
-                        this.startInactivityTimer();
-                    },
-                    error: () => {
-                        MessageToast.show("Session logout due to inactivity");
-                        this._doLogout();
-                    }
-                })
-            },
-
-            _doLogout: function () {
-                this.stopInactivityTimer();
-
-                ["keydown", "click", "scroll", "touchstart"].forEach(sEvent => {
-                    document.removeEventListener(sEvent, this._fnResetActivity, true);
-                });
-
-                sap.ui.getCore().getEventBus().unsubscribe(
-                    "sap.ui",
-                    "interaction",
-                    this._fnResetActivity,
-                    this
-                );
-
-                window.location.href = "/claima/do/logout";
-            },
-
-            destroy: function () {
-                this.stopInactivityTimer();
-                // UIComponent.prototype.destroy.apply(this, arguments);
-                clearTimeout(this._promptExpireHandle);
-                AppComponent.prototype.destroy.apply(this, arguments);
-            },
-
-            _onRouteMatched: function (oEvent) {
-                // To set current key of Side Navigation
-                var _sRoute = oEvent.getParameter("name");
-                var _oSideNavigation = this.getRootControl().byId("sideNavigation");
-                var _oRouteKeyMapping = {
-                    "Dashboard": "dashboard",
-                    "RequestFormStatus": "myrequest",
-                    "ClaimStatus": "myreport",
-                    "MyApproval": "approval",
-                    "ManageSub": "mysubstitution",
-                    "Analytics": "analytics",
-                    "Configuration": "config"
-                };
-
-                var _sKey = _oRouteKeyMapping[_sRoute];
-
-                if (_oSideNavigation && _sKey) {
-                    _oSideNavigation.setSelectedKey(_sKey);
-                }
-
-                //clear all message
-                sap.ui.getCore().getMessageManager().removeAllMessages();
-            },
-
-            _onBeforeRouteMatched: function (oEvent) {
-                var sRoute = oEvent.getParameter("name");
-                var oRoleModel = this.getModel("roleModel");
-                var oSessionModel = this.getModel("session");
-                var oRouter = this.getRouter();
-
-                this._oRolesLoadedPromise.then(function () {
-                    const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
-                                  oRoleModel.getProperty("/isDTDAdmin") ||
-                                  oRoleModel.getProperty("/isAdminCC") || 
-                                  oRoleModel.getProperty("/isCCCAdmin") ;
-                    // restriction for manual url change to Analytics and Configuration without admin role
-                    if((sRoute.startsWith("Z") || sRoute === "Analytics") && !bAdmin) {
-                        oRouter.navTo("Dashboard");
-                        MessageBox.error(Utility.getText("msg_unauthorized_role"));
-                    } else {
-                        oRouter.navTo(sRoute, {}, true);
-                    }
-                }.bind(this));
+            // Priority flags: kept the same as the original else-if chain
+            if (!oRoles.isDTDAdmin && oRoles.isAdminSystem) {
+                oFlags.JKEW_role = true;
+            } else if (!oRoles.isDTDAdmin && !oRoles.isAdminSystem && oRoles.isAdminCC) {
+                oFlags.GA_role = true;
             }
 
-        });
+            return oFlags;
+        },
+
+        // ================================================================
+        // External libraries
+        // ================================================================
+
+        /**
+         * Loads the Excel libraries (jszip, xlsx) once. Started at app start in init().
+         * @public
+         */
+        loadExternalLibraries: function () {
+            if (!this._oLibsPromise) {
+                this._oLibsPromise = EXTERNAL_LIBS
+                    .reduce((p, sSrc) => p.then(() => this._loadScript(sSrc)), Promise.resolve())
+                    .catch((oError) => {
+                        this._oLibsPromise = null; // allow retry
+                        throw oError;
+                    });
+            }
+            return this._oLibsPromise;
+        },
+
+        /**
+         * Loads one script and resolves when it has executed.
+         * Re-uses an existing <script> tag instead of adding a duplicate.
+         * @private
+         * @param {string} sSrc - Script URL
+         * @returns {Promise<void>} Resolves on load, rejects on error
+         */
+        _loadScript: function (sSrc) {
+            return new Promise((resolve, reject) => {
+                const oExisting = document.querySelector(`script[src="${sSrc}"]`);
+
+                if (oExisting) {
+                    // Already finished loading
+                    if (oExisting.dataset.loaded === "true") {
+                        resolve();
+                        return;
+                    }
+                    // Still loading: wait for it
+                    oExisting.addEventListener("load", () => resolve(), { once: true });
+                    oExisting.addEventListener("error", () => reject(new Error(`Failed to load ${sSrc}`)), { once: true });
+                    return;
+                }
+
+                const oScript = document.createElement("script");
+                oScript.src = sSrc;
+                oScript.async = false; // keep execution order
+                oScript.onload = () => {
+                    oScript.dataset.loaded = "true";
+                    resolve();
+                };
+                oScript.onerror = () => {
+                    oScript.remove(); // so a retry can add it again
+                    reject(new Error(`Failed to load ${sSrc}`));
+                };
+                document.head.appendChild(oScript);
+            });
+        },
+
+        // ================================================================
+        // Shared helpers
+        // ================================================================
+
+        /**
+         * Returns the validator, creating it on first use.
+         * @public
+         * @returns {Validator} The validator
+         */
+        getValidator: function () {
+            if (!this._oValidator) {
+                this._oValidator = new Validator();
+            }
+            return this._oValidator;
+        },
+
+        /**
+         * Cleans up the session manager when the component is destroyed.
+         * @public
+         */
+        destroy: function () {
+            if (this._oSessionManager) {
+                this._oSessionManager.destroy();
+                this._oSessionManager = null;
+            }
+            AppComponent.prototype.destroy.apply(this, arguments);
+        },
+
+        // ================================================================
+        // Routing
+        // ================================================================
+
+        /**
+         * Syncs the side navigation selection with the current route and clears old messages.
+         * @private
+         * @param {sap.ui.base.Event} oEvent - routeMatched event
+         */
+        _onRouteMatched: function (oEvent) {
+            const sKey = ROUTE_TO_NAV_KEY[oEvent.getParameter("name")];
+
+            if (sKey) {
+                this.getModel("app").setProperty("/selectedNavKey", sKey);
+            }
+
+            Messaging.removeAllMessages();
+        },
+
+        /**
+         * Stops non-admin users from opening Analytics or Configuration (Z*) pages by URL.
+         * Waits until roles are loaded before checking.
+         * @private
+         * @param {sap.ui.base.Event} oEvent - beforeRouteMatched event
+         */
+        _onBeforeRouteMatched: function (oEvent) {
+            const sRoute = oEvent.getParameter("name");
+
+            // Other routes need no check
+            if (!sRoute.startsWith("Z") && sRoute !== "Analytics") return;
+
+            this._oRolesLoadedPromise.then(() => {
+                const oRoleModel = this.getModel("roleModel");
+                const bAdmin = oRoleModel.getProperty("/isAdminSystem") ||
+                               oRoleModel.getProperty("/isDTDAdmin") ||
+                               oRoleModel.getProperty("/isAdminCC") ||
+                               oRoleModel.getProperty("/isCCCAdmin");
+
+                if (!bAdmin) {
+                    this.getRouter().navTo("Dashboard", {}, true);
+                    MessageBox.error(Utility.getText("msg_unauthorized_role"));
+                }
+            });
+        }
     });
+});

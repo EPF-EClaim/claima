@@ -568,17 +568,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
 				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
 
-				if (
-					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL ||
-					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL_ADVANCE
-				) {
-					await Utility.getRemainingMedicalEntitlement(
-						oInputModel,
-						this._oSessionModel.getProperty("/userId"),
-						"/claim_header/medical_remaining"
-					);
-				}
-
 				// if claim type is not project claim, reset project code value
 				if (!oClaimTypeData.PROJECT_CLAIM) {
 					oInputModel.setProperty("/claimtype/requestform/project_code", null);
@@ -1333,21 +1322,6 @@ sap.ui.define([
 			if (file) {
 				reader.readAsDataURL(file);
 			}
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onCancel_ClaimInput: function () {

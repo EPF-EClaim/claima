@@ -10,7 +10,6 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
-const UpdateMedical = require('./utils/UpdateMedical');
 const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
@@ -2582,137 +2581,71 @@ module.exports = (srv) => {
         };
     });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
+    /**
+     * Cost center filter column for each report entity.
+     * Key   = entity name (without the service prefix).
+     * Value = column used to limit rows to the user's department cost centers.
+     *
+     * To protect a new report, add one line here. The handler below registers itself from these keys.
+     */
+    const mCostCenterFilterField = {
+        ZEMP_CLAIM_REPORT_SUMMARY:   'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS:   'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
+        ZEMP_CC_BUDGET_REPORT:       'FUND_CENTER'
+    };
 
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+    /**
+     * Restricts report data for Admin_CC users to their own department's cost centers.
+     * Other roles are not affected.
+     *
+     * Outcomes:
+     * - Cost centers found         -> only rows with those cost centers are returned.
+     * - No cost centers found      -> no rows are returned (Fiori shows "No data").
+     * - Employee record not found  -> 401/404 from getLoggedInEmployee.
+     * - Employee has no DEP        -> 404 "Employee record not found".
+     * - Entity not configured      -> 500 "Report access is not configured".
+     * - Unexpected/DB error        -> CAP's standard 500 (details hidden in production).
+     *
+     * @param {import('@sap/cds').Request} req - Incoming READ request
+     */
+    srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
+        // Only Admin_CC users are filtered
+        if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
+        const sEntityName = req.target.name.split('.').pop();
+        const sFilterField = mCostCenterFilterField[sEntityName];
+        if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
-            const sUserCC = oEmp.CC;
+        const tx = cds.tx(req);
 
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
+        const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
+        if (!oEmp?.DEP) return req.reject(404, 'Employee record not found');
 
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
+        const aCostCenters = await getDepartmentCostCenters(tx, oEmp.DEP);
 
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
+        if (aCostCenters.length) {
+            req.query.where({ [sFilterField]: { in: aCostCenters } });
+        } else {
+            req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
         }
     });
 
-    srv.before('READ', 'ZEMP_REQUEST_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_SUMMARY', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
-
-    srv.before('READ', 'ZEMP_CLAIM_REPORT_DETAILS', async (req) => {
-        const isAdminCC = req.user.is(Constant.Admin.Admin_CC);
-        if (!isAdminCC)
-            return;
-
-        try {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.CC) {
-                return req.reject(403, 'You do not have the required Admin role.');
-            }
-
-            const sUserCC = oEmp.CC;
-
-            // To this (Array format):
-            const ccFilter = [{ ref: ['COST_CENTER'] }, '=', { val: sUserCC }];
-
-            if (req.query.SELECT.where) {
-                req.query.where([
-                    ...req.query.SELECT.where,
-                    'and',
-                    ...ccFilter // Spread the array elements here
-                ]);
-            } else {
-                req.query.where(ccFilter);
-            }
-
-        } catch (error) {
-            return req.reject(500, 'Internal server error while checking permisisons');
-        }
-    });
+    /**
+     * Returns the distinct, non-empty cost centers for a department.
+     *
+     * @param {Object} tx - CAP transaction
+     * @param {string} sDep - Department ID
+     * @returns {Promise<string[]>} Cost centers; empty array if none are found
+     */
+    async function getDepartmentCostCenters(tx, sDep) {
+        const aRows = await tx.run(
+            SELECT.distinct('CC').from('ZEMP_MASTER').where({ DEP: sDep })
+        );
+        // Remove null, undefined and '' values
+        return aRows.map(r => r.CC).filter(Boolean);
+    }
 
     srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
 
@@ -3093,37 +3026,6 @@ module.exports = (srv) => {
                     REQUEST_ID: sRequestId
                 })
         );
-    });
-
-    srv.before('READ', 'ZEMP_CC_BUDGET_REPORT', async (req) => {
-
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ FUND_CENTER: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-        }
     });
 
     /**
@@ -4742,181 +4644,6 @@ module.exports = (srv) => {
             });
 
         return oDependent?.NATIONAL_ID || null;
-    });
-
-    srv.on('getRemainingMedicalEntitlement', async (req) => {
-
-        const tx = cds.tx(req);
-        const { empId } = req.data;
-
-        console.log("empId:", empId);
-
-        const oEmployee = await tx.run(
-            SELECT.one
-                .from(Constant.Entities.ZEMP_MASTER)
-                .columns(
-                    Constant.EntitiesFields.EEID,
-                    Constant.EntitiesFields.ROLE,
-                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
-                )
-                .where({
-                    [Constant.EntitiesFields.EEID]: empId
-                })
-        );
-
-        console.log("oEmployee:", JSON.stringify(oEmployee, null, 2));
-
-        if (!oEmployee) {
-            return {
-                entitlement: 0,
-                approved: 0,
-                remaining: 0
-            };
-        }
-
-        const sEmployeeRole = oEmployee[Constant.EntitiesFields.ROLE];
-
-        const aRules = await tx.run(
-            SELECT.from(Constant.Entities.ZELIGIBILITY_RULE)
-                .where({
-                    [Constant.EntitiesFields.CLAIM_TYPE_ID]:
-                        Constant.ClaimType.MEDICAL
-                })
-        );
-
-        const bHasSpecificRole = aRules.some(
-            rule => rule.ROLE_ID === sEmployeeRole
-        );
-
-        const aFilteredRules = aRules.filter(rule =>
-            bHasSpecificRole
-                ? rule.ROLE_ID === sEmployeeRole
-                : rule.ROLE_ID === Constant.Wildcard.All
-        );
-
-        const oRule = aFilteredRules[0];
-
-        console.log("Selected Rule:", oRule);
-
-        if (!oRule) {
-            return {
-                entitlement: 0,
-                approved: 0,
-                remaining: 0
-            };
-        }
-
-        if (oRule.ELIGIBLE_AMOUNT === Constant.UnlimitedAmount) {
-            return {
-                entitlement: Constant.UnlimitedAmount,
-                approved: parseFloat(
-                    oEmployee[
-                    Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
-                    ] || 0
-                ),
-                remaining: Constant.UnlimitedAmount
-            };
-        }
-
-        const fEligibleAmount = parseFloat(
-            oRule.ELIGIBLE_AMOUNT || 0
-        );
-
-        const fConsumedAmount = parseFloat(
-            oEmployee[
-            Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
-            ] || 0
-        );
-
-        return {
-            entitlement: fEligibleAmount,
-            approved: fConsumedAmount,
-            remaining: Math.max(0, (fEligibleAmount - fConsumedAmount).toFixed(2))
-        };
-    });
-
-    /**
-        * Update ZEMP_MASTER tables with Used Entitlement Amount/Deduct for Reject
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('updateMedicalUsedAmount', async (req) => {
-        try {
-            const oPayload = req.data;
-            if (!oPayload || oPayload.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            var sRecordId = oPayload.sRecordId;
-            var sStatus = oPayload.sStatus;
-            const tx = cds.tx(req);
-
-            var result = await UpdateMedical.updateUsedMedicalAmount(sRecordId, sStatus, tx);
-            return result;
-        } catch (error) {
-            return req.reject(400, `Fail processing records: ${error.message}`);
-        }
-    });
-
-    /**
-        * Clear MEDICAL_INSURANCE_ENTITLEMENT in ZEMP_MASTER table every year (Job Scheduler)
-        * Job schedule to run on early of the year
-        * @public
-        * @returns {Integer} number of records updated in header table
-        */
-    srv.on('clearMedicalEntitlement', async (req) => {
-        console.log(`[JOB START] Initiating annual reset of MEDICAL_ENTITLEMENT on ${new Date().toISOString()}`);
-        try {
-            const { ZEMP_MEDICAL_ENT_HISTORY } = srv.entities;
-
-            const iPreviousYear = new Date().getFullYear() - 1;
-
-            const { iUpdateCount, iHistoryCount } = await cds.tx(async (tx) => {
-
-                // Keep all
-                const aAllEmployees = await tx.run(
-                    SELECT.from(ZEMP_MASTER).columns(
-                        Constant.EntitiesFields.EEID,
-                        Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT
-                    )
-                );
-
-                // Map fetched records to match ZEMP_MEDICAL_ENT_HISTORY schema
-                const aHistoryEntries = aAllEmployees.map(item => ({
-                    YEAR: iPreviousYear,
-                    EMP_ID: item[Constant.EntitiesFields.EEID],
-                    MEDICAL_INSURANCE_ENTITLEMENT: item[Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]
-                }));
-
-                const iHistoryCount = aHistoryEntries.length;
-
-                // UPSERT history records (Inserts new entries or updates existing ones for current year)
-                await tx.run(
-                    UPSERT(aHistoryEntries).into(ZEMP_MEDICAL_ENT_HISTORY)
-                );
-
-                // Perform the mass update to reset entitlement
-                const iUpdateCount = await tx.run(
-                    UPDATE(ZEMP_MASTER)
-                        .set({
-                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: 0
-                        })
-                        .where({
-                            [Constant.EntitiesFields.MEDICAL_INSURANCE_ENTITLEMENT]: {
-                                [Constant.ComparisonOperators.GreaterThan]: 0
-                            }
-                        })
-                );
-                return {
-                    iUpdateCount,
-                    iHistoryCount
-                };
-            });
-            console.log(`[JOB SUCCESS] History saved & reset completed. Total records updated: ${iUpdateCount}`);
-            return `Successfully archived ${iHistoryCount} records and reset medical entitlement for ${iUpdateCount} records.`;
-        } catch (error) {
-            console.error('[JOB ERROR] Annual entitlement reset failed:', error);
-            return req.error(500, `Job execution failed: ${error.message}`);
-        }
     });
 
     srv.on('batchUpsertCompanyInfo', async (req) => {
