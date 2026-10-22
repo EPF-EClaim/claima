@@ -18,7 +18,7 @@ module.exports = {
         var aPayload = this._parsePayload(oPayload);
         var fTotalAmount = 0;
 
-        //to find the matching eligibility rule for PINDAH as this may return more than 1 eligible rule value
+        //to find the matching eligibility rule for PINDAH, FLIGHT_L & TAMBANG as these may return more than 1 eligible rule value
         if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.PINDAH) {
             var sMarriageCategory = await GetDependentData.getMarriageCategory(oPayload.EmpId);
 
@@ -31,6 +31,13 @@ module.exports = {
 
             var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, tx);
             fTotalAmount = oCurrentRecordItemData.fTotalAmount;
+        }
+        else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.FLIGHT_L) {
+            aFilteredRules = aRules.filter(function (rule) {
+                return rule.FLIGHT_CLASS_ID === aPayload.sFlightClassId;
+            });
+
+            oRule = aFilteredRules[0];
         }
         else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
             aFilteredRules = aRules.filter(function (rule) {
@@ -55,7 +62,7 @@ module.exports = {
     * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
     */
     _parsePayload: function (oPayload) {
-        var sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass;
+        var sRegionId, iTotalTraveler, sTravelDaysId, sFlightClassId, sFareTypeId, sTransportClass;
 
         for (let i = 0; i < oPayload.CheckFields.length; i++) {
             //Convert the Payload values
@@ -75,6 +82,9 @@ module.exports = {
                 case Constant.EntitiesFields.TRAVEL_DAYS_ID:
                     sTravelDaysId = oPayload.CheckFields[i].value;
                     break;
+                case Constant.EntitiesFields.FLIGHT_CLASS_ID:
+                    sFlightClassId = oPayload.CheckFields[i].value;
+                    break;
                 case Constant.EntitiesFields.FARE_TYPE_ID:
                     sFareTypeId = oPayload.CheckFields[i].value;
                     break;
@@ -85,7 +95,7 @@ module.exports = {
             }
         }
 
-        return { sRegionId, iTotalTraveler, sTravelDaysId, sFareTypeId, sTransportClass };
+        return { sRegionId, iTotalTraveler, sTravelDaysId, sFlightClassId, sFareTypeId, sTransportClass };
     },
 
     /**
