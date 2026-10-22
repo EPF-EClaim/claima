@@ -3,6 +3,7 @@ sap.ui.define([
 	"sap/m/MessageToast",
     "sap/ui/core/BusyIndicator",
     "sap/ui/core/Fragment",
+    "sap/ui/core/Messaging",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/json/JSONModel",
@@ -13,6 +14,7 @@ sap.ui.define([
 	MessageToast,
 	BusyIndicator,
 	Fragment,
+	Messaging,
 	Filter,
 	FilterOperator,
 	JSONModel,
@@ -66,6 +68,45 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+        /**
+         * Creates an entry through an OData V4 list binding and waits for the backend
+         * to answer the POST.
+         *
+         * oContext.created() cannot be used for this: it never rejects on a failed
+         * save (it only rejects when the transient context is cancelled or $metadata
+         * fails), so a failed POST would leave it pending forever. The binding's
+         * createCompleted event reports success or failure of the request instead.
+         * On failure the transient entry is deleted, so it is not re-sent with the
+         * next batch, and an error is thrown for the caller's catch block.
+         *
+         * @public
+         * @param {sap.ui.model.odata.v4.ODataListBinding} oListBinding - binding of the target entity set
+         * @param {object} oData - initial data of the new entry
+         * @returns {Promise<sap.ui.model.odata.v4.Context>} the created context
+         * @throws {Error} with the backend error message when the save failed
+         */
+        createEntry: async function (oListBinding, oData) {
+            // only messages raised by this save are reported, not older ones
+            const aOldMessages = Messaging.getMessageModel().getData();
+            const oContext = oListBinding.create(oData);
+            oContext.created().catch(() => { /* rejected only when the entry is deleted below */ });
+
+            // the POST is sent after the current task, so attaching here is not too late
+            const bCreated = await new Promise((resolve) => {
+                oListBinding.attachEventOnce("createCompleted", (oEvent) => resolve(oEvent.getParameter("success")));
+            });
+
+            if (!bCreated) {
+                oContext.delete().catch(() => { /* already gone */ });
+                // the V4 model reports the backend error to Messaging, not to the caller
+                const oBackendError = Messaging.getMessageModel().getData()
+                    .filter((oMessage) => !aOldMessages.includes(oMessage) && oMessage.getTechnical() && oMessage.getType() === "Error")
+                    .pop();
+                throw new Error(oBackendError?.getMessage() || this.getText("msg_odata_create_failed"));
+            }
+            return oContext;
+        },
+
         /**
         * Purpose of this code is to prevent any users from using a url with a claim id/ request id that is not tied to their employee id
         * this could be either if they are not the claimant, approver or the substitute approver
