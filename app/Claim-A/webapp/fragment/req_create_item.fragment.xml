@@ -1689,14 +1689,14 @@
                             change=".onUploadParticipants"
                             style="Emphasized"
                             maximumFileSize="5.0"
-                            enabled="{= ${request>/view} !== 'view' }"
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
                             visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                         <Button 
                             id="ipb_delete_participant" 
                             icon="sap-icon://delete" 
                             text="{i18n>req_b_delete}" 
                             press=".onRowDeleteParticipant" 
-                            enabled="{= ${request>/view} !== 'view' }"
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
                             visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
                     <table:Table
