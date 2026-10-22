@@ -3727,23 +3727,36 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Clears and resets all Per Diem-related fields in the claim item model
+		 * Clears any validation states for provided meal.
+		 *
+		 * @private
+		 * @returns {void}
+		 */
 		_resetPerDiem: function () {
-			// reset claim detail amounts
-			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_day").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_hour").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_breakfast").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_lunch").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
-			}
+			const oClaimItemModel = this.getView().getModel("claimitem_input");
+
+			[   
+				"travel_duration_day",
+				"travel_duration_hour", 
+				"provided_breakfast", 
+				"provided_lunch", 
+				"provided_dinner", 
+				"entitled_breakfast", 
+				"entitled_lunch", 
+				"entitled_dinner" 
+			].forEach((sField) =>{
+				oClaimItemModel.setProperty(`/claim_item/${sField}`, null );
+			});
+			
+			[
+				"provided_breakfast",
+				"provided_lunch", 
+				"provided_dinner"
+			].forEach((sField) => {
+    			this.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
+			});
 		},
 
 		/**
@@ -3999,7 +4012,7 @@ sap.ui.define([
 					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
 
 					var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-					if (!nEntLunch >= 0) {
+					if (nEntLunch >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
 					}
 				}
@@ -4007,7 +4020,7 @@ sap.ui.define([
 					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
 
 					var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-					if (!nEntDinner >= 0) {
+					if (nEntDinner >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
 					}
 
@@ -4027,21 +4040,15 @@ sap.ui.define([
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//check if there is any input, if yes then recalculate entitled meals 
-			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
-			) {			
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed) {
-					return;
-				}
-					
-				await this._calculatePerDiem();
+			//breakfast meal entitlement		
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
 			}
+					
+			await this._calculatePerDiem();
 
-			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
 		/**
@@ -5374,11 +5381,28 @@ sap.ui.define([
 		 * @public
 		 */
 		onChange_ClaimDetails_CurrencyRate: function () {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oInputModel.getProperty("/claim_item/currency_rate")) {
-				var nAmountMYR = (oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount"));
-				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
+			const oCurrencyRateInput = this.byId("input_claimdetails_input_currency_rate");
+			const oInputModel = this.getView().getModel("claimitem_input");
+
+			if (!oCurrencyRateInput.getVisible()) {
+				return;
 			}
+
+			let fCurrencyRate = oInputModel.getProperty("/claim_item/currency_rate");
+
+			// Validate minimum value
+			if (fCurrencyRate < 0.0001) {
+				oCurrencyRateInput.setValueState(ValueState.Error);
+				oCurrencyRateInput.setValueStateText("Currency Rate must be at least 0.0001");
+			} else {
+				oCurrencyRateInput.setValueState(ValueState.None);
+			}
+
+			// Recalculate MYR amount
+			const nAmountMYR = (fCurrencyRate || 0 ) * (oInputModel.getProperty("/claim_item/currency_amount") || 0 );
+
+			oInputModel.setProperty("/claim_item/amount", nAmountMYR);
+
 		},
 
 		/**
@@ -5503,6 +5527,7 @@ sap.ui.define([
 			}
 			else {
 				oClaimItemModel.setProperty("/claim_item/currency_code", null);
+				oClaimItemModel.setProperty("/claim_item/currency_desc", null);
 				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
 				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
 

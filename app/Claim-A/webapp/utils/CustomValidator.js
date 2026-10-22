@@ -115,13 +115,26 @@ sap.ui.define([
                     }
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
-                        var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
-                        var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
+                        const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
+                        let bMealExceeded = false;
                         
-                        if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
+                        [
+                            "provided_breakfast", 
+				            "provided_lunch", 
+				            "provided_dinner" 
+                        ].forEach((sField) => {
+                            if(iTravelDays - oInputModel.getProperty(`/claim_item/${sField}`) < 0){
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState("Error");
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText("Invalid Amount");
+                                bMealExceeded = true;
+                            }else{
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState("None");
+                            }
+                        });
+
+                        if(bMealExceeded){
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
-                            bCanProceed = false
+                            bCanProceed = false;
                         }
                     }
 
