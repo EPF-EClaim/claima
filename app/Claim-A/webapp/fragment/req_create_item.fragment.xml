@@ -1676,7 +1676,10 @@
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
-                        <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
+                        <Button 
+                            text="{i18n>req_b_download_template}" 
+                            press=".onExport"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                         <unified:FileUploader
                             id="ipb_upload_participant"
                             icon="sap-icon://upload"
@@ -1686,16 +1689,23 @@
                             change=".onUploadParticipants"
                             style="Emphasized"
                             maximumFileSize="5.0"
-                            enabled="{= ${request>/view} !== 'view' }"/>
-                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
+                        <Button 
+                            id="ipb_delete_participant" 
+                            icon="sap-icon://delete" 
+                            text="{i18n>req_b_delete}" 
+                            press=".onRowDeleteParticipant" 
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
-                    <table:Table 
+                    <table:Table
                         id="req_participant_table"
                         rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
                         rowActionCount="1"
-                        >
+                    >
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
