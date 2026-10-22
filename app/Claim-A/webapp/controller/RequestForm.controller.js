@@ -2362,8 +2362,7 @@ sap.ui.define([
 						new Filter("CATEGORY_ID", FilterOperator.NE, "X"),			// filter out claim type item that is not required for PAR
 						new Filter({
 							filters: [
-								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN),
-								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.TIPS)
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 							],
 							and: true
 						})
