@@ -1372,7 +1372,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
         }
         where rh.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
-          and ri.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
           and rh.STATUS         in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
           and rh.SUBMITTED_DATE is not null
           and c.CLAIM_ID        is null
