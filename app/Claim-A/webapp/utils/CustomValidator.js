@@ -110,7 +110,17 @@ sap.ui.define([
                                     return;
 
                                 }
-                                break;    
+                                break;
+                                
+                            case Constants.ClaimTypeItem.FLIGHT_O:
+                                const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
+				                const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
+
+                                if(dDepartureTime.getTime() === dArrivalTime.getTime()){
+                                    MessageBox.error(Utility.getText("req_vs_e_invalid_flight_time"));
+                                    bCanProceed = false;
+                                }
+                                break;
                             default:
                                 break;
                         }

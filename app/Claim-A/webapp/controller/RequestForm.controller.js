@@ -1343,7 +1343,9 @@ sap.ui.define([
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 
-			this.calculateNumberOfHours();
+			if(!this.calculateNumberOfHours()){
+				return;
+			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
@@ -2424,13 +2426,15 @@ sap.ui.define([
 			if (iDiffMs < 0) {
 				MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
 				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
-				return;
+				return false;
 			}
 
 			const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
 
 			// 7. Save it back to the JSON model
 			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
+
+			return true;
 		},
 
 		getFromLocationByState() {
