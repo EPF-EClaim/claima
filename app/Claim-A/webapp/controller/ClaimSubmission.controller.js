@@ -526,7 +526,6 @@ sap.ui.define([
 
 				return true;
 			} catch (oError) {
-				MessageBox.error(oError.message);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
