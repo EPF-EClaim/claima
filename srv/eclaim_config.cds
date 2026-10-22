@@ -9187,3 +9187,25 @@ annotate eclaim_srv.ZJOB_CODE_MAPPING with {
     JOB_CODE_ID     @Search.fuzzinessThreshold: 1;
     JOB_GROUP_ID    @Search.fuzzinessThreshold: 1;
 };
+
+annotate eclaim_srv.ZMED_REPORT with @(
+    UI.SelectionFields: [ EEID, POLICY_YEAR, STATUS_ID, SUBMITTED_DATE ],
+    UI.LineItem: [
+        { Value: CLAIM_ID }, { Value: REQUEST_ID }, { Value: EEID }, { Value: NAME },
+        { Value: DEPENDENT_RELATIONSHIP }, { Value: DEPENDENT_NAME }, { Value: DEPENDENT_AGE },
+        { Value: CLAIM_METHOD }, { Value: POLICY_YEAR }, { Value: PROVIDER_NAME },
+        { Value: ENTITLED_AMOUNT }, { Value: ADVANCE_AMOUNT }, { Value: AMOUNT_CLAIMED },
+        { Value: CASH_REFUND_AMOUNT }, { Value: AMOUNT_APPROVED }, { Value: BALANCE },
+        { Value: BALANCE_RECALC },
+        { Value: BALANCE_CHECK, Criticality: BALANCE_CHECK_CRIT },
+        { Value: STATUS, Criticality: STATUS_CRIT },
+        { Value: PAYMENT_DATE }
+    ]
+) {
+    STATUS_ID      @Common.Text: STATUS @Common.TextArrangement: #TextOnly @title: 'Claim Status';
+    SUBMITTED_DATE @Common.FilterExpressionRestrictions: #SingleRange;
+};
+
+annotate eclaim_srv.ZMED_REPORT with @Capabilities.FilterRestrictions: {
+    FilterExpressionRestrictions: [{ Property: SUBMITTED_DATE, AllowedExpressions: 'SingleRange' }]
+};

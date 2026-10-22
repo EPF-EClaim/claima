@@ -218,6 +218,15 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
+				case "medical_report":
+					if (bAdminSystem) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZMED_REPORTList");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
+					}
+					break;
 				case "myreport":
 					this._oRouter.navTo("ClaimStatus")
 					break;

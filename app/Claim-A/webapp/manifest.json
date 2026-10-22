@@ -741,6 +741,11 @@
                     "pattern": "ZJOB_CODE_MAPPING",
                     "name": "ZJOB_CODE_MAPPING",
                     "target": "ZJOB_CODE_MAPPING"
+                },
+                {
+                    "name": "ZMED_REPORTList",
+                    "pattern": ":?query:",
+                    "target": "ZMED_REPORTList"
                 }
             ],
             
@@ -5882,6 +5887,35 @@
                                             "enabled": true,
                                             "text": "Back"
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZMED_REPORTList": {
+                    "type": "Component",
+                    "id": "ZMED_REPORTList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZMED_REPORT",
+                            "variantManagement": "Page",
+                            "initialLoad": "Disabled",
+                            "hideFilterBar": false,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "selectionMode": "None",
+                                        "enableExport": true,
+                                        "enableFullScreen": true,
+                                        "personalization": {
+                                            "column": true,
+                                            "sort": true,
+                                            "filter": true
+                                            },
+                                        "rowCountMode": "Auto"
                                     }
                                 }
                             }

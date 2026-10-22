@@ -165,6 +165,14 @@
                             key="cc_budgetreport"
                         >
                         </tnt:NavigationListItem>
+                        <tnt:NavigationListItem
+                            icon="sap-icon://money-bills"
+                            text="{i18n>nav_medicalreport}"
+                            enabled="true"
+                            key="medical_report"
+                            visible="{= ${roleModel>/JKEW_role} }"
+                        >
+                        </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>    
 
                     <tnt:NavigationListGroup 

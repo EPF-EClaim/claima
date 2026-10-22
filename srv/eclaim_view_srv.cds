@@ -1337,6 +1337,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
 
     /**
+    * Advance requests that already have a claim counting as usage.
+    * When one exists, the request no longer counts as "pending".
+    */
+    @readonly
+    entity ZMED_ADV_ACTIVE_CLAIM as
+        select from ECLAIM.ZCLAIM_HEADER as c {
+            key c.REQUEST_ID
+        }
+        where c.REQUEST_ID    is not null
+        and c.CLAIM_TYPE_ID =  'MEDICAL_ADVANCE'
+        and c.STATUS_ID     in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
+        group by c.REQUEST_ID;
+
+    /**
      * Stage 1 – Line-level medical usage (years in MYT).
      * LINE_ID = unique key per line (C = claim item, R = request item, E/EC/ER = employee anchors)
      */
@@ -1362,8 +1376,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         select from ECLAIM.ZREQUEST_ITEM as ri
         inner join ECLAIM.ZREQUEST_HEADER as rh
             on rh.REQUEST_ID = ri.REQUEST_ID
-        left join ECLAIM.ZCLAIM_HEADER as c
-            on c.REQUEST_ID = rh.REQUEST_ID
+        left join ZMED_ADV_ACTIVE_CLAIM as a
+            on a.REQUEST_ID = rh.REQUEST_ID
         {
             key cast('R|' || ri.REQUEST_ID || '|' || ri.REQUEST_SUB_ID as String(255)) as LINE_ID,
                 rh.EMP_ID                                                           as EEID,
@@ -1372,9 +1386,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
         }
         where rh.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
+          and (rh.CLAIM_TYPE_ID <> 'MEDICAL_ADVANCE' or ri.CLAIM_TYPE_ITEM_ID = 'MED_ADVANCE')
           and rh.STATUS         in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
           and rh.SUBMITTED_DATE is not null
-          and c.CLAIM_ID        is null
+          and a.REQUEST_ID      is null
 
         union all
 
@@ -1473,6 +1488,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                              - u.CLAIMED_AMOUNT - u.PENDING_REQUEST_AMOUNT
                         else 0
                     end as Decimal(16, 2)
-                ) as BALANCE
+                ) as BALANCE,
+                cast(
+                    coalesce(r.ELIGIBLE_AMOUNT, w.ELIGIBLE_AMOUNT, 0)
+                    - u.CLAIMED_AMOUNT - u.PENDING_REQUEST_AMOUNT
+                    as Decimal(16, 2)
+                ) as NET_BALANCE    // can be negative; used by the report
         };
 }
