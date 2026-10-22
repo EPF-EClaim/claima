@@ -252,8 +252,6 @@ sap.ui.define([
 				return;
 			}
 			if (!bLoaded) {
-				// unable to load claim details
-				MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]));
 				this._onNavBack();
 				return;
 			}
@@ -526,7 +524,7 @@ sap.ui.define([
 
 				return true;
 			} catch (oError) {
-				MessageBox.error("Failed to load claim header/items:", oError);
+				MessageBox.error(oError.message);
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
