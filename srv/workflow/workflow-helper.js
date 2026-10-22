@@ -622,7 +622,7 @@ async function getRollUpCostCenter(sEmpID) {
         oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
     }
 
-        return oEmployeeRollupCC;
+    return oEmployeeRollupCC;
 }
 
 module.exports = {
