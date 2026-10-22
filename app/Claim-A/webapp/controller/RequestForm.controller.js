@@ -807,7 +807,7 @@ sap.ui.define([
 				no_of_family_member		: oReqItem.FAMILY_COUNT || 0,
 				type_of_vehicle			: oReqItem.VEHICLE_TYPE || "",
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
-				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
+				vehicle_class			: oReqItem.VEHICLE_CLASS_ID || "",
 				kilometer				: oReqItem.KILOMETER || 0,
 				rate_per_kilometer		: oReqItem.RATE_PER_KM || "",
 				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
