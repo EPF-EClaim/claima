@@ -63,6 +63,16 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
+
+                    if(sClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_O){
+                        const dDepartureTime = oReqModel.getProperty("/req_item/departure_time");
+                        const dArrivalTime = oReqModel.getProperty("/req_item/arrival_time");
+
+                        if(dDepartureTime === dArrivalTime){
+                            MessageBox.error(Utility.getText("req_vs_e_invalid_flight_time"));
+                            bCanProceed = false;
+                        }
+                    }
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
