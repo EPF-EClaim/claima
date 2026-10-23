@@ -108,52 +108,50 @@ sap.ui.define([
          */
         _initializeUserSession: async function () {
             const oUserTypeContext = this.getModel().bindContext("/getUserType(...)");
+            let oUserData;
 
             try {
                 await oUserTypeContext.execute();
-                this._oSessionManager.clearReauthFlag();
-
-                const oUserData = oUserTypeContext.getBoundContext().getObject();
-                const oRoles = oUserData.roles || {};
-                const sName = oUserData.name || "";
-
-                // Update each model once (merge), instead of one setProperty per field
-                this.getModel("session").setData({
-                    userId: oUserData.userId || "UNKNOWN",
-                    email: oUserData.id,
-                    initials: sName.substring(0, 2).toUpperCase(),
-                    userName: sName,
-                    position: oUserData.position,
-                    grade: oUserData.grade || "UNKNOWN",
-                    department: oUserData.department || "UNKNOWN",
-                    origin: oUserData.origin,
-                    costCenters: oUserData.costcenters || "UNKNOWN",
-                    userType: this._getUserTypeLabel(oRoles)
-                }, true);
-
-                this._oReqModel.setProperty("/user", {
-                    emp_id: oUserData.userId,
-                    name: oUserData.name,
-                    cost_center: oUserData.costcenters
-                });
-
-                this.getModel("roleModel").setData(this._buildRoleFlags(oRoles), true);
-
-                this._fnRolesLoaded();
-
-                // Reload data that depends on the user's roles
-                this.getModel().refresh();
-
-                // Empty hash: go to the Dashboard
-                if (this._isEmptyHash()) {
-                    this.getRouter().navTo("Dashboard", {}, true);
-                }
+                oUserData = oUserTypeContext.getBoundContext().getObject();
             } catch (oError) {
                 this._fnRolesLoaded();
                 this._oSessionManager.handleSessionError(oError);
+                return;
             } finally {
-                // Free the operation binding; it's no longer needed
                 oUserTypeContext.destroy();
+            }
+
+            this._oSessionManager.clearReauthFlag();
+
+            const oRoles = oUserData.roles || {};
+            const sName = oUserData.name || "";
+
+            this.getModel("session").setData({
+                userId: oUserData.userId || "UNKNOWN",
+                email: oUserData.id,
+                initials: sName.substring(0, 2).toUpperCase(),
+                userName: sName,
+                position: oUserData.position,
+                grade: oUserData.grade || "UNKNOWN",
+                department: oUserData.department || "UNKNOWN",
+                origin: oUserData.origin,
+                costCenters: oUserData.costcenters || "UNKNOWN",
+                userType: this._getUserTypeLabel(oRoles)
+            }, true);
+
+            this._oReqModel.setProperty("/user", {
+                emp_id: oUserData.userId,
+                name: oUserData.name,
+                cost_center: oUserData.costcenters
+            });
+
+            this.getModel("roleModel").setData(this._buildRoleFlags(oRoles), true);
+            this._fnRolesLoaded();
+
+            this.getModel().refresh();
+
+            if (this._isEmptyHash()) {
+                this.getRouter().navTo("Dashboard", {}, true);
             }
         },
 
@@ -163,7 +161,7 @@ sap.ui.define([
          * @returns {boolean} true if no route is in the URL
          */
         _isEmptyHash: function () {
-            const sHash = (window.location.hash || "").split("?")[0].replace(/\/$/, "");
+            const sHash = (window.location.hash || "").split("?")[0].replace(/\/+$/, "");
             return !sHash || sHash === "#" || sHash === "#/";
         },
 
