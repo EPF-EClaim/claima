@@ -4705,7 +4705,7 @@ module.exports = (srv) => {
                 SELECT.from(ZLOG)
                     .where({
                         RECORD_ID: { like: `%${sRecordId}%` },
-                        MESSAGE_TYPE: Constant.MessageType.APPROVAL_LOG
+                        MESSAGE_TYPE: { '!=': Constant.BudgetLog.MESSAGE_TYPE }
                     })
                     .orderBy({ TIMESTAMP: 'asc' })
             );

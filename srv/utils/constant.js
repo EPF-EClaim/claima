@@ -632,9 +632,6 @@ const Constant = {
         HOS_COSTCENTER: "HOS_CC",
         HOB_COSTCENTER: "HOB_CC",
         HOD_COSTCENTER: "HOD_CC"
-    },
-    MessageType: {
-        APPROVAL_LOG: "A"
     }
 };
 
