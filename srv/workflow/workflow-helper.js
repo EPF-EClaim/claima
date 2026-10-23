@@ -621,15 +621,10 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
 
-    if (oEmployeeDetails &&
-        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
-        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO &&
-        !sAlternateCostCenter) {
-        oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
-    }
+    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.HOD, Constant.Role.CXO];
+    if (aNoRollUpRoles.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE])) return oSkipped;
 
-    return oEmployeeRollupCC;
+    return rollUpCostCenter(oEmployeeDetails);
 }
 
 module.exports = {
