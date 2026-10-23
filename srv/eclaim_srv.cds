@@ -1900,6 +1900,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchUpdateFIDoc(aDocument: many DocumentData)                                              returns Response;
 
-    action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;        
+    action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;  
+
+    type WBSIORecord {
+        WbsCode        : String;
+        Io             : String;
+        WbsDescription : String;
+    };
+
+    action   updateWBSIOCode(aRecords: many WBSIORecord)                                                 returns Response;
 
 };
