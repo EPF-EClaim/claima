@@ -214,8 +214,6 @@ sap.ui.define([
                 oFlags.GA_role = true;
             }
 
-            oFlags.JKEW_role = true;
-
             return oFlags;
         },
 

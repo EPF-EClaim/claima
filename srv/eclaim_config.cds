@@ -9189,7 +9189,7 @@ annotate eclaim_srv.ZJOB_CODE_MAPPING with {
 };
 
 annotate eclaim_srv.ZMED_REPORT with @(
-    UI.SelectionFields: [ EEID, POLICY_YEAR, STATUS_ID, SUBMITTED_DATE ],
+    UI.SelectionFields: [ EEID, POLICY_YEAR, STATUS_ID],
     UI.LineItem: [
         { Value: CLAIM_ID }, { Value: REQUEST_ID }, { Value: EEID }, { Value: NAME },
         { Value: DEPENDENT_RELATIONSHIP }, { Value: DEPENDENT_NAME }, { Value: DEPENDENT_AGE },
@@ -9203,9 +9203,10 @@ annotate eclaim_srv.ZMED_REPORT with @(
     ]
 ) {
     STATUS_ID      @Common.Text: STATUS @Common.TextArrangement: #TextOnly @title: 'Claim Status';
-    SUBMITTED_DATE @Common.FilterExpressionRestrictions: #SingleRange;
+    SUBMITTED_DATE;
 };
 
-annotate eclaim_srv.ZMED_REPORT with @Capabilities.FilterRestrictions: {
-    FilterExpressionRestrictions: [{ Property: SUBMITTED_DATE, AllowedExpressions: 'SingleRange' }]
+annotate eclaim_srv.ZMED_REPORT with @UI.HeaderInfo: {
+    TypeName      : 'Medical Claim',
+    TypeNamePlural: 'Medical Claim Report'
 };

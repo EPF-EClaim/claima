@@ -744,7 +744,7 @@
                 },
                 {
                     "name": "ZMED_REPORTList",
-                    "pattern": ":?query:",
+                    "pattern": "ZMED_REPORT",
                     "target": "ZMED_REPORTList"
                 }
             ],
@@ -5900,9 +5900,9 @@
                     "options": {
                         "settings": {
                             "contextPath": "/ZMED_REPORT",
-                            "variantManagement": "Page",
-                            "initialLoad": "Disabled",
-                            "hideFilterBar": false,
+                            "variantManagement": "None",
+                            "initialLoad": "Enabled",
+                            "hideFilterBar": true,
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {

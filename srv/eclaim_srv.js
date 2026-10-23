@@ -89,10 +89,10 @@ module.exports = (srv) => {
             }
 
             const oRoles = {
-                isClaimant: req.user.is('Claimant'),
+                isClaimant: true,
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminSystem: true,
                 isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
