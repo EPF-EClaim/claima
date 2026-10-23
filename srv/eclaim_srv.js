@@ -4699,6 +4699,8 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZLOG } = srv.entities;
 
+            if (!sRecordId) return req.error(400, 'Record ID is required');
+
             const aLogs = await tx.run(
                 SELECT.from(ZLOG)
                     .where({
