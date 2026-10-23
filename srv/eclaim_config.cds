@@ -9188,32 +9188,17 @@ annotate eclaim_srv.ZJOB_CODE_MAPPING with {
     JOB_GROUP_ID    @Search.fuzzinessThreshold: 1;
 };
 
-annotate eclaim_srv.ZMED_REPORT with @(
-    UI.SelectionFields: [ EEID, POLICY_YEAR, STATUS_ID],
-    UI.LineItem: [
-        { Value: CLAIM_ID }, { Value: REQUEST_ID }, { Value: EEID }, { Value: NAME },
-        { Value: DEPENDENT_RELATIONSHIP }, { Value: DEPENDENT_NAME }, { Value: DEPENDENT_AGE },
-        { Value: CLAIM_METHOD }, { Value: POLICY_YEAR }, { Value: PROVIDER_NAME },
-        { Value: ENTITLED_AMOUNT }, { Value: ADVANCE_AMOUNT }, { Value: AMOUNT_CLAIMED },
-        { Value: CASH_REFUND_AMOUNT }, { Value: AMOUNT_APPROVED }, { Value: BALANCE },
-        { Value: BALANCE_RECALC },
-        { Value: BALANCE_CHECK, Criticality: BALANCE_CHECK_CRIT },
-        { Value: STATUS, Criticality: STATUS_CRIT },
-        { Value: PAYMENT_DATE }
-    ]
-) {
-    STATUS_ID      @Common.Text: STATUS @Common.TextArrangement: #TextOnly @title: 'Claim Status';
-    SUBMITTED_DATE;
-};
-
-annotate eclaim_srv.ZMED_REPORT with @UI.HeaderInfo: {
-    TypeName      : 'Medical Claim',
-    TypeNamePlural: 'Medical Claim Report'
-};
-
 // =====================================================================
-//  Level 1 – Employee summary (List Report) + Employee Object Page
+//  Medical Report annotations (eclaim_srv)
+//  Replaces every earlier annotate block for:
+//    ZMED_EMP_SUMMARY, ZMED_ADV_TRACK, ZMED_PAYCLAIM_TRACK, ZMED_REPORT
+//  Delete all old ones before pasting – one block per entity only.
 // =====================================================================
+
+
+// ---------------------------------------------------------------------
+//  Summary list – ZMED_EMP_SUMMARY
+// ---------------------------------------------------------------------
 annotate eclaim_srv.ZMED_EMP_SUMMARY with @(
     UI.HeaderInfo: {
         TypeName      : 'Employee',
@@ -9239,31 +9224,8 @@ annotate eclaim_srv.ZMED_EMP_SUMMARY with @(
         { Value: OUTSTANDING_COUNT },
         { Value: OVERDUE_COUNT,     Criticality: OVERDUE_CRIT },
         { Value: MISMATCH_COUNT,    Criticality: MISMATCH_CRIT },
+        { Value: MIGRATED_COUNT,    Criticality: MIGRATED_CRIT },
         { Value: BALANCE_CHECK,     Criticality: BALANCE_CHECK_CRIT }
-    ],
-
-    // ---- Object Page header KPIs ----
-    UI.DataPoint #Entitled: { Value: ENTITLED_AMOUNT, Title: 'Entitlement (RM)' },
-    UI.DataPoint #Used    : { Value: USED_AMOUNT,     Title: 'Used (RM)' },
-    UI.DataPoint #Pending : { Value: PENDING_AMOUNT,  Title: 'Pending Advance (RM)' },
-    UI.DataPoint #Balance : { Value: BALANCE,         Title: 'Balance (RM)', Criticality: BALANCE_CRIT },
-    UI.DataPoint #Check   : { Value: BALANCE_CHECK,   Title: 'Balance Check', Criticality: BALANCE_CHECK_CRIT },
-    UI.DataPoint #Overdue : { Value: OVERDUE_COUNT,   Title: 'Overdue Advances', Criticality: OVERDUE_CRIT },
-    UI.HeaderFacets: [
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Entitled' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Used' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Pending' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Balance' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Check' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Overdue' }
-    ],
-
-    // ---- Object Page sections ----
-    UI.Facets: [
-        { $Type: 'UI.ReferenceFacet', ID: 'AdvanceSection',  Label: 'Medical Advance',
-          Target: 'Advances/@UI.LineItem' },
-        { $Type: 'UI.ReferenceFacet', ID: 'PayClaimSection', Label: 'Pay & Claim',
-          Target: 'PayClaims/@UI.LineItem' }
     ]
 ) {
     EEID               @title: 'Employee ID';
@@ -9276,72 +9238,58 @@ annotate eclaim_srv.ZMED_EMP_SUMMARY with @(
     OUTSTANDING_COUNT  @title: 'Outstanding Advances';
     OVERDUE_COUNT      @title: 'Overdue Advances';
     MISMATCH_COUNT     @title: 'Refund Mismatch';
+    MIGRATED_COUNT     @title: 'Migrated Records';
     BALANCE_CHECK      @title: 'Balance Check';
     BALANCE_CRIT       @UI.Hidden;
     OVERDUE_CRIT       @UI.Hidden;
     MISMATCH_CRIT      @UI.Hidden;
-    BALANCE_CHECK_CRIT @UI.Hidden;
-    MIGRATED_COUNT     @title: 'Migrated Records';
     MIGRATED_CRIT      @UI.Hidden;
+    BALANCE_CHECK_CRIT @UI.Hidden;
 };
 
-// =====================================================================
-//  Level 2a – Medical Advance (section table + Advance Object Page)
-// =====================================================================
+
+// ---------------------------------------------------------------------
+//  Detail tab "Medical Advance" – ZMED_ADV_TRACK
+//  EEID / ENTITLEMENT_YEAR must stay visible: Common.js pre-fills them
+//  in the filter bar.
+// ---------------------------------------------------------------------
 annotate eclaim_srv.ZMED_ADV_TRACK with @(
-    UI.HeaderInfo: {
-        TypeName      : 'Medical Advance',
-        TypeNamePlural: 'Medical Advances',
-        Title         : { Value: REQUEST_ID },
-        Description   : { Value: STAGE }
-    },
+    UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
     UI.LineItem: [
         { Value: REQUEST_ID },
         { Value: CLAIM_ID },
         { Value: POLICY_YEAR },
+        { Value: DEPENDENTS },
+        { Value: ADVANCE_PROVIDER },
+        { Value: DECLARED_PROVIDER },
         { Value: ADVANCE_AMOUNT },
         { Value: DECLARED_AMOUNT },
         { Value: VARIANCE },
         { Value: REFUND_DUE },
         { Value: REFUND_AMOUNT },
-        { Value: REFUND_CHECK,       Criticality: REFUND_CRIT },
-        { Value: ADVANCE_PAYMENT_DATE },
-        { Value: DAYS_SINCE_PAYMENT, Criticality: STAGE_CRIT },
-        { Value: STAGE,              Criticality: STAGE_CRIT }
-    ],
-
-    UI.DataPoint #Advance : { Value: ADVANCE_AMOUNT,  Title: 'Advance (RM)' },
-    UI.DataPoint #Declared: { Value: DECLARED_AMOUNT, Title: 'Declared (RM)' },
-    UI.DataPoint #Refund  : { Value: REFUND_DUE,      Title: 'Refund Due (RM)', Criticality: REFUND_CRIT },
-    UI.DataPoint #Stage   : { Value: STAGE,           Title: 'Stage', Criticality: STAGE_CRIT },
-    UI.HeaderFacets: [
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Advance' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Declared' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Refund' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Stage' }
-    ],
-
-    UI.FieldGroup #AdvInfo: { Data: [
-        { Value: CLAIM_ID },
-        { Value: POLICY_YEAR },
-        { Value: REQUEST_STATUS },
-        { Value: CLAIM_STATUS },
+        { Value: REFUND_CHECK,   Criticality: REFUND_CRIT },
         { Value: ADVANCE_PAYMENT_DATE },
         { Value: DAYS_SINCE_PAYMENT },
-        { Value: VARIANCE },
-        { Value: REFUND_AMOUNT },
-        { Value: REFUND_CHECK, Criticality: REFUND_CRIT }
-    ]},
-    UI.Facets: [
-        { $Type: 'UI.ReferenceFacet', ID: 'AdvInfo',    Label: 'Advance Details',
-          Target: '@UI.FieldGroup#AdvInfo' },
-        { $Type: 'UI.ReferenceFacet', ID: 'AdvDepends', Label: 'Dependents',
-          Target: 'Dependents/@UI.LineItem#Dependents' }
-    ]
+        { Value: STAGE,          Criticality: STAGE_CRIT },
+        { Value: MIGRATED_CHECK, Criticality: MIGRATED_CRIT }
+    ],
+    UI.SelectionPresentationVariant #adv: {
+        Text               : 'Medical Advance',
+        SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
+        PresentationVariant: {
+            Visualizations: ['@UI.LineItem'],
+            SortOrder     : [{ Property: REQUEST_ID }]
+        }
+    }
 ) {
+    EEID                 @title: 'Employee ID';
+    ENTITLEMENT_YEAR     @title: 'Year';
     REQUEST_ID           @title: 'Advance ID';
     CLAIM_ID             @title: 'Declaration Claim ID';
     POLICY_YEAR          @title: 'Policy Year';
+    DEPENDENTS           @title: 'Dependents';
+    ADVANCE_PROVIDER     @title: 'Advance Provider';
+    DECLARED_PROVIDER    @title: 'Declared Provider';
     ADVANCE_AMOUNT       @title: 'Advance (RM)';
     DECLARED_AMOUNT      @title: 'Declared (RM)';
     VARIANCE             @title: 'Variance (RM)';
@@ -9353,8 +9301,7 @@ annotate eclaim_srv.ZMED_ADV_TRACK with @(
     STAGE                @title: 'Stage';
     REQUEST_STATUS       @title: 'Advance Status';
     CLAIM_STATUS         @title: 'Declaration Status';
-    EEID                 @UI.Hidden;
-    ENTITLEMENT_YEAR     @UI.Hidden;
+    MIGRATED_CHECK       @title: 'Migrated Data';
     REQUEST_STATUS_ID    @UI.Hidden;
     CLAIM_STATUS_ID      @UI.Hidden;
     STAGE_CRIT           @UI.Hidden;
@@ -9362,98 +9309,29 @@ annotate eclaim_srv.ZMED_ADV_TRACK with @(
     IS_OVERDUE           @UI.Hidden;
     REFUND_MISMATCH      @UI.Hidden;
     REFUND_CRIT          @UI.Hidden;
-    MIGRATED_CHECK       @title: 'Migrated Data';
     IS_MIGRATED          @UI.Hidden;
     MIGRATED_ISSUE       @UI.Hidden;
     MIGRATED_CRIT        @UI.Hidden;
 };
 
-// =====================================================================
-//  Level 2b – Pay & Claim (section table + Claim Object Page)
-// =====================================================================
+
+// ---------------------------------------------------------------------
+//  Detail tab "Pay & Claim" – ZMED_PAYCLAIM_TRACK
+// ---------------------------------------------------------------------
 annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
-    UI.HeaderInfo: {
-        TypeName      : 'Medical Claim',
-        TypeNamePlural: 'Pay & Claim',
-        Title         : { Value: CLAIM_ID },
-        Description   : { Value: STATUS }
-    },
+    UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
     UI.LineItem: [
         { Value: CLAIM_ID },
         { Value: POLICY_YEAR },
+        { Value: DEPENDENTS },
         { Value: PROVIDER_NAME },
         { Value: AMOUNT_CLAIMED },
         { Value: AMOUNT_APPROVED },
-        { Value: STATUS, Criticality: STATUS_CRIT },
+        { Value: STATUS,         Criticality: STATUS_CRIT },
         { Value: SUBMITTED_DATE },
-        { Value: PAYMENT_DATE }
+        { Value: PAYMENT_DATE },
+        { Value: MIGRATED_CHECK, Criticality: MIGRATED_CRIT }
     ],
-
-    UI.DataPoint #Claimed : { Value: AMOUNT_CLAIMED,  Title: 'Claimed (RM)' },
-    UI.DataPoint #Approved: { Value: AMOUNT_APPROVED, Title: 'Approved (RM)' },
-    UI.DataPoint #Status  : { Value: STATUS,          Title: 'Status', Criticality: STATUS_CRIT },
-    UI.HeaderFacets: [
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Claimed' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Approved' },
-        { $Type: 'UI.ReferenceFacet', Target: '@UI.DataPoint#Status' }
-    ],
-    UI.Facets: [
-        { $Type: 'UI.ReferenceFacet', ID: 'ClmDepends', Label: 'Dependents',
-          Target: 'Dependents/@UI.LineItem#Dependents' }
-    ]
-) {
-    CLAIM_ID         @title: 'Claim ID';
-    POLICY_YEAR      @title: 'Policy Year';
-    PROVIDER_NAME    @title: 'Insurance Provider';
-    AMOUNT_CLAIMED   @title: 'Claimed (RM)';
-    AMOUNT_APPROVED  @title: 'Approved (RM)';
-    STATUS           @title: 'Status';
-    SUBMITTED_DATE   @title: 'Submitted Date';
-    PAYMENT_DATE     @title: 'Payment Date';
-    EEID             @UI.Hidden;
-    ENTITLEMENT_YEAR @UI.Hidden;
-    STATUS_ID        @UI.Hidden;
-    STATUS_CRIT      @UI.Hidden;
-    MIGRATED_CHECK   @title: 'Migrated Data';
-    IS_MIGRATED      @UI.Hidden;
-    MIGRATED_ISSUE   @UI.Hidden;
-    MIGRATED_CRIT    @UI.Hidden;
-};
-
-// =====================================================================
-//  Level 3 – Dependents table (reuses ZMED_REPORT rows)
-// =====================================================================
-annotate eclaim_srv.ZMED_REPORT with @(
-    UI.LineItem #Dependents: [
-        { Value: DEPENDENT_NAME },
-        { Value: DEPENDENT_RELATIONSHIP },
-        { Value: DEPENDENT_AGE },
-        { Value: PROVIDER_NAME },
-        { Value: ADVANCE_AMOUNT },
-        { Value: AMOUNT_CLAIMED },
-        { Value: AMOUNT_APPROVED }
-    ]
-);
-
-// ---- Advance tab ----
-annotate eclaim_srv.ZMED_ADV_TRACK with @(
-    UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
-    UI.SelectionPresentationVariant #adv: {
-        Text               : 'Medical Advance',
-        SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
-        PresentationVariant: {
-            Visualizations: ['@UI.LineItem'],
-            SortOrder     : [{ Property: REQUEST_ID }]
-        }
-    }
-) {
-    EEID             @UI.Hidden: false @title: 'Employee ID';
-    ENTITLEMENT_YEAR @UI.Hidden: false @title: 'Year';
-};
-
-// ---- Pay & Claim tab ----
-annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
-    UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
     UI.SelectionPresentationVariant #pc: {
         Text               : 'Pay & Claim',
         SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
@@ -9463,16 +9341,21 @@ annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
         }
     }
 ) {
-    EEID             @UI.Hidden: false @title: 'Employee ID';
-    ENTITLEMENT_YEAR @UI.Hidden: false @title: 'Year';
+    EEID             @title: 'Employee ID';
+    ENTITLEMENT_YEAR @title: 'Year';
+    CLAIM_ID         @title: 'Claim ID';
+    POLICY_YEAR      @title: 'Policy Year';
+    DEPENDENTS       @title: 'Dependents';
+    PROVIDER_NAME    @title: 'Insurance Provider';
+    AMOUNT_CLAIMED   @title: 'Claimed (RM)';
+    AMOUNT_APPROVED  @title: 'Approved (RM)';
+    STATUS           @title: 'Status';
+    SUBMITTED_DATE   @title: 'Submitted Date';
+    PAYMENT_DATE     @title: 'Payment Date';
+    MIGRATED_CHECK   @title: 'Migrated Data';
+    STATUS_ID        @UI.Hidden;
+    STATUS_CRIT      @UI.Hidden;
+    IS_MIGRATED      @UI.Hidden;
+    MIGRATED_ISSUE   @UI.Hidden;
+    MIGRATED_CRIT    @UI.Hidden;
 };
-
-// ---- Dependents page ----
-annotate eclaim_srv.ZMED_REPORT with @(
-    UI.SelectionFields: [ EEID, POLICY_YEAR, STATUS_ID, SUBMITTED_DATE, REQUEST_ID, CLAIM_ID ],
-    UI.SelectionPresentationVariant #Dependents: {
-        Text               : 'Dependents',
-        SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
-        PresentationVariant: { Visualizations: ['@UI.LineItem#Dependents'] }
-    }
-);

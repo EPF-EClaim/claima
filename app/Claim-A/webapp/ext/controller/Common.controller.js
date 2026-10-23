@@ -1,8 +1,10 @@
 sap.ui.define([
 	'sap/ui/core/mvc/ControllerExtension',
 	'sap/m/MessageBox',
-	'sap/m/MessageToast'
-], function (ControllerExtension, MessageBox, MessageToast) {
+	'sap/m/MessageToast',
+    'sap/ui/model/Filter',
+    'sap/ui/model/FilterOperator'
+], function (ControllerExtension, MessageBox, MessageToast, Filter, FilterOperator) {
 	'use strict';
 
 	return ControllerExtension.extend('claima.ext.controller.Common', {
@@ -81,6 +83,17 @@ sap.ui.define([
                     oMdcTable.getTable?.() || oMdcTable._oTable || null
                 ).filter(Boolean);
             };
+
+			const fnGetInnerTable = () => {
+				const aTables = oView.findAggregatedObjects(true, oControl =>
+					oControl.isA("sap.ui.mdc.Table")
+				);
+
+				if (!aTables.length) return null;
+
+				const oMdcTable = aTables[0];
+				return oMdcTable.getTable?.() || oMdcTable._oTable || null;
+			};
 
 			/* =========================
 			 * LIST REPORT
@@ -396,69 +409,28 @@ sap.ui.define([
                     const oTable = fnGetInnerTables().find((t) =>
                         t.getBinding("rows")?.getPath() === "/ZMED_EMP_SUMMARY"
                     );
-                    if (!oTable) return;
+					
+					// Remove any employee filter left by the detail page
+                    oTable.getBinding("rows")?.filter([], "Application");
+                    
+					if (!oTable) return;
 
                     this._attachItemPressOnce(oTable, this._onMedSummaryRowPress);
                 }, 800);
             }
 
             /* =========================
-             * MEDICAL – EMPLOYEE DETAIL (2 tabs)
+             * MEDICAL – EMPLOYEE DETAIL (2 tabs, no filter bar)
              * ========================= */
             if (sRouteName === "ZMED_EMP_DETAIL") {
 
-                this._detailTimer = setTimeout(() => {
-                    if (currentToken !== this._navToken) return;
+                const oArgs = oEvent.getParameter("arguments") || {};
+                this._oMedFilter = {
+                    EEID: decodeURIComponent(oArgs.EEID || ""),
+                    YEAR: Number(decodeURIComponent(oArgs.ENTITLEMENT_YEAR || "0"))
+                };
 
-                    const oFilterBar = oView.byId("fe::FilterBar::ZMED_ADV_TRACK");
-                    if (!oFilterBar) return; // not this page
-
-                    const oArgs = oEvent.getParameter("arguments");
-                    if (!oArgs) return;
-
-                    oFilterBar.setFilterConditions({
-                        EEID: [{ operator: "EQ", values: [decodeURIComponent(oArgs.EEID || "")] }],
-                        ENTITLEMENT_YEAR: [{ operator: "EQ", values: [Number(decodeURIComponent(oArgs.ENTITLEMENT_YEAR || "0"))] }]
-                    });
-
-                    this._searchTimer = setTimeout(() => {
-                        if (currentToken !== this._navToken) return;
-                        oFilterBar.fireSearch();
-
-                        // Attach row click to both tab tables
-                        fnGetInnerTables().forEach((oTable) =>
-                            this._attachItemPressOnce(oTable, this._onMedDetailRowPress)
-                        );
-                    }, 400);
-                }, 800);
-            }
-
-            /* =========================
-             * MEDICAL – DEPENDENTS
-             * ========================= */
-            if (sRouteName === "ZMED_DEP_DETAIL") {
-
-                this._detailTimer = setTimeout(() => {
-                    if (currentToken !== this._navToken) return;
-
-                    const oFilterBar = oView.byId("fe::FilterBar::ZMED_REPORT");
-                    if (!oFilterBar) return;
-
-                    const oArgs = oEvent.getParameter("arguments");
-                    if (!oArgs) return;
-
-                    const sId = decodeURIComponent(oArgs.ID || "");
-                    const sField = oArgs.TYPE === "A" ? "REQUEST_ID" : "CLAIM_ID";
-
-                    oFilterBar.setFilterConditions({
-                        [sField]: [{ operator: "EQ", values: [sId] }]
-                    });
-
-                    this._searchTimer = setTimeout(() => {
-                        if (currentToken !== this._navToken) return;
-                        oFilterBar.fireSearch();
-                    }, 400);
-                }, 800);
+                this._applyMedDetailFilter(oView, currentToken, 0);
             }
 		},
 
@@ -557,20 +529,112 @@ sap.ui.define([
             });
         },
 
-        _onMedDetailRowPress: function (oEvent) {
+		/* ==============================
+         * MEDICAL – DETAIL FILTER (no filter bar)
+         * ============================== */
 
-            const oItem = oEvent.getParameter("listItem");
-            if (!oItem) return;
+                /**
+         * Filters the detail page tables to the selected employee and year.
+         * Fiori Elements creates the tables a little after the page opens,
+         * so this checks every 250 ms (up to 20 times, about 5 seconds)
+         * until the tables exist.
+         *
+         * @param {sap.ui.core.mvc.View} oView Current page view
+         * @param {number} iToken Navigation token when this started
+         * @param {number} iTry How many times we have checked so far
+         */
+        _applyMedDetailFilter: function (oView, iToken, iTry) {
 
-            const oData = oItem.getBindingContext()?.getObject();
-            if (!oData) return;
+            const MAX_TRIES = 20;
+            const WAIT_MS = 250;
 
-            // Advance rows have REQUEST_ID; Pay & Claim rows do not
-            const bAdvance = Object.prototype.hasOwnProperty.call(oData, "REQUEST_ID");
+            // Cancel any check that is still waiting
+            clearTimeout(this._detailTimer);
 
-            this.base.getAppComponent().getRouter().navTo("ZMED_DEP_DETAIL", {
-                TYPE: bAdvance ? "A" : "C",
-                ID: encodeURIComponent(String(bAdvance ? oData.REQUEST_ID : oData.CLAIM_ID))
+            this._detailTimer = setTimeout(() => {
+
+                // 1. The user has already navigated away: stop
+                if (iToken !== this._navToken) {
+                    return;
+                }
+
+                // 2. This view isn't the detail page (e.g. the summary page): stop
+                const bIsDetailPage = oView.getId().includes("ZMED_EMP_DETAIL");
+                if (!bIsDetailPage) {
+                    return;
+                }
+
+                // 3. Find the detail tables (Medical Advance / Pay & Claim)
+                const aBindings = this._getMedDetailBindings(oView);
+
+                // 4. Tables not created yet: check again shortly
+                if (aBindings.length === 0) {
+                    if (iTry < MAX_TRIES) {
+                        this._applyMedDetailFilter(oView, iToken, iTry + 1);
+                    }
+                    return;
+                }
+
+                // 5. Tables found: apply the employee + year filter to each one
+                aBindings.forEach((oBinding) => {
+                    this._filterMedBinding(oBinding);
+                });
+
+                // 6. Filter again when the user switches tabs
+                //    (the second tab's table may only be created then)
+                this._attachMedTabSelect(oView, iToken);
+
+            }, WAIT_MS);
+        },
+
+        /**
+         * Returns the row bindings of the detail tab tables only
+         * (ZMED_ADV_TRACK / ZMED_PAYCLAIM_TRACK). Other pages are ignored.
+         * @param {sap.ui.core.mvc.View} oView Page view
+         * @returns {sap.ui.model.odata.v4.ODataListBinding[]} Bindings
+         */
+        _getMedDetailBindings: function (oView) {
+            const aDetailPaths = ["/ZMED_ADV_TRACK", "/ZMED_PAYCLAIM_TRACK"];
+
+            return oView.findAggregatedObjects(true, (oControl) =>
+                oControl.isA("sap.ui.mdc.Table")
+            ).map((oMdcTable) => {
+                const oInner = oMdcTable.getTable?.() || oMdcTable._oTable;
+                return oInner && (oInner.getBinding("rows") || oInner.getBinding("items"));
+            }).filter((oBinding) =>
+                oBinding && aDetailPaths.includes(oBinding.getPath())
+            );
+        },
+
+        /**
+         * Sets the employee + year filter on one binding.
+         * @param {sap.ui.model.odata.v4.ODataListBinding} oBinding Table binding
+         */
+        _filterMedBinding: function (oBinding) {
+            if (!this._oMedFilter) return;
+
+            oBinding.filter([
+                new Filter("EEID", FilterOperator.EQ, this._oMedFilter.EEID),
+                new Filter("ENTITLEMENT_YEAR", FilterOperator.EQ, this._oMedFilter.YEAR)
+            ], "Application");
+        },
+
+        /**
+         * Re-applies the filter when the user switches tabs.
+         * @param {sap.ui.core.mvc.View} oView Page view
+         * @param {number} iToken Navigation token
+         */
+        _attachMedTabSelect: function (oView, iToken) {
+            const oTabBar = oView.findAggregatedObjects(true, (oControl) =>
+                oControl.isA("sap.m.IconTabBar")
+            )[0];
+
+            if (!oTabBar || oTabBar.__medSelectAttached) return;
+            oTabBar.__medSelectAttached = true;
+
+            oTabBar.attachSelect(() => {
+                if (this._sCurrentRouteName !== "ZMED_EMP_DETAIL") return;
+                this._applyMedDetailFilter(oView, this._navToken, 0);
             });
         },
 

@@ -1,7 +1,7 @@
 sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
-	"sap/ui/core/ValueState",
+	"sap/ui/core/library",
 	"sap/ui/core/format/NumberFormat",
 	"sap/ui/model/Filter", 
 	"sap/ui/model/FilterOperator", 
@@ -10,7 +10,7 @@ sap.ui.define([
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
-	ValueState,
+	coreLibrary,
 	NumberFormat,
 	Filter,
 	FilterOperator,
@@ -19,6 +19,8 @@ sap.ui.define([
 	Utility) {
 	"use strict";
 
+	const ValueState = coreLibrary.ValueState;
+	
 	return {
 
 		/* =========================================================

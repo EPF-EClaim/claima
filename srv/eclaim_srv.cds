@@ -1885,11 +1885,107 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
 
-    /**
-    * Report – the claim chosen for each advance request.
-    * Drafts and cancelled claims are ignored.
-    * Order: latest non-rejected claim by SUBMITTED_DATE; if none, the latest rejected one.
-    */
+    // =====================================================================
+    //  srv/eclaim_srv.cds – Medical Report views
+    //  Paste inside your existing eclaim_srv service block.
+    //  Replaces every earlier ZMED_* report view (ZMED_REPORT is removed).
+    //
+    //  Pages
+    //    ZMED_EMP_SUMMARY     – summary list (one row per employee + year)
+    //    ZMED_ADV_TRACK       – detail tab "Medical Advance"
+    //    ZMED_PAYCLAIM_TRACK  – detail tab "Pay & Claim"
+    //
+    //  Status rules
+    //    Excluded from listing : STAT01 (draft), STAT07 (cancelled)
+    //    Counts as claimed     : STAT02, STAT05, STAT06, STAT08
+    //    Counts as approved    : STAT05, STAT06, STAT08
+    //    Declaration "declared": STAT02, STAT05, STAT06, STAT08 (stops overdue clock)
+    //    Refund settled        : declaration in STAT05 / STAT06
+    //    Declared provider     : declaration in STAT02, STAT03, STAT05, STAT06, STAT08
+    //
+    //  TODO (revisit later)
+    //    - STAT08 is counted as both claimed and approved.
+    //    - Dependent age = whole years (rounded down) as of SUBMITTED_DATE.
+    //
+    //  ⚠ HANA only: string_agg, years_between, days_between (not SQLite).
+    // =====================================================================
+
+
+    // ---------------------------------------------------------------------
+    //  1. Item-level helpers
+    //     DEPENDENT is stored as a JSON string ("90401503") – quotes/brackets
+    //     are stripped so it matches ZEMP_DEPENDENT.DEPENDENT_NO.
+    // ---------------------------------------------------------------------
+
+    /** Advance (MED_ADVANCE) items per request + dependent. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_RPT_REQ_DEP as
+        select from ECLAIM.ZREQUEST_ITEM as ri {
+            key cast(ri.REQUEST_ID as String) as REQUEST_ID,
+            key cast(replace(replace(replace(ri.DEPENDENT, '"', ''), '[', ''), ']', '') as String) as DEPENDENT,
+                max(ri.POLICY_YEAR)                                     as POLICY_YEAR   : String(4),
+                max(ri.INSURANCE_MEDICAL_PROVIDER_NAME)                 as PROVIDER_NAME : String,
+                cast(sum(coalesce(ri.EST_AMOUNT, 0)) as Decimal(16, 2)) as ADVANCE_AMOUNT
+        }
+        where ri.CLAIM_TYPE_ITEM_ID = 'MED_ADVANCE'
+        group by ri.REQUEST_ID, ri.DEPENDENT;
+
+    /** Claim items (excluding CASH_REPAY) per claim + dependent. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_RPT_CLM_DEP as
+        select from ECLAIM.ZCLAIM_ITEM as ci {
+            key cast(ci.CLAIM_ID as String) as CLAIM_ID,
+            key cast(replace(replace(replace(ci.DEPENDENT, '"', ''), '[', ''), ']', '') as String) as DEPENDENT,
+                max(ci.POLICY_YEAR)                                 as POLICY_YEAR   : String(4),
+                max(ci.INSURANCE_MEDICAL_PROVIDER_NAME)             as PROVIDER_NAME : String,
+                cast(sum(coalesce(ci.AMOUNT, 0)) as Decimal(16, 2)) as CLAIM_AMOUNT
+        }
+        where coalesce(ci.CLAIM_TYPE_ITEM_ID, '') <> 'CASH_REPAY'
+        group by ci.CLAIM_ID, ci.DEPENDENT;
+
+    /** CASH_REPAY items per claim (no dependent). */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_RPT_CLM_REPAY as
+        select from ECLAIM.ZCLAIM_ITEM as ci {
+            key ci.CLAIM_ID,
+                max(ci.POLICY_YEAR)                                 as POLICY_YEAR : String(4),
+                cast(sum(coalesce(ci.AMOUNT, 0)) as Decimal(16, 2)) as REPAY_AMOUNT
+        }
+        where ci.CLAIM_TYPE_ITEM_ID = 'CASH_REPAY'
+        group by ci.CLAIM_ID;
+
+    /** Advance amount per request. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_ADV_REQ_AMT as
+        select from ZMED_RPT_REQ_DEP {
+            key REQUEST_ID,
+                max(POLICY_YEAR)                            as POLICY_YEAR : String(4),
+                cast(sum(ADVANCE_AMOUNT) as Decimal(16, 2)) as ADVANCE_AMOUNT
+        }
+        group by REQUEST_ID;
+
+    /** Claimed / declared amount (excluding CASH_REPAY) per claim. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_CLM_AMT as
+        select from ZMED_RPT_CLM_DEP {
+            key CLAIM_ID,
+                max(POLICY_YEAR)                          as POLICY_YEAR : String(4),
+                cast(sum(CLAIM_AMOUNT) as Decimal(16, 2)) as CLAIM_AMOUNT
+        }
+        group by CLAIM_ID;
+
+
+    // ---------------------------------------------------------------------
+    //  2. Chosen declaration per advance
+    //     Ignores STAT01 / STAT07. Latest non-rejected by SUBMITTED_DATE;
+    //     if all are rejected, the latest rejected one.
+    // ---------------------------------------------------------------------
+
     @readonly
     @cds.redirection.target: false
     entity ZMED_ADV_CLAIM_RANKED as
@@ -1908,62 +2004,24 @@ service eclaim_srv @(requires: 'authenticated-user') {
         and c.STATUS_ID not in ('STAT01', 'STAT07');
 
     @readonly
+    @cds.redirection.target: false
     entity ZMED_ADV_CLAIM_WIN as
         select from ZMED_ADV_CLAIM_RANKED { key CLAIM_ID, REQUEST_ID }
         where RN = 1;
 
-    /** Report – advance (MED_ADVANCE) items, totalled per request and dependent. */
+
+    // ---------------------------------------------------------------------
+    //  3. Line-level rows (used for the balance check and dependent text)
+    //     A1 = advance + chosen declaration, per dependent
+    //     A2 = advance with no declaration yet, per dependent
+    //     A3 = cash refund row
+    //     B  = MEDICAL pay & claim, per dependent
+    // ---------------------------------------------------------------------
+
     @readonly
     @cds.redirection.target: false
-    entity ZMED_RPT_REQ_DEP as
-        select from ECLAIM.ZREQUEST_ITEM as ri {
-            key ri.REQUEST_ID,
-            key ri.DEPENDENT,
-                max(ri.POLICY_YEAR)                                   as POLICY_YEAR   : String(4),
-                max(ri.INSURANCE_MEDICAL_PROVIDER_NAME)               as PROVIDER_NAME : String,
-                cast(sum(coalesce(ri.EST_AMOUNT, 0)) as Decimal(16, 2)) as ADVANCE_AMOUNT
-        }
-        where ri.CLAIM_TYPE_ITEM_ID = 'MED_ADVANCE'
-        group by ri.REQUEST_ID, ri.DEPENDENT;
-
-    /** Report – claim items (excluding CASH_REPAY), totalled per claim and dependent. */
-    @readonly
-    @cds.redirection.target: false
-    entity ZMED_RPT_CLM_DEP as
-        select from ECLAIM.ZCLAIM_ITEM as ci {
-            key ci.CLAIM_ID,
-            key ci.DEPENDENT,
-                max(ci.POLICY_YEAR)                                 as POLICY_YEAR   : String(4),
-                max(ci.INSURANCE_MEDICAL_PROVIDER_NAME)             as PROVIDER_NAME : String,
-                cast(sum(coalesce(ci.AMOUNT, 0)) as Decimal(16, 2)) as CLAIM_AMOUNT
-        }
-        where coalesce(ci.CLAIM_TYPE_ITEM_ID, '') <> 'CASH_REPAY'
-        group by ci.CLAIM_ID, ci.DEPENDENT;
-
-    /** Report – CASH_REPAY items, totalled per claim (no dependent). */
-    @readonly
-    @cds.redirection.target: false
-    entity ZMED_RPT_CLM_REPAY as
-        select from ECLAIM.ZCLAIM_ITEM as ci {
-            key ci.CLAIM_ID,
-                max(ci.POLICY_YEAR)                                 as POLICY_YEAR : String(4),
-                cast(sum(coalesce(ci.AMOUNT, 0)) as Decimal(16, 2)) as REPAY_AMOUNT
-        }
-        where ci.CLAIM_TYPE_ITEM_ID = 'CASH_REPAY'
-        group by ci.CLAIM_ID;
-
-    /**
-    * Report lines. Claim values win over request values whenever a claim exists.
-    *  A1 = advance + chosen claim, one row per dependent
-    *  A2 = advance with no claim yet (or only draft/cancelled claims), one row per dependent
-    *  A3 = cash refund row (no dependent)
-    *  B  = MEDICAL claim, one row per dependent
-    * Statuses: STAT01 (draft) and STAT07 (cancelled) never appear.
-    * TODO (revisit): STAT08 is counted as both claimed and approved.
-    */
-    @readonly
     entity ZMED_RPT_LINES as
-        // ---------- A1: advance + chosen claim ----------
+        // ---------- A1 ----------
         select from ZMED_ADV_CLAIM_WIN as w
         inner join ECLAIM.ZREQUEST_HEADER as rh on rh.REQUEST_ID = w.REQUEST_ID
         inner join ECLAIM.ZCLAIM_HEADER   as ch on ch.CLAIM_ID   = w.CLAIM_ID
@@ -1986,7 +2044,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 cast(null as Decimal(16, 2))                           as CASH_REFUND_AMOUNT,
                 cast(case when ch.STATUS_ID in ('STAT05','STAT06','STAT08')
                         then cd.CLAIM_AMOUNT end as Decimal(16, 2))  as AMOUNT_APPROVED,
-                // still pending when the claim does not count as usage yet (e.g. STAT03/STAT04)
+                // still pending while the declaration does not count as usage (STAT03 / STAT04)
                 cast(case when ch.STATUS_ID not in ('STAT02','STAT05','STAT06','STAT08')
                         and rh.STATUS in ('STAT02','STAT05','STAT06','STAT08')
                         and rh.SUBMITTED_DATE is not null
@@ -1998,7 +2056,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where rh.STATUS not in ('STAT01', 'STAT07')
 
-        // ---------- A2: advance with no claim yet ----------
+        // ---------- A2 ----------
         union all
         select from ECLAIM.ZREQUEST_HEADER as rh
         inner join ZMED_RPT_REQ_DEP   as rd on rd.REQUEST_ID = rh.REQUEST_ID
@@ -2028,7 +2086,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         and rh.STATUS not in ('STAT01', 'STAT07')
         and w.CLAIM_ID is null
 
-        // ---------- A3: cash refund row ----------
+        // ---------- A3 ----------
         union all
         select from ZMED_ADV_CLAIM_WIN as w
         inner join ECLAIM.ZREQUEST_HEADER as rh on rh.REQUEST_ID = w.REQUEST_ID
@@ -2056,7 +2114,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where rh.STATUS not in ('STAT01', 'STAT07')
 
-        // ---------- B: MEDICAL claim ----------
+        // ---------- B ----------
         union all
         select from ECLAIM.ZCLAIM_HEADER as ch
         inner join ZMED_RPT_CLM_DEP as cd on cd.CLAIM_ID = ch.CLAIM_ID
@@ -2084,11 +2142,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where ch.CLAIM_TYPE_ID = 'MEDICAL'
         and ch.STATUS_ID not in ('STAT01', 'STAT07');
 
-    /**
-    * Report – usage rebuilt from the report lines.
-    * Claimed amounts count in the claim's submitted year; pending amounts in the request's submitted year.
-    */
+
+    // ---------------------------------------------------------------------
+    //  4. Balance check – usage rebuilt from the report lines
+    // ---------------------------------------------------------------------
+
     @readonly
+    @cds.redirection.target: false
     entity ZMED_RPT_USAGE_LINES as
         select from ZMED_RPT_LINES as l {
             key cast('C|' || l.ROW_KEY as String(260))                           as UKEY,
@@ -2108,6 +2168,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where l.PENDING_ADV_AMOUNT > 0;
 
     @readonly
+    @cds.redirection.target: false
     entity ZMED_RPT_USAGE as
         select from ZMED_RPT_USAGE_LINES as u {
             key u.EEID,
@@ -2117,131 +2178,103 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         group by u.EEID, u.ENTITLEMENT_YEAR;
 
-    /**
-    * Medical / Medical Advance report – flat list, Fiori Elements V4.
-    * TODO (revisit): age is in whole years (rounded down) as of SUBMITTED_DATE.
-    */
+
+    // ---------------------------------------------------------------------
+    //  5. Dependents text – "Name (Relationship, Age)"; "Self" if none
+    // ---------------------------------------------------------------------
+
     @readonly
-    entity ZMED_REPORT as
+    @cds.redirection.target: false
+    entity ZMED_DEP_LABEL_LINES as
         select from ZMED_RPT_LINES as l
-        inner join ECLAIM.ZEMP_MASTER as e
-            on e.EEID = l.EEID
         left join ECLAIM.ZEMP_DEPENDENT as d
             on  d.EMP_ID       = l.EEID
             and d.DEPENDENT_NO = l.DEPENDENT
         left join ECLAIM.ZEMP_RELATIONSHIP as rel
             on rel.RELATIONSHIP_TYPE_ID = d.RELATIONSHIP
-        left join ECLAIM.ZSTATUS as s
-            on s.STATUS_ID = l.STATUS_ID
-        left join ECLAIM_VIEW_SRV.ZMED_ENTITLEMENT_BAL as b   // ← replace with actual service name
-            on  b.EEID             = l.EEID
-            and b.ENTITLEMENT_YEAR = cast(year(add_seconds(l.SUBMITTED_DATE, 28800)) as Integer)
-        left join ZMED_RPT_USAGE as ru
-            on  ru.EEID             = b.EEID
-            and ru.ENTITLEMENT_YEAR = b.ENTITLEMENT_YEAR
         {
             key l.ROW_KEY,
-                l.CLAIM_ID,
                 l.REQUEST_ID,
-                l.EEID,
-                e.NAME,
-                rel.RELATIONSHIP_TYPE_DESC                              as DEPENDENT_RELATIONSHIP,
-                d.LEGAL_NAME                                            as DEPENDENT_NAME,
-                cast(years_between(d.DOB, l.SUBMITTED_DATE) as Integer) as DEPENDENT_AGE,
-                l.CLAIM_METHOD,
-                l.POLICY_YEAR,
-                l.PROVIDER_NAME,
-                b.ENTITLED_AMOUNT,
-                l.ADVANCE_AMOUNT,
-                l.AMOUNT_CLAIMED,
-                l.CASH_REFUND_AMOUNT,
-                l.AMOUNT_APPROVED,
-                b.NET_BALANCE                                           as BALANCE,
-                cast(coalesce(b.ENTITLED_AMOUNT, 0)
-                    - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
-                    as Decimal(16, 2))                                 as BALANCE_RECALC,
-                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
-                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
-                        then 'Tally' else 'Not Tally' end as String(10)) as BALANCE_CHECK,
-                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
-                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
-                        then 3 else 1 end as Integer)                 as BALANCE_CHECK_CRIT,
-                l.STATUS_ID,
-                s.STATUS_DESC                                           as STATUS,
-                cast(case when l.STATUS_ID in ('STAT05','STAT06') then 3
-                        when l.STATUS_ID = 'STAT04'             then 1
-                        when l.STATUS_ID in ('STAT02','STAT03') then 2
-                        else 0 end as Integer)                        as STATUS_CRIT,
-                l.PAYMENT_DATE,
-                l.SUBMITTED_DATE
-        };
+                l.CLAIM_ID,
+                cast(case
+                    when l.DEPENDENT is null or l.DEPENDENT = '' then 'Self'
+                    when d.LEGAL_NAME is null then 'Unknown (' || l.DEPENDENT || ')'
+                    else d.LEGAL_NAME
+                        || ' (' || coalesce(rel.RELATIONSHIP_TYPE_DESC, '-')
+                        || ', ' || coalesce(cast(years_between(d.DOB, l.SUBMITTED_DATE) as String), '-')
+                        || ')'
+                end as String(200)) as DEP_LABEL
+        }
+        where l.CLAIM_METHOD <> 'Cash Refund';
 
-    annotate eclaim_srv.ZMED_REPORT with {
-        CLAIM_ID               @title: 'Claim ID';
-        REQUEST_ID             @title: 'Advance ID';
-        EEID                   @title: 'Employee ID';
-        NAME                   @title: 'Employee Name';
-        DEPENDENT_RELATIONSHIP @title: 'Dependent Relationship';
-        DEPENDENT_NAME         @title: 'Dependent Name';
-        DEPENDENT_AGE          @title: 'Dependent Age';
-        CLAIM_METHOD           @title: 'Claim Method';
-        POLICY_YEAR            @title: 'Policy Year';
-        PROVIDER_NAME          @title: 'Insurance Provider';
-        ENTITLED_AMOUNT        @title: 'Annual Entitlement (RM)';
-        ADVANCE_AMOUNT         @title: 'Advance Amount (RM)';
-        AMOUNT_CLAIMED         @title: 'Amount Claimed (RM)';
-        CASH_REFUND_AMOUNT     @title: 'Cash Refund Amount (RM)';
-        AMOUNT_APPROVED        @title: 'Amount Approved (RM)';
-        BALANCE                @title: 'Balance Entitlement (RM)';
-        BALANCE_RECALC         @title: 'Balance (Recalculated)';
-        BALANCE_CHECK          @title: 'Balance Check';
-        STATUS                 @title: 'Claim Status';
-        STATUS_ID              @title: 'Claim Status'
-                            @Common.Text: STATUS
-                            @Common.TextArrangement: #TextOnly;
-        PAYMENT_DATE           @title: 'Payment Date';
-        SUBMITTED_DATE         @title: 'Submitted Date';
-    };
-
-    annotate eclaim_srv.ZMED_REPORT with @cds.search: {
-        CLAIM_ID,
-        REQUEST_ID,
-        EEID,
-        NAME,
-        DEPENDENT_NAME
-    };
-
-    // =====================================================================
-    //  Medical Report v2 – Employee summary → Advance / Pay & Claim → Dependents
-    // =====================================================================
-
-    /** Advance amount (MED_ADVANCE items) per request. */
     @readonly
     @cds.redirection.target: false
-    entity ZMED_ADV_REQ_AMT as
-        select from ZMED_RPT_REQ_DEP {
+    entity ZMED_ADV_DEP_TXT as
+        select from ZMED_DEP_LABEL_LINES {
             key REQUEST_ID,
-                max(POLICY_YEAR)                            as POLICY_YEAR    : String(4),
-                cast(sum(ADVANCE_AMOUNT) as Decimal(16, 2)) as ADVANCE_AMOUNT
+                cast(string_agg(DEP_LABEL, '; ') as String(1000)) as DEPENDENTS
         }
+        where REQUEST_ID is not null
         group by REQUEST_ID;
 
-    /** Claimed / declared amount (excluding CASH_REPAY) per claim. */
     @readonly
     @cds.redirection.target: false
-    entity ZMED_CLM_AMT as
-        select from ZMED_RPT_CLM_DEP {
+    entity ZMED_CLM_DEP_TXT as
+        select from ZMED_DEP_LABEL_LINES {
             key CLAIM_ID,
-                max(POLICY_YEAR)                          as POLICY_YEAR   : String(4),
-                max(PROVIDER_NAME)                        as PROVIDER_NAME : String,
-                cast(sum(CLAIM_AMOUNT) as Decimal(16, 2)) as CLAIM_AMOUNT
+                cast(string_agg(DEP_LABEL, '; ') as String(1000)) as DEPENDENTS
         }
+        where REQUEST_ID is null
         group by CLAIM_ID;
 
-    /**
-    * Advance base – one row per MEDICAL_ADVANCE request, joined to its chosen claim.
-    * Drafts (STAT01) and cancelled (STAT07) are excluded.
-    */
+
+    // ---------------------------------------------------------------------
+    //  6. Provider text – distinct providers joined with "; "
+    // ---------------------------------------------------------------------
+
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_REQ_PROV_LINES as
+        select from ZMED_RPT_REQ_DEP {
+            key REQUEST_ID,
+            key cast(coalesce(PROVIDER_NAME, '') as String) as PROVIDER_NAME
+        }
+        group by REQUEST_ID, PROVIDER_NAME;
+
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_REQ_PROV_TXT as
+        select from ZMED_REQ_PROV_LINES {
+            key REQUEST_ID,
+                cast(string_agg(PROVIDER_NAME, '; ') as String(500)) as PROVIDERS
+        }
+        where PROVIDER_NAME <> ''
+        group by REQUEST_ID;
+
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_CLM_PROV_LINES as
+        select from ZMED_RPT_CLM_DEP {
+            key CLAIM_ID,
+            key cast(coalesce(PROVIDER_NAME, '') as String) as PROVIDER_NAME
+        }
+        group by CLAIM_ID, PROVIDER_NAME;
+
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_CLM_PROV_TXT as
+        select from ZMED_CLM_PROV_LINES {
+            key CLAIM_ID,
+                cast(string_agg(PROVIDER_NAME, '; ') as String(500)) as PROVIDERS
+        }
+        where PROVIDER_NAME <> ''
+        group by CLAIM_ID;
+
+
+    // ---------------------------------------------------------------------
+    //  7. Advance tracking (tab "Medical Advance")
+    // ---------------------------------------------------------------------
+
     @readonly
     @cds.redirection.target: false
     entity ZMED_ADV_BASE as
@@ -2274,35 +2307,33 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         then 1 else 0 end as Integer)                as IS_DECLARED,
                 cast(case when ch.STATUS_ID in ('STAT05','STAT06')
                         then 1 else 0 end as Integer)                as IS_CLAIM_APPROVED,
+                cast(case when rh.STATUS = 'STAT08' or ch.STATUS_ID = 'STAT08'
+                        then 1 else 0 end as Integer)                as IS_MIGRATED,
                 cast(case when rh.PAYMENT_DATE is not null
                         then days_between(rh.PAYMENT_DATE,
                                 cast(add_seconds(current_timestamp, 28800) as Date))
-                    end as Integer)                                   as DAYS_SINCE_PAYMENT,
-                cast(case when rh.STATUS = 'STAT08' or ch.STATUS_ID = 'STAT08'
-                        then 1 else 0 end as Integer)                as IS_MIGRATED,
+                    end as Integer)                                   as DAYS_SINCE_PAYMENT
         }
         where rh.CLAIM_TYPE_ID = 'MEDICAL_ADVANCE'
         and rh.STATUS not in ('STAT01', 'STAT07');
 
-    /**
-    * Advance tracking – stage, refund and overdue flags.
-    * Shown in the "Medical Advance" section; each row opens its dependents.
-    */
     @readonly
     @cds.redirection.target: false
     entity ZMED_ADV_TRACK as
         select from ZMED_ADV_BASE as b
-        mixin {
-            Dependents : Association to many ZMED_REPORT
-                on  Dependents.REQUEST_ID   =  $projection.REQUEST_ID
-                and Dependents.CLAIM_METHOD <> 'Cash Refund';
-        }
-        into {
+        left join ZMED_ADV_DEP_TXT  as dt on dt.REQUEST_ID = b.REQUEST_ID
+        left join ZMED_REQ_PROV_TXT as rp on rp.REQUEST_ID = b.REQUEST_ID
+        left join ZMED_CLM_PROV_TXT as cp on cp.CLAIM_ID   = b.CLAIM_ID
+        {
             key b.REQUEST_ID,
                 b.EEID,
                 b.ENTITLEMENT_YEAR,
                 b.CLAIM_ID,
                 b.POLICY_YEAR,
+                dt.DEPENDENTS,
+                rp.PROVIDERS                                           as ADVANCE_PROVIDER,
+                cast(case when b.CLAIM_STATUS_ID in ('STAT02','STAT03','STAT05','STAT06','STAT08')
+                        then cp.PROVIDERS end as String(500))        as DECLARED_PROVIDER,
                 b.ADVANCE_AMOUNT,
                 b.DECLARED_AMOUNT,
                 cast(case when b.CLAIM_ID is not null
@@ -2341,7 +2372,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     else 2
                 end as Integer)                                        as STAGE_CRIT,
 
-                // ---- Flags used by the summary ----
+                // ---- Flags for the summary ----
                 cast(case when b.IS_DECLARED = 0 then 1 else 0 end as Integer) as IS_OUTSTANDING,
                 cast(case when b.IS_DECLARED = 0
                         and coalesce(b.DAYS_SINCE_PAYMENT, 0) >= 30
@@ -2358,12 +2389,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         and coalesce(b.REPAY_AMOUNT, 0)
                             <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
                         then 'Refund ≠ Due' else '' end as String(20)) as REFUND_CHECK,
-                Dependents,
                 cast(case when b.IS_DECLARED = 1
                         and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
                         and coalesce(b.REPAY_AMOUNT, 0)
                             <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
                         then 2 else 0 end as Integer)                as REFUND_CRIT,
+
+                // ---- Migrated data (STAT08) ----
                 b.IS_MIGRATED,
                 cast(case when b.IS_MIGRATED = 1
                         and b.IS_DECLARED = 1
@@ -2386,30 +2418,29 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         and ( b.IS_CLAIM_APPROVED = 0
                                 or coalesce(b.REPAY_AMOUNT, 0)
                                     <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
-                        then 2 else 0 end as Integer)                as MIGRATED_CRIT,
+                        then 2 else 0 end as Integer)                as MIGRATED_CRIT
         };
 
-    /**
-    * Pay & Claim tracking – one row per MEDICAL claim.
-    * Each row opens its dependents.
-    */
+
+    // ---------------------------------------------------------------------
+    //  8. Pay & Claim tracking (tab "Pay & Claim")
+    // ---------------------------------------------------------------------
+
     @readonly
     @cds.redirection.target: false
     entity ZMED_PAYCLAIM_TRACK as
         select from ECLAIM.ZCLAIM_HEADER as ch
-        inner join ZMED_CLM_AMT    as ca on ca.CLAIM_ID  = ch.CLAIM_ID
-        left join  ECLAIM.ZSTATUS  as s  on s.STATUS_ID  = ch.STATUS_ID
-        mixin {
-            Dependents : Association to many ZMED_REPORT
-                on  Dependents.CLAIM_ID     = $projection.CLAIM_ID
-                and Dependents.CLAIM_METHOD = 'Medical Pay and Claim';
-        }
-        into {
+        inner join ZMED_CLM_AMT      as ca on ca.CLAIM_ID  = ch.CLAIM_ID
+        left join  ECLAIM.ZSTATUS    as s  on s.STATUS_ID  = ch.STATUS_ID
+        left join  ZMED_CLM_DEP_TXT  as dt on dt.CLAIM_ID  = ch.CLAIM_ID
+        left join  ZMED_CLM_PROV_TXT as cp on cp.CLAIM_ID  = ch.CLAIM_ID
+        {
             key ch.CLAIM_ID,
                 ch.EMP_ID                                              as EEID,
                 cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as Integer) as ENTITLEMENT_YEAR,
                 ca.POLICY_YEAR,
-                ca.PROVIDER_NAME,
+                dt.DEPENDENTS,
+                cp.PROVIDERS                                           as PROVIDER_NAME,
                 cast(case when ch.STATUS_ID in ('STAT02','STAT05','STAT06','STAT08')
                         then ca.CLAIM_AMOUNT end as Decimal(16, 2))  as AMOUNT_CLAIMED,
                 cast(case when ch.STATUS_ID in ('STAT05','STAT06','STAT08')
@@ -2422,7 +2453,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         else 0 end as Integer)                       as STATUS_CRIT,
                 ch.PAYMENT_DATE,
                 ch.SUBMITTED_DATE,
-                Dependents,
+
+                // ---- Migrated data (STAT08) ----
                 cast(case when ch.STATUS_ID = 'STAT08' then 1 else 0 end as Integer) as IS_MIGRATED,
                 cast(case when ch.STATUS_ID = 'STAT08'
                         and ca.CLAIM_AMOUNT is null
@@ -2432,12 +2464,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         else 'Migrated' end as String(20))           as MIGRATED_CHECK,
                 cast(case when ch.STATUS_ID = 'STAT08'
                         and ca.CLAIM_AMOUNT is null
-                        then 2 else 0 end as Integer)                as MIGRATED_CRIT,
+                        then 2 else 0 end as Integer)                as MIGRATED_CRIT
         }
         where ch.CLAIM_TYPE_ID = 'MEDICAL'
         and ch.STATUS_ID not in ('STAT01', 'STAT07');
 
-    /** Activity lines – limits the summary to employees with medical activity. */
+
+    // ---------------------------------------------------------------------
+    //  9. Employee summary (summary list)
+    //     Only employees with medical activity in that entitlement year.
+    // ---------------------------------------------------------------------
+
     @readonly
     @cds.redirection.target: false
     entity ZMED_EMP_ACT_LINES as
@@ -2477,30 +2514,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         group by EEID, ENTITLEMENT_YEAR;
 
-    /**
-    * Employee summary – List Report entry point.
-    * One row per employee + entitlement (submitted) year, only for employees with medical activity.
-    */
     @readonly
     entity ZMED_EMP_SUMMARY as
         select from ZMED_EMP_ACT as a
         inner join ECLAIM.ZEMP_MASTER as e
             on e.EEID = a.EEID
-        left join ECLAIM_VIEW_SRV.ZMED_ENTITLEMENT_BAL as b   // ← same service name you used in ZMED_REPORT
+        // ⚠ Use the same service-qualified name that already works in your project
+        left join ECLAIM_VIEW_SRV.ZMED_ENTITLEMENT_BAL as b
             on  b.EEID             = a.EEID
             and b.ENTITLEMENT_YEAR = a.ENTITLEMENT_YEAR
         left join ZMED_RPT_USAGE as ru
             on  ru.EEID             = a.EEID
             and ru.ENTITLEMENT_YEAR = a.ENTITLEMENT_YEAR
-        mixin {
-            Advances  : Association to many ZMED_ADV_TRACK
-                on  Advances.EEID             = $projection.EEID
-                and Advances.ENTITLEMENT_YEAR = $projection.ENTITLEMENT_YEAR;
-            PayClaims : Association to many ZMED_PAYCLAIM_TRACK
-                on  PayClaims.EEID             = $projection.EEID
-                and PayClaims.ENTITLEMENT_YEAR = $projection.ENTITLEMENT_YEAR;
-        }
-        into {
+        {
             key a.EEID,
             key a.ENTITLEMENT_YEAR,
                 e.NAME,
@@ -2514,20 +2540,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 cast(case when a.OVERDUE_COUNT > 0 then 1 else 0 end as Integer) as OVERDUE_CRIT,
                 a.MISMATCH_COUNT,
                 cast(case when a.MISMATCH_COUNT > 0 then 2 else 0 end as Integer) as MISMATCH_CRIT,
-                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
-                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
-                        then 'Tally' else 'Not Tally' end as String(10)) as BALANCE_CHECK,
-                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
-                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
-                        then 3 else 1 end as Integer)                as BALANCE_CHECK_CRIT,
-                Advances,
-                PayClaims,
                 a.MIGRATED_COUNT,
                 cast(case when a.MIGRATED_COUNT > 0
                         and ( a.MIGRATED_ISSUE_COUNT > 0
                                 or b.NET_BALANCE <> coalesce(b.ENTITLED_AMOUNT, 0)
                                     - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0) )
                         then 2 else 0 end as Integer)                as MIGRATED_CRIT,
+                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
+                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
+                        then 'Tally' else 'Not Tally' end as String(10)) as BALANCE_CHECK,
+                cast(case when b.NET_BALANCE = coalesce(b.ENTITLED_AMOUNT, 0)
+                            - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
+                        then 3 else 1 end as Integer)                as BALANCE_CHECK_CRIT
         };
+
  
 };

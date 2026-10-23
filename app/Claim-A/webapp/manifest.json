@@ -743,11 +743,6 @@
                     "target": "ZJOB_CODE_MAPPING"
                 },
                 {
-                    "name": "ZMED_REPORTList",
-                    "pattern": "ZMED_REPORT",
-                    "target": "ZMED_REPORTList"
-                },
-                {
                     "pattern": "ZMED_EMP_SUMMARY",
                     "name": "ZMED_EMP_SUMMARY",
                     "target": "ZMED_EMP_SUMMARY"
@@ -756,11 +751,6 @@
                     "pattern": "ZMED_EMP_DETAIL(EEID={EEID},ENTITLEMENT_YEAR={ENTITLEMENT_YEAR})",
                     "name": "ZMED_EMP_DETAIL",
                     "target": "ZMED_EMP_DETAIL"
-                },
-                {
-                    "pattern": "ZMED_DEP_DETAIL(TYPE={TYPE},ID={ID})",
-                    "name": "ZMED_DEP_DETAIL",
-                    "target": "ZMED_DEP_DETAIL"
                 }
             ],
             
@@ -5908,35 +5898,6 @@
                         }
                     }
                 },
-                "ZMED_REPORTList": {
-                    "type": "Component",
-                    "id": "ZMED_REPORTList",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZMED_REPORT",
-                            "variantManagement": "None",
-                            "initialLoad": "Enabled",
-                            "hideFilterBar": true,
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "type": "GridTable",
-                                        "selectionMode": "None",
-                                        "enableExport": true,
-                                        "enableFullScreen": true,
-                                        "personalization": {
-                                            "column": true,
-                                            "sort": true,
-                                            "filter": true
-                                            },
-                                        "rowCountMode": "Auto"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
                 "ZMED_EMP_SUMMARY": {
                     "type": "Component",
                     "id": "ZMED_EMP_SUMMARY",
@@ -5965,7 +5926,7 @@
                     "id": "ZMED_EMP_DETAIL",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
-                        "model": "<same model as now>",
+                        "model": "employee",
                         "settings": {
                             "contextPath": "/ZMED_ADV_TRACK",
                             "initialLoad": "Auto",
@@ -5984,7 +5945,7 @@
                                         "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#pc"
                                     }
                                 ],
-                                "showCounts": true
+                                "showCounts": false
                             },
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -5999,42 +5960,6 @@
                                         "type": "GridTable",
                                         "enableExport": true,
                                         "selectionMode": "SingleSelectMaster"
-                                    }
-                                }
-                            },
-                            "content": {
-                                "header": {
-                                    "actions": {
-                                        "onBack": {
-                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "text": "Back"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "ZMED_DEP_DETAIL": {
-                    "type": "Component",
-                    "id": "ZMED_DEP_DETAIL",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "model": "<same model as now>",
-                        "settings": {
-                            "contextPath": "/ZMED_REPORT",
-                            "initialLoad": "Auto",
-                            "hideFilterBar": true,
-                            "variantManagement": "None",
-                            "defaultTemplateAnnotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#Dependents",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem#Dependents": {
-                                    "tableSettings": {
-                                        "type": "GridTable",
-                                        "enableExport": true,
-                                        "selectionMode": "None"
                                     }
                                 }
                             },
