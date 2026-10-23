@@ -339,7 +339,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
         if (oEmployeeRollupCC.error) {
             bError = true;
-            errorResults.push({
+            aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
                 MESSAGE: oEmployeeRollupCC.message
             })
@@ -420,7 +420,7 @@ async function checkRequestBudget(aBudgetContext) {
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
         if (oEmployeeRollupCC.error) {
             bError = true;
-            errorResults.push({
+            aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
                 MESSAGE: oEmployeeRollupCC.message
             });
@@ -612,11 +612,18 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
     }));
 }
 
+/**
+ * Get roll up cost center
+ * In case of no parent cost center found during budget checking or budget locking
+ * roll up cost center will be used to determine the budget 
+ *
+ * @param {string} sEmpID Employee ID
+ * @param {string} sAlternateCostCenter Alternate cost center
+ * @returns {object} 
+ */
 async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
-    var oEmployeeRollupCC;
     const oSkipped = { error: false, message: 'Roll up skipped', oEmployeeRollupCC: {} };
-
-    if (sAlternateCostCenter?.trim()) return oSkipped;
+    if (!sEmpID || sAlternateCostCenter?.trim()) return oSkipped;
 
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
