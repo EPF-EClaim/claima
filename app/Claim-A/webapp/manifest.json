@@ -746,6 +746,21 @@
                     "name": "ZMED_REPORTList",
                     "pattern": "ZMED_REPORT",
                     "target": "ZMED_REPORTList"
+                },
+                {
+                    "pattern": "ZMED_EMP_SUMMARY",
+                    "name": "ZMED_EMP_SUMMARY",
+                    "target": "ZMED_EMP_SUMMARY"
+                },
+                {
+                    "pattern": "ZMED_EMP_DETAIL(EEID={EEID},ENTITLEMENT_YEAR={ENTITLEMENT_YEAR})",
+                    "name": "ZMED_EMP_DETAIL",
+                    "target": "ZMED_EMP_DETAIL"
+                },
+                {
+                    "pattern": "ZMED_DEP_DETAIL(TYPE={TYPE},ID={ID})",
+                    "name": "ZMED_DEP_DETAIL",
+                    "target": "ZMED_DEP_DETAIL"
                 }
             ],
             
@@ -5916,6 +5931,122 @@
                                             "filter": true
                                             },
                                         "rowCountMode": "Auto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZMED_EMP_SUMMARY": {
+                    "type": "Component",
+                    "id": "ZMED_EMP_SUMMARY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "model": "<same model as now>",
+                        "settings": {
+                            "contextPath": "/ZMED_EMP_SUMMARY",
+                            "initialLoad": "Enabled",
+                            "variantManagement": "None",
+                            "hideFilterBar": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "enableExport": true,
+                                        "selectionMode": "SingleSelectMaster"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZMED_EMP_DETAIL": {
+                    "type": "Component",
+                    "id": "ZMED_EMP_DETAIL",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "model": "<same model as now>",
+                        "settings": {
+                            "contextPath": "/ZMED_ADV_TRACK",
+                            "initialLoad": "Auto",
+                            "variantManagement": "None",
+                            "hideFilterBar": true,
+                            "views": {
+                                "paths": [
+                                    {
+                                        "key": "adv",
+                                        "entitySet": "ZMED_ADV_TRACK",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#adv"
+                                    },
+                                    {
+                                        "key": "pc",
+                                        "entitySet": "ZMED_PAYCLAIM_TRACK",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#pc"
+                                    }
+                                ],
+                                "showCounts": true
+                            },
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "enableExport": true,
+                                        "selectionMode": "SingleSelectMaster"
+                                    }
+                                },
+                                "/ZMED_PAYCLAIM_TRACK/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "enableExport": true,
+                                        "selectionMode": "SingleSelectMaster"
+                                    }
+                                }
+                            },
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZMED_DEP_DETAIL": {
+                    "type": "Component",
+                    "id": "ZMED_DEP_DETAIL",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "model": "<same model as now>",
+                        "settings": {
+                            "contextPath": "/ZMED_REPORT",
+                            "initialLoad": "Auto",
+                            "hideFilterBar": true,
+                            "variantManagement": "None",
+                            "defaultTemplateAnnotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#Dependents",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem#Dependents": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "enableExport": true,
+                                        "selectionMode": "None"
+                                    }
+                                }
+                            },
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
                                     }
                                 }
                             }

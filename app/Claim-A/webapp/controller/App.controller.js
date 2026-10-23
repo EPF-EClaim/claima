@@ -221,7 +221,7 @@ sap.ui.define([
 				case "medical_report":
 					if (bAdminSystem) {
 						HashChanger.getInstance().replaceHash("");
-						this._oRouter.navTo("ZMED_REPORTList");
+						this._oRouter.navTo("ZMED_EMP_SUMMARY");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);

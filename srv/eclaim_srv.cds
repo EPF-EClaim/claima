@@ -2277,7 +2277,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 cast(case when rh.PAYMENT_DATE is not null
                         then days_between(rh.PAYMENT_DATE,
                                 cast(add_seconds(current_timestamp, 28800) as Date))
-                    end as Integer)                                   as DAYS_SINCE_PAYMENT
+                    end as Integer)                                   as DAYS_SINCE_PAYMENT,
+                cast(case when rh.STATUS = 'STAT08' or ch.STATUS_ID = 'STAT08'
+                        then 1 else 0 end as Integer)                as IS_MIGRATED,
         }
         where rh.CLAIM_TYPE_ID = 'MEDICAL_ADVANCE'
         and rh.STATUS not in ('STAT01', 'STAT07');
@@ -2356,8 +2358,35 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         and coalesce(b.REPAY_AMOUNT, 0)
                             <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
                         then 'Refund ≠ Due' else '' end as String(20)) as REFUND_CHECK,
-
-                Dependents
+                Dependents,
+                cast(case when b.IS_DECLARED = 1
+                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
+                        and coalesce(b.REPAY_AMOUNT, 0)
+                            <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
+                        then 2 else 0 end as Integer)                as REFUND_CRIT,
+                b.IS_MIGRATED,
+                cast(case when b.IS_MIGRATED = 1
+                        and b.IS_DECLARED = 1
+                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
+                        and ( b.IS_CLAIM_APPROVED = 0
+                                or coalesce(b.REPAY_AMOUNT, 0)
+                                    <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
+                        then 1 else 0 end as Integer)                as MIGRATED_ISSUE,
+                cast(case when b.IS_MIGRATED = 0 then ''
+                        when b.IS_DECLARED = 1
+                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
+                        and ( b.IS_CLAIM_APPROVED = 0
+                                or coalesce(b.REPAY_AMOUNT, 0)
+                                    <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
+                        then 'Migrated – Review'
+                        else 'Migrated' end as String(20))           as MIGRATED_CHECK,
+                cast(case when b.IS_MIGRATED = 1
+                        and b.IS_DECLARED = 1
+                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
+                        and ( b.IS_CLAIM_APPROVED = 0
+                                or coalesce(b.REPAY_AMOUNT, 0)
+                                    <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
+                        then 2 else 0 end as Integer)                as MIGRATED_CRIT,
         };
 
     /**
@@ -2393,7 +2422,17 @@ service eclaim_srv @(requires: 'authenticated-user') {
                         else 0 end as Integer)                       as STATUS_CRIT,
                 ch.PAYMENT_DATE,
                 ch.SUBMITTED_DATE,
-                Dependents
+                Dependents,
+                cast(case when ch.STATUS_ID = 'STAT08' then 1 else 0 end as Integer) as IS_MIGRATED,
+                cast(case when ch.STATUS_ID = 'STAT08'
+                        and ca.CLAIM_AMOUNT is null
+                        then 1 else 0 end as Integer)                as MIGRATED_ISSUE,
+                cast(case when ch.STATUS_ID <> 'STAT08' then ''
+                        when ca.CLAIM_AMOUNT is null then 'Migrated – Review'
+                        else 'Migrated' end as String(20))           as MIGRATED_CHECK,
+                cast(case when ch.STATUS_ID = 'STAT08'
+                        and ca.CLAIM_AMOUNT is null
+                        then 2 else 0 end as Integer)                as MIGRATED_CRIT,
         }
         where ch.CLAIM_TYPE_ID = 'MEDICAL'
         and ch.STATUS_ID not in ('STAT01', 'STAT07');
@@ -2408,7 +2447,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ENTITLEMENT_YEAR,
                 IS_OUTSTANDING                          as OUTSTANDING,
                 IS_OVERDUE                              as OVERDUE,
-                REFUND_MISMATCH                         as MISMATCH
+                REFUND_MISMATCH                         as MISMATCH,
+                IS_MIGRATED                             as MIGRATED,
+                MIGRATED_ISSUE                          as MIG_ISSUE
         }
         union all
         select from ZMED_PAYCLAIM_TRACK {
@@ -2417,7 +2458,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ENTITLEMENT_YEAR,
                 cast(0 as Integer)                      as OUTSTANDING,
                 cast(0 as Integer)                      as OVERDUE,
-                cast(0 as Integer)                      as MISMATCH
+                cast(0 as Integer)                      as MISMATCH,
+                IS_MIGRATED                             as MIGRATED,
+                MIGRATED_ISSUE                          as MIG_ISSUE
         };
 
     @readonly
@@ -2428,7 +2471,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
             key ENTITLEMENT_YEAR,
                 cast(sum(OUTSTANDING) as Integer) as OUTSTANDING_COUNT,
                 cast(sum(OVERDUE)     as Integer) as OVERDUE_COUNT,
-                cast(sum(MISMATCH)    as Integer) as MISMATCH_COUNT
+                cast(sum(MISMATCH)    as Integer) as MISMATCH_COUNT,
+                cast(sum(MIGRATED)    as Integer) as MIGRATED_COUNT,
+                cast(sum(MIG_ISSUE)   as Integer) as MIGRATED_ISSUE_COUNT
         }
         group by EEID, ENTITLEMENT_YEAR;
 
@@ -2476,7 +2521,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
                             - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0)
                         then 3 else 1 end as Integer)                as BALANCE_CHECK_CRIT,
                 Advances,
-                PayClaims
+                PayClaims,
+                a.MIGRATED_COUNT,
+                cast(case when a.MIGRATED_COUNT > 0
+                        and ( a.MIGRATED_ISSUE_COUNT > 0
+                                or b.NET_BALANCE <> coalesce(b.ENTITLED_AMOUNT, 0)
+                                    - coalesce(ru.RPT_CLAIMED, 0) - coalesce(ru.RPT_PENDING, 0) )
+                        then 2 else 0 end as Integer)                as MIGRATED_CRIT,
         };
  
 };

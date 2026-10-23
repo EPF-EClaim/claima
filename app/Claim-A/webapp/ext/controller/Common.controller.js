@@ -74,16 +74,13 @@ sap.ui.define([
 
 			const oView = this.base.getView();
 
-			const fnGetInnerTable = () => {
-				const aTables = oView.findAggregatedObjects(true, oControl =>
-					oControl.isA("sap.ui.mdc.Table")
-				);
-
-				if (!aTables.length) return null;
-
-				const oMdcTable = aTables[0];
-				return oMdcTable.getTable?.() || oMdcTable._oTable || null;
-			};
+			const fnGetInnerTables = () => {
+                return oView.findAggregatedObjects(true, (oControl) =>
+                    oControl.isA("sap.ui.mdc.Table")
+                ).map((oMdcTable) =>
+                    oMdcTable.getTable?.() || oMdcTable._oTable || null
+                ).filter(Boolean);
+            };
 
 			/* =========================
 			 * LIST REPORT
@@ -386,6 +383,83 @@ sap.ui.define([
 					oTable.attachCellClick(this._fnPendingCellClick);
 				}, 800);
 			}
+
+            /* =========================
+             * MEDICAL – SUMMARY
+             * ========================= */
+            if (sRouteName === "ZMED_EMP_SUMMARY") {
+
+                this._reportTimer = setTimeout(() => {
+                    if (currentToken !== this._navToken) return;
+
+                    // Only attach to the summary table, not tables on other List Report pages
+                    const oTable = fnGetInnerTables().find((t) =>
+                        t.getBinding("rows")?.getPath() === "/ZMED_EMP_SUMMARY"
+                    );
+                    if (!oTable) return;
+
+                    this._attachItemPressOnce(oTable, this._onMedSummaryRowPress);
+                }, 800);
+            }
+
+            /* =========================
+             * MEDICAL – EMPLOYEE DETAIL (2 tabs)
+             * ========================= */
+            if (sRouteName === "ZMED_EMP_DETAIL") {
+
+                this._detailTimer = setTimeout(() => {
+                    if (currentToken !== this._navToken) return;
+
+                    const oFilterBar = oView.byId("fe::FilterBar::ZMED_ADV_TRACK");
+                    if (!oFilterBar) return; // not this page
+
+                    const oArgs = oEvent.getParameter("arguments");
+                    if (!oArgs) return;
+
+                    oFilterBar.setFilterConditions({
+                        EEID: [{ operator: "EQ", values: [decodeURIComponent(oArgs.EEID || "")] }],
+                        ENTITLEMENT_YEAR: [{ operator: "EQ", values: [Number(decodeURIComponent(oArgs.ENTITLEMENT_YEAR || "0"))] }]
+                    });
+
+                    this._searchTimer = setTimeout(() => {
+                        if (currentToken !== this._navToken) return;
+                        oFilterBar.fireSearch();
+
+                        // Attach row click to both tab tables
+                        fnGetInnerTables().forEach((oTable) =>
+                            this._attachItemPressOnce(oTable, this._onMedDetailRowPress)
+                        );
+                    }, 400);
+                }, 800);
+            }
+
+            /* =========================
+             * MEDICAL – DEPENDENTS
+             * ========================= */
+            if (sRouteName === "ZMED_DEP_DETAIL") {
+
+                this._detailTimer = setTimeout(() => {
+                    if (currentToken !== this._navToken) return;
+
+                    const oFilterBar = oView.byId("fe::FilterBar::ZMED_REPORT");
+                    if (!oFilterBar) return;
+
+                    const oArgs = oEvent.getParameter("arguments");
+                    if (!oArgs) return;
+
+                    const sId = decodeURIComponent(oArgs.ID || "");
+                    const sField = oArgs.TYPE === "A" ? "REQUEST_ID" : "CLAIM_ID";
+
+                    oFilterBar.setFilterConditions({
+                        [sField]: [{ operator: "EQ", values: [sId] }]
+                    });
+
+                    this._searchTimer = setTimeout(() => {
+                        if (currentToken !== this._navToken) return;
+                        oFilterBar.fireSearch();
+                    }, 400);
+                }, 800);
+            }
 		},
 
 		/* ==============================
@@ -465,6 +539,40 @@ sap.ui.define([
 				claim_id: encodeURIComponent(String(oData.CLAIM_ID))
 			});
 		},
+
+		/* ==============================
+         * MEDICAL NAVIGATION
+         * ============================== */
+        _onMedSummaryRowPress: function (oEvent) {
+
+            const oItem = oEvent.getParameter("listItem");
+            if (!oItem) return;
+
+            const oData = oItem.getBindingContext()?.getObject();
+            if (!oData) return;
+
+            this.base.getAppComponent().getRouter().navTo("ZMED_EMP_DETAIL", {
+                EEID: encodeURIComponent(oData.EEID),
+                ENTITLEMENT_YEAR: encodeURIComponent(String(oData.ENTITLEMENT_YEAR))
+            });
+        },
+
+        _onMedDetailRowPress: function (oEvent) {
+
+            const oItem = oEvent.getParameter("listItem");
+            if (!oItem) return;
+
+            const oData = oItem.getBindingContext()?.getObject();
+            if (!oData) return;
+
+            // Advance rows have REQUEST_ID; Pay & Claim rows do not
+            const bAdvance = Object.prototype.hasOwnProperty.call(oData, "REQUEST_ID");
+
+            this.base.getAppComponent().getRouter().navTo("ZMED_DEP_DETAIL", {
+                TYPE: bAdvance ? "A" : "C",
+                ID: encodeURIComponent(String(bAdvance ? oData.REQUEST_ID : oData.CLAIM_ID))
+            });
+        },
 
 		_detachRowPress: function () {
 			if (!this._oAttachedTable) {
