@@ -2627,7 +2627,6 @@ module.exports = (srv) => {
         // Only Admin_CC users are filtered
         if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
-        const sEntityName = req.target.name.split('.').pop();
         const sFilterField = mCostCenterFilterField[sEntityName];
         if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
