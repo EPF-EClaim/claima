@@ -337,7 +337,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
 
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
-        if (oEmployeeRollupCC && oEmployeeRollupCC.error) {
+        if (oEmployeeRollupCC.error) {
             bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
@@ -359,7 +359,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 })
             }));
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC?.oEmployeeRollupCC);
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC.oEmployeeRollupCC);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -418,7 +418,7 @@ async function checkRequestBudget(aBudgetContext) {
 
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
-        if (oEmployeeRollupCC && oEmployeeRollupCC.error) {
+        if (oEmployeeRollupCC.error) {
             bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
@@ -444,7 +444,7 @@ async function checkRequestBudget(aBudgetContext) {
                 };
             }
 
-            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC?.oEmployeeRollupCC);
+            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC.oEmployeeRollupCC);
             let oBudgetData = oBudgetRecord.data;
 
             if (!oBudgetData) {
@@ -614,7 +614,12 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
 
 async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
     var oEmployeeRollupCC;
+    const oSkipped = { error: false, message: 'Roll up skipped', oEmployeeRollupCC: {} };
+
+    if (sAlternateCostCenter?.trim()) return oSkipped;
+
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
+    if (!oEmployeeDetails) return oSkipped;
 
     if (oEmployeeDetails &&
         oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
