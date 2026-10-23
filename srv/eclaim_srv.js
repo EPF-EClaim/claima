@@ -4711,10 +4711,13 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZLOG } = srv.entities;
 
+            if (!sRecordId) return req.error(400, 'Record ID is required');
+
             const aLogs = await tx.run(
                 SELECT.from(ZLOG)
                     .where({
-                        RECORD_ID: { like: `%${sRecordId}%` }
+                        RECORD_ID: { like: `%${sRecordId}%` },
+                        MESSAGE_TYPE: { '!=': Constant.BudgetLog.MESSAGE_TYPE }
                     })
                     .orderBy({ TIMESTAMP: 'asc' })
             );
