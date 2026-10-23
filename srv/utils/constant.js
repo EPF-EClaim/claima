@@ -601,7 +601,8 @@ const Constant = {
             " and Io eq '{INTERNAL_ORDER}'",
         RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
             "EarmarkedFundsDocument='{DOC_NO}'," +
-            "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")"
+            "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")",
+        BUDGET_REPORT: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'",
     },
     EarmarkedFundPosting_DocHeader: {
         CompanyCode: '1000',
@@ -632,6 +633,36 @@ const Constant = {
         HOS_COSTCENTER: "HOS_CC",
         HOB_COSTCENTER: "HOB_CC",
         HOD_COSTCENTER: "HOD_CC"
+    },
+    BudgetReport: {
+        DEFAULT_CURRENCY: "MYR",
+        // ZBUDGET column → IFAMS field name (17 fields from IFAMS)
+        FIELD_MAP: {
+            // Key fields
+            YEAR: "FiscalYear",
+            INTERNAL_ORDER: "Io",
+            COMMITMENT_ITEM: "CommitmentItem",
+            FUND_CENTER: "FundCenter",
+            MATERIAL_GROUP: "MaterialGroup",
+
+            // Budget amounts
+            ORIGINAL_BUDGET: "OriginalBudget",
+            VIREMENT_IN: "VirementIn",
+            VIREMENT_OUT: "VirementOut",
+            SUPPLEMENT: "Supplements",
+            RETURN: "Returns",
+            CURRENT_BUDGET: "CurrentBudget",
+            COMMITMENT: "Commitments",
+            ACTUAL: "Actuals",
+            CONSUMED: "ConsumedBudget",
+            BUDGET_BALANCE: "BudgetBalance",
+            WBS_CODE: "WbsCode",
+            CURRENCY: "Currency"
+        }
+    },
+     ProjectCodeIndicator: {        
+        WBS: "WBS",
+        IO: "IO"
     }
 };
 
