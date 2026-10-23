@@ -1,6 +1,7 @@
 sap.ui.define([
     "sap/m/MessageBox",
 	"sap/ui/core/Fragment",
+    "sap/ui/core/ValueState",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
@@ -9,6 +10,7 @@ sap.ui.define([
 ], function (
     MessageBox,
     Fragment,
+    ValueState,
     Constants,
     ClaimUtility,
     Utility,
@@ -123,12 +125,16 @@ sap.ui.define([
 				            "provided_lunch", 
 				            "provided_dinner" 
                         ].forEach((sField) => {
-                            if(iTravelDays - oInputModel.getProperty(`/claim_item/${sField}`) < 0){
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState("Error");
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText("Invalid Amount");
+                            if(oInputModel.getProperty(`/claim_item/${sField}`) >= 0 && iTravelDays - oInputModel.getProperty(`/claim_item/${sField}`) < 0){
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                                 bMealExceeded = true;
-                            }else{
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState("None");
+                            }else if (oInputModel.getProperty(`/claim_item/${sField}`) < 0){
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+                                bCanProceed = false;
+                            }else {
+                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
                             }
                         });
 
