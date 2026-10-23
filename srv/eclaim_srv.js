@@ -5321,7 +5321,7 @@ module.exports = (srv) => {
 
             return {
                 message: 'Records updated successfully'
-            }
+            };
 
         } catch (oError) {
             req.reject(400, `Fail updating records: ${oError.message}`);

@@ -355,6 +355,10 @@ async function syncBudgetReport(sYear) {
     const toText = (vValue) => String(vValue ?? '').trim();
     const toAmount = (vValue) => Number(vValue) || 0;
 
+    // Follow ZBUDGET field length
+    const iMaxCommitmentItem = 6;   // ZBUDGET.COMMITMENT_ITEM : String(6)
+    const iMaxCurrency = 3;         // ZBUDGET.CURRENCY : String(3)
+
     // 2. Map IFAMS fields → ZBUDGET columns
     //    (Map removes duplicate keys so the UPSERT does not fail)
     const oEntries = new Map();
@@ -382,12 +386,24 @@ async function syncBudgetReport(sYear) {
 
             // Other fields
             WBS_CODE: toText(oRecord[oFieldMap.WBS_CODE]),
+            // Project code currently uses the same value as IFAMS IO
+            PROJECT_CODE: toText(oRecord[oFieldMap.INTERNAL_ORDER]) || Constant.Wildcard.NA,
             CURRENCY: toText(oRecord[oFieldMap.CURRENCY]) || Constant.BudgetReport.DEFAULT_CURRENCY
         };
 
         // Skip records without mandatory keys
         if (!oEntry.FUND_CENTER || !oEntry.COMMITMENT_ITEM) {
             continue;
+        }
+
+        // Skip records exceeding ZBUDGET field length
+        if (oEntry.COMMITMENT_ITEM.length > iMaxCommitmentItem) {
+            continue;
+        }
+
+        // Fall back to default currency if exceeding ZBUDGET field length
+        if (oEntry.CURRENCY.length > iMaxCurrency) {
+            oEntry.CURRENCY = Constant.BudgetReport.DEFAULT_CURRENCY;
         }
 
         const sKey = [
@@ -405,7 +421,7 @@ async function syncBudgetReport(sYear) {
     if (!aEntries.length) {
         return 0;
     }
-    
+
     // 3. Save into ZBUDGET (insert new / update existing)
     await cds.run(UPSERT.into('ECLAIM.ZBUDGET').entries(aEntries));
     return aEntries.length;
