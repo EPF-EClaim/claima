@@ -344,7 +344,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 MESSAGE: oEmployeeRollupCC.message
             })
 
-            return errorResults;
+            return aErrorResults;
         }
 
         const aItems =
@@ -425,7 +425,7 @@ async function checkRequestBudget(aBudgetContext) {
                 MESSAGE: oEmployeeRollupCC.message
             });
 
-            return errorResults;
+            return aErrorResults;
         }
 
         for (const entry of aBudgetContext) {
@@ -619,7 +619,7 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
  *
  * @param {string} sEmpID Employee ID
  * @param {string} sAlternateCostCenter Alternate cost center
- * @returns {object} 
+ * @returns  {Promise<{error: boolean, message: string, oEmployeeRollupCC: object}>}
  */
 async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
     const oSkipped = { error: false, message: 'Roll up skipped', oEmployeeRollupCC: {} };
