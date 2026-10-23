@@ -219,7 +219,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
-            EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID // Budget release
+            EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID, // Budget release
+            ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER  // for checking against roll up cost center
         })
     }
     return aBudgetContexts
@@ -335,8 +336,8 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
-        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
-        if (oEmployeeRollupCC.error) {
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
+        if (oEmployeeRollupCC && oEmployeeRollupCC.error) {
             bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
@@ -358,7 +359,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 })
             }));
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC.oEmployeeRollupCC);
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, oEmployeeRollupCC?.oEmployeeRollupCC);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -416,8 +417,8 @@ async function checkRequestBudget(aBudgetContext) {
         var oEmployeeRollupCC;
 
         // determine upper cost center, incase for no budget allocation for each item
-        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID);
-        if (oEmployeeRollupCC.error) {
+        oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
+        if (oEmployeeRollupCC && oEmployeeRollupCC.error) {
             bError = true;
             errorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
@@ -443,7 +444,7 @@ async function checkRequestBudget(aBudgetContext) {
                 };
             }
 
-            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC.oEmployeeRollupCC);
+            let oBudgetRecord = await getBudgetRecord(sCondition, oEmployeeRollupCC?.oEmployeeRollupCC);
             let oBudgetData = oBudgetRecord.data;
 
             if (!oBudgetData) {
@@ -611,14 +612,15 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', 
     }));
 }
 
-async function getRollUpCostCenter(sEmpID) {
+async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
     var oEmployeeRollupCC;
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
 
     if (oEmployeeDetails &&
         oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.RD &&
         oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.HOD &&
-        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO) {
+        oEmployeeDetails[Constant.EntitiesFields.ROLE] != Constant.Role.CXO &&
+        !sAlternateCostCenter) {
         oEmployeeRollupCC = await rollUpCostCenter(oEmployeeDetails);
     }
 

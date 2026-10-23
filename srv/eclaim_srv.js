@@ -4702,7 +4702,8 @@ module.exports = (srv) => {
             const aLogs = await tx.run(
                 SELECT.from(ZLOG)
                     .where({
-                        RECORD_ID: { like: `%${sRecordId}%` }
+                        RECORD_ID: { like: `%${sRecordId}%` },
+                        MESSAGE_TYPE: Constant.MessageType.APPROVAL_LOG
                     })
                     .orderBy({ TIMESTAMP: 'asc' })
             );
