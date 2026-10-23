@@ -414,7 +414,9 @@ sap.ui.define([
             const aItems = this._oView.getModel("claimsubmission_input").getProperty("/claim_items") || [];
             const oInvalid = aItems.find((oItem) => !(Number(oItem.amount) > 0));
             if (oInvalid) {
-                throw new Error(Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
+                throw new Error(oInvalid.claim_type_item_id === Constants.ClaimTypeItem.MATAWANG
+                    ? Utility.getText("msg_error_matawang_zero_amount")
+                    : Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
     };
