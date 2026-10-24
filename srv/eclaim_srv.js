@@ -5207,17 +5207,15 @@ module.exports = (srv) => {
                 var oFIDocument = aDocument[i];
                 if (!oFIDocument.FI_DOC_ID) continue;
 
-                if (oFIDocument.STATUS_CODE === Constant.StatusCode.SUCCESS) {
-                    aClaimUpdates.push(
-                        UPDATE(ZCLAIM_HEADER)
-                            .set({
-                                FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
-                                FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
-                                FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
-                            })
-                            .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
-                    );
-                }
+                aClaimUpdates.push(
+                    UPDATE(ZCLAIM_HEADER)
+                        .set({
+                            FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
+                            FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
+                            FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
+                        })
+                        .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
+                );
             }
             if (aClaimUpdates.length > 0) {
                 await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
