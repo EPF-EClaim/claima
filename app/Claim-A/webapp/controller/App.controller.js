@@ -1995,9 +1995,9 @@ sap.ui.define([
 			MessageBox.confirm("Are you sure you want to sign out?", {
 				title: "Sign Out",
 				emphasizedAction: MessageBox.Action.OK,
-				onClose: function (sAction) {
+				onClose: (sAction) => {
 					if (sAction === MessageBox.Action.OK) {
-						window.location.href = "/claima/do/logout";
+						this.getOwnerComponent()._oSessionManager.logout();
 					}
 				}
 			});
