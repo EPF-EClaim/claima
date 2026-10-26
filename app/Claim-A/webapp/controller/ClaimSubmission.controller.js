@@ -2531,8 +2531,34 @@ sap.ui.define([
 				console.error("Failed to load claim type items:", e);
 			}
 
+			// Medical Advance: dependent(s) selected in the Pre-Approval Request, used by _getDependentFilters
+			this._aParDependents = await this._getParDependents(oModel);
+
 			// claim detail selection values
 			this._setClaimDetailSelectionMaster();
+		},
+
+		/**
+		* Get the dependent numbers selected in the Pre-Approval Request (PAR) of a Medical Advance claim.
+		* @private
+		* @param {sap.ui.model.json.JSONModel} oModel - claim submission input model
+		* @returns {Promise<string[]>} dependent numbers, empty if not a Medical Advance claim with a PAR
+		*/
+		_getParDependents: async function (oModel) {
+			const sRequestId = oModel.getProperty("/claim_header/request_id");
+			if (oModel.getProperty("/claim_header/claim_type_id") !== this._oConstant.ClaimType.MEDICAL_ADVANCE || !sRequestId) {
+				return [];
+			}
+			try {
+				const aContexts = await this._oModel.bindList(this._oConstant.Entities.ZREQUEST_ITEM, null, null, [
+					new Filter(this._oConstant.EntitiesFields.REQUESTID, FilterOperator.EQ, sRequestId)
+				]).requestContexts(0, Infinity);
+				// DEPENDENT is stored as JSON (see PARequestSharedFunction.getItemList)
+				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty("DEPENDENT")) || [])).map(String);
+			} catch (oError) {
+				console.error("Failed to load Pre-Approval Request dependents:", oError);
+				return [];
+			}
 		},
 
 		_setClaimDetailSelectionMaster: function () {
@@ -2772,18 +2798,28 @@ sap.ui.define([
 						and: true
 					});
 
+					var aMedicalFilters = [
+						oEmpFilter,
+						new Filter({
+							filters: [
+								oSpouseFilter,
+								oEligibleChildFilter,
+								oDisabledChildFilter
+							],
+							and: false
+						})
+					];
+
+					// Medical Advance with Pre-Approval Request: only the dependent(s) selected in the PAR
+					if (this._aParDependents?.length) {
+						aMedicalFilters.push(new Filter({
+							filters: this._aParDependents.map((sDependentNo) => new Filter("DEPENDENT_NO", FilterOperator.EQ, sDependentNo)),
+							and: false
+						}));
+					}
+
 					return new Filter({
-						filters: [
-							oEmpFilter,
-							new Filter({
-								filters: [
-									oSpouseFilter,
-									oEligibleChildFilter,
-									oDisabledChildFilter
-								],
-								and: false
-							})
-						],
+						filters: aMedicalFilters,
 						and: true
 					})
 
