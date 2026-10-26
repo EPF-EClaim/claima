@@ -119,13 +119,11 @@ sap.ui.define([
                     }
 
                     // Currency Rate amount checking if it is visible input
-                    if (this._oView.byId(`input_claimdetails_input_currency_rate`).getVisible() && oInputModel.getProperty("/claim_item/currency_rate") <=0 ) {
+                    if (this._oView.byId(`input_claimdetails_input_currency_rate`).getVisible() && (oInputModel.getProperty("/claim_item/currency_rate") <=0 || oInputModel.getProperty("/claim_item/currency_rate") == null)) {
                         this._oView.byId(`input_claimdetails_input_currency_rate`).setValueState(ValueState.Error);
                         MessageBox.error(Utility.getText("msg_error_currency_rate"));
                         bCanProceed = false;
                         return;
-                    }else{
-                        this._oView.byId(`input_claimdetails_input_currency_rate`).setValueState(ValueState.None);
                     }
 
 

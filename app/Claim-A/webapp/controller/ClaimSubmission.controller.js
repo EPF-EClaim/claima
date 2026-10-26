@@ -4089,21 +4089,15 @@ sap.ui.define([
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
-			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
+			await this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: async function () {
 			//recalculated entitled meals, then check fields
-			await this._calculatePerDiem();
-					
+			//calculation occurs first to make sure all entitled and provided numbers are always updated properly before checking the required fields in CustomValidator
+			await this._calculatePerDiem();					
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
-				return;
-			}
-					
-
-
+			await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);				
 		},
 
 		/**
