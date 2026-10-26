@@ -89,10 +89,10 @@ module.exports = (srv) => {
             }
 
             const oRoles = {
-                isClaimant: true,
+                isClaimant: true,       // remember changed from req.user.is('Claimant') to true, as all users are claimants by default
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: true,
+                isAdminSystem: true,    // remember changed from req.user.is(Constant.Admin.Admin_System) to true, as all users are system admins by default
                 isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
