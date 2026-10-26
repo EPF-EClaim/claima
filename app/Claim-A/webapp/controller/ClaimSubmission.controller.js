@@ -2553,7 +2553,7 @@ sap.ui.define([
 				const aContexts = await this._oModel.bindList(this._oConstant.Entities.ZREQUEST_ITEM, null, null, [
 					new Filter(this._oConstant.EntitiesFields.REQUESTID, FilterOperator.EQ, sRequestId)
 				]).requestContexts(0, Infinity);
-				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty("DEPENDENT")) || [])).map(String);
+				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty(this._oConstant.EntitiesFields.DEPENDENT)) || [])).map(String);
 			} catch (oError) {
 				MessageBox.error(oError.message);
 				return [];
@@ -2812,7 +2812,7 @@ sap.ui.define([
 					// Medical Advance with Pre-Approval Request: only the dependent(s) selected in the PAR
 					if (this._aParDependents?.length) {
 						aMedicalFilters.push(new Filter({
-							filters: this._aParDependents.map((sDependentNo) => new Filter("DEPENDENT_NO", FilterOperator.EQ, sDependentNo)),
+							filters: this._aParDependents.map((sDependentNo) => new Filter(this._oConstant.EntitiesFields.DEPENDENT_NO, FilterOperator.EQ, sDependentNo)),
 							and: false
 						}));
 					}
