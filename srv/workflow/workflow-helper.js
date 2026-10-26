@@ -525,7 +525,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
     const aBudgetReleaseErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.RELEASE_ERROR);
     const sBudgetError = fnItems(Constant.BudgetCheckStatus.ERROR);
-    const aCCValidationError = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.CC_VALIDATION);
+    const sCCValidationError = fnItems(Constant.BudgetCheckStatus.CC_VALIDATION);
 
     if (sNotFoundItems) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
@@ -542,9 +542,9 @@ function buildBudgetErrorMessage(aBudgetResults) {
     if (sBudgetError) {
         aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
     }
-    if (aCCValidationError.length) {
-        aMessages.push(aCCValidationError[0].ERROR_MESSAGE || 'Cost Center Validation Failed');
-    }    
+    if (sCCValidationError) {
+        aMessages.push(`Cost Center Validation Failed for claim item(s): ${sCCValidationError}.`);
+    }
 
     return aMessages.length ? aMessages.join("\n") : null;
 }
@@ -669,7 +669,8 @@ function validateCostCenter(aBudgetContext) {
         ) {
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
-                ERROR_MESSAGE: `Item cost center ${oBudgetContext.FUND_CENTER} does not match expected cost center ${sExpectedCostCenter}.`
+                CLAIM_TYPE_ITEM: oBudgetContext.CLAIM_TYPE_ITEM,
+                MESSAGE: `Cost center ${oBudgetContext.FUND_CENTER} does not match expected cost center ${sExpectedCostCenter}.`
             });
         }
     }
