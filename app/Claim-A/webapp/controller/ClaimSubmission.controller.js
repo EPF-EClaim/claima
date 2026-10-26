@@ -3761,23 +3761,11 @@ sap.ui.define([
 		_resetPerDiem: function () {
 			const oClaimItemModel = this.getView().getModel("claimitem_input");
 
-			[   "travel_duration_day",
-				"travel_duration_hour", 
-				"provided_breakfast", 
-				"provided_lunch", 
-				"provided_dinner", 
-				"entitled_breakfast", 
-				"entitled_lunch", 
-				"entitled_dinner" 
-			].forEach((sField) =>{
+			["travel_duration_day","travel_duration_hour","provided_breakfast","provided_lunch","provided_dinner","entitled_breakfast","entitled_lunch","entitled_dinner"].forEach((sField) =>{
 				oClaimItemModel.setProperty(`/claim_item/${sField}`, null );
 			});
 			
-			[
-				"provided_breakfast",
-				"provided_lunch", 
-				"provided_dinner"
-			].forEach((sField) => {
+			["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
     			this.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
 			});
 		},
@@ -5409,14 +5397,6 @@ sap.ui.define([
 			}
 
 			let fCurrencyRate = oInputModel.getProperty("/claim_item/currency_rate");
-
-			// Validate minimum value
-			if (fCurrencyRate < 0.0001) {
-				oCurrencyRateInput.setValueState(ValueState.Error);
-				oCurrencyRateInput.setValueStateText(Utility.getText("msg_error_currency_rate"));
-			} else {
-				oCurrencyRateInput.setValueState(ValueState.None);
-			}
 
 			// Recalculate MYR amount
 			const nAmountMYR = (fCurrencyRate || 0 ) * (oInputModel.getProperty("/claim_item/currency_amount") || 0 );

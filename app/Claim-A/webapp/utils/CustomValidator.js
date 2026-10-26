@@ -120,16 +120,13 @@ sap.ui.define([
                         const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
                         let bMealExceeded = false;
                         
-                        [
-                            "provided_breakfast", 
-				            "provided_lunch", 
-				            "provided_dinner" 
-                        ].forEach((sField) => {
-                            if(oInputModel.getProperty(`/claim_item/${sField}`) >= 0 && iTravelDays - oInputModel.getProperty(`/claim_item/${sField}`) < 0){
+                        ["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
+                            const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
+                            if(iProvidedMeal >= 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
                                 this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
                                 this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                                 bMealExceeded = true;
-                            }else if (oInputModel.getProperty(`/claim_item/${sField}`) < 0){
+                            }else if (iProvidedMeal < 0){
                                 this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
                                 this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                                 bCanProceed = false;
