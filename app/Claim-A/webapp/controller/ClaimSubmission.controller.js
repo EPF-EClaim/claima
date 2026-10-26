@@ -2553,7 +2553,6 @@ sap.ui.define([
 				const aContexts = await this._oModel.bindList(this._oConstant.Entities.ZREQUEST_ITEM, null, null, [
 					new Filter(this._oConstant.EntitiesFields.REQUESTID, FilterOperator.EQ, sRequestId)
 				]).requestContexts(0, Infinity);
-				// DEPENDENT is stored as JSON (see PARequestSharedFunction.getItemList)
 				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty("DEPENDENT")) || [])).map(String);
 			} catch (oError) {
 				MessageBox.error(oError.message);
