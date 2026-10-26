@@ -1377,7 +1377,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255))     as LINE_ID,
                 h.EMP_ID                                                            as EEID,
-                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as Integer)         as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as String)         as ENTITLEMENT_YEAR,
                 cast(i.AMOUNT as Decimal(16, 2))                                    as CLAIMED_AMOUNT,
                 cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
