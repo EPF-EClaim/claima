@@ -1,6 +1,5 @@
 <core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
     xmlns:u="sap.ui.unified"
@@ -8,7 +7,8 @@
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
     core:require="{FloatType: 'sap/ui/model/type/Float',
-				   Integer: 'sap/ui/model/type/Integer'}"
+				   Integer: 'sap/ui/model/type/Integer',
+                   Utility: 'claima/utils/Utility'}"
 >
     <VBox class="sapUiSmallMargin">
         <OverflowToolbar height="3rem">
@@ -874,6 +874,7 @@
                                     ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
                                     ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
 					displayFormat="dd-MMM-yyyy"
+                    required="true"
 				/>
 
 				<!-- Number of Days -->
@@ -1757,11 +1758,12 @@
                     placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
-                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-                    maximumFileSize='5.0'
-                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
-                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    uploadComplete="Utility.showAttachmentUploadComplete"
+                    maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                    fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                    mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                    fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                    typeMissmatch="Utility.showAttachmentTypeMissmatch"
                     multiple="false"
                     style="Emphasized"
                     visible="false"
@@ -1821,11 +1823,12 @@
                     placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
-                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-                    maximumFileSize='5.0'
-                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
-                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    uploadComplete="Utility.showAttachmentUploadComplete"
+                    maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                    fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                    mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                    fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                    typeMissmatch="Utility.showAttachmentTypeMissmatch"
                     multiple="false"
                     style="Emphasized"
                     visible="false"
@@ -1904,11 +1907,12 @@
                     placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'3')"
-                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-                    maximumFileSize='5.0'
-                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
-                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    uploadComplete="Utility.showAttachmentUploadComplete"
+                    maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                    fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                    mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                    fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                    typeMissmatch="Utility.showAttachmentTypeMissmatch"
                     multiple="false"
                     style="Emphasized"
                     visible="false"
@@ -1953,11 +1957,12 @@
                     placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
                     uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
                     change="onChange_ClaimDetails_Input_Attachment($event ,'4')"
-                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-                    maximumFileSize='5.0'
-                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-                    mimeType="application/pdf,image/png,image/jpeg"
-                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    uploadComplete="Utility.showAttachmentUploadComplete"
+                    maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                    fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                    mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                    fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                    typeMissmatch="Utility.showAttachmentTypeMissmatch"
                     multiple="false"
                     style="Emphasized"
                     visible="false"

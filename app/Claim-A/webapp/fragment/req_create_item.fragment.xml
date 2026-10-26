@@ -1,15 +1,13 @@
-<core:FragmentDefinition xmlns:table2="sap.ui.mdc.table" xmlns:form2="sap.fe.macros.form"
+<core:FragmentDefinition 
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
-    xmlns:layout="sap.ui.layout"
     xmlns:table="sap.ui.table"
     xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
-    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content" >
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+	core:require="{ Utility: 'claima/utils/Utility' }" >
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
@@ -343,8 +341,11 @@
                                                 )
                                             )
                                         }"
-                                        maximumFileSize="5.0"
-                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                                        fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                                        mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                                        fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                                        typeMissmatch="Utility.showAttachmentTypeMissmatch"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc1}"
                                         id="i_attachment_1_file">
@@ -419,8 +420,11 @@
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MED_ADVANCE}
                                                         &amp;&amp; !${request>/req_item/doc2_filename}
                                                     }"
-                                            maximumFileSize='5.0'
-					                        mimeType="application/pdf,image/png,image/jpeg"
+                                            maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                                            fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                                            mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                                            fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                                            typeMissmatch="Utility.showAttachmentTypeMissmatch"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" >
@@ -460,8 +464,11 @@
                                         change=".onImportChange3"
                                         enabled="{= ${request>/view} !== 'view' }"
                                         required="true"
-                                        maximumFileSize="5.0"
-                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                                        fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                                        mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                                        fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                                        typeMissmatch="Utility.showAttachmentTypeMissmatch"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc3}"
                                         id="i_attachment_3_file">
@@ -507,8 +514,11 @@
                                         change=".onImportChange4"
                                         enabled="{= ${request>/view} !== 'view' }"
                                         required="false"
-                                        maximumFileSize="5.0"
-                                        mimeType="application/pdf,image/png,image/jpeg"
+                                        maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+                                        fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+                                        mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+                                        fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+                                        typeMissmatch="Utility.showAttachmentTypeMissmatch"
                                         placeholder="{i18n>req_attachment_format}"
                                         value="{request>/req_item/doc4}"
                                         id="i_attachment_4_file">
@@ -1666,7 +1676,10 @@
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
-                        <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
+                        <Button 
+                            text="{i18n>req_b_download_template}" 
+                            press=".onExport"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                         <unified:FileUploader
                             id="ipb_upload_participant"
                             icon="sap-icon://upload"
@@ -1676,16 +1689,23 @@
                             change=".onUploadParticipants"
                             style="Emphasized"
                             maximumFileSize="5.0"
-                            enabled="{= ${request>/view} !== 'view' }"/>
-                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
+                        <Button 
+                            id="ipb_delete_participant" 
+                            icon="sap-icon://delete" 
+                            text="{i18n>req_b_delete}" 
+                            press=".onRowDeleteParticipant" 
+                            enabled="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"
+                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/GROUP} &amp;&amp; ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
-                    <table:Table 
+                    <table:Table
                         id="req_participant_table"
                         rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
                         rowActionCount="1"
-                        >
+                    >
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>

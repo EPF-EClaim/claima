@@ -182,6 +182,24 @@ sap.ui.define([
 						MessageBox.error(message);
 					}
 					break;
+				case "pay_report":
+					// Payment Recon Report - JKEW Admin (Admin_System) only
+					if (bAdminSystem) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_PAYMENT_REPORT");
+					} else {
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
+					}
+					break;
+				case "post_report":
+					// Payment Recon Report - JKEW Admin (Admin_System) only
+					if (bAdminSystem) {
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("ZEMP_POSTING_REPORT");
+					} else {
+						MessageBox.error(Utility.getText("msg_unauthorized_role"));
+					}
+					break;
 				case "cashadvance_summary":
 					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
@@ -549,17 +567,6 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/cost_center", oClaimTypeData.COST_CENTER);
 				oInputModel.setProperty("/claimtype/descr/cost_center", oClaimTypeData.COST_CENTER_DESC);
 				oInputModel.setProperty("/claimtype/project_claim", oClaimTypeData.PROJECT_CLAIM);
-
-				if (
-					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL ||
-					oClaimType.getKey() === this._oConstant.ClaimType.MEDICAL_ADVANCE
-				) {
-					await Utility.getRemainingMedicalEntitlement(
-						oInputModel,
-						this._oSessionModel.getProperty("/userId"),
-						"/claim_header/medical_remaining"
-					);
-				}
 
 				// if claim type is not project claim, reset project code value
 				if (!oClaimTypeData.PROJECT_CLAIM) {
@@ -1245,54 +1252,49 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				const oModel = this.getOwnerComponent().getModel();
-				var oListBinding;
-				var claimSaved;
 
 				if (oInputModel.getProperty("/is_new")) {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
-					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then(async () => {
-						claimSaved = true;
+					// wait for the backend to confirm the new claim before moving on, so the
+					// busy indicator stays up (no double clicks / other navigation meanwhile)
+					// and a failed save lands in the catch below
+					const oContext = await Utility.createEntry(oModel.bindList("/ZCLAIM_HEADER"), oBody.getData());
 
-						// assign report number to new claim
-						var currentReportNumber = oContext.getProperty("CLAIM_ID");
-						if (!isNaN(currentReportNumber.slice(-1))) {
-							oInputModel.setProperty("/claim_header/claim_id", currentReportNumber);
-							oInputModel.setProperty("/reportnumber/reportno", currentReportNumber);
-							// oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-						}
-						else {
-							this.oDialog = new Dialog({
-								title: Utility.getText("dialog_claiminput_claimid"),
-								type: "Message",
-								state: "None",
-								content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
-								endButton: new Button({
-									text: Utility.getText("endbutton_claiminput_claimid"),
-									press: function () {
-										this.oDialog.close();
-									}
-								})
-							});
-							this.oDialog.open();
-							return;
-						}
-						// Always post Parent MDF
-						await Attachment.postMDF(
-							oInputModel.getProperty("/claim_header/claim_id"),
-							oInputModel.getProperty("/claim_header/attachment_email_approver")
-						)
+					// assign report number to new claim
+					const currentReportNumber = oContext.getProperty("CLAIM_ID");
+					if (!isNaN(currentReportNumber.slice(-1))) {
+						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber);
+						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber);
+						// oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+					}
+					else {
+						this.oDialog = new Dialog({
+							title: Utility.getText("dialog_claiminput_claimid"),
+							type: "Message",
+							state: "None",
+							content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
+							endButton: new Button({
+								text: Utility.getText("endbutton_claiminput_claimid"),
+								press: () => {
+									this.oDialog.close();
+								}
+							})
+						});
+						this.oDialog.open();
+						return;
+					}
+					// Always post Parent MDF
+					await Attachment.postMDF(
+						oInputModel.getProperty("/claim_header/claim_id"),
+						oInputModel.getProperty("/claim_header/attachment_email_approver")
+					);
 
-						if (claimSaved) {
-							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
-						}
-						oInputModel.setProperty("/is_new", false);
-						// close Claim Input dialog
-						this.oDialog_ClaimInput.close();
+					MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+					oInputModel.setProperty("/is_new", false);
+					// close Claim Input dialog
+					this.oDialog_ClaimInput.close();
 
-						// load Claim Submission page
-						this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
-					});
+					// load Claim Submission page
+					this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
 				}
 
 			} catch (e) {
@@ -1320,21 +1322,6 @@ sap.ui.define([
 			if (file) {
 				reader.readAsDataURL(file);
 			}
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			var iHttpStatusCode = oEvent.getParameters("status");
-			var sResponse = oEvent.getParameters("response");
-			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-			MessageToast.show(sMessage);
-		},
-
-		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
-		},
-
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onCancel_ClaimInput: function () {
@@ -1558,7 +1545,7 @@ sap.ui.define([
 					sGrpType = sGrpType.substring(0, 4);
 				}
 
-				const oContext = oListBinding.create({
+				const oContext = await Utility.createEntry(oListBinding, {
 					EMP_ID: sEmpId || null,
 					REQUEST_TYPE_ID: oInputData.reqtype || null,
 					OBJECTIVE_PURPOSE: oInputData.purpose || null,
@@ -1587,8 +1574,6 @@ sap.ui.define([
 					ATTACHMENT3: oInputData.doc3 || null,
 					ATTACHMENT4: oInputData.doc4 || null
 				});
-
-				await oContext.created();
 
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 

@@ -153,19 +153,7 @@ sap.ui.define([
 			this._oRequestFragments = Object.create(null);
 			try {
 				await PARequestSharedFunction.getHeader(this, sReqId);
-
-				const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
-
-				if (sClaimType === this._oConstant.ClaimType.MEDICAL_ADVANCE) {
-
-					await Utility.getRemainingMedicalEntitlement(
-						this._oReqModel,
-						this._oReqModel.getProperty("/req_header/empid"),
-						"/req_header/medical_remaining"
-					);
-				}
-
-				await PARequestSharedFunction._getItemList(this, sReqId);
+				await PARequestSharedFunction.getItemList(this, sReqId);
 				await this._showHeaderFragment();
 				await this._showItemList(sReqId);
 
@@ -644,15 +632,15 @@ sap.ui.define([
 			this._oReqModel.setProperty('/req_item', {});
 			this._oReqModel.setProperty('/view', "view");
 		
-			await PARequestSharedFunction._getItemList(this, sReqId);
+			await PARequestSharedFunction.getItemList(this, sReqId);
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
 		
-			// _getItemList() resets /corpo_cards back to the bare card identity
+			// getItemList() resets /corpo_cards back to the bare card identity
 			// list (no amount fields) - re-merge the aggregate totals so the
 			// Corporate Credit Card Summary doesn't appear blank after cancel.
-			// _getItemList() must be awaited above, or this merge runs in a
-			// race and gets silently overwritten once _getItemList resolves.
+			// getItemList() must be awaited above, or this merge runs in a
+			// race and gets silently overwritten once getItemList resolves.
 			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
 				await this._loadCorpoCardsForItem(sReqId);
 				this._computeCorpoCardTotals();
@@ -819,7 +807,7 @@ sap.ui.define([
 				no_of_family_member		: oReqItem.FAMILY_COUNT || 0,
 				type_of_vehicle			: oReqItem.VEHICLE_TYPE || "",
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
-				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
+				vehicle_class			: oReqItem.VEHICLE_CLASS_ID || "",
 				kilometer				: oReqItem.KILOMETER || 0,
 				rate_per_kilometer		: oReqItem.RATE_PER_KM || "",
 				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
@@ -1355,10 +1343,12 @@ sap.ui.define([
 
 			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 
-			this.calculateNumberOfHours();
-
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST))) {
+				return;
+			}
+
+			if (!this.calculateNumberOfHours()) {
 				return;
 			}
 			
@@ -1930,6 +1920,8 @@ sap.ui.define([
 			oReader.onload = async (e) => {
 				try {
 					var oData = new Uint8Array(e.target.result);
+					await this.getOwnerComponent().loadExternalLibraries(); 
+					const XLSX = window.XLSX;
 					var oWorkbook = XLSX.read(oData, { type: "array" });
 					var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
 					var aJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
@@ -2062,6 +2054,7 @@ sap.ui.define([
 
 		async onDownloadExcelReport() {
 			const oView = this.getView();
+			await this.getOwnerComponent().loadExternalLibraries();
 			const XLSX = window.XLSX;
 			const that = this;
 
@@ -2371,8 +2364,7 @@ sap.ui.define([
 						new Filter("CATEGORY_ID", FilterOperator.NE, "X"),			// filter out claim type item that is not required for PAR
 						new Filter({
 							filters: [
-								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN),
-								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.TIPS)
+								new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.NE, this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
 							],
 							and: true
 						})
@@ -2409,37 +2401,30 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
+		/**
+		 * Calculates the flight duration (hours) from departure and arrival time
+		 * and saves it into /req_item/no_of_hours.
+		 * Time validation (arrival before departure / same time) is handled in CustomValidator.
+		 * @returns {boolean} false if arrival time is before departure time, otherwise true
+		 */
 		calculateNumberOfHours() {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
+			let bIsValid = true;
+			let fHours = 0;
 
-			const sDeparture = oItem.departure_time;
-			const sArrival = oItem.arrival_time;
+			if (oItem.departure_time && oItem.arrival_time) {
+				const iDiffMs = new Date(oItem.arrival_time).getTime() - new Date(oItem.departure_time).getTime();
 
-			if (!sDeparture || !sArrival) {
-				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
-				return;
+				if (iDiffMs < 0) {
+					bIsValid = false;
+				} else if (!Number.isNaN(iDiffMs)) {
+					fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
+				}
 			}
 
-			const dDeparture = new Date(sDeparture);
-			const dArrival = new Date(sArrival);
-
-			if (isNaN(dDeparture.getTime()) || isNaN(dArrival.getTime())) {
-				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
-				return;
-			}
-
-			const iDiffMs = dArrival.getTime() - dDeparture.getTime();
-
-			if (iDiffMs < 0) {
-				MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
-				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
-				return;
-			}
-
-			const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
-
-			// 7. Save it back to the JSON model
 			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
+
+			return bIsValid;
 		},
 
 		getFromLocationByState() {

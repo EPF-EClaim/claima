@@ -5149,6 +5149,18 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : COST_CENTER,
                 ![@UI.Importance]: #High,
                 Label            : 'Cost Center Code'
@@ -5249,7 +5261,7 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Approval Duration (Days)'
             }
-        ],
+        ]
     }
 ) {
     ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
@@ -5458,6 +5470,30 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: NAME,
                     ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
                 }
             ]
         }
@@ -5694,6 +5730,18 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6569,6 +6617,31 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             ]
         }
     );
+    
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
@@ -6789,6 +6862,18 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Pre-Approval Request Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7414,6 +7499,30 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             ]
         }
     );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
@@ -7649,6 +7758,18 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7971,6 +8092,30 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             ]
         }
     );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_CASHADVANCE_REPORT with @(
@@ -8224,6 +8369,156 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
             ]
         }
     );
+};
+
+annotate service.ZEMP_PAYMENT_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Payment Report',
+            TypeNamePlural: 'Payment Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_NAME,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High
+            }
+        ]
+    }
+) {
+    CLAIM_ID                @Common.Label: 'Claim ID';
+    EMP_ID                  @Common.Label: 'Employee Number';
+    EMP_NAME                @Common.Label: 'Employee Name';
+    FINAL_AMOUNT_TO_RECEIVE @Common.Label: 'Final Amount To Receive';
+    CASH_ADVANCE            @Common.Label: 'Cash Advance Amount';
+};
+
+annotate service.ZEMP_POSTING_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Posting Report',
+            TypeNamePlural: 'Posting Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                },
+                {
+                    Property  : CLAIM_SUB_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_SUB_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_NAME,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AMOUNT,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INTERNAL_ORDER,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGED_TO_CCC,
+                ![@UI.Importance]: #High
+            }
+        ]
+    }
+) {
+    CLAIM_ID       @Common.Label: 'Claim ID';
+    CLAIM_SUB_ID   @Common.Label: 'Claim Sub ID';
+    EMP_ID         @Common.Label: 'Employee Number';
+    EMP_NAME       @Common.Label: 'Employee Name';
+    AMOUNT         @Common.Label: 'Amount';
+    COST_CENTER    @Common.Label: 'Cost Center';
+    GL_ACCOUNT     @Common.Label: 'GL Account';
+    MATERIAL_GROUP @Common.Label: 'Material Group';
+    INTERNAL_ORDER @Common.Label: 'Internal Order';
+    CHARGED_TO_CCC @Common.Label: 'Charged To CCC';
 };
 
 annotate service.ZEMP_CC_BUDGET_REPORT with @(
