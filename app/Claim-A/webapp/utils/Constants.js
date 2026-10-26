@@ -327,6 +327,8 @@ sap.ui.define([
             "DISABLED" : "DISABLED",
             "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY",
             "EMPLOYED" : "EMPLOYED",
+            "DEPENDENT_NO": "DEPENDENT_NO",
+            "DEPENDENT": "DEPENDENT",
             "COST_CENTER_ID": "COST_CENTER_ID",
             "COST_CENTER_DESC": "COST_CENTER_DESC",
             "DEPARTMENT_ID": "DEPARTMENT_ID",
