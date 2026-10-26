@@ -1889,7 +1889,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
         FI_DOC_ID     : String;
         FI_DOC_YEAR   : String;
         FI_DOC_COCODE : String;
-        STATUS_CODE   : String;
     };
 
     type ReleaseLog {
@@ -1901,5 +1900,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchUpdateFIDoc(aDocument: many DocumentData)                                              returns Response;
 
     action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;        
+
+    type WBSIORecord {
+        WbsCode        : String;
+        Io             : String;
+        WbsDescription : String;
+    };
+
+    action   updateWBSIOCode(aRecords: many WBSIORecord)                                                 returns Response;    
 
 };

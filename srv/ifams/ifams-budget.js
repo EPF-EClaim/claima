@@ -330,9 +330,107 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
     );
 }
 
+/**
+ * Retrieve budget data from IFAMS in real time
+ * and store it in ZBUDGET (display purposes only).
+ *
+ * @param {string} sYear - Fiscal year to retrieve (e.g. "2026")
+ * @returns {Promise<number>} Number of records saved into ZBUDGET
+ */
+async function syncBudgetReport(sYear) {
+
+    // 1. Call IFAMS API
+    const sPath = Constant.IFAMS_API_PATH.BUDGET_REPORT.replace('{YEAR}', sYear);
+    const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+
+    const aIFAMSRecords = Array.isArray(oResponse)
+        ? oResponse
+        : (oResponse?.d?.results || oResponse?.results || oResponse?.value || []);
+
+    if (!aIFAMSRecords.length) {
+        return 0;
+    }
+
+    const oFieldMap = Constant.BudgetReport.FIELD_MAP;
+    const toText = (vValue) => String(vValue ?? '').trim();
+    const toAmount = (vValue) => Number(vValue) || 0;
+
+    // Follow ZBUDGET field length
+    const iMaxCommitmentItem = 6;   // ZBUDGET.COMMITMENT_ITEM : String(6)
+    const iMaxCurrency = 3;         // ZBUDGET.CURRENCY : String(3)
+
+    // 2. Map IFAMS fields → ZBUDGET columns
+    //    (Map removes duplicate keys so the UPSERT does not fail)
+    const oEntries = new Map();
+
+    for (const oRecord of aIFAMSRecords) {
+        const oEntry = {
+            // Key fields
+            YEAR: toText(oRecord[oFieldMap.YEAR]) || sYear,
+            INTERNAL_ORDER: toText(oRecord[oFieldMap.INTERNAL_ORDER]) || Constant.Wildcard.NA,
+            COMMITMENT_ITEM: toText(oRecord[oFieldMap.COMMITMENT_ITEM]),
+            FUND_CENTER: toText(oRecord[oFieldMap.FUND_CENTER]),
+            MATERIAL_GROUP: toText(oRecord[oFieldMap.MATERIAL_GROUP]) || Constant.Wildcard.NA,
+
+            // Budget amounts
+            ORIGINAL_BUDGET: toAmount(oRecord[oFieldMap.ORIGINAL_BUDGET]),
+            VIREMENT_IN: toAmount(oRecord[oFieldMap.VIREMENT_IN]),
+            VIREMENT_OUT: toAmount(oRecord[oFieldMap.VIREMENT_OUT]),
+            SUPPLEMENT: toAmount(oRecord[oFieldMap.SUPPLEMENT]),
+            RETURN: toAmount(oRecord[oFieldMap.RETURN]),
+            CURRENT_BUDGET: toAmount(oRecord[oFieldMap.CURRENT_BUDGET]),
+            COMMITMENT: toAmount(oRecord[oFieldMap.COMMITMENT]),
+            ACTUAL: toAmount(oRecord[oFieldMap.ACTUAL]),
+            CONSUMED: toAmount(oRecord[oFieldMap.CONSUMED]),
+            BUDGET_BALANCE: toAmount(oRecord[oFieldMap.BUDGET_BALANCE]),
+
+            // Other fields
+            WBS_CODE: toText(oRecord[oFieldMap.WBS_CODE]),
+            // Project code currently uses the same value as IFAMS IO
+            PROJECT_CODE: toText(oRecord[oFieldMap.INTERNAL_ORDER]) || Constant.Wildcard.NA,
+            CURRENCY: toText(oRecord[oFieldMap.CURRENCY]) || Constant.BudgetReport.DEFAULT_CURRENCY
+        };
+
+        // Skip records without mandatory keys
+        if (!oEntry.FUND_CENTER || !oEntry.COMMITMENT_ITEM) {
+            continue;
+        }
+
+        // Skip records exceeding ZBUDGET field length
+        if (oEntry.COMMITMENT_ITEM.length > iMaxCommitmentItem) {
+            continue;
+        }
+
+        // Fall back to default currency if exceeding ZBUDGET field length
+        if (oEntry.CURRENCY.length > iMaxCurrency) {
+            oEntry.CURRENCY = Constant.BudgetReport.DEFAULT_CURRENCY;
+        }
+
+        const sKey = [
+            oEntry.YEAR,
+            oEntry.INTERNAL_ORDER,
+            oEntry.COMMITMENT_ITEM,
+            oEntry.FUND_CENTER,
+            oEntry.MATERIAL_GROUP
+        ].join('|');
+
+        oEntries.set(sKey, oEntry);
+    }
+
+    const aEntries = [...oEntries.values()];
+    if (!aEntries.length) {
+        return 0;
+    }
+
+    // 3. Save into ZBUDGET (insert new / update existing)
+    await cds.run(UPSERT.into('ECLAIM.ZBUDGET').entries(aEntries));
+    return aEntries.length;
+}
+
 module.exports = {
     getBudgetRecord,
     processEarmarkedFunds,
     rollUpCostCenter,
-    updateEarmarkedFundDetails
-}
+    updateEarmarkedFundDetails,
+    syncBudgetReport
+};
