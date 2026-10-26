@@ -2556,7 +2556,7 @@ sap.ui.define([
 				// DEPENDENT is stored as JSON (see PARequestSharedFunction.getItemList)
 				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty("DEPENDENT")) || [])).map(String);
 			} catch (oError) {
-				console.error("Failed to load Pre-Approval Request dependents:", oError);
+				MessageBox.error(oError.message);
 				return [];
 			}
 		},
