@@ -220,7 +220,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
             EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID, // Budget release
-            ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER  // for checking against roll up cost center
+            ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER,  // for checking against roll up cost center
+            HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER] // for item cost center validation
         })
     }
     return aBudgetContexts
@@ -524,6 +525,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const aBudgetLockErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.LOCK_ERROR);
     const aBudgetReleaseErrors = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.RELEASE_ERROR);
     const sBudgetError = fnItems(Constant.BudgetCheckStatus.ERROR);
+    const aCCValidationError = aBudgetResults.filter(r => r.STATUS === Constant.BudgetCheckStatus.CC_VALIDATION);
 
     if (sNotFoundItems) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
@@ -540,6 +542,9 @@ function buildBudgetErrorMessage(aBudgetResults) {
     if (sBudgetError) {
         aMessages.push(`Error encountered during budget checking: ${sBudgetError}`);
     }
+    if (aCCValidationError.length) {
+        aMessages.push(aCCValidationError[0].ERROR_MESSAGE || 'Cost Center Validation Failed');
+    }    
 
     return aMessages.length ? aMessages.join("\n") : null;
 }
@@ -634,6 +639,44 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
     return rollUpCostCenter(oEmployeeDetails);
 }
 
+/**
+ * Validates the fund center against the expected cost center for each budget context.
+ *
+ * The expected cost center is determined using the alternate cost center when
+ * available; otherwise, the header cost center is used. If the fund center does
+ * not match the expected cost center, a cost center validation error is added.
+ *
+ * If all cost centers are valid, an empty array is returned.
+ *
+ * @param {Array<object>} aBudgetContext - Budget context containing fund center and cost center details
+ * @returns {Array<object>} Cost center validation errors, or an empty array if all cost centers are valid
+ */
+function validateCostCenter(aBudgetContext) {
+    const aErrorResults = [];
+
+    if (!Array.isArray(aBudgetContext) || aBudgetContext.length === 0) {
+        return aErrorResults;
+    }
+
+    for (const oBudgetContext of aBudgetContext) {
+        const sExpectedCostCenter =
+            oBudgetContext.ALTERNATE_COST_CENTER ||
+            oBudgetContext.HEADER_COST_CENTER;
+
+        if (
+            sExpectedCostCenter &&
+            oBudgetContext.FUND_CENTER !== sExpectedCostCenter
+        ) {
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
+                ERROR_MESSAGE: `Item cost center ${oBudgetContext.FUND_CENTER} does not match expected cost center ${sExpectedCostCenter}.`
+            });
+        }
+    }
+
+    return aErrorResults;
+}
+
 module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
@@ -648,5 +691,6 @@ module.exports = {
     logWorkflowHistory,
     checkRequestBudget,
     lockClaimBudget,
-    releaseClaimBudget
+    releaseClaimBudget,
+    validateCostCenter
 };
