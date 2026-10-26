@@ -874,6 +874,7 @@
                                     ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_TUKAR} ||
                                     ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/PINDAH} )}"
 					displayFormat="dd-MMM-yyyy"
+                    required="true"
 				/>
 
 				<!-- Number of Days -->
