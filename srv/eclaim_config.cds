@@ -9254,12 +9254,15 @@ annotate eclaim_srv.ZMED_EMP_SUMMARY with @(
 //  in the filter bar.
 // ---------------------------------------------------------------------
 annotate eclaim_srv.ZMED_ADV_TRACK with @(
+    UI.HeaderInfo: { TypeName: 'Medical Advance', TypeNamePlural: 'Medical Advances' },
     UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
     UI.LineItem: [
         { Value: REQUEST_ID },
         { Value: CLAIM_ID },
+        { Value: LINE_TYPE },
+        { Value: DEPENDENT_NAME },
+        { Value: DEP_CHECK, Criticality: DEP_CRIT },
         { Value: POLICY_YEAR },
-        { Value: DEPENDENTS },
         { Value: ADVANCE_PROVIDER },
         { Value: DECLARED_PROVIDER },
         { Value: ADVANCE_AMOUNT },
@@ -9278,7 +9281,11 @@ annotate eclaim_srv.ZMED_ADV_TRACK with @(
         SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
         PresentationVariant: {
             Visualizations: ['@UI.LineItem'],
-            SortOrder     : [{ Property: REQUEST_ID }]
+            SortOrder     : [
+                { Property: REQUEST_ID },
+                { Property: LINE_SEQ },
+                { Property: DEPENDENT_NAME }
+            ]
         }
     }
 ) {
@@ -9286,8 +9293,9 @@ annotate eclaim_srv.ZMED_ADV_TRACK with @(
     ENTITLEMENT_YEAR     @title: 'Year';
     REQUEST_ID           @title: 'Advance ID';
     CLAIM_ID             @title: 'Declaration Claim ID';
+    LINE_TYPE            @title: 'Line';
+    DEPENDENT_NAME       @title: 'Dependent';
     POLICY_YEAR          @title: 'Policy Year';
-    DEPENDENTS           @title: 'Dependents';
     ADVANCE_PROVIDER     @title: 'Advance Provider';
     DECLARED_PROVIDER    @title: 'Declared Provider';
     ADVANCE_AMOUNT       @title: 'Advance (RM)';
@@ -9296,34 +9304,28 @@ annotate eclaim_srv.ZMED_ADV_TRACK with @(
     REFUND_DUE           @title: 'Refund Due (RM)';
     REFUND_AMOUNT        @title: 'Refund Amount (RM)';
     REFUND_CHECK         @title: 'Refund Check';
+    DEP_CHECK            @title: 'Dependent Check';
     ADVANCE_PAYMENT_DATE @title: 'Advance Payment Date';
     DAYS_SINCE_PAYMENT   @title: 'Days Since Payment';
     STAGE                @title: 'Stage';
     REQUEST_STATUS       @title: 'Advance Status';
     CLAIM_STATUS         @title: 'Declaration Status';
     MIGRATED_CHECK       @title: 'Migrated Data';
-    REQUEST_STATUS_ID    @UI.Hidden;
-    CLAIM_STATUS_ID      @UI.Hidden;
-    STAGE_CRIT           @UI.Hidden;
-    IS_OUTSTANDING       @UI.Hidden;
-    IS_OVERDUE           @UI.Hidden;
-    REFUND_MISMATCH      @UI.Hidden;
+    ROW_KEY              @UI.Hidden;
+    LINE_SEQ             @UI.Hidden;
     REFUND_CRIT          @UI.Hidden;
-    IS_MIGRATED          @UI.Hidden;
-    MIGRATED_ISSUE       @UI.Hidden;
+    STAGE_CRIT           @UI.Hidden;
     MIGRATED_CRIT        @UI.Hidden;
+    DEP_CRIT             @UI.Hidden;
 };
 
-
-// ---------------------------------------------------------------------
-//  Detail tab "Pay & Claim" – ZMED_PAYCLAIM_TRACK
-// ---------------------------------------------------------------------
 annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
+    UI.HeaderInfo: { TypeName: 'Medical Claim', TypeNamePlural: 'Pay & Claim' },
     UI.SelectionFields: [ EEID, ENTITLEMENT_YEAR ],
     UI.LineItem: [
         { Value: CLAIM_ID },
+        { Value: DEPENDENT_NAME },
         { Value: POLICY_YEAR },
-        { Value: DEPENDENTS },
         { Value: PROVIDER_NAME },
         { Value: AMOUNT_CLAIMED },
         { Value: AMOUNT_APPROVED },
@@ -9337,15 +9339,19 @@ annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
         SelectionVariant   : { $Type: 'UI.SelectionVariantType', SelectOptions: [] },
         PresentationVariant: {
             Visualizations: ['@UI.LineItem'],
-            SortOrder     : [{ Property: SUBMITTED_DATE, Descending: true }]
+            SortOrder     : [
+                { Property: SUBMITTED_DATE, Descending: true },
+                { Property: CLAIM_ID },
+                { Property: DEPENDENT_NAME }
+            ]
         }
     }
 ) {
     EEID             @title: 'Employee ID';
     ENTITLEMENT_YEAR @title: 'Year';
     CLAIM_ID         @title: 'Claim ID';
+    DEPENDENT_NAME   @title: 'Dependent';
     POLICY_YEAR      @title: 'Policy Year';
-    DEPENDENTS       @title: 'Dependents';
     PROVIDER_NAME    @title: 'Insurance Provider';
     AMOUNT_CLAIMED   @title: 'Claimed (RM)';
     AMOUNT_APPROVED  @title: 'Approved (RM)';
@@ -9353,9 +9359,7 @@ annotate eclaim_srv.ZMED_PAYCLAIM_TRACK with @(
     SUBMITTED_DATE   @title: 'Submitted Date';
     PAYMENT_DATE     @title: 'Payment Date';
     MIGRATED_CHECK   @title: 'Migrated Data';
-    STATUS_ID        @UI.Hidden;
+    ROW_KEY          @UI.Hidden;
     STATUS_CRIT      @UI.Hidden;
-    IS_MIGRATED      @UI.Hidden;
-    MIGRATED_ISSUE   @UI.Hidden;
     MIGRATED_CRIT    @UI.Hidden;
 };

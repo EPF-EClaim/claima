@@ -1921,11 +1921,20 @@ service eclaim_srv @(requires: 'authenticated-user') {
     @readonly
     @cds.redirection.target: false
     entity ZMED_RPT_REQ_DEP as
-        select from ECLAIM.ZREQUEST_ITEM as ri {
+        select from ECLAIM.ZREQUEST_ITEM as ri
+        left join ECLAIM.ZINSURANCE_MEDICAL_PROVIDER as p
+            on p.INSURANCE_MEDICAL_PROVIDER_ID = ri.INSURANCE_MEDICAL_PROVIDER_ID
+        {
             key cast(ri.REQUEST_ID as String) as REQUEST_ID,
             key cast(replace(replace(replace(ri.DEPENDENT, '"', ''), '[', ''), ']', '') as String) as DEPENDENT,
-                max(ri.POLICY_YEAR)                                     as POLICY_YEAR   : String(4),
-                max(ri.INSURANCE_MEDICAL_PROVIDER_NAME)                 as PROVIDER_NAME : String,
+                max(ri.POLICY_YEAR) as POLICY_YEAR : String(4),
+                // ID 4 = free text entered by the employee; otherwise the master description
+                max(
+                    case when ri.INSURANCE_MEDICAL_PROVIDER_ID = '4'
+                        then ri.INSURANCE_MEDICAL_PROVIDER_NAME
+                        else p.INSURANCE_MEDICAL_PROVIDER_DESC
+                    end
+                ) as PROVIDER_NAME : String,
                 cast(sum(coalesce(ri.EST_AMOUNT, 0)) as Decimal(16, 2)) as ADVANCE_AMOUNT
         }
         where ri.CLAIM_TYPE_ITEM_ID = 'MED_ADVANCE'
@@ -1935,11 +1944,19 @@ service eclaim_srv @(requires: 'authenticated-user') {
     @readonly
     @cds.redirection.target: false
     entity ZMED_RPT_CLM_DEP as
-        select from ECLAIM.ZCLAIM_ITEM as ci {
+        select from ECLAIM.ZCLAIM_ITEM as ci
+        left join ECLAIM.ZINSURANCE_MEDICAL_PROVIDER as p
+            on p.INSURANCE_MEDICAL_PROVIDER_ID = ci.INSURANCE_MEDICAL_PROVIDER_ID
+        {
             key cast(ci.CLAIM_ID as String) as CLAIM_ID,
             key cast(replace(replace(replace(ci.DEPENDENT, '"', ''), '[', ''), ']', '') as String) as DEPENDENT,
-                max(ci.POLICY_YEAR)                                 as POLICY_YEAR   : String(4),
-                max(ci.INSURANCE_MEDICAL_PROVIDER_NAME)             as PROVIDER_NAME : String,
+                max(ci.POLICY_YEAR) as POLICY_YEAR : String(4),
+                max(
+                    case when ci.INSURANCE_MEDICAL_PROVIDER_ID = '4'
+                        then ci.INSURANCE_MEDICAL_PROVIDER_NAME
+                        else p.INSURANCE_MEDICAL_PROVIDER_DESC
+                    end
+                ) as PROVIDER_NAME : String,
                 cast(sum(coalesce(ci.AMOUNT, 0)) as Decimal(16, 2)) as CLAIM_AMOUNT
         }
         where coalesce(ci.CLAIM_TYPE_ITEM_ID, '') <> 'CASH_REPAY'
@@ -2312,56 +2329,45 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 cast(case when rh.PAYMENT_DATE is not null
                         then days_between(rh.PAYMENT_DATE,
                                 cast(add_seconds(current_timestamp, 28800) as Date))
-                    end as Integer)                                   as DAYS_SINCE_PAYMENT
+                    end as Integer)                                   as DAYS_SINCE_PAYMENT,
+                cast(case when ch.STATUS_ID in ('STAT02','STAT05','STAT06','STAT08')
+                        then ch.SUBMITTED_DATE else rh.SUBMITTED_DATE end
+                    as Timestamp)                                     as AGE_REF_DATE,
         }
         where rh.CLAIM_TYPE_ID = 'MEDICAL_ADVANCE'
         and rh.STATUS not in ('STAT01', 'STAT07');
 
+    /** One row per advance – stage, refund and flags. Feeds the tab rows and the summary. */
     @readonly
     @cds.redirection.target: false
-    entity ZMED_ADV_TRACK as
-        select from ZMED_ADV_BASE as b
-        left join ZMED_ADV_DEP_TXT  as dt on dt.REQUEST_ID = b.REQUEST_ID
-        left join ZMED_REQ_PROV_TXT as rp on rp.REQUEST_ID = b.REQUEST_ID
-        left join ZMED_CLM_PROV_TXT as cp on cp.CLAIM_ID   = b.CLAIM_ID
-        {
+    entity ZMED_ADV_HDR as
+        select from ZMED_ADV_BASE as b {
             key b.REQUEST_ID,
                 b.EEID,
                 b.ENTITLEMENT_YEAR,
                 b.CLAIM_ID,
                 b.POLICY_YEAR,
-                dt.DEPENDENTS,
-                rp.PROVIDERS                                           as ADVANCE_PROVIDER,
-                cast(case when b.CLAIM_STATUS_ID in ('STAT02','STAT03','STAT05','STAT06','STAT08')
-                        then cp.PROVIDERS end as String(500))        as DECLARED_PROVIDER,
                 b.ADVANCE_AMOUNT,
                 b.DECLARED_AMOUNT,
-                cast(case when b.CLAIM_ID is not null
-                        then coalesce(b.DECLARED_AMOUNT, 0) - b.ADVANCE_AMOUNT
-                    end as Decimal(16, 2))                            as VARIANCE,
+                b.ADVANCE_PAYMENT_DATE,
+                b.AGE_REF_DATE,
+                b.IS_DECLARED,
+                b.IS_MIGRATED,
+                cast(case when b.IS_DECLARED = 0 then b.DAYS_SINCE_PAYMENT end as Integer) as DAYS_SINCE_PAYMENT,
+                b.REQUEST_STATUS,
+                b.CLAIM_STATUS_ID,
+                b.CLAIM_STATUS,
                 cast(case when b.IS_DECLARED = 1
                         and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
                         then b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
                         else 0 end as Decimal(16, 2))                as REFUND_DUE,
                 b.REPAY_AMOUNT                                         as REFUND_AMOUNT,
-                b.ADVANCE_PAYMENT_DATE,
-                cast(case when b.IS_DECLARED = 0 then b.DAYS_SINCE_PAYMENT end
-                    as Integer)                                       as DAYS_SINCE_PAYMENT,
-                b.REQUEST_STATUS_ID,
-                b.REQUEST_STATUS,
-                b.CLAIM_STATUS_ID,
-                b.CLAIM_STATUS,
 
-                // ---- Stage ----
                 cast(case
-                    when b.IS_DECLARED = 0 and coalesce(b.DAYS_SINCE_PAYMENT, 0) >= 30
-                        then 'Overdue Declaration'
-                    when b.IS_DECLARED = 0
-                        then 'Advance Requested'
-                    when coalesce(b.DECLARED_AMOUNT, 0) >= b.ADVANCE_AMOUNT
-                        then 'Declared'
-                    when b.IS_CLAIM_APPROVED = 1
-                        then 'Refund Settled'
+                    when b.IS_DECLARED = 0 and coalesce(b.DAYS_SINCE_PAYMENT, 0) >= 30 then 'Overdue Declaration'
+                    when b.IS_DECLARED = 0                                               then 'Advance Requested'
+                    when coalesce(b.DECLARED_AMOUNT, 0) >= b.ADVANCE_AMOUNT              then 'Declared'
+                    when b.IS_CLAIM_APPROVED = 1                                         then 'Refund Settled'
                     else 'Refund Pending'
                 end as String(30))                                     as STAGE,
                 cast(case
@@ -2372,54 +2378,159 @@ service eclaim_srv @(requires: 'authenticated-user') {
                     else 2
                 end as Integer)                                        as STAGE_CRIT,
 
-                // ---- Flags for the summary ----
                 cast(case when b.IS_DECLARED = 0 then 1 else 0 end as Integer) as IS_OUTSTANDING,
                 cast(case when b.IS_DECLARED = 0
                         and coalesce(b.DAYS_SINCE_PAYMENT, 0) >= 30
                         then 1 else 0 end as Integer)                as IS_OVERDUE,
 
-                // ---- Refund mismatch: refund amount differs from refund due ----
                 cast(case when b.IS_DECLARED = 1
                         and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
                         and coalesce(b.REPAY_AMOUNT, 0)
                             <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
                         then 1 else 0 end as Integer)                as REFUND_MISMATCH,
-                cast(case when b.IS_DECLARED = 1
-                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
-                        and coalesce(b.REPAY_AMOUNT, 0)
-                            <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
-                        then 'Refund ≠ Due' else '' end as String(20)) as REFUND_CHECK,
-                cast(case when b.IS_DECLARED = 1
-                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
-                        and coalesce(b.REPAY_AMOUNT, 0)
-                            <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0)
-                        then 2 else 0 end as Integer)                as REFUND_CRIT,
 
-                // ---- Migrated data (STAT08) ----
-                b.IS_MIGRATED,
                 cast(case when b.IS_MIGRATED = 1
                         and b.IS_DECLARED = 1
                         and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
                         and ( b.IS_CLAIM_APPROVED = 0
                                 or coalesce(b.REPAY_AMOUNT, 0)
                                     <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
-                        then 1 else 0 end as Integer)                as MIGRATED_ISSUE,
-                cast(case when b.IS_MIGRATED = 0 then ''
-                        when b.IS_DECLARED = 1
-                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
-                        and ( b.IS_CLAIM_APPROVED = 0
-                                or coalesce(b.REPAY_AMOUNT, 0)
-                                    <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
-                        then 'Migrated – Review'
-                        else 'Migrated' end as String(20))           as MIGRATED_CHECK,
-                cast(case when b.IS_MIGRATED = 1
-                        and b.IS_DECLARED = 1
-                        and coalesce(b.DECLARED_AMOUNT, 0) < b.ADVANCE_AMOUNT
-                        and ( b.IS_CLAIM_APPROVED = 0
-                                or coalesce(b.REPAY_AMOUNT, 0)
-                                    <> b.ADVANCE_AMOUNT - coalesce(b.DECLARED_AMOUNT, 0) )
-                        then 2 else 0 end as Integer)                as MIGRATED_CRIT
+                        then 1 else 0 end as Integer)                as MIGRATED_ISSUE
         };
+
+    /** Every dependent on an advance: from the advance items plus the chosen declaration's items. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_ADV_DEP_KEYS as
+        select from ZMED_RPT_REQ_DEP as rd {
+            key cast(rd.REQUEST_ID || '|' || coalesce(rd.DEPENDENT, '') as String(255)) as DKEY,
+                cast(rd.REQUEST_ID as String) as REQUEST_ID,
+                cast(rd.DEPENDENT  as String) as DEPENDENT
+        }
+        union
+        select from ZMED_ADV_HDR as h
+        inner join ZMED_RPT_CLM_DEP as cd on cd.CLAIM_ID = h.CLAIM_ID
+        {
+            key cast(h.REQUEST_ID || '|' || coalesce(cd.DEPENDENT, '') as String(255)) as DKEY,
+                cast(h.REQUEST_ID as String) as REQUEST_ID,
+                cast(cd.DEPENDENT as String) as DEPENDENT
+        };
+
+    /**
+    * Medical Advance tab – one row per dependent + one Cash Refund row.
+    * Dependent rows: declaration stage only (Advance Requested / Overdue / Declared).
+    * Refund row: shown when a refund is due OR a CASH_REPAY was entered.
+    */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_ADV_TRACK as
+        // ---------- Dependent rows ----------
+        select from ZMED_ADV_HDR as h
+        inner join ZMED_ADV_DEP_KEYS as k
+            on k.REQUEST_ID = h.REQUEST_ID
+        left join ZMED_RPT_REQ_DEP as rd
+            on  rd.REQUEST_ID              = k.REQUEST_ID
+            and coalesce(rd.DEPENDENT, '') = coalesce(k.DEPENDENT, '')
+        left join ZMED_RPT_CLM_DEP as cd
+            on  cd.CLAIM_ID                = h.CLAIM_ID
+            and coalesce(cd.DEPENDENT, '') = coalesce(k.DEPENDENT, '')
+        left join ECLAIM.ZEMP_DEPENDENT as d
+            on  d.EMP_ID       = h.EEID
+            and d.DEPENDENT_NO = k.DEPENDENT
+        left join ECLAIM.ZEMP_RELATIONSHIP as rel
+            on rel.RELATIONSHIP_TYPE_ID = d.RELATIONSHIP
+        {
+            key cast('D|' || k.DKEY as String(255))                      as ROW_KEY,
+                cast(h.REQUEST_ID as String)                             as REQUEST_ID,
+                h.EEID,
+                h.ENTITLEMENT_YEAR,
+                cast(h.CLAIM_ID as String)                               as CLAIM_ID,
+                cast(1 as Integer)                                       as LINE_SEQ,
+                cast('Dependent' as String(20))                          as LINE_TYPE,
+                cast(case
+                    when k.DEPENDENT is null or k.DEPENDENT = '' then 'Self'
+                    when d.LEGAL_NAME is null then 'Unknown (' || k.DEPENDENT || ')'
+                    else d.LEGAL_NAME
+                        || ' (' || coalesce(rel.RELATIONSHIP_TYPE_DESC, '-')
+                        || ', ' || coalesce(cast(years_between(d.DOB, h.AGE_REF_DATE) as String), '-')
+                        || ')'
+                end as String(200))                                      as DEPENDENT_NAME,
+                cast(coalesce(cd.POLICY_YEAR, rd.POLICY_YEAR, h.POLICY_YEAR) as String(4)) as POLICY_YEAR,
+                cast(coalesce(rd.PROVIDER_NAME, '-') as String(500))     as ADVANCE_PROVIDER,
+                cast(case when h.CLAIM_STATUS_ID in ('STAT02','STAT03','STAT05','STAT06','STAT08')
+                        then coalesce(cd.PROVIDER_NAME, '-') else '-' end as String(500)) as DECLARED_PROVIDER,
+                cast(coalesce(cast(rd.ADVANCE_AMOUNT as String), '-') as String(30)) as ADVANCE_AMOUNT,
+                cast(coalesce(cast(cd.CLAIM_AMOUNT   as String), '-') as String(30)) as DECLARED_AMOUNT,
+                cast(case when rd.ADVANCE_AMOUNT is not null and cd.CLAIM_AMOUNT is not null
+                        then cast(cast(cd.CLAIM_AMOUNT - rd.ADVANCE_AMOUNT as Decimal(16, 2)) as String)
+                        else '-' end as String(30))                    as VARIANCE,
+                cast('-' as String(30))                                  as REFUND_DUE,
+                cast('-' as String(30))                                  as REFUND_AMOUNT,
+                cast('-' as String(20))                                  as REFUND_CHECK,
+                cast(0 as Integer)                                       as REFUND_CRIT,
+                // ---- Dependent mismatch between advance and declaration ----
+                cast(case
+                    when h.IS_DECLARED = 0                             then '-'
+                    when rd.REQUEST_ID is null                         then 'Not in Advance'
+                    when cd.CLAIM_ID   is null                         then 'Not Declared'
+                    else 'OK'
+                end as String(20))                                       as DEP_CHECK,
+                cast(case
+                    when h.IS_DECLARED = 1 and (rd.REQUEST_ID is null or cd.CLAIM_ID is null) then 2
+                    else 0
+                end as Integer)                                          as DEP_CRIT,
+                h.ADVANCE_PAYMENT_DATE,
+                cast(coalesce(cast(h.DAYS_SINCE_PAYMENT as String), '-') as String(10)) as DAYS_SINCE_PAYMENT,
+                cast(h.REQUEST_STATUS as String)                         as REQUEST_STATUS,
+                cast(h.CLAIM_STATUS as String)                           as CLAIM_STATUS,
+                cast(case when h.IS_DECLARED = 1 then 'Declared' else h.STAGE end as String(30)) as STAGE,
+                cast(case when h.IS_DECLARED = 1 then 3 else h.STAGE_CRIT end as Integer)       as STAGE_CRIT,
+                cast(case when h.IS_MIGRATED = 1 then 'Migrated' else '-' end as String(20))    as MIGRATED_CHECK,
+                cast(0 as Integer)                                       as MIGRATED_CRIT
+        }
+
+        // ---------- Cash Refund row ----------
+        union all
+        select from ZMED_ADV_HDR as h {
+            key cast('R|' || h.REQUEST_ID as String(255))              as ROW_KEY,
+                cast(h.REQUEST_ID as String)                           as REQUEST_ID,
+                h.EEID,
+                h.ENTITLEMENT_YEAR,
+                cast(h.CLAIM_ID as String)                             as CLAIM_ID,
+                cast(2 as Integer)                                     as LINE_SEQ,
+                cast('Cash Refund' as String(20))                      as LINE_TYPE,
+                cast('-' as String(200))                                 as DEPENDENT_NAME,
+                cast(h.POLICY_YEAR as String(4))                         as POLICY_YEAR,
+                cast('-' as String(500))                                 as ADVANCE_PROVIDER,
+                cast('-' as String(500))                                 as DECLARED_PROVIDER,
+                cast('-' as String(30))                                  as ADVANCE_AMOUNT,
+                cast('-' as String(30))                                  as DECLARED_AMOUNT,
+                cast('-' as String(30))                                  as VARIANCE,
+                cast(cast(h.REFUND_DUE as Decimal(16, 2)) as String(30)) as REFUND_DUE,
+                cast(coalesce(cast(h.REFUND_AMOUNT as String), '-') as String(30)) as REFUND_AMOUNT,
+                cast(case when h.REFUND_MISMATCH = 1 then 'Refund ≠ Due'
+                        when h.REFUND_DUE = 0 and h.REFUND_AMOUNT is not null then 'Not Required'
+                        else '-' end as String(20))                    as REFUND_CHECK,
+                cast(case when h.REFUND_MISMATCH = 1
+                            or (h.REFUND_DUE = 0 and h.REFUND_AMOUNT is not null)
+                        then 2 else 0 end as Integer)                as REFUND_CRIT,
+                cast('-' as String(20))                                  as DEP_CHECK,
+                cast(0 as Integer)                                       as DEP_CRIT,
+                h.ADVANCE_PAYMENT_DATE,
+                cast(coalesce(cast(h.DAYS_SINCE_PAYMENT as String), '-') as String(10)) as DAYS_SINCE_PAYMENT,
+                cast(h.REQUEST_STATUS as String)                       as REQUEST_STATUS,
+                cast(h.CLAIM_STATUS as String)                         as CLAIM_STATUS,
+                cast(case when h.IS_DECLARED = 0 or h.REFUND_DUE > 0 then h.STAGE
+                        else 'Refund Not Required' end as String(30)) as STAGE,
+                cast(case when h.IS_DECLARED = 0 or h.REFUND_DUE > 0 then h.STAGE_CRIT
+                        else 2 end as Integer)                       as STAGE_CRIT,
+                cast(case when h.IS_MIGRATED = 0 then '-'
+                        when h.MIGRATED_ISSUE = 1 then 'Migrated – Review'
+                        else 'Migrated' end as String(20))             as MIGRATED_CHECK,
+                cast(case when h.MIGRATED_ISSUE = 1 then 2 else 0 end as Integer) as MIGRATED_CRIT
+        }
+        where h.REFUND_DUE > 0
+        or h.REFUND_AMOUNT is not null;
 
 
     // ---------------------------------------------------------------------
@@ -2428,19 +2539,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     @readonly
     @cds.redirection.target: false
-    entity ZMED_PAYCLAIM_TRACK as
+    entity ZMED_PAYCLAIM_HDR as
         select from ECLAIM.ZCLAIM_HEADER as ch
         inner join ZMED_CLM_AMT      as ca on ca.CLAIM_ID  = ch.CLAIM_ID
         left join  ECLAIM.ZSTATUS    as s  on s.STATUS_ID  = ch.STATUS_ID
-        left join  ZMED_CLM_DEP_TXT  as dt on dt.CLAIM_ID  = ch.CLAIM_ID
-        left join  ZMED_CLM_PROV_TXT as cp on cp.CLAIM_ID  = ch.CLAIM_ID
         {
             key ch.CLAIM_ID,
                 ch.EMP_ID                                              as EEID,
                 cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as Integer) as ENTITLEMENT_YEAR,
                 ca.POLICY_YEAR,
-                dt.DEPENDENTS,
-                cp.PROVIDERS                                           as PROVIDER_NAME,
                 cast(case when ch.STATUS_ID in ('STAT02','STAT05','STAT06','STAT08')
                         then ca.CLAIM_AMOUNT end as Decimal(16, 2))  as AMOUNT_CLAIMED,
                 cast(case when ch.STATUS_ID in ('STAT05','STAT06','STAT08')
@@ -2469,6 +2576,43 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where ch.CLAIM_TYPE_ID = 'MEDICAL'
         and ch.STATUS_ID not in ('STAT01', 'STAT07');
 
+    /** Pay & Claim tab – one row per claim + dependent. */
+    @readonly
+    @cds.redirection.target: false
+    entity ZMED_PAYCLAIM_TRACK as
+        select from ZMED_PAYCLAIM_HDR as h
+        inner join ZMED_RPT_CLM_DEP as cd
+            on cd.CLAIM_ID = h.CLAIM_ID
+        left join ECLAIM.ZEMP_DEPENDENT as d
+            on  d.EMP_ID       = h.EEID
+            and d.DEPENDENT_NO = cd.DEPENDENT
+        left join ECLAIM.ZEMP_RELATIONSHIP as rel
+            on rel.RELATIONSHIP_TYPE_ID = d.RELATIONSHIP
+        {
+            key cast(h.CLAIM_ID || '|' || coalesce(cd.DEPENDENT, '') as String(255)) as ROW_KEY,
+                cast(h.CLAIM_ID as String)                             as CLAIM_ID,
+                h.EEID,
+                h.ENTITLEMENT_YEAR,
+                cast(cd.POLICY_YEAR as String(4))                      as POLICY_YEAR,
+                cast(case
+                    when cd.DEPENDENT is null or cd.DEPENDENT = '' then 'Self'
+                    when d.LEGAL_NAME is null then 'Unknown (' || cd.DEPENDENT || ')'
+                    else d.LEGAL_NAME
+                        || ' (' || coalesce(rel.RELATIONSHIP_TYPE_DESC, '-')
+                        || ', ' || coalesce(cast(years_between(d.DOB, h.SUBMITTED_DATE) as String), '-')
+                        || ')'
+                end as String(200))                                    as DEPENDENT_NAME,
+                cast(cd.PROVIDER_NAME as String(500))                  as PROVIDER_NAME,
+                cast(case when h.AMOUNT_CLAIMED  is not null then cd.CLAIM_AMOUNT end as Decimal(16, 2)) as AMOUNT_CLAIMED,
+                cast(case when h.AMOUNT_APPROVED is not null then cd.CLAIM_AMOUNT end as Decimal(16, 2)) as AMOUNT_APPROVED,
+                h.STATUS,
+                h.STATUS_CRIT,
+                h.SUBMITTED_DATE,
+                h.PAYMENT_DATE,
+                h.MIGRATED_CHECK,
+                h.MIGRATED_CRIT
+        };
+
 
     // ---------------------------------------------------------------------
     //  9. Employee summary (summary list)
@@ -2478,7 +2622,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     @readonly
     @cds.redirection.target: false
     entity ZMED_EMP_ACT_LINES as
-        select from ZMED_ADV_TRACK {
+        select from ZMED_ADV_HDR {
             key cast('A|' || REQUEST_ID as String(255)) as ACT_KEY,
                 EEID,
                 ENTITLEMENT_YEAR,
@@ -2489,7 +2633,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 MIGRATED_ISSUE                          as MIG_ISSUE
         }
         union all
-        select from ZMED_PAYCLAIM_TRACK {
+        select from ZMED_PAYCLAIM_HDR {
             key cast('C|' || CLAIM_ID as String(255))   as ACT_KEY,
                 EEID,
                 ENTITLEMENT_YEAR,
