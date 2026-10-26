@@ -11,6 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
+const { syncBudgetReport } = require('./ifams/ifams-budget');
 
 module.exports = (srv) => {
 
@@ -2607,14 +2608,25 @@ module.exports = (srv) => {
      * - Employee has no DEP        -> 404 "Employee record not found".
      * - Entity not configured      -> 500 "Report access is not configured".
      * - Unexpected/DB error        -> CAP's standard 500 (details hidden in production).
+     * - IFAMS sync fails           -> 500 "Failed to retrieve budget data from IFAMS".
      *
      * @param {import('@sap/cds').Request} req - Incoming READ request
      */
     srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
+        const sEntityName = req.target.name.split('.').pop();
+
+        // 1. Sync IFAMS → ZBUDGET for the Budget Consumption Report (all users)
+        if (sEntityName === 'ZEMP_CC_BUDGET_REPORT') {
+            try {
+                const sYear = String(new Date().getFullYear());
+                await syncBudgetReport(sYear);
+            } catch (oError) {
+                return req.reject(500, `Failed to retrieve budget data from IFAMS: ${oError.message}`);
+            }
+        }
         // Only Admin_CC users are filtered
         if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
-        const sEntityName = req.target.name.split('.').pop();
         const sFilterField = mCostCenterFilterField[sEntityName];
         if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
@@ -5259,6 +5271,58 @@ module.exports = (srv) => {
             return {
                 message: 'Records updated successfully'
             }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    });
+
+    srv.on('updateWBSIOCode', async (req) => {
+        const { ZPROJECT_HDR } = srv.entities;
+
+        try {
+            const { aRecords } = req.data;
+
+            if (!aRecords || aRecords.length === 0) {
+                throw new Error('No Data Sent');
+            }
+
+            const tx = cds.tx(req);
+            const aProjectUpserts = [];
+
+            for (let i = 0; i < aRecords.length; i++) {
+                const oRecord = aRecords[i];
+
+                const sWbsCode = oRecord.WbsCode?.trim();
+                const sIo = oRecord.Io?.trim();
+                const sWbsDescription = oRecord.WbsDescription?.trim();
+                const sProjectCodeIO = sWbsCode || sIo;
+                if (!sProjectCodeIO) continue;
+
+                const bIsWbs = !!sWbsCode;
+                const oEntry = {
+                    PROJECT_CODE_IO: sProjectCodeIO,         
+                    IO_WBS_IND: bIsWbs
+                        ? Constant.ProjectCodeIndicator.WBS
+                        : Constant.ProjectCodeIndicator.IO
+                };
+
+                if (bIsWbs && sWbsDescription) {
+                    oEntry.PROJECT_DESC = sWbsDescription;
+                }
+
+                aProjectUpserts.push(
+                    UPSERT.into(ZPROJECT_HDR).entries(oEntry)
+                );
+            }
+
+            if (aProjectUpserts.length > 0) {
+                await Promise.all(aProjectUpserts.map(function (q) { return tx.run(q); }));
+            }
+
+            return {
+                message: 'Records updated successfully'
+            };
 
         } catch (oError) {
             req.reject(400, `Fail updating records: ${oError.message}`);

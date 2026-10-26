@@ -1901,4 +1901,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;        
 
+    type WBSIORecord {
+        WbsCode        : String;
+        Io             : String;
+        WbsDescription : String;
+    };
+
+    action   updateWBSIOCode(aRecords: many WBSIORecord)                                                 returns Response;    
+
 };
