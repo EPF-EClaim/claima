@@ -122,19 +122,25 @@ sap.ui.define([
          * @param {Error} oError - Error from the OData call
          */
         handleSessionError: function (oError) {
-            if (oError.status === 404) {
+            // Sign-out in progress: ignore requests cancelled by the redirect
+            if (this._bLoggingOut) {
+                return;
+            }
+
+            // Employee really not found
+            if (oError && oError.status === 404) {
+                this.stopInactivityTimer();
+                SafeSessionStorage.remove(REAUTH_FLAG);
                 MessageBox.error(Utility.getText("user_not_found_desc", []), {
                     title: Utility.getText("user_not_found_title", []),
                     actions: [MessageBox.Action.CLOSE],
                     emphasizedAction: MessageBox.Action.CLOSE,
-                    onClose: () => {
-                        window.location.href = LOGOUT_URL;
-                    }
+                    onClose: () => this.logout()
                 });
                 return;
             }
 
-            // The flag stops an endless reload loop if the backend is down
+            // Session expired: reload once so the approuter (SSO) signs the user in again
             if (this._isSessionExpiredError(oError) && !SafeSessionStorage.get(REAUTH_FLAG)) {
                 SafeSessionStorage.set(REAUTH_FLAG, "X");
                 window.location.reload();
@@ -142,7 +148,7 @@ sap.ui.define([
             }
 
             SafeSessionStorage.remove(REAUTH_FLAG);
-            MessageBox.error(Utility.getText("msg_failed_generic_error", [oError.message]));
+            MessageBox.error(Utility.getText("msg_failed_generic_error", [oError && oError.message]));
         },
 
         /**
@@ -157,7 +163,7 @@ sap.ui.define([
             if (iStatus === 401) {
                 return true;
             }
-            return !iStatus || /<html|content-type|JSON/i.test((oError && oError.message) || "");
+            return !iStatus || /<html|<!doctype/i.test((oError && oError.message) || "");
         },
 
         // ================================================================
@@ -461,8 +467,13 @@ sap.ui.define([
          * @public
          */
         logout: function () {
+            if (this._bLoggingOut) {
+                return;
+            }
+            this._bLoggingOut = true;
             this._releaseResources();
-            window.location.href = LOGOUT_URL;
+            SafeSessionStorage.remove(REAUTH_FLAG);
+            window.location.replace(LOGOUT_URL); // Back won't return to the app
         },
 
         /**
