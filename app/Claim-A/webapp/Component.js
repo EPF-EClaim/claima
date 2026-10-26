@@ -113,6 +113,13 @@ sap.ui.define([
             try {
                 await oUserTypeContext.execute();
                 oUserData = oUserTypeContext.getBoundContext().getObject();
+                
+                // Success with no employee: handle it like a backend 404
+                if (!oUserData || !oUserData.userId) {
+                    const oNotFound = new Error("Employee not found");
+                    oNotFound.status = 404;
+                    throw oNotFound;
+                }
             } catch (oError) {
                 this._fnRolesLoaded();
                 this._oSessionManager.handleSessionError(oError);
