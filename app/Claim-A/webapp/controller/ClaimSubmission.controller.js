@@ -4093,14 +4093,16 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: async function () {
-			//check if there is any input, if yes then recalculate entitled meals 		
+			//recalculated entitled meals, then check fields
+			await this._calculatePerDiem();
+					
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 			if (!bCanProceed) {
 				return;
 			}
 					
-			await this._calculatePerDiem();
+
 
 		},
 

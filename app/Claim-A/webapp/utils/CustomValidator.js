@@ -118,13 +118,16 @@ sap.ui.define([
                         }
                     }
 
-                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
-                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined) {
-                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                    // Currency Rate amount checking if it is visible input
+                    if (this._oView.byId(`input_claimdetails_input_currency_rate`).getVisible() && oInputModel.getProperty("/claim_item/currency_rate") <=0 ) {
+                        this._oView.byId(`input_claimdetails_input_currency_rate`).setValueState(ValueState.Error);
+                        MessageBox.error(Utility.getText("msg_error_currency_rate"));
                         bCanProceed = false;
                         return;
-
+                    }else{
+                        this._oView.byId(`input_claimdetails_input_currency_rate`).setValueState(ValueState.None);
                     }
+
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
                         const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
@@ -148,8 +151,18 @@ sap.ui.define([
                         if(bMealExceeded){
                             MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
                             bCanProceed = false;
+                            return;
                         }
                     }
+
+                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                        bCanProceed = false;
+                        return;
+
+                    }
+
 
                     if (oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date")) {
                         const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdetails_receipt_date_before_trip_start_date"));
