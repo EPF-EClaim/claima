@@ -19,7 +19,8 @@ const {
     buildBudgetErrorMessage,
     generateReturnMessage,
     lockClaimBudget,
-    checkRequestBudget
+    checkRequestBudget,
+    validateCostCenter
 } = require("./workflow-helper");
 
 /**
@@ -91,10 +92,17 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
         if (aBudgetContext?.length > 0) {
 
-            if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
-                aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
-            } else {
-                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext)
+            // Validate item cost center 
+            aBudgetCheckReturn = validateCostCenter(aBudgetContext);
+
+            // Only proceed with budget process if Cost Center Validation passed
+            if (aBudgetCheckReturn.length === 0) {
+
+                if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+                    aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
+                } else {
+                    aBudgetCheckReturn = await checkRequestBudget(aBudgetContext)
+                }
             }
 
             // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
