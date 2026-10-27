@@ -1375,9 +1375,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         inner join ECLAIM.ZCLAIM_HEADER as h
             on h.CLAIM_ID = i.CLAIM_ID
         {
-            key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255))     as LINE_ID,
+            key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255))    as LINE_ID,
                 h.EMP_ID                                                            as EEID,
-                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as String)         as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as String(4))       as ENTITLEMENT_YEAR,
                 cast(i.AMOUNT as Decimal(16, 2))                                    as CLAIMED_AMOUNT,
                 cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
@@ -1396,7 +1396,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             key cast('R|' || ri.REQUEST_ID || '|' || ri.REQUEST_SUB_ID as String(255)) as LINE_ID,
                 rh.EMP_ID                                                           as EEID,
-                cast(year(add_seconds(rh.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(rh.SUBMITTED_DATE, 28800)) as String(4))        as ENTITLEMENT_YEAR,
                 cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
                 cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
         }
@@ -1412,7 +1412,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             key cast('E|' || e.EEID as String(255))                                 as LINE_ID,
                 e.EEID                                                              as EEID,
-                cast(year(add_seconds(current_timestamp, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(current_timestamp, 28800)) as String(4))        as ENTITLEMENT_YEAR,
                 cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
                 cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
@@ -1424,7 +1424,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key cast('EC|' || ch.EMP_ID || '|'
                     || cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
                 ch.EMP_ID                                                           as EEID,
-                cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as String(4))        as ENTITLEMENT_YEAR,
                 cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
                 cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
@@ -1438,7 +1438,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key cast('ER|' || rq.EMP_ID || '|'
                     || cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
                 rq.EMP_ID                                                           as EEID,
-                cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as String(4))        as ENTITLEMENT_YEAR,
                 cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
                 cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
         }
