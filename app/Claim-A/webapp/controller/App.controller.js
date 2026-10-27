@@ -638,8 +638,11 @@ sap.ui.define([
 					// filter
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
-					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
- 
+					var [aParticipantPARs, aUsedRequestIds] = await Promise.all([
+						this._getParticipantPreApprovalRecords(),
+						this._getUsedPreApprovalRequestIds()
+					]);
+
 					// (a)/(b): matches based on claim type - these require the
 					// current user to be the request's original requestor (EMP_ID)
 					var aOwnClaimTypeFilters = [];
@@ -718,10 +721,15 @@ sap.ui.define([
 								],
 								and: false // OR
 							})
-						],
+						].concat(
+							// hide pre-approval requests already used in a pending/pushed back/approved claim
+							aUsedRequestIds.map(function (sUsedId) {
+								return new Filter("REQUEST_ID", FilterOperator.NE, sUsedId);
+							})
+						),
 						and: true
 					});
- 
+
 					oBindingSelectRequestForm.filter(oFinalFilter);
 				}
 			}
@@ -2106,6 +2114,57 @@ sap.ui.define([
 				return aContexts.map(function (oContext) {
 					return oContext.getObject();
 				});
+			} catch (oError) {
+				return [];
+			}
+		},
+
+		/**
+		 * Retrieve pre-approval request IDs that the current user has already
+		 * used in a claim that is Pending Approval, Push Back (Send Back),
+		 * Approved, or Completed Disbursement. These requests are locked and must not be offered
+		 * when creating a new claim. Claims in any other status (e.g. Rejected)
+		 * release the request so it becomes selectable again.
+		 * @private
+		 * @returns {Promise<string[]>} unique list of consumed REQUEST_IDs
+		 */
+		_getUsedPreApprovalRequestIds: async function () {
+			var sUserId = this._oSessionModel.getProperty("/userId");
+			if (!sUserId) {
+				return [];
+			}
+
+			try {
+				var oListBinding = this._oDataModel.bindList(
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new Filter("EMP_ID", FilterOperator.EQ, sUserId),
+						new Filter("REQUEST_ID", FilterOperator.NE, null),
+						new Filter("REQUEST_ID", FilterOperator.NE, ""),
+						new Filter({
+							filters: [
+								new Filter("STATUS_ID", FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL),
+								new Filter("STATUS_ID", FilterOperator.EQ, this._oConstant.ClaimStatus.SEND_BACK),
+								new Filter("STATUS_ID", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
+								new Filter("STATUS_ID", FilterOperator.EQ, this._oConstant.ClaimStatus.COMPLETED_DISBURSEMENT)
+							],
+							and: false
+						})
+					],
+					{
+						$select: "CLAIM_ID,REQUEST_ID,STATUS_ID",
+						$$ownRequest: true
+					}
+				);
+
+				var aContexts = await oListBinding.requestContexts(0, Infinity);
+				var aRequestIds = aContexts
+					.map(function (oContext) { return oContext.getProperty("REQUEST_ID"); })
+					.filter(function (sId) { return !!sId; });
+
+				return Array.from(new Set(aRequestIds));
 			} catch (oError) {
 				return [];
 			}
