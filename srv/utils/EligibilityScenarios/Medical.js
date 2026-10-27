@@ -307,7 +307,7 @@ module.exports = {
                 .columns(Constant.EntitiesFields.BALANCE)
                 .where({
                     [Constant.EntitiesFields.EEID]: oEmp.EEID,
-                    [Constant.EntitiesFields.ENTITLEMENT_YEAR]: iEntitlementYear
+                    [Constant.EntitiesFields.ENTITLEMENT_YEAR]: String(iEntitlementYear)
                 })
         );
 
