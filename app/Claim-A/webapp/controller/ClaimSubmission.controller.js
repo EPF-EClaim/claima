@@ -4110,7 +4110,7 @@ sap.ui.define([
 			//calculation occurs first to make sure all entitled and provided numbers are always updated properly before checking the required fields in CustomValidator
 			await this._calculatePerDiem();					
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			await CustomValidator.validateProvidedMeals(this.getView());			
+			await CustomValidator.validateProvidedMeals();			
 		},
 
 		/**

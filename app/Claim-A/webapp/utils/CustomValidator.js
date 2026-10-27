@@ -118,17 +118,8 @@ sap.ui.define([
                         }
                     }
 
-                    // Currency Rate amount checking if it is visible input
-                    if (this._oView.byId(`input_claimdetails_input_currency_rate`).getVisible() && (oInputModel.getProperty("/claim_item/currency_rate") <=0 || oInputModel.getProperty("/claim_item/currency_rate") == null)) {
-                        this._oView.byId(`input_claimdetails_input_currency_rate`).setValueState(ValueState.Error);
-                        MessageBox.error(Utility.getText("msg_error_currency_rate"));
-                        bCanProceed = false;
-                        return;
-                    }
-
-
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        if(!this.validateProvidedMeals(this._oView)){
+                        if(!this.validateProvidedMeals()){
                             bCanProceed = false;
                             return;
                         }
@@ -429,39 +420,51 @@ sap.ui.define([
         },
 
         /**
-         * Validates provided meal values to be more than zero
+         * Validates provided meal values to be more than or equal to zero
          * Invalid fields are marked with an error value state.
          * @public
-         * @param {sap.ui.core.mvc.View} oView
          * @returns {boolean} true if all provided meal values are valid.
          */
-        validateProvidedMeals: function (oView) {
-            const oInputModel = oView.getModel("claimitem_input");
+        validateProvidedMeals: function () {
+            const oInputModel = this._oView.getModel("claimitem_input");
             const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
             let bMealExceeded = false;
             let bMealInvalid = false;
             let bCanProceed = true;           
             ["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
             const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
-                if(iProvidedMeal >= 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
-                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                    oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_provided_meal_exceed"));
+                if(iProvidedMeal > 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
+                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_provided_meal_exceed"));
                     bMealExceeded = true;
                 }else if (iProvidedMeal < 0){
-                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                    oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                     bMealInvalid = true;
                 }else {
-                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
+                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
                 }
             });
+                // Collect all validation errors
+            const aErrorMessages = [];
 
-            if(bMealExceeded){
-                MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
+            if (bMealExceeded) {
+                aErrorMessages.push(
+                    Utility.getText("msg_provided_meal_exceed")
+                );
                 bCanProceed = false;
-            }else if(bMealInvalid){
-                MessageBox.error(Utility.getText("msg_error_provided_meals_amount"));
+            }
+
+            if (bMealInvalid) {
+                aErrorMessages.push(
+                    Utility.getText("msg_error_provided_meals_amount")
+                );
                 bCanProceed = false;
+            }
+
+            // Show all applicable errors in one MessageBox
+            if (aErrorMessages.length > 0) {
+                MessageBox.error(aErrorMessages.join("\n\n"));
             }
             return bCanProceed;
         },
