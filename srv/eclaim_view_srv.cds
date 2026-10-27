@@ -264,7 +264,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 INSURANCE_MEDICAL_PROVIDER_ID,
                 INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
-                ATTACHMENT4
+                ATTACHMENT4,
+                VEHICLE_CLASS_ID
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
