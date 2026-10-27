@@ -313,7 +313,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            const bNoBackdateAllowed = 
+                            const bMinIsTripStartDate = 
                                 sType === Constants.ClaimType.ELAUN_PINDAH 
                                 || (sType === Constants.ClaimType.ELAUN_TUKAR 
                                     && ![Constants.ClaimTypeItem.FLIGHT_L,
@@ -323,14 +323,15 @@ sap.ui.define([
 
                             _dMinDate = new Date(oHeader.trip_start_date);
 
-                            if (!bNoBackdateAllowed) {
+                            if (!bMinIsTripStartDate) {
+                                // Default Claim Type - minimum date = 90 days before header trip start date 
                                 _dMinDate.setDate(_dMinDate.getDate() - 90);
                             };
 
                             _oAppModel?.setProperty(
                                 `/fieldControl/${sFieldName}/customMinDateError`,
                                 _oResourceBundle.getText(
-                                    bNoBackdateAllowed ? "error_receipt_date_in_past" : "error_receiptdate_mindate"
+                                    bMinIsTripStartDate ? "error_receipt_date_in_past" : "error_receiptdate_mindate"
                                 )
                             );
                             break;
