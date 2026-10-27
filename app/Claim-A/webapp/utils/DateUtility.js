@@ -313,20 +313,27 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // Default Claim Type - minimum date = 90 days before header start date 
-                            if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMinDate = new Date(oHeader.trip_start_date);
-                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receipt_date_in_past"));
-                            } else {
-                                _dMinDate = new Date(oHeader.trip_start_date);
-                                const dPastDate = new Date(_dMinDate);
-                                dPastDate.setDate(dPastDate.getDate() - 90);
-                                _dMinDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receiptdate_mindate"));
-                            }
+                            const bMinIsTripStartDate = 
+                                sType === Constants.ClaimType.ELAUN_PINDAH 
+                                || (sType === Constants.ClaimType.ELAUN_TUKAR 
+                                    && ![Constants.ClaimTypeItem.FLIGHT_L,
+                                         Constants.ClaimTypeItem.HOTEL_L, 
+                                         Constants.ClaimTypeItem.LAUT]
+                                         .includes(sItemType));
 
+                            _dMinDate = new Date(oHeader.trip_start_date);
+
+                            if (!bMinIsTripStartDate) {
+                                // Default Claim Type - minimum date = 90 days before header trip start date 
+                                _dMinDate.setDate(_dMinDate.getDate() - 90);
+                            };
+
+                            _oAppModel?.setProperty(
+                                `/fieldControl/${sFieldName}/customMinDateError`,
+                                _oResourceBundle.getText(
+                                    bMinIsTripStartDate ? "error_receipt_date_in_past" : "error_receiptdate_mindate"
+                                )
+                            );
                             break;
                     }
                     break;
