@@ -5277,55 +5277,58 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('updateWBSIOCode', async (req) => {
-        const { ZPROJECT_HDR } = srv.entities;
+   srv.on('updateWBSIOCode', async (req) => {
+    const { ZPROJECT_HDR } = srv.entities;
 
-        try {
-            const { aRecords } = req.data;
+    try {
+        const { aRecords } = req.data;
 
-            if (!aRecords || aRecords.length === 0) {
-                throw new Error('No Data Sent');
-            }
+        if (!aRecords || aRecords.length === 0) {
+            throw new Error('No Data Sent');
+        }
 
-            const tx = cds.tx(req);
-            const aProjectUpserts = [];
+        const tx = cds.tx(req);
+        const aProjectUpserts = [];
 
-            for (let i = 0; i < aRecords.length; i++) {
-                const oRecord = aRecords[i];
+        for (let i = 0; i < aRecords.length; i++) {
+            const oRecord = aRecords[i];
 
-                const sWbsCode = oRecord.WbsCode?.trim();
-                const sIo = oRecord.Io?.trim();
-                const sWbsDescription = oRecord.WbsDescription?.trim();
-                const sProjectCodeIO = sWbsCode || sIo;
-                if (!sProjectCodeIO) continue;
+            const sWbsCode = oRecord.WbsCode?.trim();
+            const sIo = oRecord.Io?.trim();
+            const sWbsDescription = oRecord.WbsDescription?.trim();
+            const sCommitmentItem = oRecord.CommitmentItem?.trim();
 
-                const bIsWbs = !!sWbsCode;
-                const oEntry = {
-                    PROJECT_CODE_IO: sProjectCodeIO,         
-                    IO_WBS_IND: bIsWbs
-                        ? Constant.ProjectCodeIndicator.WBS
-                        : Constant.ProjectCodeIndicator.IO
-                };
+            const sProjectCodeIO = sWbsCode || sIo;
+            if (!sProjectCodeIO) continue;
 
-                if (bIsWbs && sWbsDescription) {
-                    oEntry.PROJECT_DESC = sWbsDescription;
-                }
-
-                aProjectUpserts.push(
-                    UPSERT.into(ZPROJECT_HDR).entries(oEntry)
-                );
-            }
-
-            if (aProjectUpserts.length > 0) {
-                await Promise.all(aProjectUpserts.map(function (q) { return tx.run(q); }));
-            }
-
-            return {
-                message: 'Records updated successfully'
+            const bIsWbs = !!sWbsCode;
+            const oEntry = {
+                PROJECT_CODE_IO: sProjectCodeIO,
+                IO_WBS_IND: bIsWbs
+                    ? Constant.ProjectCodeIndicator.WBS
+                    : Constant.ProjectCodeIndicator.IO,
+                GL_ACCOUNT: sCommitmentItem
             };
 
-        } catch (oError) {
-            req.reject(400, `Fail updating records: ${oError.message}`);
+            if (bIsWbs && sWbsDescription) {
+                oEntry.PROJECT_DESC = sWbsDescription;
+            }
+
+            aProjectUpserts.push(
+                UPSERT.into(ZPROJECT_HDR).entries(oEntry)
+            );
         }
-    });
+
+        if (aProjectUpserts.length > 0) {
+                await Promise.all(aProjectUpserts.map(function (q) { return tx.run(q); }));
+        }
+
+        return {
+            message: 'Records updated successfully'
+        };
+
+    } catch (oError) {
+        req.reject(400, `Fail updating records: ${oError.message}`);
+    }
+});
 }
