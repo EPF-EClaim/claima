@@ -5296,15 +5296,18 @@ module.exports = (srv) => {
                 const sWbsCode = oRecord.WbsCode?.trim();
                 const sIo = oRecord.Io?.trim();
                 const sWbsDescription = oRecord.WbsDescription?.trim();
+                const sCommitmentItem = oRecord.CommitmentItem?.trim();
+
                 const sProjectCodeIO = sWbsCode || sIo;
                 if (!sProjectCodeIO) continue;
 
                 const bIsWbs = !!sWbsCode;
                 const oEntry = {
-                    PROJECT_CODE_IO: sProjectCodeIO,         
+                    PROJECT_CODE_IO: sProjectCodeIO,
                     IO_WBS_IND: bIsWbs
                         ? Constant.ProjectCodeIndicator.WBS
-                        : Constant.ProjectCodeIndicator.IO
+                        : Constant.ProjectCodeIndicator.IO,
+                    GL_ACCOUNT: sCommitmentItem
                 };
 
                 if (bIsWbs && sWbsDescription) {
