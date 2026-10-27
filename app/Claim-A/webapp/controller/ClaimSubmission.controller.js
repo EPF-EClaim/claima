@@ -4099,11 +4099,11 @@ sap.ui.define([
 		},
 
 		 /**
-         *Recalculates per-diem entitlement, then validates the provided meals inline.
-         *The calculation runs first so entitled and provided meal values stay in sync even
-         *when other claim fields are still empty. Only the provided-meal rule is validated
-         *here; full item validation is deferred to save (onSave_ClaimDetails_Input).
-         *@returns {Promise<void>}
+         * Recalculates per-diem entitlement, then validates the provided meals inline.
+         * The calculation runs first so entitled and provided meal values stay in sync even
+         * when other claim fields are still empty. Only the provided-meal rule is validated
+         * here; full item validation is deferred to save (onSave_ClaimDetails_Input).
+         * @returns {Promise<void>}
          */
 		onChange_ClaimDetails_ProvidedMeals: async function () {
 			await this._calculatePerDiem();					

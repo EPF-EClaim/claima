@@ -438,7 +438,7 @@ sap.ui.define([
                     oInput.setValueState(ValueState.Error);
                     oInput.setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                     bMealInvalid = true;
-                } else if (iProvidedMeal > 0 && iTravelDays != null && iProvidedMeal > iTravelDays) {
+                } else if (iTravelDays != null && iProvidedMeal > iTravelDays) {
                     oInput.setValueState(ValueState.Error);
                     oInput.setValueStateText(Utility.getText("msg_provided_meal_exceed"));
                     bMealExceeded = true;
