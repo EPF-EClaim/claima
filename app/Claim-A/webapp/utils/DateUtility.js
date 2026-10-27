@@ -314,17 +314,24 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // Default Claim Type - minimum date = 90 days before header start date 
-                            if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
+                            if (sType === Constants.ClaimType.ELAUN_PINDAH) {
                                 _dMinDate = new Date(oHeader.trip_start_date);
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receipt_date_in_past"));
+                                _oResourceBundle.getText("error_receipt_date_in_past"));
+                            } else if (sType === Constants.ClaimType.ELAUN_TUKAR 
+                                && (sItemType !== Constants.ClaimTypeItem.FLIGHT_L 
+                                    && sItemType !== Constants.ClaimTypeItem.HOTEL_L 
+                                    && sItemType !== Constants.ClaimTypeItem.LAUT)) {
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                _oResourceBundle.getText("error_receipt_date_in_past"));
                             } else {
                                 _dMinDate = new Date(oHeader.trip_start_date);
                                 const dPastDate = new Date(_dMinDate);
                                 dPastDate.setDate(dPastDate.getDate() - 90);
                                 _dMinDate = dPastDate;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receiptdate_mindate"));
+                                _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
 
                             break;
