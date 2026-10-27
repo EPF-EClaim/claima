@@ -4103,14 +4103,12 @@ sap.ui.define([
          *The calculation runs first so entitled and provided meal values stay in sync even
          *when other claim fields are still empty. Only the provided-meal rule is validated
          *here; full item validation is deferred to save (onSave_ClaimDetails_Input).
-         *@returns {Promise}
+         *@returns {Promise<void>}
          */
 		onChange_ClaimDetails_ProvidedMeals: async function () {
-			//recalculated entitled meals, then check fields
-			//calculation occurs first to make sure all entitled and provided numbers are always updated properly before checking the required fields in CustomValidator
 			await this._calculatePerDiem();					
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			await CustomValidator.validateProvidedMeals();			
+			CustomValidator.validateProvidedMeals();			
 		},
 
 		/**

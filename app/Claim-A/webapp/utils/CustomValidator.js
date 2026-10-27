@@ -428,45 +428,39 @@ sap.ui.define([
         validateProvidedMeals: function () {
             const oInputModel = this._oView.getModel("claimitem_input");
             const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
+            const aErrorMessages = [];
             let bMealExceeded = false;
             let bMealInvalid = false;
-            let bCanProceed = true;           
-            ["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
-            const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
-                if(iProvidedMeal > 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
-                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_provided_meal_exceed"));
-                    bMealExceeded = true;
-                }else if (iProvidedMeal < 0){
-                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+            ["provided_breakfast", "provided_lunch", "provided_dinner"].forEach((sField) => {
+                const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
+                const oInput = this._oView.byId(`input_claimdetails_input_${sField}`);
+                if (iProvidedMeal < 0) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
                     bMealInvalid = true;
-                }else {
-                    this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
+                } else if (iProvidedMeal > 0 && iTravelDays != null && iProvidedMeal > iTravelDays) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_provided_meal_exceed"));
+                    bMealExceeded = true;
+                } else {
+                    oInput.setValueState(ValueState.None);
                 }
             });
-                // Collect all validation errors
-            const aErrorMessages = [];
 
             if (bMealExceeded) {
-                aErrorMessages.push(
-                    Utility.getText("msg_provided_meal_exceed")
-                );
-                bCanProceed = false;
+                aErrorMessages.push(Utility.getText("msg_provided_meal_exceed"));
             }
 
             if (bMealInvalid) {
-                aErrorMessages.push(
-                    Utility.getText("msg_error_provided_meals_amount")
-                );
-                bCanProceed = false;
+                aErrorMessages.push(Utility.getText("msg_error_provided_meals_amount"));
             }
 
-            // Show all applicable errors in one MessageBox
-            if (aErrorMessages.length > 0) {
+            if (aErrorMessages.length) {
                 MessageBox.error(aErrorMessages.join("\n\n"));
+                return false;
             }
-            return bCanProceed;
+
+            return true;
         },
 
     };
