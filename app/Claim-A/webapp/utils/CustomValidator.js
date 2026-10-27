@@ -128,26 +128,7 @@ sap.ui.define([
 
 
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
-                        let bMealExceeded = false;
-                        
-                        ["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
-                            const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
-                            if(iProvidedMeal >= 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
-                                bMealExceeded = true;
-                            }else if (iProvidedMeal < 0){
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
-                                bCanProceed = false;
-                            }else {
-                                this._oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
-                            }
-                        });
-
-                        if(bMealExceeded){
-                            MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
+                        if(!this.validateProvidedMeals(this._oView)){
                             bCanProceed = false;
                             return;
                         }
@@ -446,5 +427,44 @@ sap.ui.define([
                     : Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
+
+        /**
+         * Validates provided meal values to be more than zero
+         * Invalid fields are marked with an error value state.
+         * @public
+         * @param {sap.ui.core.mvc.View} oView
+         * @returns {boolean} true if all provided meal values are valid.
+         */
+        validateProvidedMeals: function (oView) {
+            const oInputModel = oView.getModel("claimitem_input");
+            const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
+            let bMealExceeded = false;
+            let bMealInvalid = false;
+            let bCanProceed = true;           
+            ["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
+            const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
+                if(iProvidedMeal >= 0 && iTravelDays != null && iTravelDays - iProvidedMeal < 0){
+                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                    oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_provided_meal_exceed"));
+                    bMealExceeded = true;
+                }else if (iProvidedMeal < 0){
+                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.Error);
+                    oView.byId(`input_claimdetails_input_${sField}`).setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+                    bMealInvalid = true;
+                }else {
+                    oView.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
+                }
+            });
+
+            if(bMealExceeded){
+                MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
+                bCanProceed = false;
+            }else if(bMealInvalid){
+                MessageBox.error(Utility.getText("msg_error_provided_meals_amount"));
+                bCanProceed = false;
+            }
+            return bCanProceed;
+        },
+
     };
 });

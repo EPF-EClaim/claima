@@ -4056,30 +4056,36 @@ sap.ui.define([
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_day", nTravelDays);
 
 				//set initial value for meal entitlement based on traveldays
+				//only update entitled meals when provided meals are non-negative, error handling will be done in CustomValidator
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
 
-					var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-					if (nEntBfast >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") >= 0){
+						var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
+						if (nEntBfast >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+						}
 					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
 
-					var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-					if (nEntLunch >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_lunch") >= 0){
+						var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
+						if (nEntLunch >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+						}
 					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
 
-					var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-					if (nEntDinner >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_dinner") >= 0){
+						var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
+						if (nEntDinner >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+						}
 					}
-
 				}
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
@@ -4092,12 +4098,19 @@ sap.ui.define([
 			await this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
+		 /**
+         *Recalculates per-diem entitlement, then validates the provided meals inline.
+         *The calculation runs first so entitled and provided meal values stay in sync even
+         *when other claim fields are still empty. Only the provided-meal rule is validated
+         *here; full item validation is deferred to save (onSave_ClaimDetails_Input).
+         *@returns {Promise}
+         */
 		onChange_ClaimDetails_ProvidedMeals: async function () {
 			//recalculated entitled meals, then check fields
 			//calculation occurs first to make sure all entitled and provided numbers are always updated properly before checking the required fields in CustomValidator
 			await this._calculatePerDiem();					
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);				
+			await CustomValidator.validateProvidedMeals(this.getView());			
 		},
 
 		/**
@@ -5459,7 +5472,6 @@ sap.ui.define([
 			const nAmountMYR = (fCurrencyRate || 0 ) * (oInputModel.getProperty("/claim_item/currency_amount") || 0 );
 
 			oInputModel.setProperty("/claim_item/amount", nAmountMYR);
-
 		},
 
 		/**
