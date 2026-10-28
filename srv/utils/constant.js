@@ -661,13 +661,16 @@ const Constant = {
             CURRENCY: "Currency"
         }
     },
-     ProjectCodeIndicator: {        
+    ProjectCodeIndicator: {
         WBS: "WBS",
         IO: "IO"
     }, 
     SF_API_PATH: {
         FLEXI_POSTING_CONFIG: '/cust_eClaim_Flexi_Posting_Config'
-    }
+    },
+    Status: {
+        ACTIVE: 'ACTIVE'
+    },
 };
 
 module.exports = { Constant };
