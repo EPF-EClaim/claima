@@ -3,7 +3,7 @@ const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
-const { retrieveClaimFlexiPosting } = require('../ifams/pre-checking-budget');
+const { retrieveClaimFlexiPosting, determineBudgetYear } = require('../ifams/pre-checking-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -439,17 +439,25 @@ async function checkRequestBudget(aBudgetContext) {
         }
 
         // check for range date against api
-        var aFlexiClaimPosting = await retrieveClaimFlexiPosting();
+        var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            bError: true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oClaimFlexiPosting.message
+            });
+            return aErrorResults;
+        }
 
         for (const entry of aBudgetContext) {
             if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
                 sCondition = {
-                    YEAR: entry.YEAR,
+                    YEAR: determineBudgetYear(entry.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 };
             } else {
                 sCondition = {
-                    YEAR: entry.YEAR,
+                    YEAR: determineBudgetYear(entry.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                     FUND_CENTER: entry.FUND_CENTER,
                     MATERIAL_GROUP: entry.MATERIAL_GROUP,
