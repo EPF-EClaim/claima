@@ -1,6 +1,7 @@
 sap.ui.define([
     "sap/m/MessageBox",
-    "sap/ui/core/Fragment",
+	"sap/ui/core/Fragment",
+    "sap/ui/core/ValueState",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
@@ -9,6 +10,7 @@ sap.ui.define([
 ], function (
     MessageBox,
     Fragment,
+    ValueState,
     Constants,
     ClaimUtility,
     Utility,
@@ -116,6 +118,13 @@ sap.ui.define([
                         }
                     }
 
+                    if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
+                        if(!this.validateProvidedMeals()){
+                            bCanProceed = false;
+                            return;
+                        }
+                    }
+
                     // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
                     if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined) {
                         MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
@@ -124,16 +133,6 @@ sap.ui.define([
 
                     }
 
-                    if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
-                        var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
-                        var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
-
-                        if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
-                            MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
-                            bCanProceed = false
-                        }
-                    }
 
                     if (oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date")) {
                         const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdetails_receipt_date_before_trip_start_date"));
@@ -419,5 +418,50 @@ sap.ui.define([
                     : Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
+
+        /**
+         * Validates provided meal values to be more than or equal to zero
+         * Invalid fields are marked with an error value state.
+         * @public
+         * @returns {boolean} true if all provided meal values are valid.
+         */
+        validateProvidedMeals: function () {
+            const oInputModel = this._oView.getModel("claimitem_input");
+            const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
+            const aErrorMessages = [];
+            let bMealExceeded = false;
+            let bMealInvalid = false;
+            ["provided_breakfast", "provided_lunch", "provided_dinner"].forEach((sField) => {
+                const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
+                const oInput = this._oView.byId(`input_claimdetails_input_${sField}`);
+                if (iProvidedMeal < 0) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+                    bMealInvalid = true;
+                } else if (iTravelDays != null && iProvidedMeal > iTravelDays) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_provided_meal_exceed"));
+                    bMealExceeded = true;
+                } else {
+                    oInput.setValueState(ValueState.None);
+                }
+            });
+
+            if (bMealExceeded) {
+                aErrorMessages.push(Utility.getText("msg_provided_meal_exceed"));
+            }
+
+            if (bMealInvalid) {
+                aErrorMessages.push(Utility.getText("msg_error_provided_meals_amount"));
+            }
+
+            if (aErrorMessages.length) {
+                MessageBox.error(aErrorMessages.join("\n\n"));
+                return false;
+            }
+
+            return true;
+        },
+
     };
 });
