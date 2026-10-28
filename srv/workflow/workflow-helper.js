@@ -441,7 +441,7 @@ async function checkRequestBudget(aBudgetContext) {
         // check for range date against api
         var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
         if (oClaimFlexiPosting.error) {
-            bError: true;
+            bError = true;
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
                 MESSAGE: oClaimFlexiPosting.message

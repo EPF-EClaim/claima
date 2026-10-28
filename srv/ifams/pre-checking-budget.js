@@ -17,7 +17,7 @@ async function retrieveClaimFlexiPosting() {
             path: Constant.SF_API_PATH.FLEXI_POSTING_CONFIG
         });
 
-        if (aFlexiPostingRecords.length > 0) {
+        if (Array.isArray(aFlexiPostingRecords) && aFlexiPostingRecords.length > 0) {
             const aRecords = aFlexiPostingRecords.map(oRecord => ({
                 ...oRecord,
                 effectiveStartDate: parseODataDate(oRecord.effectiveStartDate),
@@ -26,19 +26,21 @@ async function retrieveClaimFlexiPosting() {
             }));
 
             // further filter the record incase there are multiple records created in SF
-            oFlexiPostingRecord = aRecords.filter(oRecord => oRecord.effectiveStartDate <= dCurrentDate)
+            oFlexiPostingRecord = aRecords.filter(oRecord => oRecord.effectiveStartDate && oRecord.effectiveStartDate <= dCurrentDate)
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
         }
 
     } catch (oError) {
         return { error: true, message: oError.message, oFlexiPostingRecord };
     }
-    return { error: false, message: 'Successfully retrieve Flexi Posting Record', oFlexiPostingRecord };
+    return { error: false, message: 'Successfully retrieved Flexi Posting Record', oFlexiPostingRecord };
 }
 
 /**
  * Determine Budget Year based on Receipt Date and Claim Flexi Posting range date
- * 
+ * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
+ * is configured in SF and the fields are made as mandatory
+ *  
  * @param {Date} dReceiptDate - Receipt date
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
  * @returns {Integer} Year
@@ -59,11 +61,7 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
         // need to use receipt year and compare with current system date year
         // if match, use receipt date year
         // if not match, use current system date year
-        if (dReceipt.getFullYear() === dCurrentDate.getFullYear()) {
-            iYear = dReceipt.getFullYear();
-        } else {
-            iYear = dCurrentDate.getFullYear();
-        }
+        iYear = dCurrentDate.getFullYear();
     }
     return iYear;
 }
