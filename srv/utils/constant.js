@@ -661,10 +661,13 @@ const Constant = {
             CURRENCY: "Currency"
         }
     },
-     ProjectCodeIndicator: {        
+    ProjectCodeIndicator: {
         WBS: "WBS",
         IO: "IO"
-    }
+    },
+    Status: {
+        ACTIVE: 'ACTIVE'
+    },
 };
 
 module.exports = { Constant };
