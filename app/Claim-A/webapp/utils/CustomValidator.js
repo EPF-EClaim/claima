@@ -431,9 +431,15 @@ sap.ui.define([
             const aErrorMessages = [];
             let bMealExceeded = false;
             let bMealInvalid = false;
+            let bTypeError = false;
             ["provided_breakfast", "provided_lunch", "provided_dinner"].forEach((sField) => {
                 const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
                 const oInput = this._oView.byId(`input_claimdetails_input_${sField}`);
+                if (this._hasTypeError(oInput)) {
+                    bTypeError = true;
+                    return;
+                }
+
                 if (iProvidedMeal < 0) {
                     oInput.setValueState(ValueState.Error);
                     oInput.setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
@@ -460,7 +466,27 @@ sap.ui.define([
                 return false;
             }
 
-            return true;
+            return !bTypeError;
+        },
+
+        /**
+         * Checks whether the input's current text fails its binding type parsing/constraints.
+         * @private
+         * @param {sap.m.Input} oInput - Input control to check
+         * @returns {boolean} true if the displayed value is not valid for the bound type
+         */
+        _hasTypeError: function (oInput) {
+            const oType = oInput.getBinding("value")?.getType();
+            if (!oType) {
+                return false;
+            }
+            try {
+                const vParsed = oType.parseValue(oInput.getValue(), "string");
+                oType.validateValue(vParsed);
+                return false;
+            } catch (oError) {
+                return true; // ParseException or ValidateException
+            }
         },
 
     };
