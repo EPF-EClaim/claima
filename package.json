@@ -73,6 +73,12 @@
         "credentials": {
           "destination": "IFAMS_S4_QAS"        
         }        
+      },
+      "Conn_SF_API": {
+        "kind": "odata",
+        "credentials": {
+          "destination": "Conn_SF_API"        
+        }        
       }
     },
     "hana": {
