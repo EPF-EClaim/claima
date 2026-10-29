@@ -1,6 +1,7 @@
 sap.ui.define([
     "sap/m/MessageBox",
 	"sap/ui/core/Fragment",
+    "sap/ui/core/ValueState",
     "claima/utils/Constants",
     "claima/utils/ClaimUtility",
     "claima/utils/Utility",
@@ -9,6 +10,7 @@ sap.ui.define([
 ], function (
     MessageBox,
     Fragment,
+    ValueState,
     Constants,
     ClaimUtility,
     Utility,
@@ -19,14 +21,14 @@ sap.ui.define([
 
     return {
         /**
-		 * Initialize the Utility 
-		 * @public
-		 */
-        init: function(oOwnerComponent,oView) {
+         * Initialize the Utility 
+         * @public
+         */
+        init: function (oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
             this._oView = oView;
-		},
-        
+        },
+
         /**
          * Validates all common and scenario-specific rules during submission
          *
@@ -57,14 +59,23 @@ sap.ui.define([
 
                         if (iNumberOfTraveler > iNumberOfFamily) {
                             var oInput = this._oView.byId("input_no_of_traveler");
-				            oInput.setValueState("Error");   
-				            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
+                            oInput.setValueState("Error");
+                            oInput.setValueStateText(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
                             MessageBox.error(Utility.getText("req_vs_e_exceed_no_of_family", [iNumberOfFamily]));
                             bCanProceed = false;
                         }
                     }
+
+                    // departure/arrival time checking (same time only blocked for international flight)
+                    if (!this._validateFlightTimes(
+                        oReqModel.getProperty("/req_item/departure_time"),
+                        oReqModel.getProperty("/req_item/arrival_time"),
+                        sClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_O
+                    )) {
+                        bCanProceed = false;
+                    }
                     break;
-                case Constants.SubmissionTypePrefix.CLAIM:   
+                case Constants.SubmissionTypePrefix.CLAIM:
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var sClaimTypeItem = oInputModel ? oInputModel.getProperty("/claim_item/claim_type_item_id") : null;
@@ -73,13 +84,13 @@ sap.ui.define([
                     if (!!sClaimTypeItem) {
                         switch (sClaimTypeItem) {
                             case Constants.ClaimTypeItem.TELEFON_B:
-                                if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                                if (!oInputModel.getProperty("/claim_item/disclaimer")) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
                                     bCanProceed = false;
                                 }
                                 break;
                             case Constants.ClaimTypeItem.MATAWANG:
-                                if(!oInputModel.getProperty("/claim_item/amount")) {
+                                if (!oInputModel.getProperty("/claim_item/amount")) {
                                     MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
                                     bCanProceed = false;
                                     return;
@@ -87,81 +98,77 @@ sap.ui.define([
                                 }
                                 break;
                             case Constants.ClaimTypeItem.MKN_LOAN:
-                                if(oInputModel.getProperty("/claim_item/no_of_days") > 2){
+                                if (oInputModel.getProperty("/claim_item/no_of_days") > 2) {
                                     MessageBox.error(Utility.getText("msg_claimsubmission_invalid_no_of_days_in_claim_item"));
                                     bCanProceed = false;
 
                                 }
                                 break;
                             case Constants.ClaimTypeItem.KM:
-                                if(oInputModel.getProperty("/claim_item/km") < 0.01){
+                                if (oInputModel.getProperty("/claim_item/km") < 0.01) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_km_amount_zero"));
                                     bCanProceed = false;
                                     return;
 
                                 }
-                                break;    
+                                break;
+
                             default:
                                 break;
                         }
                     }
 
-                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
-                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined )  {
-                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
-                        bCanProceed = false;
-                        return;
-                        
-                    }
-
                     if (Object.values(Constants.ClaimTypeItemMakan).includes(sClaimTypeItem)) {
-                        var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
-                        var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
-                        var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
-                        
-                        if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
-                            MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
-                            bCanProceed = false
+                        if(!this.validateProvidedMeals()){
+                            bCanProceed = false;
+                            return;
                         }
                     }
 
-                    if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
-                    	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdetails_receipt_date_before_trip_start_date"));
+                    // the Amount (MYR) must not be zero (e.g. rate could not be determined for that date).
+                    if (parseFloat(oInputModel.getProperty("/claim_item/amount")) <= 0 || oInputModel.getProperty("/claim_item/amount") === null || oInputModel.getProperty("/claim_item/amount") === undefined) {
+                        MessageBox.error(Utility.getText("msg_claimdetails_amount_zero"));
+                        bCanProceed = false;
+                        return;
+
+                    }
+
+
+                    if (oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date")) {
+                        const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdetails_receipt_date_before_trip_start_date"));
                         if (!bConfirm) {
                             bCanProceed = false;
                         }
                     }
 
-                    if(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == Constants.ClaimType.ELAUN_TUKAR ){
-                        if(oPropertyModel.getProperty("/number_of_traveller/is_visible") && oPropertyModel.getProperty("/no_of_family_member/is_visible")){
-                            if(oInputModel.getProperty("/claim_item/number_of_travellers") > oInputModel.getProperty("/claim_item/no_of_family_member")){
+                    if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") == Constants.ClaimType.ELAUN_TUKAR) {
+                        if (oPropertyModel.getProperty("/number_of_traveller/is_visible") && oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+                            if (oInputModel.getProperty("/claim_item/number_of_travellers") > oInputModel.getProperty("/claim_item/no_of_family_member")) {
                                 MessageBox.error(Utility.getText("msg_number_of_traveller_exceed"));
                                 bCanProceed = false
                             }
                         }
                     }
 
-                    if(!!oInputModel?.getProperty("/claim_item/receipt_date") && this._oView.byId("datepicker_claimdetails_input_receipt_date").getVisible() && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
+                    if (!!oInputModel?.getProperty("/claim_item/receipt_date") && this._oView.byId("datepicker_claimdetails_input_receipt_date").getVisible() && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
                         var dTripEndDate = this._getMaxReceiptDate(oClaimSubmissionModel);
                         var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-                        
+
                         if (dReceiptDate > dTripEndDate) {
                             MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
                             bCanProceed = false;
                         }
                     }
 
-                    if(!!oInputModel?.getProperty("/claim_item/departure_time") && !!oInputModel?.getProperty("/claim_item/arrival_time")){
-                        const dDepartureTime = new Date(oInputModel.getProperty("/claim_item/departure_time"));
-                        const dArrivalTime = new Date(oInputModel.getProperty("/claim_item/arrival_time"));
-                        const iDiffMs = dArrivalTime.getTime() - dDepartureTime.getTime();
-
-                        if (iDiffMs < 0) {
-                            MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
-                            bCanProceed = false;
-                        }
+                    // departure/arrival time checking (same time only blocked for international flight)
+                    if (!this._validateFlightTimes(
+                        oInputModel?.getProperty("/claim_item/departure_time"),
+                        oInputModel?.getProperty("/claim_item/arrival_time"),
+                        sClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_O
+                    )) {
+                        bCanProceed = false;
                     }
-                    
+
                     if (!!oInputModel && sClaimTypeItem === Constants.ClaimTypeItem.E_PENGAKUT) {
                         // check if previous claim with elaun pengangkutan has already been approved; if found, return message based on status
                         var sClaimStatus = await ClaimUtility.fetchUserClaimStatusElaunPengangkutan();
@@ -183,7 +190,7 @@ sap.ui.define([
                     // validate item date + time range (end must not be earlier than start)
                     var oItem = oInputModel.getProperty("/claim_item");
                     if ((oItem.start_date && oItem.start_time && oItem.end_date && oItem.end_time &&
-                            DateUtility.parseDateTime(oItem.end_date, oItem.end_time) < DateUtility.parseDateTime(oItem.start_date, oItem.start_time)) ||
+                        DateUtility.parseDateTime(oItem.end_date, oItem.end_time) < DateUtility.parseDateTime(oItem.start_date, oItem.start_time)) ||
                         (oItem.trip_start_date && oItem.trip_start_time && oItem.trip_end_date && oItem.trip_end_time &&
                             DateUtility.parseDateTime(oItem.trip_end_date, oItem.trip_end_time) < DateUtility.parseDateTime(oItem.trip_start_date, oItem.trip_start_time))) {
                         MessageBox.error(Utility.getText("req_d_e_end_date_less_then_start_date"));
@@ -197,7 +204,7 @@ sap.ui.define([
                             bCanProceed = false;
                         }
                     }
-                    
+
                     break;
                 case Constants.SubmissionTypePrefix.REQUESTHEADER:
                     var oReqModel = this._oOwnerComponent.getModel("request");
@@ -219,7 +226,7 @@ sap.ui.define([
                         }
                     }
                     break;
-                case Constants.SubmissionTypePrefix.CLAIMHEADER:   
+                case Constants.SubmissionTypePrefix.CLAIMHEADER:
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
 
                     if (!!oClaimSubmissionModel) {
@@ -262,27 +269,59 @@ sap.ui.define([
                     break;
             }
             return bCanProceed;
-            
-        },        
-        onShowConfirmation: function(sPromptMessage) {
-                return new Promise((oResolve) => {
-                    MessageBox.warning(
-                        sPromptMessage,
-                        {
-                            actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-                            emphasizedAction: MessageBox.Action.OK,
 
-                            onClose: function (sAction) {
-                                if (sAction === MessageBox.Action.OK) {
-                                    oResolve(true);    
-                                } else {
-                                    oResolve(false); 
-                                }
+        },
+        onShowConfirmation: function (sPromptMessage) {
+            return new Promise((oResolve) => {
+                MessageBox.warning(
+                    sPromptMessage,
+                    {
+                        actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                        emphasizedAction: MessageBox.Action.OK,
+
+                        onClose: function (sAction) {
+                            if (sAction === MessageBox.Action.OK) {
+                                oResolve(true);
+                            } else {
+                                oResolve(false);
                             }
                         }
-                    );
-                });
+                    }
+                );
+            });
             return Promise.resolve(true);
+        },
+
+        /**
+         * Validates the departure and arrival time of a flight
+         * Shared by both request and claim submission
+         * @param {string|Date} vDeparture departure date time
+         * @param {string|Date} vArrival arrival date time
+         * @param {boolean} bCheckSameTime true to block departure and arrival time being the same
+         * @returns {boolean} true if valid (or either value is empty / unparseable)
+         * @private
+         */
+        _validateFlightTimes: function (vDeparture, vArrival, bCheckSameTime) {
+            if (!vDeparture || !vArrival) {
+                return true;
+            }
+
+            const iDiffMs = new Date(vArrival).getTime() - new Date(vDeparture).getTime();
+            if (Number.isNaN(iDiffMs)) {
+                return true;
+            }
+
+            if (iDiffMs < 0) {
+                MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
+                return false;
+            }
+
+            if (bCheckSameTime && iDiffMs === 0) {
+                MessageBox.error(Utility.getText("req_vs_e_invalid_flight_time"));
+                return false;
+            }
+
+            return true;
         },
 
         /**
@@ -344,8 +383,8 @@ sap.ui.define([
          * @returns {boolean} if start and end dates are valid, returns true, if dates are invalid, returns false
          */
         _isValidDateRange: function (sStartdate, sEnddate) {
-			// check for missing value
-			if (!sStartdate || !sEnddate) {
+            // check for missing value
+            if (!sStartdate || !sEnddate) {
                 MessageBox.error(Utility.getText("msg_daterange_missing"));
                 return false;
             }
@@ -357,13 +396,13 @@ sap.ui.define([
                 }
             }
 
-			// check if end date earlier than start date
-			if (new Date(sStartdate) > new Date(sEnddate)) {
+            // check if end date earlier than start date
+            if (new Date(sStartdate) > new Date(sEnddate)) {
                 MessageBox.error(Utility.getText("msg_daterange_order"));
                 return false;
             }
-			return true;
-		},
+            return true;
+        },
 
         /**
          * Checks that every claim item has an amount greater than zero.
@@ -374,8 +413,81 @@ sap.ui.define([
             const aItems = this._oView.getModel("claimsubmission_input").getProperty("/claim_items") || [];
             const oInvalid = aItems.find((oItem) => !(Number(oItem.amount) > 0));
             if (oInvalid) {
-                throw new Error(Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
+                throw new Error(oInvalid.claim_type_item_id === Constants.ClaimTypeItem.MATAWANG
+                    ? Utility.getText("msg_error_matawang_zero_amount")
+                    : Utility.getText("msg_claimdetails_item_amount_zero", [oInvalid.claim_sub_id]));
             }
         },
+
+        /**
+         * Validates provided meal values to be more than or equal to zero
+         * Invalid fields are marked with an error value state.
+         * @public
+         * @returns {boolean} true if all provided meal values are valid.
+         */
+        validateProvidedMeals: function () {
+            const oInputModel = this._oView.getModel("claimitem_input");
+            const iTravelDays = oInputModel.getProperty("/claim_item/travel_duration_day");
+            const aErrorMessages = [];
+            let bMealExceeded = false;
+            let bMealInvalid = false;
+            let bTypeError = false;
+            ["provided_breakfast", "provided_lunch", "provided_dinner"].forEach((sField) => {
+                const iProvidedMeal = oInputModel.getProperty(`/claim_item/${sField}`);
+                const oInput = this._oView.byId(`input_claimdetails_input_${sField}`);
+                if (this._hasTypeError(oInput)) {
+                    bTypeError = true;
+                    return;
+                }
+
+                if (iProvidedMeal < 0) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_error_provided_meals_amount"));
+                    bMealInvalid = true;
+                } else if (iTravelDays != null && iProvidedMeal > iTravelDays) {
+                    oInput.setValueState(ValueState.Error);
+                    oInput.setValueStateText(Utility.getText("msg_provided_meal_exceed"));
+                    bMealExceeded = true;
+                } else {
+                    oInput.setValueState(ValueState.None);
+                }
+            });
+
+            if (bMealExceeded) {
+                aErrorMessages.push(Utility.getText("msg_provided_meal_exceed"));
+            }
+
+            if (bMealInvalid) {
+                aErrorMessages.push(Utility.getText("msg_error_provided_meals_amount"));
+            }
+
+            if (aErrorMessages.length) {
+                MessageBox.error(aErrorMessages.join("\n\n"));
+                return false;
+            }
+
+            return !bTypeError;
+        },
+
+        /**
+         * Checks whether the input's current text fails its binding type parsing/constraints.
+         * @private
+         * @param {sap.m.Input} oInput - Input control to check
+         * @returns {boolean} true if the displayed value is not valid for the bound type
+         */
+        _hasTypeError: function (oInput) {
+            const oType = oInput.getBinding("value")?.getType();
+            if (!oType) {
+                return false;
+            }
+            try {
+                const vParsed = oType.parseValue(oInput.getValue(), "string");
+                oType.validateValue(vParsed);
+                return false;
+            } catch (oError) {
+                return true; // ParseException or ValidateException
+            }
+        },
+
     };
 });

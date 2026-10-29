@@ -164,7 +164,11 @@ sap.ui.define([
 			this.getView().setModel(models.createEditButtonModel(), "editButtonModel");
 		},
 
-		_beforeRouteMatched: async function (oEvent) {
+		_beforeRouteMatched: function (oEvent) {
+			// Any navigation ends the current claim route. A _onMatched run that is
+			// still waiting on the backend sees this and stops without touching the page.
+			this._oActiveClaimRoute = null;
+
 			if (!this.currentHash || this.currentHash.indexOf("ClaimSubmission") === -1) {
 				// skip check if not on claim submission page
 				return;
@@ -177,7 +181,9 @@ sap.ui.define([
 
 			if (!this._clearExit) {
 				// return from claim detail input screen
-				this.onCancel_ClaimDetails_Input();
+				// (UI reset only - leaving the page must not load claim data;
+				// _onMatched loads the claim from the URL whenever the page is shown)
+				this.onCancel_ClaimDetails_Input(null, true);
 
 				let oSideNav = true;
 				this.onBack_ClaimSubmission(oSideNav);
@@ -202,6 +208,15 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Route handler for ClaimSubmission/{claim_id}.
+		 *
+		 * The claim_id in the URL is the single source of truth for what this page
+		 * shows. Every match puts a fresh claimsubmission_input model on the view and
+		 * loads that claim from the backend into it. Nothing left in memory by other
+		 * screens or earlier navigations is trusted, and a load that finishes after
+		 * the user has moved on only writes into its own (no longer displayed) model.
+		 */
 		_onMatched: async function (oEvent) {
 			const _oRouter = this.getOwnerComponent().getRouter();
 			this.currentHash = _oRouter.getHashChanger().getHash();
@@ -217,31 +232,33 @@ sap.ui.define([
 				this._onNavBack();
 				return;
 			}
+
+			// identifies this navigation; replaced by the next one, cleared when leaving
+			const oRoute = this._oActiveClaimRoute = { claimId: sClaimId };
+			const fnIsActive = () => this._oActiveClaimRoute === oRoute;
+
 			const bAllowed = await Utility.checkClaimAccess(sClaimId);
-			if (!bAllowed) {
+			if (!bAllowed || !fnIsActive()) {
 				return;
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (!oClaimSubmissionModel) {
-				oClaimSubmissionModel = await this._getNewClaimSubmissionModel("claimsubmission_input");
-				await this._loadClaimById(String(sClaimId));
-				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
-					// unable to load claim details
-					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
-					this._onNavBack();
-				}
+			// The page always uses its own view-level model, so the models of the
+			// same name set by App (create dialog) or MyApproval can no longer leak in.
+			const oClaimSubmissionModel = this._getNewClaimSubmissionModel();
+			this._applyCreateContext(oClaimSubmissionModel, sClaimId);
+			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
+
+			const bLoaded = await this._loadClaimById(sClaimId);
+			if (!fnIsActive()) {
+				// user moved on while this was loading - discard the result
+				return;
 			}
-			else if (oClaimSubmissionModel.getProperty("/claim_header/claim_id") !== sClaimId) {
-				await this._loadClaimById(String(sClaimId));
-				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
-					// unable to load claim details
-					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
-					this._onNavBack();
-				}
+			if (!bLoaded) {
+				this._onNavBack();
+				return;
 			}
+
 			// set view-only
-			// TODO: Revisit to make sure the claim is reloaded everytime
 			Common.init(this.getOwnerComponent(), this.getView());
 			if (
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
@@ -270,8 +287,33 @@ sap.ui.define([
 				}
 			}
 			this._oClaimFragments = Object.create(null);
+			if (!fnIsActive()) {
+				return;
+			}
 			await this._showInitFormFragment();
+			if (!fnIsActive()) {
+				return;
+			}
 			await this._afterLoadFragments();
+		},
+
+		/**
+		 * The create-claim dialog (App.controller) collects claim-type context under
+		 * /claimtype that is not stored on the claim itself. When we arrive here right
+		 * after creating this very claim, carry that context over. It is matched by
+		 * claim ID, so context from any other claim is never used.
+		 *
+		 * @param {sap.ui.model.json.JSONModel} oTargetModel - new model for this navigation
+		 * @param {string} sClaimId - claim ID from the URL
+		 */
+		_applyCreateContext: function (oTargetModel, sClaimId) {
+			const oCreateModel = this.getOwnerComponent().getRootControl()?.getModel("claimsubmission_input");
+			if (oCreateModel && oCreateModel.getProperty("/claim_header/claim_id") === sClaimId) {
+				const oClaimType = oCreateModel.getProperty("/claimtype");
+				if (oClaimType) {
+					oTargetModel.setProperty("/claimtype", structuredClone(oClaimType));
+				}
+			}
 		},
 
 		// Shared event handler for Confirm buttons
@@ -383,8 +425,21 @@ sap.ui.define([
 			
 
 		},
+		/**
+		 * Loads a claim (header + items) from the backend.
+		 *
+		 * Writes into the claimsubmission_input model that is on the view when the load
+		 * starts. Every navigation puts a new model on the view, so a load that finishes
+		 * after the page has moved to another claim writes into a model that is no longer
+		 * displayed, and cannot change what the user sees. It does not navigate; the
+		 * caller decides what to do.
+		 *
+		 * @param {string} sClaimId - claim ID to load
+		 * @returns {Promise<boolean>} true if loaded, false if not found or failed
+		 */
 		_loadClaimById: async function (sClaimId) {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			// resolve the model once, before any await, and use only this instance below
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
@@ -421,20 +476,19 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission!");
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-					this.getOwnerComponent().getRouter().navTo("ClaimStatus", {}, {}, true);
+					return false;
 				}
 
-				const oHeader = await this._applyClaimHeader(oHeaderRaw);
+				const oHeader = await this._applyClaimHeader(oHeaderRaw, oClaimSubmissionModel);
 
 				// Items
 				const aRawItems = aItemCtx.map(ctx => ctx.getObject());
 				const aItems = ClaimUtility.mapClaimItems(aRawItems);
 
-				this._applyItemTotalsFallback(oHeader, aItems);
+				this._applyItemTotalsFallback(oHeader, aItems, oClaimSubmissionModel);
 
 				oClaimSubmissionModel.setProperty("/claim_items", aItems);
 				oClaimSubmissionModel.setProperty("/claim_items_count", aItems.length);
@@ -445,7 +499,7 @@ sap.ui.define([
 				ClaimUtility.applyClaimItemDescr(oClaimSubmissionModel, aRawItems);
 
 				// Employee master
-				await this._loadEmployeeMasterData();
+				await this._loadEmployeeMasterData(oClaimSubmissionModel);
 
 				// check is approver
 				const sStatusId = oClaimSubmissionModel.getProperty("/claim_header/status_id");
@@ -469,12 +523,13 @@ sap.ui.define([
 				} else if (sClaimOwnerId !== sCurrentUserId) {
 					oClaimSubmissionModel.setProperty("/view_only", true);
 				}
-				
-			} catch (err) {
-				console.error("Failed to load claim header/items:", err);
+
+				return true;
+			} catch (oError) {
 				oClaimSubmissionModel.setProperty("/claim_header", {});
 				oClaimSubmissionModel.setProperty("/claim_items", []);
 				oClaimSubmissionModel.setProperty("/claim_items_count", 0);
+				return false;
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -486,10 +541,10 @@ sap.ui.define([
 		 * lookup, the view-only flag, and resets is_approver.
 		 *
 		 * @param {object} oHeaderRaw - raw ZEMP_CLAIM_HEADER_VIEW row
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
 		 * @returns {Promise<object>} the mapped header
 		 */
-		_applyClaimHeader: async function (oHeaderRaw) {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		_applyClaimHeader: async function (oHeaderRaw, oClaimSubmissionModel) {
 			const oHeader = ClaimUtility.mapClaimHeaderToForm(oHeaderRaw);
 			Utility.mapOwnerDetail(this._oOwnerDetail, oHeaderRaw, this._oConstant.SubmissionOwnerType.CLAIMANT);
 
@@ -511,9 +566,12 @@ sap.ui.define([
 		/**
 		 * If the header had no total_claim_amount, derives it from non-CCC-charged
 		 * items and writes it back onto the model.
+		 *
+		 * @param {object} oHeader - mapped claim header (from _applyClaimHeader)
+		 * @param {object[]} aItems - mapped claim items
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
 		 */
-		_applyItemTotalsFallback: function (oHeader, aItems) {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		_applyItemTotalsFallback: function (oHeader, aItems, oClaimSubmissionModel) {
 			if (oHeader.total_claim_amount) {
 				return;
 			}
@@ -527,9 +585,11 @@ sap.ui.define([
 		/**
 		 * Loads the current user's ZEMP_MASTER record and its resolved
 		 * descriptions onto /emp_master, when found.
+		 *
+		 * @param {sap.ui.model.json.JSONModel} oClaimSubmissionModel - claimsubmission_input model to write into
+		 * @returns {Promise<void>}
 		 */
-		_loadEmployeeMasterData: async function () {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+		_loadEmployeeMasterData: async function (oClaimSubmissionModel) {
 			const emp_data = await Utility.getEmpIdDetail(
 				this._oModel,
 				Constants.EntitiesFields.EEID,
@@ -702,7 +762,13 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		_getNewClaimSubmissionModel: function (modelName) {
+		/**
+		 * Creates a new, empty claimsubmission_input model. It is not set on the
+		 * view; the caller (_onMatched) does that.
+		 *
+		 * @returns {sap.ui.model.json.JSONModel} the new claim submission model
+		 */
+		_getNewClaimSubmissionModel: function () {
 			// Employee Model
 			var oEmployeeModel = this._getNewEmployeeModel("emp_current");
 
@@ -843,9 +909,7 @@ sap.ui.define([
 					"fileContent": null
 				}
 			});
-			//// set input
-			this.getView().setModel(oClaimSubmissionModel, modelName);
-			return this.getView().getModel(modelName);
+			return oClaimSubmissionModel;
 		},
 
 		_getNewClaimItemModel: function (modelName) {
@@ -1916,6 +1980,11 @@ sap.ui.define([
 		},
 
 
+		_goToClaimList: function () {
+			// same navigation the loader used to trigger itself when a claim was not found
+			this.getOwnerComponent().getRouter().navTo("ClaimStatus", {}, {}, true);
+		},
+
 		_fnGoToDashboard: function () {
 			const oRouter = this.getOwnerComponent().getRouter();
 			this._clearExit = true;    // If you use this flag in your pattern
@@ -2462,8 +2531,33 @@ sap.ui.define([
 				console.error("Failed to load claim type items:", e);
 			}
 
+			// Medical Advance: dependent(s) selected in the Pre-Approval Request, used by _getDependentFilters
+			this._aParDependents = await this._getParDependents(oModel);
+
 			// claim detail selection values
 			this._setClaimDetailSelectionMaster();
+		},
+
+		/**
+		* Get the dependent numbers selected in the Pre-Approval Request (PAR) of a Medical Advance claim.
+		* @private
+		* @param {sap.ui.model.json.JSONModel} oModel - claim submission input model
+		* @returns {Promise<string[]>} dependent numbers, empty if not a Medical Advance claim with a PAR
+		*/
+		_getParDependents: async function (oModel) {
+			const sRequestId = oModel.getProperty("/claim_header/request_id");
+			if (oModel.getProperty("/claim_header/claim_type_id") !== this._oConstant.ClaimType.MEDICAL_ADVANCE || !sRequestId) {
+				return [];
+			}
+			try {
+				const aContexts = await this._oModel.bindList(this._oConstant.Entities.ZREQUEST_ITEM, null, null, [
+					new Filter(this._oConstant.EntitiesFields.REQUESTID, FilterOperator.EQ, sRequestId)
+				]).requestContexts(0, Infinity);
+				return aContexts.flatMap((oContext) => [].concat(JSON.parse(oContext.getProperty(this._oConstant.EntitiesFields.DEPENDENT)) || [])).map(String);
+			} catch (oError) {
+				MessageBox.error(oError.message);
+				return [];
+			}
 		},
 
 		_setClaimDetailSelectionMaster: function () {
@@ -2703,18 +2797,28 @@ sap.ui.define([
 						and: true
 					});
 
+					var aMedicalFilters = [
+						oEmpFilter,
+						new Filter({
+							filters: [
+								oSpouseFilter,
+								oEligibleChildFilter,
+								oDisabledChildFilter
+							],
+							and: false
+						})
+					];
+
+					// Medical Advance with Pre-Approval Request: only the dependent(s) selected in the PAR
+					if (this._aParDependents?.length) {
+						aMedicalFilters.push(new Filter({
+							filters: this._aParDependents.map((sDependentNo) => new Filter(this._oConstant.EntitiesFields.DEPENDENT_NO, FilterOperator.EQ, sDependentNo)),
+							and: false
+						}));
+					}
+
 					return new Filter({
-						filters: [
-							oEmpFilter,
-							new Filter({
-								filters: [
-									oSpouseFilter,
-									oEligibleChildFilter,
-									oDisabledChildFilter
-								],
-								and: false
-							})
-						],
+						filters: aMedicalFilters,
 						and: true
 					})
 
@@ -3727,23 +3831,26 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Clears and resets all Per Diem-related fields in the claim item model
+		 * Clears any validation states for provided meal.
+		 *
+		 * @private
+		 * @returns {void}
+		 */
 		_resetPerDiem: function () {
-			// reset claim detail amounts
-			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_day").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_hour").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_breakfast").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_lunch").setValue("");
-			}
-			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
-			}
+			const oClaimItemModel = this.getView().getModel("claimitem_input");
+
+			["travel_duration_day","travel_duration_hour","provided_breakfast","provided_lunch","provided_dinner","entitled_breakfast","entitled_lunch","entitled_dinner"].forEach((sField) =>{
+				oClaimItemModel.setProperty(`/claim_item/${sField}`, null );
+			});
+			
+			["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
+				const oInput = this.byId(`input_claimdetails_input_${sField}`);
+    			oInput?.setValueState(ValueState.None);
+				oInput?.setValue("");
+				oInput?.setValueStateText("")
+			});
 		},
 
 		/**
@@ -3987,30 +4094,36 @@ sap.ui.define([
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_day", nTravelDays);
 
 				//set initial value for meal entitlement based on traveldays
+				//only update entitled meals when provided meals are non-negative, error handling will be done in CustomValidator
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nTravelDays);
 
-					var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-					if (nEntBfast >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") >= 0){
+						var nEntBfast = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
+						if (nEntBfast >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+						}
 					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nTravelDays);
 
-					var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-					if (!nEntLunch >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_lunch") >= 0){
+						var nEntLunch = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
+						if (nEntLunch >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+						}
 					}
 				}
 				if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nTravelDays);
 
-					var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-					if (!nEntDinner >= 0) {
-						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+					if (oClaimItemInputModel.getProperty("/claim_item/provided_dinner") >= 0){
+						var nEntDinner = nTravelDays - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
+						if (nEntDinner >= 0) {
+							oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+						}
 					}
-
 				}
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
@@ -4020,28 +4133,20 @@ sap.ui.define([
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", remainingHours);
 			}
 
-			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
+			await this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
 		},
 
+		 /**
+         * Recalculates per-diem entitlement, then validates the provided meals inline.
+         * The calculation runs first so entitled and provided meal values stay in sync even
+         * when other claim fields are still empty. Only the provided-meal rule is validated
+         * here; full item validation is deferred to save (onSave_ClaimDetails_Input).
+         * @returns {Promise<void>}
+         */
 		onChange_ClaimDetails_ProvidedMeals: async function () {
-			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			//check if there is any input, if yes then recalculate entitled meals 
-			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
-				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
-			) {			
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed) {
-					return;
-				}
-					
-				await this._calculatePerDiem();
-			}
-
-			this._updateEntitlementAmount(oClaimItemInputModel,oClaimSubmissionModel);
+			await this._calculatePerDiem();					
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			CustomValidator.validateProvidedMeals();			
 		},
 
 		/**
@@ -4281,7 +4386,12 @@ sap.ui.define([
 			}.bind(this));
 		},
 
-		onCancel_ClaimDetails_Input: async function () {
+		/**
+		 * @param {sap.ui.base.Event} [oEvent] - press event (unused)
+		 * @param {boolean} [bLeavingPage] - true when the user is navigating away:
+		 *      only reset the item screen; no redraw, no data load
+		 */
+		onCancel_ClaimDetails_Input: async function (oEvent, bLeavingPage) {
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -4304,11 +4414,18 @@ sap.ui.define([
 				}
  
 				oPage.removeContent(oClaimItemFragment);
+
+				if (bLeavingPage) {
+					return;
+				}
  
 				await this._showInitFormFragment();
 				await this._afterLoadFragments();
 				// Reload when item cancellation
-				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				if (!(await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id")))) {
+					this._goToClaimList();
+					return;
+				}
 				this._calculateCardAdvanceAmount();
 
 				this._refreshActionState("SUMMARY");	// footer button control
@@ -4506,8 +4623,12 @@ sap.ui.define([
 				MessageBox.error(`Submission failed: ${oError.message}`);
 			} finally {
 				BusyIndicator.hide();
-				await this._loadClaimById(String(oHeader.claim_id));
-				this._afterLoadFragments()
+				// reload; a deleted claim is no longer found -> back to the claim list
+				if (!(await this._loadClaimById(String(oHeader.claim_id)))) {
+					this._goToClaimList();
+				} else {
+					this._afterLoadFragments();
+				}
 			}
 		},
 
@@ -5374,11 +5495,19 @@ sap.ui.define([
 		 * @public
 		 */
 		onChange_ClaimDetails_CurrencyRate: function () {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oInputModel.getProperty("/claim_item/currency_rate")) {
-				var nAmountMYR = (oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount"));
-				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
+			const oCurrencyRateInput = this.byId("input_claimdetails_input_currency_rate");
+			const oInputModel = this.getView().getModel("claimitem_input");
+
+			if (!oCurrencyRateInput.getVisible()) {
+				return;
 			}
+
+			let fCurrencyRate = oInputModel.getProperty("/claim_item/currency_rate");
+
+			// Recalculate MYR amount
+			const nAmountMYR = (fCurrencyRate || 0 ) * (oInputModel.getProperty("/claim_item/currency_amount") || 0 );
+
+			oInputModel.setProperty("/claim_item/amount", nAmountMYR);
 		},
 
 		/**
@@ -5503,6 +5632,7 @@ sap.ui.define([
 			}
 			else {
 				oClaimItemModel.setProperty("/claim_item/currency_code", null);
+				oClaimItemModel.setProperty("/claim_item/currency_desc", null);
 				oClaimItemModel.setProperty("/claim_item/currency_rate", null);
 				oClaimItemModel.setProperty("/claim_item/currency_amount", null);
 
