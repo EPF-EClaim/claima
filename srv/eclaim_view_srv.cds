@@ -1258,15 +1258,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZPROJECT_DROPDOWN_VH as
-        select from ECLAIM.ZBUDGET {
-            key YEAR,
-            key PROJECT_CODE,
-                ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
-                ZPROJECT_HDR.STATUS       as STATUS
+        select from ECLAIM.ZPROJECT_HDR {
+            key PROJECT_CODE_IO as PROJECT_CODE,
+                PROJECT_DESC
         }
-            where PROJECT_CODE is not null
-            and PROJECT_CODE <> ''
-            and PROJECT_CODE <> '-';
+            where STATUS = 'ACTIVE';
 
     entity ZPARTICIPANT_PREAPPROVED_AMOUNT as
         select from ECLAIM.ZREQ_ITEM_PART as itemPart

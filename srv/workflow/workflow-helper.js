@@ -3,6 +3,7 @@ const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
+const { retrieveClaimFlexiPosting, determineBudgetYear, determineClaimPostingDate } = require('../ifams/pre-checking-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -44,18 +45,23 @@ function resolveDocDescriptor(sId) {
     return oDescriptor
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
+    const aColumns = [
+        oDescriptor.idField,
+        oDescriptor.typeField,
+        oDescriptor.entityTypeDesc,
+        Constant.EntitiesFields.EMP_ID,
+        Constant.EntitiesFields.COST_CENTER,
+        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+        Constant.EntitiesFields.PROJECT_CODE
+    ];
+
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) aColumns.push(Constant.EntitiesFields.TRIP_START_DATE);  // to be used for cross budget checking
+
     const oHeader =  await cds.run(
         SELECT
             .one
             .from(oDescriptor.entityHeader)
-            .columns(   oDescriptor.idField,
-                oDescriptor.typeField,
-                oDescriptor.entityTypeDesc,
-                Constant.EntitiesFields.EMP_ID,
-                Constant.EntitiesFields.COST_CENTER,
-                Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                Constant.EntitiesFields.PROJECT_CODE
-            )
+            .columns(...aColumns)
             .where( { [oDescriptor.idField]:sId })
     );
     return oHeader;
@@ -152,6 +158,7 @@ async function retrieveItems(sId, oDescriptor) {
     // Only ZCLAIM_ITEM has the IFAMS item number
     if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
         aColumns.push('EARMARKED_FUNDS_DOC_ITEM_ID');
+        aColumns.push(Constant.EntitiesFields.RECEIPT_DATE);    // to be used for cross budget checking
     }
 
     let oQuery = SELECT
@@ -221,7 +228,9 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
             EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID, // Budget release
             ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER,  // for checking against roll up cost center
-            HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER] // for item cost center validation
+            HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER], // for item cost center validation
+            RECEIPT_DATE: oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST ? 
+                            oHeaderContext[Constant.EntitiesFields.TRIP_START_DATE] : oItemContext[Constant.EntitiesFields.RECEIPT_DATE] // to be used for cross budget checking
         })
     }
     return aBudgetContexts
@@ -348,12 +357,25 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             return aErrorResults;
         }
 
+        // fetch data from SF MDF to determine cross budget year
+        var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            })
+
+            return aErrorResults;
+        }
+
         const aItems =
             aBudgetContext.map((oBudgetContext) => ({
                 ...Constant.EarmarkedFundPosting_Item,
                 EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
                 FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
                 CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                PostingDate: determineClaimPostingDate(oBudgetContext.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                 ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
                     oBudgetContext.INTERNAL_ORDER && {
                     InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
@@ -429,15 +451,26 @@ async function checkRequestBudget(aBudgetContext) {
             return aErrorResults;
         }
 
+        // check for range date against api
+        var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oClaimFlexiPosting.message
+            });
+            return aErrorResults;
+        }
+
         for (const entry of aBudgetContext) {
             if (entry.INTERNAL_ORDER != Constant.Wildcard.NA) {
                 sCondition = {
-                    YEAR: entry.YEAR,
+                    YEAR: determineBudgetYear(entry.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 };
             } else {
                 sCondition = {
-                    YEAR: entry.YEAR,
+                    YEAR: determineBudgetYear(entry.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                     INTERNAL_ORDER: entry.INTERNAL_ORDER,
                     FUND_CENTER: entry.FUND_CENTER,
                     MATERIAL_GROUP: entry.MATERIAL_GROUP,
