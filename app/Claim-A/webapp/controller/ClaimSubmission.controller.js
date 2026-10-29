@@ -3846,8 +3846,10 @@ sap.ui.define([
 			});
 			
 			["provided_breakfast","provided_lunch","provided_dinner"].forEach((sField) => {
-    			this.byId(`input_claimdetails_input_${sField}`).setValueState(ValueState.None);
-				this.byId(`input_claimdetails_input_${sField}`).setValue("");
+				const oInput = this.byId(`input_claimdetails_input_${sField}`);
+    			oInput?.setValueState(ValueState.None);
+				oInput?.setValue("");
+				oInput?.setValueStateText("")
 			});
 		},
 
