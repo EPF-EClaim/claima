@@ -307,9 +307,6 @@ sap.ui.define([
 				})
 
 				await this._onInit_ClaimProcess();
-				
-				this.byId("select_claimprocess_requestform").getBinding("items")?.refresh();
-
 				this.oDialog_ClaimProcess.open();
 			} catch {
 				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
@@ -640,13 +637,19 @@ sap.ui.define([
 				) {
 					// filter - ZPARTICIPANT_PREAPPROVED_AMOUNT already limits to approved requests
 					// and hides requests locked by the participant's pending/push back/approved claims
+					// binding starts suspended (fragment) - suspend/filter/refresh/resume gives one
+					// fresh read each time; refresh() is needed because an unchanged filter is a no-op
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
-					var aFilterSelectRequestForm = [
+					if (!oBindingSelectRequestForm.isSuspended()) {
+						oBindingSelectRequestForm.suspend();
+					}
+					oBindingSelectRequestForm.filter([
 						new Filter("PARTICIPANTS_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/type"))
-					];
-					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
+					]);
+					oBindingSelectRequestForm.refresh();
+					oBindingSelectRequestForm.resume();
 				}
 			}
 			else {
