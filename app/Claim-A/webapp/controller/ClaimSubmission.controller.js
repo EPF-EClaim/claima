@@ -2390,6 +2390,15 @@ sap.ui.define([
 						return;
 					}
 				}
+
+				// if claim type item is lodging, retrieve eligible amount
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O) {
+					oInputModel.setProperty("/claim_item/eligible_amount", 0);
+				} else {
+					if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+						oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
+					}
+				}
 			}
 
 			}
@@ -2418,15 +2427,6 @@ sap.ui.define([
 			//for tambang excluding flight
 			this._filterFareType();
 
-			// if claim type item is lodging, retrieve eligible amount
-			// if claim type item is lodging, retrieve eligible amount
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItemLodging.LODG_O) {
-				oInputModel.setProperty("/claim_item/eligible_amount", 0);
-			} else {
-				if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
-					oInputModel.setProperty("/claim_item/eligible_amount", await ClaimUtility.fetchUserAmountLodging());
-				}
-			}
 			//if round trip set to yes
 			if (oInputModel.getProperty("/claim_item/round_trip")) {
 				await this.onChange_ClaimDetails_Kilometer();
