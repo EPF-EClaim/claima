@@ -341,10 +341,10 @@
                         id="text_claimsummary_claimheader_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
+                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'ReadOnly' }"
                         display="ValueDescription"
-                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
-                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        visible="{= !!${claimsubmission_input>/claim_header/alternate_cost_center} ||
+                            ${claimSubmissionHeaderEditableModel>/altCostCenter}
                         }"
                         valueHelp="valuehelp_claiminput_altcc"
                 />

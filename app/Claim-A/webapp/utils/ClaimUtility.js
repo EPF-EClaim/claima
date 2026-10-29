@@ -1003,6 +1003,7 @@ sap.ui.define([
 				attachment_file_3: it.ATTACHMENT_FILE_3,
 				attachment_file_4: it.ATTACHMENT_FILE_4,
 				policy_year: it.POLICY_YEAR,
+				eligible_amount: parseFloat(it.AMOUNT / it.NO_OF_DAYS) || parseFloat(0),
 				descr: {}
 			}));
 		},
