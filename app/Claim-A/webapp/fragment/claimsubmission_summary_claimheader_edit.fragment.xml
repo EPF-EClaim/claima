@@ -344,7 +344,7 @@
                         editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'ReadOnly' }"
                         display="ValueDescription"
                         visible="{= !!${claimsubmission_input>/claim_header/alternate_cost_center} ||
-                            ${claimSubmissionHeaderEditableModel>/altCostCenter} === true
+                            ${claimSubmissionHeaderEditableModel>/altCostCenter}
                         }"
                         valueHelp="valuehelp_claiminput_altcc"
                 />
