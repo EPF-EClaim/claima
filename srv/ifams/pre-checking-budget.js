@@ -67,6 +67,33 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
 }
 
 /**
+ * Determine the Posting Date for cross year budget checking
+ * This will be used to determine the year of the budget for the claim
+ * The posting date will then being passed to EarmarkedFund API for processing
+ * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
+ * is configured in SF and the fields are made as mandatory
+ *  
+ * @param {Date} dReceiptDate - Receipt date
+ * @param {object} oClaimFlexiPosting - Claim Flexi Posting
+ * @returns {String} Posting Date (YYYY-MM-DD)
+ */
+function determineClaimPostingDate(dReceiptDate, oClaimFlexiPosting) {
+    const dReceipt = new Date(dReceiptDate);
+    const dCurrentDate = new Date();
+    let dPostingDate;
+
+    // if receipt date falls within range date, take receipt date
+    // otherwise, take current date
+    if (dReceipt >= oClaimFlexiPosting.cust_Validity_Start && dReceipt <= oClaimFlexiPosting.cust_Validity_End) {
+        dPostingDate = dReceipt;
+    } else {
+        dPostingDate = dCurrentDate;
+    }
+
+    return dPostingDate.toLocaleDateString('en-CA');;
+}
+
+/**
  * Convert the date returned from API into readable format
  * 
  * @param {String} sDate - Date
@@ -82,5 +109,6 @@ function parseODataDate(sDate) {
 
 module.exports = {
     retrieveClaimFlexiPosting,
-    determineBudgetYear
+    determineBudgetYear,
+    determineClaimPostingDate
 }
