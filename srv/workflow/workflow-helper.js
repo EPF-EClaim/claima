@@ -375,6 +375,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
                 FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
                 CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
                 PostingDate: determineClaimPostingDate(oBudgetContext.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                 ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
                     oBudgetContext.INTERNAL_ORDER && {
