@@ -3,7 +3,7 @@ const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
-const { retrieveClaimFlexiPosting, determineBudgetYear } = require('../ifams/pre-checking-budget');
+const { retrieveClaimFlexiPosting, determineBudgetYear, determineClaimPostingDate } = require('../ifams/pre-checking-budget');
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -357,12 +357,25 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             return aErrorResults;
         }
 
+        // fetch data from SF MDF to determine cross budget year
+        var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oEmployeeRollupCC.message
+            })
+
+            return aErrorResults;
+        }
+
         const aItems =
             aBudgetContext.map((oBudgetContext) => ({
                 ...Constant.EarmarkedFundPosting_Item,
                 EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
                 FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
                 CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                PostingDate: determineClaimPostingDate(oBudgetContext.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
                 ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
                     oBudgetContext.INTERNAL_ORDER && {
                     InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()

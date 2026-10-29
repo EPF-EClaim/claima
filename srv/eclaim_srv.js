@@ -5297,7 +5297,7 @@ module.exports = (srv) => {
                 const sIo = oRecord.Io?.trim();
                 const sWbsDescription = oRecord.WbsDescription?.trim();
                 const sCommitmentItem = oRecord.CommitmentItem?.trim();
-                const sStatus = oRecord.Status?.trim() || Constant.Status.ACTIVE;
+                const sStatus = oRecord.Status?.trim() || Constant.ProjectStatus.ACTIVE;
 
                 const sProjectCodeIO = sWbsCode || sIo;
                 if (!sProjectCodeIO) continue;

@@ -112,7 +112,8 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
                             Constant.EarmarkedFundPosting_Item,
                             EmrkdFndsAmountInTransCrcy: item.EmrkdFndsAmountInTransCrcy,
                             FundsCenter: oEmployeeRollupCC[sCostCenter],
-                            CommitmentItem: item.CommitmentItem
+                            CommitmentItem: item.CommitmentItem,
+                            PostingDate: item.PostingDate
                         });
                     }
 
