@@ -11,6 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
+const getSFData = require('./utils/getSFData');
 
 module.exports = (srv) => {
 
@@ -5177,5 +5178,17 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+    srv.on('getEmpJob', async (req) => {
+        const { userId, options = {} } = req.data;
+
+        if (!userId) return req.reject(400, 'userId is required');
+
+        try {
+            return await getSFData.getSFEmpJob(userId, options ?? {});
+        } catch (error) {
+            return req.reject(502, error.message);
+        }
     });
 }

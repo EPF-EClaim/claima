@@ -1883,5 +1883,35 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 JOB_GROUP_DESC
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
+
+    type SFEmpJob {
+        userId          : String;
+        seqNumber       : String;
+        startDate       : Date;
+        endDate         : Date;
+        jobCode         : String;
+        payGrade        : String;
+        company         : String;
+        division        : String;
+        businessUnit    : String;
+        department      : String;
+        position        : String;
+        costCenter      : String;
+        location        : String;
+        managerId       : String;
+        employmentType  : String;
+        employeeClass   : String;
+        emplStatus      : String;
+        emplStatusCode  : String;
+        emplStatusLabel : String;
+    }
+
+    type EmpJobOptions {
+        history  : Boolean;
+        asOfDate : Date;
+        fields   : many String;
+    }
+
+    action getEmpJob(userId : String, options : EmpJobOptions) returns many SFEmpJob;
  
 };
