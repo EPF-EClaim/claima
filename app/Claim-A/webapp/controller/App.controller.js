@@ -644,94 +644,21 @@ sap.ui.define([
 					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
 					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
 				) {
-					// filter
+					// filter - ZPARTICIPANT_PREAPPROVED_AMOUNT already limits to approved requests
+					// and hides requests locked by the participant's pending/push back/approved claims
+					// binding starts suspended (fragment) - suspend/filter/refresh/resume gives one
+					// fresh read each time; refresh() is needed because an unchanged filter is a no-op
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
-					var aParticipantPARs = await this._getParticipantPreApprovalRecords();
- 
-					// (a)/(b): matches based on claim type - these require the
-					// current user to be the request's original requestor (EMP_ID)
-					var aOwnClaimTypeFilters = [];
- 
-					// Selected claim type
-					aOwnClaimTypeFilters.push(
-						new Filter(
-							"CLAIM_TYPE_ID",
-							FilterOperator.EQ,
-							oInputModel.getProperty("/claimtype/type")
-						)
-					);
- 
-					var oOwnClaimTypeOrFilter = new Filter({
-						filters: aOwnClaimTypeFilters,
-						and: false
-					});
- 
-					var oOwnRequestorFilter = new Filter({
-						filters: [
-							oOwnClaimTypeOrFilter,
-							new Filter(
-								"EMP_ID",
-								FilterOperator.EQ,
-								this._oSessionModel.getProperty("/userId")
-							)
-						],
-						and: true
-					});
- 
-					// (c): matches based on the current user being a PARTICIPANT
-					// on the request - _getParticipantPreApprovalRecords() already
-					// scopes results to PARTICIPANTS_ID = current user, so this
-					// alone is sufficient proof of legitimate access. It must NOT
-					// also require EMP_ID = current user, or a cardholder who
-					// isn't the request's original creator would be excluded -
-					// exactly defeating the point of matching on participation.
-					var aFinalOrGroups = [oOwnRequestorFilter];
- 
-					if (aParticipantPARs.length > 0) {
-						var aParticipantReqFilters = aParticipantPARs.map(function (oPAR) {
-							return new Filter(
-								"REQUEST_ID",
-								FilterOperator.EQ,
-								oPAR.REQUEST_ID
-							);
-						});
- 
-						aFinalOrGroups.push(new Filter({
-							filters: aParticipantReqFilters,
-							and: false
-						}));
+					if (!oBindingSelectRequestForm.isSuspended()) {
+						oBindingSelectRequestForm.suspend();
 					}
- 
-					var oCombinedOrFilter = new Filter({
-						filters: aFinalOrGroups,
-						and: false
-					});
- 
-					// Apply mandatory filters
-					var oFinalFilter = new Filter({
-						filters: [
-							oCombinedOrFilter,
-							new Filter({
-								filters: [
-									new Filter(
-										"STATUS",
-										FilterOperator.EQ,
-										this._oConstant.ClaimStatus.APPROVED
-									),
-									new Filter(
-										"STATUS",
-										FilterOperator.EQ,
-										this._oConstant.ClaimStatus.COMPLETED_DISBURSEMENT
-									)
-								],
-								and: false // OR
-							})
-						],
-						and: true
-					});
- 
-					oBindingSelectRequestForm.filter(oFinalFilter);
+					oBindingSelectRequestForm.filter([
+						new Filter("PARTICIPANTS_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/type"))
+					]);
+					oBindingSelectRequestForm.refresh();
+					oBindingSelectRequestForm.resume();
 				}
 			}
 			else {
@@ -766,39 +693,29 @@ sap.ui.define([
 			if (oRequestForm) {
 				var sPrefix = oRequestForm.getKey().slice(0, 6);
 				// populate request form values
-				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
-				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/trip_end_date", oRequestForm.getBindingContext("employee").getObject("TRIP_END_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
-				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
+				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee_view").getObject("OBJECTIVE_PURPOSE"));
+				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee_view").getObject("TRIP_START_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/trip_end_date", oRequestForm.getBindingContext("employee_view").getObject("TRIP_END_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee_view").getObject("EVENT_START_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee_view").getObject("EVENT_END_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee_view").getObject("ALTERNATE_COST_CENTER"));
 				
 				if(sPrefix.includes("CCC")){
 					oInputModel.setProperty("/claimtype/requestform/corporate_cred_card", true)
 				}
 
-				var sRequestId = oRequestForm.getKey();
-				var aParticipantPARs = await this._getParticipantPreApprovalRecords(sRequestId);
-				var oParticipantPAR = aParticipantPARs.length > 0 ? aParticipantPARs[0] : null;
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee_view").getObject("PREAPPROVED_AMOUNT"));
+				oInputModel.setProperty("/claim_header/preapproved_amount", oRequestForm.getBindingContext("employee_view").getObject("PREAPPROVED_AMOUNT"));
 
-				if (!oParticipantPAR) {
-					oInputModel.setProperty("/claimtype/requestform/request_id", null);
-					oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
-					oInputModel.setProperty("/claim_header/preapproved_amount", null);
-					return;
-				}
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount",oParticipantPAR.PREAPPROVED_AMOUNT);
-				oInputModel.setProperty("/claim_header/preapproved_amount",oParticipantPAR.PREAPPROVED_AMOUNT);
-
-				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee").getObject("PROJECT_CODE"));
-				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee").getObject("ZPROJECT_HDR/PROJECT_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("TRANSFER_MODE_ID"));
-				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("TRAVEL_ALONE_FAMILY"));
-				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("TRAVEL_FAMILY_NOW_LATER"));
-				oInputModel.setProperty("/claimtype/requestform/descr/mode_of_transfer", oRequestForm.getBindingContext("employee").getObject("ZTRANSFER_MODE/TRANSFER_MODE_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/descr/travel_alone_family", oRequestForm.getBindingContext("employee").getObject("ZTRAVEL_TYPE/TRAVEL_TYPE_DESC"));
-				oInputModel.setProperty("/claimtype/requestform/descr/travel_family_now_later", oRequestForm.getBindingContext("employee").getObject("ZFAMILY_TIMING/FAMILY_TIMING_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee_view").getObject("ALT_COST_CENTER_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/project_code",oRequestForm.getBindingContext("employee_view").getObject("PROJECT_CODE"));
+				oInputModel.setProperty("/claimtype/requestform/project_desc",oRequestForm.getBindingContext("employee_view").getObject("PROJECT_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/mode_of_transfer", oRequestForm.getBindingContext("employee_view").getObject("TRANSFER_MODE_ID"));
+				oInputModel.setProperty("/claimtype/requestform/travel_alone_family", oRequestForm.getBindingContext("employee_view").getObject("TRAVEL_ALONE_FAMILY"));
+				oInputModel.setProperty("/claimtype/requestform/travel_family_now_later", oRequestForm.getBindingContext("employee_view").getObject("TRAVEL_FAMILY_NOW_LATER"));
+				oInputModel.setProperty("/claimtype/requestform/descr/mode_of_transfer", oRequestForm.getBindingContext("employee_view").getObject("TRANSFER_MODE_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/descr/travel_alone_family", oRequestForm.getBindingContext("employee_view").getObject("TRAVEL_TYPE_DESC"));
+				oInputModel.setProperty("/claimtype/requestform/descr/travel_family_now_later", oRequestForm.getBindingContext("employee_view").getObject("FAMILY_TIMING_DESC"));
 
 				// populate cash advance amount based on items
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", await Utility.getApprovedCashAdvanceAmount(oRequestForm.getKey()));
@@ -2068,56 +1985,6 @@ sap.ui.define([
 			var oClaimTypeData =oSelectedItem.getBindingContext("employee").getObject();
 			var oReqModel = this._oDialogFragment.getModel("reqDialog");
 			oReqModel.setProperty("/project_claim",oClaimTypeData.PROJECT_CLAIM);
-		},
-
-		//participant pre-approval records
-		_getParticipantPreApprovalRecords: async function (sRequestId) {
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oEmployeeModel = this.getView().getModel("employee_view");
- 
-			var sParticipantId = oInputModel.getProperty("/emp_master/eeid");
-			var sClaimTypeId = oInputModel.getProperty("/claimtype/type");
-			if (!sParticipantId || !sClaimTypeId) {
-				return [];
-			}
- 
-			try {
-				var aClaimTypeIds = [sClaimTypeId];
- 
-				var aFilters = [
-					new Filter("PARTICIPANTS_ID", FilterOperator.EQ, sParticipantId),
-					new Filter({
-						filters: aClaimTypeIds.map(function (sId) {
-							return new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sId);
-						}),
-						and: false
-					})
-				];
- 
-				if (sRequestId) {
-					aFilters.push(
-						new Filter("REQUEST_ID", FilterOperator.EQ, sRequestId)
-					);
-				}
- 
-				var oListBinding = oEmployeeModel.bindList(
-					"/ZPARTICIPANT_PREAPPROVED_AMOUNT",
-					null,
-					null,
-					aFilters,
-					{
-						$select: "REQUEST_ID,PARTICIPANTS_ID,CLAIM_TYPE_ID,STATUS,PREAPPROVED_AMOUNT"
-					}
-				);
- 
-				var aContexts = await oListBinding.requestContexts(0, 100);
- 
-				return aContexts.map(function (oContext) {
-					return oContext.getObject();
-				});
-			} catch (oError) {
-				return [];
-			}
 		},
 
 		async _setHasCorporateCard() {
