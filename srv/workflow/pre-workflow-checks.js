@@ -101,7 +101,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                 if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
                     aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
                 } else {
-                    aBudgetCheckReturn = await checkRequestBudget(aBudgetContext)
+                    aBudgetCheckReturn = await checkRequestBudget(oTx, aBudgetContext, sId);
                 }
             }
 

@@ -363,7 +363,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             bError = true;
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.ERROR,
-                MESSAGE: oEmployeeRollupCC.message
+                MESSAGE: oClaimFlexiPosting.message
             })
 
             return aErrorResults;
@@ -403,6 +403,11 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             aSuccessResults.push({
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
             });
+
+            var sClaimHeader = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
+            var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
+            // update claim header based on the new cost center (in case of roll up cost center)
+            if (sFundCenter) await oTx.run(UPDATE(sClaimHeader).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
         }
 
         if (bError) {
@@ -429,7 +434,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
  * @param {Array<object>} aBudgetContext - Request budget context containing employee, amount, and account assignment details
  * @returns {Promise<Array<object>|Error>} Budget-check results or the caught error
  */
-async function checkRequestBudget(aBudgetContext) {
+async function checkRequestBudget(oTx, aBudgetContext, sId) {
 
     const toNum = (v) => Number(v) || 0;
 
@@ -439,6 +444,7 @@ async function checkRequestBudget(aBudgetContext) {
         let aSuccessResults = [];
         let sCondition;
         var oEmployeeRollupCC;
+        let sCostCenter;
 
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
@@ -511,12 +517,19 @@ async function checkRequestBudget(aBudgetContext) {
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
                 CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
             });
+
+            // rewrite the cost center in header level (in case of roll up cost center takes place)
+            if (!sCostCenter) sCostCenter = oBudgetData.FundCenter;
             continue;
         }
 
         if (bError) {
             return aErrorResults;
         }
+
+        // update parent cost center based on the cost center used for budget check
+        var sRequestHeader = cds.entities['eclaim_srv.ZREQUEST_HEADER'];
+        if (sCostCenter) await oTx.run(UPDATE(sRequestHeader).set({ [Constant.EntitiesFields.COST_CENTER]: sCostCenter }).where({ REQUEST_ID: sId }));
 
         return aSuccessResults;
 
