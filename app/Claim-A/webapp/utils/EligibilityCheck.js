@@ -3,12 +3,18 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
 	"sap/ui/core/format/NumberFormat",
+	"sap/ui/model/Filter", 
+	"sap/ui/model/FilterOperator", 
+	"sap/ui/model/Sorter",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
 	ValueState,
 	NumberFormat,
+	Filter,
+	FilterOperator,
+	Sorter,
 	Constants,
 	Utility) {
 	"use strict";
@@ -20,24 +26,28 @@ sap.ui.define([
 		* ======================================================= */
 
 		/**
-		* Generate the payload needed for eligibility check
-		* @public
-		* @param {Object} oController - Object Model from Controller;
-		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
-		* @param {String} oClaimItemPayload - The claim item that the user wishes to duplicate in the claim submission
-		* @returns {Object} Object Payload with results field in CheckFields List Array populated
-		*/
-		generateEligibilityCheckPayload(oController, sSubmissionType, oClaimItemPayload) {
+		 * Generate the payload needed for eligibility check.
+		 * For WILAYAH_ASAL, the state field is mapped to the eClaim STATE_ID via ZSTATE.
+		 * @public
+		 * @param {Object} oController       - Calling controller
+		 * @param {string} sSubmissionType   - Submission type prefix (Request or Claim)
+		 * @param {Object} oClaimItemPayload - Claim item to duplicate (fallback when no item model data)
+		 * @returns {Promise<Object[]>} One payload per participant, with CheckFields populated
+		 */
+		generateEligibilityCheckPayload: async function (oController, sSubmissionType, oClaimItemPayload) {
+			let oItemData, aItemPartData, sRecordId, sRecordSubId, sClaimType, sClaimTypeItem, oMapping, sStateKey;
+
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
-					var oItemData = oController._oReqModel.getProperty('/req_item');
-					var aItemPartData = oController._oReqModel.getProperty('/participant');
-					var sRecordId = oController._oReqModel.getProperty('/req_header/reqid');
-					var sRecordSubId = oItemData?.req_subid || null;
-					var sClaimType = oController._oReqModel.getProperty('/req_header/claimtype');
-					var sClaimTypeItem = oItemData.claim_type_item_id;
+					oItemData = oController._oReqModel.getProperty('/req_item');
+					aItemPartData = oController._oReqModel.getProperty('/participant');
+					sRecordId = oController._oReqModel.getProperty('/req_header/reqid');
+					sRecordSubId = oItemData?.req_subid || null;
+					sClaimType = oController._oReqModel.getProperty('/req_header/claimtype');
+					sClaimTypeItem = oItemData.claim_type_item_id;
+					sStateKey = "to_state";
 
-					var oMapping = {
+					oMapping = {
 						// field                : db technical name
 						"vehicle_ownership": "VEHICLE_OWNERSHIP_ID",
 						"est_amount": "ELIGIBLE_AMOUNT",
@@ -55,25 +65,28 @@ sap.ui.define([
 						"trip_start_date": "RECEIPT_DATE",
 						"lodging_cat": "LODGING_CATEGORY",
 						"vehicle_ownership_id": "VEHICLE_OWNERSHIP_ID",
-						"to_state": "TO_STATE_ID"
+						"to_state": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
 
-				case Constants.SubmissionTypePrefix.CLAIM:
-					var sEmpId = oController._oSessionModel.getProperty("/userId");
+				case Constants.SubmissionTypePrefix.CLAIM: {
+					const sEmpId = oController._oSessionModel.getProperty("/userId");
 					const oHeaderModel = oController.getView().getModel("claimsubmission_input");
 					const oItemModel = oController.getView().getModel("claimitem_input");
-					var aItemPartData = [{ PARTICIPANTS_ID: sEmpId }];
-					var oItemData = oItemModel?.getProperty('/claim_item') || oClaimItemPayload;
-					var sRecordId = oHeaderModel.getProperty("/claim_header/claim_id");
-					var sRecordSubId = oItemData?.claim_sub_id;
-					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
-					var sClaimTypeItem = oItemData.claim_type_item_id;
-					var sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount"
+					aItemPartData = [{ PARTICIPANTS_ID: sEmpId }];
+					oItemData = oItemModel?.getProperty('/claim_item') || oClaimItemPayload;
+					sRecordId = oHeaderModel.getProperty("/claim_header/claim_id");
+					sRecordSubId = oItemData?.claim_sub_id;
+					sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
+					sClaimTypeItem = oItemData.claim_type_item_id;
+					sStateKey = "to_state_id";
+					const sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount";
 					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 
-					var oMapping = {
-						// field                		: db technical name
+					oMapping = {
+						// field                        : db technical name
 						[sAmount]: "ELIGIBLE_AMOUNT",
 						"no_of_days": "TRAVEL_DAYS_ID",
 						"fare_type_id": "FARE_TYPE_ID",
@@ -93,39 +106,43 @@ sap.ui.define([
 						"insurance_package_id": "INSURANCE_PACKAGE_ID",
 						"dependent": "DEPENDENT",
 						"phone_no": "PHONE_NO",
-						"to_state_id": "TO_STATE_ID"
+						"to_state_id": "TO_STATE_ID",
+						"dependent_national_id": "DEPENDENT_NATIONAL_ID",
+						"policy_start_date": "POLICY_START_DATE",
+						"policy_year": "POLICY_YEAR"
 					};
 					break;
+				}
 
 				default:
-					break;
+					return [];   // unknown submission type: nothing to check
 			}
 
-			const aActiveFields = Object.entries(oMapping).reduce((aCheckField, [sKey, sTargetName]) => {
-				const sVal = oItemData[sKey];
+			// State-of-origin mapping applies to WILAYAH_ASAL only
+			let sMappedState;
+			if (sClaimType === Constants.ClaimType.WILAYAH_ASAL) {
+				sMappedState = await this._mapStateOfOrigin(oController, oItemData[sStateKey]);
+			}
 
-				aCheckField.push({
-					fieldName: sTargetName,
-					value: String(sVal),
-					result: null
-				});
-				return aCheckField;
-			}, []);
+			const aActiveFields = Object.entries(oMapping).map(([sKey, sTargetName]) => {
+				// Use the mapped state for the state field; all other fields unchanged
+				const vVal = (sKey === sStateKey && sMappedState !== undefined) ? sMappedState : oItemData[sKey];
+				return { fieldName: sTargetName, value: String(vVal), result: null };
+			});
 
 			const aPayload = [];
 			aItemPartData.forEach((row) => {
 				if (row.PARTICIPANTS_ID) {
-					var aNewActiveFields = aActiveFields.map(field => {
-						var oNewField = { ...field };
-
-						if (oNewField.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT && sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
+					// Copy fields per participant so the shared array is not mutated
+					const aNewActiveFields = aActiveFields.map(field => {
+						const oNewField = { ...field };
+						if (oNewField.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT &&
+							sSubmissionType === Constants.SubmissionTypePrefix.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
 						}
-
 						return oNewField;
 					});
 
-					// Push the payload using the NEW array, not the shared one
 					aPayload.push({
 						EmpId: row.PARTICIPANTS_ID,
 						RecordId: sRecordId,
@@ -138,6 +155,35 @@ sap.ui.define([
 			});
 
 			return aPayload;
+		},
+
+		/**
+		 * Maps a state value to the eClaim STATE_ID using ZSTATE.STATE_OF_ORIGIN_ID.
+		 * @private
+		 * @param {Object} oController - Calling controller (used to get the OData V4 model)
+		 * @param {string} sStateId    - State value to map
+		 * @returns {Promise<string>} 
+		 */
+		async _mapStateOfOrigin(oController, sStateId) {
+			if (!sStateId) return sStateId;
+
+			const oModel = oController.getOwnerComponent().getModel();
+			const oBinding = oModel.bindList(
+				"/ZSTATE",
+				null,
+				[new Sorter("STATE_ID")],                                   // stable "first match"
+				[new Filter("STATE_ID", FilterOperator.EQ, String(sStateId).trim())],
+				{ $select: "STATE_OF_ORIGIN_ID" }
+			);
+
+			try {
+				const [oCtx] = await oBinding.requestContexts(0, 1);
+				return oCtx?.getProperty("STATE_OF_ORIGIN_ID") ?? sStateId;
+			} catch (oError) {
+				return sStateId;                                            // don't block the check on lookup failure
+			} finally {
+				oBinding.destroy();
+			}
 		},
 
 		/**
@@ -162,8 +208,7 @@ sap.ui.define([
 						"ROOM_TYPE_ID": "i_room_type",
 						"FLIGHT_CLASS_ID": "i_flight_class",
 						"MARRIAGE_CATEGORY": "i_marriage_cat",
-						"TRANSPORT_CLASS": "i_vehicle_class",
-						"VEHICLE_OWNERSHIP_ID": "i_vehicle_ownership"
+						"TRANSPORT_CLASS": "i_vehicle_class"
 					};
 					break;
 
@@ -228,10 +273,15 @@ sap.ui.define([
 
 					switch (oField.fieldName) {
 						case Constants.EntitiesFields.ELIGIBLE_AMOUNT:
-							if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
-								sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
-							} else {
-								sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+							if (typeof oField.result === "number" || (typeof oField.result === "object" && oField.result !== null)) {
+								if (sClaimType === Constants.ClaimType.POST_EDUCATION_ASSISTANCE) {
+									sErrorMsg = Utility.getText("eligibility_validation_amount_pedu", [oFloatFormat.format(oField.result.defaultLimit), oFloatFormat.format(oField.result.limit)]);
+								} else {
+									sErrorMsg = Utility.getText("eligibility_validation_amount", [oFloatFormat.format(oField.result), sEmpId]);
+								}
+							} else{
+								// backend found no eligibility rule for the employee (e.g. grade not configured)
+								sErrorMsg = Utility.getText("eligibility_validation_rule_not_found", [sClaimTypeItem]);
 							}
 							break;
 
@@ -265,7 +315,12 @@ sap.ui.define([
 							} else {
 								sErrorMsg = Utility.getText("eligibility_validation_to_state", [sEmpId]);
 							}
-							break;					
+							break;
+
+						case Constants.EntitiesFields.TRAVEL_HOURS:
+							sErrorMsg = Utility.getText("eligibility_validation_travel_hours_insufficient", [oField.result]);
+							break;
+
 
 						default:
 							sErrorMsg = Utility.getText("eligibility_validation_default_msg", [sErrorField, sEmpId]);
@@ -291,7 +346,10 @@ sap.ui.define([
 			const bIsEligible = aErrorMessages.length === 0;
 
 			if (!bIsEligible) {
-				const sFormattedErrors = "• " + aErrorMessages[0];
+				// Build one bullet per error, each on its own line
+				const sFormattedErrors = aErrorMessages
+					.map(sMsg => "• " + sMsg)
+					.join("\n");
 				MessageBox.error(Utility.getText("req_e_validation_msg") + sFormattedErrors, {
 					title: Utility.getText("req_e_validation_title"),
 					actions: [MessageBox.Action.CLOSE]
@@ -344,7 +402,7 @@ sap.ui.define([
 
 			try {
 				await oFunction.execute();
-				const oContext  = oFunction.getBoundContext();
+				const oContext = oFunction.getBoundContext();
 				return oContext.getObject().value;
 
 			} catch (oError) {

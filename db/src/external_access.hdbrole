@@ -41,7 +41,7 @@
         "name": "ECLAIM_ZROLEHIERARCHY",
         "type": "TABLE",
         "privileges": ["SELECT"]
-      }                                       
+      }
     ]
   }
 }

@@ -115,7 +115,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
 					}"
                     minDate="{
@@ -160,7 +160,7 @@
                                 source:{
                                     pattern:'yyyy-MM-dd'
                                 },
-                                pattern:'dd-MMM-yyyy'
+                                pattern:'dd MMM yyyy'
                             }
 					}"
 
@@ -201,8 +201,32 @@
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_start_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_START_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                        }"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_START_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"
                 />
 
                 <!-- Event End Date -->
@@ -216,8 +240,32 @@
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_end_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
+                    minDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_END_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/event_start_date'
+                        ],
+                        formatter: '.DateUtility.determineMinDate'
+                        }"
+                    maxDate="{
+                        parts: [
+                            'constant>/EntitiesFields/EVENT_END_DATE',
+                            'constant>/WorkflowType/CLAIM',
+                            'claimsubmission_input>/claimtype/type',
+                            { value: 'null' },
+                            'claimsubmission_input>/claim_header',
+                            'claimsubmission_input>/claimtype/item',
+                            'claimsubmission_input>/claim_header/trip_end_date'
+                        ],
+                        formatter: '.DateUtility.determineMaxDate'
+                    }"
                 />
 
                 <!-- Loan Scheme -->
@@ -249,7 +297,7 @@
                     text="{
 						path: 'claimsubmission_input>/claim_header/move_in_date',
 						type: 'sap.ui.model.odata.type.Date',
-						formatOptions: { pattern: 'dd-MMM-yyyy' }
+						formatOptions: { pattern: 'dd MMM yyyy' }
 					}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                 />
@@ -293,10 +341,10 @@
                         id="text_claimsummary_claimheader_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
+                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'ReadOnly' }"
                         display="ValueDescription"
-                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
-                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        visible="{= !!${claimsubmission_input>/claim_header/alternate_cost_center} ||
+                            ${claimSubmissionHeaderEditableModel>/altCostCenter}
                         }"
                         valueHelp="valuehelp_claiminput_altcc"
                 />
@@ -335,7 +383,13 @@
                 />
 
                 <!-- Total Claim (MYR) -->
-                <Label text="{i18n>label_claimsummary_claimheader_amttotal}" />
+                <Label text="{= !!${claimsubmission_input>/claim_header/card_no} &amp;&amp;
+                                    ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                    ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} )
+                                     ?  ${i18n>label_claimsummary_claimheader_cccamttotal} 
+                                     : ${i18n>label_claimsummary_claimheader_amttotal} }" />
                 <Text
                     id="text_claimsummary_claimheader_amttotal"
                     text="{
@@ -384,6 +438,34 @@
                         }
                     }"
                     textAlign="End"
+                />
+
+                <!-- Corporate Credit Card Advance (MYR) -->
+                <Label
+                    text="{i18n>label_claimsummary_claimheader_amtcardadvance}"
+                    visible="{= ${claimsubmission_input>/claimtype/has_ccc} === true &amp;&amp;
+                                ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} ) }"
+                />
+                <Text
+                    id="text_claimsummary_claimheader_amtcardadvance"
+                    text="{
+                        path: 'claimsubmission_input>/claim_header/card_advance_amount',
+                        type: 'FloatType',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2,
+                            preserveDecimals: false
+                        }
+                    }"
+                    textAlign="End"
+                    visible="{= ${claimsubmission_input>/claimtype/has_ccc} === true &amp;&amp;
+                                ( ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/LUAR_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_DLM_NEGARA} ||
+                                ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/TravelClaimType/KURSUS_LUAR_NEGARA} ) }"
                 />
 
                 <!-- Final Amount to Receive (MYR) -->

@@ -29,7 +29,7 @@ sap.ui.define([
             let submission_type = sId.substring(0,3);
             let oListBinding;
 
-            if (submission_type == "REQ") {
+            if (submission_type === Constants.SubmissionTypePrefix.REQUEST) {
                 oListBinding = oViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
                     null,[new Filter("PREAPPROVAL_ID", "EQ", sId)],
                     {
@@ -38,7 +38,7 @@ sap.ui.define([
                         $$updateGroupId: "$auto"
                     }
                 );
-            } else if (submission_type == "CLM") {
+            } else if (submission_type === Constants.SubmissionTypePrefix.CLAIM) {
                 oListBinding = oViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
                     null,[new Filter("CLAIM_ID", "EQ", sId)],
                     {
@@ -72,12 +72,17 @@ sap.ui.define([
 					}
 				});
 
-				if (submission_type == Constants.WorkflowType.CLAIM) {
-					if (
-						sClaimTypeID == Constants.ClaimType.ELAUN_PINDAH ||
-						sClaimTypeID == Constants.ClaimType.WILAYAH_ASAL
-					) {
-						a[0].LEVEL = Constants.SpecialApprover.VERIFIER;
+				// For Elaun Pindah / Wilayah Asal, the first approver is the Verifier.
+				// Applies to both Claim (CLM) and Pre-Approval Request (REQ).
+				if (
+					(submission_type === Constants.WorkflowType.CLAIM ||
+						submission_type === Constants.WorkflowType.REQUEST) &&
+					(sClaimTypeID === Constants.ClaimType.ELAUN_PINDAH ||
+						sClaimTypeID === Constants.ClaimType.WILAYAH_ASAL)
+				) {
+					const oFirstApprover = a.find((item) => Number(item.LEVEL) === 1);
+					if (oFirstApprover) {
+						oFirstApprover.LEVEL = Constants.SpecialApprover.VERIFIER;
 					}
 				}
 

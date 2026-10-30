@@ -1,13 +1,12 @@
 <core:FragmentDefinition
 	xmlns:unified="sap.ui.unified"
-	xmlns:l="sap.ui.layout"
 	xmlns:core="sap.ui.core"
-	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:mdc="sap.ui.mdc"
 	xmlns:mdcvh="sap.ui.mdc.valuehelp"
 	xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
+	core:require="{ Utility: 'claima/utils/Utility' }"
 >
 	<Dialog
 		title="{i18n>req_po_title}"
@@ -155,7 +154,7 @@
 					</items>
 				</Select>
 				<Label
-					text="{i18n>req_tripstartdate} {i18n>icon_info}"
+					text="{= ${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_billing_cycle_start} : ${i18n>req_tripstartdate} + ' ' +  ${i18n>icon_info} }"
 					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
@@ -173,7 +172,8 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004' ||
+						${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} || ${reqDialog>/reqtype} === 'RT0005'}"
 					visible="false"
 					minDate="{
 						parts: [
@@ -224,7 +224,7 @@
 					</customData>
 				</DatePicker>
 				<Label
-					text="{i18n>req_tripenddate} {i18n>icon_info}"
+					text="{= ${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC} ? ${i18n>req_billing_cycle_end} : ${i18n>req_tripenddate} + ' ' +  ${i18n>icon_info} }"
 					tooltip="{i18n>valuehelp_reqinput_tripdate}"
 				/>
 				<DatePicker
@@ -242,7 +242,8 @@
 					}"
 					showCurrentDateButton="true"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
-						${reqDialog>/reqtype} === 'RT0004' }"
+						${reqDialog>/reqtype} === 'RT0004' ||
+						${reqDialog>/reqtype} === ${constant>/RequestType/CORP_CC}|| ${reqDialog>/reqtype} === 'RT0005'}"
 					visible="false"
 					minDate="{
 						parts: [
@@ -298,10 +299,17 @@
 				/>
 				<DatePicker
 					id="req_eventstartdate"
-					displayFormat="dd MMM yyyy"
-					valueFormat="yyyy-MM-dd"
 					placeholder="eg: 01 Jan 1990"
-					value="{reqDialog>/eventstartdate}"
+					value="{
+						path: 'reqDialog>/eventstartdate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd MMM yyyy'
+						}
+					}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
@@ -326,11 +334,23 @@
 							{ value: 'null' },
 							'reqDialog>/',
 							{ value: 'null' },
-							'reqDialog>/eventenddate'
+							'reqDialog>/eventenddate',
+							'reqDialog>/tripenddate'
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-					/>
+				>
+					<customData>
+						<core:CustomData
+							key="customMinDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+					</customData>
+				</DatePicker>
 
 				<Label
 					text="{i18n>req_eventenddate} {i18n>icon_info}"
@@ -338,10 +358,17 @@
 				/>
 				<DatePicker
 					id="req_eventenddate"
-					displayFormat="dd MMM yyyy"
-					valueFormat="yyyy-MM-dd"
 					placeholder="eg: 01 Jan 1990"
-					value="{reqDialog>/eventenddate}"
+					value="{
+						path: 'reqDialog>/eventenddate',
+						type: 'sap.ui.model.type.Date',
+						formatOptions: {
+							source: {
+								pattern: 'yyyy-MM-dd'
+							},
+							pattern: 'dd MMM yyyy'
+						}
+					}"
 					textAlign="Begin"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 						${reqDialog>/reqtype} === 'RT0003' }"
@@ -354,7 +381,8 @@
 							{ value: 'null' },
 							'reqDialog>/',
 							{ value: 'null' },
-							'reqDialog>/eventstartdate'
+							'reqDialog>/eventstartdate',
+							'reqDialog>/tripstartdate'
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
@@ -370,7 +398,60 @@
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-					/>
+				>
+					<customData>
+						<core:CustomData
+							key="customMinDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+						<core:CustomData
+							key="customMaxDateError"
+							value="{i18n>error_event_date_range}"
+						/>
+					</customData>
+				</DatePicker>
+
+				<Label text="{i18n>req_corp_reference_no}" />
+				<Select
+					id="req_corpoRefNo"
+					selectedKey="{reqDialog>/reqCorpRefNo}"
+					required="true"
+					visible="false"
+					forceSelection="false"
+					items="{
+						path: 'employee>/ZCORPORATE_CARD',
+						sorter: {
+							path: 'CARD_NO',
+							descending: false
+						},
+						filters: [{
+							path: 'PRINCIPLE',
+							operator: 'EQ',
+							value1: 'true'
+						}]
+					}"
+				>
+					<items>
+						<core:Item
+							key="{employee>CARD_NO}"
+							text="{employee>CARD_NO}"
+						/>
+					</items>
+				</Select>
+
+				<Label
+				text="{i18n>req_corp_cc_payment_due_date}"
+				/>
+				<DatePicker
+					id="req_CorpCCPayDueDate"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{reqDialog>/cccduedate}"
+					textAlign="Begin"
+					required="{= ${reqDialog>/reqtype} === 'RT0007'}"
+					visible="false"
+				/>
 				<Label text="{i18n>req_grptype}" />
 				<Select
 					id="req_grptype"
@@ -460,7 +541,11 @@
 				<unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
-					mimeType="application/pdf,image/png,image/jpeg"
+					maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+					fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+					mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+					fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+					typeMissmatch="Utility.showAttachmentTypeMissmatch"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
 					visible="false"
@@ -469,7 +554,11 @@
 				<unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
-					mimeType="application/pdf,image/png,image/jpeg"
+					maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
+					fileSizeExceed="Utility.showAttachmentFileSizeExceed"
+					mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
+					fileType="{constant>/AttachmentConfig/ALLOWED_FILE_TYPES}"
+					typeMissmatch="Utility.showAttachmentTypeMissmatch"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc2}"
 					visible="false"

@@ -698,6 +698,16 @@
                     "target": "ZEMP_CLAIM_REPORT_DETAILS"
                 },
                 {
+                    "pattern": "ZEMP_PAYMENT_REPORT",
+                    "name": "ZEMP_PAYMENT_REPORT",
+                    "target": "ZEMP_PAYMENT_REPORT"
+                },
+                {
+                    "pattern": "ZEMP_POSTING_REPORT",
+                    "name": "ZEMP_POSTING_REPORT",
+                    "target": "ZEMP_POSTING_REPORT"
+                },
+                {
                     "pattern": "ZEMP_CASHADVANCE_REPORT",
                     "name": "ZEMP_CASHADVANCE_REPORT",
                     "target": "ZEMP_CASHADVANCE_REPORT"
@@ -711,8 +721,29 @@
                     "pattern": "ZEMP_CC_BUDGET_DETAIL(FUND_CENTER={FUND_CENTER},COMMITMENT_ITEM={COMMITMENT_ITEM},MATERIAL_GROUP={MATERIAL_GROUP})",
                     "name": "ZEMP_CC_BUDGET_DETAIL",
                     "target": "ZEMP_CC_BUDGET_DETAIL"
+                },
+                {
+                    "pattern": "ZCORPORATE_CARD",
+                    "name": "ZCORPORATE_CARD",
+                    "target": "ZCORPORATE_CARD"
+                },
+                {
+                    "pattern": "ZCORPORATE_CARD_ADVANCED",
+                    "name": "ZCORPORATE_CARD_ADVANCED",
+                    "target": "ZCORPORATE_CARD_ADVANCED"
+                },
+                {
+                    "pattern": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "name": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "target": "ZCLAIM_TYPE_ITEM_CHARGING_CC"
+                },
+                {
+                    "pattern": "ZJOB_CODE_MAPPING",
+                    "name": "ZJOB_CODE_MAPPING",
+                    "target": "ZJOB_CODE_MAPPING"
                 }
             ],
+            
             "targets": {
                 "TargetMain": {
                     "id": "Main",
@@ -740,7 +771,7 @@
                                         "selectAll": true,
                                         "selectionMode": "Multi",
                                         "personalization": {
-                                            "column": false,
+                                            "column": true,
                                             "filter": true,
                                             "sort": true
                                         },
@@ -748,12 +779,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,BUFFER_FIELD1,BUFFER_FIELD2,START_DATE,END_DATE"
+                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,BUFFER_FIELD1,BUFFER_FIELD2,START_DATE,END_DATE"
+                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1901,12 +1932,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
+                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS,ELIGIBILITY_USE"
                                         },
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS,ELIGIBILITY_USE"
                                         }
                                     },
                                     "actions": {
@@ -4851,6 +4882,98 @@
                         }
                     }
                 },
+                "ZEMP_PAYMENT_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_PAYMENT_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_PAYMENT_REPORT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "{i18n>back}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_POSTING_REPORT": {
+                    "type": "Component",
+                    "id": "ZEMP_POSTING_REPORT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_POSTING_REPORT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "None",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "{i18n>back}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "ZEMP_CASHADVANCE_REPORT": {
                     "type": "Component",
                     "id": "ZEMP_CASHADVANCE_REPORT",
@@ -5507,6 +5630,234 @@
                                             "creationFields": "ROLE,RANK"
                                         },
                                         "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCORPORATE_CARD": {
+                    "type": "Component",
+                    "id": "ZCORPORATE_CARD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCORPORATE_CARD",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "CARD_NO,CARDHOLDER_ID,PRINCIPLE,START_DATE,END_DATE,CARDHOLDER_NAME,STATEMENT_DATE,DUE_DATE,EXPIRY_DATA,REMARKS"
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CARD_NO,CARDHOLDER_ID,PRINCIPLE,START_DATE,END_DATE,CARDHOLDER_NAME,STATEMENT_DATE,DUE_DATE,EXPIRY_DATA,REMARKS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/CCCFeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCORPORATE_CARD_ADVANCED": {
+                    "type": "Component",
+                    "id": "ZCORPORATE_CARD_ADVANCED",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCORPORATE_CARD_ADVANCED",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "None",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": false
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCLAIM_TYPE_ITEM_CHARGING_CC": {
+                    "type": "Component",
+                    "id": "ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCLAIM_TYPE_ITEM_CHARGING_CC",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "CHARGING_COST_CENTER"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "EditChargingCC": {
+                                            "press": "claima.ext.controller.ChargingCostCenter.onEditChargingCostCenter",
+                                            "visible": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZJOB_CODE_MAPPING": {
+                    "type": "Component",
+                    "id": "ZJOB_CODE_MAPPING",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZJOB_CODE_MAPPING",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "JOB_CODE_ID,JOB_CODE_DESC,JOB_GROUP_ID"
+                                        },
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "JOB_CODE_ID,JOB_CODE_DESC,JOB_GROUP_ID"
+                                        }
                                     },
                                     "actions": {
                                         "newCopy": {

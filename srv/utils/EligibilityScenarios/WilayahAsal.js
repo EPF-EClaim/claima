@@ -127,13 +127,14 @@ module.exports = {
     },
 
     /**
-    * Validates claim item against eligibility rule
-    * @private
-    * @param {Object} oRule - matched eligibility rule from aRules
-    * @param {Object} oPayload - original payload from user input
-    * @param {Integer} iExistingFreq - Date frequency count
-    * @param {Integer} iAllowedFreq - Rules Frequency Count
-    */
+     * Validates a claim item against its matched eligibility rule.
+     * @private
+     * @param {Object}  oRule         - Matched eligibility rule (from aRules)
+     * @param {Object}  oPayload      - Claim item payload from user input
+     * @param {number}  iExistingFreq - Number of claims the employee has already made
+     * @param {number}  iAllowedFreq  - Maximum number of claims the rule allows
+     * @param {Object}  oEmp          - Employee master data
+     */
     _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
         var iIndex;
 
@@ -142,7 +143,10 @@ module.exports = {
                 // WILAYAH_ASAL - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 if (iIndex == -1) return;
-                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
+                //reject if no rule, then accept if frequency not exceeded, else error
+                if (!oRule) {
+                    throw new Error("You are not eligible for this claim.");
+                } else if (iExistingFreq < iAllowedFreq) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     throw new Error("Claim Type has exceeded allowed eligibility frequency.");
@@ -152,9 +156,7 @@ module.exports = {
                 // WILAYAH_ASAL - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
                 if (iIndex == -1) return;
-                if (!oRule) {
-                    throw new Error("No Eligible Rules found for this user.");
-                } else {
+                if (oRule) {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                     if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
@@ -171,7 +173,7 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (oEmp.STATE_OF_ORIGIN &&
                     oPayload.CheckFields[iIndex].value) {
-                    if (oPayload.CheckFields[iIndex].value == oEmp.STATE_OF_ORIGIN) {
+                    if (oPayload.CheckFields[iIndex].value === oEmp.STATE_OF_ORIGIN) {
                         oPayload.CheckFields[iIndex].result = true;
                     }
                     else {
@@ -185,5 +187,5 @@ module.exports = {
 
                 break;
         }
-    }
+    },
 };

@@ -30,10 +30,11 @@ sap.ui.define(
 				"sections",
 				"subSections",
 				"_grid",
+				"rows", // sap.ui.table.Table rows
 				"cells",
 				"_page"
 			];
-			this._aValidateProperties = ["value", "selectedKey", "selectedKeys", "text", "dateValue"]; // yes, I want to validate Select and Text controls too
+			this._aValidateProperties = ["value", "selectedKey", "selectedKeys", "text", "dateValue", "selected"]; // yes, I want to validate Select and Text controls too | added CheckBox validation.
 			this._oMessageModel = new JSONModel();
 		};
 
@@ -93,6 +94,13 @@ sap.ui.define(
 				isValidatedControl = false,
 				isValid = true;
 
+			// sap.ui.table.Row is an Element (not a Control) without a 'visible' property,
+			// so step straight into its cells; otherwise inputs inside grid tables are never validated
+			if (oControl && oControl.isA && oControl.isA("sap.ui.table.Row")) {
+				this._recursiveCall(oControl, this._validate);
+				return;
+			}
+
 			// only validate controls and elements which have a 'visible' property
 			// and are visible controls (invisible controls make no sense checking)
 			if (!(
@@ -102,7 +110,8 @@ sap.ui.define(
 						oControl instanceof sap.m.Select ||
 						oControl instanceof sap.m.Input ||
 						oControl instanceof sap.ui.unified.FileUploader ||
-						oControl instanceof sap.m.IconTabFilter) &&
+						oControl instanceof sap.m.IconTabFilter ||
+						oControl instanceof sap.m.CheckBox) &&
 					oControl.getVisible()
 				)) {
 				return;
@@ -139,7 +148,8 @@ sap.ui.define(
 			}
 			if ( isValid &&
 				oControl.getValueState &&
-				oControl.getValueState() === ValueState.Error
+				oControl.getValueState() === ValueState.Error && 
+				oControl.getValueStateText() !== "Please fill this mandatory field!"
 			) {
 				// Control custom validation
 				isValid = false;

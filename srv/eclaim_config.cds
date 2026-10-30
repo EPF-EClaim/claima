@@ -112,6 +112,170 @@ annotate service.ZREQUEST_TYPE with @(
     }
 );
 
+annotate service.ZCORPORATE_CARD with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [CARD_NO],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/CCCFeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'List of Corporate Credit Card - ZCORPORATE_CARD',
+            TypeNamePlural: 'List of Corporate Credit Card - ZCORPORATE_CARD',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARD_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Card No.'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PRINCIPLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Principal'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATEMENT_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Statement Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DUE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Due Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EXPIRY_DATA,
+                ![@UI.Importance]: #High,
+                Label            : 'Expiry Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARKS,
+                ![@UI.Importance]: #High,
+                Label            : 'Remarks'
+            }
+        ],
+
+    }
+);
+
+annotate service.ZCORPORATE_CARD_ADVANCED with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SortRestrictions  : {Sortable: true},
+    Common.SemanticKey             : [CARD_NO, CARDHOLDER_ID],
+    Capabilities                   : {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false
+    },
+
+    UI                             : {
+        CreateHidden: true,
+        DeleteHidden: true,
+        UpdateHidden: true,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
+            TypeNamePlural: 'Cardholder''s Advanced - ZCORPORATE_CARD_ADVANCED',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARD_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Card No.'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CARDHOLDER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Cardholder ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MONTHLY_ADVANCED_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Monthly Advanced Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMIT_OFFSET_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Commit Offset Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL_OFFSET_AMT,
+                ![@UI.Importance]: #High,
+                Label            : 'Actual Offset Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_ADVANCED_BALANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Advanced Balance'
+            }
+        ],
+
+    }
+);
+
+annotate service.ZCORPORATE_CARD_ADVANCED with {
+    CARD_NO                  @readonly;
+    CARDHOLDER_ID             @readonly;
+    STATUS                    @readonly;
+    MONTHLY_ADVANCED_AMT      @readonly;
+    COMMIT_OFFSET_AMT         @readonly;
+    ACTUAL_OFFSET_AMT         @readonly;
+    CURRENT_ADVANCED_BALANCE  @readonly;
+};
+
 annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
     odata.draft.enabled,
@@ -1247,6 +1411,12 @@ annotate service.ZJOB_GROUP with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ELIGIBILITY_USE,
+                ![@UI.Importance]: #High,
+                Label            : 'Use for Eligibility Checking'
             }
         ]
     }
@@ -2199,43 +2369,20 @@ annotate service.ZPROJECT_HDR with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },
-            {
-                $Type            : 'UI.DataField',
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BUFFER_FIELD1,
-                ![@UI.Importance]: #High,
-                Label            : 'Buffer Field 1'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BUFFER_FIELD2,
-                ![@UI.Importance]: #High,
-                Label            : 'Buffer Field 2'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
             }
         ]
     }
 );
+
+annotate service.ZPROJECT_HDR with {
+    PROJECT_CODE_IO @mandatory;
+    PROJECT_DESC    @mandatory;
+    GL_ACCOUNT      @mandatory;
+    STATUS          @mandatory;
+};
 
 annotate service.ZBRANCH with @(
     cds.autoexpose,
@@ -5002,6 +5149,18 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : COST_CENTER,
                 ![@UI.Importance]: #High,
                 Label            : 'Cost Center Code'
@@ -5102,7 +5261,7 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Approval Duration (Days)'
             }
-        ],
+        ]
     }
 ) {
     ALT_COST_CENTER_DESC @(Common.Label: 'Alternate Cost Center Description');
@@ -5311,6 +5470,30 @@ annotate service.ZEMP_CLAIM_REPORT_SUMMARY with @(
                     $Type            : 'Common.ValueListParameterOut',
                     LocalDataProperty: NAME,
                     ValueListProperty: 'NAME'
+                }
+            ]
+        }
+    );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
                 }
             ]
         }
@@ -5547,6 +5730,18 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -6422,6 +6617,31 @@ annotate service.ZEMP_CLAIM_REPORT_DETAILS with @(
             ]
         }
     );
+    
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
@@ -6642,6 +6862,18 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Pre-Approval Request Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7267,6 +7499,30 @@ annotate service.ZEMP_REQUEST_REPORT_DETAILS with @(
             ]
         }
     );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
@@ -7502,6 +7758,18 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Status Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
             },
             {
                 $Type            : 'UI.DataField',
@@ -7824,6 +8092,30 @@ annotate service.ZEMP_REQUEST_REPORT_SUMMARY with @(
             ]
         }
     );
+    CHARGING_COST_CENTER_DESC @(Common.Label: 'Charging Cost Center Description');
+    CHARGING_COST_CENTER      @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        // Fixed values = dropdown; multi-select in the filter bar by default
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Charging Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    // Shows the description in the dropdown
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
 };
 
 annotate service.ZEMP_CASHADVANCE_REPORT with @(
@@ -8077,6 +8369,156 @@ annotate service.ZEMP_CASHADVANCE_REPORT with @(
             ]
         }
     );
+};
+
+annotate service.ZEMP_PAYMENT_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Payment Report',
+            TypeNamePlural: 'Payment Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_NAME,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FINAL_AMOUNT_TO_RECEIVE,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High
+            }
+        ]
+    }
+) {
+    CLAIM_ID                @Common.Label: 'Claim ID';
+    EMP_ID                  @Common.Label: 'Employee Number';
+    EMP_NAME                @Common.Label: 'Employee Name';
+    FINAL_AMOUNT_TO_RECEIVE @Common.Label: 'Final Amount To Receive';
+    CASH_ADVANCE            @Common.Label: 'Cash Advance Amount';
+};
+
+annotate service.ZEMP_POSTING_REPORT with @(
+    cds.autoexpose,
+    Capabilities: {
+        Deletable : false,
+        Updatable : false,
+        Insertable: false,
+    },
+    UI          : {
+        HeaderInfo         : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Posting Report',
+            TypeNamePlural: 'Posting Report',
+        },
+        PresentationVariant: {
+            SortOrder     : [
+                {
+                    Property  : CLAIM_ID,
+                    Descending: false
+                },
+                {
+                    Property  : CLAIM_SUB_ID,
+                    Descending: false
+                }
+            ],
+            Visualizations: ['@UI.LineItem']
+        },
+        LineItem           : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_SUB_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_NAME,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AMOUNT,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : GL_ACCOUNT,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INTERNAL_ORDER,
+                ![@UI.Importance]: #High
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGED_TO_CCC,
+                ![@UI.Importance]: #High
+            }
+        ]
+    }
+) {
+    CLAIM_ID       @Common.Label: 'Claim ID';
+    CLAIM_SUB_ID   @Common.Label: 'Claim Sub ID';
+    EMP_ID         @Common.Label: 'Employee Number';
+    EMP_NAME       @Common.Label: 'Employee Name';
+    AMOUNT         @Common.Label: 'Amount';
+    COST_CENTER    @Common.Label: 'Cost Center';
+    GL_ACCOUNT     @Common.Label: 'GL Account';
+    MATERIAL_GROUP @Common.Label: 'Material Group';
+    INTERNAL_ORDER @Common.Label: 'Internal Order';
+    CHARGED_TO_CCC @Common.Label: 'Charged To CCC';
 };
 
 annotate service.ZEMP_CC_BUDGET_REPORT with @(
@@ -8460,6 +8902,8 @@ annotate service.ZEMP_APPROVER_LIST_VH with @(UI.SelectionFields: [
 ]) {
     @UI.hidden: true
     DEP;
+    @UI.hidden: true
+    NAME_SEARCH;
 };
 
 annotate service.ZEMP_APPROVER_VH with @(UI.SelectionFields: [
@@ -8622,4 +9066,124 @@ annotate service.ZSUBSTITUTION_RULES_CONFIG with @(
     SUBSTITUTE_COMMENT @(
         Common.Label : 'Comment',
     )
+};
+
+annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with @(
+    cds.autoexpose,
+
+    Capabilities : {
+        Deletable : false,
+        Updatable : true,
+        Insertable: false
+    },
+
+    UI : {
+        CreateHidden : true,
+        DeleteHidden : true,
+        UpdateHidden : false,
+
+        HeaderInfo : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC',
+            TypeNamePlural: 'Claim Type Item with Charging Cost Center - ZCLAIM_TYPE_ITEM_CHARGING_CC'
+        },
+
+        LineItem : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CHARGING_COST_CENTER_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Charging Cost Center Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZCLAIM_TYPE_ITEM_CHARGING_CC with {
+
+    CHARGING_COST_CENTER @(
+        Common.Label                   : 'Charging Cost Center',
+        Common.Text                    : CHARGING_COST_CENTER_DESC,
+        Common.TextArrangement         : #TextSeparate,
+        Common.ValueListWithFixedValues: true,
+        Common.ValueList               : {
+            Label         : 'Cost Center Selection',
+            CollectionPath: 'ZCOST_CENTER_VH',
+            Parameters    : [
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    LocalDataProperty: CHARGING_COST_CENTER,
+                    ValueListProperty: 'COST_CENTER_ID'
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    LocalDataProperty: CHARGING_COST_CENTER_DESC,
+                    ValueListProperty: 'COST_CENTER_DESC'
+                }
+            ]
+        }
+    );
+
+};
+
+annotate eclaim_srv.ZJOB_CODE_MAPPING with @(
+    UI.HeaderInfo: {
+        TypeName      : 'Job Code Mapping',
+        TypeNamePlural: 'Job Code Mappings'
+    },
+    UI.LineItem: [
+        { Value: JOB_CODE_ID,       Label: 'Job Code' },
+        { Value: JOB_CODE_DESC,     Label: 'Job Code Description' },
+        { Value: JOB_GROUP_ID,      Label: 'Job Group' },
+        { Value: JOB_GROUP_DESC,    Label: 'Job Group Description' }
+    ]
+) {
+    JOB_CODE_ID   @title: 'Job Code'             @mandatory;
+    JOB_CODE_DESC @title: 'Job Code Description' @mandatory;
+    JOB_GROUP_ID  @title: 'Job Group'  @mandatory
+        @Common.ValueListWithFixedValues
+        @Common.ValueList: {
+            CollectionPath: 'ZJOB_GROUP_VH',
+            Parameters    : [
+                { $Type: 'Common.ValueListParameterInOut',
+                LocalDataProperty: JOB_GROUP_ID, ValueListProperty: 'JOB_GROUP_ID' },
+                { $Type: 'Common.ValueListParameterDisplayOnly',
+                ValueListProperty: 'JOB_GROUP_DESC' }
+            ]
+        };
+};
+
+annotate eclaim_srv.ZJOB_CODE_MAPPING with {
+    JOB_CODE_ID     @Search.fuzzinessThreshold: 1;
+    JOB_GROUP_ID    @Search.fuzzinessThreshold: 1;
 };

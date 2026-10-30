@@ -43,10 +43,10 @@ sap.ui.define([
         },
 
         open: function () {
-            this.byId("helloDialog").open();
+            this.byId("mileageCalcDialog").open();
         },
         close: function () {
-            var dlg = this.byId("helloDialog");
+            var dlg = this.byId("mileageCalcDialog");
             if (dlg) dlg.close();
         },
 
@@ -68,7 +68,7 @@ sap.ui.define([
             // Load SDK if needed
             if (!window.google || !window.google.maps) {
                 const script = document.createElement("script");
-                script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCq2oZylfVF7F1lW9IuUlL62q6UJC9s3tc&libraries=places";
+                script.src = "https://maps.googleapis.com/maps/api/js";
                 script.async = true;
                 script.defer = true;
                 script.onload = () => {
@@ -377,7 +377,7 @@ sap.ui.define([
                         headers: {
                             "Content-Type": "application/json",
                             // TODO: Use a restricted server-side proxy/key for production
-                            "X-Goog-Api-Key": "AIzaSyCq2oZylfVF7F1lW9IuUlL62q6UJC9s3tc",
+                            "X-Goog-Api-Key": "YOUR_API_KEY_HERE",  // Replace with your actual API key
                             "X-Goog-FieldMask": [
                                 "routes.distanceMeters",
                                 "routes.duration",

@@ -16,6 +16,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         MaterialCode         : String;
         CashAdvanceAmount    : Decimal(15, 2);
         InternalOrder        : String;
+        CashAdvanceCatID     : String(10);
     }
 
 
@@ -26,8 +27,15 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
 
     entity ZEMP_REQUEST_VIEW              as
-        projection on ECLAIM.ZREQUEST_HEADER {
-            key REQUEST_ID,
+        select from ECLAIM.ZREQUEST_HEADER
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZREQUEST_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZREQUEST_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZREQUEST_HEADER.REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
@@ -81,7 +89,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 ATTACHMENT3,
                 ATTACHMENT4,
-                PAYMENT_DUE_DATE
+                PAYMENT_DUE_DATE,
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_REQUEST_EE_VIEW @(restrict: [
@@ -94,9 +103,16 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
-        projection on ECLAIM.ZREQUEST_HEADER {
-            key REQUEST_ID,
+    ])          as
+        select from ECLAIM.ZREQUEST_HEADER
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZREQUEST_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZREQUEST_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZREQUEST_HEADER.REQUEST_ID,
                 EMP_ID,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
@@ -146,7 +162,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 ATTACHMENT3,
-                ATTACHMENT4
+                ATTACHMENT4,
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
 
@@ -160,6 +177,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
                 ZCLAIM_TYPE.COST_CENTER,
+                COST_CENTER   as  CHARGING_COST_CENTER,
                 ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 NO_OF_DAYS,
                 PURPOSE,
@@ -246,7 +264,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 INSURANCE_MEDICAL_PROVIDER_ID,
                 INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
-                ATTACHMENT4
+                ATTACHMENT4,
+                VEHICLE_CLASS_ID
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -270,9 +289,16 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
+    ])            as
+        select from ECLAIM.ZCLAIM_HEADER
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZCLAIM_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZCLAIM_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZCLAIM_HEADER.CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
@@ -320,12 +346,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW         as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
+        select from ECLAIM.ZCLAIM_HEADER
+        left join ZMED_ENTITLEMENT_BAL as bal
+            on  bal.EEID             = ZCLAIM_HEADER.EMP_ID
+            and bal.ENTITLEMENT_YEAR = coalesce(
+                    year(add_seconds(ZCLAIM_HEADER.SUBMITTED_DATE, 28800)),
+                    year(add_seconds(current_timestamp, 28800))
+                )
+        {
+            key ZCLAIM_HEADER.CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
@@ -386,20 +420,21 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PROJECT_CODE,
                 ZPROJECT_HDR.PROJECT_DESC as PROJECT_DESC,
                 CARD_NO,
-                CCC_ADV_AMT
+                CCC_ADV_AMT,
+                case when CLAIM_TYPE_ID in ('MEDICAL','MEDICAL_ADVANCE') then bal.BALANCE end as MED_ENTITLEMENT_BALANCE : Decimal(16,2)
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
         select from ECLAIM.ZCLAIM_ITEM 
-        left join ECLAIM.ZCLAIM_ITEM as PrevPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as PrevPolicy
             on PrevPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and PrevPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR - 1
 
-        left join ECLAIM.ZCLAIM_ITEM as CurrPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as CurrPolicy
             on CurrPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and CurrPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR
 
-        left join ECLAIM.ZCLAIM_ITEM as NextPolicy
+        left join ZEMP_CLAIM_POLICY_VALID as NextPolicy
             on NextPolicy.DEPENDENT_NATIONAL_ID = ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID
             and NextPolicy.POLICY_YEAR = ZCLAIM_ITEM.POLICY_YEAR + 1        
         {
@@ -540,6 +575,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.INTERNAL_ORDER,
                 ZCLAIM_ITEM.COURSE_DURATION,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_3,
+                ZCLAIM_ITEM.CHARGED_TO_CCC,
                 ZCLAIM_ITEM.POLICY_YEAR,
                 PrevPolicy.POLICY_NUMBER as PREVIOUS_POLICY_NUMBER,
                 CurrPolicy.POLICY_NUMBER as CURRENT_POLICY_NUMBER,
@@ -550,8 +586,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_DESC,
                 ZCLAIM_ITEM.INSURANCE_MEDICAL_PROVIDER_NAME,
                 ZCLAIM_ITEM.ATTACHMENT_FILE_4,
-                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID,
-                ZCLAIM_ITEM.CHARGED_TO_CCC                        
+                ZCLAIM_ITEM.DEPENDENT_NATIONAL_ID                     
         };
 
     entity ZEMP_REQUEST_STATUS            as
@@ -601,7 +636,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])      as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -661,7 +696,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])      as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -838,7 +873,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])    as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -897,7 +932,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])    as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -1025,6 +1060,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER_SUBS.EMAIL            as SUBSTITUTE_EMAIL,
                 ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
                 ZREQUEST_HEADER.EMP_ID,
+                ZREQUEST_HEADER.REQUEST_TYPE_ID,
                 ZREQUEST_HEADER.ZEMP_MASTER.NAME  as EMPLOYEE_NAME,
                 ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
                 ZREQUEST_HEADER.REQUEST_DATE,
@@ -1065,23 +1101,31 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_DETAILS             as
-        projection on ECLAIM.ZCLAIM_HEADER {
-            key CLAIM_ID,
-            key ZCLAIM_ITEM.CLAIM_SUB_ID,
-                EMP_ID,
-                LAST_MODIFIED_DATE,
-                SUBMITTED_DATE,
-                FINAL_AMOUNT_TO_RECEIVE,
-                ZCLAIM_ITEM.RECEIPT_DATE,
-                ZCLAIM_ITEM.AMOUNT,
-                ZCLAIM_ITEM.COST_CENTER,
-                ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                CASH_ADVANCE_AMOUNT,
-                ALTERNATE_COST_CENTER,
-                ZCLAIM_ITEM.INTERNAL_ORDER,
-                ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID
-        };
+    projection on ECLAIM.ZCLAIM_HEADER {
+        key CLAIM_ID,
+        key ZCLAIM_ITEM.CLAIM_SUB_ID,
+            EMP_ID,
+            LAST_MODIFIED_DATE,
+            SUBMITTED_DATE,
+            FINAL_AMOUNT_TO_RECEIVE,
+            ZCLAIM_ITEM.RECEIPT_DATE,
+            ZCLAIM_ITEM.AMOUNT,
+            ZCLAIM_ITEM.COST_CENTER,
+            ZCLAIM_ITEM.GL_ACCOUNT,
+            ZCLAIM_ITEM.MATERIAL_CODE,
+            CASH_ADVANCE_AMOUNT,
+            ALTERNATE_COST_CENTER,
+            ZCLAIM_ITEM.INTERNAL_ORDER,
+            ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID,
+            ZCLAIM_ITEM.CHARGED_TO_CCC,
+            ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+            CARD_NO,
+            CLAIM_TYPE_ID,
+            EARMARKED_FUNDS_DOC_ID,
+            EARMARKED_FUNDS_DOC_YEAR,
+            EARMARKED_FUNDS_DOC_COMP_CODE,
+            ZCLAIM_ITEM.EARMARKED_FUNDS_DOC_ITEM_ID
+    };
 
     entity ZEMP_PREAPPROVAL_DETAILS       as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -1137,11 +1181,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-entity ZEMP_APPROVER_DETAILS @(restrict: [{
+    entity ZEMP_APPROVER_DETAILS @(restrict: [{
         grant: 'READ',
         to   : ['Approver'],
         where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) OR SUBSTITUTE_APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-    }])                                  as
+    }])  as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
@@ -1250,28 +1294,33 @@ entity ZEMP_APPROVER_DETAILS @(restrict: [{
             ZTOSTATE.STATE_DESC,
             STATUS;
 
-    entity ZCLM_COURSE_VIEW               as
-        projection on ECLAIM.ZTRAIN_COURSE_PART {
-            key COURSE_ID || '|' || SESSION_NUMBER || '|' || cast(
-                    START_DATE as String
-                ) || '|' || cast(
-                    END_DATE as String
-                ) as COURSE_SESSION_KEY : String,
-                COURSE_ID,
-                PARTICIPANT_ID,
-                COURSE_DESC,
-                COURSE_SESSION_STAT,
-                ATTENDENCE_STATUS,
+    entity ZCLM_COURSE_VIEW as
+        select from ECLAIM.ZTRAIN_COURSE_PART as course distinct {
+            key course.COURSE_ID || '|' ||
+                coalesce(cast(course.SESSION_NUMBER as String), '') || '|' ||
+                coalesce(cast(course.START_DATE     as String), '') || '|' ||
+                coalesce(cast(course.END_DATE       as String), '')   as COURSE_SESSION_KEY : String,
+            key course.PARTICIPANT_ID,
+                course.COURSE_ID,
+                course.COURSE_DESC,
+                course.COURSE_SESSION_STAT,
+                course.ATTENDENCE_STATUS,
+                course.SESSION_NUMBER,
+                course.START_DATE,
+                course.END_DATE
         }
-        group by
-            COURSE_ID,
-            PARTICIPANT_ID,
-            COURSE_DESC,
-            COURSE_SESSION_STAT,
-            ATTENDENCE_STATUS,
-            SESSION_NUMBER,
-            START_DATE,
-            END_DATE;
+        where course.ATTENDENCE_STATUS = true
+        and not exists (
+            select 1 from ECLAIM.ZCLAIM_HEADER as header
+            where trim(header.EMP_ID)      = trim(course.PARTICIPANT_ID)
+                and trim(header.COURSE_CODE) = trim(course.COURSE_ID)
+                and (   header.SESSION_NUMBER = course.SESSION_NUMBER
+                    or header.SESSION_NUMBER is null )
+                and header.STATUS_ID in ('STAT01', 'STAT02', 'STAT03', 'STAT05', 'STAT06', 'STAT08')
+        )
+        order by
+            course.END_DATE   desc,
+            course.START_DATE desc;
 
     entity ZEMP_ACCESS               as
         projection on ECLAIM.ZEMP_MASTER {
@@ -1322,10 +1371,24 @@ entity ZEMP_APPROVER_DETAILS @(restrict: [{
             req.TRAVEL_ALONE_FAMILY,
             req.TRAVEL_FAMILY_NOW_LATER,
 
+            req.COSTCENTER.COST_CENTER_DESC       as ALT_COST_CENTER_DESC,
+            req.ZPROJECT_HDR.PROJECT_DESC         as PROJECT_DESC,
+            req.ZTRANSFER_MODE.TRANSFER_MODE_DESC as TRANSFER_MODE_DESC,
+            req.ZTRAVEL_TYPE.TRAVEL_TYPE_DESC     as TRAVEL_TYPE_DESC,
+            req.ZFAMILY_TIMING.FAMILY_TIMING_DESC as FAMILY_TIMING_DESC,
+
             sum(itemPart.ALLOCATED_AMOUNT) as PREAPPROVED_AMOUNT : Decimal
         }
         where
-            req.STATUS = 'STAT05'
+            req.STATUS IN ('STAT05', 'STAT06')
+            // hide the request from this participant once their own claim on it is
+            // Pending Approval / Push Back / Approved / Completed Disbursement
+            and not exists (
+                select 1 from ECLAIM.ZCLAIM_HEADER as header
+                where header.REQUEST_ID = itemPart.REQUEST_ID
+                  and header.EMP_ID     = itemPart.PARTICIPANTS_ID
+                  and header.STATUS_ID in ('STAT02', 'STAT03', 'STAT05', 'STAT06')
+            )
             
         group by
             itemPart.REQUEST_ID,
@@ -1348,6 +1411,165 @@ entity ZEMP_APPROVER_DETAILS @(restrict: [{
 
             req.TRANSFER_MODE_ID,
             req.TRAVEL_ALONE_FAMILY,
-            req.TRAVEL_FAMILY_NOW_LATER;
+            req.TRAVEL_FAMILY_NOW_LATER,
 
+            req.COSTCENTER.COST_CENTER_DESC,
+            req.ZPROJECT_HDR.PROJECT_DESC,
+            req.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+            req.ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+            req.ZFAMILY_TIMING.FAMILY_TIMING_DESC;
+
+    entity ZEMP_CLAIM_POLICY_VALID as
+        select from ECLAIM.ZCLAIM_ITEM as item
+            inner join ECLAIM.ZCLAIM_HEADER as header
+                on header.CLAIM_ID = item.CLAIM_ID
+    {
+        key item.CLAIM_SUB_ID,
+            item.CLAIM_ID,
+            header.STATUS_ID,
+            POLICY_NUMBER,
+            POLICY_YEAR,
+            DEPENDENT_NATIONAL_ID
+    }
+    where header.STATUS_ID in ('STAT02', 'STAT05', 'STAT06');
+
+    /**
+     * Stage 1 – Line-level medical usage (years in MYT).
+     * LINE_ID = unique key per line (C = claim item, R = request item, E/EC/ER = employee anchors)
+     */
+    @readonly
+    entity ZMED_USAGE_LINES as
+        select from ECLAIM.ZCLAIM_ITEM as i
+        inner join ECLAIM.ZCLAIM_HEADER as h
+            on h.CLAIM_ID = i.CLAIM_ID
+        {
+            key cast('C|' || i.CLAIM_ID || '|' || i.CLAIM_SUB_ID as String(255))     as LINE_ID,
+                h.EMP_ID                                                            as EEID,
+                cast(year(add_seconds(h.SUBMITTED_DATE, 28800)) as Integer)         as ENTITLEMENT_YEAR,
+                cast(i.AMOUNT as Decimal(16, 2))                                    as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+        where h.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
+          and coalesce(i.CLAIM_TYPE_ITEM_ID,'') <> 'CASH_REPAY'
+          and h.STATUS_ID      in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
+          and h.SUBMITTED_DATE is not null
+
+        union all
+
+        select from ECLAIM.ZREQUEST_ITEM as ri
+        inner join ECLAIM.ZREQUEST_HEADER as rh
+            on rh.REQUEST_ID = ri.REQUEST_ID
+        left join ECLAIM.ZCLAIM_HEADER as c
+            on c.REQUEST_ID = rh.REQUEST_ID
+        {
+            key cast('R|' || ri.REQUEST_ID || '|' || ri.REQUEST_SUB_ID as String(255)) as LINE_ID,
+                rh.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(rh.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(ri.EST_AMOUNT as Decimal(16, 2))                               as PENDING_REQUEST_AMOUNT
+        }
+        where rh.CLAIM_TYPE_ID  in ('MEDICAL', 'MEDICAL_ADVANCE')
+          and rh.STATUS         in ('STAT02', 'STAT05', 'STAT06', 'STAT08')
+          and rh.SUBMITTED_DATE is not null
+          and c.CLAIM_ID        is null
+
+        union all
+
+        // Anchor: current year (MYT) for every employee
+        select from ECLAIM.ZEMP_MASTER as e
+        {
+            key cast('E|' || e.EEID as String(255))                                 as LINE_ID,
+                e.EEID                                                              as EEID,
+                cast(year(add_seconds(current_timestamp, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+
+        union all
+
+        // Anchor: every year an employee submitted a claim (MYT)
+        select from ECLAIM.ZCLAIM_HEADER as ch
+        {
+            key cast('EC|' || ch.EMP_ID || '|'
+                     || cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
+                ch.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(ch.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+        where ch.SUBMITTED_DATE is not null
+        group by ch.EMP_ID, year(add_seconds(ch.SUBMITTED_DATE, 28800))
+
+        union all
+
+        // Anchor: every year an employee submitted a request (MYT)
+        select from ECLAIM.ZREQUEST_HEADER as rq
+        {
+            key cast('ER|' || rq.EMP_ID || '|'
+                     || cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as String) as String(255)) as LINE_ID,
+                rq.EMP_ID                                                           as EEID,
+                cast(year(add_seconds(rq.SUBMITTED_DATE, 28800)) as Integer)        as ENTITLEMENT_YEAR,
+                cast(0 as Decimal(16, 2))                                           as CLAIMED_AMOUNT,
+                cast(0 as Decimal(16, 2))                                           as PENDING_REQUEST_AMOUNT
+        }
+        where rq.SUBMITTED_DATE is not null
+        group by rq.EMP_ID, year(add_seconds(rq.SUBMITTED_DATE, 28800));
+
+    /**
+     * Stage 2 – Usage per employee per year.
+     */
+    @readonly
+    entity ZMED_USAGE_SUM as
+        select from ZMED_USAGE_LINES as l
+        {
+            key l.EEID,
+            key l.ENTITLEMENT_YEAR,
+                cast(sum(coalesce(l.CLAIMED_AMOUNT, 0)) as Decimal(16, 2))         as CLAIMED_AMOUNT,
+                cast(sum(coalesce(l.PENDING_REQUEST_AMOUNT, 0)) as Decimal(16, 2)) as PENDING_REQUEST_AMOUNT
+        }
+        group by
+            l.EEID,
+            l.ENTITLEMENT_YEAR;
+
+    /**
+     * Stage 3 – Entitlement vs usage, balance floored at 0.
+     * CEO / CXO -> own ROLE_ID rule; everyone else -> ROLE_ID = '*'.
+     */
+    @readonly
+    entity ZMED_ENTITLEMENT_BAL as
+        select from ZMED_USAGE_SUM as u
+        inner join ECLAIM.ZEMP_MASTER as e
+            on e.EEID = u.EEID
+        left join ECLAIM.ZELIGIBILITY_RULE as r
+            on  r.ROLE_ID            =  e.ROLE
+            and e.ROLE               in ('CEO', 'CXO')
+            and r.CLAIM_TYPE_ID      =  'MEDICAL'
+            and r.CLAIM_TYPE_ITEM_ID =  'INSURANCE'
+            and r.STATUS             =  'ACTIVE'
+            and year(r.START_DATE)   <= u.ENTITLEMENT_YEAR
+            and year(r.END_DATE)     >= u.ENTITLEMENT_YEAR
+        left join ECLAIM.ZELIGIBILITY_RULE as w
+            on  w.ROLE_ID            =  '*'
+            and w.CLAIM_TYPE_ID      =  'MEDICAL'
+            and w.CLAIM_TYPE_ITEM_ID =  'INSURANCE'
+            and w.STATUS             =  'ACTIVE'
+            and year(w.START_DATE)   <= u.ENTITLEMENT_YEAR
+            and year(w.END_DATE)     >= u.ENTITLEMENT_YEAR
+        {
+            key u.EEID,
+            key u.ENTITLEMENT_YEAR,
+                e.ROLE,
+                cast(coalesce(r.ELIGIBLE_AMOUNT, w.ELIGIBLE_AMOUNT, 0) as Decimal(16, 2)) as ENTITLED_AMOUNT,
+                u.CLAIMED_AMOUNT,
+                u.PENDING_REQUEST_AMOUNT,
+                cast(
+                    case
+                        when coalesce(r.ELIGIBLE_AMOUNT, w.ELIGIBLE_AMOUNT, 0)
+                             - u.CLAIMED_AMOUNT - u.PENDING_REQUEST_AMOUNT > 0
+                        then coalesce(r.ELIGIBLE_AMOUNT, w.ELIGIBLE_AMOUNT, 0)
+                             - u.CLAIMED_AMOUNT - u.PENDING_REQUEST_AMOUNT
+                        else 0
+                    end as Decimal(16, 2)
+                ) as BALANCE
+        };
 }

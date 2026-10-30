@@ -26,7 +26,9 @@ sap.ui.define([
             "HANDPHONE": "HANDPHONE",
             "GALAKAN": "GALAKAN",
             "WILAYAH_ASAL": "WILAYAH_ASAL",
-            "CERAMAH": "CERAMAH"
+            "CERAMAH": "CERAMAH",
+            "CORPO_CRED_CARD" : "CORPO_CRED_CARD",
+            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -96,7 +98,16 @@ sap.ui.define([
             "BIL_AIR": "BIL_AIR",
             "IPAD":"I-PAD",
             "JENAZAH":"JENAZAH",
-            "KEMATIAN": "KEMATIAN"
+            "KEMATIAN": "KEMATIAN",
+            "INSURANCE": "INSURANCE",
+            "MED_ADVANCE": "MED_ADVANCE",
+            "CASH_BACK" : "CASH_BACK",
+            "STATMENT_DUE" : "STATMENT_DUE",
+            "SERV_TAX" : "SERV_TAX",
+            "MERCH_RETURN" : "MERCH_RETURN",
+            "PERSONAL_EXP" : "PERSONAL_EXPENSE",
+            "POTONGAN_ELAUN" : "POTONGAN_ELAUN",
+            'SEWAPETAK': "SEWAPETAK"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",
@@ -219,7 +230,18 @@ sap.ui.define([
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
             "ZREJECT_REASON": "/ZREJECT_REASON",
             "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
-            "ZDISBURSEMENT_STATUS": "/ZDISBURSEMENT_STATUS"
+            "ZDISBURSEMENT_STATUS": "/ZDISBURSEMENT_STATUS",
+            "ZCOST_CENTER": "/ZCOST_CENTER",
+            "ZDEPARTMENT": "/ZDEPARTMENT",
+            "ZBRANCH": "/ZBRANCH",
+            "ZMARITAL_STAT": "/ZMARITAL_STAT",
+            "ZJOB_GROUP": "/ZJOB_GROUP",
+            "ZOFFICE_LOCATION": "/ZOFFICE_LOCATION",
+            "ZSTATE": "/ZSTATE",
+            "ZCOUNTRY": "/ZCOUNTRY",
+            "ZROLE": "/ZROLE",
+            "ZUSER_TYPE": "/ZUSER_TYPE",
+            "ZEMP_TYPE": "/ZEMP_TYPE",
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -299,7 +321,35 @@ sap.ui.define([
             "COUNTRY": "COUNTRY",
             "PHONE_NO": "PHONE_NO",
             "ALT_CC" : "ALT_CC",
-            "PROJECT_CODE" : "PROJECT_CODE"
+            "PROJECT_CODE" : "PROJECT_CODE",
+            "POLICY_END_DATE" : "POLICY_END_DATE",
+            "POLICY_START_DATE" : "POLICY_START_DATE",
+            "DISABLED" : "DISABLED",
+            "MEDICAL_BENEFICIARY" : "MEDICAL_BENEFICIARY",
+            "EMPLOYED" : "EMPLOYED",
+            "DEPENDENT_NO": "DEPENDENT_NO",
+            "DEPENDENT": "DEPENDENT",
+            "COST_CENTER_ID": "COST_CENTER_ID",
+            "COST_CENTER_DESC": "COST_CENTER_DESC",
+            "DEPARTMENT_ID": "DEPARTMENT_ID",
+            "DEPARTMENT_DESC": "DEPARTMENT_DESC",
+            "BRANCH_ID": "BRANCH_ID",
+            "BRANCH_DESC": "BRANCH_DESC",
+            "MARRIAGE_STATUS_ID": "MARRIAGE_STATUS_ID",
+            "MARRIAGE_STATUS_DESC": "MARRIAGE_STATUS_DESC",
+            "JOB_GROUP_ID": "JOB_GROUP_ID",
+            "JOB_GROUP_DESC": "JOB_GROUP_DESC",
+            "LOCATION_ID": "LOCATION_ID",
+            "COUNTRY_ID": "COUNTRY_ID",
+            "COUNTRY_DESC": "COUNTRY_DESC",
+            "ROLE_ID": "ROLE_ID",
+            "ROLE_DESC": "ROLE_DESC",
+            "USER_TYPE_ID": "USER_TYPE_ID",
+            "USER_TYPE_DESC": "USER_TYPE_DESC",
+            "EMP_TYPE_ID": "EMP_TYPE_ID",
+            "EMP_TYPE_DESC": "EMP_TYPE_DESC",
+            "SUBMISSION_TYPE_DESC": "SUBMISSION_TYPE_DESC",
+            "OBJECTIVE_PURPOSE": "OBJECTIVE_PURPOSE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -320,7 +370,8 @@ sap.ui.define([
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
             "SUPER_ADMIN": "Super Admin",
-            "HEADOFDEP": "HOD"
+            "HEADOFDEP": "HOD",
+            "CCC_ADMIN" : "CCC Admin"
         },
         "User_Type": {
             "CASH_FI": "CASH_FI",
@@ -345,7 +396,8 @@ sap.ui.define([
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET",
-            "ZEMP_CA_PAYMENT" : "ZEMP_CA_PAYMENT"
+            "ZEMP_CA_PAYMENT" : "ZEMP_CA_PAYMENT",
+            "ZCORPORATE_CARD" : "ZCORPORATE_CARD"
         },
         "BudgetCheckStatus": {
             "NOT_FOUND": "RECORD NOT FOUND",
@@ -409,7 +461,8 @@ sap.ui.define([
             "EVENTS": "RT0003",
             "REIMBURSEMENT": "RT0004",
             "MEDICAL": "RT0005",
-            "PROJECT": "RT0006"
+            "PROJECT": "RT0006",
+            "CORP_CC" : "RT0007"
         },
         "ClaimFooterMode": {
             "SUMMARY": "SUMMARY",
@@ -490,7 +543,8 @@ sap.ui.define([
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
-                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART", "ZEMP_PENDING_LIST", "ZSUBSTITUTION_RULES_CONFIG"
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE", "ZTRAIN_COURSE_PART", "ZEMP_PENDING_LIST", "ZSUBSTITUTION_RULES_CONFIG",
+                "ZCORPORATE_CARD", "ZCORPORATE_CARD_ADVANCED", "ZCLAIM_TYPE_ITEM_CHARGING_CC", "ZJOB_CODE_MAPPING"
             ],
         "ExcludeField":
         {
@@ -684,7 +738,8 @@ sap.ui.define([
             "TRAVEL_INSURANCE": "Medical Travel Insurance",
             "VISA": "Visa & Passport",
             "YURAN": "Yuran Penyertaan Bagi Tugas Rasmi",
-            "YURAN_KLJ": "Bayaran Yuran KLJ"
+            "YURAN_KLJ": "Bayaran Yuran KLJ",
+            "INSURANCE": "INSURANCE"
         },
         "FrequencyCheckClaimTypeItem": {
             "MAHKAMAH": "MAHKAMAH",
@@ -709,14 +764,71 @@ sap.ui.define([
             "EPFSFUAT" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT",
             "EPFSFPRD" : "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD"
         },
-        "RelationshipType": {
-            "SPOUSE": "01",
-            "CHILD": "02",
-            "ADDITIONAL_SPOUSE": "07"
-        },
         "PeduResult": {
             "EXCEEDED": "EXCEEDED",
             "NOT_EXCEEDED": "NOT_EXCEEDED"
+        },
+
+        "TravelClaimType" :{
+            "DLM_NEGARA" : "DLM_NEGARA",
+            "LUAR_NEGARA" : "LUAR_NEGARA",
+            "KURSUS_DLM_NEGARA" : "KURSUS_DLM_NEGARA",
+            "KURSUS_LUAR_NEGARA" : "KURSUS_LUAR_NEGARA"
+        },
+
+        "TravelClaimItems" : {
+            "FLIGHT_L" : "FLIGHT_L",
+            "HOTEL_L" : "HOTEL_L",
+            "YURAN" : "YURAN",
+            "CASH_REPAY"  : "CASH_REPAY",
+            "DOBI" : "DOBI",
+            "TAMBANG" : "TAMBANG",
+            "MISC" : "MISC",
+            "PARKING" : "PARKING",
+            "EXCESS" : "EXCESS",
+            "FLIGHT_O" : "FLIGHT_O",
+            "HOTEL_O" : "HOTEL_O",
+            "PELBAGAI" : "PELBAGAI",
+            "SERVICES" : "SERVICES",
+            "TELEFON" : "TELEFON",
+            "VISA" : "VISA",
+        },
+        "StatementDueInfo" : {
+            "GL_CODE" : "214229",
+            "MATERIAL_CODE" : "NA"
+        },
+        "CashBackInfo" : {
+            "GL_CODE" : "690003",
+            "MATERIAL_CODE" : "NA",
+            "COST_CENTER" : "100050505"
+        },
+        "ServiceTaxInfo" : {
+            "GL_CODE" : "721001",
+            "MATERIAL_CODE" : "721001006",
+            "COST_CENTER" : "100050505"
+        },
+        "InsuranceMedicalProvider": {
+            "OTHERS": "4",
+        },
+        "MedicalAdvanceInfo": {
+            "COST_CENTER": "100000000",
+            "GL_ACCOUNT": "214230"
+        },
+        "WorkflowArea": {
+            "WORKFLOW_GENERAL"          : "WORKFLOW_GENERAL",
+            "WORKFLOW_DETERMINATION"    : "WORKFLOW_DETERMINATION",
+            "APPROVER_DETERMINATION"    : "APPROVER_DETERMINATION",
+            "WORKFLOW_TABLE_SAVING"     : "WORKFLOW_TABLE_SAVING",
+            "WORKFLOW_NOTIFICATION"     : "WORKFLOW_NOTIFICATION",
+            "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
+            "BUDGET_CHECKING"           : "BUDGET_CHECKING",
+            "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
+            "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
+        },
+        "AttachmentConfig": {
+            "MAX_FILE_SIZE": 5.0,
+            "MIME_TYPES": ["image/jpeg", "image/png", "application/pdf"],
+            "ALLOWED_FILE_TYPES": ["jpg", "jpeg", "png", "pdf"]
         }
 
     }

@@ -65,8 +65,19 @@ module.exports = {
     return oPayload;
   },
 
+  /**
+* Determines the frequency based on the employee's job grade.
+* Retrieves configured exception job grades and frequency values from ZCONSTANTS.
+* If the employee grade matches a configured exception grade, the exception
+* frequency is returned; else, the default frequency is used.
+* @private
+* @param {string} sEmpGrade Employee job grade.
+* @param {number} iDefaultFreq Default HP frequency value.
+* @param {object} tx CDS transaction instance.
+* @returns {Promise<{freqValue: number, isExceptionGrade: boolean}>}
+*/
   _getCustomFrequencyException: async function (sEmpGrade, iDefaultFreq, tx) {
-    if (!sEmpGrade) return iDefaultFreq;
+    if (!sEmpGrade) return {freqValue: iDefaultFreq, isExceptionGrade: false};
     const aConfigs = await tx.run(
       SELECT.from(Constant.Entities.ZCONSTANTS).where({
         ID: { in: [Constant.ConstantId.EXCEPTION_HP_FREQUENCY_JOB_GRADE, Constant.ConstantId.EXCEPTION_HP_FREQUENCY] }
@@ -307,10 +318,13 @@ module.exports = {
             (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
           );
           if (iIndex == -1) return;
-          if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
-            oPayload.CheckFields[iIndex].result = true;
+          //reject if no rule, then accept if frequency not exceeded, else error
+          if (!oRule) {
+              throw new Error("You are not eligible for this claim.");
+          } else if (iExistingFreq < iAllowedFreq) {
+              oPayload.CheckFields[iIndex].result = true;
           } else {
-            throw new Error("Claim Type has exceeded allowed eligibility frequency.");
+              throw new Error("Claim Type has exceeded allowed eligibility frequency.");
           }
         }
 
@@ -320,9 +334,7 @@ module.exports = {
           (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
         );
         if (iIndex == -1) return;
-        if (!oRule) {
-          oPayload.CheckFields[iIndex].result = false;
-        } else {
+        if (oRule) {
           // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
           // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
           if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {

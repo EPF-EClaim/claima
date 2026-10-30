@@ -32,11 +32,8 @@ sap.ui.define([
 		},
 
         async postAttachment(fileName, fileBase64, emp_id) {
-
-			var sDestination = this._getSrvLink();
-			const sServiceUrl = sDestination + "/upsert";
 			
-            const res = await fetch(sServiceUrl, {
+            const oRes = await fetch(this._getSrvLink() + '/upsert', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -53,29 +50,36 @@ sap.ui.define([
                 })
             });
 
-            if (!res.ok) {
-                const errText = await res.text().catch(() => "");
-                console.log("Body:", await res.text());
-                throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
-            }
+			const oBody = await oRes.text().catch(() => "");
+			let oResult;
+			try {
+				oResult = JSON.parse(oBody)?.d?.[0];
+			} catch {
+				// non-JSON body (e.g. HTML error page); handled below
+			}
 
-            const json = await res.json();
-            const id = json?.d[0]?.key || json?.key || "";
-            const attachmentNumber = id.split('=')[1];
-            return attachmentNumber;
+			const sAttachmentNumber = oResult?.key?.split("=")[1];
+
+			if (!oRes.ok || oResult?.status === "ERROR" || !sAttachmentNumber) {
+				throw new Error(`Attachment POST failed (HTTP ${oRes.status}): ${oResult?.message || oBody.slice(0, 500)}`);
+			}
+			return sAttachmentNumber;
+
         },
 
         /* =========================================================
         * Attachments Post to MDF
         * ======================================================= */
 
-        async postMDF(reqID, attachment1, attachment2) {
+        async postMDF(reqID, attachment1, attachment2, attachment3, attachment4) {
 
 			var sDestination = this._getSrvLink();
 			const sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
+			const hasAttachment3 = attachment3 && String(attachment3).trim().length > 0;
+			const hasAttachment4 = attachment4 && String(attachment4).trim().length > 0;
 
 			const payload = {
 				__metadata: {
@@ -96,6 +100,22 @@ sap.ui.define([
 				payload.cust_Parent_attachment2Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment2}')`
+					}
+				};
+			}
+
+			if (hasAttachment3) {
+				payload.cust_Parent_attachment3Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment3}')`
+					}
+				};
+			}
+
+			if (hasAttachment4) {
+				payload.cust_Parent_attachment4Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment4}')`
 					}
 				};
 			}
@@ -129,13 +149,15 @@ sap.ui.define([
         * Attachments Post to Child MDF
         * ======================================================= */
 
-		async postMDFChild(reqID, reqSubID, attachment1, attachment2) {
+		async postMDFChild(reqID, reqSubID, attachment1, attachment2, attachment3, attachment4 ) {
 			
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
+			const hasAttachment3 = attachment3 && String(attachment3).trim().length > 0;
+			const hasAttachment4 = attachment4 && String(attachment4).trim().length > 0;
 
 			const payload = {
 				__metadata: {
@@ -157,6 +179,22 @@ sap.ui.define([
 				payload.cust_attachment2Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment2}')`
+					}
+				};
+			}
+
+			if (hasAttachment3) {
+				payload.cust_attachment3Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment3}')`
+					}
+				};
+			}
+
+			if (hasAttachment4) {
+				payload.cust_attachment4Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment4}')`
 					}
 				};
 			}
@@ -225,12 +263,25 @@ sap.ui.define([
 								oItemModel.getProperty(`/claim_item/${sTarget}`));
 							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
 						}
+
+					if (sTarget === "attachment_file_3") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
+						}
+	
+					if (sTarget === "attachment_file_4") {
+							oItemModel.setProperty(`/claim_item/${sTarget}_delete`,
+								oItemModel.getProperty(`/claim_item/${sTarget}`));
+							oItemModel.setProperty(`/claim_item/${sTarget}`, null);
+						}
+					oItemModel.refresh(true);
 						break;
 						
 					case Constants.SubmissionTypePrefix.REQUEST:
 						if (sTarget === "doc1") {
 							this._oView.byId("i_attachment_1_file")?.clear();
-							this._oView.byId("i_attachment_1_file").setRequired(true);
+							// required state is handled by the expression binding (KWSP Office / toll rule)
 							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
 								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}
@@ -239,10 +290,20 @@ sap.ui.define([
 							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
 								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
 						}
+						if (sTarget === "doc3") {
+							this._oView.byId("i_attachment_3_file")?.clear();
+							this._oView.byId("i_attachment_3_file").setRequired(true);
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+						}
+						if (sTarget === "doc4") {
+							this._oView.byId("i_attachment_4_file")?.clear();
+							oItemModel.setProperty(`/req_item/${sTarget}_delete`, 
+								oItemModel.getProperty(`/req_item/${sTarget}_filename`));
+						}
 						oItemModel.setProperty(`/req_item/${sTarget}_filename`, null);
 						break;
 				}
-				oItemModel.refresh(true);
 			} catch (e) {
 				MessageBox.error(e.message || Utility.getText("msg_attachment_delete_error"));
 			}

@@ -7,10 +7,11 @@ module.exports = {
         * @param {String} sRecordId - Claims / Request Record ID
         * @param {String} sStatus - Status to be updated into header tables
         * @param {Object} tx - CDS Transaction
+        * @param {Boolean} bAutoApprove - flag to determine if it is auto approval flow
         * @returns {Integer} result number of records updated in header tables
         */
-    updateApproverActionToHeader: async function (sRecordId, sStatus, tx) {
-        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField, sStatusField;
+    updateApproverActionToHeader: async function (sRecordId, sStatus, tx, bAutoApprove) {
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sApproverDetailsTable, sApproverIdField, sIdField, sDateField, sTimeField, sReasonIdField, sStatusField, sAdditionalDateField;
 
         // Build Where Condition
         switch (sRecordId.substring(0, 3)) {
@@ -53,16 +54,29 @@ module.exports = {
         }
 
         //Split Timestamp into Date Time
-        var oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
+        let oDateTime;
+        if (!!oTimestamp.PROCESS_TIMESTAMP) {
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(oTimestamp.PROCESS_TIMESTAMP);
+        } else {
+            oDateTime = BuildSelectWhereConditions.formatTimeStamp(new Date());
+        }
 
         var dDate = oDateTime.sDateFormat;
         var tTime = oDateTime.sTimeFormat;
 
         // change Date time field based on Status
         switch (sStatus) {
+
+            case Constant.Status.PENDING_APPROVAL:
+                sDateField = Constant.EntitiesFields.SUBMITTED_DATE;
+                break;
+
             case Constant.Status.APPROVED:
                 sDateField = Constant.EntitiesFields.LAST_APPROVED_DATE;
                 sTimeField = Constant.EntitiesFields.LAST_APPROVED_TIME;
+                if(bAutoApprove){
+                sAdditionalDateField = Constant.EntitiesFields.SUBMITTED_DATE;   //added in SUBMITTED_DATE field for auto approve scenarios
+                }
                 break;
 
             case Constant.Status.REJECTED:
@@ -90,7 +104,12 @@ module.exports = {
             [sTimeField]: tTime,
             [sStatusField]: sStatus // caters for both par and claim
         };
-
+        
+        // for scenarios which require additional date field
+        if (sAdditionalDateField){
+            oToUpdateFields[sAdditionalDateField] =  dDate;
+        }
+        
         // Reject and Push back has reason ID fields
         if ((sStatus == Constant.Status.REJECTED) || (sStatus == Constant.Status.PUSH_BACK)) {
             oToUpdateFields[sReasonIdField] =  sReasonId;
@@ -101,11 +120,46 @@ module.exports = {
             [sIdField]: sRecordId
         };
 
-        console.log("To Update Fields: ", oToUpdateFields);
-        console.log("Where Conditions: ", oWhereConditions);
-        console.log("Header Table: ", sHeaderTable);    
+        return sResult = await this._updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
+    },
 
-        return sResult = await this.updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
+    /**
+        * Update Claim and Request Header Status
+        * @public
+        * @param {String} sRecordId - Claims / Request Record ID
+        * @param {String} sStatus - Status to be updated into header tables
+        * @param {Object} tx - CDS Transaction
+        * @returns {Integer} result number of records updated in header tables
+        */
+    updateHeaderStatus: async function (sRecordId, sStatus, tx) {
+        var sHeaderTable, oToUpdateFields, oWhereConditions, sIdField, sStatusField;
+
+        // Build Where Condition
+        switch (sRecordId.substring(0, 3)) {
+            case Constant.WorkflowType.CLAIM:
+                sIdField = Constant.EntitiesFields.CLAIMID;
+                sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS_ID;
+                break;
+
+            case Constant.WorkflowType.REQUEST:
+                sIdField = Constant.EntitiesFields.REQUESTID;
+                sHeaderTable = Constant.Entities.ZREQUEST_HEADER;
+                sStatusField = Constant.EntitiesFields.STATUS;
+                break;
+        };
+
+        // Object of to be updated fields
+        oToUpdateFields = {
+            [sStatusField]: sStatus // caters for both par and claim
+        };
+
+        // where condition
+        var oWhereConditions = {
+            [sIdField]: sRecordId
+        };
+
+        return sResult = await this._updateHeader(sHeaderTable, oToUpdateFields, oWhereConditions, tx);
     },
 
     /**
@@ -117,24 +171,28 @@ module.exports = {
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} number of records updated
         */
-    updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
-        const iResult = await tx.run(
-            UPDATE(sHeaderTable)
-                .set(oToUpdateFields)
-                .where(oWhereConditions));
+    _updateHeader: async function (sHeaderTable, oToUpdateFields, oWhereConditions, tx) {
+        try {
+            const iResult = await tx.run(
+                UPDATE(sHeaderTable)
+                    .set(oToUpdateFields)
+                    .where(oWhereConditions));
 
-        if (sHeaderTable === 'ZREQUEST_HEADER' || sHeaderTable === Constant.Entities.ZREQUEST_HEADER) {
+            if (sHeaderTable === 'ZREQUEST_HEADER' || sHeaderTable === Constant.Entities.ZREQUEST_HEADER) {
         
-            // Extract the ID and Status from the objects passed into the function
-            const sRequestId = oWhereConditions.REQUEST_ID; 
-            const sStatus = oToUpdateFields.STATUS;
+                // Extract the ID and Status from the objects passed into the function
+                const sRequestId = oWhereConditions.REQUEST_ID;
+                const sStatus = oToUpdateFields.STATUS;
 
-            await this.handlePostHeaderUpdate(sRequestId, sStatus, tx);
+                await this.handlePostHeaderUpdate(sRequestId, sStatus, tx);
 
-        }
+            }
 
-        // Return the original update result (number of affected rows)
-        return iResult;
+            // Return the original update result (number of affected rows)
+            return iResult;
+        } catch (error) {
+            throw new Error(`Failed to update header table "${sHeaderTable}": ${error.message}`);
+        }    
     },
 
     /**
@@ -159,7 +217,7 @@ module.exports = {
                     .from('ZBUDGET')
                     .columns('WBS_CODE')
                     .where({
-                        PROJECT_CODE: sProjectCode,
+                        PROJECT_CODE: oHeader.PROJECT_CODE,
                         YEAR: sCurrentYear
                     })
             );

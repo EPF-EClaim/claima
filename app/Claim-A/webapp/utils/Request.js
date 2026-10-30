@@ -2,12 +2,16 @@ sap.ui.define([
   "sap/m/MessageToast",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter"
-], function (MessageToast, Filter, FilterOperator, Sorter) {
+  "sap/ui/model/Sorter",
+  "claima/utils/DateUtility"
+], function (MessageToast, Filter, FilterOperator, Sorter, DateUtility) {
   "use strict";
 
   // ---- Pure helpers (no UI) ----
-  function _mapHeader(oData) {
+ function _mapHeader(oData) {
+    const bIsCorpoCC = oData.CLAIM_TYPE_ID === Constants.ClaimType.CORPO_CRED_CARD;
+    const fReqAmt = Number(oData.PREAPPROVAL_AMOUNT) || 0;
+ 
     return {
       purpose        : oData.OBJECTIVE_PURPOSE      || "",
       reqtype        : oData.REQUEST_TYPE_DESC      || "",
@@ -21,6 +25,8 @@ sap.ui.define([
       altcostcenter  : oData.ALTERNATE_COST_CENTER  || "",
       doc1           : oData.ATTACHMENT1            || "",
       doc2           : oData.ATTACHMENT2            || "",
+      doc3           : oData.ATTACHMENT3            || "",
+      doc4           : oData.ATTACHMENT4            || "",
       comment        : oData.REMARK                 || "",
       eventdetail1   : oData.EVENT_FIELD1           || "",
       eventdetail2   : oData.EVENT_FIELD2           || "",
@@ -31,7 +37,7 @@ sap.ui.define([
       reqstatus_id   : oData.STATUS_ID              || "",
       costcenter     : oData.COST_CENTER            || "",
       cashadvamt     : oData.CASH_ADVANCE           || 0,
-      reqamt         : oData.PREAPPROVAL_AMOUNT     || 0,
+      reqamt         : (bIsCorpoCC && fReqAmt < 0) ? 0 : fReqAmt,
       claimtype      : oData.CLAIM_TYPE_ID          || "",
       claimtypedesc  : oData.CLAIM_TYPE_DESC        || "",
       reqdate        : oData.REQUEST_DATE
@@ -63,6 +69,9 @@ sap.ui.define([
     a.forEach(it => {
       if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
       if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+      // DB value is UTC; convert to local time in the DateTimePicker's format
+      it.DEPARTURE_TIME = DateUtility.formatDate(it.DEPARTURE_TIME, "dd MMM yyyy HH:mm") || null;
+      it.ARRIVAL_TIME = DateUtility.formatDate(it.ARRIVAL_TIME, "dd MMM yyyy HH:mm") || null;
     });
     return a;
   }

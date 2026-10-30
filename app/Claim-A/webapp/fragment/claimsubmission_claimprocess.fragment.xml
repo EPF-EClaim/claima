@@ -36,6 +36,9 @@
                                 { path: 'CLAIM_TYPE_DESC' },
                                 { path: 'CLAIM_TYPE_ID' }
                             ],
+                            filters: [
+                                { path: 'CLAIM_TYPE_ID', operator: 'NE', value1: 'CORPO_CRED_CARD' }
+                            ],
                             parameters: {
                                 $select: 'COST_CENTER,COST_CENTER_DESC,PROJECT_CLAIM'
                             }
@@ -87,7 +90,8 @@
                             sorter: [
                                 { path: 'COURSE_SESSION_KEY' },
                                 { path: 'COURSE_DESC' }
-                            ]
+                            ],
+                            length: 1000
                         }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
                             ${claimsubmission_input>/claimtype/item} !== null
@@ -127,11 +131,11 @@
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/requestform/request_id}"
                         items="{
-                            path: 'employee>/ZREQUEST_HEADER',
+                            path: 'employee_view>/ZPARTICIPANT_PREAPPROVED_AMOUNT',
+                            suspended: true,
                             sorter: [{ path: 'REQUEST_ID' }],
                             parameters: {
-                                $expand: 'COSTCENTER,ZTRAVEL_TYPE,ZTRANSFER_MODE,ZFAMILY_TIMING,ZPROJECT_HDR',
-                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC,TRANSFER_MODE_ID,TRAVEL_ALONE_FAMILY,TRAVEL_FAMILY_NOW_LATER,ZTRAVEL_TYPE/TRAVEL_TYPE_DESC,ZTRANSFER_MODE/TRANSFER_MODE_DESC,ZFAMILY_TIMING/FAMILY_TIMING_DESC,PROJECT_CODE,ZPROJECT_HDR/PROJECT_DESC'
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,ALT_COST_CENTER_DESC,PREAPPROVED_AMOUNT,TRANSFER_MODE_ID,TRANSFER_MODE_DESC,TRAVEL_ALONE_FAMILY,TRAVEL_TYPE_DESC,TRAVEL_FAMILY_NOW_LATER,FAMILY_TIMING_DESC,PROJECT_CODE,PROJECT_DESC'
                             }
                         }"
                         editable="{= !${claimsubmission_input>/req_emailapprove} }"
@@ -141,7 +145,7 @@
                         change="onSelect_ClaimProcess_RequestForm"
                         liveChange="onSelect_ClaimProcess_RequestForm"
                     >
-                        <core:Item key="{employee>REQUEST_ID}" text="{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})" />
+                        <core:Item key="{employee_view>REQUEST_ID}" text="{employee_view>REQUEST_ID} {employee_view>OBJECTIVE_PURPOSE} ({employee_view>TRIP_START_DATE} – {employee_view>TRIP_END_DATE})" />
                     </Select>
 
                     <!-- Email Approval -->
@@ -153,7 +157,8 @@
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
-                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) &amp;&amp; 
+                                        ${claimsubmission_input>/claimtype/type} !== ${constant>/ClaimType/MEDICAL_ADVANCE}}" 
                         change="onSwitch_ClaimProcess_Req_EmailApprove"
                     >
                         <layoutData>

@@ -1,0 +1,30 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        id="medicalPolicyDialog"
+        type="Message"
+        state="Warning"
+        title="{i18n>dialog_medical_policy}">
+
+        <Text
+            text="{i18n>msg_medical_policy}"
+            wrapping="true" />
+
+        <beginButton>
+            <Button
+                type="Emphasized"
+                text="{i18n>button_yes}"
+                press=".onMedicalPolicyYes" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="{i18n>button_no}"
+                press=".onMedicalPolicyNo" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

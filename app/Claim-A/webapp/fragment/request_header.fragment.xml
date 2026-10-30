@@ -29,8 +29,11 @@
                     icon="sap-icon://edit"
                     text="{i18n>req_b_edit}"
                     press=".onEditHeaderPress"
-                    visible="{= ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
-                                ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} }" />
+                    visible="{= ( ${request>/req_header/reqstatus} === ${constant>/RequestStatus/DRAFT} ||
+                                  ${request>/req_header/reqstatus} === ${constant>/RequestStatus/SEND_BACK} ) &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/VIEWAPPR} &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/APPROVER} &amp;&amp;
+                                ${request>/view} !== ${constant>/PARMode/VIEW} }" />
             </OverflowToolbar>
 
             <form:Form 
@@ -42,7 +45,7 @@
                         <form:formElements>
                             <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
-                            <form:FormElement label="{i18n>req_tripstartdate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                            <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_start} : ${i18n>req_tripstartdate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <Text text="{
                                         path: 'request>/req_header/tripstartdate',
@@ -56,10 +59,24 @@
                                     }"/>
                                 </form:fields>
                             </form:FormElement>
-                            <form:FormElement label="{i18n>req_tripenddate} {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
+                            <form:FormElement label="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} ? ${i18n>req_billing_cycle_end} : ${i18n>req_tripenddate} } {i18n>icon_info}" tooltip="{i18n>valuehelp_reqinput_tripdate}">
                                 <form:fields>
                                     <Text text="{
                                         path: 'request>/req_header/tripenddate',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: {
+                                            source: {
+                                                pattern: 'yyyy-MM-dd'
+                                            },
+                                            pattern: 'dd MMM yyyy'
+                                        }
+                                    }"/>
+                                </form:fields>
+                            </form:FormElement>
+                            <form:FormElement label="{i18n>req_corp_cc_payment_due_date}" visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/CORPO_CRED_CARD} }">
+                                <form:fields>
+                                    <Text text="{
+                                        path: 'request>/req_header/cccduedate',
                                         type: 'sap.ui.model.type.Date',
                                         formatOptions: {
                                             source: {
@@ -130,7 +147,7 @@
                                         }}" 
                                     textDirection="RTL"></Text></form:fields>
                             </form:FormElement>
-                            <form:FormElement label="{i18n>req_amt}">
+                            <form:FormElement label="{i18n>req_amt}" visible="{= ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD} }">
                                 <form:fields><Text text="{
                                         path: 'request>/req_header/reqamt',
                                         type: 'sap.ui.model.type.Float',
@@ -140,6 +157,27 @@
                                             groupingEnabled: true
                                         }}" 
                                     textDirection="RTL"></Text></form:fields>
+                            </form:FormElement>
+                            <form:FormElement
+                                label="{i18n>label_remaining_medical_entitlement}"
+                                visible="{= ${request>/req_header/claimtype} === ${constant>/ClaimType/MEDICAL_ADVANCE} }">
+
+                                <form:fields>
+
+                                    <Text
+                                        text="{
+                                            path: 'request>/req_header/medical_remaining',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2,
+                                                groupingEnabled: true
+                                            }
+                                        }"
+                                        textDirection="RTL" />
+
+                                </form:fields>
+
                             </form:FormElement>
                             <form:FormElement label="{i18n>req_rtype}"><form:fields><Text text="{request>/req_header/reqtype}" /></form:fields></form:FormElement>
                             <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>

@@ -9,6 +9,29 @@ sap.ui.define([
 ) {
     "use strict";
 
+    /**
+     * Converts a date value (Date object, timestamp or 'yyyy-MM-dd' string) to a new Date at local midnight.
+     * 'yyyy-MM-dd' strings are parsed as local dates (not UTC) to avoid off-by-one days.
+     * Module-level on purpose: the min/max date formatters are invoked with the controller as `this`.
+     * @private
+     * @param {string|Date|number} vDate input date
+     * @returns {Date|null} local date at 00:00:00.000, or null if empty/invalid
+     */
+    function _toLocalDate(vDate) {
+        if (!vDate) return null;
+
+        var dDate;
+        if (typeof vDate === "string" && /^\d{4}-\d{2}-\d{2}/.test(vDate)) {
+            var aParts = vDate.substring(0, 10).split("-").map(Number);
+            dDate = new Date(aParts[0], aParts[1] - 1, aParts[2]);
+        } else {
+            dDate = new Date(vDate);
+            dDate.setHours(0, 0, 0, 0);
+        }
+
+        return isNaN(dDate.getTime()) ? null : dDate;
+    }
+
     return {
 
         /**
@@ -86,6 +109,21 @@ sap.ui.define([
          */
         today: function () {
             return new Date();
+        },
+
+        /**
+         * Get 1 January of the year N years before the current year, in HANA date format (yyyy-MM-dd).
+         * Age is determined by birth year (current year - birth year), not by the exact birthday.
+         * Usage for age-based DOB filters:
+         *  - age N or below this year : DOB >= getDateNYearsAgo(N)
+         *  - age above N this year    : DOB <  getDateNYearsAgo(N)
+         * e.g. in 2026, getDateNYearsAgo(18) returns "2008-01-01"
+         * @public
+         * @param {integer} iYears - number of years to go back from the current year
+         * @return {string} 1 January of (current year - iYears) in 'yyyy-MM-dd' format
+         */
+        getDateNYearsAgo: function (iYears) {
+            return (this.today().getFullYear() - iYears) + "-01-01";
         },
 
         /**
@@ -254,6 +292,8 @@ sap.ui.define([
          * @param {string} sItemType - Claim Item Type.
          * @param {object} oHeader - Header data.
          * @param {object} oItem - Item data.
+         * @param {string} sFieldValue - Primary reference date for the bound (see field cases below).
+         *                                    (e.g. request Event End Date min: Event Start Date, else header Start Date).
          * @returns {Date|null} Minimum allowed date or null if invalid input.
          *
         **/
@@ -273,33 +313,36 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // Default Claim Type - minimum date = 90 days before header start date 
-                            if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR)  {
-                                _dMinDate = new Date(oHeader.trip_start_date);
-                                _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receipt_date_in_past"));
-                            } else {
-                                _dMinDate = new Date(oHeader.trip_start_date);
-                                const dPastDate = new Date(_dMinDate);
-                                dPastDate.setDate(dPastDate.getDate() - 90);
-                                _dMinDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receiptdate_mindate"));
-                            }
+                            const bMinIsTripStartDate = 
+                                sType === Constants.ClaimType.ELAUN_PINDAH 
+                                || (sType === Constants.ClaimType.ELAUN_TUKAR 
+                                    && ![Constants.ClaimTypeItem.FLIGHT_L,
+                                         Constants.ClaimTypeItem.HOTEL_L, 
+                                         Constants.ClaimTypeItem.LAUT]
+                                         .includes(sItemType));
 
+                            _dMinDate = new Date(oHeader.trip_start_date);
+
+                            if (!bMinIsTripStartDate) {
+                                // Default Claim Type - minimum date = 90 days before header trip start date 
+                                _dMinDate.setDate(_dMinDate.getDate() - 90);
+                            };
+
+                            _oAppModel?.setProperty(
+                                `/fieldControl/${sFieldName}/customMinDateError`,
+                                _oResourceBundle.getText(
+                                    bMinIsTripStartDate ? "error_receipt_date_in_past" : "error_receiptdate_mindate"
+                                )
+                            );
                             break;
                     }
                     break;
                 case Constants.EntitiesFields.START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
-                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMinDate = new Date(oHeader.tripstartdate);
-                                _dMinDate.setDate(_dMinDate.getDate());
-                            }
-                              else {
-                                _dMinDate = null;
-                            }
+                            // Request item - minimum date = header Start Date (sFieldValue)
+                            // if header Start Date not set, default to null (no constraint)
+                            _dMinDate = sFieldValue;
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -331,11 +374,9 @@ sap.ui.define([
                 case Constants.EntitiesFields.END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
-                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMinDate = new Date(oHeader.tripstartdate);
-                                _dMinDate.setDate(_dMinDate.getDate());
-                            }
-                           
+                            // Request item - minimum date = header Start Date (sFieldValue)
+                            // if header Start Date not set, default to null (no constraint)
+                            _dMinDate = sFieldValue;
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -368,11 +409,32 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_end_date_kursus_mindate"));
                                 }
                             } else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMinDate = new Date(oHeader["trip_start_date"]);
-                                const dPastDate = new Date(_dMinDate);
-                                _dMinDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                                // Elaun Perpindahan/Pertukaran - minimum date = item start date
+                                // if item start date not set, use header trip start date
+                                if (oItem?.start_date) {
+                                    _dMinDate = oItem.start_date;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_end_date_mindate"));
+                                } else {
+                                    _dMinDate = oHeader?.trip_start_date;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                                }
+                                // Elaun Perpindahan / Elaun Pertukaran (e.g. Elaun Pengangkutan items)
+                                // minimum date = item start date if set, otherwise header trip start date
+                                // (whichever is later), so End Date can never be earlier than Start Date
+                                var dHeaderStart = new Date(oHeader["trip_start_date"]);
+                                var dItemStart = (oItem && oItem["start_date"]) ? new Date(oItem["start_date"]) : null;
+                                if (!!dItemStart && !isNaN(dItemStart.getTime()) &&
+                                    (isNaN(dHeaderStart.getTime()) || dItemStart >= dHeaderStart)) {
+                                    _dMinDate = dItemStart;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_end_date_mindate"));
+                                } else {
+                                    _dMinDate = dHeaderStart;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
+                                }
                             } else {
                                 // Other Claim Type - minimum date = item start date
                                 // if start date not set, default to null (no constraint)
@@ -459,19 +521,19 @@ sap.ui.define([
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_trip_start_date_in_past"));
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                if (!!sFieldValue){
+                                if (!!sFieldValue) {
                                     _dMinDate = new Date(sFieldValue);
                                     _dMinDate.setDate(_dMinDate.getDate() - oHeader["req_no_of_days"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("error_trip_start_date_exceed_mode_of_transfer"));
-                            
+
                                 } else
-                                if (!!oHeader["trip_end_date"]) {
-                                    _dMinDate = new Date(oHeader["trip_end_date"]);
-                                    _dMinDate.setDate(_dMinDate.getDate() - oHeader["req_no_of_days"]);
-                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                        _oResourceBundle.getText("error_trip_start_date_exceed_mode_of_transfer"));
-                                }
+                                    if (!!oHeader["trip_end_date"]) {
+                                        _dMinDate = new Date(oHeader["trip_end_date"]);
+                                        _dMinDate.setDate(_dMinDate.getDate() - oHeader["req_no_of_days"]);
+                                        _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                            _oResourceBundle.getText("error_trip_start_date_exceed_mode_of_transfer"));
+                                    }
                             }
                             break;
                     }
@@ -510,16 +572,16 @@ sap.ui.define([
                                 }
                             } else if (sType === Constants.ClaimType.ELAUN_TUKAR) {
 
-                                if (!!sFieldValue){
+                                if (!!sFieldValue) {
                                     _dMinDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                         _oResourceBundle.getText("req_d_w_check_date"));
                                 } else
-                                if (!!new Date(oHeader["trip_start_date"]).getTime()) {
-                                    _dMinDate = new Date(oHeader["trip_start_date"]);
-                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                        _oResourceBundle.getText("req_d_w_check_date"));
-                                }
+                                    if (!!new Date(oHeader["trip_start_date"]).getTime()) {
+                                        _dMinDate = new Date(oHeader["trip_start_date"]);
+                                        _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                            _oResourceBundle.getText("req_d_w_check_date"));
+                                    }
                             }
                             break;
                     }
@@ -535,7 +597,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            
+
                             break;
                     }
                     break;
@@ -543,12 +605,13 @@ sap.ui.define([
                 case Constants.EntitiesFields.EVENT_START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            // Event Start Date - minimum date = header Trip Start Date
+                            _dMinDate = oHeader?.tripstartdate;
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
                             if (sFieldValue) {
                                 _dMinDate = new Date(sFieldValue);
                             }
-                            break;
-                        case Constants.SubmissionTypePrefix.CLAIM:
-                            
                             break;
                     }
                     break;
@@ -556,21 +619,64 @@ sap.ui.define([
                 case Constants.EntitiesFields.EVENT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
-                            if (sFieldValue) {
-                                _dMinDate = new Date(sFieldValue);
-                            } 
+                            // Event End Date - minimum date = Event Start Date once it has a value,
+                            // otherwise header Trip Start Date
+                            _dMinDate = oHeader?.eventstartdate || oHeader?.tripstartdate;
                             break;
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            
+                            if (sFieldValue) {
+                                _dMinDate = new Date(sFieldValue);
+                            }
+                            break;
+                    }
+                    break;
+                case Constants.EntitiesFields.POLICY_END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            if (sItemType) {
+                                if (sItemType === Constants.ClaimTypeItem.MED_ADVANCE) {
+                                    const dYearStart = new Date(new Date().getFullYear(), 0, 1);
+
+                                    if (sFieldValue) {
+                                        const dPolicyStart = new Date(sFieldValue);
+
+                                        _dMinDate = dPolicyStart > dYearStart
+                                            ? dPolicyStart
+                                            : dYearStart;
+                                    } else {
+                                        _dMinDate = dYearStart;
+                                    }
+                                } else {
+                                    if (sFieldValue) {
+                                        _dMinDate = new Date(sFieldValue);
+                                    }
+                                }
+                            } else {
+                                if (sFieldValue) {
+                                    _dMinDate = new Date(sFieldValue);
+                                }
+                            }
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.POLICY_START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            if (sItemType) {
+                                if (sItemType === Constants.ClaimTypeItem.MED_ADVANCE) {
+                                    _dMinDate = new Date(new Date().getFullYear(), 0, 1);
+                                }
+                            } else {
+                                if (sFieldValue) {
+                                    _dMinDate = new Date(sFieldValue);
+                                }
+                            }
                             break;
                     }
                     break;
             }
-            if (_dMinDate !== null) {
-                _dMinDate = new Date(_dMinDate);
-                _dMinDate.setHours(0, 0, 0, 0);
-            }
-            return _dMinDate;
+            return _toLocalDate(_dMinDate);
         },
 
         /**
@@ -583,6 +689,8 @@ sap.ui.define([
          * @param {string} sItemType - Claim Item Type.
          * @param {object} oHeader - Header data.
          * @param {object} oItem - Item data.
+         * @param {string} sFieldValue - Primary reference date for the bound (see field cases below).
+         *                                    (e.g. request Event Start Date max: Event End Date, else header End Date).
          * @returns {Date|null} Maximum allowed date or null if invalid input.
          *
         **/
@@ -632,17 +740,9 @@ sap.ui.define([
                 case Constants.EntitiesFields.START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
-                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMaxDate = new Date(oHeader.tripenddate);
-                                _dMaxDate.setDate(_dMaxDate.getDate());
-                            }
-                               else {
-                                if (sFieldValue){
-                                    _dMaxDate = new Date(sFieldValue);
-                                    _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                        _oResourceBundle.getText("error_trip_start_date_in_past"));
-                                }
-                            }
+                            // Request item - maximum date = header End Date (sFieldValue)
+                            // if header End Date not set, default to null (no constraint)
+                            _dMaxDate = sFieldValue;
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -664,11 +764,22 @@ sap.ui.define([
                                 }
                             }
                             else if (sType === Constants.ClaimType.ELAUN_PINDAH || sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                // Elaun Perpindahan - maximum date = trip end date
-                                _dMaxDate = new Date(oHeader["trip_end_date"]);
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
+                                // Elaun Perpindahan/Pertukaran / Elaun Pertukaran (e.g. Elaun Pengangkutan items)
+                                // maximum date = item end date
+                                // if item end date not set, use header item end date if set, otherwise header trip end date
+                                // (whichever is earlier), so Start Date can never exceed End Date
+                                var dHeaderEnd = new Date(oItem?.end_date) || new Date(oHeader?.trip_end_date);
+                                var dItemEnd = (oItem && oItem["end_date"]) ? new Date(oItem["end_date"]) : null;
+                                if (!!dItemEnd && !isNaN(dItemEnd.getTime()) &&
+                                    (isNaN(dHeaderEnd.getTime()) || dItemEnd <= dHeaderEnd)) {
+                                    _dMaxDate = dItemEnd;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_maxdate"));
+                                } else {
+                                    _dMaxDate = dHeaderEnd;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_start_date_mknloan_item_maxdate"));
+                                }
                             }
                             else if (sType === Constants.ClaimType.KURSUS_LUAR_NEGARA){
                                 // Kursus Dalam Negara/Kursus Luar Negara - maximum date = item end date
@@ -702,13 +813,9 @@ sap.ui.define([
                 case Constants.EntitiesFields.END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
-                            if (sType === Constants.ClaimType.ELAUN_TUKAR) {
-                                _dMaxDate = new Date(oHeader.tripenddate);
-                                _dMaxDate.setDate(_dMaxDate.getDate());
-                            }
-                               else {
-                                _dMaxDate = null;
-                            }
+                            // Request item - maximum date = header End Date (sFieldValue)
+                            // if header End Date not set, default to null (no constraint)
+                            _dMaxDate = sFieldValue;
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
@@ -795,8 +902,8 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_start_date_over_trip_end_date"));
                                 }
                             }
-                               else {
-                                if (sFieldValue){
+                            else {
+                                if (sFieldValue) {
                                     _dMaxDate = new Date(sFieldValue);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                         _oResourceBundle.getText("error_trip_start_date_in_past"));
@@ -847,7 +954,7 @@ sap.ui.define([
                                         _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
                                 }
                             }
-                            else{
+                            else {
                                 _dMaxDate = null;
                             }
                             break;
@@ -858,7 +965,7 @@ sap.ui.define([
                                     _dMaxDate = new Date(sFieldValue);
                                     _dMaxDate.setDate(_dMaxDate.getDate() + oHeader["req_no_of_days"]);
                                     _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
+                                        _oResourceBundle.getText("error_trip_end_date_exceed_mode_of_transfer"));
                                 } else
                                     if (!!new Date(oHeader["trip_start_date"]).getTime()) {
                                         _dMaxDate = new Date(oHeader["trip_start_date"]);
@@ -887,22 +994,24 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            
+
                             break;
                     }
                     break;
 
-                    case Constants.EntitiesFields.EVENT_START_DATE:
+                case Constants.EntitiesFields.EVENT_START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            // Event Start Date - maximum date = Event End Date once it has a value,
+                            // otherwise header End Date
+                            _dMaxDate = oHeader?.eventenddate || oHeader?.tripenddate;
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
                             if (sFieldValue) {
                                 _dMaxDate = new Date(sFieldValue);
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("req_d_w_check_date"));
                             }
-                            break;
-                        case Constants.SubmissionTypePrefix.CLAIM:
-                            
                             break;
                     }
                     break;
@@ -910,25 +1019,49 @@ sap.ui.define([
                 case Constants.EntitiesFields.EVENT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
+                            // Event End Date - maximum date = header End Date
+                            _dMaxDate = oHeader?.tripenddate;
+                            break;
+                        case Constants.SubmissionTypePrefix.CLAIM:
                             if (sFieldValue) {
                                 _dMaxDate = new Date(sFieldValue);
                                 _oAppModel?.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("req_d_w_check_date"));
-                            } 
-
+                            }
                             break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.POLICY_START_DATE:
+                    switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            
+                            if (sItemType) {
+                                if (sItemType === Constants.ClaimTypeItem.MED_ADVANCE) {
+
+                                    const dYearEnd = new Date(new Date().getFullYear(), 11, 31);
+
+                                    if (sFieldValue) {
+                                        const dPolicyEnd = new Date(sFieldValue);
+
+                                        _dMaxDate = dPolicyEnd < dYearEnd
+                                            ? dPolicyEnd
+                                            : dYearEnd;
+                                    } else {
+                                        _dMaxDate = dYearEnd;
+                                    }
+
+                                } else if (sFieldValue) {
+                                    _dMaxDate = new Date(sFieldValue);
+                                }
+                            } else {
+                                _dMaxDate = new Date(sFieldValue);
+                            }
                             break;
                     }
                     break;
             }
 
-            if (_dMaxDate !== null) {
-                _dMaxDate = new Date(_dMaxDate);
-                _dMaxDate.setHours(0, 0, 0, 0);
-            }
-            return _dMaxDate;
+            return _toLocalDate(_dMaxDate);
         },
 
         /**

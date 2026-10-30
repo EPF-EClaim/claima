@@ -67,11 +67,20 @@ sap.ui.define([
 
 			try {
 				const oContext = await oListBinding.requestContexts(0, Infinity);
-				const oContextItems = oContext.map((ctx) => ctx.getObject());
+				let oContextItems = oContext.map((ctx) => ctx.getObject());
 
 				oContextItems.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
+
+				//db error will be handled here instead of in the utility file
+				try {
+					oContextItems = await PARequestSharedFunction.computeCorpoCCTotalPaymentDue(
+						this._oDataModel, oContextItems, "REQUEST_ID"
+					);
+				} catch (oError) {
+                    MessageToast.show(Utility.getText("msg_ccc_total_unavailable", [String(oError.message || oError)]));
+				}
 
 				oReqStatusModel.setProperty("/req_header_list", oContextItems);
 				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
@@ -83,6 +92,10 @@ sap.ui.define([
 				oReqStatusModel.setProperty("/req_header_count", 0);
 				return [];
 			}
+		},
+
+		formatRequestAmount: function (sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount) {
+			return PARequestSharedFunction.formatRequestAmount(sRequestTypeId, fPreapprovalAmount, fTotalPaymentDueAmount);
 		},
 
 		async openItemFromList(oEvent) {
