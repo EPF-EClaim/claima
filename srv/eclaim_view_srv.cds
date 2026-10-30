@@ -1295,10 +1295,24 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             req.TRAVEL_ALONE_FAMILY,
             req.TRAVEL_FAMILY_NOW_LATER,
 
+            req.COSTCENTER.COST_CENTER_DESC       as ALT_COST_CENTER_DESC,
+            req.ZPROJECT_HDR.PROJECT_DESC         as PROJECT_DESC,
+            req.ZTRANSFER_MODE.TRANSFER_MODE_DESC as TRANSFER_MODE_DESC,
+            req.ZTRAVEL_TYPE.TRAVEL_TYPE_DESC     as TRAVEL_TYPE_DESC,
+            req.ZFAMILY_TIMING.FAMILY_TIMING_DESC as FAMILY_TIMING_DESC,
+
             sum(itemPart.ALLOCATED_AMOUNT) as PREAPPROVED_AMOUNT : Decimal
         }
         where
             req.STATUS IN ('STAT05', 'STAT06')
+            // hide the request from this participant once their own claim on it is
+            // Pending Approval / Push Back / Approved / Completed Disbursement
+            and not exists (
+                select 1 from ECLAIM.ZCLAIM_HEADER as header
+                where header.REQUEST_ID = itemPart.REQUEST_ID
+                  and header.EMP_ID     = itemPart.PARTICIPANTS_ID
+                  and header.STATUS_ID in ('STAT02', 'STAT03', 'STAT05', 'STAT06')
+            )
             
         group by
             itemPart.REQUEST_ID,
@@ -1321,7 +1335,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
             req.TRANSFER_MODE_ID,
             req.TRAVEL_ALONE_FAMILY,
-            req.TRAVEL_FAMILY_NOW_LATER;
+            req.TRAVEL_FAMILY_NOW_LATER,
+
+            req.COSTCENTER.COST_CENTER_DESC,
+            req.ZPROJECT_HDR.PROJECT_DESC,
+            req.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
+            req.ZTRAVEL_TYPE.TRAVEL_TYPE_DESC,
+            req.ZFAMILY_TIMING.FAMILY_TIMING_DESC;
 
     entity ZEMP_CLAIM_POLICY_VALID as
         select from ECLAIM.ZCLAIM_ITEM as item

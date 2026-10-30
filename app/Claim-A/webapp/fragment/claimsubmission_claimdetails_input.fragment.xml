@@ -394,7 +394,8 @@
                             emptyString: 0
 						}
 					}"
-					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
+                                ${claimsubmission_input>/claim_header/emp_id} === ${session>/userId}}"
                 />
 
                 <!-- Meter Cube Entitled -->
