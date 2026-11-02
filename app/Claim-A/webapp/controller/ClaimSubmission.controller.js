@@ -5830,10 +5830,6 @@ sap.ui.define([
 		_calculateCardAdvanceAmount: function () {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
-			if (oInputModel.getProperty("/view_only")) {
-				return;
-			}
-
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
 
@@ -5841,7 +5837,7 @@ sap.ui.define([
 				.filter((it) => it.charged_to_ccc)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
-			var nCardAdvanceAmount = nOriginalCardAdvanceAmount - nChargedToCccAmount;
+			var nCardAdvanceAmount = Math.round((nOriginalCardAdvanceAmount - nChargedToCccAmount) * 100) / 100;
 
 			oInputModel.setProperty("/claim_header/card_advance_amount", nCardAdvanceAmount);
 		},
