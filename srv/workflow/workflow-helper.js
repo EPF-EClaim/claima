@@ -444,7 +444,6 @@ async function checkRequestBudget(oTx, aBudgetContext, sId) {
         let aSuccessResults = [];
         let sCondition;
         var oEmployeeRollupCC;
-        let sCostCenter;
 
         // determine upper cost center, incase for no budget allocation for each item
         oEmployeeRollupCC = await getRollUpCostCenter(aBudgetContext[0].EMP_ID, aBudgetContext[0].ALTERNATE_COST_CENTER);
@@ -518,8 +517,6 @@ async function checkRequestBudget(oTx, aBudgetContext, sId) {
                 CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
             });
 
-            // rewrite the cost center in header level (in case of roll up cost center takes place)
-            if (!sCostCenter) sCostCenter = oBudgetData.FundCenter;
             continue;
         }
 
@@ -527,9 +524,6 @@ async function checkRequestBudget(oTx, aBudgetContext, sId) {
             return aErrorResults;
         }
 
-        // update parent cost center based on the cost center used for budget check
-        var sRequestHeader = cds.entities['eclaim_srv.ZREQUEST_HEADER'];
-        if (sCostCenter) await oTx.run(UPDATE(sRequestHeader).set({ [Constant.EntitiesFields.COST_CENTER]: sCostCenter }).where({ REQUEST_ID: sId }));
 
         return aSuccessResults;
 
