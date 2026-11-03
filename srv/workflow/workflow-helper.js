@@ -40,6 +40,9 @@ function resolveDocDescriptor(sId) {
 
     const oDescriptor = aEntityTableByPrefix[sPrefix];
     return oDescriptor;
+
+    if (typeof sId !== "string") return undefined;
+    return aEntityTableByPrefix[sId.slice(0, 3)];
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
     const oHeader =  await cds.run(
@@ -333,7 +336,7 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                         BUDGET_BALANCE: newBudgetBalance.toFixed(2),
                         ACTUAL: newActual.toFixed(2)
                     })
-                    .where(condition);
+                    .where(condition)
             );
 
             successResults.push({
