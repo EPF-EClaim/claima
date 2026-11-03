@@ -2434,7 +2434,7 @@ sap.ui.define([
 
 			//for CCC personal expense
 			await this._calculateClaimTotal();
-			await this._calculateCardAdvanceAmount();
+			this._calculateCardAdvanceAmount();
 		},
 
 		_setClaimDetailSelection: async function (oModel) {
@@ -5827,6 +5827,17 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
 
+		/**
+		 * Derives the remaining Corporate Credit Card (CCC) advance shown on the
+		 * claim header: original advance minus all claim items charged to the CCC.
+		 *
+		 * The header column CCC_ADV_AMT only stores the original advance, captured
+		 * when the claim is created; the remaining balance is never persisted. It is
+		 * therefore derived on screen from the items every time the claim is shown.
+		 *
+		 * @private
+		 * @returns {void}
+		 */
 		_calculateCardAdvanceAmount: function () {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
