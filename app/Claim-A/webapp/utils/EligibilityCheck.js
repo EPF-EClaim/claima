@@ -3,18 +3,12 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
 	"sap/ui/core/format/NumberFormat",
-	"sap/ui/model/Filter", 
-	"sap/ui/model/FilterOperator", 
-	"sap/ui/model/Sorter",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
 	ValueState,
 	NumberFormat,
-	Filter,
-	FilterOperator,
-	Sorter,
 	Constants,
 	Utility) {
 	"use strict";
@@ -35,7 +29,7 @@ sap.ui.define([
 		 * @returns {Promise<Object[]>} One payload per participant, with CheckFields populated
 		 */
 		generateEligibilityCheckPayload: async function (oController, sSubmissionType, oClaimItemPayload) {
-			let oItemData, aItemPartData, sRecordId, sRecordSubId, sClaimType, sClaimTypeItem, oMapping, sStateKey;
+			let oItemData, aItemPartData, sRecordId, sRecordSubId, sClaimType, sClaimTypeItem, oMapping;
 
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
@@ -45,7 +39,6 @@ sap.ui.define([
 					sRecordSubId = oItemData?.req_subid || null;
 					sClaimType = oController._oReqModel.getProperty('/req_header/claimtype');
 					sClaimTypeItem = oItemData.claim_type_item_id;
-					sStateKey = "to_state";
 
 					oMapping = {
 						// field                : db technical name
@@ -81,7 +74,6 @@ sap.ui.define([
 					sRecordSubId = oItemData?.claim_sub_id;
 					sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
 					sClaimTypeItem = oItemData.claim_type_item_id;
-					sStateKey = "to_state_id";
 					const sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount";
 					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 

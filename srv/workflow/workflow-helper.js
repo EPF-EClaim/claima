@@ -39,8 +39,7 @@ function resolveDocDescriptor(sId) {
     const sPrefix = sId.slice(0,3);
 
     const oDescriptor = aEntityTableByPrefix[sPrefix]
-    //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
-    return oDescriptor
+    return oDescriptor;
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
     const oHeader =  await cds.run(

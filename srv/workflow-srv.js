@@ -170,7 +170,7 @@ module.exports = (srv) => {
         } = req.data.request
 
         if (!sRecordId) {
-            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to process approval", false);
+            return generateReturnMessage(false, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to process approval", false);
         }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
