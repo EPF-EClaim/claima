@@ -409,8 +409,8 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
             if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
-                for (const oEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
-                    await oTx.run(UPDATE(oEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
+                for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
+                    await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }
             }
         }
