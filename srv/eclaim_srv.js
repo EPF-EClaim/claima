@@ -10,7 +10,7 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
-const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
+const { logWorkflowHistory } = require('./workflow/workflow-helper');
 
 module.exports = (srv) => {
 
