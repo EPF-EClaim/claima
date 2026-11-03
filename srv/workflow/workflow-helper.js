@@ -38,7 +38,7 @@ function resolveDocDescriptor(sId) {
     if (!sId) throw new Error("Document ID is required to resolve descriptor");
     const sPrefix = sId.slice(0,3);
 
-    const oDescriptor = aEntityTableByPrefix[sPrefix]
+    const oDescriptor = aEntityTableByPrefix[sPrefix];
     return oDescriptor;
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
@@ -128,7 +128,7 @@ async function retrieveRoleRank(sRole) {
     }
 
     if(sRole == "") {
-        return [{ RANK: '0', ROLE: 'Normal' }]
+        return [{ RANK: '0', ROLE: 'Normal' }];
     }
 
     return await cds.run(sQuery)
@@ -212,7 +212,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             ACTION          : sAction //SUBMIT, REJECT, APPROVE;
-        })
+        });
     }
     return aBudgetContexts
 }
@@ -238,7 +238,7 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
                 Constant.EntitiesFields.REASON_ID,
                 Constant.EntitiesFields.REASON_DESC
             )
-    )
+    );
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
 async function performBudgetChecking(oTx, aBudgetContext) {
@@ -333,7 +333,7 @@ async function performBudgetChecking(oTx, aBudgetContext) {
                         BUDGET_BALANCE: newBudgetBalance.toFixed(2),
                         ACTUAL: newActual.toFixed(2)
                     })
-                    .where(condition)
+                    .where(condition);
             );
 
             successResults.push({
@@ -404,7 +404,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
                 Constant.EntitiesFields.APPROVER_ID,
                 Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID
             )
-    )
+    );
     if(!aApproversDetails.length) {
         return null;
     }
@@ -433,7 +433,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
             SUB_EEID        : sSubEEID,
             SUB_NAME        : sSubName,
             SUB_EMAIL       : sSubEmail
-        })
+        });
     }
     return aApproversContext;
 }

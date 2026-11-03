@@ -5156,9 +5156,7 @@ module.exports = (srv) => {
 
         if (!oEmp) return req.reject(404, "Employee record not found");
         if (!sRecordId) return req.reject(400, "Document ID is required for cancellation");
-
-        const oDescriptor = resolveDocDescriptor(sRecordId);
-
+        
         // update header status
         try {
             await UpdateHeader.updateHeaderStatus(sRecordId, Constant.Status.CANCELLED, oTx);
