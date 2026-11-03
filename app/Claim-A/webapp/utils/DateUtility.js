@@ -303,7 +303,8 @@ sap.ui.define([
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-            const _sSubmissionType = sId.substring(0, 3);
+            const _sSubmissionType = sId ? sId.substring(0, 3): null;
+            if (!_sSubmissionType) return null;
             var _dMinDate = null;
 
             switch (sFieldName) {
@@ -700,7 +701,8 @@ sap.ui.define([
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-            const _sSubmissionType = sId.substring(0, 3);
+            const _sSubmissionType = sId ? sId.substring(0, 3): null;
+            if (!_sSubmissionType) return null;
             var _dMaxDate = null;
 
             switch (sFieldName) {

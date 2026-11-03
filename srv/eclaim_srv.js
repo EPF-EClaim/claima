@@ -5154,9 +5154,8 @@ module.exports = (srv) => {
         const { sRecordId } = req.data;
         const oEmp = await getLoggedInEmployee(oTx, req, srv.entities);
 
-        if (!oEmp) {
-            return req.reject(404, "Employee record not found");
-        }
+        if (!oEmp) return req.reject(404, "Employee record not found");
+        if (!sRecordId) return req.reject(400, "Document ID is required for cancellation");
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
 

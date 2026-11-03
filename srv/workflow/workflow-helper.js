@@ -34,8 +34,8 @@ const aEntityTableByPrefix = {
     }
 }
 
-
 function resolveDocDescriptor(sId) {
+    if (!sId) throw new Error("Document ID is required to resolve descriptor");
     const sPrefix = sId.slice(0,3);
 
     const oDescriptor = aEntityTableByPrefix[sPrefix]

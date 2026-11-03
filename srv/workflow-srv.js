@@ -47,6 +47,10 @@ module.exports = (srv) => {
 
         let bStatus = false;    // default to false, will be set to true
 
+        if (!sRecordId) {
+            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to start workflow", false);
+        }
+
         const oDescriptor = resolveDocDescriptor(sRecordId);
         if (!oDescriptor) {
             return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sRecordId}`, false);
@@ -164,6 +168,10 @@ module.exports = (srv) => {
             Comments: sComments,
             RejectionReason: sRejectionReason
         } = req.data.request
+
+        if (!sRecordId) {
+            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to process approval", false);
+        }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
         let bStatus = true;

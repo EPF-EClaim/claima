@@ -26,6 +26,11 @@ sap.ui.define([
 
 		async getApproverList(oApprovalLogModel, oViewModel, sId, sClaimTypeID) {
 
+			if (!sId) { 
+				MessageBox.error("Document ID is required to fetch approval log"); 
+				return; 
+			}
+			
             let submission_type = sId.substring(0,3);
             let oListBinding;
 
