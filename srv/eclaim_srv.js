@@ -5124,21 +5124,41 @@ module.exports = (srv) => {
         };
     });
 
-    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) =>{
-        const tx = cds.tx(req);
-        try {
-            var oStatus = await tx.run(SELECT.one
-                                    .from(Constant.Entities.ZCLAIM_HEADER)
-                                    .where({
-                                        CLAIM_ID: req.data.sClaimID
-                                    })
-            )
-
-            return { sStatus: oStatus.STATUS_ID}
-        }catch(oError){
-            throw new Error(oError)
-        }
+    /**
+     * Returns the current STATUS_ID of a claim header for the auto-approval check.
+     * @param {string} req.data.sClaimID - Claim ID, e.g. CLM26000066669
+     * @returns {{ sStatus: string }}
+     */
+    srv.on('checkClaimHeaderStatusForAutoApproval', async (req) => {
+        const sClaimID = req.data?.sClaimID?.trim();
         
+        if (!sClaimID) {
+            return req.reject(400, 'Claim ID is required to check claim status.');
+        }
+
+        try {
+            const tx = cds.tx(req);
+
+            // 2. Fetch only the field we need
+            const oClaimHeader = await tx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZCLAIM_HEADER)
+                    .columns('STATUS_ID')
+                    .where({ CLAIM_ID: sClaimID })
+            );
+
+            // 3. Handle claim not found (prevents null TypeError)
+            if (!oClaimHeader) {
+                return req.reject(404, `Claim ${sClaimID} not found.`);
+            }
+
+            return { sStatus: oClaimHeader.STATUS_ID };
+
+        } catch (oError) {
+            // 4. Log the full error, return a controlled 500 response
+            console.error(`[checkClaimHeaderStatusForAutoApproval] Failed for ${sClaimID}:`, oError);
+            return req.reject(500, `Unable to retrieve status for claim ${sClaimID}.`);
+        }
     });
 
     /**
