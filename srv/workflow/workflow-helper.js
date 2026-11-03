@@ -404,15 +404,12 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
             });
 
-            var sClaimHeader = cds.entities[Constant.Entities.ZCLAIM_HEADER];
-            var sClaimItem = cds.entities[Constant.Entities.ZCLAIM_ITEM];
             // fund center will be the same for all items
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
             if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
-                const aEntities = [sClaimHeader, sClaimItem];
-                for (const oEntity of aEntities) {
+                for (const oEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
                     await oTx.run(UPDATE(oEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }
             }
