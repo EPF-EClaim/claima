@@ -405,9 +405,16 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
             });
 
             var sClaimHeader = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
+            var sClaimItem = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
+            // fund center will be the same for all items
+            // update claim header/item based on the new cost center (in case of roll up cost center)
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
-            // update claim header based on the new cost center (in case of roll up cost center)
-            if (sFundCenter) await oTx.run(UPDATE(sClaimHeader).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
+            if (sFundCenter) {
+                const aEntities = [sClaimHeader, sClaimItem];
+                for (const oEntity of aEntities) {
+                    await oTx.run(UPDATE(oEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
+                }
+            }
         }
 
         if (bError) {
