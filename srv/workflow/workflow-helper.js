@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
+const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { constants } = require('@sap/xssec');
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
@@ -404,8 +404,8 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
             });
 
-            var sClaimHeader = cds.entities['eclaim_srv.ZCLAIM_HEADER'];
-            var sClaimItem = cds.entities['eclaim_srv.ZCLAIM_ITEM'];
+            var sClaimHeader = cds.entities[Constant.Entities.ZCLAIM_HEADER];
+            var sClaimItem = cds.entities[Constant.Entities.ZCLAIM_ITEM];
             // fund center will be the same for all items
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
@@ -439,7 +439,9 @@ async function lockClaimBudget(oTx, aBudgetContext, sId) {
  * If any item fails the check, only the failed results are returned.
  * Otherwise, the function returns the successful results for all items.
  *
+ * @param {object} oTx - cds transaction
  * @param {Array<object>} aBudgetContext - Request budget context containing employee, amount, and account assignment details
+ * @param {string} sId - Request ID
  * @returns {Promise<Array<object>|Error>} Budget-check results or the caught error
  */
 async function checkRequestBudget(oTx, aBudgetContext, sId) {
