@@ -299,12 +299,12 @@ sap.ui.define([
         **/
         determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
+            if (!sId) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-            const _sSubmissionType = sId ? sId.substring(0, 3): null;
-            if (!_sSubmissionType) return null;
+            const _sSubmissionType = sId.substring(0, 3);
             var _dMinDate = null;
 
             switch (sFieldName) {
@@ -697,12 +697,12 @@ sap.ui.define([
         **/
         determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
+            if (!sId) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-            const _sSubmissionType = sId ? sId.substring(0, 3): null;
-            if (!_sSubmissionType) return null;
+            const _sSubmissionType = sId.substring(0, 3);
             var _dMaxDate = null;
 
             switch (sFieldName) {
