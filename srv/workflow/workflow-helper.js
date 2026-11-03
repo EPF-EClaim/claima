@@ -524,14 +524,12 @@ async function checkRequestBudget(oTx, aBudgetContext, sId) {
                 STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
                 CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
             });
-
             continue;
         }
 
         if (bError) {
             return aErrorResults;
         }
-
 
         return aSuccessResults;
 
