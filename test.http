@@ -323,17 +323,12 @@ POST http://localhost:4004/odata/v4/EmployeeSrv/getEmpJob
 Content-Type: application/json
 Authorization: Basic alice
 
+# {
+#     "email": "904015smsm1@epf.gov.my.test.test",
+#     "asOfDate": "2016-11-30"
+# }
+
 {
-    "userId": "904015",
-    "options": {
-        "history": false,
-        "asOfDate": "2026-10-29",
-        "fields": [
-            "seqNumber", "userId", "startDate", "endDate", "createdOn",
-            "businessUnit", "division", "department", "costCenter",
-            "position", "positionEntryDate", "jobCode", "customString8",
-            "managerId", "isFulltimeEmployee", "event", "eventReason"
-        ]
-    }
+    "userId": "904015"
 }
  

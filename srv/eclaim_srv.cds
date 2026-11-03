@@ -1885,33 +1885,18 @@ service eclaim_srv @(requires: 'authenticated-user') {
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
 
     type SFEmpJob {
-        userId          : String;
-        seqNumber       : String;
-        startDate       : Date;
-        endDate         : Date;
-        jobCode         : String;
-        payGrade        : String;
-        company         : String;
-        division        : String;
-        businessUnit    : String;
-        department      : String;
-        position        : String;
-        costCenter      : String;
-        location        : String;
-        managerId       : String;
-        employmentType  : String;
-        employeeClass   : String;
-        emplStatus      : String;
-        emplStatusCode  : String;
-        emplStatusLabel : String;
+        EEID : String;  NAME : String;  GRADE : String;  POS : String;  ROLE : String;
+        POSITION_START_DATE : Date;  POSITION_EVENT_REASON : String;  JOB_GROUP : String;
+        CC : String;  DEP : String;  UNIT_SECTION : String;  OFFICE_LOCATION : String;
+        ADDRESS_LINE1 : String;  ADDRESS_LINE2 : String;  ADDRESS_LINE3 : String;
+        POSTCODE : String;  STATE : String;  COUNTRY : String;  CONTACT_NO : String;
+        EMAIL : String;  DIRECT_SUPPERIOR : String;  MARITAL : String;  EMPLOYEE_TYPE : String;
+        CONFIRMATION_DATE : Date;  EFFECTIVE_DATE : Date;  JOB_GRADE : String;
+        DIVISION : String;  SECTION_REGION : String;  UNIT_BRANCH : String;
+        SUB_UNIT_BRANCH : String;  HIRE_DATE : Date;  RETIREMENT_DATE : Date;
+        STATE_OF_ORIGIN : String;
     }
 
-    type EmpJobOptions {
-        history  : Boolean;
-        asOfDate : Date;
-        fields   : many String;
-    }
-
-    action getEmpJob(userId : String, options : EmpJobOptions) returns many SFEmpJob;
+    action getEmpJob(userId : String, email : String, asOfDate : Date) returns SFEmpJob;
  
 };

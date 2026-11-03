@@ -11,7 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const { resolveDocDescriptor, logWorkflowHistory } = require('./workflow/workflow-helper');
-const getSFData = require('./utils/getSFData');
+const sfLib = require('./utils/getSFData');
 
 module.exports = (srv) => {
 
@@ -5181,14 +5181,28 @@ module.exports = (srv) => {
     });
 
     srv.on('getEmpJob', async (req) => {
-        const { userId, options = {} } = req.data;
+        const { userId, email, asOfDate } = req.data;
 
-        if (!userId) return req.reject(400, 'userId is required');
+        if (!userId && !email) return req.reject(400, 'userId or email is required');
 
+        const by = userId ? 'userId' : 'email';
+        const key = userId || email;
+
+        let result;
         try {
-            return await getSFData.getSFEmpJob(userId, options ?? {});
+            result = await sfLib.getSFEmpJob(key, { by, asOfDate });
         } catch (error) {
             return req.reject(502, error.message);
         }
+
+        if (!result || (Array.isArray(result) && !result.length)) {
+            const message = asOfDate
+                ? `No job record found for ${by} '${key}' as of ${asOfDate}. The employee may not have been active in SuccessFactors on this date.`
+                : `Employee not found for ${by} '${key}'.`;
+
+            return req.reject(404, message);
+        }
+
+        return result;
     });
 }
