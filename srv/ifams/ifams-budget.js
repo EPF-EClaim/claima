@@ -87,7 +87,6 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
         oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
-            EarmarkedFundsHeaderText: sRecordID,
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
         };
@@ -113,14 +112,14 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
                             EmrkdFndsAmountInTransCrcy: item.EmrkdFndsAmountInTransCrcy,
                             FundsCenter: oEmployeeRollupCC[sCostCenter],
                             CommitmentItem: item.CommitmentItem,
-                            PostingDate: item.PostingDate
+                            PostingDate: item.PostingDate,
+                            DocumentItemText: item.DocumentItemText
                         });
                     }
 
                     oEarMarkedFundsPayload = {
                         ...
                         Constant.EarmarkedFundPosting_DocHeader,
-                        EarmarkedFundsHeaderText: sRecordID,
                         _EarmarkedFundsDocumentItem:
                             aNewCCItems
                     }
