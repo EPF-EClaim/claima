@@ -909,7 +909,12 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
-			oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+			// populate usermodel's costcenter if the call to DB to get the CC fails.
+            if(oInputModel.getProperty("/emp_master/cc")){
+                oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+            }else{
+                oInputModel.setProperty("/claim_header/cost_center", this._oSessionModel.getProperty("/costCenters"));
+            }
 			//// request form values
 			oInputModel.setProperty("/claim_header/request_id", oInputModel.getProperty("/claimtype/requestform/request_id"));
 			oInputModel.setProperty("/claim_header/preapproved_amount", oInputModel.getProperty("/claimtype/requestform/preapproval_amount"));
@@ -988,7 +993,6 @@ sap.ui.define([
 			//// include description in data
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
-			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
 			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
 		},
 
@@ -1922,7 +1926,7 @@ sap.ui.define([
 			});
 
 			if (this.oDialog_ClaimInput) {
-				this._onInit_ClaimInput();
+				await this._onInit_ClaimInput();
 				this.oDialog_ClaimInput.open();
 			} else {
 				MessageToast.show(
