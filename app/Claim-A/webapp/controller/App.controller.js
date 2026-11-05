@@ -909,7 +909,12 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
-			oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+			// populate sessionmodel's costcenter if the costcenter failed to update to emp_masterModel's cc which could be due to DB query failed .
+            if (oInputModel.getProperty("/emp_master/cc")) {
+                oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+            } else {
+                oInputModel.setProperty("/claim_header/cost_center", this._oSessionModel.getProperty("/costCenters"));
+            }
 			//// request form values
 			oInputModel.setProperty("/claim_header/request_id", oInputModel.getProperty("/claimtype/requestform/request_id"));
 			oInputModel.setProperty("/claim_header/preapproved_amount", oInputModel.getProperty("/claimtype/requestform/preapproval_amount"));
@@ -1922,7 +1927,7 @@ sap.ui.define([
 			});
 
 			if (this.oDialog_ClaimInput) {
-				this._onInit_ClaimInput();
+				await this._onInit_ClaimInput();
 				this.oDialog_ClaimInput.open();
 			} else {
 				MessageToast.show(
