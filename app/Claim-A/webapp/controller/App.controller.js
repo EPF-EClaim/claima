@@ -910,10 +910,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
 			// populate sessionmodel's costcenter if the costcenter failed to update to emp_masterModel's cc which could be due to DB query failed .
-            if(oInputModel.getProperty("/emp_master/cc")){
+            if (oInputModel.getProperty("/emp_master/cc")) {
                 oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
-            }
-			else{
+            } else {
                 oInputModel.setProperty("/claim_header/cost_center", this._oSessionModel.getProperty("/costCenters"));
             }
 			//// request form values
@@ -994,6 +993,7 @@ sap.ui.define([
 			//// include description in data
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
+			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
 			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
 		},
 
