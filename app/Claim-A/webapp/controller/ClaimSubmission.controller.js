@@ -2319,12 +2319,12 @@ sap.ui.define([
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 
 			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
-				var oPropertyModel = this.getView().getModel("claimitem_property"); 
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
