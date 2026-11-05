@@ -9,9 +9,8 @@ async function getIFAMSConnection() {
     return _ifamsConnection;
 }
 
-async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
+async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
     let oBudget;
-
     try {
         const norm = v => {
             const s = String(v ?? '').trim();
@@ -24,26 +23,23 @@ async function getBudgetRecord(oCondition, oEmployeeRollupCC) {
             .replace('{YEAR}', esc(oCondition.YEAR))
             .replace('{INTERNAL_ORDER}', esc(oCondition.INTERNAL_ORDER));
 
-        const aBudgetRecords = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+        if (!oCache[sPath]) {
+            oCache[sPath] = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+        }
+        const aBudgetRecords = oCache[sPath] || [];
 
         const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
-        const fnFind = fc => aBudgetRecords.find(r =>
-            eq(r.FundCenter, fc)
+
+        oBudget = aBudgetRecords.find(r =>
+            eq(r.FundCenter, sFundCenter)
             && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
             && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
 
-        oBudget = fnFind(oCondition.FUND_CENTER);
+        return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
 
-        if (!oBudget && norm(oCondition.FUND_CENTER) && oEmployeeRollupCC && Object.keys(oEmployeeRollupCC).length > 0) {
-            oBudget = [oEmployeeRollupCC.HOS_CC, oEmployeeRollupCC.HOB_CC, oEmployeeRollupCC.HOD_CC]
-                .filter(cc => norm(cc))
-                .map(fnFind)
-                .find(Boolean);
-        }
     } catch (oError) {
         return { error: true, data: oBudget, message: oError.message };
     }
-    return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
@@ -56,7 +52,7 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
     return aRecords;
 }
 
-async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oEmployeeRollupCC) {
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
     var oEarmarkedFundsDocument;
     var oEarMarkedFundsPayload;
     var sPath;
@@ -93,48 +89,6 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, oE
 
         sPath = Constant.IFAMS_API_PATH.EARMARKEDFUNDS;
         oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
-
-        // if no budget allocation, use budget lookup to higher hierarchy
-        if (!oEarmarkedFundsDocument && oEmployeeRollupCC && Object.keys(oEmployeeRollupCC).length > 0) {
-            var aNewCCItems = [];
-            var iCount = 2;
-            let sCostCenter = Constant.RollUp_CostCenter.HOS_COSTCENTER;
-
-            while (iCount > 0) {
-                iCount--;
-                aNewCCItems = []; // clear item for next iteration
-                if (oEmployeeRollupCC[sCostCenter]) {
-                    // rebuild payload
-                    for (const item of aEarmarkedFundItems) {
-                        aNewCCItems.push({
-                            ...
-                            Constant.EarmarkedFundPosting_Item,
-                            EmrkdFndsAmountInTransCrcy: item.EmrkdFndsAmountInTransCrcy,
-                            FundsCenter: oEmployeeRollupCC[sCostCenter],
-                            CommitmentItem: item.CommitmentItem,
-                            PostingDate: item.PostingDate,
-                            DocumentItemText: item.DocumentItemText
-                        });
-                    }
-
-                    oEarMarkedFundsPayload = {
-                        ...
-                        Constant.EarmarkedFundPosting_DocHeader,
-                        _EarmarkedFundsDocumentItem:
-                            aNewCCItems
-                    }
-
-                    oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
-
-                    if (oEarmarkedFundsDocument) break;
-                }
-                if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOB_COSTCENTER]) {
-                    sCostCenter = Constant.RollUp_CostCenter.HOB_COSTCENTER;
-                } else if (oEmployeeRollupCC[Constant.RollUp_CostCenter.HOD_COSTCENTER]) {
-                    sCostCenter = Constant.RollUp_CostCenter.HOD_COSTCENTER;
-                }
-            }
-        }
 
     } catch (oError) {
         return {

@@ -98,10 +98,16 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             // Only proceed with budget process if Cost Center Validation passed
             if (aBudgetCheckReturn.length === 0) {
 
-                if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
-                    aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId);
-                } else {
-                    aBudgetCheckReturn = await checkRequestBudget(oTx, aBudgetContext, sId);
+                // check budget first (Claim & Request)
+                aBudgetCheckReturn = await checkRequestBudget(oTx, aBudgetContext, sId);
+
+                // lock only for Claim, only if all groups are sufficient
+                const bAllSufficient = Array.isArray(aBudgetCheckReturn)
+                    && aBudgetCheckReturn.length > 0
+                    && aBudgetCheckReturn.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
+
+                if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM && bAllSufficient) {
+                    aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId, aBudgetCheckReturn); // >>>
                 }
             }
 
