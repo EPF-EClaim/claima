@@ -20,7 +20,8 @@ const {
     generateReturnMessage,
     lockClaimBudget,
     checkRequestBudget,
-    validateCostCenter
+    validateCostCenter,
+    updateRequestBudget
 } = require("./workflow-helper");
 
 /**
@@ -99,15 +100,21 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             if (aBudgetCheckReturn.length === 0) {
 
                 // check budget first (Claim & Request)
-                aBudgetCheckReturn = await checkRequestBudget(oTx, aBudgetContext, sId);
+                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext); 
 
-                // lock only for Claim, only if all groups are sufficient
                 const bAllSufficient = Array.isArray(aBudgetCheckReturn)
                     && aBudgetCheckReturn.length > 0
                     && aBudgetCheckReturn.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
 
-                if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM && bAllSufficient) {
-                    aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId, aBudgetCheckReturn); // >>>
+                if (bAllSufficient) {
+                    if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+                        // Claim: lock budget + update claim header/item
+                        aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId, aBudgetCheckReturn);
+
+                    } else if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) { 
+                        // Request: update request header/item only (no lock)
+                        aBudgetCheckReturn = await updateRequestBudget(oTx, sId, aBudgetCheckReturn);
+                    }
                 }
             }
 
