@@ -909,10 +909,11 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
-			// populate usermodel's costcenter if the call to DB to get the CC fails.
+			// populate sessionmodel's costcenter if the costcenter failed to update to emp_masterModel's cc which could be due to DB query failed .
             if(oInputModel.getProperty("/emp_master/cc")){
                 oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
-            }else{
+            }
+			else{
                 oInputModel.setProperty("/claim_header/cost_center", this._oSessionModel.getProperty("/costCenters"));
             }
 			//// request form values
