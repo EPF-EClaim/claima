@@ -204,6 +204,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         as projection on ECLAIM.ZPROJECT_HDR {
             *,
             ZEMP_MASTER.EEID  as PROJECT_OWNER_EEID,
+            ZEMP_MASTER.NAME  as PROJECT_OWNER_NAME,
             ZEMP_MASTER.EMAIL as PROJECT_OWNER_EMAIL
         };
 
