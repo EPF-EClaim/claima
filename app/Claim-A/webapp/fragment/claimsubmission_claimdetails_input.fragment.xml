@@ -1104,8 +1104,9 @@
                 </Select>
 
                 <!-- Special To State for Wilayah Asal-->
-                <Label text="{i18n>label_claimdetails_input_state_to}" 
-                required="{claimitem_property>/to_state_id/is_required}" />
+                <Label text="{i18n>label_claimdetails_input_state_to} {i18n>icon_info}" 
+                required="{claimitem_property>/to_state_id/is_required}"
+                tooltip="{i18n>valuehelp_claiminput_to_state}" />
                 <Select
                     id="select_claimdetails_input_special_to_state_id"
                     forceSelection="false"
