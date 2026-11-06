@@ -5,6 +5,16 @@ const { constants } = require('@sap/xssec');
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
 const { retrieveClaimFlexiPosting, determineBudgetYear, determineClaimPostingDate } = require('../ifams/pre-checking-budget');
 
+// ============================================================
+// Shared helpers (module level)
+// ============================================================
+const toNum = (v) => Number(v) || 0;
+const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+const norm = (v) => {
+    const s = String(v ?? '').trim();
+    return s === Constant.Wildcard.NA ? '' : s;
+};
+
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
         entityPrefix        : Constant.WorkflowType.CLAIM,
@@ -322,17 +332,15 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
 }
 /**
  * Locks the required claim budget by creating an earmarked funds document.
- *
  * For employees outside the RD, HOD, and CXO roles, the function determines
  * the applicable upper-level cost center before processing the earmarked
- * funds request. When the lock succeeds, the generated earmarked fund details
- * are updated in the database.
- *
+ * funds request. When the budget is sufficient and the lock succeeds, the
+ * generated earmarked fund details are updated in the database.
  * @param {object} oTx - cds transaction
  * @param {Array<object>} aBudgetContext - Claim budget context containing the amount and account assignment details
  * @param {string} sId - Claim or record ID used for the earmarked funds request
- * @param {Array<object>} [aCheckResults=[]] - Budget check results used to get the rolled-up fund center (non-EMP level) for the lock* 
- * @returns {Promise<Array<object>|Error>} Lock error results, an empty array on success, or the caught error
+ * @param {Array<object>} [aCheckResults=[]] - Budget check results used to get the rolled-up fund center (non-EMP level) for the lock
+ * @returns {Promise<Array<object>|Error>} Budget lock results containing a SUFFICIENT status on success, error status results on failure, or the caught error
  */
 async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
 
@@ -422,15 +430,6 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
         }];
     }
 }
-// ============================================================
-// Shared helpers (module level)
-// ============================================================
-const toNum = (v) => Number(v) || 0;
-const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
-const norm = (v) => {
-    const s = String(v ?? '').trim();
-    return s === Constant.Wildcard.NA ? '' : s;
-};
 
 /**
  * Group claim items by year + account assignment and sum their amounts.
@@ -655,9 +654,7 @@ function evaluateGroups(aGroups, sFinalLevel) {
 
 /**
  * Check budget for claim/request items with roll-up (EMP -> HOS -> HOB -> HOD).
- * @param {object} oTx - cds transaction
  * @param {Array<object>} aBudgetContext - Claim budget context
- * @param {string} sId - Claim or record ID
  * @returns {Promise<Array<object>>} Error results if any error, otherwise success results
  */
 async function checkRequestBudget(aBudgetContext) {
@@ -728,7 +725,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const fnFundCenter = (r) => r.RESOLVED_FUND_CENTER || r.FUND_CENTER;
 
     const fnLevel = (r, bHideEmp = false) =>
-        r.ROLLUP_LEVEL && !(bHideEmp && r.ROLLUP_LEVEL === "EMP")
+        r.ROLLUP_LEVEL && !(bHideEmp && r.ROLLUP_LEVEL === Constant.RollUp_Level.EMP)
             ? ` (${r.ROLLUP_LEVEL})`
             : "";
 
