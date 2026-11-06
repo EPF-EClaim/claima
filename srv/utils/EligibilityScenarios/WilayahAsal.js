@@ -16,7 +16,7 @@ module.exports = {
         var oDateRange = await this._getDateRange(oPayload, tx);
         var iHistoricalData = await this._getHistoricalData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
         var oCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oDateRange.oDatetoFrom.dDateTo, oDateRange.oDatetoFrom.dDateFrom, tx);
-        this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp);
+        await this._validateClaimItem(oRule, oPayload, iHistoricalData + oCurrentRecordItemData.iItemCount, oDateRange.iItemFreq, oEmp, tx);
         return oPayload;
     },
     /**
@@ -134,8 +134,9 @@ module.exports = {
      * @param {number}  iExistingFreq - Number of claims the employee has already made
      * @param {number}  iAllowedFreq  - Maximum number of claims the rule allows
      * @param {Object}  oEmp          - Employee master data
+     * @param {Object}  oTx           - Transaction object for database operations
      */
-    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp) {
+    _validateClaimItem: async function (oRule, oPayload, iExistingFreq, iAllowedFreq, oEmp, oTx) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -173,7 +174,15 @@ module.exports = {
                 if (iIndex == -1) return;
                 if (oEmp.STATE_OF_ORIGIN &&
                     oPayload.CheckFields[iIndex].value) {
-                    if (oPayload.CheckFields[iIndex].value === oEmp.STATE_OF_ORIGIN) {
+                    const oState = await oTx.run(
+                        SELECT.one
+                            .from(Constant.Entities.ZSTATE)
+                            .columns(Constant.EntitiesFields.STATE_OF_ORIGIN_ID)
+                            .where({ STATE_ID: oPayload.CheckFields[iIndex].value })
+                    );
+
+                    const sStateOfOrigin = oState ? oState[Constant.EntitiesFields.STATE_OF_ORIGIN_ID] : null;
+                    if (sStateOfOrigin === oEmp.STATE_OF_ORIGIN) {
                         oPayload.CheckFields[iIndex].result = true;
                     }
                     else {
