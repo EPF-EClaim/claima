@@ -572,7 +572,7 @@ async function resolveRollUp(aGroups, aLevels) {
  */
 function evaluateGroups(aGroups, sFinalLevel) {
     const sEmp = Constant.RollUp_Level.EMP;
-    const S = Constant.BudgetCheckStatus;
+    const oBudgetStatus = Constant.BudgetCheckStatus;
     const aErrors = [];
     const aSuccesses = [];
     const oConsumed = {};
@@ -607,7 +607,7 @@ function evaluateGroups(aGroups, sFinalLevel) {
         if (!oBudgetData) {
             aErrors.push({
                 ...oBase,
-                STATUS: S.NOT_FOUND,
+                STATUS: oBudgetStatus.NOT_FOUND,
                 MESSAGE: fnMsg(sLabel, sNotFoundMsg)
             });
             continue;
@@ -628,7 +628,7 @@ function evaluateGroups(aGroups, sFinalLevel) {
         if (oGroup.TOTAL_AMOUNT > nAvailable) {
             aErrors.push({
                 ...oBase,
-                STATUS: S.INSUFFICIENT,
+                STATUS: oBudgetStatus.INSUFFICIENT,
                 RESOLVED_FUND_CENTER: oBudgetData.FundCenter,
                 MESSAGE: fnMsg(sLabel, sNotFoundMsg, sRollUpMsg)
             });
@@ -640,7 +640,7 @@ function evaluateGroups(aGroups, sFinalLevel) {
 
         aSuccesses.push({
             ...oBase,
-            STATUS: S.SUFFICIENT,
+            STATUS: oBudgetStatus.SUFFICIENT,
             AVAILABLE: nAvailable,
             RESOLVED_FUND_CENTER: oBudgetData.FundCenter,
             ITEM_INDEXES: oGroup.ITEM_INDEXES,
@@ -714,7 +714,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
         return `Budget check failed: ${aBudgetResults?.message ?? 'unknown error'}`;
     }
 
-    const S = Constant.BudgetCheckStatus;
+    const oBudgetStatus = Constant.BudgetCheckStatus;
 
     // ---------- Helpers ----------
     const fnItems = (r) =>
@@ -741,24 +741,24 @@ function buildBudgetErrorMessage(aBudgetResults) {
 
     // ---------- Status -> formatter ----------
     const mFormatters = {
-        [S.NOT_FOUND]: (r) =>
+        [oBudgetStatus.NOT_FOUND]: (r) =>
             Array.isArray(r.NOT_FOUND_AT) && r.NOT_FOUND_AT.length
                 ? r.NOT_FOUND_AT.map(sAt => `• Budget Not Found: ${fnItems(r)} (${fnTarget(r, sAt)})`)
                 : `• Budget Not Found: ${fnItems(r)} (Fund Center ${fnFundCenter(r)}${fnLevel(r)})`,
 
-        [S.INSUFFICIENT]: (r) =>
+        [oBudgetStatus.INSUFFICIENT]: (r) =>
             `• Insufficient Budget: ${fnItems(r)} (Fund Center ${fnFundCenter(r)}${fnLevel(r, true)})`,
 
-        [S.LOCK_ERROR]: (r) =>
+        [oBudgetStatus.LOCK_ERROR]: (r) =>
             `• ${r.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'}`,
 
-        [S.RELEASE_ERROR]: (r) =>
+        [oBudgetStatus.RELEASE_ERROR]: (r) =>
             `• ${r.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'}`,
 
-        [S.ERROR]: (r) =>
+        [oBudgetStatus.ERROR]: (r) =>
             `• Error encountered during budget checking: ${fnItems(r)}${fnDetail(r)}`,
 
-        [S.CC_VALIDATION]: (r) =>
+        [oBudgetStatus.CC_VALIDATION]: (r) =>
             `• Cost Center Validation Failed for claim item(s): ${fnItems(r)}${fnDetail(r)}`
     };
 
