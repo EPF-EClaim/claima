@@ -299,6 +299,7 @@ sap.ui.define([
         **/
         determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
+            if (!sId) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -696,6 +697,7 @@ sap.ui.define([
         **/
         determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem, sFieldValue) {
             if (!sId && !sType && !sItemType) return null;
+            if (!sId) return null;
 
             var _oAppModel = this.getOwnerComponent().getModel("appModel");
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();

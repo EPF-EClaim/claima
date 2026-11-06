@@ -26,6 +26,8 @@ sap.ui.define([
 
 		async getApproverList(oApprovalLogModel, oViewModel, sId, sClaimTypeID) {
 
+			if (!sId) return []; 
+			
             let submission_type = sId.substring(0,3);
             let oListBinding;
 

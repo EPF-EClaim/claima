@@ -3,18 +3,12 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
 	"sap/ui/core/format/NumberFormat",
-	"sap/ui/model/Filter", 
-	"sap/ui/model/FilterOperator", 
-	"sap/ui/model/Sorter",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (MessageBox,
 	Fragment,
 	ValueState,
 	NumberFormat,
-	Filter,
-	FilterOperator,
-	Sorter,
 	Constants,
 	Utility) {
 	"use strict";
@@ -35,7 +29,7 @@ sap.ui.define([
 		 * @returns {Promise<Object[]>} One payload per participant, with CheckFields populated
 		 */
 		generateEligibilityCheckPayload: async function (oController, sSubmissionType, oClaimItemPayload) {
-			let oItemData, aItemPartData, sRecordId, sRecordSubId, sClaimType, sClaimTypeItem, oMapping, sStateKey;
+			let oItemData, aItemPartData, sRecordId, sRecordSubId, sClaimType, sClaimTypeItem, oMapping;
 
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
@@ -45,7 +39,6 @@ sap.ui.define([
 					sRecordSubId = oItemData?.req_subid || null;
 					sClaimType = oController._oReqModel.getProperty('/req_header/claimtype');
 					sClaimTypeItem = oItemData.claim_type_item_id;
-					sStateKey = "to_state";
 
 					oMapping = {
 						// field                : db technical name
@@ -81,7 +74,6 @@ sap.ui.define([
 					sRecordSubId = oItemData?.claim_sub_id;
 					sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
 					sClaimTypeItem = oItemData.claim_type_item_id;
-					sStateKey = "to_state_id";
 					const sAmount = sClaimTypeItem === Constants.ClaimTypeItem.PEM_PINDAH ? "actual_amount" : "amount";
 					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 
@@ -118,16 +110,8 @@ sap.ui.define([
 					return [];   // unknown submission type: nothing to check
 			}
 
-			// State-of-origin mapping applies to WILAYAH_ASAL only
-			let sMappedState;
-			if (sClaimType === Constants.ClaimType.WILAYAH_ASAL) {
-				sMappedState = await this._mapStateOfOrigin(oController, oItemData[sStateKey]);
-			}
-
 			const aActiveFields = Object.entries(oMapping).map(([sKey, sTargetName]) => {
-				// Use the mapped state for the state field; all other fields unchanged
-				const vVal = (sKey === sStateKey && sMappedState !== undefined) ? sMappedState : oItemData[sKey];
-				return { fieldName: sTargetName, value: String(vVal), result: null };
+				return { fieldName: sTargetName, value: String(oItemData[sKey]), result: null };
 			});
 
 			const aPayload = [];
@@ -155,35 +139,6 @@ sap.ui.define([
 			});
 
 			return aPayload;
-		},
-
-		/**
-		 * Maps a state value to the eClaim STATE_ID using ZSTATE.STATE_OF_ORIGIN_ID.
-		 * @private
-		 * @param {Object} oController - Calling controller (used to get the OData V4 model)
-		 * @param {string} sStateId    - State value to map
-		 * @returns {Promise<string>} 
-		 */
-		async _mapStateOfOrigin(oController, sStateId) {
-			if (!sStateId) return sStateId;
-
-			const oModel = oController.getOwnerComponent().getModel();
-			const oBinding = oModel.bindList(
-				"/ZSTATE",
-				null,
-				[new Sorter("STATE_ID")],                                   // stable "first match"
-				[new Filter("STATE_ID", FilterOperator.EQ, String(sStateId).trim())],
-				{ $select: "STATE_OF_ORIGIN_ID" }
-			);
-
-			try {
-				const [oCtx] = await oBinding.requestContexts(0, 1);
-				return oCtx?.getProperty("STATE_OF_ORIGIN_ID") ?? sStateId;
-			} catch (oError) {
-				return sStateId;                                            // don't block the check on lookup failure
-			} finally {
-				oBinding.destroy();
-			}
 		},
 
 		/**

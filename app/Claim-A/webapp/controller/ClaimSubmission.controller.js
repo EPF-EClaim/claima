@@ -237,6 +237,12 @@ sap.ui.define([
 			const oRoute = this._oActiveClaimRoute = { claimId: sClaimId };
 			const fnIsActive = () => this._oActiveClaimRoute === oRoute;
 
+			// lock all actions until this claim is loaded (re-enabled by _refreshActionState)
+			const oActionState = this.getOwnerComponent().getModel("actionState");
+			const oStates = oActionState?.getData() || {};
+			Object.keys(oStates).forEach(k => oStates[k] && (oStates[k].enabled = false));
+			oActionState?.refresh(true);
+
 			const bAllowed = await Utility.checkClaimAccess(sClaimId);
 			if (!bAllowed || !fnIsActive()) {
 				return;
@@ -2319,12 +2325,12 @@ sap.ui.define([
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 
 			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
-				var oPropertyModel = this.getView().getModel("claimitem_property"); 
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
@@ -2434,7 +2440,7 @@ sap.ui.define([
 
 			//for CCC personal expense
 			await this._calculateClaimTotal();
-			await this._calculateCardAdvanceAmount();
+			this._calculateCardAdvanceAmount();
 		},
 
 		_setClaimDetailSelection: async function (oModel) {
@@ -5827,12 +5833,19 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", nFinal);
 		},
 
+		/**
+		 * Derives the remaining Corporate Credit Card (CCC) advance shown on the
+		 * claim header: original advance minus all claim items charged to the CCC.
+		 *
+		 * The header column CCC_ADV_AMT only stores the original advance, captured
+		 * when the claim is created; the remaining balance is never persisted. It is
+		 * therefore derived on screen from the items every time the claim is shown.
+		 *
+		 * @private
+		 * @returns {void}
+		 */
 		_calculateCardAdvanceAmount: function () {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-
-			if (oInputModel.getProperty("/view_only")) {
-				return;
-			}
 
 			var aClaimItems = oInputModel.getProperty("/claim_items") || [];
 			var nOriginalCardAdvanceAmount = Number(oInputModel.getProperty("/claim_header/original_card_advance_amount")) || 0;
@@ -5841,7 +5854,7 @@ sap.ui.define([
 				.filter((it) => it.charged_to_ccc)
 				.reduce((s, it) => s + (Number(it.amount) || 0), 0);
 
-			var nCardAdvanceAmount = nOriginalCardAdvanceAmount - nChargedToCccAmount;
+			var nCardAdvanceAmount = Math.round((nOriginalCardAdvanceAmount - nChargedToCccAmount) * 100) / 100;
 
 			oInputModel.setProperty("/claim_header/card_advance_amount", nCardAdvanceAmount);
 		},
