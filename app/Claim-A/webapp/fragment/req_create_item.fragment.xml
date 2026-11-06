@@ -1123,9 +1123,10 @@
                                 </form:FormElement>
 
                                 <!--Special To State for Wilayah Asal -->
-                                <form:FormElement label="{i18n>req_i_to_state}"
+                                <form:FormElement label="{i18n>req_i_to_state} {i18n>icon_info}"
                                             visible="false"
-                                            id="i_special_to_state" >
+                                            id="i_special_to_state" 
+                                            tooltip="{i18n>valuehelp_claiminput_to_state}" >
                                     <form:fields>
                                         <Select 
                                             id="item_special_to_state"
