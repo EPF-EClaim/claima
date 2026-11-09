@@ -637,6 +637,12 @@ const Constant = {
         HOB_COSTCENTER: "HOB_CC",
         HOD_COSTCENTER: "HOD_CC"
     },
+    RollUp_Level: {
+        EMP: "EMP",
+        HOS: "HOS",
+        HOB: "HOB",
+        HOD: "HOD"
+    },
     BudgetReport: {
         DEFAULT_CURRENCY: "MYR",
         // ZBUDGET column → IFAMS field name (17 fields from IFAMS)
