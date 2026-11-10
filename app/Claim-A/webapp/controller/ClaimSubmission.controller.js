@@ -237,6 +237,12 @@ sap.ui.define([
 			const oRoute = this._oActiveClaimRoute = { claimId: sClaimId };
 			const fnIsActive = () => this._oActiveClaimRoute === oRoute;
 
+			// lock all actions until this claim is loaded (re-enabled by _refreshActionState)
+			const oActionState = this.getOwnerComponent().getModel("actionState");
+			const oStates = oActionState?.getData() || {};
+			Object.keys(oStates).forEach(k => oStates[k] && (oStates[k].enabled = false));
+			oActionState?.refresh(true);
+
 			const bAllowed = await Utility.checkClaimAccess(sClaimId);
 			if (!bAllowed || !fnIsActive()) {
 				return;
@@ -2319,12 +2325,12 @@ sap.ui.define([
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
 			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 
 			this._refreshActionState("DETAILS");	// footer button control
 
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
-				var oPropertyModel = this.getView().getModel("claimitem_property"); 
 				// add claim item values to claim detail screen
 				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 

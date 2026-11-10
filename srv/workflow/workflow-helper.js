@@ -34,13 +34,9 @@ const aEntityTableByPrefix = {
     }
 }
 
-
 function resolveDocDescriptor(sId) {
-    const sPrefix = sId.slice(0,3);
-
-    const oDescriptor = aEntityTableByPrefix[sPrefix]
-    //console.log('[workflow-determination/resolveDocDescriptor] oDescriptor:', oDescriptor)
-    return oDescriptor
+    if (typeof sId !== "string") return undefined;
+    return aEntityTableByPrefix[sId.slice(0, 3)];
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
     const oHeader =  await cds.run(
@@ -129,7 +125,7 @@ async function retrieveRoleRank(sRole) {
     }
 
     if(sRole == "") {
-        return [{ RANK: '0', ROLE: 'Normal' }]
+        return [{ RANK: '0', ROLE: 'Normal' }];
     }
 
     return await cds.run(sQuery)
@@ -213,7 +209,7 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
             ACTION          : sAction //SUBMIT, REJECT, APPROVE;
-        })
+        });
     }
     return aBudgetContexts
 }
@@ -239,7 +235,7 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
                 Constant.EntitiesFields.REASON_ID,
                 Constant.EntitiesFields.REASON_DESC
             )
-    )
+    );
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
 async function performBudgetChecking(oTx, aBudgetContext) {
@@ -405,7 +401,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
                 Constant.EntitiesFields.APPROVER_ID,
                 Constant.EntitiesFields.SUBSTITUTE_APPROVER_ID
             )
-    )
+    );
     if(!aApproversDetails.length) {
         return null;
     }
@@ -434,7 +430,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
             SUB_EEID        : sSubEEID,
             SUB_NAME        : sSubName,
             SUB_EMAIL       : sSubEmail
-        })
+        });
     }
     return aApproversContext;
 }
