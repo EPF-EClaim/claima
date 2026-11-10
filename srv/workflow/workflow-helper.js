@@ -383,7 +383,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
         aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
     }
     if (sInsufficientItems) {
-        aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
+        aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}. Please contact the GA Admin for further assistance.`);
     }
 
     return aMessages.length ? aMessages.join("\n") : null;
