@@ -2387,12 +2387,6 @@ annotate service.ZPROJECT_HDR with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },
-            {
-                $Type            : 'UI.DataField',
                 Value            : PROJECT_OWNER_POSITION_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Project Owner Position ID'
@@ -2438,13 +2432,21 @@ annotate service.ZPROJECT_HDR with @(
 );
 
 annotate service.ZPROJECT_HDR with {
-    PROJECT_CODE_IO @mandatory;
-    PROJECT_DESC    @mandatory;
-    GL_ACCOUNT      @mandatory;
-    STATUS          @mandatory;
-    EEID            @Common.FieldControl: #ReadOnly;
-    NAME            @Common.FieldControl: #ReadOnly;
-    EMAIL           @Common.FieldControl: #ReadOnly;
+    PROJECT_CODE_IO           @Common.FieldControl: #ReadOnly;
+    PROJECT_DESC              @Common.FieldControl: #ReadOnly;
+    GL_ACCOUNT                @Common.FieldControl: #ReadOnly;
+    COST_CENTER               @Common.FieldControl: #ReadOnly;
+    STATUS                    @Common.FieldControl: #ReadOnly;
+    BUFFER_FIELD1             @Common.FieldControl: #ReadOnly;
+    BUFFER_FIELD2             @Common.FieldControl: #ReadOnly;
+    START_DATE                @Common.FieldControl: #ReadOnly;
+    END_DATE                  @Common.FieldControl: #ReadOnly;
+    IO_WBS_IND                @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_POSITION_ID @mandatory;
+    PROJECT_OWNER_EEID        @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_NAME        @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_EMAIL       @Common.FieldControl: #ReadOnly;
+    
 };
 
 annotate service.ZBRANCH with @(
