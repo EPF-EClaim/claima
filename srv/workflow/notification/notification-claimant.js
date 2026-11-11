@@ -69,8 +69,7 @@ async function sendEmailToClaimant(sId, sApproverId, oDescriptor, sAction, sComm
         return true;
     }
     catch(oError){
-        console.log("Email sending failed with error: ", oError);
-        return false;
+        throw new Error(`Email sending failed with error: ${oError.message}`);
     }    
 }
 

@@ -72,8 +72,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         return true;
     }
     catch(oError){
-        console.log("Email sending failed with error: ", oError);
-        return false;
+        throw new Error(`Email sending failed with error: ${oError.message}`);
     }
     
 }
