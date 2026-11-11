@@ -28,6 +28,8 @@ async function retrieveClaimFlexiPosting() {
             // further filter the record incase there are multiple records created in SF
             oFlexiPostingRecord = aRecords.filter(oRecord => oRecord.effectiveStartDate && oRecord.effectiveStartDate <= dCurrentDate)
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
+        } else {
+            throw new Error('Flexi Posting Configuration is missing');
         }
 
     } catch (oError) {
