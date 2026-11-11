@@ -719,54 +719,77 @@ function buildBudgetErrorMessage(aBudgetResults) {
     // ---------- Helpers ----------
     const fnItems = (r) =>
         Array.isArray(r.CLAIM_TYPE_ITEMS) && r.CLAIM_TYPE_ITEMS.length
-            ? [...new Set(r.CLAIM_TYPE_ITEMS)].join(", ")
-            : (r.CLAIM_TYPE_ITEM || "-");
-
-    const fnFundCenter = (r) => r.RESOLVED_FUND_CENTER || r.FUND_CENTER;
-
-    const fnLevel = (r, bHideEmp = false) =>
-        r.ROLLUP_LEVEL && !(bHideEmp && r.ROLLUP_LEVEL === Constant.RollUp_Level.EMP)
-            ? ` (${r.ROLLUP_LEVEL})`
-            : "";
+            ? r.CLAIM_TYPE_ITEMS
+            : r.CLAIM_TYPE_ITEM
+                ? [r.CLAIM_TYPE_ITEM]
+                : [];
 
     const fnDetail = (r) => {
         const sMessage = String(r.MESSAGE ?? '').trim();
         return sMessage ? ` (${sMessage})` : "";
     };
 
-    const fnTarget = (r, sNotFoundAt) =>
-        r.INTERNAL_ORDER && r.INTERNAL_ORDER !== Constant.Wildcard.NA
-            ? `Internal Order ${r.INTERNAL_ORDER}`
-            : `Fund Center ${sNotFoundAt.replace(/\s*\(EMP\)\s*$/i, "")}`;
+    const aMessages = [];
 
-    // ---------- Status -> formatter ----------
-    const mFormatters = {
-        [oBudgetStatus.NOT_FOUND]: (r) =>
-            Array.isArray(r.NOT_FOUND_AT) && r.NOT_FOUND_AT.length
-                ? r.NOT_FOUND_AT.map(sAt => `• Budget Not Found: ${fnItems(r)} (${fnTarget(r, sAt)})`)
-                : `• Budget Not Found: ${fnItems(r)} (Fund Center ${fnFundCenter(r)}${fnLevel(r)})`,
+    // 1. Budget not found
+    // Show only once regardless of how many groups are NOT_FOUND
+    const bBudgetNotFound = aBudgetResults.some(
+        r => r.STATUS === oBudgetStatus.NOT_FOUND
+    );
 
-        [oBudgetStatus.INSUFFICIENT]: (r) =>
-            `• Insufficient Budget: ${fnItems(r)} (Fund Center ${fnFundCenter(r)}${fnLevel(r, true)})`,
+    if (bBudgetNotFound) {
+        aMessages.push('Budget data is not found');
+    }
 
-        [oBudgetStatus.LOCK_ERROR]: (r) =>
-            `• ${r.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'}`,
+    // 2. Insufficient budget
+    // Combine claim type item descriptions from all insufficient groups
+    const aInsufficientItems = [
+        ...new Set(
+            aBudgetResults
+                .filter(r => r.STATUS === oBudgetStatus.INSUFFICIENT)
+                .flatMap(fnItems)
+                .filter(Boolean)
+        )
+    ];
 
-        [oBudgetStatus.RELEASE_ERROR]: (r) =>
-            `• ${r.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'}`,
+    if (aInsufficientItems.length) {
+        aMessages.push(
+            `Insufficient budget for claim item(s): (${aInsufficientItems.join(', ')}). Please contact the GA Admin for further assistance`
+        );
+    }
 
-        [oBudgetStatus.ERROR]: (r) =>
-            `• Error encountered during budget checking: ${fnItems(r)}${fnDetail(r)}`,
+    // 3. Other errors
+    for (const r of aBudgetResults) {
+        switch (r.STATUS) {
+            case oBudgetStatus.LOCK_ERROR:
+                aMessages.push(
+                    r.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'
+                );
+                break;
 
-        [oBudgetStatus.CC_VALIDATION]: (r) =>
-            `• Cost Center Validation Failed for claim item(s): ${fnItems(r)}${fnDetail(r)}`
-    };
+            case oBudgetStatus.RELEASE_ERROR:
+                aMessages.push(
+                    r.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'
+                );
+                break;
 
-    const aMessages = aBudgetResults
-        .flatMap(r => mFormatters[r.STATUS]?.(r) ?? [])
-        .filter(Boolean);
+            case oBudgetStatus.ERROR:
+                aMessages.push(
+                    `Error encountered during budget checking: ${fnItems(r).join(', ') || '-'}${fnDetail(r)}`
+                );
+                break;
 
-    // Remove duplicate messages, if any
+            case oBudgetStatus.CC_VALIDATION:
+                aMessages.push(
+                    `Cost Center Validation Failed for claim item(s): ${fnItems(r).join(', ') || '-'}${fnDetail(r)}`
+                );
+                break;
+
+            default:
+                break;
+        }
+    }
+
     const aUniqueMessages = [...new Set(aMessages)];
 
     return aUniqueMessages.length
