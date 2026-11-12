@@ -2337,9 +2337,9 @@ annotate service.ZPROJECT_HDR with @(
         PROJECT_CODE_IO
     ],
     Capabilities: {
-        Deletable : true,
+        Deletable : false,
         Updatable : true,
-        Insertable: true
+        Insertable: false
     },
     odata.draft.enabled,
 

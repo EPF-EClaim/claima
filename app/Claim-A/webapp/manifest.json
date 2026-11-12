@@ -765,11 +765,10 @@
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
                                         "type": "GridTable",
-                                        "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
                                         "selectAll": true,
-                                        "selectionMode": "Multi",
+                                        "selectionMode": "Single",
                                         "personalization": {
                                             "column": true,
                                             "filter": true,
@@ -779,26 +778,10 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
-                                        },
-                                        "disableCopyToClipboard": true,
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS"
+                                            "visibleFields": "PROJECT_OWNER_POSITION_ID"
                                         }
                                     },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy",
-                                            "position": {
-                                                "placement": "Before"
-                                            }
-                                        }
-                                    }
+                                    "actions": { }
                                 }
                             },
                             "hideFilterBar": true,
