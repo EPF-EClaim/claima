@@ -29,7 +29,7 @@ async function retrieveClaimFlexiPosting() {
             oFlexiPostingRecord = aRecords.filter(oRecord => oRecord.effectiveStartDate && oRecord.effectiveStartDate <= dCurrentDate)
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
         } else {
-            throw new Error('Flexi Posting Configuration is missing');
+            throw new Error('Budget Data Not Found');
         }
 
     } catch (oError) {
