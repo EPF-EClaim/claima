@@ -1183,15 +1183,10 @@ sap.ui.define([
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 
-				//get internal order by project code
-				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-				var sInternalOrder = await Utility.getInternalOrderByProjectCode(this.getOwnerComponent().getModel(),sProjectCode);
-				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
-
-				var glAccount;
+				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				let glAccount;
 
 				if (sProjectCode) {
 					glAccount = await Utility.getGLAccountByProjectCode(
@@ -3350,7 +3345,7 @@ sap.ui.define([
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
-					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
+					INTERNAL_ORDER: oClaimSubmissionModel.getProperty("/claim_header/project_code"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)
