@@ -717,15 +717,15 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const oBudgetStatus = Constant.BudgetCheckStatus;
 
     // ---------- Helpers ----------
-    const fnItems = (r) =>
-        Array.isArray(r.CLAIM_TYPE_ITEMS) && r.CLAIM_TYPE_ITEMS.length
-            ? r.CLAIM_TYPE_ITEMS
-            : r.CLAIM_TYPE_ITEM
-                ? [r.CLAIM_TYPE_ITEM]
+    const fnItems = (oResult) =>
+        Array.isArray(oResult.CLAIM_TYPE_ITEMS) && oResult.CLAIM_TYPE_ITEMS.length
+            ? oResult.CLAIM_TYPE_ITEMS
+            : oResult.CLAIM_TYPE_ITEM
+                ? [oResult.CLAIM_TYPE_ITEM]
                 : [];
 
-    const fnDetail = (r) => {
-        const sMessage = String(r.MESSAGE ?? '').trim();
+    const fnDetail = (oResult) => {
+        const sMessage = String(oResult.MESSAGE ?? '').trim();
         return sMessage ? ` (${sMessage})` : "";
     };
 
@@ -734,7 +734,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     // 1. Budget not found
     // Show only once regardless of how many groups are NOT_FOUND
     const bBudgetNotFound = aBudgetResults.some(
-        r => r.STATUS === oBudgetStatus.NOT_FOUND
+        oResult => oResult.STATUS === oBudgetStatus.NOT_FOUND
     );
 
     if (bBudgetNotFound) {
@@ -746,7 +746,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
     const aInsufficientItems = [
         ...new Set(
             aBudgetResults
-                .filter(r => r.STATUS === oBudgetStatus.INSUFFICIENT)
+                .filter(oResult => oResult.STATUS === oBudgetStatus.INSUFFICIENT)
                 .flatMap(fnItems)
                 .filter(Boolean)
         )
@@ -759,29 +759,29 @@ function buildBudgetErrorMessage(aBudgetResults) {
     }
 
     // 3. Other errors
-    for (const r of aBudgetResults) {
-        switch (r.STATUS) {
+    for (const oResult of aBudgetResults) {
+        switch (oResult.STATUS) {
             case oBudgetStatus.LOCK_ERROR:
                 aMessages.push(
-                    r.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'
+                    oResult.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'
                 );
                 break;
 
             case oBudgetStatus.RELEASE_ERROR:
                 aMessages.push(
-                    r.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'
+                    oResult.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'
                 );
                 break;
 
             case oBudgetStatus.ERROR:
                 aMessages.push(
-                    `Error encountered during budget checking: ${fnItems(r).join(', ') || '-'}${fnDetail(r)}`
+                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${fnDetail(oResult)}`
                 );
                 break;
 
             case oBudgetStatus.CC_VALIDATION:
                 aMessages.push(
-                    `Cost Center Validation Failed for claim item(s): ${fnItems(r).join(', ') || '-'}${fnDetail(r)}`
+                    `Cost Center Validation Failed for claim item(s): ${fnItems(oResult).join(', ') || '-'}${fnDetail(oResult)}`
                 );
                 break;
 
