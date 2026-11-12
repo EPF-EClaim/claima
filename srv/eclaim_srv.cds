@@ -200,7 +200,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZMARITAL_CAT                  as projection on ECLAIM.ZMARITAL_CAT;
 
-    entity ZPROJECT_HDR                  as projection on ECLAIM.ZPROJECT_HDR;
+    entity ZPROJECT_HDR 
+        as projection on ECLAIM.ZPROJECT_HDR {
+            *,
+            ZEMP_MASTER.EEID  as PROJECT_OWNER_EEID,
+            ZEMP_MASTER.NAME  as PROJECT_OWNER_NAME,
+            ZEMP_MASTER.EMAIL as PROJECT_OWNER_EMAIL
+        };
 
     entity ZBRANCH                       as projection on ECLAIM.ZBRANCH;
 

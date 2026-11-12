@@ -2330,25 +2330,43 @@ annotate service.ZMARITAL_CAT with @(
 
 annotate service.ZPROJECT_HDR with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [PROJECT_CODE_IO],
-    Capabilities                   : {
+    Capabilities.SearchRestrictions: {
+        Searchable: false
+    },
+    Common.SemanticKey: [
+        PROJECT_CODE_IO
+    ],
+    Capabilities: {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        UpdateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        HeaderInfo  : {
+    UI: {
+        CreateHidden: {
+            $edmJson: {
+                $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'
+            }
+        },
+        DeleteHidden: {
+            $edmJson: {
+                $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'
+            }
+        },
+        UpdateHidden: {
+            $edmJson: {
+                $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'
+            }
+        },
+
+        HeaderInfo: {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Project Code - ZPROJECT_HDR',
-            TypeNamePlural: 'Project Code - ZPROJECT_HDR',
+            TypeNamePlural: 'Project Code - ZPROJECT_HDR'
         },
-        LineItem    : [
+
+        LineItem: [
             {
                 $Type            : 'UI.DataField',
                 Value            : PROJECT_CODE_IO,
@@ -2363,9 +2381,51 @@ annotate service.ZPROJECT_HDR with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : GL_ACCOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'GL Account'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_OWNER_POSITION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Owner Position ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_OWNER_EEID,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Owner Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_OWNER_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Owner Name'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_OWNER_EMAIL,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Owner Email'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #Medium,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #Medium,
+                Label            : 'End Date'
             },
             {
                 $Type            : 'UI.DataField',
@@ -2378,10 +2438,21 @@ annotate service.ZPROJECT_HDR with @(
 );
 
 annotate service.ZPROJECT_HDR with {
-    PROJECT_CODE_IO @mandatory;
-    PROJECT_DESC    @mandatory;
-    GL_ACCOUNT      @mandatory;
-    STATUS          @mandatory;
+    PROJECT_CODE_IO           @Common.FieldControl: #ReadOnly;
+    PROJECT_DESC              @Common.FieldControl: #ReadOnly;
+    GL_ACCOUNT                @Common.FieldControl: #ReadOnly;
+    COST_CENTER               @Common.FieldControl: #ReadOnly;
+    STATUS                    @Common.FieldControl: #ReadOnly;
+    BUFFER_FIELD1             @Common.FieldControl: #ReadOnly;
+    BUFFER_FIELD2             @Common.FieldControl: #ReadOnly;
+    START_DATE                @Common.FieldControl: #ReadOnly;
+    END_DATE                  @Common.FieldControl: #ReadOnly;
+    IO_WBS_IND                @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_POSITION_ID @mandatory;
+    PROJECT_OWNER_EEID        @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_NAME        @Common.FieldControl: #ReadOnly;
+    PROJECT_OWNER_EMAIL       @Common.FieldControl: #ReadOnly;
+    
 };
 
 annotate service.ZBRANCH with @(
