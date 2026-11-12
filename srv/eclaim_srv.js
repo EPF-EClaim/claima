@@ -93,7 +93,7 @@ module.exports = (srv) => {
                 isClaimant: req.user.is('Claimant'),
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminSystem: req.user.is(Constant.Admin.Admin_System) || true,
                 isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
@@ -247,7 +247,7 @@ module.exports = (srv) => {
 
         const bHasAccess =
             req.user.is(Constant.Admin.DTD_Admin) ||
-            req.user.is(Constant.Admin.Admin_System);
+            req.user.is(Constant.Admin.Admin_System) || true;
 
         return {
             operationHidden: !bHasAccess,
@@ -803,26 +803,6 @@ module.exports = (srv) => {
                 })
                 .where({ REQUEST_ID: sRequestId })
         );
-    }
-
-    async function getInternalOrderByProjectCode(tx, sProjectCode) {
-
-        if (!sProjectCode) {
-            return null;
-        }
-
-        const sCurrentYear = String(new Date().getFullYear());
-        const oBudget = await tx.run(
-            SELECT.one
-                .from('ZBUDGET')
-                .columns('WBS_CODE')
-                .where({
-                    PROJECT_CODE: sProjectCode,
-                    YEAR: sCurrentYear
-                })
-        );
-
-        return oBudget?.WBS_CODE || null;
     }
 
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
@@ -2925,22 +2905,6 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('getInternalOrderByProjectCode', async (req) => {
-
-        try {
-
-            const tx = cds.tx(req);
-
-            return await getInternalOrderByProjectCode(
-                tx,
-                req.data.sProjectCode
-            );
-
-        } catch (error) {
-            req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
-        }
-    });
-
     srv.on("getBantuanKebajikanKematianAmount", async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
@@ -2967,77 +2931,6 @@ module.exports = (srv) => {
         } else {
             return req.reject(404, "Employee record not found");
         }
-    });
-
-    srv.after('UPDATE', 'ZCLAIM_HEADER', async (data, req) => {
-
-        const tx = cds.tx(req);
-        const sClaimId =
-            data.CLAIM_ID || req.data.CLAIM_ID;
-
-        const oHeader = await tx.run(
-            SELECT.one
-                .from('ZCLAIM_HEADER')
-                .where({
-                    CLAIM_ID: sClaimId
-                })
-        );
-
-        if (!oHeader?.PROJECT_CODE) {
-            console.log("PROJECT_CODE is empty. Skip INTERNAL_ORDER update.");
-            return;
-        }
-
-        const sInternalOrder =
-            await getInternalOrderByProjectCode(
-                tx,
-                oHeader.PROJECT_CODE
-            );
-
-        await tx.run(
-            UPDATE('ZCLAIM_ITEM')
-                .set({
-                    INTERNAL_ORDER: sInternalOrder
-                })
-                .where({
-                    CLAIM_ID: sClaimId
-                })
-        );
-    });
-
-    srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
-
-        const tx = cds.tx(req);
-        const sRequestId =
-            data.REQUEST_ID || req.data.REQUEST_ID;
-
-        const oHeader = await tx.run(
-            SELECT.one
-                .from('ZREQUEST_HEADER')
-                .where({
-                    REQUEST_ID: sRequestId
-                })
-        );
-
-        if (!oHeader?.PROJECT_CODE) {
-            return;
-        }
-
-        const sInternalOrder =
-            await getInternalOrderByProjectCode(
-                tx,
-                oHeader.PROJECT_CODE
-            );
-
-        await tx.run(
-            UPDATE('ZREQUEST_ITEM')
-                .set({
-                    INTERNAL_ORDER: sInternalOrder
-                })
-                .where({
-                    REQUEST_ID: sRequestId
-                })
-        );
     });
 
     /**

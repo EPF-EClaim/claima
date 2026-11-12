@@ -116,10 +116,10 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                             console.log("System Year: ", sSystemYear);
                             oProjectDetails = await retrieveProjectOwnerDetails(sProjectCode, sSystemYear);
                             console.log("Project Details: ", oProjectDetails);
-                            if(!oProjectDetails){
-                                return false;
-                            }
-                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
+
+                            if(!oProjectDetails.BUDGET_OWNER_ID) return false;      // project owner is not found, return false to stop the workflow
+
+                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
                             oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);

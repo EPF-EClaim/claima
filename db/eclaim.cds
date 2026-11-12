@@ -675,6 +675,8 @@ entity ZCLAIM_ITEM : managed {
                                               on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
         ZINSURANCE_MEDICAL_PROVIDER     : Association to ZINSURANCE_MEDICAL_PROVIDER
                                               on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
+        ZPROJECT_HDR                    : Association to ZPROJECT_HDR
+                                              on ZPROJECT_HDR.PROJECT_CODE_IO = INTERNAL_ORDER;
 }
 
 entity ZLODGING_CAT : managed {
@@ -1061,20 +1063,23 @@ entity ZEMP_DEPENDENT : managed {
 
 
 entity ZPROJECT_HDR : managed {
-    key PROJECT_CODE_IO : String    @mandatory  @Common.Label: 'Project Code(IO)';
-        PROJECT_DESC    : String    @Common.Label: 'Project Description';
-        GL_ACCOUNT      : String(6) @Common.Label: 'GL Account';
-        COST_CENTER     : String(9) @Common.Label: 'Cost Center';
-        STATUS          : String    @Common.Label: 'Status';
-        BUFFER_FIELD1   : String    @Common.Label: 'Buffer Field 1';
-        BUFFER_FIELD2   : String    @Common.Label: 'Buffer Field 2';
-        START_DATE      : Date      @Common.Label: 'Start Date';
-        END_DATE        : Date      @Common.Label: 'End Date';
-        IO_WBS_IND      : String(3) @Common.Label: 'IO Code / WBS Code Indicator';
+    key PROJECT_CODE_IO             : String      @mandatory  @Common.Label: 'Project Code(IO)';
+        PROJECT_DESC                : String      @Common.Label: 'Project Description';
+        GL_ACCOUNT                  : String(6)   @Common.Label: 'GL Account';
+        COST_CENTER                 : String(9)   @Common.Label: 'Cost Center';
+        STATUS                      : String      @Common.Label: 'Status';
+        BUFFER_FIELD1               : String      @Common.Label: 'Buffer Field 1';
+        BUFFER_FIELD2               : String      @Common.Label: 'Buffer Field 2';
+        START_DATE                  : Date        @Common.Label: 'Start Date';
+        END_DATE                    : Date        @Common.Label: 'End Date';
+        IO_WBS_IND                  : String(3)   @Common.Label: 'IO Code / WBS Code Indicator';
+        PROJECT_OWNER_POSITION_ID   : String(10)  @mandatory  @Common.Label: 'Position ID';
         ZGL_ACCOUNT     : Association to ZGL_ACCOUNT
                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZCOST_CENTER    : Association to ZCOST_CENTER
                               on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZEMP_MASTER     : Association to ZEMP_MASTER
+                              on ZEMP_MASTER.POS = PROJECT_OWNER_POSITION_ID;
 }
 
 entity ZBRANCH : managed {
