@@ -1884,19 +1884,72 @@ service eclaim_srv @(requires: 'authenticated-user') {
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
 
+    /* ---------------------------------------------------------------- */
+    /*  Types                                                           */
+    /* ---------------------------------------------------------------- */
+
     type SFEmpJob {
-        EEID : String;  NAME : String;  GRADE : String;  POS : String;  ROLE : String;
-        POSITION_START_DATE : Date;  POSITION_EVENT_REASON : String;  JOB_GROUP : String;
-        CC : String;  DEP : String;  UNIT_SECTION : String;  OFFICE_LOCATION : String;
-        ADDRESS_LINE1 : String;  ADDRESS_LINE2 : String;  ADDRESS_LINE3 : String;
-        POSTCODE : String;  STATE : String;  COUNTRY : String;  CONTACT_NO : String;
-        EMAIL : String;  DIRECT_SUPPERIOR : String;  MARITAL : String;  EMPLOYEE_TYPE : String;
-        CONFIRMATION_DATE : Date;  EFFECTIVE_DATE : Date;  JOB_GRADE : String;
-        DIVISION : String;  SECTION_REGION : String;  UNIT_BRANCH : String;
-        SUB_UNIT_BRANCH : String;  HIRE_DATE : Date;  RETIREMENT_DATE : Date;
-        STATE_OF_ORIGIN : String;
+        EEID                  : String;
+        NAME                  : String;
+        GRADE                 : String;
+        POS                   : String;
+        ROLE                  : String;
+        POSITION_START_DATE   : Date;
+        POSITION_EVENT_REASON : String;
+        JOB_GROUP             : String;
+        CC                    : String;
+        DEP                   : String;
+        UNIT_SECTION          : String;
+        OFFICE_LOCATION       : String;
+        ADDRESS_LINE1         : String;
+        ADDRESS_LINE2         : String;
+        ADDRESS_LINE3         : String;
+        POSTCODE              : String;
+        STATE                 : String;
+        COUNTRY               : String;
+        CONTACT_NO            : String;
+        EMAIL                 : String;
+        DIRECT_SUPPERIOR      : String;
+        MARITAL               : String;
+        EMPLOYEE_TYPE         : String;
+        CONFIRMATION_DATE     : Date;
+        EFFECTIVE_DATE        : Date;
+        JOB_GRADE             : String;
+        DIVISION              : String;
+        SECTION_REGION        : String;
+        UNIT_BRANCH           : String;
+        SUB_UNIT_BRANCH       : String;
+        HIRE_DATE             : Date;
+        RETIREMENT_DATE       : Date;
+        STATE_OF_ORIGIN       : String;
     }
 
-    action getEmpJob(userId : String, email : String, asOfDate : Date) returns SFEmpJob;
- 
+    type SFCostCenter {
+        COST_CENTER           : String;
+        NAME                  : String;
+        DESCRIPTION           : String;
+        STATUS                : String;
+        START_DATE            : Date;
+        END_DATE              : Date;
+        BUDGET_OWNER_POSITION : String;
+    }
+
+    type SFCostCenterWithEmployee : SFCostCenter {
+        BUDGET_OWNER : SFEmpJob;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /*  Actions                                                         */
+    /* ---------------------------------------------------------------- */
+
+    /** Pass one of userId / email / positionId (first one provided wins). */
+    action getEmpJob(userId     : String,
+                     email      : String,
+                     positionId : String,
+                     asOfDate   : Date)               returns SFEmpJob;
+
+    action getCostCenter(costCenter : String, status : String, asOfDate : Date)
+        returns many SFCostCenterWithEmployee
+
+
 };

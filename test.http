@@ -318,17 +318,34 @@
 #     "data" : "[{\"CASH_ADVANCE_CAT_ID\": \"test01\",\"CASH_ADVANCE_CAT_DESC\": \"Test 01\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}, {\"CASH_ADVANCE_CAT_ID\": \"test02\",\"CASH_ADVANCE_CAT_DESC\": \"Test 02\",\"START_DATE\": \"20260101\",\"END_DATE\": \"99991231\",\"STATUS\": \"ACTIVE\"}]"
 # }
 
+@host = http://localhost:4004/odata/v4/EmployeeSrv
 
-POST http://localhost:4004/odata/v4/EmployeeSrv/getEmpJob
+### EmpJob by userId
+POST {{host}}/getEmpJob
 Content-Type: application/json
 Authorization: Basic alice
 
-# {
-#     "email": "904015smsm1@epf.gov.my.test.test",
-#     "asOfDate": "2016-11-30"
-# }
+{ "userId": "904015", "asOfDate": "2026-10-29" }
 
-{
-    "userId": "904015"
-}
- 
+### EmpJob by email
+POST {{host}}/getEmpJob
+Content-Type: application/json
+Authorization: Basic alice
+
+{ "email": "someone@company.com" }
+
+### EmpJob by position (keep leading zeros)
+POST {{host}}/getEmpJob
+Content-Type: application/json
+Authorization: Basic alice
+
+{ "positionId": "00004623", "asOfDate": "2026-10-29" }
+
+### Cost center with employee
+POST {{host}}/getCostCenter
+Content-Type: application/json
+Authorization: Basic alice
+
+{ "costCenter": "100040404" }
+
+

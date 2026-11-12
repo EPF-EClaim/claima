@@ -5197,13 +5197,17 @@ module.exports = (srv) => {
         return true;
     });
 
+    /* ---------------------------------------------------------------- */
+    /*  getEmpJob: by userId, email or positionId                       */
+    /* ---------------------------------------------------------------- */
     srv.on('getEmpJob', async (req) => {
-        const { userId, email, asOfDate } = req.data;
+        const { userId, email, positionId, asOfDate } = req.data;
 
-        if (!userId && !email) return req.reject(400, 'userId or email is required');
+        // First one provided wins
+        const [by, key] = [['userId', userId], ['email', email], ['position', positionId]]
+            .find(([, v]) => v) ?? [];
 
-        const by = userId ? 'userId' : 'email';
-        const key = userId || email;
+        if (!by) return req.reject(400, 'userId, email or positionId is required');
 
         let result;
         try {
@@ -5212,14 +5216,39 @@ module.exports = (srv) => {
             return req.reject(502, error.message);
         }
 
-        if (!result || (Array.isArray(result) && !result.length)) {
+        // Outside try/catch so the 404 is not turned into a 502
+        if (!result) {
             const message = asOfDate
                 ? `No job record found for ${by} '${key}' as of ${asOfDate}. The employee may not have been active in SuccessFactors on this date.`
                 : `Employee not found for ${by} '${key}'.`;
-
             return req.reject(404, message);
         }
 
         return result;
     });
+
+    /* ---------------------------------------------------------------- */
+    /*  getCostCenter: cost centers with the employee in each owner     */
+    /*  position                                                        */
+    /* ---------------------------------------------------------------- */
+    srv.on('getCostCenter', async (req) => {
+        const { costCenter, status, asOfDate } = req.data;
+
+        let result;
+        try {
+            result = await sfLib.getSFCostCenter({ costCenter, status }, { asOfDate });
+        } catch (error) {
+            return req.reject(502, error.message);
+        }
+
+        // Outside try/catch so the 404 is not turned into a 502
+        if (!result.length) {
+            const target = costCenter ? `cost center '${costCenter}'` : 'cost centers';
+            return req.reject(404, `No ${target} found${asOfDate ? ` as of ${asOfDate}` : ''}.`);
+        }
+
+        return result;
+    });
+
+
 }
