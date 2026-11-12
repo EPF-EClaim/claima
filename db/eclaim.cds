@@ -675,6 +675,8 @@ entity ZCLAIM_ITEM : managed {
                                               on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
         ZINSURANCE_MEDICAL_PROVIDER     : Association to ZINSURANCE_MEDICAL_PROVIDER
                                               on ZINSURANCE_MEDICAL_PROVIDER.INSURANCE_MEDICAL_PROVIDER_ID = INSURANCE_MEDICAL_PROVIDER_ID;
+        ZPROJECT_HDR                    : Association to ZPROJECT_HDR
+                                              on ZPROJECT_HDR.PROJECT_CODE_IO = INTERNAL_ORDER;
 }
 
 entity ZLODGING_CAT : managed {

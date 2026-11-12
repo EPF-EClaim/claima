@@ -1044,7 +1044,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             CASH_ADVANCE_AMOUNT,
             ALTERNATE_COST_CENTER,
             ZCLAIM_ITEM.INTERNAL_ORDER,
-            ZPROJECT_HDR.IO_WBS_IND,
+            ZCLAIM_ITEM.ZPROJECT_HDR.IO_WBS_IND,
             ZCLAIM_TYPE.CASH_ADVANCE_CAT_ID,
             ZCLAIM_ITEM.CHARGED_TO_CCC,
             ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
