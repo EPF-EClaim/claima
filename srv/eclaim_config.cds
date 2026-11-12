@@ -2381,6 +2381,12 @@ annotate service.ZPROJECT_HDR with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : GL_ACCOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'GL Account'
