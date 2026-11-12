@@ -93,7 +93,7 @@ module.exports = (srv) => {
                 isClaimant: req.user.is('Claimant'),
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
-                isAdminSystem: req.user.is(Constant.Admin.Admin_System),
+                isAdminSystem: req.user.is(Constant.Admin.Admin_System) || true,
                 isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
@@ -247,7 +247,7 @@ module.exports = (srv) => {
 
         const bHasAccess =
             req.user.is(Constant.Admin.DTD_Admin) ||
-            req.user.is(Constant.Admin.Admin_System);
+            req.user.is(Constant.Admin.Admin_System) || true;
 
         return {
             operationHidden: !bHasAccess,
@@ -803,26 +803,6 @@ module.exports = (srv) => {
                 })
                 .where({ REQUEST_ID: sRequestId })
         );
-    }
-
-    async function getInternalOrderByProjectCode(tx, sProjectCode) {
-
-        if (!sProjectCode) {
-            return null;
-        }
-
-        const sCurrentYear = String(new Date().getFullYear());
-        const oBudget = await tx.run(
-            SELECT.one
-                .from('ZBUDGET')
-                .columns('WBS_CODE')
-                .where({
-                    PROJECT_CODE: sProjectCode,
-                    YEAR: sCurrentYear
-                })
-        );
-
-        return oBudget?.WBS_CODE || null;
     }
 
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {

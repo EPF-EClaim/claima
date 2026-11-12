@@ -3232,14 +3232,6 @@ sap.ui.define([
 				var oModel = this.getOwnerComponent().getModel();
 				var oListBinding = null;
 
-				// Ensure Internal Order is populated before save
-				if (!oInputModel.getProperty("/claim_item/internal_order")) {
-					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-					var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
-
-					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-				}
-
 				// "Charged to CCC" is only offered on travel claims of corporate card holders
 				const bCccAllowed = this._isTravelClaimWithCard(
 					oClaimSubmissionModel.getProperty("/claim_header/card_no"),
