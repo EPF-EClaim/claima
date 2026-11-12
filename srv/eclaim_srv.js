@@ -5327,8 +5327,8 @@ module.exports = (srv) => {
                         ? Constant.ProjectCodeIndicator.WBS
                         : Constant.ProjectCodeIndicator.IO,
                     GL_ACCOUNT: sCommitmentItem,
-                    STATUS : sStatus,
-                    COST_CENTER : sCostCenter
+                    STATUS: sStatus,
+                    COST_CENTER: sCostCenter
                 };
 
                 if (bIsWbs && sWbsDescription) {
