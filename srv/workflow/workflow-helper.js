@@ -775,7 +775,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
 
             case oBudgetStatus.ERROR:
                 aMessages.push(
-                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${fnDetail(oResult)}`
+                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${oResult.MESSAGE ? `\n${oResult.MESSAGE}` : ''}`
                 );
                 break;
 
