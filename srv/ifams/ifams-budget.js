@@ -28,7 +28,7 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         }
         const aBudgetRecords = oCache[sPath] || [];
 
-        if (!aBudgetRecords || aBudgetRecords.length === 0){
+        if (aBudgetRecords.length === 0){
             return { error: true, data: null, message: 'The budget validation cannot be completed due to a technical or interface error during communication' +
                                                        ' between SAP CENTRA eClaims and S/4 IFAMS'};
         }
