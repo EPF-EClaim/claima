@@ -178,7 +178,6 @@ module.exports = (srv) => {
         try {
             await updateCorpoCardAdvance(oTx, sRecordId, sActionValue);
         } catch (oAdvErr) {
-            console.error("Failed to update corpo card advance:", oAdvErr);
             throw new Error('Error encountered during Corporate Card Advance update');
         }
     };
@@ -188,28 +187,23 @@ module.exports = (srv) => {
      */
     const runBudgetChecking = async (oTx, sRecordId, oDescriptor, sBudgetActionValue) => {
         const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, sBudgetActionValue);
-        console.log("aBudgetContext: ", aBudgetContext);
 
         const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-        console.log("aReturn: ", aReturn);
 
         const sBudgetError = buildBudgetErrorMessage(aReturn);
         if (sBudgetError) {
             throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`);
         }
-        console.log("Budget Checking Status: ", true);
     };
 
     /**
      * Final-approval steps for Corporate Credit Card requests.
      */
     const handleCCCFinalApproval = async (oTx, sRecordId, sUserId) => {
-        console.log("Sending final approve CCC email");
         await notifyCardholdersOfRequestApproval(oTx, sRecordId);
         await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);
 
         const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sRecordId);
-        console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
     };
 
     /**
@@ -253,7 +247,6 @@ module.exports = (srv) => {
     * processApproval
     * ========================================================================= */
     srv.on('processApproval', async (req) => {
-        console.log("Request Payload: ", req.data);
 
         const {
             Id: sRecordId,

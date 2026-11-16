@@ -558,14 +558,10 @@ const Constant = {
     },
     StatusCode: {       
         SUCCESS: "200",
-        ERROR: "500",
-        NOT_FOUND: "404",
-        BAD_REQUEST: "400"
+        ERROR: "500"
     },
     MessageType: {
         ERROR: "E",
-        WARNING: "W",
-        SUCCESS: "S",
         WORKFLOW: "A"
     },
     EmailStatus: {
