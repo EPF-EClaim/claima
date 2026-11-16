@@ -23,7 +23,7 @@ const {
     validateCostCenter,
     updateRequestBudget
 } = require("./workflow-helper");
-const { notifyIFAMSEmptyResponse } = require('../ifams/ifams-notification');
+const { sendEmailNotification } = require('../utils/EmailNotification');
 
 /**
  * startWorkflow steps 1-5: eligibility check, budget locking, workflow
@@ -37,7 +37,7 @@ const { notifyIFAMSEmptyResponse } = require('../ifams/ifams-notification');
  * @param {object} oTx - the cds transaction (cds.tx(req))
  * @param {string} sId - claim/request id
  * @param {object} oDescriptor - result of resolveDocDescriptor(sId)
- * @returns {Promise<object>} either the success context object, or a generateReturnMessage failure object
+ * @returns {Promise<{error: boolean, message: string|null}>} Result of the email sending
  */
 async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     // 1. Eligibility Checking (Claim only, upon submission)
@@ -104,15 +104,17 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                 aBudgetCheckReturn = await checkRequestBudget(aBudgetContext);
 
                 // Send admin notification when IFAMS unexpectedly returns empty result
-                const oEmptyResponseError = Array.isArray(aBudgetCheckReturn)
-                    ? aBudgetCheckReturn.find(
-                        oResult =>
-                            oResult.ERROR_CODE === Constant.BudgetErrorCode.IFAMS_EMPTY_RESPONSE
-                    )
-                    : null;
+                const bHasEmptyResponse = Array.isArray(aBudgetCheckReturn)
+                    && aBudgetCheckReturn.some(oResult =>
+                        oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.EMPTY_RESPONSE);
 
-                if (oEmptyResponseError) {
-                    await notifyIFAMSEmptyResponse(sId);
+                if (bHasEmptyResponse) {
+                    sendEmailNotification({
+                        recordId: sId,
+                        recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
+                        action: Constant.IFAMSEmailAction.EMPTY_RESPONSE,
+                        emailTitle: `API Error: Empty IFAMS Budget Response - ${sId}`
+                    });
                 }
 
                 const bAllSufficient = Array.isArray(aBudgetCheckReturn)

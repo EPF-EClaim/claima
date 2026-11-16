@@ -680,14 +680,13 @@ const Constant = {
     ProjectStatus: {
         ACTIVE: 'ACTIVE'
     },
-    BudgetErrorCode: {
-        IFAMS_EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE',
-        IFAMS_REQUEST_ERROR: 'IFAMS_REQUEST_ERROR'
+    IFAMSBudgetErrorCode: {
+        EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE',
+        REQUEST_ERROR: 'IFAMS_REQUEST_ERROR'
     },
-    EmailAction: {
-        IFAMS_EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE'
-    }   
-
+    IFAMSEmailAction: {
+        EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE'
+    }
 };
 
 module.exports = { Constant };

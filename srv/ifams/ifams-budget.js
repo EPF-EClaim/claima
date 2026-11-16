@@ -31,7 +31,7 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         if (aBudgetRecords.length === 0) {
             return {
                 error: true,
-                errorCode: Constant.BudgetErrorCode.IFAMS_EMPTY_RESPONSE,
+                errorCode: Constant.IFAMSBudgetErrorCode.EMPTY_RESPONSE,
                 data: null,
                 message: 'The budget validation cannot be completed due to a technical or interface error during communication between SAP CENTRA eClaims and S/4 IFAMS'
             };
@@ -47,7 +47,7 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         return { error: false, errorCode: null, data: oBudget, message: 'Successfully retrieved the budget' };
 
     } catch (oError) {
-        return { error: true, errorCode: Constant.BudgetErrorCode.IFAMS_REQUEST_ERROR, data: oBudget, message: oError.message };
+        return { error: true, errorCode: Constant.IFAMSBudgetErrorCode.REQUEST_ERROR, data: oBudget, message: oError.message };
     }
 }
 
