@@ -2625,9 +2625,7 @@ sap.ui.define([
 		*                                Child (02) aged 18 and below;
 		*                                Child (02) aged 19 to 25 who is a student
 		*  - LAUT                      : Spouse (01), Child (02), Additional Spouse (07)
-		*  - INSURANCE / MED_ADVANCE   : Spouse (01) / Additional Spouse (07) who is a medical beneficiary;
-		*                                Child (02) aged 25 and below who is a medical beneficiary and a student;
-		*                                Child (02) who is a medical beneficiary and disabled (student and age checks bypassed)
+		*  - INSURANCE / MED_ADVANCE   : dependents who are a medical beneficiary (MEDICAL_BENEFICIARY = true)
 		*  - KEMATIAN                  : Spouse (01), Additional Spouse (07);
 		*                                Child (02) below 18 (17 and below) who is not employed;
 		*                                Child (02) below 24 (23 and below) who is a student
@@ -2725,94 +2723,14 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-					var s25YearsAndBelow = DateUtility.getDateNYearsAgo(25);
-
-					// Spouse / Additional Spouse
-					var oSpouseFilter = new Filter({
-						filters: [
-							new Filter({
-								filters: [
-									new Filter(
-										this._oConstant.EntitiesFields.RELATIONSHIP,
-										FilterOperator.EQ,
-										this._oConstant.Relationship.SPOUSE
-									),
-									new Filter(
-										this._oConstant.EntitiesFields.RELATIONSHIP,
-										FilterOperator.EQ,
-										this._oConstant.Relationship.ADDITIONAL_SPOUSE
-									)
-								],
-								and: false
-							}),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							)
-						],
-						and: true
-					});
-
-					// Child - Normal Rule
-					var oEligibleChildFilter = new Filter({
-						filters: [
-							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
-								FilterOperator.EQ,
-								this._oConstant.Relationship.CHILD
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.STUDENT,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.DOB,
-								FilterOperator.GE,
-								s25YearsAndBelow
-							)
-						],
-						and: true
-					});
-
-					// Child - Disabled (bypass Student & DOB checks)
-					var oDisabledChildFilter = new Filter({
-						filters: [
-							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
-								FilterOperator.EQ,
-								this._oConstant.Relationship.CHILD
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.DISABLED,
-								FilterOperator.EQ,
-								true
-							)
-						],
-						and: true
-					});
-
+					// Only dependents flagged as medical beneficiary
 					var aMedicalFilters = [
 						oEmpFilter,
-						new Filter({
-							filters: [
-								oSpouseFilter,
-								oEligibleChildFilter,
-								oDisabledChildFilter
-							],
-							and: false
-						})
+						new Filter(
+							this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY, 
+							FilterOperator.EQ, 
+							true
+						)
 					];
 
 					// Medical Advance with Pre-Approval Request: only the dependent(s) selected in the PAR
