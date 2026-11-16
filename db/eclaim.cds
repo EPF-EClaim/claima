@@ -1061,7 +1061,6 @@ entity ZEMP_DEPENDENT : managed {
         MEDICAL_BENEFICIARY               : Boolean       @Common.Label: 'Medical Beneficiary';  
 }
 
-
 entity ZPROJECT_HDR : managed {
     key PROJECT_CODE_IO             : String      @mandatory  @Common.Label: 'Project Code(IO)';
         PROJECT_DESC                : String      @Common.Label: 'Project Description';

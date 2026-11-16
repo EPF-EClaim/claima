@@ -767,7 +767,6 @@
                                         "type": "GridTable",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": true,
@@ -780,8 +779,7 @@
                                         "enableMassEdit": {
                                             "visibleFields": "PROJECT_OWNER_POSITION_ID"
                                         }
-                                    },
-                                    "actions": { }
+                                    }
                                 }
                             },
                             "hideFilterBar": true,

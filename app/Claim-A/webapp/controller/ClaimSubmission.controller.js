@@ -1186,21 +1186,21 @@ sap.ui.define([
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
 				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-				let glAccount;
+				let sGLAccount;
 
 				if (sProjectCode) {
-					glAccount = await Utility.getGLAccountByProjectCode(
+					sGLAccount = await Utility.getGLAccountByProjectCode(
 						oModel,
 						sProjectCode
 					);
 				} else {
-					glAccount = await this._getGLAccount(
+					sGLAccount = await this._getGLAccount(
 						oModel,
 						oInputModel.getProperty("/claim_item/claim_type_id")
 					);
 				}
 
-				oInputModel.setProperty("/claim_item/gl_account", glAccount);
+				oInputModel.setProperty("/claim_item/gl_account", sGLAccount);
 				//// get cost center
 				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center") || null;
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);

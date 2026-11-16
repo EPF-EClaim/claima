@@ -131,14 +131,13 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         BUDGET_OWNER_ID:    sEEID
     };
 }
-async function retrieveProjectOwnerDetails(sProjectCode, sYear){
+async function retrieveProjectOwnerDetails(sProjectCode, sYear) {
     let oBudgetContext = null;
 
     // Main table path
     const sProjectCodeTable = cds.entities['eclaim_srv.ZPROJECT_HDR'];
     const sProjectCodeSafe = String(sProjectCode);
     const sYearSafe = String(sYear);
-    let sEEID = "";
 
     // Fetch data
     console.log("Start Project Code check");
@@ -147,7 +146,7 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
             .one
             .from(sProjectCodeTable)
             .where({
-                [Constant.EntitiesFields.PROJECT_CODE_IO]   : sProjectCodeSafe
+                [Constant.EntitiesFields.PROJECT_CODE_IO]: sProjectCodeSafe
             })
             .columns(
                 Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID,
@@ -155,20 +154,37 @@ async function retrieveProjectOwnerDetails(sProjectCode, sYear){
                 Constant.EntitiesFields.PROJECT_OWNER_NAME,
                 Constant.EntitiesFields.PROJECT_OWNER_EMAIL
             )
-    )
-    if(!oBudgetContext){
+    );
+
+    // Project code not found
+    if (!oBudgetContext) {
+        console.warn(`Project Code '${sProjectCodeSafe}' not found`);
         return null;
     }
-    
+
+    const sPositionId = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID] || null;
+    const sEEID       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EEID] || null;
+    const sName       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_NAME] || null;
+    const sEmail      = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EMAIL] || null;
+
+    // check if position id is maintained
+    if (!sPositionId) {
+        console.warn(`Project Code '${sProjectCodeSafe}' has no Project Owner Position ID`);
+        return null;
+    }
+
+    // check if there is a employee associated with the position id
+    if (!sEEID) {
+        console.warn(`Position ID '${sPositionId}' for Project Code '${sProjectCodeSafe}' has no associated employee`);
+        return null;
+    }
+
     // Return only the required fields
     return {
-        YEAR:               oBudgetContext[Constant.EntitiesFields.YEAR],
-        INTERNAL_ORDER:     oBudgetContext[Constant.EntitiesFields.INTERNAL_ORDER],
-        COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
-        FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
-        MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EMAIL].toLowerCase(),
-        BUDGET_OWNER_ID:    oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EEID]
+        BUDGET_OWNER_EMAIL:       sEmail ? String(sEmail).toLowerCase() : null,
+        BUDGET_OWNER_ID:          sEEID,
+        BUDGET_OWNER_POSITION_ID: sPositionId,
+        BUDGET_OWNER_NAME:        sName
     };
 }
 function populateApproverDetails(oApproverDetails, iLevel) {

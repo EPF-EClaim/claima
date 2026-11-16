@@ -851,7 +851,6 @@ sap.ui.define([
 				meter_cube_actual				: oReqItem.METER_CUBE_ACTUAL || 0,
 				round_trip 						: oReqItem.ROUND_TRIP || false,
 				internal_order					: oReqItem.INTERNAL_ORDER || null,
-				internal_order					: oReqItem.INTERNAL_ORDER || null,
 				policy_year						: oReqItem.POLICY_YEAR || null,
 				dependent_national_id			: oReqItem.DEPENDENT_NATIONAL_ID || null,
 				insurance_medical_provider_id	: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
@@ -1372,6 +1371,19 @@ sap.ui.define([
 				await this._setParticipantsForCC();
 			}
 
+			// get project gl account
+			let sProjectGL;
+			if (oReqHeader.projectcode) {
+				sProjectGL = await Utility.getGLAccountByProjectCode(this._oDataModel, oReqHeader.projectcode);
+				if (sProjectGL) {
+					// populate to oReqItem.gl_account for budget check
+					oReqItem.gl_account = sProjectGL;
+				} else {
+					MessageBox.error(Utility.getText("req_d_e_project_gl_account_not_found", [oReqHeader.projectcode]));
+					return;
+				}
+			}
+
 			// Eligibility Checking
 			try {
 				var aPayload = await EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
@@ -1436,17 +1448,6 @@ sap.ui.define([
 						String(oReqItem.cost_center)
 							.split(" - ")[0]
 							.trim();
-				}
-
-				// get project gl account
-				if (oReqHeader.projectcode) {
-					const sProjectGLAccount = await Utility.getGLAccountByProjectCode(this._oDataModel, oReqHeader.projectcode);
-					if (sProjectGLAccount) {
-						oReqItem.gl_account = sProjectGLAccount;
-					} else {
-						MessageBox.error(Utility.getText("req_d_w_project_gl_account_not_found", [oReqHeader.projectcode]));
-						return;
-					}
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
