@@ -483,7 +483,8 @@ const Constant = {
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
         DEFAULT_EDU_ELIGIBLE_YEAR: "DEFAULT_EDU_ELIGIBLE_YEAR",
         DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT",
-        CCC_MAKER: "CCC_MAKER"
+        CCC_MAKER: "CCC_MAKER",
+        IFAMS_ERROR_EMAIL: "IFAMS_ERROR_EMAIL"
     },
     ElaunTukarStatus: {
         ALLOWED_CREATION: "01",
@@ -678,7 +679,14 @@ const Constant = {
     },
     ProjectStatus: {
         ACTIVE: 'ACTIVE'
-    }
+    },
+    BudgetErrorCode: {
+        IFAMS_EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE',
+        IFAMS_REQUEST_ERROR: 'IFAMS_REQUEST_ERROR'
+    },
+    EmailAction: {
+        IFAMS_EMPTY_RESPONSE: 'IFAMS_EMPTY_RESPONSE'
+    }   
 
 };
 

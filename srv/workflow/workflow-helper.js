@@ -537,6 +537,7 @@ async function resolveRollUp(aGroups, aLevels) {
                     oError: {
                         ...oGroup.oCondition,
                         STATUS: Constant.BudgetCheckStatus.ERROR,
+                        ERROR_CODE: oBudgetRecord.errorCode,
                         CLAIM_TYPE_ITEMS: oGroup.CLAIM_TYPE_ITEMS,
                         TOTAL_AMOUNT: oGroup.TOTAL_AMOUNT,
                         MESSAGE: oBudgetRecord.message

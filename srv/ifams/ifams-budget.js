@@ -28,9 +28,13 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         }
         const aBudgetRecords = oCache[sPath] || [];
 
-        if (aBudgetRecords.length === 0){
-            return { error: true, data: null, message: 'The budget validation cannot be completed due to a technical or interface error during communication' +
-                                                       ' between SAP CENTRA eClaims and S/4 IFAMS'};
+        if (aBudgetRecords.length === 0) {
+            return {
+                error: true,
+                errorCode: Constant.BudgetErrorCode.IFAMS_EMPTY_RESPONSE,
+                data: null,
+                message: 'The budget validation cannot be completed due to a technical or interface error during communication between SAP CENTRA eClaims and S/4 IFAMS'
+            };
         }
 
         const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
@@ -40,10 +44,10 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
             && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
             && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
 
-        return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
+        return { error: false, errorCode: null, data: oBudget, message: 'Successfully retrieved the budget' };
 
     } catch (oError) {
-        return { error: true, data: oBudget, message: oError.message };
+        return { error: true, errorCode: Constant.BudgetErrorCode.IFAMS_REQUEST_ERROR, data: oBudget, message: oError.message };
     }
 }
 

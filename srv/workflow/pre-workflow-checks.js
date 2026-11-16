@@ -23,6 +23,7 @@ const {
     validateCostCenter,
     updateRequestBudget
 } = require("./workflow-helper");
+const { notifyIFAMSEmptyResponse } = require('../ifams/ifams-notification');
 
 /**
  * startWorkflow steps 1-5: eligibility check, budget locking, workflow
@@ -100,7 +101,19 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             if (aBudgetCheckReturn.length === 0) {
 
                 // check budget first (Claim & Request)
-                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext); 
+                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext);
+
+                // Send admin notification when IFAMS unexpectedly returns empty result
+                const oEmptyResponseError = Array.isArray(aBudgetCheckReturn)
+                    ? aBudgetCheckReturn.find(
+                        oResult =>
+                            oResult.ERROR_CODE === Constant.BudgetErrorCode.IFAMS_EMPTY_RESPONSE
+                    )
+                    : null;
+
+                if (oEmptyResponseError) {
+                    await notifyIFAMSEmptyResponse(sId);
+                }
 
                 const bAllSufficient = Array.isArray(aBudgetCheckReturn)
                     && aBudgetCheckReturn.length > 0
@@ -111,7 +124,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                         // Claim: lock budget + update claim header/item
                         aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId, aBudgetCheckReturn);
 
-                    } else if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) { 
+                    } else if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
                         // Request: update request header/item only (no lock)
                         aBudgetCheckReturn = await updateRequestBudget(oTx, sId, aBudgetCheckReturn);
                     }
