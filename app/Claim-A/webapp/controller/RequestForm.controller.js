@@ -1290,6 +1290,7 @@ sap.ui.define([
 			if (!bSaved){
 				return;
 			}
+			this._resetReqItemInputs();
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -1371,19 +1372,6 @@ sap.ui.define([
 				await this._setParticipantsForCC();
 			}
 
-			// get project gl account
-			let sProjectGL;
-			if (oReqHeader.projectcode) {
-				sProjectGL = await Utility.getGLAccountByProjectCode(this._oDataModel, oReqHeader.projectcode);
-				if (sProjectGL) {
-					// populate to oReqItem.gl_account for budget check
-					oReqItem.gl_account = sProjectGL;
-				} else {
-					MessageBox.error(Utility.getText("req_d_e_project_gl_account_not_found", [oReqHeader.projectcode]));
-					return;
-				}
-			}
-
 			// Eligibility Checking
 			try {
 				var aPayload = await EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
@@ -1394,7 +1382,7 @@ sap.ui.define([
 				MessageBox.error(error.message || Utility.getText("msg_failed_generic_error"));
 			};
 
-			if (!bCanProceed) return;
+			if (!bCanProceed) return bSaved;
 
 			BusyIndicator.show(0);
 
@@ -1417,14 +1405,29 @@ sap.ui.define([
 					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
 				}
 
+				// check med_advance
 				if (oReqItem.claim_type_item_id === this._oConstant.ClaimTypeItem.MED_ADVANCE) {
 					oReqItem.cost_center = this._oConstant.MedicalAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.MedicalAdvanceInfo.GL_ACCOUNT;
 				}
+				// check cash advance
 				else if (oReqItem.cash_advance) {
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
-				} else {
+				} 
+				// check project code
+				else if (oReqHeader.projectcode) {
+					const sProjectGL = await Utility.getGLAccountByProjectCode(this._oDataModel, oReqHeader.projectcode);
+					if (sProjectGL) {
+						// populate to oReqItem.gl_account for budget check
+						oReqItem.gl_account = sProjectGL;
+					} else {
+						MessageBox.error(Utility.getText("req_d_e_project_gl_account_not_found", [oReqHeader.projectcode]));
+						return bSaved;
+					}
+				} 
+				// check and assign charging cost center & GL account
+				else {
 					const sDefaultChargingCostCenter =
 						await Utility.getDefaultChargingCostCenter(
 							this._oDataModel,
@@ -1435,21 +1438,21 @@ sap.ui.define([
 					if (sDefaultChargingCostCenter) {
 						oReqItem.cost_center = sDefaultChargingCostCenter;
 					} else {
-						oReqItem.cost_center =
-							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
-								? oReqHeader.altcostcenter
-								: oReqHeader.costcenter;
+						oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
+												? oReqHeader.altcostcenter
+												: oReqHeader.costcenter;
 					}
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 				}
-					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+
+				// assign material code
+				oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+				// trim cost center from "CC - Description" to "CC"
 				if (oReqItem.cost_center) {
-					oReqItem.cost_center =
-						String(oReqItem.cost_center)
-							.split(" - ")[0]
-							.trim();
+					oReqItem.cost_center = String(oReqItem.cost_center).split(" - ")[0].trim();
 				}
 
+				// get ISOString time for departure_time and arrival_time if they exist
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
 					var dtDeparture_date = new Date(oReqItem.departure_time).toISOString() || null;
 					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
@@ -1652,7 +1655,6 @@ sap.ui.define([
 				MessageBox.error(e.message || Utility.getText("req_d_e_save_failed"));
 			} finally {
 				BusyIndicator.hide();
-				this._resetReqItemInputs();
 			}
 			
 			return bSaved;

@@ -571,14 +571,14 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:                     oItem.GL_ACCOUNT,
                     MATERIAL_CODE:                  oItem.MATERIAL_CODE,
                     INTERNAL_ORDER:                 null,
+                    IO_WBS_IND:                     null,
                     CHARGED_TO_CCC:                 oItem.CHARGED_TO_CCC,
                     CLAIM_TYPE_ITEM_ID:             oItem.CLAIM_TYPE_ITEM_ID,
                     CASH_ADVANCE_CAT_ID:            bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
                     EARMARKED_FUNDS_DOC_ID:         oItem.EARMARKED_FUNDS_DOC_ID,
                     EARMARKED_FUNDS_DOC_YEAR:       oItem.EARMARKED_FUNDS_DOC_YEAR,
                     EARMARKED_FUNDS_DOC_COMP_CODE:  oItem.EARMARKED_FUNDS_DOC_COMP_CODE,
-                    EARMARKED_FUNDS_DOC_ITEM_ID:    oItem.EARMARKED_FUNDS_DOC_ITEM_ID,
-                    
+                    EARMARKED_FUNDS_DOC_ITEM_ID:    oItem.EARMARKED_FUNDS_DOC_ITEM_ID
                 }));
         }else{ 
             sData = 
@@ -596,6 +596,7 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
                     INTERNAL_ORDER:          oItem.INTERNAL_ORDER,
+                    IO_WBS_IND:              oItem.IO_WBS_IND,
                     CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
                     CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
                     CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
