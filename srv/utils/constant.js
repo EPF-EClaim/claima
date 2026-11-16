@@ -573,11 +573,13 @@ const Constant = {
     },
     StatusCode: {       
         SUCCESS: "200",
-        ERROR: "500"
+        ERROR: "500",
+        NOT_FOUND: '404'
     },
     MessageType: {
         ERROR: "E",
-        WORKFLOW: "A"
+        WORKFLOW: "A",
+        WARNING: "W"
     },
     EmailStatus: {
         REJECTED: "rejected"
@@ -639,7 +641,8 @@ const Constant = {
     BudgetLog: {
         PROGRAM: {
             RELEASE: "RELEASE_BUDGET",
-            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK"
+            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK",
+            EMAIL_NOTIFICATION: "EMAIL_NOTIFICATION"
         },
         MESSAGE_TYPE: "B"
     },

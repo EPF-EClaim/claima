@@ -1,6 +1,6 @@
 const cds = require('@sap/cds');
 const { sendEmailInternal } = require('./EmailHelper');
-const { Constant } = require("../utils/constant");
+const { Constant } = require("./constant");
 
 /**
  * Write email notification failure to ZLOG in its own transaction,
@@ -15,8 +15,8 @@ async function writeEmailFailureLog(sRecordId, sStatusCode, sMessage) {
             INSERT.into(Constant.Entities.ZLOG).entries({
                 TIMESTAMP: new Date(),
                 RECORD_ID: String(sRecordId || '').slice(0, 20),
-                PROGRAM: 'EMAIL_NOTIFICATION',
-                MESSAGE_TYPE: 'W',
+                PROGRAM: Constant.BudgetLog.PROGRAM.EMAIL_NOTIFICATION,
+                MESSAGE_TYPE: Constant.MessageType.WARNING,
                 STATUS_CODE: sStatusCode,
                 MESSAGE: sMessage || 'No Message'
             })
@@ -34,7 +34,7 @@ async function writeEmailFailureLog(sRecordId, sStatusCode, sMessage) {
  * @param {string} oParams.recipientConstantId - ID in ZCONSTANTS holding recipient emails
  * @param {string} oParams.action - Email action (determines email template in IS)
  * @param {string} oParams.emailTitle - Email subject
- * @returns {Promise<{error: boolean, message: string|null}>} Result of the email sending
+ * @returns {Promise<object>} either the success context object, or a generateReturnMessage failure object
  */
 async function sendEmailNotification({ recordId, recipientConstantId, action, emailTitle }) {
     try {
@@ -52,7 +52,7 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
 
         if (aRecipients.length === 0) {
             const sMessage = `No recipients configured in ZCONSTANTS (${recipientConstantId}) for ${action}`;
-            await writeEmailFailureLog(recordId, '404', sMessage);
+            await writeEmailFailureLog(recordId, Constant.StatusCode.NOT_FOUND, sMessage);
             return { error: true, message: sMessage };
         }
 
@@ -60,16 +60,19 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
             ClaimID: recordId,
             Action: action,
             EmailTitle: emailTitle,
-            ReceiverEmail: aRecipients.join(',')
+            ReceiverEmail: '' //aRecipients.join(',')
         });
 
         return { error: false, message: null };
 
     } catch (oEmailError) {
         const sMessage = `Failed to send ${action} email notification: ${oEmailError?.message}`;
+        const sCode = String(oEmailError?.status ?? oEmailError?.statusCode ?? '');
+        const sStatusCode = /^\d{3}$/.test(sCode) ? sCode : Constant.StatusCode.ERROR;
+
         await writeEmailFailureLog(
             recordId,
-            String(oEmailError?.status || oEmailError?.statusCode || oEmailError?.code || '500'),
+            sStatusCode,
             sMessage
         );
         return { error: true, message: sMessage };
