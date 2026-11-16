@@ -37,7 +37,6 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
-const { message } = require('@sap/cds/lib/log/cds-error');
 
 module.exports = (srv) => {
 
@@ -150,7 +149,7 @@ module.exports = (srv) => {
             } catch (oError) {
                 // Log the failure for audit visibility, but don't roll back or throw -
                 // the workflow itself already succeeded by this point.
-                await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, 'E', '500');
+                await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, Constant.MessageType.ERROR, Constant.StatusCode.ERROR);
             }
         }
         // ==========
@@ -307,7 +306,7 @@ module.exports = (srv) => {
 
         // 7. Header status update (final stage only)
         if (bFinalStage) {
-            const sStatus = await UpdateHeader.updateApproverActionToHeader(sRecordId, sActionValue, oTx);
+            await UpdateHeader.updateApproverActionToHeader(sRecordId, sActionValue, oTx);
         }
 
         // 8. Follow-up actions
@@ -342,12 +341,12 @@ module.exports = (srv) => {
                 sComments, sRejectionReasonDesc, bIsRejectOrPushBack, bIsFinalApprove
             });
         } catch (oError) {
-            await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, 'E', '500');
+            await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, Constant.MessageType.ERROR, Constant.StatusCode.ERROR);
         }
 
         // 10. Workflow history
         const sLogMessage = await buildApprovalLogMessage(oTx, sRecordId, sUserId, oActionDescriptor, sComments);
-        await logWorkflowHistory(oTx, sRecordId, sLogMessage, 'A', Constant.StatusCode.SUCCESS);
+        await logWorkflowHistory(oTx, sRecordId, sLogMessage, Constant.MessageType.WORKFLOW, Constant.StatusCode.SUCCESS);
 
         return generateReturnMessage(true, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Approver Process Completed');
     });
