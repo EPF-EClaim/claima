@@ -200,10 +200,9 @@ module.exports = (srv) => {
      * Final-approval steps for Corporate Credit Card requests.
      */
     const handleCCCFinalApproval = async (oTx, sRecordId, sUserId) => {
-        await notifyCardholdersOfRequestApproval(oTx, sRecordId);
-        await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);
-
-        const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sRecordId);
+        await notifyCardholdersOfRequestApproval(oTx, sRecordId);   // send email to cardholder(s) to inform that request has been approved
+        await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);    // send email to maker to inform that request has been approved
+        await buildFinalApprovalPayloadForCCC(oTx, sRecordId);      // send CCC records to SF MDF
     };
 
     /**

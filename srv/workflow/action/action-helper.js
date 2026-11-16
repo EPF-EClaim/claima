@@ -824,11 +824,6 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
         cust_EPF_CCC_Child: aPayload
     };
 
-    console.log(
-        "JSON BEFORE ISservice.send:",
-        JSON.stringify(oFinalPayload, null, 2)
-    );
-
     try {
         const ISservice = await cds.connect.to('IS_Conn');
 
@@ -842,8 +837,6 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     } catch (error) {
         throw new Error(`Failed sending final approval payload: ${error.message}`);
     }
-
-    return oFinalPayload;
 }
 
 module.exports = {
