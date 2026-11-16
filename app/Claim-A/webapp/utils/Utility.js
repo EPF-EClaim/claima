@@ -658,27 +658,6 @@ sap.ui.define([
             }
         },
 
-        getInternalOrderByProjectCode: async function (oModel, sProjectCode) {
-            if (!sProjectCode) {
-                return null;
-            }
-
-            const oFunction = oModel.bindContext("/getInternalOrderByProjectCode(...)");
-            oFunction.setParameter("sProjectCode", sProjectCode);
-
-            try {
-                await oFunction.execute();
-
-                const oContext = oFunction.getBoundContext();
-                const oResult = oContext.getObject();
-
-                return oResult?.value || oResult || null;
-
-            } catch (oError) {
-                return null;
-            }
-        },
-
         setFieldEditableState: function (sField, sAltCC, sProjectCode, bEmailApprove, sSubmissionType) {
             var aRestrictedTypes = [
                 Constants.SubmissionType.PRE_APPROVE,
@@ -721,7 +700,7 @@ sap.ui.define([
                 const oContext = oFunction.getBoundContext();
                 const oResult = oContext.getObject();
 
-                return oResult?.value || oResult || null;
+                return oResult?.value || null;
 
             } catch (oError) {
                 return null;
