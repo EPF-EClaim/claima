@@ -37,7 +37,7 @@ const { sendEmailNotification } = require('../utils/EmailNotification');
  * @param {object} oTx - the cds transaction (cds.tx(req))
  * @param {string} sId - claim/request id
  * @param {object} oDescriptor - result of resolveDocDescriptor(sId)
- * @returns {Promise<{error: boolean, message: string|null}>} Result of the email sending
+ * @returns {Promise<object>} either the success context object, or a generateReturnMessage failure object
  */
 async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     // 1. Eligibility Checking (Claim only, upon submission)
