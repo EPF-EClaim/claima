@@ -831,7 +831,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
  * @param {string} [sStatusCode='200']
  * @returns {Promise<void>}
  */
-async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = 'A', sStatusCode = '200', sProgram = 'WORKFLOW') {
+async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Constant.MessageType.WORKFLOW, sStatusCode = Constant.StatusCode.SUCCESS) {
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,

@@ -565,8 +565,13 @@ const Constant = {
         "CCC_APPROVER1": "CCC_APPROVER1",
         "CCC_APPROVER2": "CCC_APPROVER2"
     },
-    StatusCode: {
-        SUCCESS: "200"
+    StatusCode: {       
+        SUCCESS: "200",
+        ERROR: "500"
+    },
+    MessageType: {
+        ERROR: "E",
+        WORKFLOW: "A"
     },
     EmailStatus: {
         REJECTED: "rejected"
