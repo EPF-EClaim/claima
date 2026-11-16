@@ -60,7 +60,7 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
             ClaimID: recordId,
             Action: action,
             EmailTitle: emailTitle,
-            ReceiverEmail: '' //aRecipients.join(',')
+            ReceiverEmail: aRecipients.join(',')
         });
 
         return { error: false, message: null };
