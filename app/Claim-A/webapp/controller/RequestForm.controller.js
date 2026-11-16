@@ -781,83 +781,82 @@ sap.ui.define([
 			const sReqSubId = String(oReqItem.REQUEST_SUB_ID || "").trim();
 
 			this._oReqModel.setProperty("/req_item", {
-				req_subid				: sReqSubId,
-				claim_type				: oReqItem.CLAIM_TYPE_ID || "",
-				claim_type_item_id		: oReqItem.CLAIM_TYPE_ITEM_ID || "",
-				no_of_days				: oReqItem.NO_OF_DAYS ?? 0,
-				purpose					: oReqItem.PURPOSE || "",
-				est_amount				: oReqItem.EST_AMOUNT ?? 0,
-				dependent				: oReqItem.DEPENDENT || "",
-				remark					: oReqItem.REMARK || "",
-				course					: oReqItem.COURSE_TITLE || "",
-				sport_rep				: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
-				club_membership			: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
-				doc1_filename			: oReqItem.ATTACHMENT1 || "",
-				cat_purpose				: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
-				doc2_filename			: oReqItem.ATTACHMENT2 || "",
-				start_date				: oReqItem.START_DATE || "",
-				end_date				: oReqItem.END_DATE || "",
-				start_time				: oReqItem.START_TIME || "",
-				end_time				: oReqItem.END_TIME || "",
-				vehicle_ownership		: oReqItem.VEHICLE_OWNERSHIP_ID || "",
-				room_type				: oReqItem.ROOM_TYPE || "",
-				country					: oReqItem.COUNTRY || "",
-				location				: oReqItem.LOCATION || "",
-				area					: oReqItem.AREA || "",
-				no_of_family_member		: oReqItem.FAMILY_COUNT || 0,
-				type_of_vehicle			: oReqItem.VEHICLE_TYPE || "",
-				fare_type				: oReqItem.FARE_TYPE_ID || "",
-				vehicle_class			: oReqItem.VEHICLE_CLASS_ID || "",
-				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE_PER_KM || "",
-				toll_amt				: parseFloat(oReqItem.TOLL) || 0,
-				flight_class			: oReqItem.FLIGHT_CLASS || "",
-				location_type			: oReqItem.LOCATION_TYPE || "",
-				from_state				: oReqItem.FROM_STATE_ID || "",
-				from_location			: oReqItem.FROM_LOCATION || "",
-				from_location_office	: oReqItem.FROM_LOCATION_OFFICE || "",
-				to_state				: oReqItem.TO_STATE_ID || "",
-				to_location				: oReqItem.TO_LOCATION || "",
-				to_location_office		: oReqItem.TO_LOCATION_OFFICE || "",
-				mode_of_transfer		: oReqItem.MODE_OF_TRANSFER || "",
-				tarikh_pindah			: oReqItem.TRANSFER_DATE || "",
-				sss						: oReqItem.REGION || "",
-				marriage_cat			: oReqItem.MARRIAGE_CATEGORY || "",
-				cube_eligible			: parseFloat(oReqItem.METER_CUBE_ENTITLED) || 0,
-				departure_time			: oReqItem.DEPARTURE_TIME || "",
-				arrival_time			: oReqItem.ARRIVAL_TIME || "",
-				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
-				cash_advance			: oReqItem.CASH_ADVANCE || false,
-				trip_start_date			: oReqItem.TRIP_START_DATE || null,
-				trip_end_date			: oReqItem.TRIP_END_DATE || null,
-				trip_start_time			: oReqItem.TRIP_START_TIME || null,
-				trip_end_time			: oReqItem.TRIP_END_TIME || null,
-				travel_day				: oReqItem.TRAVEL_DURATION_DAY || 0,
-				travel_hour				: oReqItem.TRAVEL_DURATION_HOUR || 0,
-				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
-				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
-				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
-				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
-				currency_code		    : oReqItem.CURRENCY_CODE || null,
-				currency_rate			: oReqItem.CURRENCY_RATE || 0,
+				req_subid						: sReqSubId,
+				claim_type						: oReqItem.CLAIM_TYPE_ID || "",
+				claim_type_item_id				: oReqItem.CLAIM_TYPE_ITEM_ID || "",
+				no_of_days						: oReqItem.NO_OF_DAYS ?? 0,
+				purpose							: oReqItem.PURPOSE || "",
+				est_amount						: oReqItem.EST_AMOUNT ?? 0,
+				dependent						: oReqItem.DEPENDENT || "",
+				remark							: oReqItem.REMARK || "",
+				course							: oReqItem.COURSE_TITLE || "",
+				sport_rep						: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
+				club_membership					: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
+				doc1_filename					: oReqItem.ATTACHMENT1 || "",
+				cat_purpose						: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
+				doc2_filename					: oReqItem.ATTACHMENT2 || "",
+				start_date						: oReqItem.START_DATE || "",
+				end_date						: oReqItem.END_DATE || "",
+				start_time						: oReqItem.START_TIME || "",
+				end_time						: oReqItem.END_TIME || "",
+				vehicle_ownership				: oReqItem.VEHICLE_OWNERSHIP_ID || "",
+				room_type						: oReqItem.ROOM_TYPE || "",
+				country							: oReqItem.COUNTRY || "",
+				location						: oReqItem.LOCATION || "",
+				area							: oReqItem.AREA || "",
+				no_of_family_member				: oReqItem.FAMILY_COUNT || 0,
+				type_of_vehicle					: oReqItem.VEHICLE_TYPE || "",
+				fare_type						: oReqItem.FARE_TYPE_ID || "",
+				vehicle_class					: oReqItem.VEHICLE_CLASS_ID || "",
+				kilometer						: oReqItem.KILOMETER || 0,
+				rate_per_kilometer				: oReqItem.RATE_PER_KM || "",
+				toll_amt						: parseFloat(oReqItem.TOLL) || 0,
+				flight_class					: oReqItem.FLIGHT_CLASS || "",
+				location_type					: oReqItem.LOCATION_TYPE || "",
+				from_state						: oReqItem.FROM_STATE_ID || "",
+				from_location					: oReqItem.FROM_LOCATION || "",
+				from_location_office			: oReqItem.FROM_LOCATION_OFFICE || "",
+				to_state						: oReqItem.TO_STATE_ID || "",
+				to_location						: oReqItem.TO_LOCATION || "",
+				to_location_office				: oReqItem.TO_LOCATION_OFFICE || "",
+				mode_of_transfer				: oReqItem.MODE_OF_TRANSFER || "",
+				tarikh_pindah					: oReqItem.TRANSFER_DATE || "",
+				sss								: oReqItem.REGION || "",
+				marriage_cat					: oReqItem.MARRIAGE_CATEGORY || "",
+				cube_eligible					: parseFloat(oReqItem.METER_CUBE_ENTITLED) || 0,
+				departure_time					: oReqItem.DEPARTURE_TIME || "",
+				arrival_time					: oReqItem.ARRIVAL_TIME || "",
+				est_no_participant				: oReqItem.EST_NO_PARTICIPANT ?? 0,
+				cash_advance					: oReqItem.CASH_ADVANCE || false,
+				trip_start_date					: oReqItem.TRIP_START_DATE || null,
+				trip_end_date					: oReqItem.TRIP_END_DATE || null,
+				trip_start_time					: oReqItem.TRIP_START_TIME || null,
+				trip_end_time					: oReqItem.TRIP_END_TIME || null,
+				travel_day						: oReqItem.TRAVEL_DURATION_DAY || 0,
+				travel_hour						: oReqItem.TRAVEL_DURATION_HOUR || 0,
+				entitled_breakfast				: oReqItem.ENTITLED_BREAKFAST || 0,
+				entitled_lunch					: oReqItem.ENTITLED_LUNCH || 0,
+				entitled_dinner					: oReqItem.ENTITLED_DINNER || 0,
+				daily_allowance					: oReqItem.DAILY_ALLOWANCE || 0,
+				currency_code		    		: oReqItem.CURRENCY_CODE || null,
+				currency_rate					: oReqItem.CURRENCY_RATE || 0,
 				type_of_professional_body		: oReqItem.TYPE_OF_PROFESSIONAL_BODY || null,
-				no_of_traveler			: oReqItem.TOTAL_TRAVELLER || null,
-				lodging_cat				: oReqItem.LODGING_CATEGORY || null,
+				no_of_traveler					: oReqItem.TOTAL_TRAVELLER || null,
+				lodging_cat						: oReqItem.LODGING_CATEGORY || null,
 				// extra hidden field value
-				cost_center: oReqItem.COST_CENTER || "",
-				gl_account: oReqItem.GL_ACCOUNT || "",
-				material_code: oReqItem.MATERIAL_CODE || "",
-				dependent_relationship: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual: oReqItem.METER_CUBE_ACTUAL || 0,
-				round_trip 				: oReqItem.ROUND_TRIP || false,
-				internal_order			: oReqItem.INTERNAL_ORDER || null,
-				internal_order			: oReqItem.INTERNAL_ORDER || null,
-				policy_year				: oReqItem.POLICY_YEAR || null,
-				dependent_national_id	: oReqItem.DEPENDENT_NATIONAL_ID || null,
-				insurance_medical_provider_id: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
-				insurance_medical_provider_name: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null,
-				doc3_filename			: oReqItem.ATTACHMENT3 || "",
-				doc4_filename			: oReqItem.ATTACHMENT4 || "",
+				cost_center						: oReqItem.COST_CENTER || "",
+				gl_account						: oReqItem.GL_ACCOUNT || "",
+				material_code					: oReqItem.MATERIAL_CODE || "",
+				dependent_relationship			: oReqItem.DEPENDENT_RELATIONSHIP || "",
+				meter_cube_actual				: oReqItem.METER_CUBE_ACTUAL || 0,
+				round_trip 						: oReqItem.ROUND_TRIP || false,
+				internal_order					: oReqItem.INTERNAL_ORDER || null,
+				policy_year						: oReqItem.POLICY_YEAR || null,
+				dependent_national_id			: oReqItem.DEPENDENT_NATIONAL_ID || null,
+				insurance_medical_provider_id	: oReqItem.INSURANCE_MEDICAL_PROVIDER_ID || null,
+				insurance_medical_provider_name	: oReqItem.INSURANCE_MEDICAL_PROVIDER_NAME || null,
+				doc3_filename					: oReqItem.ATTACHMENT3 || "",
+				doc4_filename					: oReqItem.ATTACHMENT4 || "",
 			});
 
 			if (this._oReqModel.getProperty("/req_header/claimtype") == this._oConstant.ClaimType.CORPO_CRED_CARD) {
@@ -1291,6 +1290,7 @@ sap.ui.define([
 			if (!bSaved){
 				return;
 			}
+			this._resetReqItemInputs();
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -1382,7 +1382,7 @@ sap.ui.define([
 				MessageBox.error(error.message || Utility.getText("msg_failed_generic_error"));
 			};
 
-			if (!bCanProceed) return;
+			if (!bCanProceed) return bSaved;
 
 			BusyIndicator.show(0);
 
@@ -1405,14 +1405,29 @@ sap.ui.define([
 					sAttachment4_SFID = await Attachment.postAttachment(oReqItem.doc4.name, sAttachment4Binary, sEmpId);
 				}
 
+				// check med_advance
 				if (oReqItem.claim_type_item_id === this._oConstant.ClaimTypeItem.MED_ADVANCE) {
 					oReqItem.cost_center = this._oConstant.MedicalAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.MedicalAdvanceInfo.GL_ACCOUNT;
 				}
+				// check cash advance
 				else if (oReqItem.cash_advance) {
 					oReqItem.cost_center = this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account = this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
-				} else {
+				} 
+				// check project code
+				else if (oReqHeader.projectcode) {
+					const sProjectGL = await Utility.getGLAccountByProjectCode(this._oDataModel, oReqHeader.projectcode);
+					if (sProjectGL) {
+						// populate to oReqItem.gl_account for budget check
+						oReqItem.gl_account = sProjectGL;
+					} else {
+						MessageBox.error(Utility.getText("req_d_e_project_gl_account_not_found", [oReqHeader.projectcode]));
+						return bSaved;
+					}
+				} 
+				// check and assign charging cost center & GL account
+				else {
 					const sDefaultChargingCostCenter =
 						await Utility.getDefaultChargingCostCenter(
 							this._oDataModel,
@@ -1423,32 +1438,21 @@ sap.ui.define([
 					if (sDefaultChargingCostCenter) {
 						oReqItem.cost_center = sDefaultChargingCostCenter;
 					} else {
-						oReqItem.cost_center =
-							(oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
-								? oReqHeader.altcostcenter
-								: oReqHeader.costcenter;
+						oReqItem.cost_center = (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-")
+												? oReqHeader.altcostcenter
+												: oReqHeader.costcenter;
 					}
 					oReqItem.gl_account = await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 				}
-					oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+
+				// assign material code
+				oReqItem.material_code = await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
+				// trim cost center from "CC - Description" to "CC"
 				if (oReqItem.cost_center) {
-					oReqItem.cost_center =
-						String(oReqItem.cost_center)
-							.split(" - ")[0]
-							.trim();
+					oReqItem.cost_center = String(oReqItem.cost_center).split(" - ")[0].trim();
 				}
 
-				// Get Internal Order from ZBUDGET using Request Header Project Code
-				if (!oReqItem.internal_order) {
-					const sProjectCode = oReqHeader.projectcode;
-					const sInternalOrder = await Utility.getInternalOrderByProjectCode(
-						this._oDataModel,
-						sProjectCode
-					);
-
-					oReqItem.internal_order = sInternalOrder;
-				}
-
+				// get ISOString time for departure_time and arrival_time if they exist
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
 					var dtDeparture_date = new Date(oReqItem.departure_time).toISOString() || null;
 					var dtArrival_date = new Date(oReqItem.arrival_time).toISOString() || null;
@@ -1521,7 +1525,7 @@ sap.ui.define([
 					TOTAL_TRAVELLER: 			  oReqItem.no_of_traveler || null,
 					LODGING_CATEGORY: 			  oReqItem.lodging_cat || null,
 					ROUND_TRIP:					  !!oReqItem.round_trip,
-					INTERNAL_ORDER: 			  oReqItem.internal_order || null,
+					INTERNAL_ORDER: 			  oReqHeader.projectcode || null,
 					POLICY_YEAR: 				  oReqItem.policy_year || null,
 					DEPENDENT_NATIONAL_ID:		  oReqItem.dependent_national_id || null,
 					INSURANCE_MEDICAL_PROVIDER_ID:oReqItem.insurance_medical_provider_id || null,
@@ -1651,7 +1655,6 @@ sap.ui.define([
 				MessageBox.error(e.message || Utility.getText("req_d_e_save_failed"));
 			} finally {
 				BusyIndicator.hide();
-				this._resetReqItemInputs();
 			}
 			
 			return bSaved;

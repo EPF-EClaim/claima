@@ -328,7 +328,12 @@ const Constant = {
         "POLICY_YEAR": "POLICY_YEAR",
         "BALANCE": "BALANCE",
         "ENTITLEMENT_YEAR": "ENTITLEMENT_YEAR",
-        "STATE_OF_ORIGIN_ID": "STATE_OF_ORIGIN_ID"
+        "STATE_OF_ORIGIN_ID": "STATE_OF_ORIGIN_ID",
+        "PROJECT_OWNER_POSITION_ID": "PROJECT_OWNER_POSITION_ID",
+        "PROJECT_OWNER_EEID": "PROJECT_OWNER_EEID",
+        "PROJECT_OWNER_NAME": "PROJECT_OWNER_NAME",
+        "PROJECT_OWNER_EMAIL": "PROJECT_OWNER_EMAIL",
+        "PROJECT_CODE_IO": "PROJECT_CODE_IO"
     },
     Wildcard: {
         "All": "*",
@@ -566,8 +571,13 @@ const Constant = {
         "CCC_APPROVER1": "CCC_APPROVER1",
         "CCC_APPROVER2": "CCC_APPROVER2"
     },
-    StatusCode: {
-        SUCCESS: "200"
+    StatusCode: {       
+        SUCCESS: "200",
+        ERROR: "500"
+    },
+    MessageType: {
+        ERROR: "E",
+        WORKFLOW: "A"
     },
     EmailStatus: {
         REJECTED: "rejected"
