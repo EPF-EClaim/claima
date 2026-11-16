@@ -1911,6 +1911,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         WbsDescription : String;
         CommitmentItem : String;
         Status         : String;
+        CostCenter     : String;
     };
 
     action   updateWBSIOCode(aRecords: many WBSIORecord)                                                 returns Response;    
