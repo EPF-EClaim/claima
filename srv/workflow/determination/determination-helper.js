@@ -131,51 +131,60 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         BUDGET_OWNER_ID:    sEEID
     };
 }
-async function retrieveProjectOwnerDetails(sProjectCode, sYear){
+async function retrieveProjectOwnerDetails(sProjectCode, sYear) {
     let oBudgetContext = null;
 
     // Main table path
-    const sBudgetTablePath = cds.entities['eclaim_srv.ZBUDGET'];
+    const sProjectCodeTable = cds.entities['eclaim_srv.ZPROJECT_HDR'];
     const sProjectCodeSafe = String(sProjectCode);
     const sYearSafe = String(sYear);
-    let sEEID = "";
 
     // Fetch data
     console.log("Start Project Code check");
     oBudgetContext = await cds.run(
         SELECT
             .one
-            .from(sBudgetTablePath)
+            .from(sProjectCodeTable)
             .where({
-                [Constant.EntitiesFields.PROJECT_CODE]   : sProjectCodeSafe,
-                [Constant.EntitiesFields.YEAR]          : sYearSafe
+                [Constant.EntitiesFields.PROJECT_CODE_IO]: sProjectCodeSafe
             })
             .columns(
-                Constant.EntitiesFields.YEAR,
-                Constant.EntitiesFields.INTERNAL_ORDER,
-                Constant.EntitiesFields.COMMITMENT_ITEM,
-                Constant.EntitiesFields.FUND_CENTER,
-                Constant.EntitiesFields.MATERIAL_GROUP,
-                Constant.EntitiesFields.BUDGET_OWNER_ID
+                Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID,
+                Constant.EntitiesFields.PROJECT_OWNER_EEID,
+                Constant.EntitiesFields.PROJECT_OWNER_NAME,
+                Constant.EntitiesFields.PROJECT_OWNER_EMAIL
             )
-    )
-    if(!oBudgetContext){
+    );
+
+    // Project code not found
+    if (!oBudgetContext) {
+        console.warn(`Project Code '${sProjectCodeSafe}' not found`);
         return null;
     }
-    const oProjectOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
-    if (oProjectOwnerContext){
-        sEEID = oProjectOwnerContext[Constant.EntitiesFields.EEID];
+
+    const sPositionId = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID] || null;
+    const sEEID       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EEID] || null;
+    const sName       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_NAME] || null;
+    const sEmail      = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EMAIL] || null;
+
+    // check if position id is maintained
+    if (!sPositionId) {
+        console.warn(`Project Code '${sProjectCodeSafe}' has no Project Owner Position ID`);
+        return null;
     }
-    
+
+    // check if there is a employee associated with the position id
+    if (!sEEID) {
+        console.warn(`Position ID '${sPositionId}' for Project Code '${sProjectCodeSafe}' has no associated employee`);
+        return null;
+    }
+
     // Return only the required fields
     return {
-        YEAR:               oBudgetContext[Constant.EntitiesFields.YEAR],
-        INTERNAL_ORDER:     oBudgetContext[Constant.EntitiesFields.INTERNAL_ORDER],
-        COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
-        FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
-        MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
-        BUDGET_OWNER_ID:    sEEID
+        BUDGET_OWNER_EMAIL:       sEmail ? String(sEmail).toLowerCase() : null,
+        BUDGET_OWNER_ID:          sEEID,
+        BUDGET_OWNER_POSITION_ID: sPositionId,
+        BUDGET_OWNER_NAME:        sName
     };
 }
 function populateApproverDetails(oApproverDetails, iLevel) {
@@ -549,22 +558,23 @@ async function sendClaimBatch(sId){
         if(aAllClaimItem[0].INTERNAL_ORDER == null){
             var sData = 
                 aAllClaimItem.map(oItem => ({
-                    CLAIM_ID:                sId,
-                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
-                    EMP_ID:                  oItem.EMP_ID,
-                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
-                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
-                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
-                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
-                    AMOUNT:                  oItem.AMOUNT,
-                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
-                    COST_CENTER:             oItem.COST_CENTER,
-                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
-                    MATERIAL_CODE:           oItem.MATERIAL_CODE,
-                    INTERNAL_ORDER:          null,
-                    CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
-                    CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
-                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
+                    CLAIM_ID:                       sId,
+                    CLAIM_SUB_ID:                   oItem.CLAIM_SUB_ID,
+                    EMP_ID:                         oItem.EMP_ID,
+                    SUBMITTED_DATE:                 oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE:        oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:            oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:             oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                         oItem.AMOUNT,
+                    RECEIPT_DATE:                   oItem.RECEIPT_DATE,
+                    COST_CENTER:                    oItem.COST_CENTER,
+                    GL_ACCOUNT:                     oItem.GL_ACCOUNT,
+                    MATERIAL_CODE:                  oItem.MATERIAL_CODE,
+                    INTERNAL_ORDER:                 null,
+                    IO_WBS_IND:                     null,
+                    CHARGED_TO_CCC:                 oItem.CHARGED_TO_CCC,
+                    CLAIM_TYPE_ITEM_ID:             oItem.CLAIM_TYPE_ITEM_ID,
+                    CASH_ADVANCE_CAT_ID:            bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
                     EARMARKED_FUNDS_DOC_ID:         oItem.EARMARKED_FUNDS_DOC_ID,
                     EARMARKED_FUNDS_DOC_YEAR:       oItem.EARMARKED_FUNDS_DOC_YEAR,
                     EARMARKED_FUNDS_DOC_COMP_CODE:  oItem.EARMARKED_FUNDS_DOC_COMP_CODE,
@@ -586,6 +596,7 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
                     INTERNAL_ORDER:          oItem.INTERNAL_ORDER,
+                    IO_WBS_IND:              oItem.IO_WBS_IND,
                     CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
                     CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
                     CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
