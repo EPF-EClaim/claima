@@ -512,7 +512,7 @@ async function normalizeWorkflowRequestType(sId, oDescriptor) {
         else{
             return {
                 workflowRequestType : oWorkflowRequestType[Constant.EntitiesFields.REQUEST_TYPE_ID],
-                claimTypeID         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
+                claimTypeId         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
             };
         }
     }
