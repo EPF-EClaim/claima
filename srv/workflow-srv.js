@@ -37,7 +37,7 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
-const { sendEmailNotification } = require('./utils/EmailNotification');
+const { notifyIFAMSConnectionError } = require('./utils/EmailNotification');
 
 module.exports = (srv) => {
 
@@ -306,18 +306,7 @@ module.exports = (srv) => {
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
 
             // Send admin notification when IFAMS connection fails during budget release
-            const oIFAMSError = Array.isArray(aReturn)
-                && aReturn.find(oResult =>
-                    oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
-
-            if (oIFAMSError) {
-                await sendEmailNotification({
-                    recordId: sRecordId,
-                    recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
-                    action: Constant.IFAMSEmailAction.CONNECTION_ERROR,
-                    emailTitle: `API Error: IFAMS Connection Failed - ${sRecordId}`
-                });
-            }
+            await notifyIFAMSConnectionError(aReturn, sRecordId);
 
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {

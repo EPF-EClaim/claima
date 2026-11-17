@@ -549,7 +549,8 @@ const Constant = {
         "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
         "BUDGET_CHECKING"           : "BUDGET_CHECKING",
         "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
-        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
+        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING",
+        "WORKFLOW"                  : "WORKFLOW"
     },
     LocationType: {
         HQ: "HQ",

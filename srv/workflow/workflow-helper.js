@@ -865,7 +865,7 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: Constant.WorkflowArea.WORKFLOW,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage

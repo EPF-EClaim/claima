@@ -23,7 +23,7 @@ const {
     validateCostCenter,
     updateRequestBudget
 } = require("./workflow-helper");
-const { sendEmailNotification } = require('../utils/EmailNotification');
+const { notifyIFAMSConnectionError } = require('../utils/EmailNotification');
 
 /**
  * startWorkflow steps 1-5: eligibility check, budget locking, workflow
@@ -119,18 +119,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                 }
 
                 // Send admin notification when IFAMS connection fails (budget check or budget lock)
-                const oIFAMSError = Array.isArray(aBudgetCheckReturn)
-                    && aBudgetCheckReturn.find(oResult =>
-                        oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
-
-                if (oIFAMSError) {
-                    await sendEmailNotification({
-                        recordId: sId,
-                        recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
-                        action: Constant.IFAMSEmailAction.CONNECTION_ERROR,  
-                        emailTitle: `API Error: IFAMS Connection Failed - ${sId}`
-                    });
-                }                
+                await notifyIFAMSConnectionError(aBudgetCheckReturn, sId);
             }
 
             // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items
