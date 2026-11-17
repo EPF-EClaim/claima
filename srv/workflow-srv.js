@@ -168,20 +168,6 @@ module.exports = (srv) => {
     };
 
     /**
-     * Runs budget checking and throws if any line fails.
-     */
-    const runBudgetChecking = async (oTx, sRecordId, oDescriptor, sBudgetActionValue) => {
-        const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, sBudgetActionValue);
-
-        const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-
-        const sBudgetError = buildBudgetErrorMessage(aReturn);
-        if (sBudgetError) {
-            throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`);
-        }
-    };
-
-    /**
      * Final-approval steps for Corporate Credit Card requests.
      */
     const handleCCCFinalApproval = async (oTx, sRecordId, sUserId) => {
@@ -272,7 +258,6 @@ module.exports = (srv) => {
         if (!bApproverUpdated) {
             throw new Error(`Error Encountered during action: ${sAction} for Document ${sRecordId}`);
         }
-        console.log("Approver Action Completed: ", bStatus);
 
         // REJECT / PUSH BACK:
         // Release Earmarked Funds reservation in IFAMS,
@@ -296,7 +281,6 @@ module.exports = (srv) => {
             );
             const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
             if (!sEarmarkedFundsDocId) {
-                bStatus = false;
                 throw new Error(
                     `Earmarked Funds Document ID not found for ${sRecordId}`
                 );
@@ -306,7 +290,6 @@ module.exports = (srv) => {
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
-                bStatus = false;
                 throw new Error(
                     `Error encountered during IFAMS Budget Release\n${sBudgetError}`
                 );
