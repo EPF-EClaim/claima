@@ -20,7 +20,6 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         let sSubmittedDate = new Date().toISOString().split('T')[0];
 
         // Retrieve Header context
-        console.log
         const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
         if(!oHeaderContext){
             console.log(`No header context found for document ${sId}`);
@@ -37,7 +36,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
        
         console.log(`Looping through approvers context to send email for document ${sId} at level ${sLevel} with action ${sAction}`);
         for(const oApproverContext of aApproversContext){
-            if(oApproverContext.LEVEL = sLevel) {
+            if(oApproverContext.LEVEL === sLevel) {
                 oEmailPayload = generateEmailPayload(
                     oApproverContext.APPROVER_NAME,
                     sSubmittedDate,
@@ -72,8 +71,7 @@ async function sendEmailToApprover(aApproversContext, sId, oDescriptor, sAction,
         return true;
     }
     catch(oError){
-        console.log("Email sending failed with error: ", oError);
-        return false;
+        throw new Error(`Email sending failed with error: ${oError.message}`);
     }
     
 }
