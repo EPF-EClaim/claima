@@ -37,6 +37,7 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
+const { sendEmailNotification } = require('./utils/EmailNotification');
 
 module.exports = (srv) => {
 
@@ -272,7 +273,6 @@ module.exports = (srv) => {
         if (!bApproverUpdated) {
             throw new Error(`Error Encountered during action: ${sAction} for Document ${sRecordId}`);
         }
-        console.log("Approver Action Completed: ", bStatus);
 
         // REJECT / PUSH BACK:
         // Release Earmarked Funds reservation in IFAMS,
@@ -304,6 +304,21 @@ module.exports = (srv) => {
 
             // Call IFAMS to release the budget
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
+
+            // Send admin notification when IFAMS connection fails during budget release
+            const oIFAMSError = Array.isArray(aReturn)
+                && aReturn.find(oResult =>
+                    oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
+
+            if (oIFAMSError) {
+                await sendEmailNotification({
+                    recordId: sRecordId,
+                    recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
+                    action: Constant.IFAMSEmailAction.CONNECTION_ERROR,
+                    emailTitle: `API Error: IFAMS Connection Failed - ${sRecordId}`
+                });
+            }
+
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
                 bStatus = false;

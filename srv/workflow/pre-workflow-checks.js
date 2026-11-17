@@ -103,20 +103,6 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                 // check budget first (Claim & Request)
                 aBudgetCheckReturn = await checkRequestBudget(aBudgetContext);
 
-                // Send admin notification when IFAMS unexpectedly returns empty result
-                const bHasEmptyResponse = Array.isArray(aBudgetCheckReturn)
-                    && aBudgetCheckReturn.some(oResult =>
-                        oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.EMPTY_RESPONSE);
-
-                if (bHasEmptyResponse) {
-                    sendEmailNotification({
-                        recordId: sId,
-                        recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
-                        action: Constant.IFAMSEmailAction.EMPTY_RESPONSE,
-                        emailTitle: `API Error: Empty IFAMS Budget Response - ${sId}`
-                    });
-                }
-
                 const bAllSufficient = Array.isArray(aBudgetCheckReturn)
                     && aBudgetCheckReturn.length > 0
                     && aBudgetCheckReturn.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
@@ -131,6 +117,20 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                         aBudgetCheckReturn = await updateRequestBudget(oTx, sId, aBudgetCheckReturn);
                     }
                 }
+
+                // Send admin notification when IFAMS connection fails (budget check or budget lock)
+                const oIFAMSError = Array.isArray(aBudgetCheckReturn)
+                    && aBudgetCheckReturn.find(oResult =>
+                        oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
+
+                if (oIFAMSError) {
+                    await sendEmailNotification({
+                        recordId: sId,
+                        recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
+                        action: Constant.IFAMSEmailAction.CONNECTION_ERROR,  
+                        emailTitle: `API Error: IFAMS Connection Failed - ${sId}`
+                    });
+                }                
             }
 
             // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items

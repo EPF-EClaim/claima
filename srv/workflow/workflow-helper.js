@@ -295,7 +295,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
                     EarmarkedFundsDocumentItem: String(oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
                     FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
                     CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
-                }))
+                }));
 
         const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
 
@@ -304,6 +304,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
                 RELEASE_ERROR: true,
+                ERROR_CODE: oReleaseResult?.errorCode,
                 ERROR_MESSAGE: oReleaseResult?.Message
             });
         } else {
@@ -327,7 +328,11 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
         return aSuccessResults;
 
     } catch (oError) {
-        return oError;
+        return [{
+            STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+            RELEASE_ERROR: true,
+            ERROR_MESSAGE: oError.message
+        }];
     }
 }
 /**
@@ -391,6 +396,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
                 LOCK_BUDGET: true,
+                ERROR_CODE: oBudgetRecord?.errorCode,
                 ERROR_MESSAGE: oBudgetRecord?.Message
             });
         } else {
@@ -859,7 +865,7 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: sProgram,
+        PROGRAM: 'WORKFLOW',
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
