@@ -90,7 +90,8 @@ const Constant = {
         "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL",
         "ZLOG": "ZLOG",
         "ZMED_ENTITLEMENT_BAL": "ECLAIM_VIEW_SRV.ZMED_ENTITLEMENT_BAL",
-        "ZSTATE": "ZSTATE"
+        "ZSTATE": "ZSTATE", 
+        "ZPROJECT_HDR": "ZPROJECT_HDR"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -333,7 +334,8 @@ const Constant = {
         "PROJECT_OWNER_EEID": "PROJECT_OWNER_EEID",
         "PROJECT_OWNER_NAME": "PROJECT_OWNER_NAME",
         "PROJECT_OWNER_EMAIL": "PROJECT_OWNER_EMAIL",
-        "PROJECT_CODE_IO": "PROJECT_CODE_IO"
+        "PROJECT_CODE_IO": "PROJECT_CODE_IO",
+        "IO_WBS_IND": "IO_WBS_IND"
     },
     Wildcard: {
         "All": "*",
@@ -610,8 +612,7 @@ const Constant = {
     },
     IFAMS_API_PATH: {
         EARMARKEDFUNDS: '/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocument',
-        BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'" +
-            " and Io eq '{INTERNAL_ORDER}'",
+        BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'",
         RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
             "EarmarkedFundsDocument='{DOC_NO}'," +
             "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")",
