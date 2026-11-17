@@ -310,7 +310,7 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
 async function syncBudgetReport(sYear) {
 
     // 1. Call IFAMS API
-    const sPath = Constant.IFAMS_API_PATH.BUDGET_REPORT.replace('{YEAR}', sYear);
+    const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', sYear);
     const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
     const aIFAMSRecords = Array.isArray(oResponse)

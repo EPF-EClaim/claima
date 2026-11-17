@@ -217,11 +217,13 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
-    const sIoWbsInd = await getIoWbsIndicator(sInternalOrder);
     
     if(!aItemsContext.length) {
         return aBudgetContexts;
     }
+
+    const sIoWbsInd = await getIoWbsIndicator(sInternalOrder);
+
     for(const oItemContext of aItemsContext) {
 
         aBudgetContexts.push({
@@ -862,7 +864,7 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: Constant.WorkflowArea.WORKFLOW,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
@@ -908,31 +910,18 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
  * @returns {Array<object>} Cost center validation errors, or an empty array if all cost centers are valid
  */
 function validateCostCenter(aBudgetContext) {
-    const aErrorResults = [];
-
-    if (!aBudgetContext[0].IO_WBS_IND) {
-        if (!Array.isArray(aBudgetContext) || aBudgetContext.length === 0) {
-            return aErrorResults;
-        }
-
-        for (const oBudgetContext of aBudgetContext) {
-            const sExpectedCostCenter =
-                oBudgetContext.ALTERNATE_COST_CENTER ||
-                oBudgetContext.HEADER_COST_CENTER;
-
-            if (
-                sExpectedCostCenter &&
-                oBudgetContext.FUND_CENTER !== sExpectedCostCenter
-            ) {
-                aErrorResults.push({
-                    STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
-                    CLAIM_TYPE_ITEM: oBudgetContext.CLAIM_TYPE_ITEM,
-                    MESSAGE: `Cost center ${oBudgetContext.FUND_CENTER} does not match expected cost center ${sExpectedCostCenter}.`
-                });
-            }
-        }
-    }
-    return aErrorResults;
+    return aBudgetContext
+    .filter(o => !o.IO_WBS_IND)
+    .flatMap(o => {
+        const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
+        return sExpected && o.FUND_CENTER !== sExpected
+            ? [{
+                STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
+                CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
+                MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
+            }]
+            : [];
+    });
 }
 
 /**

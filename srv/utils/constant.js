@@ -550,7 +550,8 @@ const Constant = {
         "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
         "BUDGET_CHECKING"           : "BUDGET_CHECKING",
         "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
-        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
+        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING",
+        "WORKFLOW"                  : "WORKFLOW"
     },
     LocationType: {
         HQ: "HQ",
@@ -615,8 +616,7 @@ const Constant = {
         BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'",
         RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
             "EarmarkedFundsDocument='{DOC_NO}'," +
-            "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")",
-        BUDGET_REPORT: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'",
+            "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")"
     },
     EarmarkedFundPosting_DocHeader: {
         CompanyCode: '1000',
