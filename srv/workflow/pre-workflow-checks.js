@@ -23,6 +23,7 @@ const {
     validateCostCenter,
     updateRequestBudget
 } = require("./workflow-helper");
+const { notifyIFAMSConnectionError } = require('../utils/EmailNotification');
 
 /**
  * startWorkflow steps 1-5: eligibility check, budget locking, workflow
@@ -100,7 +101,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             if (aBudgetCheckReturn.length === 0) {
 
                 // check budget first (Claim & Request)
-                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext); 
+                aBudgetCheckReturn = await checkRequestBudget(aBudgetContext);
 
                 const bAllSufficient = Array.isArray(aBudgetCheckReturn)
                     && aBudgetCheckReturn.length > 0
@@ -111,11 +112,14 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
                         // Claim: lock budget + update claim header/item
                         aBudgetCheckReturn = await lockClaimBudget(oTx, aBudgetContext, sId, aBudgetCheckReturn);
 
-                    } else if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) { 
+                    } else if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
                         // Request: update request header/item only (no lock)
                         aBudgetCheckReturn = await updateRequestBudget(oTx, sId, aBudgetCheckReturn);
                     }
                 }
+
+                // Send admin notification when IFAMS connection fails (budget check or budget lock)
+                await notifyIFAMSConnectionError(aBudgetCheckReturn, sId);
             }
 
             // Returns 'Budget not found' and/or 'Insufficient budget' with all affected claim items

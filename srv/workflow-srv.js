@@ -37,6 +37,7 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
+const { notifyIFAMSConnectionError } = require('./utils/EmailNotification');
 
 module.exports = (srv) => {
 
@@ -288,6 +289,10 @@ module.exports = (srv) => {
 
             // Call IFAMS to release the budget
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
+
+            // Send admin notification when IFAMS connection fails during budget release
+            await notifyIFAMSConnectionError(aReturn, sRecordId);
+
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
                 throw new Error(
