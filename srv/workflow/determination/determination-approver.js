@@ -19,7 +19,6 @@ const {
 } = require("../../workflow/workflow-helper");
 const oauthConfiguration = require('@sap/approuter/lib/passport/oauth-configuration');
 
-
 async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor) {
     // Variable declarations for Approver Determination logic
     let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
@@ -92,40 +91,28 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 switch(oWorkflowApprStep){
                     case Constant.Role.BUDGET:  
                         if(sFinalCC){
-                            console.log("FinalCC: ", sFinalCC);
-                            console.log("System Year: ", sSystemYear);
-                            oBudgetDetails = await retrieveBudgetDetails(sFinalCC, sSystemYear);
-                            console.log("Budget Details: ", oBudgetDetails);
-                            if(!oBudgetDetails){
+                            oBudgetOwnerDetails = await retrieveBudgetDetails(sFinalCC);
+                            if(!oBudgetOwnerDetails){
                                 return false;
                             }
-                            oApproverDetails = await retrieveEmployeeDetails(oBudgetDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
-                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            oPopulatedEmployee = populateApproverDetails(oBudgetOwnerDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Budget Approver: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
                         break;
                     case Constant.Role.PROJECT_OWNER:
                         if(sProjectCode){
-                            console.log("Project Code: ", sProjectCode);
-                            console.log("System Year: ", sSystemYear);
-                            oProjectDetails = await retrieveProjectOwnerDetails(sProjectCode, sSystemYear);
-                            console.log("Project Details: ", oProjectDetails);
-                            if(!oProjectDetails){
+                            oProjectOwnerDetails = await retrieveProjectOwnerDetails(sProjectCode);
+                            if(!oProjectOwnerDetails){
                                 return false;
                             }
-                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
-                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            oPopulatedEmployee = populateApproverDetails(oProjectOwnerDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Project Owner: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }

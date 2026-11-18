@@ -323,7 +323,8 @@ const Constant = {
         "POLICY_YEAR": "POLICY_YEAR",
         "BALANCE": "BALANCE",
         "ENTITLEMENT_YEAR": "ENTITLEMENT_YEAR",
-        "STATE_OF_ORIGIN_ID": "STATE_OF_ORIGIN_ID"
+        "STATE_OF_ORIGIN_ID": "STATE_OF_ORIGIN_ID",
+        "PROJECT_CODE_IO": "PROJECT_CODE_IO"
     },
     Wildcard: {
         "All": "*",
