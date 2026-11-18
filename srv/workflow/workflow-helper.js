@@ -216,9 +216,13 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
+    
     if(!aItemsContext.length) {
         return aBudgetContexts;
     }
+
+    const sIoWbsInd = await getIoWbsIndicator(sInternalOrder);
+
     for(const oItemContext of aItemsContext) {
 
         aBudgetContexts.push({
@@ -235,7 +239,8 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER,  // for checking against roll up cost center
             HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER], // for item cost center validation
             RECEIPT_DATE: oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST ?
-                oHeaderContext[Constant.EntitiesFields.TRIP_START_DATE] : oItemContext[Constant.EntitiesFields.RECEIPT_DATE] // to be used for cross budget checking
+                oHeaderContext[Constant.EntitiesFields.TRIP_START_DATE] : oItemContext[Constant.EntitiesFields.RECEIPT_DATE], // to be used for cross budget checking
+            IO_WBS_IND: sIoWbsInd // to be used for budget locking/checking against project
         })
     }
     return aBudgetContexts
@@ -444,7 +449,7 @@ function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
         const bIO = entry.INTERNAL_ORDER !== Constant.Wildcard.NA;
 
         const oCondition = bIO
-            ? { YEAR: sYear, INTERNAL_ORDER: entry.INTERNAL_ORDER }
+            ? { YEAR: sYear, INTERNAL_ORDER: entry.INTERNAL_ORDER, IOWBS_IND: entry.IO_WBS_IND }
             : {
                 YEAR: sYear,
                 INTERNAL_ORDER: entry.INTERNAL_ORDER,
@@ -670,7 +675,8 @@ async function checkRequestBudget(aBudgetContext) {
         // determine upper cost center, in case of no budget allocation for each item
         const oEmployeeRollupCC = await getRollUpCostCenter(
             aBudgetContext[0].EMP_ID,
-            aBudgetContext[0].ALTERNATE_COST_CENTER
+            aBudgetContext[0].ALTERNATE_COST_CENTER,
+            aBudgetContext[0].IO_WBS_IND
         );
         if (oEmployeeRollupCC.error) return fnError(oEmployeeRollupCC.message);
 
@@ -857,7 +863,7 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: Constant.WorkflowArea.WORKFLOW,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
@@ -868,14 +874,16 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
  * Get roll up cost center
  * In case of no parent cost center found during budget checking or budget locking
  * roll up cost center will be used to determine the budget 
+ * Skip the roll up if IO/WBS indicator present
  *
  * @param {string} sEmpID Employee ID
  * @param {string} sAlternateCostCenter Alternate cost center
+ * @param {string} sIOWBSInd IO/WBS Indicator
  * @returns  {Promise<{error: boolean, message: string, oEmployeeRollupCC: object}>}
  */
-async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
+async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
     const oSkipped = { error: false, message: 'Roll up skipped', oEmployeeRollupCC: {} };
-    if (!sEmpID || sAlternateCostCenter?.trim()) return oSkipped;
+    if (!sEmpID || sAlternateCostCenter?.trim() || sIOWBSInd) return oSkipped;
 
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
@@ -894,35 +902,27 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter) {
  * not match the expected cost center, a cost center validation error is added.
  *
  * If all cost centers are valid, an empty array is returned.
+ * Additional checking: for IO/WBS - the fund center will be empty
+ * During budget checking/locking, WBS/IO will be sent to the API
  *
  * @param {Array<object>} aBudgetContext - Budget context containing fund center and cost center details
  * @returns {Array<object>} Cost center validation errors, or an empty array if all cost centers are valid
  */
 function validateCostCenter(aBudgetContext) {
-    const aErrorResults = [];
-
-    if (!Array.isArray(aBudgetContext) || aBudgetContext.length === 0) {
-        return aErrorResults;
-    }
-
-    for (const oBudgetContext of aBudgetContext) {
-        const sExpectedCostCenter =
-            oBudgetContext.ALTERNATE_COST_CENTER ||
-            oBudgetContext.HEADER_COST_CENTER;
-
-        if (
-            sExpectedCostCenter &&
-            oBudgetContext.FUND_CENTER !== sExpectedCostCenter
-        ) {
-            aErrorResults.push({
+    if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) return [];
+    
+    return aBudgetContext
+    .filter(o => !o.IO_WBS_IND)
+    .flatMap(o => {
+        const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
+        return sExpected && o.FUND_CENTER !== sExpected
+            ? [{
                 STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
-                CLAIM_TYPE_ITEM: oBudgetContext.CLAIM_TYPE_ITEM,
-                MESSAGE: `Cost center ${oBudgetContext.FUND_CENTER} does not match expected cost center ${sExpectedCostCenter}.`
-            });
-        }
-    }
-
-    return aErrorResults;
+                CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
+                MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
+            }]
+            : [];
+    });
 }
 
 /**
@@ -961,6 +961,31 @@ async function updateRequestBudget(oTx, sId, aCheckResults) {
         }];
     }
 }
+
+/**
+ * Retrieves the IO/WBS indicator for the given project code from ZPROJECT_HDR.
+ * Used to decide whether the earmarked fund lock should send the project code
+ * as WBSElementExternalID (WBS) or as InternalOrder (IO).
+ *
+ * @async
+ * @param {string} sInternalOrder - Project code from the header (PROJECT_CODE). 
+ *                                  May be Constant.Wildcard.NA if not provided.
+ * @returns {Promise<string|null>} Indicator value in uppercase ('WBS' or 'IO'),
+ *                                 or null if no project code is provided or the record is not found.
+ */
+async function getIoWbsIndicator(sInternalOrder) {
+    if (!sInternalOrder || sInternalOrder === Constant.Wildcard.NA) return null;
+
+    const oProject = await SELECT.one
+        .from(Constant.Entities.ZPROJECT_HDR)
+        .columns(Constant.EntitiesFields.IO_WBS_IND)
+        .where({ [Constant.EntitiesFields.PROJECT_CODE_IO]: sInternalOrder });
+
+    return oProject?.IO_WBS_IND
+        ? String(oProject.IO_WBS_IND).trim().toUpperCase()
+        : null;
+}
+
 module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
@@ -977,5 +1002,6 @@ module.exports = {
     lockClaimBudget,
     releaseClaimBudget,
     validateCostCenter,
-    updateRequestBudget
+    updateRequestBudget,
+    getIoWbsIndicator
 };

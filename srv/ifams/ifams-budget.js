@@ -18,22 +18,38 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         };
 
         const esc = v => norm(v).replace(/'/g, "''");
+        const aFilters = [];
+        const sInternalOrder = norm(oCondition.INTERNAL_ORDER);
 
-        const sPath = Constant.IFAMS_API_PATH.BUDGET_SF
-            .replace('{YEAR}', esc(oCondition.YEAR))
-            .replace('{INTERNAL_ORDER}', esc(oCondition.INTERNAL_ORDER));
+        if (sInternalOrder) {
+            const sProjectField = {
+                [Constant.ProjectCodeIndicator.IO]: Constant.BudgetReport.FIELD_MAP.INTERNAL_ORDER,
+                [Constant.ProjectCodeIndicator.WBS]: Constant.BudgetReport.FIELD_MAP.WBS_CODE
+            }[oCondition.IOWBS_IND];
+            aFilters.push(`${sProjectField} eq '${esc(sInternalOrder)}'`);
+        }
+
+        if (norm(sFundCenter)) {
+            aFilters.push(`FundCenter eq '${esc(sFundCenter)}'`);
+        }
+
+        if (norm(oCondition.COMMITMENT_ITEM)) {
+            aFilters.push(`CommitmentItem eq '${esc(oCondition.COMMITMENT_ITEM)}'`);
+        }
+
+        if (norm(oCondition.MATERIAL_GROUP)) {
+            aFilters.push(`MaterialGroup eq '${esc(oCondition.MATERIAL_GROUP)}'`);
+        }
+
+        const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', esc(oCondition.YEAR))
+                        + (aFilters.length ? ` and ${aFilters.join(' and ')}` : '');
 
         if (!oCache[sPath]) {
             oCache[sPath] = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
         }
         const aBudgetRecords = oCache[sPath] || [];
 
-        const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
-
-        oBudget = aBudgetRecords.find(r =>
-            eq(r.FundCenter, sFundCenter)
-            && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
-            && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
+        oBudget = aBudgetRecords[0] || null;
 
         return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
 
@@ -294,7 +310,7 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
 async function syncBudgetReport(sYear) {
 
     // 1. Call IFAMS API
-    const sPath = Constant.IFAMS_API_PATH.BUDGET_REPORT.replace('{YEAR}', sYear);
+    const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', sYear);
     const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
     const aIFAMSRecords = Array.isArray(oResponse)
