@@ -92,7 +92,7 @@ function determineClaimPostingDate(dReceiptDate, oClaimFlexiPosting) {
         dPostingDate = dCurrentDate;
     }
 
-    return dPostingDate.toLocaleDateString('en-CA');;
+    return dPostingDate.toLocaleDateString('en-CA');
 }
 
 /**

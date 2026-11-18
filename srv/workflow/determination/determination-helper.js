@@ -131,13 +131,12 @@ async function retrieveBudgetDetails(sCostCenter, sYear) {
         BUDGET_OWNER_ID:    sEEID
     };
 }
-async function retrieveProjectOwnerDetails(sProjectCode, sYear) {
+async function retrieveProjectOwnerDetails(sProjectCode) {
     let oBudgetContext = null;
 
     // Main table path
     const sProjectCodeTable = cds.entities['eclaim_srv.ZPROJECT_HDR'];
     const sProjectCodeSafe = String(sProjectCode);
-    const sYearSafe = String(sYear);
 
     // Fetch data
     console.log("Start Project Code check");

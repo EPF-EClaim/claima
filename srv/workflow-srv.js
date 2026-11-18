@@ -269,7 +269,7 @@ module.exports = (srv) => {
                 oActionDescriptor.actionValue === Constant.Status.PUSH_BACK
             )
         ) {
-            const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
+            const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor);
             // Earmarked Funds Document ID must be available
             const oClaimHeader = await oTx.run(
                 SELECT.one

@@ -90,7 +90,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     // 4. Budget Locking (return full list of claim type item that failed)
     let aBudgetContext, aBudgetCheckReturn;
     try {
-        aBudgetContext = await retrieveBudgetContext(sId, oDescriptor, Constant.BudgetProcessingAction.SUBMIT);
+        aBudgetContext = await retrieveBudgetContext(sId, oDescriptor);
         if (aBudgetContext?.length > 0) {
 
             // Validate item cost center 

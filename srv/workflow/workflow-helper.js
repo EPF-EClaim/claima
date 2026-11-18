@@ -205,7 +205,7 @@ async function retrieveItems(sId, oDescriptor) {
         CLAIM_TYPE_ITEM_DESC: oDescMap.get(r[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]) ?? null
     }));
 }
-async function retrieveBudgetContext(sId, oDescriptor, sAction) {
+async function retrieveBudgetContext(sId, oDescriptor) {
 
     const aBudgetContexts = [];
     const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
@@ -213,7 +213,6 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
         return null;
     }
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
-    const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
     if(!aItemsContext.length) {
@@ -222,7 +221,6 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
     for(const oItemContext of aItemsContext) {
 
         aBudgetContexts.push({
-            YEAR            : dSubmittedYear,
             INTERNAL_ORDER  : sInternalOrder,
             FUND_CENTER     : oItemContext[Constant.EntitiesFields.COST_CENTER],
             MATERIAL_GROUP  : oItemContext[Constant.EntitiesFields.MATERIAL_CODE],
