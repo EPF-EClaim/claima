@@ -18,38 +18,75 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         };
 
         const esc = v => norm(v).replace(/'/g, "''");
+        const aFilters = [];
+        const sInternalOrder = norm(oCondition.INTERNAL_ORDER);
 
-        const sPath = Constant.IFAMS_API_PATH.BUDGET_SF
-            .replace('{YEAR}', esc(oCondition.YEAR))
-            .replace('{INTERNAL_ORDER}', esc(oCondition.INTERNAL_ORDER));
+        if (sInternalOrder) {
+            const sProjectField = {
+                [Constant.ProjectCodeIndicator.IO]: Constant.BudgetReport.FIELD_MAP.INTERNAL_ORDER,
+                [Constant.ProjectCodeIndicator.WBS]: Constant.BudgetReport.FIELD_MAP.WBS_CODE
+            }[oCondition.IOWBS_IND];
+            aFilters.push(`${sProjectField} eq '${esc(sInternalOrder)}'`);
+        }
+
+        if (norm(sFundCenter)) {
+            aFilters.push(`FundCenter eq '${esc(sFundCenter)}'`);
+        }
+
+        if (norm(oCondition.COMMITMENT_ITEM)) {
+            aFilters.push(`CommitmentItem eq '${esc(oCondition.COMMITMENT_ITEM)}'`);
+        }
+
+        if (norm(oCondition.MATERIAL_GROUP)) {
+            aFilters.push(`MaterialGroup eq '${esc(oCondition.MATERIAL_GROUP)}'`);
+        }
+
+        const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', esc(oCondition.YEAR))
+                        + (aFilters.length ? ` and ${aFilters.join(' and ')}` : '');
 
         if (!oCache[sPath]) {
-            oCache[sPath] = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+            const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+
+            if (oResponse.error) {
+                return {
+                    error: true,
+                    errorCode: oResponse.errorCode,
+                    data: null,
+                    message: 'The budget validation cannot be completed due to a technical or interface error during communication between SAP CENTRA eClaims and S/4 IFAMS',
+                    detail: oResponse.message
+                };
+            }
+            oCache[sPath] = oResponse.data;
         }
+
         const aBudgetRecords = oCache[sPath] || [];
 
-        const eq = (recVal, condVal) => !norm(condVal) || norm(recVal) === norm(condVal);
+        oBudget = aBudgetRecords[0] || null;
 
-        oBudget = aBudgetRecords.find(r =>
-            eq(r.FundCenter, sFundCenter)
-            && eq(r.CommitmentItem, oCondition.COMMITMENT_ITEM)
-            && eq(r.MaterialGroup, oCondition.MATERIAL_GROUP));
-
-        return { error: false, data: oBudget, message: 'Successfully retrieved the budget' };
+        return { error: false, errorCode: null, data: oBudget, message: 'Successfully retrieved the budget' };
 
     } catch (oError) {
-        return { error: true, data: oBudget, message: oError.message };
+        return { error: true, errorCode: Constant.IFAMSBudgetErrorCode.REQUEST_ERROR, data: oBudget, message: oError.message };
     }
 }
 
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
-    const IFAMS_Service = await getIFAMSConnection();
-    var aRecords = await IFAMS_Service.send({
-        method: sMethod,
-        path: sPath,
-        data: oData
-    });
-    return aRecords;
+    try {
+        const IFAMS_Service = await getIFAMSConnection();
+        const aRecords = await IFAMS_Service.send({
+            method: sMethod,
+            path: sPath,
+            data: oData
+        });
+        return { error: false, errorCode: null, data: aRecords, message: 'Successfully executed IFAMS request' };
+    } catch (oError) {
+        return {
+            error: true,
+            errorCode: Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR,
+            data: null,
+            message: oError.message
+        };
+    }
 }
 
 async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
@@ -60,7 +97,11 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
     var bError;
 
     try {
-        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED) && aEarmarkedFundItems.length > 0) {
+        if (!aEarmarkedFundItems || !aEarmarkedFundItems.length) {
+            return { Error: true, Message: 'No earmarked fund items provided' }
+        }
+
+        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED)) {
             var oResponse;
 
             for (const item of aEarmarkedFundItems) {
@@ -75,9 +116,12 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
                 }
 
                 oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
-            }
-            return { oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${sRecordID}` }
 
+                if (oResponse.error) {
+                    return { Error: true, errorCode: oResponse.errorCode, oEarmarkedFundsDocument: null, Message: oResponse.message };
+                }
+            }
+            return { Error: false, oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${sRecordID}` };
         }
 
         oEarMarkedFundsPayload = {
@@ -88,7 +132,13 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
         };
 
         sPath = Constant.IFAMS_API_PATH.EARMARKEDFUNDS;
-        oEarmarkedFundsDocument = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
+        const oPostResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
+
+        if (oPostResponse.error) {
+            return { Error: true, errorCode: oPostResponse.errorCode, oEarmarkedFundsDocument: null, Message: oPostResponse.message };
+        }
+
+        oEarmarkedFundsDocument = oPostResponse.data;
 
     } catch (oError) {
         return {
@@ -294,12 +344,17 @@ async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument
 async function syncBudgetReport(sYear) {
 
     // 1. Call IFAMS API
-    const sPath = Constant.IFAMS_API_PATH.BUDGET_REPORT.replace('{YEAR}', sYear);
+    const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', sYear);
     const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
-    const aIFAMSRecords = Array.isArray(oResponse)
-        ? oResponse
-        : (oResponse?.d?.results || oResponse?.results || oResponse?.value || []);
+    if (oResponse.error) {
+        throw new Error(`Failed to retrieve budget report from IFAMS: ${oResponse.message}`);   
+    }
+
+    const oData = oResponse.data; 
+    const aIFAMSRecords = Array.isArray(oData)
+        ? oData
+        : (oData?.d?.results || oData?.results || oData?.value || []);
 
     if (!aIFAMSRecords.length) {
         return 0;
