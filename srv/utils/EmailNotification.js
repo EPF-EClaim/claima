@@ -34,7 +34,7 @@ async function writeEmailFailureLog(sRecordId, sStatusCode, sMessage) {
  * @param {string} oParams.recipientConstantId - ID in ZCONSTANTS holding recipient emails
  * @param {string} oParams.action - Email action (determines email template in IS)
  * @param {string} oParams.emailTitle - Email subject
-* @returns {Promise<object>} either the success context object, or a generateReturnMessage failure object
+ * @returns {Promise<{error: boolean, message: string|null}>} Result of the email sending
  */
 async function sendEmailNotification({ recordId, recipientConstantId, action, emailTitle }) {
     try {
@@ -90,10 +90,10 @@ async function notifyIFAMSConnectionError(aResults, sRecordId) {
             oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
 
     if (!bIFAMSConnectionError) {
-        return;
+        return { error: false, message: null };
     }
 
-    await sendEmailNotification({
+    return await sendEmailNotification({
         recordId: sRecordId,
         recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
         action: Constant.IFAMSEmailAction.CONNECTION_ERROR,
