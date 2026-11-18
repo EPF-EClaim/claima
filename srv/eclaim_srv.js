@@ -11,6 +11,7 @@ const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const { logWorkflowHistory } = require('./workflow/workflow-helper');
+const { syncBudgetReport } = require('./ifams/ifams-budget');
 
 module.exports = (srv) => {
 
@@ -69,9 +70,9 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZDEPARTMENT } = srv.entities;
             const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-            if (!oEmp) { 
-                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id }); 
-                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.'); 
+            if (!oEmp) {
+                cds.log('eclaim').warn('getUserType: no ZEMP_MASTER record for user', { user: req.user?.id });
+                return req.reject(403, 'Your employee profile is not set up in eClaim. Please contact the system administrator.');
             }
 
             let sOrigin = null;
@@ -381,7 +382,7 @@ module.exports = (srv) => {
                     var new_virement_in = virement_in + Number(existing[0].VIREMENT_IN);
                     var new_virement_out = virement_out + Number(existing[0].VIREMENT_OUT);
                     var new_supplement = supplement + Number(existing[0].SUPPLEMENT);
-                    var new_return = return_value + Number(existing[0].RETURN); 
+                    var new_return = return_value + Number(existing[0].RETURN);
                     var newOriginalBudget = original_budget + Number(existing[0].ORIGINAL_BUDGET);
 
                     //if amount is maintained for the Virement In, Virement Out, Supplement and Return 
@@ -770,13 +771,13 @@ module.exports = (srv) => {
 
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
-    
+
         const oHeaderResult = await tx.run(
             SELECT.one.from('ZREQUEST_HEADER')
                 .where({ REQUEST_ID: sRequestId })
                 .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
         );
-    
+
         const result = await tx.run(
             SELECT.one`
                 SUM(EST_AMOUNT) as TotalEstAmount,
@@ -785,15 +786,15 @@ module.exports = (srv) => {
                 .from('ZREQUEST_ITEM')
                 .where({ REQUEST_ID: sRequestId })
         );
-    
+
         let totalEstAmount = result.TotalEstAmount || 0;
         const totalCashAdvance = result.TotalCashAdvance || 0;
-    
+
         const bIsCorpoCC = oHeaderResult && String(oHeaderResult.REQUEST_TYPE_ID) === String(Constant.RequestType.CORP_CC);
         if (bIsCorpoCC && totalEstAmount < 0) {
             totalEstAmount = 0;
         }
-    
+
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
                 .set({
@@ -802,26 +803,6 @@ module.exports = (srv) => {
                 })
                 .where({ REQUEST_ID: sRequestId })
         );
-    }
-
-    async function getInternalOrderByProjectCode(tx, sProjectCode) {
-
-        if (!sProjectCode) {
-            return null;
-        }
-
-        const sCurrentYear = String(new Date().getFullYear());
-        const oBudget = await tx.run(
-            SELECT.one
-                .from('ZBUDGET')
-                .columns('WBS_CODE')
-                .where({
-                    PROJECT_CODE: sProjectCode,
-                    YEAR: sCurrentYear
-                })
-        );
-
-        return oBudget?.WBS_CODE || null;
     }
 
     srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
@@ -1510,13 +1491,13 @@ module.exports = (srv) => {
 
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
         const tx = cds.tx(req);
-        const sRequestId =data.REQUEST_ID || req.data.REQUEST_ID;
+        const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
 
         if (sRequestId) {
-            await updateRequestItemCostCenters(tx,sRequestId);
+            await updateRequestItemCostCenters(tx, sRequestId);
         }
         const sStatus = data.STATUS || req.data.STATUS;
-        
+
         if (sStatus === Constant.Status.APPROVED) {
             var oRequestRecord;
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
@@ -2589,11 +2570,11 @@ module.exports = (srv) => {
      * To protect a new report, add one line here. The handler below registers itself from these keys.
      */
     const mCostCenterFilterField = {
-        ZEMP_CLAIM_REPORT_SUMMARY:   'CHARGING_COST_CENTER',
-        ZEMP_CLAIM_REPORT_DETAILS:   'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
+        ZEMP_CLAIM_REPORT_DETAILS: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
-        ZEMP_CC_BUDGET_REPORT:       'FUND_CENTER'
+        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER'
     };
 
     /**
@@ -2607,14 +2588,25 @@ module.exports = (srv) => {
      * - Employee has no DEP        -> 404 "Employee record not found".
      * - Entity not configured      -> 500 "Report access is not configured".
      * - Unexpected/DB error        -> CAP's standard 500 (details hidden in production).
+     * - IFAMS sync fails           -> 500 "Failed to retrieve budget data from IFAMS".
      *
      * @param {import('@sap/cds').Request} req - Incoming READ request
      */
     srv.before('READ', Object.keys(mCostCenterFilterField), async (req) => {
+        const sEntityName = req.target.name.split('.').pop();
+
+        // 1. Sync IFAMS → ZBUDGET for the Budget Consumption Report (all users)
+        if (sEntityName === 'ZEMP_CC_BUDGET_REPORT') {
+            try {
+                const sYear = String(new Date().getFullYear());
+                await syncBudgetReport(sYear);
+            } catch (oError) {
+                return req.reject(500, `Failed to retrieve budget data from IFAMS: ${oError.message}`);
+            }
+        }
         // Only Admin_CC users are filtered
         if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
-        const sEntityName = req.target.name.split('.').pop();
         const sFilterField = mCostCenterFilterField[sEntityName];
         if (!sFilterField) return req.reject(500, 'Report access is not configured');
 
@@ -2913,22 +2905,6 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('getInternalOrderByProjectCode', async (req) => {
-
-        try {
-
-            const tx = cds.tx(req);
-
-            return await getInternalOrderByProjectCode(
-                tx,
-                req.data.sProjectCode
-            );
-
-        } catch (error) {
-            req.error(500, `Failed to retrieve Internal Order: ${error.message}`);
-        }
-    });
-
     srv.on("getBantuanKebajikanKematianAmount", async (req) => {
         const tx = cds.tx(req);
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
@@ -2955,77 +2931,6 @@ module.exports = (srv) => {
         } else {
             return req.reject(404, "Employee record not found");
         }
-    });
-
-    srv.after('UPDATE', 'ZCLAIM_HEADER', async (data, req) => {
-
-        const tx = cds.tx(req);
-        const sClaimId =
-            data.CLAIM_ID || req.data.CLAIM_ID;
-
-        const oHeader = await tx.run(
-            SELECT.one
-                .from('ZCLAIM_HEADER')
-                .where({
-                    CLAIM_ID: sClaimId
-                })
-        );
-
-        if (!oHeader?.PROJECT_CODE) {
-            console.log("PROJECT_CODE is empty. Skip INTERNAL_ORDER update.");
-            return;
-        }
-
-        const sInternalOrder =
-            await getInternalOrderByProjectCode(
-                tx,
-                oHeader.PROJECT_CODE
-            );
-
-        await tx.run(
-            UPDATE('ZCLAIM_ITEM')
-                .set({
-                    INTERNAL_ORDER: sInternalOrder
-                })
-                .where({
-                    CLAIM_ID: sClaimId
-                })
-        );
-    });
-
-    srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
-
-        const tx = cds.tx(req);
-        const sRequestId =
-            data.REQUEST_ID || req.data.REQUEST_ID;
-
-        const oHeader = await tx.run(
-            SELECT.one
-                .from('ZREQUEST_HEADER')
-                .where({
-                    REQUEST_ID: sRequestId
-                })
-        );
-
-        if (!oHeader?.PROJECT_CODE) {
-            return;
-        }
-
-        const sInternalOrder =
-            await getInternalOrderByProjectCode(
-                tx,
-                oHeader.PROJECT_CODE
-            );
-
-        await tx.run(
-            UPDATE('ZREQUEST_ITEM')
-                .set({
-                    INTERNAL_ORDER: sInternalOrder
-                })
-                .where({
-                    REQUEST_ID: sRequestId
-                })
-        );
     });
 
     /**
@@ -4612,7 +4517,7 @@ module.exports = (srv) => {
     srv.on('getMonthlyAdvanceAmount', async (req) => {
         const { sCardNo, sCardholderId } = req.data;
         if (!sCardNo || !sCardholderId) return 0.00;
-    
+
         try {
             const oCardAdvance = await SELECT
                 .one
@@ -4622,11 +4527,11 @@ module.exports = (srv) => {
                     CARD_NO: sCardNo,
                     CARDHOLDER_ID: sCardholderId
                 });
- 
+
             console.log(`[getMonthlyAdvanceAmount] Queried CARD_NO="${sCardNo}" CARDHOLDER_ID="${sCardholderId}" -> ${JSON.stringify(oCardAdvance)}`);
-    
+
             return oCardAdvance ? (parseFloat(oCardAdvance.CURRENT_ADVANCED_BALANCE) || 0.00) : 0.00;
-    
+
         } catch (error) {
             console.error('[getMonthlyAdvanceAmount] Query failed:', error);
             req.error(500, 'An error occurred while checking Corporate Card Advanced table.');
@@ -4699,10 +4604,13 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
             const { ZLOG } = srv.entities;
 
+            if (!sRecordId) return req.error(400, 'Record ID is required');
+
             const aLogs = await tx.run(
                 SELECT.from(ZLOG)
                     .where({
-                        RECORD_ID: { like: `%${sRecordId}%` }
+                        RECORD_ID: { like: `%${sRecordId}%` },
+                        MESSAGE_TYPE: { '!=': Constant.BudgetLog.MESSAGE_TYPE }
                     })
                     .orderBy({ TIMESTAMP: 'asc' })
             );
@@ -4738,21 +4646,21 @@ module.exports = (srv) => {
 
     srv.on('deleteItemCascade', async (req) => {
         const { sReqId, sReqSubId } = req.data;
-    
+
         if (!sReqId || !sReqSubId) {
             req.error(400, 'sReqId and sReqSubId are required');
             return;
         }
-    
+
         const tx = cds.tx(req);
-    
+
         try {
             await tx.run(DELETE.from('ZREQ_ITEM_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQ_ITEM_CCC_PART').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
             await tx.run(DELETE.from('ZREQUEST_ITEM').where({ REQUEST_ID: sReqId, REQUEST_SUB_ID: sReqSubId }));
-    
+
             return true;
-    
+
         } catch (error) {
             console.error('[deleteItemCascade] Failed:', error);
             req.error(500, `Failed to delete item: ${error.message}`);
@@ -4783,7 +4691,7 @@ module.exports = (srv) => {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
             const tx = cds.tx(req);
-        
+
             for (const row of budget) {
                 const key = {
                     YEAR: row.YEAR,
@@ -5194,5 +5102,147 @@ module.exports = (srv) => {
         }
 
         return true;
+    });
+
+    srv.on('batchUpdateFIDoc', async (req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        try {
+            const { aDocument } = req.data;
+            if (!aDocument || aDocument.length === 0) {
+                throw new Error('No Data Sent');
+            }
+            const tx = cds.tx(req);
+            const aClaimUpdates = [];
+            for (var i = 0; i < aDocument.length; i++) {
+                var oFIDocument = aDocument[i];
+                if (!oFIDocument.FI_DOC_ID) continue;
+
+                aClaimUpdates.push(
+                    UPDATE(ZCLAIM_HEADER)
+                        .set({
+                            FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
+                            FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
+                            FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
+                        })
+                        .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
+                );
+            }
+            if (aClaimUpdates.length > 0) {
+                await Promise.all(aClaimUpdates.map(function (q) { return tx.run(q); }));
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    })
+
+    srv.on('batchUpdateReleaseLog', async (req) => {
+        const { ZLOG } = srv.entities;
+
+        try {
+            const { aReleaseLog } = req.data;
+
+            if (!aReleaseLog || aReleaseLog.length === 0) {
+                throw new Error('No Data Sent');
+            }
+
+            const tx = cds.tx(req);
+            const aReleaseLogUpdates = [];
+
+            for (let i = 0; i < aReleaseLog.length; i++) {
+                const oReleaseLog = aReleaseLog[i];
+
+                if (!oReleaseLog.CLAIM_ID) continue;
+
+                const bSuccess = oReleaseLog.STATUS_CODE === Constant.StatusCode.SUCCESS;
+
+                aReleaseLogUpdates.push({
+                    TIMESTAMP: new Date(),
+                    RECORD_ID: oReleaseLog.CLAIM_ID,
+                    PROGRAM: Constant.BudgetLog.PROGRAM.RELEASE,
+                    MESSAGE_TYPE: Constant.BudgetLog.MESSAGE_TYPE,
+                    STATUS_CODE: oReleaseLog.STATUS_CODE,
+                    MESSAGE: bSuccess
+                        ? `Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} successfully released for Claim ${oReleaseLog.CLAIM_ID}.`
+                        : `Failed to release Earmarked Funds Document ${oReleaseLog.EARMARKED_FUNDS_DOC_ID} for Claim ${oReleaseLog.CLAIM_ID}.`
+                });
+            }
+
+            if (aReleaseLogUpdates.length > 0) {
+                await tx.run(
+                    INSERT.into(ZLOG).entries(aReleaseLogUpdates)
+                );
+            }
+
+            return {
+                message: 'Records updated successfully'
+            }
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    });
+
+    srv.on('updateWBSIOCode', async (req) => {
+        const { ZPROJECT_HDR } = srv.entities;
+
+        try {
+            const { aRecords } = req.data;
+
+            if (!aRecords || aRecords.length === 0) {
+                throw new Error('No Data Sent');
+            }
+
+            const tx = cds.tx(req);
+            const aProjectUpserts = [];
+
+            for (let i = 0; i < aRecords.length; i++) {
+                const oRecord = aRecords[i];
+
+                const sWbsCode = oRecord.WbsCode?.trim();
+                const sIo = oRecord.Io?.trim();
+                const sWbsDescription = oRecord.WbsDescription?.trim();
+                const sCommitmentItem = oRecord.CommitmentItem?.trim();
+                const sStatus = oRecord.Status?.trim() || Constant.ProjectStatus.ACTIVE;
+                const sCostCenter = oRecord.CostCenter?.trim();
+
+                const sProjectCodeIO = sWbsCode || sIo;
+                if (!sProjectCodeIO) continue;
+
+                const bIsWbs = !!sWbsCode;
+                const oEntry = {
+                    PROJECT_CODE_IO: sProjectCodeIO,
+                    IO_WBS_IND: bIsWbs
+                        ? Constant.ProjectCodeIndicator.WBS
+                        : Constant.ProjectCodeIndicator.IO,
+                    GL_ACCOUNT: sCommitmentItem,
+                    STATUS: sStatus,
+                    COST_CENTER: sCostCenter
+                };
+
+                if (bIsWbs && sWbsDescription) {
+                    oEntry.PROJECT_DESC = sWbsDescription;
+                }
+
+                aProjectUpserts.push(
+                    UPSERT.into(ZPROJECT_HDR).entries(oEntry)
+                );
+            }
+
+            if (aProjectUpserts.length > 0) {
+                await Promise.all(aProjectUpserts.map(function (q) { return tx.run(q); }));
+            }
+
+            return {
+                message: 'Records updated successfully'
+            };
+
+        } catch (oError) {
+            req.reject(400, `Fail updating records: ${oError.message}`);
+        }
     });
 }

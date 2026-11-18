@@ -1,7 +1,18 @@
 const cds = require('@sap/cds');
-const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
+const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
-const { constants } = require('@sap/xssec');
+const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
+const { retrieveClaimFlexiPosting, determineBudgetYear, determineClaimPostingDate } = require('../ifams/pre-checking-budget');
+
+// ============================================================
+// Shared helpers (module level)
+// ============================================================
+const toNum = (v) => Number(v) || 0;
+const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+const norm = (v) => {
+    const s = String(v ?? '').trim();
+    return s === Constant.Wildcard.NA ? '' : s;
+};
 
 const aEntityTableByPrefix = {
     [Constant.WorkflowType.CLAIM]   : {
@@ -39,18 +50,23 @@ function resolveDocDescriptor(sId) {
     return aEntityTableByPrefix[sId.slice(0, 3)];
 }
 async function retrieveHeaderDetails(sId, oDescriptor) {
+    const aColumns = [
+        oDescriptor.idField,
+        oDescriptor.typeField,
+        oDescriptor.entityTypeDesc,
+        Constant.EntitiesFields.EMP_ID,
+        Constant.EntitiesFields.COST_CENTER,
+        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
+        Constant.EntitiesFields.PROJECT_CODE
+    ];
+
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) aColumns.push(Constant.EntitiesFields.TRIP_START_DATE);  // to be used for cross budget checking
+
     const oHeader =  await cds.run(
         SELECT
             .one
             .from(oDescriptor.entityHeader)
-            .columns(   oDescriptor.idField,
-                        oDescriptor.typeField,
-                        oDescriptor.entityTypeDesc,
-                        Constant.EntitiesFields.EMP_ID,
-                        Constant.EntitiesFields.COST_CENTER,
-                        Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-                        Constant.EntitiesFields.PROJECT_CODE
-            )
+            .columns(...aColumns)
             .where( { [oDescriptor.idField]:sId })
     );
     return oHeader;
@@ -74,9 +90,9 @@ async function retrieveEmployeeDetails(sId, sEmail){
         sWhereClause = {
             [Constant.EntitiesFields.EMAIL]     : sEmail
         };
-    }    
+    }
     const oEmployeeContext =  await cds.run(
-        SELECT  
+        SELECT
             .one
             .from(sEmpMasterTable)
             .where(sWhereClause)
@@ -115,8 +131,8 @@ async function retrieveRoleRank(sRole) {
     let sQuery = SELECT
         .from(sRoleHierarchyTable)
         .columns(
-                Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.RANK
+            Constant.EntitiesFields.ROLE,
+            Constant.EntitiesFields.RANK
         );
     if(sRole) {
         sQuery = sQuery.where({
@@ -142,6 +158,12 @@ async function retrieveItems(sId, oDescriptor) {
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         aColumns.push(Constant.EntitiesFields.CASH_ADVANCE);
+    }
+
+    // Only ZCLAIM_ITEM has the IFAMS item number
+    if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
+        aColumns.push('EARMARKED_FUNDS_DOC_ITEM_ID');
+        aColumns.push(Constant.EntitiesFields.RECEIPT_DATE);    // to be used for cross budget checking
     }
 
     let oQuery = SELECT
@@ -183,7 +205,7 @@ async function retrieveItems(sId, oDescriptor) {
         CLAIM_TYPE_ITEM_DESC: oDescMap.get(r[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]) ?? null
     }));
 }
-async function retrieveBudgetContext(sId, oDescriptor, sAction) {
+async function retrieveBudgetContext(sId, oDescriptor) {
 
     const aBudgetContexts = [];
     const oHeaderContext = await retrieveHeaderDetails(sId, oDescriptor);
@@ -191,16 +213,18 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
         return null;
     }
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
-    const dSubmittedYear = sSubmittedDate ? String(new Date(oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE]).getFullYear()) : String(new Date().getFullYear());
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
+    
     if(!aItemsContext.length) {
         return aBudgetContexts;
     }
+
+    const sIoWbsInd = await getIoWbsIndicator(sInternalOrder);
+
     for(const oItemContext of aItemsContext) {
-        
+
         aBudgetContexts.push({
-            YEAR            : dSubmittedYear,
             INTERNAL_ORDER  : sInternalOrder,
             FUND_CENTER     : oItemContext[Constant.EntitiesFields.COST_CENTER],
             MATERIAL_GROUP  : oItemContext[Constant.EntitiesFields.MATERIAL_CODE],
@@ -208,8 +232,14 @@ async function retrieveBudgetContext(sId, oDescriptor, sAction) {
             CLAIM_TYPE_ITEM : oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC],
             AMOUNT          : oItemContext[oDescriptor.entityAmount],
             INDICATOR       : oDescriptor.entityPrefix, //CLM and REQ
-            ACTION          : sAction //SUBMIT, REJECT, APPROVE;
-        });
+            EMP_ID          : oHeaderContext.EMP_ID, // to be used for cost center roll up
+            EARMARKED_FUNDS_DOC_ITEM_ID: oItemContext.EARMARKED_FUNDS_DOC_ITEM_ID, // Budget release
+            ALTERNATE_COST_CENTER   : oHeaderContext.ALTERNATE_COST_CENTER,  // for checking against roll up cost center
+            HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER], // for item cost center validation
+            RECEIPT_DATE: oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST ?
+                oHeaderContext[Constant.EntitiesFields.TRIP_START_DATE] : oItemContext[Constant.EntitiesFields.RECEIPT_DATE], // to be used for cross budget checking
+            IO_WBS_IND: sIoWbsInd // to be used for budget locking/checking against project
+        })
     }
     return aBudgetContexts
 }
@@ -238,118 +268,442 @@ async function retrieveRejectReasonDesc(sRejectReasonId) {
     );
     return oRejectReasonContext ? oRejectReasonContext[Constant.EntitiesFields.REASON_DESC] : null;
 }
-async function performBudgetChecking(oTx, aBudgetContext) {
-    const ZBUDGET = cds.entities['eclaim_srv.ZBUDGET'];
-
-    const toNum = (v) => Number(v) || 0;
-    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+/**
+ * Releases the previously locked claim budget by processing the associated
+ * earmarked fund document items.
+ *
+ * Only budget context entries containing an earmarked fund document item ID
+ * are included in the release request. When the release succeeds, the
+ * earmarked fund details are updated in the database.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the earmarked fund item details
+ * @param {string} sId - Claim 
+ * @param {string} sEarmarkedFundsDocId - Earmarked funds document ID to be released
+ * @param {string} sAction - Claim workflow action
+ * @returns {Promise<Array<object>|Error>} Release error results, an empty array on success, or the caught error
+ */
+async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId, sAction) {
 
     try {
-        let error = false;
-        let errorResults = [];
-        let successResults = [];
-        let condition;
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
 
-        for (const entry of aBudgetContext) {
-            if(entry.INTERNAL_ORDER != Constant.Wildcard.NA){
-                condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                };
-            }else{
-                condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                    FUND_CENTER: entry.FUND_CENTER,
-                    MATERIAL_GROUP: entry.MATERIAL_GROUP,
-                    COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-                };   
-            }
+        const aItems =
+            aBudgetContext
+                .filter(oBudgetContext => oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID)
+                .map(oBudgetContext => ({
+                    EarmarkedFundsDocumentItem: String(oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
+                    FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
+                    CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
+                }));
 
-            let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
-                ? await cds.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
-                : await cds.run(SELECT.one.from(ZBUDGET).where(condition));
+        const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
 
-            if (!budgetRecord) {
-                error = true;
-                errorResults.push({
-                    ...condition,
-                    STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
-                });
-                continue;
-            }
-
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
-                (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
-                const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
-                if (!bSufficient) {
-                    error = true;
-                    errorResults.push({
-                        ...condition,
-                        STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                        AMOUNT: entry.AMOUNT,
-                        AVAILABLE: budgetRecord.BUDGET_BALANCE
-                    });
-                    continue;
-                }
-            }
-
-            if (error) continue;
-
-            if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                successResults.push({
-                    ...condition,
-                    STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                    CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
-                });
-                continue;
-            }
-
-            let newCommitment = toNum(budgetRecord.COMMITMENT);
-            let newActual = toNum(budgetRecord.ACTUAL);
-            const amount = toNum(entry.AMOUNT);
-            if (entry.ACTION === Constant.BudgetProcessingAction.SUBMIT) {
-                newCommitment = round2(newCommitment - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.APPROVE) {
-                newCommitment = round2(newCommitment + amount);
-                newActual = round2(newActual - amount);
-            } else if (entry.ACTION === Constant.BudgetProcessingAction.REJECT) {
-                newCommitment = round2(newCommitment + amount);
-            }
-
-            const newConsumed = round2(newCommitment + newActual);
-            const newBudgetBalance = round2(toNum(budgetRecord.CURRENT_BUDGET) + newConsumed);
-
-            await oTx.run(
-                UPDATE(ZBUDGET)
-                    .set({
-                        CONSUMED: newConsumed.toFixed(2),
-                        COMMITMENT: newCommitment.toFixed(2),
-                        BUDGET_BALANCE: newBudgetBalance.toFixed(2),
-                        ACTUAL: newActual.toFixed(2)
-                    })
-                    .where(condition)
+        if (oReleaseResult?.Error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+                RELEASE_ERROR: true,
+                ERROR_CODE: oReleaseResult?.errorCode,
+                ERROR_MESSAGE: oReleaseResult?.Message
+            });
+        } else {
+            await updateEarmarkedFundDetails(
+                oTx,
+                sId,
+                oReleaseResult?.oEarmarkedFundsDocument,
+                oReleaseResult?.Message,
+                sAction
             );
 
-            successResults.push({
-                ...condition,
-                STATUS: Constant.BudgetCheckStatus.UPDATED,
-                CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
-                NEW_CONSUMED: newConsumed,
-                NEW_BUDGETBALANCE: newBudgetBalance
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.RELEASED,
             });
         }
 
-        if (error) {
-            return errorResults;
+        if (bError) {
+            return aErrorResults;
         }
 
-        return successResults;
+        return aSuccessResults;
 
-    } catch (err) {
-        return err;
+    } catch (oError) {
+        return [{
+            STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+            RELEASE_ERROR: true,
+            ERROR_MESSAGE: oError.message
+        }];
+    }
+}
+/**
+ * Locks the required claim budget by creating an earmarked funds document.
+ * For employees outside the RD, HOD, and CXO roles, the function determines
+ * the applicable upper-level cost center before processing the earmarked
+ * funds request. When the budget is sufficient and the lock succeeds, the
+ * generated earmarked fund details are updated in the database.
+ * @param {object} oTx - cds transaction
+ * @param {Array<object>} aBudgetContext - Claim budget context containing the amount and account assignment details
+ * @param {string} sId - Claim or record ID used for the earmarked funds request
+ * @param {Array<object>} [aCheckResults=[]] - Budget check results used to get the rolled-up fund center (non-EMP level) for the lock
+ * @returns {Promise<Array<object>|Error>} Budget lock results containing a SUFFICIENT status on success, error status results on failure, or the caught error
+ */
+async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
+
+    try {
+        let bError = false;
+        let aErrorResults = [];
+        let aSuccessResults = [];
+
+        // fetch data from SF MDF to determine cross budget year
+        var oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.ERROR,
+                MESSAGE: oClaimFlexiPosting.message
+            })
+
+            return aErrorResults;
+        }
+
+        // map each line index -> fund center that has sufficient budget
+        const oResolvedFC = {};
+        for (const r of aCheckResults) {
+            if (r.IS_IO || !r.RESOLVED_FUND_CENTER) continue;   // internal order lines keep their own FC
+            for (const i of (r.ITEM_INDEXES || [])) {
+                oResolvedFC[i] = r.RESOLVED_FUND_CENTER;
+            }
+        }
+
+        const aItems =
+            aBudgetContext.map((oBudgetContext, iIndex) => ({
+                ...Constant.EarmarkedFundPosting_Item,
+                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+                FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim(),
+                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
+                PostingDate: determineClaimPostingDate(oBudgetContext.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
+                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
+                    oBudgetContext.INTERNAL_ORDER && {
+                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
+                })
+            }));
+
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null);
+
+        if (oBudgetRecord?.Error) {
+            bError = true;
+            aErrorResults.push({
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_CODE: oBudgetRecord?.errorCode,
+                ERROR_MESSAGE: oBudgetRecord?.Message
+            });
+        } else {
+            await updateEarmarkedFundDetails(
+                oTx,
+                sId,
+                oBudgetRecord?.oEarmarkedFundsDocument,
+                oBudgetRecord?.Message
+            );
+
+            aSuccessResults.push({
+                STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+            });
+
+            // fund center will be the same for all items
+            // update claim header/item based on the new cost center (in case of roll up cost center)
+            // skip if alternate cost center available as the budget check/lock will always take alternate if available
+            var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
+            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
+                for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
+                    await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
+                }
+            }
+        }
+
+        if (bError) {
+            return aErrorResults;
+        }
+
+        return aSuccessResults;
+
+    } catch (oError) {
+        return [{
+            STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+            LOCK_BUDGET: true,
+            ERROR_MESSAGE: oError.message
+        }];
+    }
+}
+
+/**
+ * Group claim items by year + account assignment and sum their amounts.
+ * @param {Array<object>} aBudgetContext - Claim budget context
+ * @param {object} oFlexiPostingRecord - Flexi posting record used to determine budget year
+ * @returns {Array<object>} Grouped budget items
+ */
+function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
+    const oGroups = {};
+
+    for (const [iIndex, entry] of aBudgetContext.entries()) {
+        const sYear = determineBudgetYear(entry.RECEIPT_DATE, oFlexiPostingRecord);
+        const bIO = entry.INTERNAL_ORDER !== Constant.Wildcard.NA;
+
+        const oCondition = bIO
+            ? { YEAR: sYear, INTERNAL_ORDER: entry.INTERNAL_ORDER, IOWBS_IND: entry.IO_WBS_IND }
+            : {
+                YEAR: sYear,
+                INTERNAL_ORDER: entry.INTERNAL_ORDER,
+                FUND_CENTER: entry.FUND_CENTER,
+                COMMITMENT_ITEM: entry.COMMITMENT_ITEM,
+                MATERIAL_GROUP: entry.MATERIAL_GROUP
+            };
+
+        const sKey = [
+            oCondition.YEAR,
+            oCondition.INTERNAL_ORDER,
+            oCondition.FUND_CENTER || '',
+            oCondition.COMMITMENT_ITEM || '',
+            oCondition.MATERIAL_GROUP || ''
+        ].join('|');
+
+        if (!oGroups[sKey]) {
+            oGroups[sKey] = {
+                oCondition,
+                TOTAL_AMOUNT: 0,
+                CLAIM_TYPE_ITEMS: [],
+                ITEM_INDEXES: [],
+                NOT_FOUND_AT: [],
+                oBudgetData: null,
+                bIO
+            };
+        }
+
+        oGroups[sKey].TOTAL_AMOUNT = round2(oGroups[sKey].TOTAL_AMOUNT + toNum(entry.AMOUNT));
+        oGroups[sKey].CLAIM_TYPE_ITEMS.push(entry.CLAIM_TYPE_ITEM);
+        oGroups[sKey].ITEM_INDEXES.push(iIndex);
+    }
+
+    return Object.values(oGroups);
+}
+
+/**
+ * Build roll-up levels (EMP -> HOS -> HOB -> HOD), skipping levels without a fund center.
+ * @param {object} oRollup - Employee roll-up cost centers
+ * @returns {Array<object>} Levels to check
+ */
+function buildRollUpLevels(oRollup = {}) {
+    const L = Constant.RollUp_Level;
+    const CC = Constant.RollUp_CostCenter;
+
+    return [
+        { LEVEL: L.EMP, FUND_CENTER: null },
+        { LEVEL: L.HOS, FUND_CENTER: norm(oRollup[CC.HOS_COSTCENTER]) },
+        { LEVEL: L.HOB, FUND_CENTER: norm(oRollup[CC.HOB_COSTCENTER]) },
+        { LEVEL: L.HOD, FUND_CENTER: norm(oRollup[CC.HOD_COSTCENTER]) }
+    ].filter(l => l.LEVEL === L.EMP || l.FUND_CENTER);
+}
+
+/**
+ * Check budget level by level. Roll up to next level only if any group is NOT FOUND.
+ * Mutates each group's oBudgetData and NOT_FOUND_AT.
+ * @param {Array<object>} aGroups - Grouped budget items
+ * @param {Array<object>} aLevels - Roll-up levels
+ * @returns {Promise<{sFinalLevel: string, oError: object|null}>}
+ */
+async function resolveRollUp(aGroups, aLevels) {
+    const sEmp = Constant.RollUp_Level.EMP;
+    const oCache = {};
+    let sFinalLevel = sEmp;
+
+    for (const oLevel of aLevels) {
+        let bRollUpNeeded = false;
+
+        for (const oGroup of aGroups) {
+            // internal order groups have no fund center, check at Employee level only
+            if (oGroup.bIO && oLevel.LEVEL !== sEmp) continue;
+
+            const sFC = oLevel.LEVEL === sEmp
+                ? oGroup.oCondition.FUND_CENTER
+                : oLevel.FUND_CENTER;
+
+            if (!oGroup.bIO && !sFC) {
+                oGroup.oBudgetData = null;
+                oGroup.NOT_FOUND_AT.push(`- (${oLevel.LEVEL})`);
+                bRollUpNeeded = true;
+                continue;
+            }
+
+            const oBudgetRecord = await getBudgetRecord(oGroup.oCondition, sFC, oCache);
+
+            if (oBudgetRecord.error) {
+                return {
+                    sFinalLevel,
+                    oError: {
+                        ...oGroup.oCondition,
+                        STATUS: Constant.BudgetCheckStatus.ERROR,
+                        ERROR_CODE: oBudgetRecord.errorCode,
+                        CLAIM_TYPE_ITEMS: oGroup.CLAIM_TYPE_ITEMS,
+                        TOTAL_AMOUNT: oGroup.TOTAL_AMOUNT,
+                        MESSAGE: oBudgetRecord.message
+                    }
+                };
+            }
+
+            oGroup.oBudgetData = oBudgetRecord.data;
+
+            if (!oBudgetRecord.data) {
+                oGroup.NOT_FOUND_AT.push(oGroup.bIO
+                    ? `${oLevel.LEVEL}`
+                    : `${sFC || '-'} (${oLevel.LEVEL})`);
+
+                if (!oGroup.bIO) bRollUpNeeded = true;
+            }
+        }
+
+        sFinalLevel = oLevel.LEVEL;
+
+        // Only roll up when there is NOT_FOUND
+        if (!bRollUpNeeded) break;
+    }
+
+    return { sFinalLevel, oError: null };
+}
+
+/**
+ * Evaluate each group at the final level: NOT_FOUND / INSUFFICIENT / SUFFICIENT.
+ * @param {Array<object>} aGroups - Grouped budget items (after roll-up)
+ * @param {string} sFinalLevel - Final roll-up level reached
+ * @returns {{aErrors: Array<object>, aSuccesses: Array<object>}}
+ */
+function evaluateGroups(aGroups, sFinalLevel) {
+    const sEmp = Constant.RollUp_Level.EMP;
+    const oBudgetStatus = Constant.BudgetCheckStatus;
+    const aErrors = [];
+    const aSuccesses = [];
+    const oConsumed = {};
+
+    const fnGroupLabel = (c) => c.INTERNAL_ORDER !== Constant.Wildcard.NA
+        ? `Internal Order ${c.INTERNAL_ORDER}`
+        : `Fund Center ${c.FUND_CENTER}`;
+
+    const fnMsg = (...aParts) => aParts.filter(Boolean).join('. ') || null;
+
+    for (const oGroup of aGroups) {
+        const oBudgetData = oGroup.oBudgetData;
+        const sGroupLevel = oGroup.bIO ? sEmp : sFinalLevel;
+        const sLabel = fnGroupLabel(oGroup.oCondition);
+
+        const sNotFoundMsg = oGroup.NOT_FOUND_AT.length
+            ? `Not found at ${oGroup.NOT_FOUND_AT.join(', ')}`
+            : null;
+
+        const sRollUpMsg = (sGroupLevel !== sEmp && oBudgetData)
+            ? `Rolled up to ${oBudgetData.FundCenter} (${sGroupLevel})`
+            : null;
+
+        const oBase = {
+            ...oGroup.oCondition,
+            CLAIM_TYPE_ITEMS: oGroup.CLAIM_TYPE_ITEMS,
+            ROLLUP_LEVEL: sGroupLevel,
+            NOT_FOUND_AT: oGroup.NOT_FOUND_AT
+        };
+
+        // NOT FOUND (still missing at final level)
+        if (!oBudgetData) {
+            aErrors.push({
+                ...oBase,
+                STATUS: oBudgetStatus.NOT_FOUND,
+                MESSAGE: fnMsg(sLabel, sNotFoundMsg)
+            });
+            continue;
+        }
+
+        const sResolvedKey = [
+            oGroup.oCondition.YEAR,
+            oGroup.oCondition.INTERNAL_ORDER,
+            oBudgetData.FundCenter,
+            oBudgetData.CommitmentItem,
+            oBudgetData.MaterialGroup
+        ].join('|');
+
+        const nUsed = oConsumed[sResolvedKey] || 0;
+        const nAvailable = round2(toNum(oBudgetData.BudgetBalance) - nUsed);
+
+        // INSUFFICIENT (checked at final level)
+        if (oGroup.TOTAL_AMOUNT > nAvailable) {
+            aErrors.push({
+                ...oBase,
+                STATUS: oBudgetStatus.INSUFFICIENT,
+                RESOLVED_FUND_CENTER: oBudgetData.FundCenter,
+                MESSAGE: fnMsg(sLabel, sNotFoundMsg, sRollUpMsg)
+            });
+            continue;
+        }
+
+        // SUFFICIENT
+        oConsumed[sResolvedKey] = round2(nUsed + oGroup.TOTAL_AMOUNT);
+
+        aSuccesses.push({
+            ...oBase,
+            STATUS: oBudgetStatus.SUFFICIENT,
+            AVAILABLE: nAvailable,
+            RESOLVED_FUND_CENTER: oBudgetData.FundCenter,
+            ITEM_INDEXES: oGroup.ITEM_INDEXES,
+            IS_IO: oGroup.bIO,
+            MESSAGE: fnMsg(sNotFoundMsg, sRollUpMsg)
+        });
+    }
+
+    return { aErrors, aSuccesses };
+}
+
+/**
+ * Check budget for claim/request items with roll-up (EMP -> HOS -> HOB -> HOD).
+ * @param {Array<object>} aBudgetContext - Claim budget context
+ * @returns {Promise<Array<object>>} Error results if any error, otherwise success results
+ */
+async function checkRequestBudget(aBudgetContext) {
+    const fnError = (sMessage) => [{
+        STATUS: Constant.BudgetCheckStatus.ERROR,
+        MESSAGE: sMessage
+    }];
+
+    try {
+        if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) {
+            return fnError('No claim items to check budget');
+        }
+
+        // determine upper cost center, in case of no budget allocation for each item
+        const oEmployeeRollupCC = await getRollUpCostCenter(
+            aBudgetContext[0].EMP_ID,
+            aBudgetContext[0].ALTERNATE_COST_CENTER,
+            aBudgetContext[0].IO_WBS_IND
+        );
+        if (oEmployeeRollupCC.error) return fnError(oEmployeeRollupCC.message);
+
+        // check for range date against api
+        const oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) return fnError(oClaimFlexiPosting.message);
+
+        // 1. Group items
+        const aGroups = groupBudgetItems(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
+
+        // 2. Resolve roll-up
+        const aLevels = buildRollUpLevels(oEmployeeRollupCC.oEmployeeRollupCC);
+        const { sFinalLevel, oError } = await resolveRollUp(aGroups, aLevels);
+        if (oError) return [oError];
+
+        // 3. Evaluate result
+        const { aErrors, aSuccesses } = evaluateGroups(aGroups, sFinalLevel);
+
+        return aErrors.length ? aErrors : aSuccesses;
+
+    } catch (oError) {
+        return fnError(oError.message);
     }
 }
 /**
@@ -360,33 +714,97 @@ async function performBudgetChecking(oTx, aBudgetContext) {
  *  - pre-workflow-checks.js (request/claim submission)
  *  - ../workflow-srv.js (auto-approval, final approval, reject, push back)
  *
- * @param {Array} aBudgetResults - results returned by performBudgetChecking
+ * @param {Array} aBudgetResults - results returned by checkRequestBudget
+ *                                 lockClaimBudget and releaseClaimBudget
  *                                 (each with STATUS and CLAIM_TYPE_ITEM)
  * @returns {string|null} error message, or null when there is no budget error
  */
 function buildBudgetErrorMessage(aBudgetResults) {
     if (!Array.isArray(aBudgetResults)) {
-        return null;
+        return `Budget check failed: ${aBudgetResults?.message ?? 'unknown error'}`;
     }
 
-    const fnItems = (sStatus) => [...new Set(
-        aBudgetResults
-            .filter(r => r.STATUS === sStatus)
-            .map(r => r.CLAIM_TYPE_ITEM || "-")
-    )].join(", ");
+    const oBudgetStatus = Constant.BudgetCheckStatus;
+
+    // ---------- Helpers ----------
+    const fnItems = (oResult) =>
+        Array.isArray(oResult.CLAIM_TYPE_ITEMS) && oResult.CLAIM_TYPE_ITEMS.length
+            ? oResult.CLAIM_TYPE_ITEMS
+            : oResult.CLAIM_TYPE_ITEM
+                ? [oResult.CLAIM_TYPE_ITEM]
+                : [];
+
+    const fnDetail = (oResult) => {
+        const sMessage = String(oResult.MESSAGE ?? '').trim();
+        return sMessage ? ` (${sMessage})` : "";
+    };
 
     const aMessages = [];
-    const sNotFoundItems = fnItems(Constant.BudgetCheckStatus.NOT_FOUND);
-    const sInsufficientItems = fnItems(Constant.BudgetCheckStatus.INSUFFICIENT);
 
-    if (sNotFoundItems) {
-        aMessages.push(`Budget not found for claim item(s): ${sNotFoundItems}.`);
-    }
-    if (sInsufficientItems) {
-        aMessages.push(`Insufficient budget for claim item(s): ${sInsufficientItems}.`);
+    // 1. Budget not found
+    // Show only once regardless of how many groups are NOT_FOUND
+    const bBudgetNotFound = aBudgetResults.some(
+        oResult => oResult.STATUS === oBudgetStatus.NOT_FOUND
+    );
+
+    if (bBudgetNotFound) {
+        aMessages.push('Budget data is not found');
     }
 
-    return aMessages.length ? aMessages.join("\n") : null;
+    // 2. Insufficient budget
+    // Combine claim type item descriptions from all insufficient groups
+    const aInsufficientItems = [
+        ...new Set(
+            aBudgetResults
+                .filter(oResult => oResult.STATUS === oBudgetStatus.INSUFFICIENT)
+                .flatMap(fnItems)
+                .filter(Boolean)
+        )
+    ];
+
+    if (aInsufficientItems.length) {
+        aMessages.push(
+            `Insufficient budget for claim item(s): (${aInsufficientItems.join(', ')}). Please contact the GA Admin for further assistance`
+        );
+    }
+
+    // 3. Other errors
+    for (const oResult of aBudgetResults) {
+        switch (oResult.STATUS) {
+            case oBudgetStatus.LOCK_ERROR:
+                aMessages.push(
+                    oResult.ERROR_MESSAGE || 'Failed to lock budget in IFAMS.'
+                );
+                break;
+
+            case oBudgetStatus.RELEASE_ERROR:
+                aMessages.push(
+                    oResult.ERROR_MESSAGE || 'Failed to release budget in IFAMS.'
+                );
+                break;
+
+            case oBudgetStatus.ERROR:
+                aMessages.push(
+                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${oResult.MESSAGE ? `\n${oResult.MESSAGE}` : ''}`
+                );
+                break;
+
+            case oBudgetStatus.CC_VALIDATION:
+                aMessages.push(
+                    `Cost Center Validation Failed for claim item(s): ${fnItems(oResult).join(', ') || '-'}${fnDetail(oResult)}`
+                );
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    const aUniqueMessages = [...new Set(aMessages)];
+
+    return aUniqueMessages.length
+        ? aUniqueMessages.join("\n")
+        : null;
 }
 async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     let aApproversContext = [];
@@ -405,7 +823,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
     if(!aApproversDetails.length) {
         return null;
     }
-    for(const oApproverDetails of aApproversDetails) {
+    for (const oApproverDetails of aApproversDetails) {
         let oEmployeeDetails = await retrieveEmployeeDetails(oApproverDetails[Constant.EntitiesFields.APPROVER_ID]);
         let oSubEmployeeDetails = null;
         let sSubEEID = "";
@@ -420,7 +838,7 @@ async function getApproverContextByLevel(sId, oDescriptor, sLevel){
             sSubEEID = oSubEmployeeDetails ?? null;
             sSubName = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.NAME] : null;
             sSubEmail = oSubEmployeeDetails ? oSubEmployeeDetails[Constant.EntitiesFields.EMAIL] : null;
-            console.log("Substitute Employee Details: ", oSubEmployeeDetails);  
+            console.log("Substitute Employee Details: ", oSubEmployeeDetails);
         }
         aApproversContext.push({
             APPROVER_EEID   : oEmployeeDetails[Constant.EntitiesFields.EEID],
@@ -450,23 +868,145 @@ async function logWorkflowHistory(oTx, sRecordId, sMessage, sMessageType = Const
     await oTx.run(INSERT.into("ZLOG").entries({
         TIMESTAMP: new Date(),
         RECORD_ID: `${sRecordId}`,
-        PROGRAM: 'WORKFLOW',
+        PROGRAM: Constant.WorkflowArea.WORKFLOW,
         MESSAGE_TYPE: sMessageType,
         STATUS_CODE: sStatusCode,
         MESSAGE: sMessage
     }));
 }
-module.exports = { 
+
+/**
+ * Get roll up cost center
+ * In case of no parent cost center found during budget checking or budget locking
+ * roll up cost center will be used to determine the budget 
+ * Skip the roll up if IO/WBS indicator present
+ *
+ * @param {string} sEmpID Employee ID
+ * @param {string} sAlternateCostCenter Alternate cost center
+ * @param {string} sIOWBSInd IO/WBS Indicator
+ * @returns  {Promise<{error: boolean, message: string, oEmployeeRollupCC: object}>}
+ */
+async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
+    const oSkipped = { error: false, message: 'Roll up skipped', oEmployeeRollupCC: {} };
+    if (!sEmpID || sAlternateCostCenter?.trim() || sIOWBSInd) return oSkipped;
+
+    let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
+    if (!oEmployeeDetails) return oSkipped;
+
+    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.HOD, Constant.Role.CXO];
+    if (aNoRollUpRoles.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE])) return oSkipped;
+
+    return rollUpCostCenter(oEmployeeDetails);
+}
+
+/**
+ * Validates the fund center against the expected cost center for each budget context.
+ *
+ * The expected cost center is determined using the alternate cost center when
+ * available; otherwise, the header cost center is used. If the fund center does
+ * not match the expected cost center, a cost center validation error is added.
+ *
+ * If all cost centers are valid, an empty array is returned.
+ * Additional checking: for IO/WBS - the fund center will be empty
+ * During budget checking/locking, WBS/IO will be sent to the API
+ *
+ * @param {Array<object>} aBudgetContext - Budget context containing fund center and cost center details
+ * @returns {Array<object>} Cost center validation errors, or an empty array if all cost centers are valid
+ */
+function validateCostCenter(aBudgetContext) {
+    if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) return [];
+    
+    return aBudgetContext
+    .filter(o => !o.IO_WBS_IND)
+    .flatMap(o => {
+        const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
+        return sExpected && o.FUND_CENTER !== sExpected
+            ? [{
+                STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
+                CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
+                MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
+            }]
+            : [];
+    });
+}
+
+/**
+ * Update request header and items with the rolled-up fund center after budget check.
+ * Applicable to Request only. Fund center will be the same for all items (same as claim).
+ * @param {object} oTx - cds transaction
+ * @param {string} sId - Request ID
+ * @param {Array<object>} aCheckResults - SUFFICIENT results from checkRequestBudget
+ * @returns {Promise<Array<object>>} Empty array on success, otherwise error results
+ */
+async function updateRequestBudget(oTx, sId, aCheckResults) {
+    try {
+        const oDescriptor = aEntityTableByPrefix[Constant.WorkflowType.REQUEST];
+
+        // only update when budget was rolled up (non-EMP, non-IO)
+        const oRolledUp = aCheckResults.find(r =>
+            !r.IS_IO &&
+            r.ROLLUP_LEVEL !== Constant.RollUp_Level.EMP &&
+            r.RESOLVED_FUND_CENTER
+        );
+        if (!oRolledUp) return [];
+
+        for (const oEntity of [oDescriptor.entityHeader, oDescriptor.entityItem]) {
+            await oTx.run(
+                UPDATE(oEntity)
+                    .set({ [Constant.EntitiesFields.COST_CENTER]: oRolledUp.RESOLVED_FUND_CENTER })
+                    .where({ [oDescriptor.idField]: sId })
+            );
+        }
+
+        return [];
+    } catch (oError) {
+        return [{
+            STATUS: Constant.BudgetCheckStatus.ERROR,
+            MESSAGE: oError.message
+        }];
+    }
+}
+
+/**
+ * Retrieves the IO/WBS indicator for the given project code from ZPROJECT_HDR.
+ * Used to decide whether the earmarked fund lock should send the project code
+ * as WBSElementExternalID (WBS) or as InternalOrder (IO).
+ *
+ * @async
+ * @param {string} sInternalOrder - Project code from the header (PROJECT_CODE). 
+ *                                  May be Constant.Wildcard.NA if not provided.
+ * @returns {Promise<string|null>} Indicator value in uppercase ('WBS' or 'IO'),
+ *                                 or null if no project code is provided or the record is not found.
+ */
+async function getIoWbsIndicator(sInternalOrder) {
+    if (!sInternalOrder || sInternalOrder === Constant.Wildcard.NA) return null;
+
+    const oProject = await SELECT.one
+        .from(Constant.Entities.ZPROJECT_HDR)
+        .columns(Constant.EntitiesFields.IO_WBS_IND)
+        .where({ [Constant.EntitiesFields.PROJECT_CODE_IO]: sInternalOrder });
+
+    return oProject?.IO_WBS_IND
+        ? String(oProject.IO_WBS_IND).trim().toUpperCase()
+        : null;
+}
+
+module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
     retrieveEmployeeDetails,
     retrieveBudgetContext,
     retrieveItems,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRoleRank,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    checkRequestBudget,
+    lockClaimBudget,
+    releaseClaimBudget,
+    validateCostCenter,
+    updateRequestBudget,
+    getIoWbsIndicator
 };
