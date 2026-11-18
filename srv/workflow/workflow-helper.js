@@ -299,7 +299,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
                     EarmarkedFundsDocumentItem: String(oBudgetContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
                     FundsCenter: String(oBudgetContext.FUND_CENTER).trim(),
                     CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim()
-                }))
+                }));
 
         const oReleaseResult = await processEarmarkedFunds(aItems, sEarmarkedFundsDocId, sAction);
 
@@ -308,6 +308,7 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
                 RELEASE_ERROR: true,
+                ERROR_CODE: oReleaseResult?.errorCode,
                 ERROR_MESSAGE: oReleaseResult?.Message
             });
         } else {
@@ -331,7 +332,11 @@ async function releaseClaimBudget(oTx, aBudgetContext, sId, sEarmarkedFundsDocId
         return aSuccessResults;
 
     } catch (oError) {
-        return oError;
+        return [{
+            STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+            RELEASE_ERROR: true,
+            ERROR_MESSAGE: oError.message
+        }];
     }
 }
 /**
@@ -395,6 +400,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             aErrorResults.push({
                 STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
                 LOCK_BUDGET: true,
+                ERROR_CODE: oBudgetRecord?.errorCode,
                 ERROR_MESSAGE: oBudgetRecord?.Message
             });
         } else {
@@ -541,6 +547,7 @@ async function resolveRollUp(aGroups, aLevels) {
                     oError: {
                         ...oGroup.oCondition,
                         STATUS: Constant.BudgetCheckStatus.ERROR,
+                        ERROR_CODE: oBudgetRecord.errorCode,
                         CLAIM_TYPE_ITEMS: oGroup.CLAIM_TYPE_ITEMS,
                         TOTAL_AMOUNT: oGroup.TOTAL_AMOUNT,
                         MESSAGE: oBudgetRecord.message
@@ -780,7 +787,7 @@ function buildBudgetErrorMessage(aBudgetResults) {
 
             case oBudgetStatus.ERROR:
                 aMessages.push(
-                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${fnDetail(oResult)}`
+                    `Error encountered during budget checking: ${fnItems(oResult).join(', ') || '-'}${oResult.MESSAGE ? `\n${oResult.MESSAGE}` : ''}`
                 );
                 break;
 

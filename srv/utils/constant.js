@@ -490,7 +490,8 @@ const Constant = {
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
         DEFAULT_EDU_ELIGIBLE_YEAR: "DEFAULT_EDU_ELIGIBLE_YEAR",
         DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT",
-        CCC_MAKER: "CCC_MAKER"
+        CCC_MAKER: "CCC_MAKER",
+        IFAMS_ERROR_EMAIL: "IFAMS_ERROR_EMAIL"
     },
     ElaunTukarStatus: {
         ALLOWED_CREATION: "01",
@@ -575,11 +576,13 @@ const Constant = {
     },
     StatusCode: {       
         SUCCESS: "200",
-        ERROR: "500"
+        ERROR: "500",
+        NOT_FOUND: '404'
     },
     MessageType: {
         ERROR: "E",
-        WORKFLOW: "A"
+        WORKFLOW: "A",
+        WARNING: "W"
     },
     EmailStatus: {
         REJECTED: "rejected"
@@ -639,7 +642,8 @@ const Constant = {
     BudgetLog: {
         PROGRAM: {
             RELEASE: "RELEASE_BUDGET",
-            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK"
+            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK",
+            EMAIL_NOTIFICATION: "EMAIL_NOTIFICATION"
         },
         MESSAGE_TYPE: "B"
     },
@@ -689,8 +693,14 @@ const Constant = {
     },
     ProjectStatus: {
         ACTIVE: 'ACTIVE'
+    },
+    IFAMSBudgetErrorCode: {
+        REQUEST_ERROR: 'IFAMS_REQUEST_ERROR',
+        CONNECTION_ERROR: 'CONNECTION_ERROR'
+    },
+    IFAMSEmailAction: {
+        CONNECTION_ERROR: 'CONNECTION_ERROR'
     }
-
 };
 
 module.exports = { Constant };
