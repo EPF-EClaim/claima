@@ -76,7 +76,11 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
     var bError;
 
     try {
-        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED) && aEarmarkedFundItems.length > 0) {
+        if (!aEarmarkedFundItems || !aEarmarkedFundItems.length) {
+            return { Error: true, Message: 'No earmarked fund items provided' }
+        }
+
+        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED)) {
             var oResponse;
 
             for (const item of aEarmarkedFundItems) {
