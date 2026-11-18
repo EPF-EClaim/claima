@@ -118,21 +118,20 @@ async function retrieveBudgetDetails(sCostCenter) {
     // Return only the required fields
     return oOwner;
 }
-async function retrieveProjectOwnerDetails(sProjectCode, sYear){
+async function retrieveProjectOwnerDetails(sProjectCode) {
     let oBudgetContext = null;
 
     // Main table path
-    const sBudgetTablePath = cds.entities['eclaim_srv.ZPROJECT_HDR'];
+    const sProjectCodeTable = cds.entities['eclaim_srv.ZPROJECT_HDR'];
     const sProjectCodeSafe = String(sProjectCode);
-    let sEEID = "";
 
     // Fetch data
     oBudgetContext = await cds.run(
         SELECT
             .one
-            .from(sBudgetTablePath)
+            .from(sProjectCodeTable)
             .where({
-                [Constant.EntitiesFields.PROJECT_CODE_IO]   : sProjectCodeSafe
+                [Constant.EntitiesFields.PROJECT_CODE_IO]: sProjectCodeSafe
             })
             .columns(
                 Constant.EntitiesFields.COST_CENTER,
@@ -468,7 +467,7 @@ async function normalizeWorkflowRequestType(sId, oDescriptor) {
         else{
             return {
                 workflowRequestType : oWorkflowRequestType[Constant.EntitiesFields.REQUEST_TYPE_ID],
-                claimTypeID         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
+                claimTypeId         : oWorkflowRequestType[Constant.EntitiesFields.CLAIM_TYPE_ID]
             };
         }
     }
@@ -514,22 +513,27 @@ async function sendClaimBatch(sId){
         if(aAllClaimItem[0].INTERNAL_ORDER == null){
             var sData = 
                 aAllClaimItem.map(oItem => ({
-                    CLAIM_ID:                sId,
-                    CLAIM_SUB_ID:            oItem.CLAIM_SUB_ID,
-                    EMP_ID:                  oItem.EMP_ID,
-                    SUBMITTED_DATE:          oItem.SUBMITTED_DATE,
-                    FINAL_AMOUNT_TO_RECEIVE: oItem.FINAL_AMOUNT_TO_RECEIVE,
-                    CASH_ADVANCE_AMOUNT:     oItem.CASH_ADVANCE_AMOUNT,
-                    LAST_MODIFIED_DATE:      oItem.LAST_MODIFIED_DATE,
-                    AMOUNT:                  oItem.AMOUNT,
-                    RECEIPT_DATE:            oItem.RECEIPT_DATE,
-                    COST_CENTER:             oItem.COST_CENTER,
-                    GL_ACCOUNT:              oItem.GL_ACCOUNT,
-                    MATERIAL_CODE:           oItem.MATERIAL_CODE,
-                    INTERNAL_ORDER:          null,
-                    CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
-                    CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
-                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID
+                    CLAIM_ID:                       sId,
+                    CLAIM_SUB_ID:                   oItem.CLAIM_SUB_ID,
+                    EMP_ID:                         oItem.EMP_ID,
+                    SUBMITTED_DATE:                 oItem.SUBMITTED_DATE,
+                    FINAL_AMOUNT_TO_RECEIVE:        oItem.FINAL_AMOUNT_TO_RECEIVE,
+                    CASH_ADVANCE_AMOUNT:            oItem.CASH_ADVANCE_AMOUNT,
+                    LAST_MODIFIED_DATE:             oItem.LAST_MODIFIED_DATE,
+                    AMOUNT:                         oItem.AMOUNT,
+                    RECEIPT_DATE:                   oItem.RECEIPT_DATE,
+                    COST_CENTER:                    oItem.COST_CENTER,
+                    GL_ACCOUNT:                     oItem.GL_ACCOUNT,
+                    MATERIAL_CODE:                  oItem.MATERIAL_CODE,
+                    INTERNAL_ORDER:                 null,
+                    IO_WBS_IND:                     null,
+                    CHARGED_TO_CCC:                 oItem.CHARGED_TO_CCC,
+                    CLAIM_TYPE_ITEM_ID:             oItem.CLAIM_TYPE_ITEM_ID,
+                    CASH_ADVANCE_CAT_ID:            bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
+                    EARMARKED_FUNDS_DOC_ID:         oItem.EARMARKED_FUNDS_DOC_ID,
+                    EARMARKED_FUNDS_DOC_YEAR:       oItem.EARMARKED_FUNDS_DOC_YEAR,
+                    EARMARKED_FUNDS_DOC_COMP_CODE:  oItem.EARMARKED_FUNDS_DOC_COMP_CODE,
+                    EARMARKED_FUNDS_DOC_ITEM_ID:    oItem.EARMARKED_FUNDS_DOC_ITEM_ID
                 }));
         }else{ 
             sData = 
@@ -547,9 +551,14 @@ async function sendClaimBatch(sId){
                     GL_ACCOUNT:              oItem.GL_ACCOUNT,
                     MATERIAL_CODE:           null,
                     INTERNAL_ORDER:          oItem.INTERNAL_ORDER,
+                    IO_WBS_IND:              oItem.IO_WBS_IND,
                     CHARGED_TO_CCC:          oItem.CHARGED_TO_CCC,
                     CLAIM_TYPE_ITEM_ID:      oItem.CLAIM_TYPE_ITEM_ID,
-                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID
+                    CASH_ADVANCE_CAT_ID:     bOverrideToEpfCat3 ? 'EPF_CAT_3' : oItem.CASH_ADVANCE_CAT_ID,
+                    EARMARKED_FUNDS_DOC_ID:         oItem.EARMARKED_FUNDS_DOC_ID,
+                    EARMARKED_FUNDS_DOC_YEAR:       oItem.EARMARKED_FUNDS_DOC_YEAR,
+                    EARMARKED_FUNDS_DOC_COMP_CODE:  oItem.EARMARKED_FUNDS_DOC_COMP_CODE,
+                    EARMARKED_FUNDS_DOC_ITEM_ID:    oItem.EARMARKED_FUNDS_DOC_ITEM_ID                    
                 }));
         }
 

@@ -21,7 +21,12 @@ const Constant = {
         NOT_FOUND: "RECORD NOT FOUND",
         INSUFFICIENT: "INSUFFICIENT BALANCE",
         SUFFICIENT: "OK",
-        UPDATED: "RECORD UPDATED"
+        UPDATED: "RECORD UPDATED",
+        LOCK_ERROR: "BUDGET LOCK ERROR",
+        ERROR: "ERROR IN BUDGET CHECKING",
+        RELEASE_ERROR: "BUDGET RELEASE ERROR",
+        RELEASED: "RELEASED",
+        CC_VALIDATION: "COST_CENTER_VALIDATION"
     },
     NumberRange: {
         REQUEST: "NR01",
@@ -85,7 +90,8 @@ const Constant = {
         "ZAPPROVER_DETAILS_PREAPPROVAL": "ZAPPROVER_DETAILS_PREAPPROVAL",
         "ZLOG": "ZLOG",
         "ZMED_ENTITLEMENT_BAL": "ECLAIM_VIEW_SRV.ZMED_ENTITLEMENT_BAL",
-        "ZSTATE": "ZSTATE"
+        "ZSTATE": "ZSTATE", 
+        "ZPROJECT_HDR": "ZPROJECT_HDR"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -172,7 +178,7 @@ const Constant = {
         "ISTIADAT": "ISTIADAT",
         "MAHKAMAH": "MAHKAMAH",
         "BEG_BIMBIT": "BEG_BIMBIT",
-        "FLIGHT_WIL": "FLIGHT_WIL", 
+        "FLIGHT_WIL": "FLIGHT_WIL",
         "JENAZAH": "JENAZAH",
         "GALAKAN": "GALAKAN",
         "KEMATIAN": "KEMATIAN",
@@ -324,7 +330,12 @@ const Constant = {
         "BALANCE": "BALANCE",
         "ENTITLEMENT_YEAR": "ENTITLEMENT_YEAR",
         "STATE_OF_ORIGIN_ID": "STATE_OF_ORIGIN_ID",
-        "PROJECT_CODE_IO": "PROJECT_CODE_IO"
+        "PROJECT_OWNER_POSITION_ID": "PROJECT_OWNER_POSITION_ID",
+        "PROJECT_OWNER_EEID": "PROJECT_OWNER_EEID",
+        "PROJECT_OWNER_NAME": "PROJECT_OWNER_NAME",
+        "PROJECT_OWNER_EMAIL": "PROJECT_OWNER_EMAIL",
+        "PROJECT_CODE_IO": "PROJECT_CODE_IO",
+        "IO_WBS_IND": "IO_WBS_IND"
     },
     Wildcard: {
         "All": "*",
@@ -332,10 +343,10 @@ const Constant = {
         "DASH": "-",
         "ZERO": "0",
         "NA": "NA"
-    }, 
+    },
     Role: {
-        "CEO": "CEO", 
-        "CEO_FI": "CEO_FI", 
+        "CEO": "CEO",
+        "CEO_FI": "CEO_FI",
         "HOD": "HOD",
         "HOD_JKEW": "HOD_JKEW",
         "BUDGET": "Budget",
@@ -349,8 +360,12 @@ const Constant = {
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER",
         "PROJECT_OWNER" : "PROJECT_OWNER",
         "CCC_APPROVER1" : "CCC_APPROVER1",
-        "CCC_APPROVER2" : "CCC_APPROVER2"
-    }, 
+        "CCC_APPROVER2" : "CCC_APPROVER2",
+        "RD": "RD",
+        "CXO": "CXO",
+        "HOS": "HOS",
+        "HOB": "HOB"
+    },
     Status: {
         DRAFT : "STAT01", 
         PENDING_APPROVAL: "STAT02",
@@ -368,13 +383,13 @@ const Constant = {
         NO_CASH_ADVANCE: "1",
         WITH_CASH_ADVANCE: "2",
         MEDICAL_ADVANCE: "3"
-    }, 
+    },
     RequestType: {
         Travel : "RT0001", 
         Reimbursement : "RT0004",
         CORP_CC : "RT0007",
         Medical : "RT0005"
-    }, 
+    },
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
     },
@@ -431,33 +446,33 @@ const Constant = {
         RELATIVES: "06",
         ADDITIONAL_SPOUSE: "07"
     },
-    
+
     MarriageCategory: {
         SINGLE : "01",
         MARRIED_NO_CHILDREN: "02",
         MARRIED_1_TO_3_CHILDREN: "03",
         MARRIED_4_OR_MORE_CHILDREN: "04"
     },
-    
+
     UnlimitedAmount: -1,
 
     FareType: {
-            "BUS": "01",
-            "EHAILING": "02",
-            "FERRY": "03",
-            "FLIGHT": "04",
-            "TRAIN": "05",
-            "TAXI": "06"
-        },
-    
+        "BUS": "01",
+        "EHAILING": "02",
+        "FERRY": "03",
+        "FLIGHT": "04",
+        "TRAIN": "05",
+        "TAXI": "06"
+    },
+
     ConfigStatus: {
         "ACTIVE": "ACTIVE"
-    }, 
+    },
     Indicator: {
         Spouse_Child: "IND1"
     },
     PositionEventId: {
-        TRANSFER_WITHIN_BRANCH: "ZA01", 
+        TRANSFER_WITHIN_BRANCH: "ZA01",
         TRANSFER_INTER_BRANCH: "ZA02",
         TRANSFER_WITHIN_DEPARTMENT: "ZA03",
         TRANSFER_INTER_DIVISION: "ZA04",
@@ -475,7 +490,8 @@ const Constant = {
         EXCEPTION_HP_FREQUENCY: "EXCEPTION_HP_FREQUENCY",
         DEFAULT_EDU_ELIGIBLE_YEAR: "DEFAULT_EDU_ELIGIBLE_YEAR",
         DEFAULT_EDU_ENTITLEMENT_AMOUNT: "DEFAULT_EDU_ENTITLEMENT_AMOUNT",
-        CCC_MAKER: "CCC_MAKER"
+        CCC_MAKER: "CCC_MAKER",
+        IFAMS_ERROR_EMAIL: "IFAMS_ERROR_EMAIL"
     },
     ElaunTukarStatus: {
         ALLOWED_CREATION: "01",
@@ -493,7 +509,7 @@ const Constant = {
         NOW: "1",
         LATER: "2",
         LATER_DESC: "Travel with Family on Later Date"
-    }, 
+    },
     MarriageCategory: {
         SINGLE: "01",
         MARRIED_NO_CHILDREN: "02",
@@ -535,7 +551,8 @@ const Constant = {
         "WORKFLOW_ACTION"           : "WORKFLOW_ACTION",
         "BUDGET_CHECKING"           : "BUDGET_CHECKING",
         "BUDGET_ACTUALIZATION"      : "BUDGET_ACTUALIZATION",
-        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING"
+        "ELIGIBILITY_CHECKING"      : "ELIGIBILITY_CHECKING",
+        "WORKFLOW"                  : "WORKFLOW"
     },
     LocationType: {
         HQ: "HQ",
@@ -550,15 +567,22 @@ const Constant = {
         NOT_EXCEEDED: "NOT_EXCEEDED"
     },
     SpecialMultipleConstantApproverList: {
-        "MED_REVIEWER": "MED_REVIEWER", 
-        "MED_APPROVER": "MED_APPROVER", 
+        "MED_REVIEWER": "MED_REVIEWER",
+        "MED_APPROVER": "MED_APPROVER",
         "WILAYAH_ASAL_VERIFIER" : "WILAYAH_ASAL_VERIFIER", 
         "ELAUN_PINDAH_VERIFIER": "ELAUN_PINDAH_VERIFIER",
         "CCC_APPROVER1": "CCC_APPROVER1",
         "CCC_APPROVER2": "CCC_APPROVER2"
     },
     StatusCode: {       
-        SUCCESS: "200"
+        SUCCESS: "200",
+        ERROR: "500",
+        NOT_FOUND: '404'
+    },
+    MessageType: {
+        ERROR: "E",
+        WORKFLOW: "A",
+        WARNING: "W"
     },
     EmailStatus: {
         REJECTED: "rejected"
@@ -589,8 +613,94 @@ const Constant = {
     "CashAdvanceInfo": {
         "COST_CENTER": "100000000",
         "GL_ACCOUNT": "214005"
-    }
+    },
+    IFAMS_API_PATH: {
+        EARMARKEDFUNDS: '/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocument',
+        BUDGET_SF: "/sap/opu/odata/sap/ZFFM_GW_BUDGET_SF_SRV/ZCDS_FFM_C_BudMvmtSFSet" + "?$filter=FiscalYear eq '{YEAR}'",
+        RELEASE_EARMARKEDFUNDS: "/sap/opu/odata4/sap/api_earmarkedfundsdocument/srvd_a2x/sap/earmarkedfundsdocument/0001/EarmarkedFundsDocumentItem(" +
+            "EarmarkedFundsDocument='{DOC_NO}'," +
+            "EarmarkedFundsDocumentItem='{ITEM_NO}'" + ")"
+    },
+    EarmarkedFundPosting_DocHeader: {
+        CompanyCode: '1000',
+        EarmarkedFundsDocumentType: '11',
+        TransactionCurrency: 'MYR',
+        CompanyCodeCurrency: 'MYR',
+        EarmarkedFundsDocumentCategory: '30',
+        EarmarkedFundsIsCompleted: false
+    },
+    EarmarkedFundPosting_Item: {
+        CompanyCode: '1000',
+        TransactionCurrency: 'MYR',
+        CompanyCodeCurrency: 'MYR',
+    },
+    API_REQUEST_METHOD: {
+        GET: 'GET',
+        POST: 'POST',
+        PATCH: 'PATCH'
+    },
+    BudgetLog: {
+        PROGRAM: {
+            RELEASE: "RELEASE_BUDGET",
+            SUBMISSION_LOCK: "SUBMISSION_BUDGET_LOCK",
+            EMAIL_NOTIFICATION: "EMAIL_NOTIFICATION"
+        },
+        MESSAGE_TYPE: "B"
+    },
+    RollUp_CostCenter: {
+        HOS_COSTCENTER: "HOS_CC",
+        HOB_COSTCENTER: "HOB_CC",
+        HOD_COSTCENTER: "HOD_CC"
+    },
+    RollUp_Level: {
+        EMP: "EMP",
+        HOS: "HOS",
+        HOB: "HOB",
+        HOD: "HOD"
+    },
+    BudgetReport: {
+        DEFAULT_CURRENCY: "MYR",
+        // ZBUDGET column → IFAMS field name (17 fields from IFAMS)
+        FIELD_MAP: {
+            // Key fields
+            YEAR: "FiscalYear",
+            INTERNAL_ORDER: "Io",
+            COMMITMENT_ITEM: "CommitmentItem",
+            FUND_CENTER: "FundCenter",
+            MATERIAL_GROUP: "MaterialGroup",
 
+            // Budget amounts
+            ORIGINAL_BUDGET: "OriginalBudget",
+            VIREMENT_IN: "VirementIn",
+            VIREMENT_OUT: "VirementOut",
+            SUPPLEMENT: "Supplements",
+            RETURN: "Returns",
+            CURRENT_BUDGET: "CurrentBudget",
+            COMMITMENT: "Commitments",
+            ACTUAL: "Actuals",
+            CONSUMED: "ConsumedBudget",
+            BUDGET_BALANCE: "BudgetBalance",
+            WBS_CODE: "WbsCode",
+            CURRENCY: "Currency"
+        }
+    },
+    ProjectCodeIndicator: {
+        WBS: "WBS",
+        IO: "IO"
+    },
+    SF_API_PATH: {
+        FLEXI_POSTING_CONFIG: '/cust_eClaim_Flexi_Posting_Config'
+    },
+    ProjectStatus: {
+        ACTIVE: 'ACTIVE'
+    },
+    IFAMSBudgetErrorCode: {
+        REQUEST_ERROR: 'IFAMS_REQUEST_ERROR',
+        CONNECTION_ERROR: 'CONNECTION_ERROR'
+    },
+    IFAMSEmailAction: {
+        CONNECTION_ERROR: 'CONNECTION_ERROR'
+    }
 };
 
 module.exports = { Constant };
