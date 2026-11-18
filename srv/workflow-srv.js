@@ -12,11 +12,11 @@ const {
     resolveDocDescriptor,
     retrieveBudgetContext,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    releaseClaimBudget
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -37,6 +37,7 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
+const { notifyIFAMSConnectionError } = require('./utils/EmailNotification');
 
 module.exports = (srv) => {
 
@@ -63,26 +64,11 @@ module.exports = (srv) => {
         }
         const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
-        // 6.1 Perform budget actualization for auto approve ===
-        // 6.2 update header status
-        // 6.3 update entitlement amount 
-        // 6.4 update ccc advance value
-        let aBudgetContext, aBudgetCheckReturn;
+        // 6.1 update header status
+        // 6.2 update entitlement amount 
+        // 6.3 update ccc advance value
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             var bAutoApprove = true;
-            try {
-                aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, Constant.ApproverActions.APPROVE);
-                aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-            } catch (oError) {
-                await oTx.rollback();
-                throw new Error(`Error encountered during Budget Actualization\n${oError.message}`);
-            }
-
-            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-            if (sBudgetError) {
-                await oTx.rollback();
-                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, `Error encountered during Budget Checking\n${sBudgetError}`, false);
-            }
 
             // If successful, update Header table with approved status and timestamp
             try {
@@ -183,20 +169,6 @@ module.exports = (srv) => {
     };
 
     /**
-     * Runs budget checking and throws if any line fails.
-     */
-    const runBudgetChecking = async (oTx, sRecordId, oDescriptor, sBudgetActionValue) => {
-        const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, sBudgetActionValue);
-
-        const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-
-        const sBudgetError = buildBudgetErrorMessage(aReturn);
-        if (sBudgetError) {
-            throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`);
-        }
-    };
-
-    /**
      * Final-approval steps for Corporate Credit Card requests.
      */
     const handleCCCFinalApproval = async (oTx, sRecordId, sUserId) => {
@@ -288,9 +260,45 @@ module.exports = (srv) => {
             throw new Error(`Error Encountered during action: ${sAction} for Document ${sRecordId}`);
         }
 
-        // 5. Budget checking (final stage only)
-        if (bFinalStage) {
-            await runBudgetChecking(oTx, sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
+        // REJECT / PUSH BACK:
+        // Release Earmarked Funds reservation in IFAMS,
+        // log the successful release and clear the local IFAMS references.
+        if (
+            oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM &&
+            (
+                oActionDescriptor.actionValue === Constant.Status.REJECTED ||
+                oActionDescriptor.actionValue === Constant.Status.PUSH_BACK
+            )
+        ) {
+            const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor);
+            // Earmarked Funds Document ID must be available
+            const oClaimHeader = await oTx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZCLAIM_HEADER)
+                    .columns("EARMARKED_FUNDS_DOC_ID")
+                    .where({
+                        CLAIM_ID: sRecordId
+                    })
+            );
+            const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
+            if (!sEarmarkedFundsDocId) {
+                throw new Error(
+                    `Earmarked Funds Document ID not found for ${sRecordId}`
+                );
+            }
+
+            // Call IFAMS to release the budget
+            const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
+
+            // Send admin notification when IFAMS connection fails during budget release
+            await notifyIFAMSConnectionError(aReturn, sRecordId);
+
+            const sBudgetError = buildBudgetErrorMessage(aReturn);
+            if (sBudgetError) {
+                throw new Error(
+                    `Error encountered during IFAMS Budget Release\n${sBudgetError}`
+                );
+            }
         }
 
         // 6. PEDU entitlement usage

@@ -200,7 +200,13 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZMARITAL_CAT                  as projection on ECLAIM.ZMARITAL_CAT;
 
-    entity ZPROJECT_HDR                  as projection on ECLAIM.ZPROJECT_HDR;
+    entity ZPROJECT_HDR 
+        as projection on ECLAIM.ZPROJECT_HDR {
+            *,
+            ZEMP_MASTER.EEID  as PROJECT_OWNER_EEID,
+            ZEMP_MASTER.NAME  as PROJECT_OWNER_NAME,
+            ZEMP_MASTER.EMAIL as PROJECT_OWNER_EMAIL
+        };
 
     entity ZBRANCH                       as projection on ECLAIM.ZBRANCH;
 
@@ -1566,8 +1572,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function checkClaimHeaderStatusForAutoApproval(sClaimID: String)                                     returns ClaimStatusAuto;
 
-    action   getInternalOrderByProjectCode(sProjectCode: String)                                         returns String;
-
     function getBantuanKebajikanKematianAmount(sDependentType: String)                                   returns Decimal(10, 2);
 
     type ReassignmentPayload {
@@ -1883,5 +1887,33 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 JOB_GROUP_DESC
         }
         where ELIGIBILITY_USE = true;        // or: = 'Y' / = 'X'
- 
+
+    type DocumentData {
+        CLAIM_ID      : String;
+        FI_DOC_ID     : String;
+        FI_DOC_YEAR   : String;
+        FI_DOC_COCODE : String;
+    };
+
+    type ReleaseLog {
+        CLAIM_ID               : String;
+        EARMARKED_FUNDS_DOC_ID : String;
+        STATUS_CODE            : String;
+    };
+
+    action   batchUpdateFIDoc(aDocument: many DocumentData)                                              returns Response;
+
+    action   batchUpdateReleaseLog(aReleaseLog: many ReleaseLog)                                         returns Response;        
+
+    type WBSIORecord {
+        WbsCode        : String;
+        Io             : String;
+        WbsDescription : String;
+        CommitmentItem : String;
+        Status         : String;
+        CostCenter     : String;
+    };
+
+    action   updateWBSIOCode(aRecords: many WBSIORecord)                                                 returns Response;    
+
 };
