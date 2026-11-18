@@ -909,6 +909,8 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
  * @returns {Array<object>} Cost center validation errors, or an empty array if all cost centers are valid
  */
 function validateCostCenter(aBudgetContext) {
+    if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) return [];
+    
     return aBudgetContext
     .filter(o => !o.IO_WBS_IND)
     .flatMap(o => {
