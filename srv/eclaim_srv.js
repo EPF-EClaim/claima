@@ -94,7 +94,7 @@ module.exports = (srv) => {
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC) || true,
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
 
@@ -2665,7 +2665,7 @@ module.exports = (srv) => {
             }
         }
         // Only Admin_CC users are filtered
-        // if (!req.user.is(Constant.Admin.Admin_CC)) return;
+        if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
         const sFilterField = mCostCenterFilterField[sEntityName];
         if (!sFilterField) return req.reject(500, 'Report access is not configured');
