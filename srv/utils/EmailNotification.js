@@ -28,13 +28,13 @@ async function writeEmailFailureLog(sRecordId, sStatusCode, sMessage) {
 
 /**
  * Send email notification to recipients maintained in ZCONSTANTS.
- * Never throws. Failures are written to ZLOG and returned to the caller.
+ * Never throws. Failures are written to ZLOG.
  * @param {object} oParams
  * @param {string} oParams.recordId - Claim / Request ID
  * @param {string} oParams.recipientConstantId - ID in ZCONSTANTS holding recipient emails
  * @param {string} oParams.action - Email action (determines email template in IS)
  * @param {string} oParams.emailTitle - Email subject
- * @returns {Promise<{error: boolean, message: string|null}>} Result of the email sending
+ * @returns {Promise<void>}
  */
 async function sendEmailNotification({ recordId, recipientConstantId, action, emailTitle }) {
     try {
@@ -53,7 +53,7 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
         if (aRecipients.length === 0) {
             const sMessage = `No recipients configured in ZCONSTANTS (${recipientConstantId}) for ${action}`;
             await writeEmailFailureLog(recordId, Constant.StatusCode.NOT_FOUND, sMessage);
-            return { error: true, message: sMessage };
+            return;
         }
 
         await sendEmailInternal({
@@ -62,8 +62,6 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
             EmailTitle: emailTitle,
             ReceiverEmail: aRecipients.join(',')
         });
-
-        return { error: false, message: null };
 
     } catch (oEmailError) {
         const sMessage = `Failed to send ${action} email notification: ${oEmailError?.message}`;
@@ -75,7 +73,7 @@ async function sendEmailNotification({ recordId, recipientConstantId, action, em
             sStatusCode,
             sMessage
         );
-        return { error: true, message: sMessage };
+
     }
 }
 
@@ -90,10 +88,10 @@ async function notifyIFAMSConnectionError(aResults, sRecordId) {
             oResult.ERROR_CODE === Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR);
 
     if (!bIFAMSConnectionError) {
-        return { error: false, message: null };
+        return;
     }
 
-    return await sendEmailNotification({
+    await sendEmailNotification({
         recordId: sRecordId,
         recipientConstantId: Constant.ConstantId.IFAMS_ERROR_EMAIL,
         action: Constant.IFAMSEmailAction.CONNECTION_ERROR,
