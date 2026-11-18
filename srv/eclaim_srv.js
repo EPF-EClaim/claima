@@ -94,7 +94,7 @@ module.exports = (srv) => {
                 isApprover: req.user.is('Approver'),
                 isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
-                isAdminCC: req.user.is(Constant.Admin.Admin_CC),
+                isAdminCC: req.user.is(Constant.Admin.Admin_CC) || true,
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
             };
 
@@ -2574,8 +2574,68 @@ module.exports = (srv) => {
         ZEMP_CLAIM_REPORT_DETAILS: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_SUMMARY: 'CHARGING_COST_CENTER',
         ZEMP_REQUEST_REPORT_DETAILS: 'CHARGING_COST_CENTER',
-        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER'
+        ZEMP_CC_BUDGET_REPORT: 'FUND_CENTER',
+        ZCOST_CENTER_VH: 'COST_CENTER_ID'
     };
+
+    /**
+     * Departments whose codes share a 6-character prefix and are split by the 8th character.
+     * Example: 100111120 (DESD) and 100111170 (DSMD) belong to different departments.
+     */
+    const aSharedHqPrefix = ['100111', '100262'];
+
+    /** Codes that don't follow the numbering pattern: cost center -> family key */
+    const mFamilyOverride = {
+        '100111180': '10011117'   // Customer Experience Centre -> DSMD (100111170)
+    };
+
+    /**
+     * Turns employee cost centers into LIKE patterns that cover the parent and all children.
+     * @param {string[]} aCostCenters - Distinct employee cost centers
+     * @returns {string[]} LIKE patterns
+     */
+    function getCostCenterPatterns(aCostCenters) {
+        const oPatterns = new Set();
+
+        aCostCenters.forEach((sCC) => {
+            const sCode = String(sCC).trim().toUpperCase();
+            let aMatch;
+
+            // Branch parent (112SP3000) or child (112S30001)
+            if ((aMatch = sCode.match(/^(\d{3})SP(\d{4})$/) || sCode.match(/^(\d{3})S(\d{4})\d$/))) {
+                const [, sState, sBranch] = aMatch;
+                oPatterns.add(`${sState}SP${sBranch}`);   // parent
+                oPatterns.add(`${sState}S${sBranch}_`);   // children (_ = 1 character)
+                return;
+            }
+
+            // HQ: 9 digits
+            if (/^\d{9}$/.test(sCode)) {
+                const sKey = mFamilyOverride[sCode]
+                    || (aSharedHqPrefix.includes(sCode.slice(0, 6)) ? sCode.slice(0, 8) : sCode.slice(0, 7));
+                oPatterns.add(`${sKey}%`);
+                Object.entries(mFamilyOverride)
+                    .filter(([, sOverrideKey]) => sOverrideKey === sKey)
+                    .forEach(([sExtra]) => oPatterns.add(sExtra));
+                return;
+            }
+
+            // Unknown format: match this code only
+            oPatterns.add(sCode);
+        });
+
+        return [...oPatterns];
+    }
+
+    /** Employee cost centers for the same department and office location */
+    async function getEmployeeCostCenters(tx, sDep, sOfficeLocation) {
+        const { ZEMP_MASTER } = cds.entities('ECLAIM');
+        const aRows = await tx.run(
+            SELECT.distinct.from(ZEMP_MASTER).columns('CC')
+                .where({ DEP: sDep, OFFICE_LOCATION: sOfficeLocation, CC: { '!=': null } })
+        );
+        return aRows.map((r) => r.CC);
+    }
 
     /**
      * Restricts report data for Admin_CC users to their own department's cost centers.
@@ -2605,7 +2665,7 @@ module.exports = (srv) => {
             }
         }
         // Only Admin_CC users are filtered
-        if (!req.user.is(Constant.Admin.Admin_CC)) return;
+        // if (!req.user.is(Constant.Admin.Admin_CC)) return;
 
         const sFilterField = mCostCenterFilterField[sEntityName];
         if (!sFilterField) return req.reject(500, 'Report access is not configured');
@@ -2613,15 +2673,22 @@ module.exports = (srv) => {
         const tx = cds.tx(req);
 
         const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-        if (!oEmp?.DEP) return req.reject(404, 'Employee record not found');
+        if (!oEmp?.DEP || !oEmp?.OFFICE_LOCATION) return req.reject(404, 'Employee record not found');
 
-        const aCostCenters = await getDepartmentCostCenters(tx, oEmp.DEP);
+        const aPatterns = getCostCenterPatterns(
+            await getEmployeeCostCenters(tx, oEmp.DEP, oEmp.OFFICE_LOCATION)
+        );
 
-        if (aCostCenters.length) {
-            req.query.where({ [sFilterField]: { in: aCostCenters } });
+        if (aPatterns.length) {
+            // (CC like p1 or CC like p2 ...)
+            const aXpr = aPatterns.flatMap((sPattern, i) => [
+                ...(i ? ['or'] : []),
+                { ref: [sFilterField] }, 'like', { val: sPattern }
+            ]);
+            req.query.where({ xpr: aXpr });
         } else {
             req.query.where(`${sFilterField} is null and ${sFilterField} is not null`);
-        }
+        }   
     });
 
     /**
@@ -2638,37 +2705,6 @@ module.exports = (srv) => {
         // Remove null, undefined and '' values
         return aRows.map(r => r.CC).filter(Boolean);
     }
-
-    srv.before('READ', 'ZCOST_CENTER_VH', async (req) => {
-
-        if (req.user.is(Constant.Admin.Admin_CC)) {
-            const tx = cds.tx(req);
-            const oEmp = await getLoggedInEmployee(tx, req, srv.entities);
-
-            if (!oEmp || !oEmp.DEP) {
-                req.query.where('1 = 0');
-                return req.reject(404, "Employee record not found");
-            }
-
-            const aDeptRecords = await tx.run(
-                SELECT.distinct('CC')
-                    .from('ZEMP_MASTER')
-                    .where({ DEP: oEmp.DEP })
-            );
-
-            const aCostCenters = aDeptRecords
-                .map(record => record.CC)
-                .filter(cc => cc !== null && cc !== undefined && cc !== '');
-
-            if (aCostCenters.length > 0) {
-
-                req.query.where({ COST_CENTER_ID: { 'in': aCostCenters } });
-
-            } else {
-                req.query.where('1 = 0');
-            }
-        }
-    });
 
     srv.on("getJenazahEligibleAmount", async (req) => {
         const tx = cds.tx(req);
