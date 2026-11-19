@@ -776,7 +776,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         },
         {
             grant: '*',
-            to   : 'DTD_Admin'
+            to   : 'Admin_System'
         }
     ])  as projection on ECLAIM.ZPROJECT_HDR {
             *,
