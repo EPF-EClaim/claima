@@ -127,6 +127,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
         oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
+            EarmarkedFundsHeaderText: sRecordID,
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
         };
