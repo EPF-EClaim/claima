@@ -332,7 +332,13 @@
                                             ${request>/req_header/claimtype} !== ${constant>/ClaimType/CORPO_CRED_CARD}
                                             &amp;&amp;
                                             (
-                                                ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
+                                                !!${request>/req_item/cash_advance}
+                                                ||
+                                                (
+                                                    !!${request>/req_item/location_type}
+                                                    &amp;&amp;
+                                                    ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
+                                                )
                                                 ||
                                                 (
                                                     parseFloat(${request>/req_item/toll_amt}) > 0.00
@@ -340,7 +346,7 @@
                                                     ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}
                                                 )
                                             )
-                                        }"
+                                        }" 
                                         maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
                                         fileSizeExceed="Utility.showAttachmentFileSizeExceed"
                                         mimeType="{constant>/AttachmentConfig/MIME_TYPES}"
