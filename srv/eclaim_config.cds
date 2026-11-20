@@ -398,22 +398,22 @@ annotate service.ZCLAIM_TYPE with @(
             {
                 $Type: 'UI.DataField',
                 Value: CTS_APPROVER_POSITION_ID,
-                Label: 'Specific Approver Position ID'
+                Label: 'Default Approver Position ID'
             },
             {
                 $Type: 'UI.DataField',
                 Value: CTS_APPROVER_EEID,
-                Label: 'Specific Approver Employee ID'
+                Label: 'Default Approver Employee ID'
             },
             {
                 $Type: 'UI.DataField',
                 Value: CTS_APPROVER_NAME,
-                Label: 'Specific Approver Name'
+                Label: 'Default Approver Name'
             },
             {
                 $Type: 'UI.DataField',
                 Value: CTS_APPROVER_EMAIL,
-                Label: 'Specific Approver Email'
+                Label: 'Default Approver Email'
             }
         ],
 
