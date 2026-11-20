@@ -5300,5 +5300,17 @@ module.exports = (srv) => {
         return result;
     });
 
+    srv.before(["CREATE", "UPDATE"], "ZCLAIM_TYPE", async (req) => {
+        const sPositionId = req.data.CTS_APPROVER_POSITION_ID;
+        if (!sPositionId) return;
 
+        const oEmp = await SELECT.one
+            .from("ECLAIM.ZEMP_MASTER")
+            .columns("EEID")
+            .where({ POSITION_ID: sPositionId });
+
+        if (!oEmp) {
+            req.error(400, `No employee found for position ${sPositionId}`, "CTS_APPROVER_POSITION_ID");
+        }
+    });
 }

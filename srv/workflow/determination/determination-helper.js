@@ -95,7 +95,7 @@ async function retrieveApprover(sEEID, iApproverRank, idepth = 0) {
  * @param {string} [sAsOfDate]  YYYY-MM-DD. Defaults to today in Malaysia time (MYT)
  * @returns {Promise<{BUDGET_OWNER_EMAIL: string, BUDGET_OWNER_ID: string} | null>}
  */
-async function retrieveBudgetDetails(sCostCenter) {
+async function retrieveBudgetOwnerDetails(sCostCenter, sClaimTypeId) {
     const sCC = String(sCostCenter ?? "").trim();
     if (!sCC) {
         return null;
@@ -103,7 +103,13 @@ async function retrieveBudgetDetails(sCostCenter) {
 
     const sAsOfDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // Fetch data
+    // this part will override cost center owner with claim type specific approver if exist, otherwise will use cost center owner
+    // Check if claim type specific approver details exist
+    const oCTSApproverDetails = await retrieveClaimTypeSpecificApproverDetails(sClaimTypeId);
+    if(oCTSApproverDetails && oCTSApproverDetails.EEID){
+        return oCTSApproverDetails;
+    }
+
     // costCenter, asOfDate is SF fields name
     const aBudgetOwnerContext = await sfLib.getSFCostCenter({ costCenter: sCC }, { asOfDate: sAsOfDate });
 
@@ -117,6 +123,47 @@ async function retrieveBudgetDetails(sCostCenter) {
 
     // Return only the required fields
     return oOwner;
+}
+/**
+ * Retrieve claim type specific approver details.
+ * @param {string} sClaimType  Claim type
+ * @returns {Promise<{EEID: string, NAME: string, EMAIL: string} | null>}
+ */
+async function retrieveClaimTypeSpecificApproverDetails(sClaimTypeId) {
+    const sClaimType = String(sClaimTypeId ?? "").trim();
+    if (!sClaimType) {
+        return null;
+    }
+
+    // Main table path
+    const sClaimTypeTable = cds.entities['eclaim_srv.ZCLAIM_TYPE'];
+
+    const oCTSApproverContext = await cds.run(
+        SELECT
+            .one
+            .from(sClaimTypeTable)
+            .where({
+                [Constant.EntitiesFields.CLAIM_TYPE_ID]: sClaimType
+            })
+            .columns(
+                Constant.EntitiesFields.CTS_APPROVER_POSITION_ID,
+                Constant.EntitiesFields.CTS_APPROVER_EEID,
+                Constant.EntitiesFields.CTS_APPROVER_NAME,
+                Constant.EntitiesFields.CTS_APPROVER_EMAIL
+            )
+    )
+
+    if (!oCTSApproverContext){
+        return null;
+    } 
+
+    // Return only the required fields
+    return {
+        POS: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_POSITION_ID] || "",
+        EEID: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_EEID] || "",
+        NAME: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_NAME] || "",
+        EMAIL: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_EMAIL] || ""
+    };
 }
 async function retrieveProjectOwnerDetails(sProjectCode) {
     let oBudgetContext = null;
@@ -140,7 +187,7 @@ async function retrieveProjectOwnerDetails(sProjectCode) {
     if(!oBudgetContext){
         return null;
     }
-    return await retrieveBudgetDetails(oBudgetContext[Constant.EntitiesFields.COST_CENTER]);
+    return await retrieveBudgetOwnerDetails(oBudgetContext[Constant.EntitiesFields.COST_CENTER]);
 }
 function populateApproverDetails(oApproverDetails, iLevel) {
     if(!oApproverDetails) return null;
@@ -596,7 +643,7 @@ module.exports = {
     determineWorkflowStepContext,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails,
+    retrieveBudgetOwnerDetails,
     retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,

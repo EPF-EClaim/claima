@@ -340,31 +340,33 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID          : String     @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC        : String     @Common.Label    : 'Claim Type Description';
-        GL_ACCOUNT             : String     @Common.Label    : 'GL Account';
-        START_DATE             : Date       @Common.Label    : 'Start Date';
-        END_DATE               : Date       @Common.Label    : 'End Date';
-        STATUS                 : String(10) @Common.Label    : 'Status';
-        REQUEST_TYPE           : String     @Common.Label    : 'Request Type';
-        IND_OR_GROUP           : String(4)  @Common.Label    : 'Individual/Group';
-        PROJECT_CLAIM          : Boolean    @Common.Label    : 'Project Claim';
-        COST_CENTER            : String(9)  @Common.Label    : 'Cost Center';
-        CASH_ADVANCE_CAT_ID    : String(10) @Common.Label    : 'Cash Advance Category';
-        ZCLAIM_TYPE_ITEM       : Composition of many ZCLAIM_TYPE_ITEM
-                                     on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
-                                            @assert.integrity: false;
-        ZREQUEST_TYPE          : Association to ZREQUEST_TYPE
-                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
-        ZINDIV_GROUP           : Association to ZINDIV_GROUP
-                                     on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
-        ZCOST_CENTER           : Association to ZCOST_CENTER
-                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZGL_ACCOUNT            : Association to ZGL_ACCOUNT
-                                     on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
-        ZCASH_ADVANCE_CATEGORY : Association to ZCASH_ADVANCE_CATEGORY
-                                     on ZCASH_ADVANCE_CATEGORY.CASH_ADVANCE_CAT_ID = CASH_ADVANCE_CAT_ID;
-
+    key CLAIM_TYPE_ID               : String      @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC             : String      @Common.Label    : 'Claim Type Description';
+        GL_ACCOUNT                  : String      @Common.Label    : 'GL Account';
+        START_DATE                  : Date        @Common.Label    : 'Start Date';
+        END_DATE                    : Date        @Common.Label    : 'End Date';
+        STATUS                      : String(10)  @Common.Label    : 'Status';
+        REQUEST_TYPE                : String      @Common.Label    : 'Request Type';
+        IND_OR_GROUP                : String(4)   @Common.Label    : 'Individual/Group';
+        PROJECT_CLAIM               : Boolean     @Common.Label    : 'Project Claim';
+        COST_CENTER                 : String(9)   @Common.Label    : 'Cost Center';
+        CASH_ADVANCE_CAT_ID         : String(10)  @Common.Label    : 'Cash Advance Category';
+        CTS_APPROVER_POSITION_ID    : String(10)  @mandatory  @Common.Label: 'Position ID';
+        ZCLAIM_TYPE_ITEM            : Composition of many ZCLAIM_TYPE_ITEM
+                                          on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
+                                                 @assert.integrity: false;
+        ZREQUEST_TYPE               : Association to ZREQUEST_TYPE
+                                          on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
+        ZINDIV_GROUP                : Association to ZINDIV_GROUP
+                                          on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER                : Association to ZCOST_CENTER
+                                          on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZGL_ACCOUNT                 : Association to ZGL_ACCOUNT
+                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCASH_ADVANCE_CATEGORY      : Association to ZCASH_ADVANCE_CATEGORY
+                                          on ZCASH_ADVANCE_CATEGORY.CASH_ADVANCE_CAT_ID = CASH_ADVANCE_CAT_ID;
+        ZEMP_MASTER                 : Association to ZEMP_MASTER
+                                          on ZEMP_MASTER.POS = CTS_APPROVER_POSITION_ID;
 }
 
 entity ZNUM_RANGE : managed {

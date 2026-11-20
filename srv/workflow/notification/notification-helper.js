@@ -3,7 +3,7 @@ const { SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../../utils/constant");
 
 async function sendEmailViaSAPIS(oEmailPayload) {
-    const oISService = await cds.connect.to('IS_Conn'); 
+    const oISService = await cds.connect.to('IS_Conn_2'); 
     return await oISService.post("/http/SendEmailNotification_eClaim", oEmailPayload);
 }   
 

@@ -108,8 +108,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 START_DATE,
                 STATUS,
                 COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC as COST_CENTER_DESC,
-                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM  as Items
+                ZCOST_CENTER.COST_CENTER_DESC   as COST_CENTER_DESC,
+                CTS_APPROVER_POSITION_ID,
+                ZEMP_MASTER.EEID                as CTS_APPROVER_EEID,
+                ZEMP_MASTER.NAME                as CTS_APPROVER_NAME,
+                ZEMP_MASTER.EMAIL               as CTS_APPROVER_EMAIL,
+                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM    as Items
         };
 
     entity ZREQUEST_ITEM                 as

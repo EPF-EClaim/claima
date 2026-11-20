@@ -2,17 +2,6 @@
     controllerName="claima.controller.configuration"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns:tnt="sap.tnt"
-    xmlns:cards="sap.f.cards"
-    xmlns:f="sap.f"
-    xmlns:l="sap.ui.layout"
-    xmlns:cssgrid="sap.ui.layout.cssgrid"
-    xmlns:w="sap.ui.integration.widgets"
-    xmlns:card="sap.f.cards"
-    xmlns:core="sap.ui.core"
-    xmlns:layout="sap.ui.layout"
-    xmlns:table="sap.ui.table"
-    xmlns:unified="sap.ui.unified"
 >
     <Page showHeader="true">
         <customHeader>
@@ -36,10 +25,10 @@
                 <Table
                     id="claimTable"
                     width="90%"
-                    items="{ path: '/ZCLAIM_TYPE',sorter : { path : 'modifiedAt' }}"
+                    items="{ path: '/ZCLAIM_TYPE', sorter: { path: 'modifiedAt' } }"
                     mode="MultiSelect"
                     selectionChange="onSelectionChange"
-                    includeItemInSelection="true"
+                    includeItemInSelection="false"
                     sticky="ColumnHeaders,HeaderToolbar"
                 >
                     <headerToolbar>
@@ -119,40 +108,40 @@
                         <Column>
                             <Text text="{i18n>appr_status}" />
                         </Column>
-                        <Column width="2rem">
-                            <Text text="" />
+                        <Column>
+                            <Text text="{i18n>cts_appr_pos_id}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>cts_appr_eeid}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>cts_appr_name}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>cts_appr_email}" />
                         </Column>
                     </columns>
 
                     <items>
-                        <ColumnListItem press="onRowPress">
+                        <ColumnListItem
+                            type="Navigation"
+                            press="onNavigate"
+                        >
                             <cells>
                                 <Text text="{CLAIM_TYPE_ID}" />
-
                                 <Text text="{CLAIM_TYPE_DESC}" />
-
                                 <Text text="{GL_ACCOUNT}" />
-
                                 <Text text="{COST_CENTER}" />
-
                                 <Text text="{REQUEST_TYPE}" />
-
                                 <Text text="{IND_OR_GROUP}" />
-
                                 <Text text="{PROJECT_CLAIM}" />
-
                                 <Text text="{START_DATE}" />
-
                                 <Text text="{END_DATE}" />
-
                                 <Text text="{STATUS}" />
-
-                                <core:Icon
-                                    src="sap-icon://navigation-right-arrow"
-                                    press="onNavigate"
-                                    tooltip="View Item"
-                                    class="sapUiIconColorSubtle"
-                                />
+                                <Text text="{CTS_APPROVER_POSITION_ID}" />
+                                <Text text="{CTS_APPROVER_EEID}" />
+                                <Text text="{CTS_APPROVER_NAME}" />
+                                <Text text="{CTS_APPROVER_EMAIL}" />
                             </cells>
                         </ColumnListItem>
                     </items>
@@ -204,6 +193,10 @@
                             <ViewSettingsItem
                                 text="{i18n>appr_status}"
                                 key="STATUS"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>cts_appr_pos_id}"
+                                key="CTS_APPROVER_POSITION_ID"
                             />
                         </sortItems>
                         <filterItems>
@@ -314,6 +307,17 @@
                                     <Input
                                         id="filterStatus"
                                         placeholder="{i18n>zclaim_status}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>cts_appr_pos_id}"
+                                key="CTS_APPROVER_POSITION_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCtsApproverPositionId"
+                                        placeholder="{i18n>zclaim_cts_appr_pos_id}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>

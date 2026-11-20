@@ -394,6 +394,26 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: STATUS,
                 Label: 'Status'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CTS_APPROVER_POSITION_ID,
+                Label: 'Specific Approver Position ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CTS_APPROVER_EEID,
+                Label: 'Specific Approver Employee ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CTS_APPROVER_NAME,
+                Label: 'Specific Approver Name'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CTS_APPROVER_EMAIL,
+                Label: 'Specific Approver Email'
             }
         ],
 
@@ -411,6 +431,24 @@ annotate service.ZCLAIM_TYPE with @(
         ]
     }
 );
+
+annotate service.ZCLAIM_TYPE with {
+    CTS_APPROVER_POSITION_ID @Common.ValueList: {
+        Label         : 'Select CTS Approver Position',
+        CollectionPath: 'ZEMP_MASTER',
+        Parameters    : [
+            { $Type: 'Common.ValueListParameterInOut', LocalDataProperty: CTS_APPROVER_POSITION_ID, ValueListProperty: 'POS'   },
+            { $Type: 'Common.ValueListParameterOut',   LocalDataProperty: CTS_APPROVER_EEID,        ValueListProperty: 'EEID'  },
+            { $Type: 'Common.ValueListParameterOut',   LocalDataProperty: CTS_APPROVER_NAME,        ValueListProperty: 'NAME'  },
+            { $Type: 'Common.ValueListParameterOut',   LocalDataProperty: CTS_APPROVER_EMAIL,       ValueListProperty: 'EMAIL' }
+        ]
+    };
+
+    // Emitted as Core.Computed: read-only in the dialog and never sent on save
+    CTS_APPROVER_EEID  @readonly;
+    CTS_APPROVER_NAME  @readonly;
+    CTS_APPROVER_EMAIL @readonly;
+};
 
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,

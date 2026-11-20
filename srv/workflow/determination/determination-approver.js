@@ -5,7 +5,7 @@ const {
     determineWorkflowStepContext,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails,
+    retrieveBudgetOwnerDetails,
     retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,
@@ -43,6 +43,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     
     const oHeader = await retrieveHeaderDetails(sId, oDescriptor)
     const sFinalCC = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeader[Constant.EntitiesFields.COST_CENTER] ?? null;
+    const sClaimTypeId = oHeader[Constant.EntitiesFields.CLAIM_TYPE_ID];
     const sProjectCode = oHeader[Constant.EntitiesFields.PROJECT_CODE]
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
     //console.log(oClaimantDetails);
@@ -91,7 +92,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 switch(oWorkflowApprStep){
                     case Constant.Role.BUDGET:  
                         if(sFinalCC){
-                            oBudgetOwnerDetails = await retrieveBudgetDetails(sFinalCC);
+                            oBudgetOwnerDetails = await retrieveBudgetOwnerDetails(sFinalCC, sClaimTypeId);
                             if(!oBudgetOwnerDetails){
                                 return false;
                             }
