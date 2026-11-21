@@ -1,8 +1,9 @@
 sap.ui.define([
 	'sap/ui/core/mvc/ControllerExtension',
 	'sap/m/MessageBox',
-	'sap/m/MessageToast'
-], function (ControllerExtension, MessageBox, MessageToast) {
+	'sap/m/MessageToast',
+	'sap/ui/mdc/p13n/StateUtil'
+], function (ControllerExtension, MessageBox, MessageToast, StateUtil) {
 	'use strict';
 
 	return ControllerExtension.extend('claima.ext.controller.Common', {
@@ -15,6 +16,7 @@ sap.ui.define([
 		_oAttachedTable: null,
 		_fnAttachedItemPress: null,
 		_fnAttachedCellClick: null,
+		_bDefaultYearApplied: false,
 
 		override: {
 
@@ -51,6 +53,7 @@ sap.ui.define([
 		_onRouteMatched: function (oEvent) {
 
 			const sRouteName = oEvent.getParameter("name");
+			const sPreviousRouteName = this._sCurrentRouteName;
 			this._sCurrentRouteName = sRouteName;
 
 			if (
@@ -90,8 +93,17 @@ sap.ui.define([
 			 * ========================= */
 			if (sRouteName === "ZEMP_CC_BUDGET_REPORT") {
 
+				if (sPreviousRouteName !== "ZEMP_CC_BUDGET_DETAIL") {
+					this._bDefaultYearApplied = false;
+				}
+
 				this._reportTimer = setTimeout(() => {
 					if (currentToken !== this._navToken) return;
+
+					const oMdcTable = oView.findAggregatedObjects(true, oControl =>
+						oControl.isA("sap.ui.mdc.Table")
+					)[0];
+					this._applyDefaultEffectiveYear(oMdcTable);
 
 					const oTable = fnGetInnerTable();
 					if (!oTable) return;
@@ -503,7 +515,35 @@ sap.ui.define([
 				ApproverPopup.onClickChangeApprover([oContext]);
 
 			});
-		}
+		},
+
+		/* ==============================
+		 * DEFAULT EFFECTIVE DATE FILTER   
+		 * ============================== */
+		_applyDefaultEffectiveYear: async function (oMdcTable) {
+
+			if (!oMdcTable || this._bDefaultYearApplied) return;
+
+			try {
+				const sCurrentYear = String(new Date().getFullYear());
+				const oConditions = oMdcTable.getFilterConditions() || {};
+
+				// Always reset YEAR to current year when entering from menu
+				oConditions.YEAR = [{
+					operator: "EQ",
+					values: [sCurrentYear]
+				}];
+
+				oMdcTable.setFilterConditions(oConditions);
+				oMdcTable.rebind();
+
+				this._bDefaultYearApplied = true;
+			} catch (oError) {
+				// Allow retry on next route match if applying failed
+				this._bDefaultYearApplied = false;
+				console.error("Failed to apply default Effective Date filter:", oError);
+			}
+		},
 
 	});
 });
