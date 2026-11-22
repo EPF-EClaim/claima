@@ -173,6 +173,14 @@ async function retrieveItems(sId, oDescriptor) {
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         oQuery.where({ CASH_ADVANCE: false });
+
+        // Exclude specific Corporate Credit Card items
+        oQuery.where`
+            NOT (
+                CLAIM_TYPE_ID = 'CORPO_CRED_CARD'
+                AND CLAIM_TYPE_ITEM_ID in ('STATMENT_DUE', 'CASH_BACK', 'MERCH_RETURN')
+            )
+        `;
     }
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
