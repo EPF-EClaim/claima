@@ -127,6 +127,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, dR
         oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
+            EarmarkedFundsHeaderText: sRecordID,
             ...(dReceiptDate && { PostingDate: dReceiptDate }),
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
