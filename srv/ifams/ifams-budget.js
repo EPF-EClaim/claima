@@ -89,7 +89,7 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
     }
 }
 
-async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, dReceiptDate = null) {
     var oEarmarkedFundsDocument;
     var oEarMarkedFundsPayload;
     var sPath;
@@ -127,6 +127,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
         oEarMarkedFundsPayload = {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
+            ...(dReceiptDate && { PostingDate: dReceiptDate }),
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
         };
