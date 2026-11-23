@@ -1,9 +1,8 @@
 sap.ui.define([
 	'sap/ui/core/mvc/ControllerExtension',
 	'sap/m/MessageBox',
-	'sap/m/MessageToast',
-	'sap/ui/mdc/p13n/StateUtil'
-], function (ControllerExtension, MessageBox, MessageToast, StateUtil) {
+	'sap/m/MessageToast'
+], function (ControllerExtension, MessageBox, MessageToast) {
 	'use strict';
 
 	return ControllerExtension.extend('claima.ext.controller.Common', {
@@ -518,7 +517,7 @@ sap.ui.define([
 		},
 
 		/* ==============================
-		 * DEFAULT EFFECTIVE DATE FILTER   
+		 * DEFAULT YEAR FILTER   
 		 * ============================== */
 		_applyDefaultEffectiveYear: async function (oMdcTable) {
 
@@ -541,7 +540,6 @@ sap.ui.define([
 			} catch (oError) {
 				// Allow retry on next route match if applying failed
 				this._bDefaultYearApplied = false;
-				console.error("Failed to apply default Effective Date filter:", oError);
 			}
 		},
 
