@@ -177,8 +177,12 @@ async function retrieveItems(sId, oDescriptor) {
         // Exclude specific Corporate Credit Card items
         oQuery.where`
             NOT (
-                CLAIM_TYPE_ID = 'CORPO_CRED_CARD'
-                AND CLAIM_TYPE_ITEM_ID in ('STATMENT_DUE', 'CASH_BACK', 'MERCH_RETURN')
+                CLAIM_TYPE_ID = ${Constant.ClaimType.CORPO_CRED_CARD}
+                AND CLAIM_TYPE_ITEM_ID in (
+                    ${Constant.ClaimTypeItem.STATMENT_DUE},
+                    ${Constant.ClaimTypeItem.CASH_BACK},
+                    ${Constant.ClaimTypeItem.MERCH_RETURN}
+                )
             )
         `;
     }
@@ -223,7 +227,7 @@ async function retrieveBudgetContext(sId, oDescriptor) {
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
-    
+
     if(!aItemsContext.length) {
         return aBudgetContexts;
     }
@@ -923,19 +927,19 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
  */
 function validateCostCenter(aBudgetContext) {
     if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) return [];
-    
+
     return aBudgetContext
-    .filter(o => !o.IO_WBS_IND)
-    .flatMap(o => {
-        const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
-        return sExpected && o.FUND_CENTER !== sExpected
-            ? [{
-                STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
-                CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
-                MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
-            }]
-            : [];
-    });
+        .filter(o => !o.IO_WBS_IND)
+        .flatMap(o => {
+            const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
+            return sExpected && o.FUND_CENTER !== sExpected
+                ? [{
+                    STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
+                    CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
+                    MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
+                }]
+                : [];
+        });
 }
 
 /**
