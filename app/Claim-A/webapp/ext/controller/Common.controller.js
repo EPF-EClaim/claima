@@ -1,8 +1,7 @@
 sap.ui.define([
 	'sap/ui/core/mvc/ControllerExtension',
-	'sap/m/MessageBox',
 	'sap/m/MessageToast'
-], function (ControllerExtension, MessageBox, MessageToast) {
+], function (ControllerExtension, MessageToast) {
 	'use strict';
 
 	return ControllerExtension.extend('claima.ext.controller.Common', {
@@ -519,7 +518,7 @@ sap.ui.define([
 		/* ==============================
 		 * DEFAULT YEAR FILTER   
 		 * ============================== */
-		_applyDefaultEffectiveYear: async function (oMdcTable) {
+		_applyDefaultEffectiveYear: function (oMdcTable) {
 
 			if (!oMdcTable || this._bDefaultYearApplied) return;
 
