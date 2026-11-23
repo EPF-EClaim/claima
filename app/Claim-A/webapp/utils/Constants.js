@@ -621,11 +621,6 @@ sap.ui.define([
             "ON_GOING": "03",
             "NOT_ALLOWED": "04"
         },
-        "Age": {
-            "EIGHTEEN": "18",
-            "NINETEEN": "19",
-            "TWENTY_FIVE": "25"
-        },
         "ClaimTypeItemDesc": {
             "AFIDAVIT": "Tuntutan Afidavit",
             "ALATULIS": "Alatulis & Percetakan",
