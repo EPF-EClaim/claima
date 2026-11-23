@@ -192,8 +192,7 @@ const Constant = {
         "CASH_REPAY": "CASH_REPAY",
         "MERCH_RETURN": "MERCH_RETURN",
         "STATMENT_DUE": "STATMENT_DUE",
-        "CASH_BACK": "CASH_BACK",
-        "SERV_TAX": "SERV_TAX"
+        "CASH_BACK": "CASH_BACK"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
