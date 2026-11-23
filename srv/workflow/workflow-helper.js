@@ -392,20 +392,59 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
         // determine posting date for EMF
         var sPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
 
-        const aItems =
-            aBudgetContext.map((oBudgetContext, iIndex) => ({
-                ...Constant.EarmarkedFundPosting_Item,
-                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-                FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim(),
-                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-                DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
-                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
-                    oBudgetContext.INTERNAL_ORDER && {
-                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
-                })
-            }));
+        const bIsProjectRelated = aBudgetContext.some(oBudgetContext => {
+            const sProjectCode = String(oBudgetContext.INTERNAL_ORDER || '').trim();
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate);
+            const bHasProjectCode =
+                !!sProjectCode &&
+                sProjectCode !== Constant.Wildcard.NA;
+
+            const bIsIO =
+                oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.IO;
+
+            const bIsWBS =
+                oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.WBS;
+
+            return bHasProjectCode && (bIsIO || bIsWBS);
+        });
+
+        // NEW: IO/WBS -> Z2, normal -> 11
+        const sDocumentType = bIsProjectRelated
+            ? Constant.EarmarkedFundsDocumentType.PROJECT
+            : Constant.EarmarkedFundsDocumentType.NONPROJECT;
+
+        const aItems =
+            aBudgetContext.map((oBudgetContext, iIndex) => {
+
+                const sProjectCode = String(oBudgetContext.INTERNAL_ORDER || '').trim();
+                const bHasProjectCode =
+                    !!sProjectCode &&
+                    sProjectCode !== Constant.Wildcard.NA;
+                const bIsIO =
+                    bHasProjectCode &&
+                    oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.IO;
+                const bIsWBS =
+                    bHasProjectCode &&
+                    oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.WBS;
+
+                return {
+                    ...Constant.EarmarkedFundPosting_Item,
+                    EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+                    ...(!bIsIO && !bIsWBS && {
+                        FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim()
+                    }),
+                    CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+                    DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
+                    ...(bIsIO && {
+                        InternalOrder: sProjectCode
+                    }),
+                    ...(bIsWBS && {
+                        WBSElementExternalID: sProjectCode
+                    })
+                };
+            });
+
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate, sDocumentType);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -431,7 +470,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
-            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
+            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER && !bIsProjectRelated) {
                 for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
                     await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }

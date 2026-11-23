@@ -113,7 +113,7 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
  * @param {String} [sPostingDate] - Posting date
  * @returns {Promise<{Error: boolean, errorCode?: string|null, oEarmarkedFundsDocument?: Object|null, oResponse?: Object, Message: string}>} Result of the earmarked funds processing
  */
-async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null) {
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null, sDocumentType = null) {
     var oEarmarkedFundsDocument;
     var oEarMarkedFundsPayload;
     var sPath;
@@ -152,6 +152,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sP
             ...
             Constant.EarmarkedFundPosting_DocHeader,
             EarmarkedFundsHeaderText: sRecordID,
+            ...(sDocumentType && { EarmarkedFundsDocumentType: sDocumentType }),
             ...(sPostingDate && { PostingDate: sPostingDate }),
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems

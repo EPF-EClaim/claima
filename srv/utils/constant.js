@@ -704,7 +704,11 @@ const Constant = {
     },
     IFAMSEmailAction: {
         CONNECTION_ERROR: 'CONNECTION_ERROR'
-    }
+    },
+    EarmarkedFundsDocumentType: {
+        NONPROJECT: '11',
+        PROJECT: 'Z2'
+    },
 };
 
 module.exports = { Constant };
