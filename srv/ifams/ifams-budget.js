@@ -110,10 +110,10 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
  * @param {Array<object>} aEarmarkedFundItems - List of earmarked fund items
  * @param {string} sRecordID - Record ID
  * @param {string} sAction - Action to perform (e.g., PUSH_BACK, REJECTED)
- * @param {String} [sReceiptDate] - Receipt date
+ * @param {String} [sPostingDate] - Posting date
  * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the earmarked funds processing
  */
-async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sReceiptDate = null) {
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null) {
     var oEarmarkedFundsDocument;
     var oEarMarkedFundsPayload;
     var sPath;
@@ -152,7 +152,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sR
             ...
             Constant.EarmarkedFundPosting_DocHeader,
             EarmarkedFundsHeaderText: sRecordID,
-            ...(sReceiptDate && { PostingDate: sReceiptDate }),
+            ...(sPostingDate && { PostingDate: sPostingDate }),
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
         };
