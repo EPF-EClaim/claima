@@ -161,6 +161,7 @@ const Constant = {
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
         "PUNSIAN_BG": "PUNSIAN_BG",
+        "SERV_TAX": "SERV_TAX",
         "SERVICES": "SERVICES",
         "SEWA": "SEWA",
         "SUMPAH": "SUMPAH",

@@ -21,7 +21,9 @@ const {
     lockClaimBudget,
     checkRequestBudget,
     validateCostCenter,
-    updateRequestBudget
+    updateRequestBudget,
+    retrieveCccServiceTaxBudgetContext,
+    lockCccServiceTaxBudget
 } = require("./workflow-helper");
 const { notifyIFAMSConnectionError } = require('../utils/EmailNotification');
 
@@ -127,6 +129,31 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
             if (sBudgetError) {
                 await oTx.rollback();
                 return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sBudgetError, false);
+            }
+        }
+
+        // 4b. CCC request Service Tax: check its fixed budget line (no roll-up, no cost center
+        // validation) and lock it in IFAMS. Runs last so nothing is locked if other items fail.
+        if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
+            const oServiceTaxContext = await retrieveCccServiceTaxBudgetContext(sId);
+            if (oServiceTaxContext) {
+                let aServiceTaxReturn = await checkRequestBudget([oServiceTaxContext]);
+
+                const bServiceTaxSufficient = Array.isArray(aServiceTaxReturn)
+                    && aServiceTaxReturn.length > 0
+                    && aServiceTaxReturn.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
+
+                if (bServiceTaxSufficient) {
+                    aServiceTaxReturn = await lockCccServiceTaxBudget(oTx, sId, oServiceTaxContext);
+                }
+
+                await notifyIFAMSConnectionError(aServiceTaxReturn, sId);
+
+                const sServiceTaxError = buildBudgetErrorMessage(aServiceTaxReturn);
+                if (sServiceTaxError) {
+                    await oTx.rollback();
+                    return generateReturnMessage(false, sId, Constant.WorkflowArea.BUDGET_CHECKING, sServiceTaxError, false);
+                }
             }
         }
     } catch (oError) {
