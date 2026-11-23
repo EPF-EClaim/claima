@@ -111,6 +111,7 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
  * @param {string} sRecordID - Record ID
  * @param {string} sAction - Action to perform (e.g., PUSH_BACK, REJECTED)
  * @param {String} [sPostingDate] - Posting date
+ * @param {String} [sDocumentType] - Earmarked funds document type
  * @returns {Promise<{Error: boolean, errorCode?: string|null, oEarmarkedFundsDocument?: Object|null, oResponse?: Object, Message: string}>} Result of the earmarked funds processing
  */
 async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null, sDocumentType = null) {

@@ -627,7 +627,6 @@ const Constant = {
     },
     EarmarkedFundPosting_DocHeader: {
         CompanyCode: '1000',
-        EarmarkedFundsDocumentType: '11',
         TransactionCurrency: 'MYR',
         CompanyCodeCurrency: 'MYR',
         EarmarkedFundsDocumentCategory: '30',
@@ -706,7 +705,7 @@ const Constant = {
         CONNECTION_ERROR: 'CONNECTION_ERROR'
     },
     EarmarkedFundsDocumentType: {
-        NONPROJECT: '11',
+        NON_PROJECT: '11',
         PROJECT: 'Z2'
     },
 };

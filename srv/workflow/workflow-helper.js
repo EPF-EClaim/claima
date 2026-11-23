@@ -392,57 +392,42 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
         // determine posting date for EMF
         var sPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
 
-        const bIsProjectRelated = aBudgetContext.some(oBudgetContext => {
-            const sProjectCode = String(oBudgetContext.INTERNAL_ORDER || '').trim();
+        const sProjectCode = String(aBudgetContext[0]?.INTERNAL_ORDER ?? '').trim();
+        const sIoWbsInd = aBudgetContext[0]?.IO_WBS_IND;
 
-            const bHasProjectCode =
-                !!sProjectCode &&
-                sProjectCode !== Constant.Wildcard.NA;
+        const bHasProject = !!sProjectCode && sProjectCode !== Constant.Wildcard.NA;
 
-            const bIsIO =
-                oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.IO;
+        // Validate IO/WBS indicator when project code is provided
+        if ( bHasProject && ![Constant.ProjectCodeIndicator.IO, Constant.ProjectCodeIndicator.WBS].includes(sIoWbsInd)) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_MESSAGE: `Project ${sProjectCode} has no valid IO/WBS indicator`
+            }];
+        }
 
-            const bIsWBS =
-                oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.WBS;
+        const sProjectField = {[Constant.ProjectCodeIndicator.IO]: 'InternalOrder',
+            [Constant.ProjectCodeIndicator.WBS]: 'WBSElementExternalID'}[sIoWbsInd];
 
-            return bHasProjectCode && (bIsIO || bIsWBS);
-        });
-
-        // NEW: IO/WBS -> Z2, normal -> 11
-        const sDocumentType = bIsProjectRelated
+        // Determine document type based on whether project code is used
+        const sDocumentType = bHasProject
             ? Constant.EarmarkedFundsDocumentType.PROJECT
-            : Constant.EarmarkedFundsDocumentType.NONPROJECT;
+            : Constant.EarmarkedFundsDocumentType.NON_PROJECT;
 
-        const aItems =
-            aBudgetContext.map((oBudgetContext, iIndex) => {
-
-                const sProjectCode = String(oBudgetContext.INTERNAL_ORDER || '').trim();
-                const bHasProjectCode =
-                    !!sProjectCode &&
-                    sProjectCode !== Constant.Wildcard.NA;
-                const bIsIO =
-                    bHasProjectCode &&
-                    oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.IO;
-                const bIsWBS =
-                    bHasProjectCode &&
-                    oBudgetContext.IO_WBS_IND === Constant.ProjectCodeIndicator.WBS;
-
-                return {
-                    ...Constant.EarmarkedFundPosting_Item,
-                    EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-                    ...(!bIsIO && !bIsWBS && {
-                        FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim()
-                    }),
-                    CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-                    DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
-                    ...(bIsIO && {
-                        InternalOrder: sProjectCode
-                    }),
-                    ...(bIsWBS && {
-                        WBSElementExternalID: sProjectCode
-                    })
-                };
-            });
+        const aItems = aBudgetContext.map((oBudgetContext, iIndex) => ({
+            ...Constant.EarmarkedFundPosting_Item,
+            EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+            CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+            DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
+            ...(bHasProject? {
+                    [sProjectField]: sProjectCode
+                }
+                : {
+                    FundsCenter: String(
+                        oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER
+                    ).trim()
+                })
+        }));
 
         let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate, sDocumentType);
 
@@ -470,7 +455,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
-            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER && !bIsProjectRelated) {
+            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER && !bHasProject) {
                 for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
                     await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }
