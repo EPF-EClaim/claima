@@ -378,7 +378,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
         }
 
         // determine posting date for EMF
-        var dPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
+        var sPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
 
         const aItems =
             aBudgetContext.map((oBudgetContext, iIndex) => ({
@@ -393,7 +393,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
                 })
             }));
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, dPostingDate);
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate);
 
         if (oBudgetRecord?.Error) {
             bError = true;
