@@ -22,12 +22,17 @@ async function retrieveClaimFlexiPosting() {
                 ...oRecord,
                 effectiveStartDate: parseODataDate(oRecord.effectiveStartDate),
                 cust_Validity_Start: parseODataDate(oRecord.cust_Validity_Start),
-                cust_Validity_End: parseODataDate(oRecord.cust_Validity_End)
+                cust_Validity_End: parseODataDate(oRecord.cust_Validity_End),
+                cust_Flexi_Posting_Date: parseODataDate(oRecord.cust_Flexi_Posting_Date)
             }));
 
             // further filter the record incase there are multiple records created in SF
             oFlexiPostingRecord = aRecords.filter(oRecord => oRecord.effectiveStartDate && oRecord.effectiveStartDate <= dCurrentDate)
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
+            
+            if (!oFlexiPostingRecord) {
+                return { error: true, message: 'No valid Flexi Posting Record found', oFlexiPostingRecord: null };
+            }
         } else {
             throw new Error('Budget Data Not Found');
         }
@@ -74,22 +79,30 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  * The posting date will then being passed to EarmarkedFund API for processing
  * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
  * is configured in SF and the fields are made as mandatory
+ * The posting date will be determined based on the latest receipt date from the 
+ * budget context and the Flexi Posting range date. If the latest receipt date falls within the range,
+ * the posting date will be the latest receipt date. If not, the posting date will be the Flexible Posting Date
+ * from the Flexi Posting Configuration (Cut off Date)
  *  
- * @param {Date} dReceiptDate - Receipt date
+ * @param {Array<object>} aBudgetContext - Budget context
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
  * @returns {String} Posting Date (YYYY-MM-DD)
  */
-function determineClaimPostingDate(dReceiptDate, oClaimFlexiPosting) {
-    const dReceipt = new Date(dReceiptDate);
-    const dCurrentDate = new Date();
+function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
     let dPostingDate;
 
-    // if receipt date falls within range date, take receipt date
-    // otherwise, take current date
-    if (dReceipt >= oClaimFlexiPosting.cust_Validity_Start && dReceipt <= oClaimFlexiPosting.cust_Validity_End) {
-        dPostingDate = dReceipt;
+    // 1. Determine latest receipt date from the budget context
+    const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
+        const dReceipt = new Date(oBudgetContext.RECEIPT_DATE);
+        return dReceipt > dLatest ? dReceipt : dLatest;
+    }, new Date(aBudgetContext[0].RECEIPT_DATE));
+
+    // 2. Check if the latest receipt date falls within the Flexi Posting range date
+    if (dLatestReceiptDate >= oClaimFlexiPosting.cust_Validity_Start && dLatestReceiptDate <= oClaimFlexiPosting.cust_Validity_End) {
+        dPostingDate = dLatestReceiptDate;
     } else {
-        dPostingDate = dCurrentDate;
+        // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
+        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date;
     }
 
     return dPostingDate.toLocaleDateString('en-CA');
