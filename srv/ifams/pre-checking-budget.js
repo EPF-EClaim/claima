@@ -95,7 +95,7 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
     const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
         const dReceipt = new Date(oBudgetContext.RECEIPT_DATE);
         return dReceipt > dLatest ? dReceipt : dLatest;
-    }, new Date(0));
+    }, new Date(aBudgetContext[0].RECEIPT_DATE));
 
     // 2. Check if the latest receipt date falls within the Flexi Posting range date
     if (dLatestReceiptDate >= oClaimFlexiPosting.cust_Validity_Start && dLatestReceiptDate <= oClaimFlexiPosting.cust_Validity_End) {

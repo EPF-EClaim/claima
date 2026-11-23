@@ -14,7 +14,7 @@ async function getIFAMSConnection() {
  * @param {Object} oCondition - Condition object containing the necessary parameters for the budget record retrieval
  * @param {string} sFundCenter - Fund center to filter the budget records
  * @param {Object} oCache - Optional cache object to store previously retrieved budget records
- * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the budget record retrieval
+ * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string, detail: string|null}>} - Result of the budget record retrieval
  */
 async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
     let oBudget;
@@ -111,7 +111,7 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
  * @param {string} sRecordID - Record ID
  * @param {string} sAction - Action to perform (e.g., PUSH_BACK, REJECTED)
  * @param {String} [sPostingDate] - Posting date
- * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the earmarked funds processing
+ * @returns {Promise<{Error: boolean, errorCode?: string|null, oEarmarkedFundsDocument?: Object|null, oResponse?: Object, Message: string}>} Result of the earmarked funds processing
  */
 async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null) {
     var oEarmarkedFundsDocument;
@@ -193,7 +193,7 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sP
  * Roll up cost center based on the employee's role hierarchy.
  * 
  * @param {Object} oEmployeeDetails - Employee details object
- * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the roll up cost center 
+ * @returns {Promise<{error: boolean, message: string, oEmployeeRollupCC: Object}>} - Result of the roll up cost center 
  */
 async function rollUpCostCenter(oEmployeeDetails) {
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
