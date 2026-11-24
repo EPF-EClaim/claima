@@ -2,8 +2,9 @@ const cds = require('@sap/cds');
 
 /* ==================================================================== */
 /*  MAPPINGS: eClaims column → SF path                                  */
-/*  '*'  = collection (takes the first record)                          */
-/*  null = no SF source yet (returned as null)                          */
+/*  '*'      = collection (takes the first record)                      */
+/*  'nav/'   = trailing slash: return the whole expanded Nav object     */
+/*  null     = no SF source yet (returned as null)                      */
 /* ==================================================================== */
 
 const EMPJOB_MAP = {
@@ -55,7 +56,7 @@ const COSTCENTER_MAP = {
 /** COSTCENTER_MAP column that holds the position ID (used to look up EmpJob by position) */
 const CC_POSITION_COLUMN = 'BUDGET_OWNER_POSITION';
 
-/** EMPJOB_MAP columns returned in a cost center's EMPLOYEE object */
+/** EMPJOB_MAP columns returned in a cost center's BUDGET_OWNER object */
 const CC_EMPLOYEE_COLUMNS = ['EEID', 'NAME', 'EMAIL'];
 
 /** EmpJob filters per call when looking up many keys (keeps the URL short) */
@@ -66,6 +67,16 @@ const MYT_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 /* ==================================================================== */
 /*  ENTITY CONFIG: one entry per SF entity                              */
+/*                                                                      */
+/*  selectAll: true  → no $select is sent; every plain SF field of the  */
+/*                     entity is returned (raw SF names), plus the      */
+/*                     mapped eClaims columns.                          */
+/*             false → only the mapped columns are selected/returned.   */
+/*  Ignored when a caller passes options.columns (e.g. the cost center  */
+/*  owner lookup), so those calls stay light.                           */
+/*                                                                      */
+/*  activeFilter: only return records whose status is in `values`.      */
+/*                Set to null to disable.                               */
 /* ==================================================================== */
 
 const SF_ENTITIES = {
@@ -73,6 +84,8 @@ const SF_ENTITIES = {
         map: EMPJOB_MAP,
         systemFields: ['userId', 'seqNumber', 'startDate'],
         orderby: 'startDate desc,seqNumber desc',
+        selectAll: false,
+        activeFilter: { sfPath: 'userNav/status', values: ['t'] },
         searchKeys: {
             userId:   { sfPath: 'userId',           column: 'EEID'  },
             email:    { sfPath: 'userNav/username', column: 'EMAIL' },
@@ -83,6 +96,7 @@ const SF_ENTITIES = {
         map: COSTCENTER_MAP,
         systemFields: ['externalCode', 'startDate'],
         orderby: 'externalCode asc,startDate desc',
+        selectAll: false,
         searchKeys: {
             costCenter: { sfPath: 'externalCode', column: 'COST_CENTER' },
             status:     { sfPath: 'status',       column: 'STATUS'      }
@@ -97,7 +111,8 @@ module.exports = {
     /* ================================================================ */
 
     /**
-     * Get one employee's EmpJob, mapped to eClaims columns.
+     * Get one employee's EmpJob, mapped to eClaims columns
+     * (plus all raw SF fields when EmpJob.selectAll is true).
      *
      * @param {string} key - userId, email or position ID
      * @param {object} [options]
@@ -144,7 +159,10 @@ module.exports = {
             const filter = batch.map(k => this._eq(searchKey.sfPath, k)).join(' or ');
 
             try {
-                const rows = await this._querySF('EmpJob', filter, { asOfDate: options.asOfDate, columns });
+                const rows = await this._querySF('EmpJob', filter, {
+                    asOfDate: options.asOfDate,
+                    columns
+                });
                 for (const row of rows) {
                     const k = String(row[searchKey.column] ?? '');
                     if (!batch.includes(k) || result.has(k)) continue;
@@ -219,23 +237,40 @@ module.exports = {
 
     /**
      * Read an SF entity with $select/$expand built from its map.
-     * options.columns limits the map, so only those fields are selected/expanded.
+     * - options.columns limits the map, so only those fields are selected/expanded.
+     * - entity.selectAll (when no columns are passed) skips $select so SF returns
+     *   every field; the result is raw SF fields + mapped eClaims columns.
+     * - entity.activeFilter is always added when configured.
      * Follows __next links so large results are not cut off.
      */
     _querySF: async function (entityName, filter, options = {}) {
         const entity = SF_ENTITIES[entityName];
-        const map = options.columns?.length
+        const hasColumns = Boolean(options.columns?.length);
+        const selectAll = Boolean(entity.selectAll) && !hasColumns;
+
+        const map = hasColumns
             ? Object.fromEntries(options.columns.map(c => [c, entity.map[c] ?? null]))
             : entity.map;
 
         const Conn_SF_API = await cds.connect.to('Conn_SF_API');
         const { select, expand } = this._buildSFQuery(map);
 
-        const query = {
-            '$select': [...new Set([...entity.systemFields, ...select])].join(','),
-            '$format': 'json'
-        };
-        if (filter) query.$filter = filter;
+        const query = { '$format': 'json' };
+
+        // No $select → SF returns every field of the entity
+        if (!selectAll) {
+            query.$select = [...new Set([...entity.systemFields, ...select])].join(',');
+        }
+
+        // Search filter + active-only filter
+        const filters = [];
+        if (filter) filters.push(`(${filter})`);   // brackets keep 'or' batches correct
+
+        if (entity.activeFilter) {
+            const { sfPath, values } = entity.activeFilter;
+            filters.push(`(${values.map(v => this._eq(sfPath, v)).join(' or ')})`);
+        }
+        if (filters.length) query.$filter = filters.join(' and ');
         if (expand.length) query.$expand = expand.join(',');
 
         if (options.history) {
@@ -262,7 +297,39 @@ module.exports = {
             path = next ? next.substring(next.indexOf('/odata/v2') + '/odata/v2'.length) : null;
         }
 
-        return rows.map(r => this._mapRecord(r, map));
+        return rows.map(r => selectAll
+            ? { ...this._cleanRaw(r), ...this._mapRecord(r, map) }   // raw SF fields + mapped columns
+            : this._mapRecord(r, map));
+    },
+
+    /** All plain fields of a raw SF record: drops __metadata and Nav objects, converts dates. */
+    _cleanRaw: function (raw) {
+        const out = {};
+        for (const [key, value] of Object.entries(raw)) {
+            if (key === '__metadata') continue;
+            if (value && typeof value === 'object') continue;   // Nav links / expanded objects
+            out[key] = this._toSFValue(value);
+        }
+        return out;
+    },
+
+    /**
+     * Clean a whole expanded Nav object (used for 'nav/' mappings):
+     * drops __metadata and unexpanded __deferred links, converts dates,
+     * keeps expanded child objects (cleaned the same way).
+     */
+    _cleanObject: function (value) {
+        if (value == null || typeof value !== 'object') return this._toSFValue(value);
+        if (Array.isArray(value)) return value.map(v => this._cleanObject(v));
+        if (Array.isArray(value.results)) return value.results.map(v => this._cleanObject(v));
+
+        const out = {};
+        for (const [key, v] of Object.entries(value)) {
+            if (key === '__metadata') continue;
+            if (v && typeof v === 'object' && v.__deferred) continue;   // not expanded
+            out[key] = this._cleanObject(v);
+        }
+        return out;
     },
 
     /** Build an OData eq filter with quotes escaped. */
@@ -273,6 +340,7 @@ module.exports = {
     /**
      * Build $select / $expand from a mapping.
      * 'a/b/* /c/d' → select 'a/b/c/d', expand 'a', 'a/b', 'a/b/c'
+     * 'a/'         → select 'a',       expand 'a'   (whole object)
      */
     _buildSFQuery: function (map) {
         const select = new Set();
@@ -280,10 +348,16 @@ module.exports = {
 
         for (const path of Object.values(map)) {
             if (!path) continue;
-            const segments = path.split('/').filter(s => s !== '*');
+
+            const wholeObject = path.endsWith('/');
+            const segments = path.split('/').filter(s => s && s !== '*');
+            if (!segments.length) continue;
+
             select.add(segments.join('/'));
 
-            for (let i = 1; i < segments.length; i++) {
+            // Whole object: expand the last segment too; field: expand only its parents
+            const expandDepth = wholeObject ? segments.length : segments.length - 1;
+            for (let i = 1; i <= expandDepth; i++) {
                 expand.add(segments.slice(0, i).join('/'));
             }
         }
@@ -294,21 +368,33 @@ module.exports = {
     _mapRecord: function (raw, map) {
         const out = {};
         for (const [column, path] of Object.entries(map)) {
-            out[column] = path ? this._toSFValue(this._resolvePath(raw, path)) : null;
+            if (!path) { out[column] = null; continue; }
+
+            const value = this._resolvePath(raw, path);
+            out[column] = path.endsWith('/')
+                ? this._cleanObject(value)    // whole Nav object
+                : this._toSFValue(value);     // single field
         }
         return out;
     },
 
-    /** Walk an SF path; collections ({ results: [] }) resolve to the first record. */
+    /**
+     * Walk an SF path; collections ({ results: [] }) resolve to the first record.
+     * A trailing '/' returns the object itself.
+     */
     _resolvePath: function (obj, path) {
+        const wholeObject = path.endsWith('/');
         let current = obj;
-        for (const segment of path.split('/')) {
+
+        for (const segment of path.split('/').filter(Boolean)) {
             if (current == null) return null;
             if (Array.isArray(current.results)) current = current.results[0];
             if (segment === '*') continue;
             current = current?.[segment];
         }
-        if (current && Array.isArray(current.results)) current = current.results[0];
+
+        // Keep collections intact for whole-object paths; otherwise take the first record
+        if (!wholeObject && current && Array.isArray(current.results)) current = current.results[0];
         return current ?? null;
     },
 

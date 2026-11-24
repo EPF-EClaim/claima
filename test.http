@@ -325,7 +325,7 @@ POST {{host}}/getEmpJob
 Content-Type: application/json
 Authorization: Basic alice
 
-{ "userId": "904015", "asOfDate": "2026-10-29" }
+{ "userId": "903411", "asOfDate": "2026-11-24" }
 
 ### EmpJob by email
 POST {{host}}/getEmpJob
