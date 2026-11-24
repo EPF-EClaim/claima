@@ -135,17 +135,17 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         // 4b. CCC request Service Tax: check its fixed budget line (no roll-up, no cost center
         // validation) and lock it in IFAMS. Runs last so nothing is locked if other items fail.
         if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
-            const oServiceTaxContext = await retrieveCccServiceTaxBudgetContext(sId);
+            const oServiceTaxContext = await retrieveCccServiceTaxBudgetContext(oTx, sId);
             if (oServiceTaxContext) {
-                let aServiceTaxReturn = await checkRequestBudget([oServiceTaxContext]);
+                const aServiceTaxCheck = await checkRequestBudget([oServiceTaxContext]);
 
-                const bServiceTaxSufficient = Array.isArray(aServiceTaxReturn)
-                    && aServiceTaxReturn.length > 0
-                    && aServiceTaxReturn.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
+                const bServiceTaxSufficient = Array.isArray(aServiceTaxCheck)
+                    && aServiceTaxCheck.length > 0
+                    && aServiceTaxCheck.every(r => r.STATUS === Constant.BudgetCheckStatus.SUFFICIENT);
 
-                if (bServiceTaxSufficient) {
-                    aServiceTaxReturn = await lockCccServiceTaxBudget(oTx, sId, oServiceTaxContext);
-                }
+                const aServiceTaxReturn = bServiceTaxSufficient
+                    ? await lockCccServiceTaxBudget(oTx, sId, oServiceTaxContext)
+                    : aServiceTaxCheck;
 
                 await notifyIFAMSConnectionError(aServiceTaxReturn, sId);
 

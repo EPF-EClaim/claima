@@ -660,11 +660,11 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
         SELECT.one.from('ZREQUEST_HEADER')
             .where({ REQUEST_ID: sRequestId })
             .columns(
-                'REQUEST_ID',
-                'REQUEST_TYPE_ID',
-                'EARMARKED_FUNDS_DOC_ID',
-                'EARMARKED_FUNDS_DOC_YEAR',
-                'EARMARKED_FUNDS_DOC_COMP_CODE'
+                Constant.EntitiesFields.REQUESTID,
+                Constant.EntitiesFields.REQUEST_TYPE_ID,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ID,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_YEAR,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_COMP_CODE
             )
     );
 
@@ -814,7 +814,7 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
 
     const oServiceTaxItem = await oTx.run(
         SELECT.one.from('ZREQUEST_ITEM')
-            .columns('REQUEST_SUB_ID', 'EARMARKED_FUNDS_DOC_ITEM_ID')
+            .columns(Constant.EntitiesFields.REQUEST_SUB_ID, Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ITEM_ID)
             .where({ REQUEST_ID: sRequestId, CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.SERV_TAX })
     );
     const bHasServiceTaxEarmark = !!(oRequest.EARMARKED_FUNDS_DOC_ID && oServiceTaxItem?.EARMARKED_FUNDS_DOC_ITEM_ID);

@@ -5089,7 +5089,7 @@ module.exports = (srv) => {
             try {
                 const oRequest = await oTx.run(
                     SELECT.one.from(Constant.Entities.ZREQUEST_HEADER)
-                        .columns('STATUS')
+                        .columns(Constant.EntitiesFields.STATUS)
                         .where({ REQUEST_ID: sRecordId })
                 );
                 if (oRequest?.STATUS === Constant.Status.PENDING_APPROVAL) {

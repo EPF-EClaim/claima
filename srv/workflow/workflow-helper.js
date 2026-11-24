@@ -1071,14 +1071,15 @@ function isCccRequestHeader(oHeader, oDescriptor) {
  * budget line = GL_CODE / MATERIAL_CODE / COST_CENTER of those card rows.
  * EMP_ID is left empty on purpose so checkRequestBudget does not roll up.
  *
+ * @param {object} oTx - cds transaction (all reads run in the caller's transaction)
  * @param {string} sId - Request ID
  * @returns {Promise<object|null>} budget context, or null when the request is not CCC
  *                                 or has no service tax to lock
  */
-async function retrieveCccServiceTaxBudgetContext(sId) {
+async function retrieveCccServiceTaxBudgetContext(oTx, sId) {
     const oDescriptor = aEntityTableByPrefix[Constant.WorkflowType.REQUEST];
 
-    const oHeader = await cds.run(
+    const oHeader = await oTx.run(
         SELECT.one
             .from(oDescriptor.entityHeader)
             .columns(
@@ -1091,12 +1092,12 @@ async function retrieveCccServiceTaxBudgetContext(sId) {
     );
     if (!isCccRequestHeader(oHeader, oDescriptor)) return null;
 
-    const aServTaxItems = await cds.run(
+    const aServTaxItems = await oTx.run(
         SELECT.from(oDescriptor.entityItem)
             .columns(
                 Constant.EntitiesFields.REQUEST_SUB_ID,
                 Constant.EntitiesFields.CLAIM_TYPE_ID,
-                'EARMARKED_FUNDS_DOC_ITEM_ID'
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ITEM_ID
             )
             .where({
                 [oDescriptor.idField]: sId,
@@ -1110,9 +1111,14 @@ async function retrieveCccServiceTaxBudgetContext(sId) {
     const oServTaxItem = aServTaxItems[0];
     const sSubId = oServTaxItem[Constant.EntitiesFields.REQUEST_SUB_ID];
 
-    const aParts = await cds.run(
+    const aParts = await oTx.run(
         SELECT.from(cds.entities['eclaim_srv.ZREQ_ITEM_CCC_PART'])
-            .columns('GL_CODE', 'MATERIAL_CODE', 'COST_CENTER', 'SERVICE_TAX')
+            .columns(
+                Constant.EntitiesFields.GL_CODE,
+                Constant.EntitiesFields.MATERIAL_CODE,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.SERVICE_TAX
+            )
             .where({ [oDescriptor.idField]: sId, [Constant.EntitiesFields.REQUEST_SUB_ID]: sSubId })
     );
     const aTaxedParts = aParts.filter(oPart => toNum(oPart.SERVICE_TAX) !== 0);
@@ -1126,10 +1132,10 @@ async function retrieveCccServiceTaxBudgetContext(sId) {
     }
     const [sFundCenter, sCommitmentItem, sMaterialGroup] = aLines[0].split('|');
 
-    const oTypeItem = await cds.run(
+    const oTypeItem = await oTx.run(
         SELECT.one
             .from(oDescriptor.entityClaimTypeItem)
-            .columns('CLAIM_TYPE_ITEM_DESC')
+            .columns(Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC)
             .where({
                 CLAIM_TYPE_ID: oServTaxItem[Constant.EntitiesFields.CLAIM_TYPE_ID],
                 CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.SERV_TAX
@@ -1183,7 +1189,9 @@ async function lockCccServiceTaxBudget(oTx, sId, oContext) {
             DocumentItemText: String(oContext.MATERIAL_GROUP).trim()
         }];
 
-        const oResult = await processEarmarkedFunds(aItems, sId, null, sPostingDate);
+        const oResult = await processEarmarkedFunds(
+            aItems, sId, null, sPostingDate, Constant.EarmarkedFundsDocumentType.NON_PROJECT
+        );
         const oDocument = oResult?.oEarmarkedFundsDocument;
         const sItemNo = oDocument?._EarmarkedFundsDocumentItem?.[0]?.EarmarkedFundsDocumentItem;
 
@@ -1238,7 +1246,7 @@ async function releaseCccServiceTaxBudget(oTx, sId, sAction) {
         const oHeader = await oTx.run(
             SELECT.one
                 .from(Constant.Entities.ZREQUEST_HEADER)
-                .columns('REQUEST_TYPE_ID', 'EARMARKED_FUNDS_DOC_ID')
+                .columns(Constant.EntitiesFields.REQUEST_TYPE_ID, Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ID)
                 .where({ REQUEST_ID: sId })
         );
         if (!oHeader ||
@@ -1247,7 +1255,7 @@ async function releaseCccServiceTaxBudget(oTx, sId, sAction) {
             return [];
         }
 
-        const oContext = await retrieveCccServiceTaxBudgetContext(sId);
+        const oContext = await retrieveCccServiceTaxBudgetContext(oTx, sId);
         if (!oContext?.EARMARKED_FUNDS_DOC_ITEM_ID) {
             return [{
                 STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
