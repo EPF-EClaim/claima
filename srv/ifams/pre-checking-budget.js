@@ -116,7 +116,7 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         const dPostingDate = dLatestReceiptDate;
     } else {
         // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
-        // In case Flexible Posting Date is blank, used current date as default
+        // In case Flexible Posting Date is blank, use current date as default
         const dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: dCurrentDate;
     }
 
