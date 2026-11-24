@@ -155,7 +155,8 @@ async function retrieveItems(sId, oDescriptor) {
         Constant.EntitiesFields.GL_ACCOUNT,
         oDescriptor.entityAmount,
         Constant.EntitiesFields.MATERIAL_CODE,
-        Constant.EntitiesFields.COST_CENTER
+        Constant.EntitiesFields.COST_CENTER,
+        Constant.EntitiesFields.MODIFIEDAT
     ];
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
@@ -226,7 +227,6 @@ async function retrieveBudgetContext(sId, oDescriptor) {
     if(!oHeaderContext) {
         return null;
     }
-    const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
 
@@ -252,7 +252,8 @@ async function retrieveBudgetContext(sId, oDescriptor) {
             HEADER_COST_CENTER: oHeaderContext[Constant.EntitiesFields.COST_CENTER], // for item cost center validation
             RECEIPT_DATE: oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST ?
                 oHeaderContext[Constant.EntitiesFields.TRIP_START_DATE] : oItemContext[Constant.EntitiesFields.RECEIPT_DATE], // to be used for cross budget checking
-            IO_WBS_IND: sIoWbsInd // to be used for budget locking/checking against project
+            IO_WBS_IND: sIoWbsInd, // to be used for budget locking/checking against project
+            MODIFIEDAT: oItemContext[Constant.EntitiesFields.MODIFIEDAT]?.slice(0, 10)
         })
     }
     return aBudgetContexts
@@ -489,7 +490,7 @@ function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
     const oGroups = {};
 
     for (const [iIndex, entry] of aBudgetContext.entries()) {
-        const sYear = determineBudgetYear(entry.RECEIPT_DATE, oFlexiPostingRecord);
+        const sYear = determineBudgetYear(entry.RECEIPT_DATE, oFlexiPostingRecord, entry.MODIFIEDAT);
         const bIO = entry.INTERNAL_ORDER !== Constant.Wildcard.NA;
 
         const oCondition = bIO

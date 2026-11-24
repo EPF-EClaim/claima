@@ -57,32 +57,35 @@ async function retrieveClaimFlexiPosting() {
 }
 
 /**
- * Determine Budget Year based on Receipt Date and Claim Flexi Posting range date
+ * Determine Budget Year based on Last Modified and Claim Flexi Posting range date
+ * If above condition passed, check if Receipt year (Config) match with receipt year in Receipt Date
+ * If all condition match, get the Flexible Posting Date
+ * Else, Flexible Posting Date will be blank (Defaulted to Current Date) 
  * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
  * is configured in SF and the fields are made as mandatory
  *  
- * @param {Date} dReceiptDate - Receipt date
+ * @param {string} sReceiptDate - Receipt date
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
- * @returns {Integer} Year
+ * @param {string} sLastModifiedDate - Last Modified Date
+ * @returns {string} Year
  */
-function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
+function determineBudgetYear(sReceiptDate, oClaimFlexiPosting, sLastModifiedDate) {
     const dStartDate = oClaimFlexiPosting.cust_Validity_Start;
     const dEndDate = oClaimFlexiPosting.cust_Validity_End;
-    const dReceipt = new Date(dReceiptDate);
     const dCurrentDate = new Date();
-    var iYear;
+    const sReceiptYear = sReceiptDate.slice(0, 4);
 
-    // check if the receipt date falls within the start/end date range
-    // if yes, take the receipt year
-    if (dReceipt >= dStartDate && dReceipt <= dEndDate) {
-        iYear = oClaimFlexiPosting.cust_Receipt_Year;
-    } else {
-        // receipt date is out of the range
-        // need to use receipt year and compare with current system date year
-        // if match, use receipt date year
-        // if not match, use current system date year
-        iYear = dCurrentDate.getFullYear();
-    }
+    // 1.Check if last modified date is within range and Receipt Year (Flexi Posting Config) match with Receipt Year (sReceiptDate)
+    // 2.If all condition matches, get flexible posting date (year)
+    // 3.If no match, blank (default fallback to current year)
+    const iYear =
+    new Date(sLastModifiedDate) >= dStartDate &&
+    new Date(sLastModifiedDate) <= dEndDate &&
+    sReceiptYear === oClaimFlexiPosting.cust_Receipt_Year &&
+    oClaimFlexiPosting.cust_Flexi_Posting_Date
+        ? oClaimFlexiPosting.cust_Flexi_Posting_Date.getFullYear()
+        : dCurrentDate.getFullYear();
+
     return iYear;
 }
 
@@ -108,13 +111,22 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         return dReceipt > dLatest ? dReceipt : dLatest;
     }, new Date(aBudgetContext[0].RECEIPT_DATE));
 
+    // 2. Get the latest LastModifiedAt across all items
+    const dLastModifiedAt = aBudgetContext.reduce((dLatest, oBudgetContext) => {
+        if (!oBudgetContext.MODIFIEDAT) return dLatest;
+        const dModifiedAt = new Date(oBudgetContext.MODIFIEDAT);
+        if (Number.isNaN(dModifiedAt.getTime())) return dLatest;
+        return !dLatest || dModifiedAt > dLatest ? dModifiedAt : dLatest;
+    }, null) ?? new Date();
+
     const { cust_Validity_Start: dStart, cust_Validity_End: dEnd, cust_Flexi_Posting_Date: dFlexiPosting } = oClaimFlexiPosting;
 
-    // 2. Latest receipt date within the Flexi Posting range -> use it
-    // 3. Otherwise use the Flexible Posting Date (cut-off), default to current date if not maintained
-    const dPostingDate = (dLatestReceiptDate >= dStart && dLatestReceiptDate <= dEnd)
-        ? dLatestReceiptDate
-        : (dFlexiPosting ?? new Date());
+    // 3. Latest last modified date within the Flexi Posting range and receipt year match - use flexible posting date
+    // 3. Otherwise, flexible posting date is blank (default to current date)
+    const dPostingDate = ((dLastModifiedAt >= dStart && dLastModifiedAt <= dEnd) &&
+                            String(dLatestReceiptDate.getFullYear()) === oClaimFlexiPosting.cust_Receipt_Year)
+        ? (dFlexiPosting ?? new Date())
+        : new Date();
 
     return dPostingDate.toLocaleDateString('en-CA');
 }

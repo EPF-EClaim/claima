@@ -340,7 +340,8 @@ const Constant = {
         "PROJECT_OWNER_EMAIL": "PROJECT_OWNER_EMAIL",
         "PROJECT_CODE_IO": "PROJECT_CODE_IO",
         "IO_WBS_IND": "IO_WBS_IND",
-        "UNIT_SECTION": "UNIT_SECTION"
+        "UNIT_SECTION": "UNIT_SECTION",
+        "MODIFIEDAT":"modifiedAt"
     },
     Wildcard: {
         "All": "*",
