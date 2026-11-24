@@ -244,11 +244,13 @@ async function rollUpCostCenter(oEmployeeDetails) {
         if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) sParentCC = await retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails);
         var sMessage = !sParentCC ? 'No roll up cost center found' : 'Roll up cost center available';
         
-        if (oEmployeeRollupCC.HOD) {
-            oEmployeeRollupCC.DEPARTMENT_CC = sParentCC;
-        } else if(oEmployeeRollupCC.HOB) {
-            oEmployeeRollupCC.BRANCH_CC = sParentCC;
-        }
+        if (sParentCC) {
+            if (oEmployeeRollupCC.HOD) {
+                oEmployeeRollupCC.DEPARTMENT_CC = sParentCC;
+            } else if(oEmployeeRollupCC.HOB) {
+                oEmployeeRollupCC.BRANCH_CC = sParentCC;
+            }
+        }   
 
         return { error: false, message: sMessage, oEmployeeRollupCC };
     } catch (oError) {
