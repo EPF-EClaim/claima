@@ -116,7 +116,7 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         dPostingDate = dLatestReceiptDate;
     } else {
         // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
-        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: sCurrentDate;
+        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: dCurrentDate;
     }
 
     return dPostingDate.toLocaleDateString('en-CA');
