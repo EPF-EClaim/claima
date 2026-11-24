@@ -97,7 +97,6 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  * the posting date will be the latest receipt date. If not, the posting date will be the Flexible Posting Date
  * from the Flexi Posting Configuration (Cut off Date)
  * Set to Current Date if no Flexible Posting Date maintained
- * 
  * @param {Array<object>} aBudgetContext - Budget context
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
  * @returns {String} Posting Date (YYYY-MM-DD)
