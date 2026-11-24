@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const { Constant } = require("../utils/constant");
+const { parseODataDate } = require('../ifams/pre-checking-budget');
 
 let _ifamsConnection;
 async function getIFAMSConnection() {
@@ -191,7 +192,8 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sP
 
 /**
  * Roll up cost center based on the employee's role hierarchy.
- * 
+ * Upon checking on HOB/HOD level, retrieve main Cost Center (Parent CC) that belongs to the Department/Branch
+ * The Parent CC will be maintained in SF 
  * @param {Object} oEmployeeDetails - Employee details object
  * @returns {Promise<{error: boolean, message: string, oEmployeeRollupCC: Object}>} - Result of the roll up cost center 
  */
@@ -203,6 +205,7 @@ async function rollUpCostCenter(oEmployeeDetails) {
     let iCounter = 20;
     var oEmployeeRollupCC = {};
     let sRank;
+    let sParentCC;
 
     try {
         const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
@@ -221,25 +224,29 @@ async function rollUpCostCenter(oEmployeeDetails) {
             }
 
             switch (oDirectSuperior.ROLE) {
-                case (Constant.Role.HOS):
-                    oEmployeeRollupCC.HOS_CC = oDirectSuperior.CC;
-                    break;
                 case (Constant.Role.HOB):
-                    oEmployeeRollupCC.HOB_CC = oDirectSuperior.CC;
+                    oEmployeeRollupCC.HOB = true;
                     break;
                 case (Constant.Role.HOD):
-                    oEmployeeRollupCC.HOD_CC = oDirectSuperior.CC;
+                    oEmployeeRollupCC.HOD = true;
                     break;
                 default:
                     break;
             }
 
             sDirectSuperior = oDirectSuperior[Constant.EntitiesFields.DIRECT_SUPERIOR];
-
-            if (oEmployeeRollupCC.HOD_CC || oEmployeeRollupCC.HOB_CC) break;
+            
+            if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) break;
         }
 
-        var sMessage = Object.keys(oEmployeeRollupCC).length === 0 ? 'No roll up cost center found' : 'Roll up cost center available';
+        if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) sParentCC = await retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails);
+        var sMessage = !sParentCC ? 'No roll up cost center found' : 'Roll up cost center available';
+        
+        if (oEmployeeRollupCC.HOD) {
+            oEmployeeRollupCC.DEPARTMENT_CC = sParentCC;
+        } else if(oEmployeeRollupCC.HOB) {
+            oEmployeeRollupCC.BRANCH_CC = sParentCC;
+        }
 
         return { error: false, message: sMessage, oEmployeeRollupCC };
     } catch (oError) {
@@ -477,6 +484,57 @@ async function syncBudgetReport(sYear) {
     return aEntries.length;
 }
 
+/**
+ * Retrieve Parent Cost Center from Department/Branch
+ * Each Department and Branch will have their own Cost Center maintained in Centra
+ * For department, it is linked to Department
+ * For branch, it is linked to Unit/Section Branch 
+ *
+ * @param {object} oEmployeeRollupCC - Employee roll up data
+ * @param {object} oEmployeeDetails - Employee data
+ * @returns {string} Department/Branch cost center
+ */
+async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
+    let sPath;
+    let oParentCostCenter;
+        if (oEmployeeRollupCC.HOD) {
+            sPath = Constant.SF_API_PATH.DEPARTMENT.replace('{DEPARTMENT}', oEmployeeDetails.DEP);
+        } else if (oEmployeeRollupCC.HOB) {
+            var sEmployeeBranchCode = oEmployeeDetails[Constant.EntitiesFields.UNIT_SECTION];
+            sPath = Constant.SF_API_PATH.UNIT_BRANCH
+                    .replace('{BRANCH_CODE}', sEmployeeBranchCode);
+        }
+        
+        const SFConnection = await cds.connect.to('Conn_SF_API');
+        var aParentCostCenter = await SFConnection.send({
+            method: Constant.API_REQUEST_METHOD.GET,
+            path: sPath
+        });
+
+        if (Array.isArray(aParentCostCenter) && aParentCostCenter.length > 0) {
+            const aRecords = aParentCostCenter.map(oRecord => ({
+                ...oRecord,
+                effectiveStartDate: parseODataDate(oEmployeeRollupCC.HOB? oRecord.effectiveStartDate: oRecord.startDate)
+            }));
+
+            // get latest record based on effective start date
+            oParentCostCenter = aRecords.filter(oRecord => oRecord.effectiveStartDate)
+                .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
+            
+            if (oParentCostCenter) {
+                console.log('HOD_CC:', oEmployeeRollupCC.HOD_CC);
+                console.log('check:', oEmployeeRollupCC.HOD_CC !== null)
+                switch (true) {
+                    case oEmployeeRollupCC.HOB === true:
+                    case oEmployeeRollupCC.HOD_CC !== null:
+                        return oParentCostCenter.cust_CostCenter_eClaim;
+                    default:
+                        break;
+                }
+            }
+        } 
+        
+}
 module.exports = {
     getBudgetRecord,
     processEarmarkedFunds,

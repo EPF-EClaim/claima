@@ -117,7 +117,7 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
 function parseODataDate(sDate) {
     if (!sDate) return null;
 
-    const aMatch = sDate.match(/\/Date\((\d+)(?:[+-]\d+)?\)\//);
+    const aMatch = sDate.match(/\/Date\(([+-]?\d+)(?:[+-]\d+)?\)\//);
 
     return aMatch ? new Date(Number(aMatch[1])) : null;
 }
@@ -125,5 +125,6 @@ function parseODataDate(sDate) {
 module.exports = {
     retrieveClaimFlexiPosting,
     determineBudgetYear,
-    determineClaimPostingDate
+    determineClaimPostingDate,
+    parseODataDate
 }
