@@ -1,6 +1,14 @@
 const cds = require('@sap/cds');
 const { Constant } = require("../utils/constant");
 
+let _sfConnection;
+async function getSFConnection() {
+    if (!_sfConnection) {
+        _sfConnection = await cds.connect.to('Conn_SF_API');
+    }
+    return _sfConnection;
+}
+
 /**
  * Retrieve Claim Flexi Posting from SF API to decide the budget year
  * 
@@ -9,7 +17,7 @@ const { Constant } = require("../utils/constant");
 async function retrieveClaimFlexiPosting() {
     var oFlexiPostingRecord;
     try {
-        const SFConnection = await cds.connect.to('Conn_SF_API');
+        const SFConnection = await getSFConnection();
         const dCurrentDate = new Date();
 
         var aFlexiPostingRecords = await SFConnection.send({
@@ -123,6 +131,7 @@ function parseODataDate(sDate) {
 }
 
 module.exports = {
+    getSFConnection,
     retrieveClaimFlexiPosting,
     determineBudgetYear,
     determineClaimPostingDate,

@@ -1,6 +1,6 @@
 const cds = require('@sap/cds');
 const { Constant } = require("../utils/constant");
-const { parseODataDate } = require('../ifams/pre-checking-budget');
+const { parseODataDate, getSFConnection } = require('./pre-checking-budget');
 
 let _ifamsConnection;
 async function getIFAMSConnection() {
@@ -508,7 +508,7 @@ async function syncBudgetReport(sYear) {
  */
 async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
     let sPath;
-    let oParentCostCenter;
+    
         if (oEmployeeRollupCC.HOD) {
             sPath = Constant.SF_API_PATH.DEPARTMENT.replace('{DEPARTMENT}', oEmployeeDetails.DEP);
         } else if (oEmployeeRollupCC.HOB) {
@@ -517,7 +517,7 @@ async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
                     .replace('{BRANCH_CODE}', sEmployeeBranchCode);
         }
         
-        const SFConnection = await cds.connect.to('Conn_SF_API');
+        const SFConnection = await getSFConnection();
         var aParentCostCenter = await SFConnection.send({
             method: Constant.API_REQUEST_METHOD.GET,
             path: sPath
@@ -530,7 +530,7 @@ async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
             }));
 
             // get latest record based on effective start date
-            oParentCostCenter = aRecords.filter(oRecord => oRecord.effectiveStartDate)
+            const oParentCostCenter = aRecords.filter(oRecord => oRecord.effectiveStartDate)
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
             
             if (oParentCostCenter) {
