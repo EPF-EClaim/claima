@@ -97,12 +97,12 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  * the posting date will be the latest receipt date. If not, the posting date will be the Flexible Posting Date
  * from the Flexi Posting Configuration (Cut off Date)
  *  Set to Current Date if no Flexible Posting Date maintained
+ * 
  * @param {Array<object>} aBudgetContext - Budget context
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
  * @returns {String} Posting Date (YYYY-MM-DD)
  */
 function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
-    let dPostingDate;
     const dCurrentDate = new Date();
 
     // 1. Determine latest receipt date from the budget context
@@ -113,10 +113,11 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
 
     // 2. Check if the latest receipt date falls within the Flexi Posting range date
     if (dLatestReceiptDate >= oClaimFlexiPosting.cust_Validity_Start && dLatestReceiptDate <= oClaimFlexiPosting.cust_Validity_End) {
-        dPostingDate = dLatestReceiptDate;
+        const dPostingDate = dLatestReceiptDate;
     } else {
         // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
-        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: dCurrentDate;
+        // In case Flexible Posting Date is blank, used current date as default
+        const dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: dCurrentDate;
     }
 
     return dPostingDate.toLocaleDateString('en-CA');
