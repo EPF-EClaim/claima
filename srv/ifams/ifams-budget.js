@@ -528,7 +528,7 @@ async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
             if (oParentCostCenter) {
                 switch (true) {
                     case oEmployeeRollupCC.HOB === true:
-                    case oEmployeeRollupCC.HOD_CC !== null:
+                    case oEmployeeRollupCC.HOD === true:
                         return oParentCostCenter.cust_CostCenter_eClaim;
                     default:
                         break;
