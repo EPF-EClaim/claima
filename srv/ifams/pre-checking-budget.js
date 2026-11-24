@@ -1,6 +1,11 @@
 const cds = require('@sap/cds');
 const { Constant } = require("../utils/constant");
 
+/**
+ * Retrieve SF Connection
+ * 
+ * @returns {Promise<cds.Connection>} SF Connection
+ */
 let _sfConnection;
 async function getSFConnection() {
     if (!_sfConnection) {
