@@ -103,7 +103,8 @@ async function retrieveEmployeeDetails(sId, sEmail){
                 Constant.EntitiesFields.EMAIL,
                 Constant.EntitiesFields.DIRECT_SUPERIOR,
                 Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.DIVISION
+                Constant.EntitiesFields.DIVISION,
+                Constant.EntitiesFields.UNIT_SECTION
             )
     )
     if(!oEmployeeContext) {
@@ -121,7 +122,8 @@ async function retrieveEmployeeDetails(sId, sEmail){
         [Constant.EntitiesFields.EMAIL]             : oEmployeeContext[Constant.EntitiesFields.EMAIL],
         [Constant.EntitiesFields.DIRECT_SUPERIOR]   : oEmployeeContext[Constant.EntitiesFields.DIRECT_SUPERIOR],
         [Constant.EntitiesFields.ROLE]              : oEmployeeContext[Constant.EntitiesFields.ROLE],
-        [Constant.EntitiesFields.RANK]              : oRoleRankContext[Constant.EntitiesFields.RANK]
+        [Constant.EntitiesFields.RANK]              : oRoleRankContext[Constant.EntitiesFields.RANK],
+        [Constant.EntitiesFields.UNIT_SECTION]      : oEmployeeContext[Constant.EntitiesFields.UNIT_SECTION]
     };
 }
 async function retrieveRoleRank(sRole) {
@@ -529,7 +531,7 @@ function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
 }
 
 /**
- * Build roll-up levels (EMP -> HOS -> HOB -> HOD), skipping levels without a fund center.
+ * Build roll-up levels (EMP -> BRANCH -> DEPARTMENT), skipping levels without a fund center.
  * @param {object} oRollup - Employee roll-up cost centers
  * @returns {Array<object>} Levels to check
  */
@@ -539,9 +541,8 @@ function buildRollUpLevels(oRollup = {}) {
 
     return [
         { LEVEL: L.EMP, FUND_CENTER: null },
-        { LEVEL: L.HOS, FUND_CENTER: norm(oRollup[CC.HOS_COSTCENTER]) },
-        { LEVEL: L.HOB, FUND_CENTER: norm(oRollup[CC.HOB_COSTCENTER]) },
-        { LEVEL: L.HOD, FUND_CENTER: norm(oRollup[CC.HOD_COSTCENTER]) }
+        { LEVEL: L.BRANCH, FUND_CENTER: norm(oRollup[CC.BRANCH_COSTCENTER]) },
+        { LEVEL: L.DEPARTMENT, FUND_CENTER: norm(oRollup[CC.DEPARTMENT_COSTCENTER]) }
     ].filter(l => l.LEVEL === L.EMP || l.FUND_CENTER);
 }
 
@@ -931,7 +932,7 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
 
-    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.HOD, Constant.Role.CXO];
+    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.CXO];
     if (aNoRollUpRoles.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE])) return oSkipped;
 
     return rollUpCostCenter(oEmployeeDetails);
