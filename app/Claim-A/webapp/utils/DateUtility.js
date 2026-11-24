@@ -718,6 +718,12 @@ sap.ui.define([
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_receipt_date_in_future"));
+                            } else if (sType === Constants.ClaimType.KURSUS_DLM_NEGARA || sType === Constants.ClaimType.KURSUS_LUAR_NEGARA) {
+                                // Kursus - maximum date = header end date + 1 day (Dlm Negara) / + 2 days (Luar Negara)
+                                _dMaxDate = new Date(oHeader.trip_end_date);
+                                _dMaxDate.setDate(_dMaxDate.getDate() + (sType === Constants.ClaimType.KURSUS_DLM_NEGARA ? 1 : 2));
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                    _oResourceBundle.getText("error_receipt_date_kursus_maxdate"));
                             } else {
                                 // Default Claim Type - maximum date = header end date 
                                 _dMaxDate = new Date(oHeader.trip_end_date);
