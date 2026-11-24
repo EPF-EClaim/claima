@@ -524,8 +524,6 @@ async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
                 .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
             
             if (oParentCostCenter) {
-                console.log('HOD_CC:', oEmployeeRollupCC.HOD_CC);
-                console.log('check:', oEmployeeRollupCC.HOD_CC !== null)
                 switch (true) {
                     case oEmployeeRollupCC.HOB === true:
                     case oEmployeeRollupCC.HOD_CC !== null:
