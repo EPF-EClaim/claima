@@ -116,7 +116,8 @@ const Constant = {
         "PEDU" : "PEDU",
         "CERAMAH" : "CERAMAH",
         "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
-        "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
+        "MEDICAL_ADVANCE": "MEDICAL_ADVANCE",
+        "CORPO_CRED_CARD": "CORPO_CRED_CARD"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -188,7 +189,10 @@ const Constant = {
         "PERSONAL_EXPENSE": "PERSONAL_EXPENSE",
         "MED_ADVANCE": "MED_ADVANCE",
         "INSURANCE": "INSURANCE",
-        "CASH_REPAY": "CASH_REPAY"
+        "CASH_REPAY": "CASH_REPAY",
+        "MERCH_RETURN": "MERCH_RETURN",
+        "STATMENT_DUE": "STATMENT_DUE",
+        "CASH_BACK": "CASH_BACK"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -627,7 +631,6 @@ const Constant = {
     },
     EarmarkedFundPosting_DocHeader: {
         CompanyCode: '1000',
-        EarmarkedFundsDocumentType: '11',
         TransactionCurrency: 'MYR',
         CompanyCodeCurrency: 'MYR',
         EarmarkedFundsDocumentCategory: '30',
@@ -704,7 +707,11 @@ const Constant = {
     },
     IFAMSEmailAction: {
         CONNECTION_ERROR: 'CONNECTION_ERROR'
-    }
+    },
+    EarmarkedFundsDocumentType: {
+        NON_PROJECT: '11',
+        PROJECT: 'Z2'
+    },
 };
 
 module.exports = { Constant };

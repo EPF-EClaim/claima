@@ -174,6 +174,18 @@ async function retrieveItems(sId, oDescriptor) {
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) {
         oQuery.where({ CASH_ADVANCE: false });
+
+        // Exclude specific Corporate Credit Card items
+        oQuery.where`
+            NOT (
+                CLAIM_TYPE_ID = ${Constant.ClaimType.CORPO_CRED_CARD}
+                AND CLAIM_TYPE_ITEM_ID in (
+                    ${Constant.ClaimTypeItem.STATMENT_DUE},
+                    ${Constant.ClaimTypeItem.CASH_BACK},
+                    ${Constant.ClaimTypeItem.MERCH_RETURN}
+                )
+            )
+        `;
     }
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM) {
@@ -216,7 +228,7 @@ async function retrieveBudgetContext(sId, oDescriptor) {
     const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
-    
+
     if(!aItemsContext.length) {
         return aBudgetContexts;
     }
@@ -378,21 +390,47 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             }
         }
 
-        const aItems =
-            aBudgetContext.map((oBudgetContext, iIndex) => ({
-                ...Constant.EarmarkedFundPosting_Item,
-                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-                FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim(),
-                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-                DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
-                PostingDate: determineClaimPostingDate(oBudgetContext.RECEIPT_DATE, oClaimFlexiPosting.oFlexiPostingRecord),
-                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
-                    oBudgetContext.INTERNAL_ORDER && {
-                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
-                })
-            }));
+        // determine posting date for EMF
+        var sPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null);
+        const sProjectCode = String(aBudgetContext[0]?.INTERNAL_ORDER ?? '').trim();
+        const sIoWbsInd = aBudgetContext[0]?.IO_WBS_IND;
+
+        const bHasProject = !!sProjectCode && sProjectCode !== Constant.Wildcard.NA;
+
+        // Validate IO/WBS indicator when project code is provided
+        if ( bHasProject && ![Constant.ProjectCodeIndicator.IO, Constant.ProjectCodeIndicator.WBS].includes(sIoWbsInd)) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_MESSAGE: `Project ${sProjectCode} has no valid IO/WBS indicator`
+            }];
+        }
+
+        const sProjectField = {[Constant.ProjectCodeIndicator.IO]: 'InternalOrder',
+            [Constant.ProjectCodeIndicator.WBS]: 'WBSElementExternalID'}[sIoWbsInd];
+
+        // Determine document type based on whether project code is used
+        const sDocumentType = bHasProject
+            ? Constant.EarmarkedFundsDocumentType.PROJECT
+            : Constant.EarmarkedFundsDocumentType.NON_PROJECT;
+
+        const aItems = aBudgetContext.map((oBudgetContext, iIndex) => ({
+            ...Constant.EarmarkedFundPosting_Item,
+            EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+            CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+            DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
+            ...(bHasProject? {
+                    [sProjectField]: sProjectCode
+                }
+                : {
+                    FundsCenter: String(
+                        oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER
+                    ).trim()
+                })
+        }));
+
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate, sDocumentType);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -418,7 +456,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
-            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
+            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER && !bHasProject) {
                 for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
                     await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }
@@ -916,19 +954,19 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
  */
 function validateCostCenter(aBudgetContext) {
     if (!Array.isArray(aBudgetContext) || !aBudgetContext.length) return [];
-    
+
     return aBudgetContext
-    .filter(o => !o.IO_WBS_IND)
-    .flatMap(o => {
-        const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
-        return sExpected && o.FUND_CENTER !== sExpected
-            ? [{
-                STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
-                CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
-                MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
-            }]
-            : [];
-    });
+        .filter(o => !o.IO_WBS_IND)
+        .flatMap(o => {
+            const sExpected = o.ALTERNATE_COST_CENTER || o.HEADER_COST_CENTER;
+            return sExpected && o.FUND_CENTER !== sExpected
+                ? [{
+                    STATUS: Constant.BudgetCheckStatus.CC_VALIDATION,
+                    CLAIM_TYPE_ITEM: o.CLAIM_TYPE_ITEM,
+                    MESSAGE: `Cost center ${o.FUND_CENTER} does not match expected cost center ${sExpected}.`
+                }]
+                : [];
+        });
 }
 
 /**

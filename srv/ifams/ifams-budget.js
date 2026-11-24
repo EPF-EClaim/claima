@@ -9,6 +9,13 @@ async function getIFAMSConnection() {
     return _ifamsConnection;
 }
 
+/**
+ * Retrieve budget record from IFAMS based on the provided condition and fund center.
+ * @param {Object} oCondition - Condition object containing the necessary parameters for the budget record retrieval
+ * @param {string} sFundCenter - Fund center to filter the budget records
+ * @param {Object} oCache - Optional cache object to store previously retrieved budget records
+ * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string, detail: string|null}>} - Result of the budget record retrieval
+ */
 async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
     let oBudget;
     try {
@@ -70,6 +77,14 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
     }
 }
 
+/**
+ * Execute an IFAMS API request with the specified method, path, and optional data.
+ * 
+ * @param {string} sMethod - HTTP method (GET, POST, PATCH, etc.)
+ * @param {string} sPath - API endpoint path
+ * @param {object} [oData] - Optional data to send with the request
+ * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the IFAMS request
+ */
 async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
     try {
         const IFAMS_Service = await getIFAMSConnection();
@@ -89,7 +104,17 @@ async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
     }
 }
 
-async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
+/**
+ * Process earmarked funds - create or released earmarked funds document
+ * 
+ * @param {Array<object>} aEarmarkedFundItems - List of earmarked fund items
+ * @param {string} sRecordID - Record ID
+ * @param {string} sAction - Action to perform (e.g., PUSH_BACK, REJECTED)
+ * @param {String} [sPostingDate] - Posting date
+ * @param {String} [sDocumentType] - Earmarked funds document type
+ * @returns {Promise<{Error: boolean, errorCode?: string|null, oEarmarkedFundsDocument?: Object|null, oResponse?: Object, Message: string}>} Result of the earmarked funds processing
+ */
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null, sDocumentType = null) {
     var oEarmarkedFundsDocument;
     var oEarMarkedFundsPayload;
     var sPath;
@@ -128,6 +153,8 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
             ...
             Constant.EarmarkedFundPosting_DocHeader,
             EarmarkedFundsHeaderText: sRecordID,
+            ...(sDocumentType && { EarmarkedFundsDocumentType: sDocumentType }),
+            ...(sPostingDate && { PostingDate: sPostingDate }),
             _EarmarkedFundsDocumentItem:
                 aEarmarkedFundItems
         };
@@ -164,6 +191,12 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction) {
     }
 }
 
+/**
+ * Roll up cost center based on the employee's role hierarchy.
+ * 
+ * @param {Object} oEmployeeDetails - Employee details object
+ * @returns {Promise<{error: boolean, message: string, oEmployeeRollupCC: Object}>} - Result of the roll up cost center 
+ */
 async function rollUpCostCenter(oEmployeeDetails) {
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
     const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
@@ -216,6 +249,15 @@ async function rollUpCostCenter(oEmployeeDetails) {
     }
 }
 
+/**
+ * Update earmarked fund details
+ * 
+ * @param {object} oTx - Transaction object
+ * @param {string} sClaimId - Claim ID
+ * @param {object} oEarmarkedFundsDocument - Earmarked funds document details
+ * @param {string} sMessage - Message to log
+ * @param {string} sAction - Action to perform
+ */
 async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument, sMessage, sAction) {
     const bIsBudgetReleaseAction = sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK;
     let sProgram;
