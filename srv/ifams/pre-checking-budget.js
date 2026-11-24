@@ -103,6 +103,7 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  */
 function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
     let dPostingDate;
+    const dCurrentDate = new Date();
 
     // 1. Determine latest receipt date from the budget context
     const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
@@ -115,7 +116,7 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         dPostingDate = dLatestReceiptDate;
     } else {
         // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
-        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date;
+        dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date? oClaimFlexiPosting.cust_Flexi_Posting_Date: sCurrentDate;
     }
 
     return dPostingDate.toLocaleDateString('en-CA');
