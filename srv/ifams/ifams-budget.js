@@ -1,0 +1,488 @@
+const cds = require('@sap/cds');
+const { Constant } = require("../utils/constant");
+
+let _ifamsConnection;
+async function getIFAMSConnection() {
+    if (!_ifamsConnection) {
+        _ifamsConnection = await cds.connect.to('IFAMS_S4_QAS');
+    }
+    return _ifamsConnection;
+}
+
+/**
+ * Retrieve budget record from IFAMS based on the provided condition and fund center.
+ * @param {Object} oCondition - Condition object containing the necessary parameters for the budget record retrieval
+ * @param {string} sFundCenter - Fund center to filter the budget records
+ * @param {Object} oCache - Optional cache object to store previously retrieved budget records
+ * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string, detail: string|null}>} - Result of the budget record retrieval
+ */
+async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
+    let oBudget;
+    try {
+        const norm = v => {
+            const s = String(v ?? '').trim();
+            return s === Constant.Wildcard.NA ? '' : s;
+        };
+
+        const esc = v => norm(v).replace(/'/g, "''");
+        const aFilters = [];
+        const sInternalOrder = norm(oCondition.INTERNAL_ORDER);
+
+        if (sInternalOrder) {
+            const sProjectField = {
+                [Constant.ProjectCodeIndicator.IO]: Constant.BudgetReport.FIELD_MAP.INTERNAL_ORDER,
+                [Constant.ProjectCodeIndicator.WBS]: Constant.BudgetReport.FIELD_MAP.WBS_CODE
+            }[oCondition.IOWBS_IND];
+            aFilters.push(`${sProjectField} eq '${esc(sInternalOrder)}'`);
+        }
+
+        if (norm(sFundCenter)) {
+            aFilters.push(`FundCenter eq '${esc(sFundCenter)}'`);
+        }
+
+        if (norm(oCondition.COMMITMENT_ITEM)) {
+            aFilters.push(`CommitmentItem eq '${esc(oCondition.COMMITMENT_ITEM)}'`);
+        }
+
+        if (norm(oCondition.MATERIAL_GROUP)) {
+            aFilters.push(`MaterialGroup eq '${esc(oCondition.MATERIAL_GROUP)}'`);
+        }
+
+        const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', esc(oCondition.YEAR))
+                        + (aFilters.length ? ` and ${aFilters.join(' and ')}` : '');
+
+        if (!oCache[sPath]) {
+            const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+
+            if (oResponse.error) {
+                return {
+                    error: true,
+                    errorCode: oResponse.errorCode,
+                    data: null,
+                    message: 'The budget validation cannot be completed due to a technical or interface error during communication between SAP CENTRA eClaims and S/4 IFAMS',
+                    detail: oResponse.message
+                };
+            }
+            oCache[sPath] = oResponse.data;
+        }
+
+        const aBudgetRecords = oCache[sPath] || [];
+
+        oBudget = aBudgetRecords[0] || null;
+
+        return { error: false, errorCode: null, data: oBudget, message: 'Successfully retrieved the budget' };
+
+    } catch (oError) {
+        return { error: true, errorCode: Constant.IFAMSBudgetErrorCode.REQUEST_ERROR, data: oBudget, message: oError.message };
+    }
+}
+
+/**
+ * Execute an IFAMS API request with the specified method, path, and optional data.
+ * 
+ * @param {string} sMethod - HTTP method (GET, POST, PATCH, etc.)
+ * @param {string} sPath - API endpoint path
+ * @param {object} [oData] - Optional data to send with the request
+ * @returns {Promise<{error: boolean, errorCode: string|null, data: object|null, message: string}>} - Result of the IFAMS request
+ */
+async function executeIFAMSRequest(sMethod, sPath, oData = undefined) {
+    try {
+        const IFAMS_Service = await getIFAMSConnection();
+        const aRecords = await IFAMS_Service.send({
+            method: sMethod,
+            path: sPath,
+            data: oData
+        });
+        return { error: false, errorCode: null, data: aRecords, message: 'Successfully executed IFAMS request' };
+    } catch (oError) {
+        return {
+            error: true,
+            errorCode: Constant.IFAMSBudgetErrorCode.CONNECTION_ERROR,
+            data: null,
+            message: oError.message
+        };
+    }
+}
+
+/**
+ * Process earmarked funds - create or released earmarked funds document
+ * 
+ * @param {Array<object>} aEarmarkedFundItems - List of earmarked fund items
+ * @param {string} sRecordID - Record ID
+ * @param {string} sAction - Action to perform (e.g., PUSH_BACK, REJECTED)
+ * @param {String} [sPostingDate] - Posting date
+ * @param {String} [sDocumentType] - Earmarked funds document type
+ * @returns {Promise<{Error: boolean, errorCode?: string|null, oEarmarkedFundsDocument?: Object|null, oResponse?: Object, Message: string}>} Result of the earmarked funds processing
+ */
+async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sPostingDate = null, sDocumentType = null) {
+    var oEarmarkedFundsDocument;
+    var oEarMarkedFundsPayload;
+    var sPath;
+    var sMessage;
+    var bError;
+
+    try {
+        if (!aEarmarkedFundItems || !aEarmarkedFundItems.length) {
+            return { Error: true, Message: 'No earmarked fund items provided' }
+        }
+
+        if ((sAction === Constant.Status.PUSH_BACK || sAction === Constant.Status.REJECTED)) {
+            var oResponse;
+
+            for (const item of aEarmarkedFundItems) {
+                sPath = Constant.IFAMS_API_PATH.RELEASE_EARMARKEDFUNDS
+                    .replace('{DOC_NO}', sRecordID)
+                    .replace('{ITEM_NO}', item.EarmarkedFundsDocumentItem);
+
+                oEarMarkedFundsPayload = {
+                    FundsCenter: item.FundsCenter,
+                    CommitmentItem: item.CommitmentItem,
+                    EmrkdFndsItmIsCompleted: true
+                }
+
+                oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.PATCH, sPath, oEarMarkedFundsPayload);
+
+                if (oResponse.error) {
+                    return { Error: true, errorCode: oResponse.errorCode, oEarmarkedFundsDocument: null, Message: oResponse.message };
+                }
+            }
+            return { Error: false, oResponse, Message: `EarmarkedFunds Document has been released. Doc ID: ${sRecordID}` };
+        }
+
+        oEarMarkedFundsPayload = {
+            ...
+            Constant.EarmarkedFundPosting_DocHeader,
+            EarmarkedFundsHeaderText: sRecordID,
+            ...(sDocumentType && { EarmarkedFundsDocumentType: sDocumentType }),
+            ...(sPostingDate && { PostingDate: sPostingDate }),
+            _EarmarkedFundsDocumentItem:
+                aEarmarkedFundItems
+        };
+
+        sPath = Constant.IFAMS_API_PATH.EARMARKEDFUNDS;
+        const oPostResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.POST, sPath, oEarMarkedFundsPayload);
+
+        if (oPostResponse.error) {
+            return { Error: true, errorCode: oPostResponse.errorCode, oEarmarkedFundsDocument: null, Message: oPostResponse.message };
+        }
+
+        oEarmarkedFundsDocument = oPostResponse.data;
+
+    } catch (oError) {
+        return {
+            Error: true,
+            oEarmarkedFundsDocument,
+            Message: oError.message
+        }
+    }
+
+    if (!oEarmarkedFundsDocument) {
+        bError = true;
+        sMessage = 'Budget not found';
+    } else {
+        bError = false;
+        sMessage = `EarmarkedFunds Document created. Doc ID: ${oEarmarkedFundsDocument.EarmarkedFundsDocument}`;
+    }
+
+    return {
+        Error: bError,
+        oEarmarkedFundsDocument,
+        Message: sMessage
+    }
+}
+
+/**
+ * Roll up cost center based on the employee's role hierarchy.
+ * 
+ * @param {Object} oEmployeeDetails - Employee details object
+ * @returns {Promise<{error: boolean, message: string, oEmployeeRollupCC: Object}>} - Result of the roll up cost center 
+ */
+async function rollUpCostCenter(oEmployeeDetails) {
+    const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
+    const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
+
+    let sDirectSuperior = oEmployeeDetails[Constant.EntitiesFields.DIRECT_SUPERIOR];
+    let iCounter = 20;
+    var oEmployeeRollupCC = {};
+    let sRank;
+
+    try {
+        const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
+        while (iCounter > 0) {
+            iCounter--;
+
+            var oDirectSuperior = await cds.run(SELECT.one.from(sEmpMasterTable).
+                where({ [Constant.EntitiesFields.EEID]: sDirectSuperior }));
+
+            if (!oDirectSuperior) break;
+
+            sRank = (aRoleHierarchy.find(role => role.ROLE === oDirectSuperior.ROLE))?.RANK;
+
+            if (sRank > (aRoleHierarchy.find(role => role.ROLE === Constant.Role.HOD)).RANK) {
+                break;
+            }
+
+            switch (oDirectSuperior.ROLE) {
+                case (Constant.Role.HOS):
+                    oEmployeeRollupCC.HOS_CC = oDirectSuperior.CC;
+                    break;
+                case (Constant.Role.HOB):
+                    oEmployeeRollupCC.HOB_CC = oDirectSuperior.CC;
+                    break;
+                case (Constant.Role.HOD):
+                    oEmployeeRollupCC.HOD_CC = oDirectSuperior.CC;
+                    break;
+                default:
+                    break;
+            }
+
+            sDirectSuperior = oDirectSuperior[Constant.EntitiesFields.DIRECT_SUPERIOR];
+
+            if (oEmployeeRollupCC.HOD_CC || oEmployeeRollupCC.HOB_CC) break;
+        }
+
+        var sMessage = Object.keys(oEmployeeRollupCC).length === 0 ? 'No roll up cost center found' : 'Roll up cost center available';
+
+        return { error: false, message: sMessage, oEmployeeRollupCC };
+    } catch (oError) {
+        return { error: true, message: oError.message, oEmployeeRollupCC };
+    }
+}
+
+/**
+ * Update earmarked fund details
+ * 
+ * @param {object} oTx - Transaction object
+ * @param {string} sClaimId - Claim ID
+ * @param {object} oEarmarkedFundsDocument - Earmarked funds document details
+ * @param {string} sMessage - Message to log
+ * @param {string} sAction - Action to perform
+ */
+async function updateEarmarkedFundDetails(oTx, sClaimId, oEarmarkedFundsDocument, sMessage, sAction) {
+    const bIsBudgetReleaseAction = sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK;
+    let sProgram;
+
+    // =====================================================
+    // REJECT / PUSH BACK
+    // Clear Earmarked Funds references after IFAMS release
+    // =====================================================
+    if (bIsBudgetReleaseAction) {
+
+        // 1. Clear ZCLAIM_HEADER
+        await oTx.run(
+            UPDATE(Constant.Entities.ZCLAIM_HEADER)
+                .set({
+                    EARMARKED_FUNDS_DOC_COMP_CODE: null,
+                    EARMARKED_FUNDS_DOC_ID: null,
+                    EARMARKED_FUNDS_DOC_YEAR: null
+                })
+                .where({
+                    CLAIM_ID: sClaimId
+                })
+        );
+
+        // 2. Clear ZCLAIM_ITEM
+        await oTx.run(
+            UPDATE(Constant.Entities.ZCLAIM_ITEM)
+                .set({
+                    EARMARKED_FUNDS_DOC_ITEM_ID: null
+                })
+                .where({
+                    CLAIM_ID: sClaimId
+                })
+        );
+        // Set ZLOG program for release
+        sProgram = Constant.BudgetLog.PROGRAM.RELEASE;
+    }
+    // =====================================================
+    // Save newly created Earmarked Funds information
+    // =====================================================
+    else {
+        if (!oEarmarkedFundsDocument) {
+            throw new Error(
+                `Earmarked Funds Document is required for Claim ${sClaimId}`
+            );
+        }
+        const sDocumentYear = oEarmarkedFundsDocument.EmrkdFndsDocCreationDate?.substring(0, 4);
+
+        // 1. Update ZCLAIM_HEADER
+        await oTx.run(
+            UPDATE(Constant.Entities.ZCLAIM_HEADER)
+                .set({
+                    EARMARKED_FUNDS_DOC_COMP_CODE:
+                        oEarmarkedFundsDocument.CompanyCode,
+                    EARMARKED_FUNDS_DOC_ID:
+                        oEarmarkedFundsDocument.EarmarkedFundsDocument,
+                    EARMARKED_FUNDS_DOC_YEAR:
+                        sDocumentYear
+                })
+                .where({
+                    CLAIM_ID: sClaimId
+                })
+        );
+
+        const aClaimItems = await oTx.run(
+            SELECT.from(Constant.Entities.ZCLAIM_ITEM)
+                .columns('CLAIM_ID', 'CLAIM_SUB_ID')
+                .where({
+                    CLAIM_ID: sClaimId
+                })
+        );
+
+        // 2. Update ZCLAIM_ITEM
+        for (const oEarmarkedItem of oEarmarkedFundsDocument._EarmarkedFundsDocumentItem) {
+
+            const sItemNo = String(
+                oEarmarkedItem.EarmarkedFundsDocumentItem
+            ).padStart(3, '0');
+
+            const oClaimItem = aClaimItems.find(
+                oItem => oItem.CLAIM_SUB_ID?.slice(-3) === sItemNo
+            );
+
+            if (!oClaimItem) {
+                continue;
+            }
+
+            await oTx.run(
+                UPDATE(Constant.Entities.ZCLAIM_ITEM)
+                    .set({
+                        EARMARKED_FUNDS_DOC_ITEM_ID:
+                            oEarmarkedItem.EarmarkedFundsDocumentItem
+                    })
+                    .where({
+                        CLAIM_ID: oClaimItem.CLAIM_ID,
+                        CLAIM_SUB_ID: oClaimItem.CLAIM_SUB_ID
+                    })
+            );
+        }
+
+        // Set ZLOG program for submission
+        sProgram = Constant.BudgetLog.PROGRAM.SUBMISSION_LOCK;
+    }
+    // =====================================================
+    // ZLOG
+    // Used for both CREATE and RELEASE
+    // =====================================================
+    await oTx.run(
+        INSERT.into(Constant.Entities.ZLOG)
+            .entries({
+                TIMESTAMP: new Date(),
+                RECORD_ID: sClaimId,
+                PROGRAM: sProgram,
+                MESSAGE_TYPE: Constant.BudgetLog.MESSAGE_TYPE,
+                STATUS_CODE: Constant.StatusCode.SUCCESS,
+                MESSAGE: sMessage
+            })
+    );
+}
+
+/**
+ * Retrieve budget data from IFAMS in real time
+ * and store it in ZBUDGET (display purposes only).
+ *
+ * @param {string} sYear - Fiscal year to retrieve (e.g. "2026")
+ * @returns {Promise<number>} Number of records saved into ZBUDGET
+ */
+async function syncBudgetReport(sYear) {
+
+    // 1. Call IFAMS API
+    const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', sYear);
+    const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
+
+    if (oResponse.error) {
+        throw new Error(`Failed to retrieve budget report from IFAMS: ${oResponse.message}`);   
+    }
+
+    const oData = oResponse.data; 
+    const aIFAMSRecords = Array.isArray(oData)
+        ? oData
+        : (oData?.d?.results || oData?.results || oData?.value || []);
+
+    if (!aIFAMSRecords.length) {
+        return 0;
+    }
+
+    const oFieldMap = Constant.BudgetReport.FIELD_MAP;
+    const toText = (vValue) => String(vValue ?? '').trim();
+    const toAmount = (vValue) => Number(vValue) || 0;
+
+    // Follow ZBUDGET field length
+    const iMaxCommitmentItem = 6;   // ZBUDGET.COMMITMENT_ITEM : String(6)
+    const iMaxCurrency = 3;         // ZBUDGET.CURRENCY : String(3)
+
+    // 2. Map IFAMS fields → ZBUDGET columns
+    //    (Map removes duplicate keys so the UPSERT does not fail)
+    const oEntries = new Map();
+
+    for (const oRecord of aIFAMSRecords) {
+        const oEntry = {
+            // Key fields
+            YEAR: toText(oRecord[oFieldMap.YEAR]) || sYear,
+            INTERNAL_ORDER: toText(oRecord[oFieldMap.INTERNAL_ORDER]) || Constant.Wildcard.NA,
+            COMMITMENT_ITEM: toText(oRecord[oFieldMap.COMMITMENT_ITEM]),
+            FUND_CENTER: toText(oRecord[oFieldMap.FUND_CENTER]),
+            MATERIAL_GROUP: toText(oRecord[oFieldMap.MATERIAL_GROUP]) || Constant.Wildcard.NA,
+
+            // Budget amounts
+            ORIGINAL_BUDGET: toAmount(oRecord[oFieldMap.ORIGINAL_BUDGET]),
+            VIREMENT_IN: toAmount(oRecord[oFieldMap.VIREMENT_IN]),
+            VIREMENT_OUT: toAmount(oRecord[oFieldMap.VIREMENT_OUT]),
+            SUPPLEMENT: toAmount(oRecord[oFieldMap.SUPPLEMENT]),
+            RETURN: toAmount(oRecord[oFieldMap.RETURN]),
+            CURRENT_BUDGET: toAmount(oRecord[oFieldMap.CURRENT_BUDGET]),
+            COMMITMENT: toAmount(oRecord[oFieldMap.COMMITMENT]),
+            ACTUAL: toAmount(oRecord[oFieldMap.ACTUAL]),
+            CONSUMED: toAmount(oRecord[oFieldMap.CONSUMED]),
+            BUDGET_BALANCE: toAmount(oRecord[oFieldMap.BUDGET_BALANCE]),
+
+            // Other fields
+            WBS_CODE: toText(oRecord[oFieldMap.WBS_CODE]),
+            // Project code currently uses the same value as IFAMS IO
+            PROJECT_CODE: toText(oRecord[oFieldMap.INTERNAL_ORDER]) || Constant.Wildcard.NA,
+            CURRENCY: toText(oRecord[oFieldMap.CURRENCY]) || Constant.BudgetReport.DEFAULT_CURRENCY
+        };
+
+        // Skip records without mandatory keys
+        if (!oEntry.FUND_CENTER || !oEntry.COMMITMENT_ITEM) {
+            continue;
+        }
+
+        // Skip records exceeding ZBUDGET field length
+        if (oEntry.COMMITMENT_ITEM.length > iMaxCommitmentItem) {
+            continue;
+        }
+
+        // Fall back to default currency if exceeding ZBUDGET field length
+        if (oEntry.CURRENCY.length > iMaxCurrency) {
+            oEntry.CURRENCY = Constant.BudgetReport.DEFAULT_CURRENCY;
+        }
+
+        const sKey = [
+            oEntry.YEAR,
+            oEntry.INTERNAL_ORDER,
+            oEntry.COMMITMENT_ITEM,
+            oEntry.FUND_CENTER,
+            oEntry.MATERIAL_GROUP
+        ].join('|');
+
+        oEntries.set(sKey, oEntry);
+    }
+
+    const aEntries = [...oEntries.values()];
+    if (!aEntries.length) {
+        return 0;
+    }
+
+    // 3. Save into ZBUDGET (insert new / update existing)
+    await cds.run(UPSERT.into('ECLAIM.ZBUDGET').entries(aEntries));
+    return aEntries.length;
+}
+
+module.exports = {
+    getBudgetRecord,
+    processEarmarkedFunds,
+    rollUpCostCenter,
+    updateEarmarkedFundDetails,
+    syncBudgetReport
+};

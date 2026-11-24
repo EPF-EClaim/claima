@@ -12,11 +12,11 @@ const {
     resolveDocDescriptor,
     retrieveBudgetContext,
     generateReturnMessage,
-    performBudgetChecking,
     buildBudgetErrorMessage,
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
-    logWorkflowHistory
+    logWorkflowHistory,
+    releaseClaimBudget
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -37,7 +37,7 @@ const {
 const {
     updateUsedEntitlementAmount
 } = require('./utils/UpdateDependent');
-const { message } = require('@sap/cds/lib/log/cds-error');
+const { notifyIFAMSConnectionError } = require('./utils/EmailNotification');
 
 module.exports = (srv) => {
 
@@ -64,26 +64,11 @@ module.exports = (srv) => {
         }
         const { oWorkflowContext, aApproversContext, aApproversContextNew } = oPreWorkflowResult;
 
-        // 6.1 Perform budget actualization for auto approve ===
-        // 6.2 update header status
-        // 6.3 update entitlement amount 
-        // 6.4 update ccc advance value
-        let aBudgetContext, aBudgetCheckReturn;
+        // 6.1 update header status
+        // 6.2 update entitlement amount 
+        // 6.3 update ccc advance value
         if (aApproversContext.length && aApproversContext[0].LEVEL == 0) {
             var bAutoApprove = true;
-            try {
-                aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, Constant.ApproverActions.APPROVE);
-                aBudgetCheckReturn = await performBudgetChecking(oTx, aBudgetContext);
-            } catch (oError) {
-                await oTx.rollback();
-                throw new Error(`Error encountered during Budget Actualization\n${oError.message}`);
-            }
-
-            const sBudgetError = buildBudgetErrorMessage(aBudgetCheckReturn);
-            if (sBudgetError) {
-                await oTx.rollback();
-                return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.BUDGET_ACTUALIZATION, `Error encountered during Budget Checking\n${sBudgetError}`, false);
-            }
 
             // If successful, update Header table with approved status and timestamp
             try {
@@ -150,7 +135,7 @@ module.exports = (srv) => {
             } catch (oError) {
                 // Log the failure for audit visibility, but don't roll back or throw -
                 // the workflow itself already succeeded by this point.
-                await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, 'E', '500');
+                await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, Constant.MessageType.ERROR, Constant.StatusCode.ERROR);
             }
         }
         // ==========
@@ -159,160 +144,210 @@ module.exports = (srv) => {
 
     });
 
-    srv.on('processApproval', async req => {
-        console.log("Request Payload: ", req.data);
+    /* =========================================================================
+    * processApproval helpers
+    * ========================================================================= */
+
+    /**
+     * Whether the action ends the workflow stage
+     * (REJECT / PUSH BACK, or APPROVE by the last-level approver).
+     */
+    const isFinalStageAction = (sActionValue, oLastLevel) =>
+        sActionValue === Constant.Status.REJECTED ||
+        sActionValue === Constant.Status.PUSH_BACK ||
+        (oLastLevel.SUCCESS && oLastLevel.ISLASTLEVEL);
+
+    /**
+     * Updates the Corporate Card advance and wraps any failure in a standard error.
+     */
+    const updateCorpoCardAdvanceSafe = async (oTx, sRecordId, sActionValue) => {
+        try {
+            await updateCorpoCardAdvance(oTx, sRecordId, sActionValue);
+        } catch (oAdvErr) {
+            throw new Error('Error encountered during Corporate Card Advance update');
+        }
+    };
+
+    /**
+     * Final-approval steps for Corporate Credit Card requests.
+     */
+    const handleCCCFinalApproval = async (oTx, sRecordId, sUserId) => {
+        await notifyCardholdersOfRequestApproval(oTx, sRecordId);   // send email to cardholder(s) to inform that request has been approved
+        await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);    // send email to maker to inform that request has been approved
+        await buildFinalApprovalPayloadForCCC(oTx, sRecordId);      // send CCC records to SF MDF
+    };
+
+    /**
+     * Builds the workflow history message for the approver action.
+     */
+    const buildApprovalLogMessage = async (oTx, sRecordId, sUserId, oActionDescriptor, sComments) => {
+        const oUser = await oTx.run(
+            SELECT.one.from('ZEMP_MASTER')
+                .columns('EEID', 'NAME')
+                .where({ EEID: sUserId })
+        );
+
+        const sActionText = Constant.UIAction[oActionDescriptor.approverActionValue]
+            ?? oActionDescriptor.approverActionValue?.toLowerCase();
+        const sCommentText = sComments ? ` with comment: ${sComments}` : '';
+
+        return `${sRecordId} is ${sActionText} by ${oUser?.NAME ?? sUserId}${sCommentText}.`;
+    };
+
+    /**
+     * Sends the approval notification:
+     * - REJECT / PUSH BACK  → claimant
+     * - Final APPROVE       → claimant
+     * - Intermediate APPROVE → next level approver(s)
+     */
+    const sendApprovalNotification = async ({
+        sRecordId, sUserId, oDescriptor, oActionDescriptor, oLastLevel,
+        sComments, sRejectionReasonDesc, bIsRejectOrPushBack, bIsFinalApprove
+    }) => {
+        if (bIsRejectOrPushBack || bIsFinalApprove) {
+            return sendEmailToClaimant(sRecordId, sUserId, oDescriptor,
+                oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
+        }
+
+        const aApproversContext = await getApproverContextByLevel(sRecordId, oDescriptor, oLastLevel.NEXTLEVEL);
+        return sendEmailToApprover(aApproversContext, sRecordId, oDescriptor,
+            Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevel.NEXTLEVEL);
+    };
+
+    /* =========================================================================
+    * processApproval
+    * ========================================================================= */
+    srv.on('processApproval', async (req) => {
+
         const {
             Id: sRecordId,
             UserId: sUserId,
             ApproverAction: sAction,
             Comments: sComments,
             RejectionReason: sRejectionReason
-        } = req.data.request
+        } = req.data.request;
 
         if (!sRecordId) {
-            return generateReturnMessage(false, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to process approval", false);
+            return generateReturnMessage(false, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL,
+                "Document ID is required to process approval", false);
         }
 
+        const oTx = cds.tx(req);
         const oDescriptor = resolveDocDescriptor(sRecordId);
-        let bStatus = true;
 
-        const oTx = cds.tx(req)
+        // 1. Resolve action
         const oActionDescriptor = resolveActionDescriptor(sAction);
         if (!oActionDescriptor) {
             throw new Error(`Unsupported workflow action: ${sAction}`);
         }
-        console.log("ActionDescriptor: ", oActionDescriptor);
-        // Verify if Approver is correct approver        
-        bStatus = await verifyCorrectApproverForAction(sRecordId, sUserId, oDescriptor);
-        if (!bStatus) {
-            //Return error message
+
+        // 2. Validate approver
+        const bValidApprover = await verifyCorrectApproverForAction(sRecordId, sUserId, oDescriptor);
+        if (!bValidApprover) {
             throw new Error(`Invalid Approver ${sUserId} for Document ${sRecordId}`);
         }
-        console.log("Approver Validation: ", bStatus);
-        // Check if approver is last level approver
-        const oLastLevelApproverStatus = await determineLastApproverLevel(sRecordId, sUserId, oDescriptor);
 
-        console.log("Final Approver Context: ", oLastLevelApproverStatus);
-        // Once Approver is validated, perform action
-        console.log("Rejection Reason: ", sRejectionReason);
-        bStatus = await updateApproverDetailsTable(oTx, sRecordId, sUserId, oActionDescriptor, sComments, sRejectionReason, oDescriptor);
-        if (!bStatus) {
-            //Return error message
+        // 3. Determine approver level
+        const oLastLevel = await determineLastApproverLevel(sRecordId, sUserId, oDescriptor);
+
+        const sActionValue = oActionDescriptor.actionValue;
+        const bFinalStage = isFinalStageAction(sActionValue, oLastLevel);
+
+        // 4. Update approver details
+        const bApproverUpdated = await updateApproverDetailsTable(
+            oTx, sRecordId, sUserId, oActionDescriptor, sComments, sRejectionReason, oDescriptor);
+        if (!bApproverUpdated) {
             throw new Error(`Error Encountered during action: ${sAction} for Document ${sRecordId}`);
         }
-        console.log("Approver Action Completed: ", bStatus);
 
-        // If approver is final level approver or if action is REJECT/PUSH BACK, perform budget checking
-        if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
-            const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor, oActionDescriptor.budgetActionValue);
-            console.log("aBudgetContext: ", aBudgetContext);
-            const aReturn = await performBudgetChecking(oTx, aBudgetContext);
-            console.log("aReturn: ", aReturn);
+        // REJECT / PUSH BACK:
+        // Release Earmarked Funds reservation in IFAMS,
+        // log the successful release and clear the local IFAMS references.
+        if (
+            oDescriptor.entityPrefix === Constant.WorkflowType.CLAIM &&
+            (
+                oActionDescriptor.actionValue === Constant.Status.REJECTED ||
+                oActionDescriptor.actionValue === Constant.Status.PUSH_BACK
+            )
+        ) {
+            const aBudgetContext = await retrieveBudgetContext(sRecordId, oDescriptor);
+            // Earmarked Funds Document ID must be available
+            const oClaimHeader = await oTx.run(
+                SELECT.one
+                    .from(Constant.Entities.ZCLAIM_HEADER)
+                    .columns("EARMARKED_FUNDS_DOC_ID")
+                    .where({
+                        CLAIM_ID: sRecordId
+                    })
+            );
+            const sEarmarkedFundsDocId = oClaimHeader?.EARMARKED_FUNDS_DOC_ID;
+            if (!sEarmarkedFundsDocId) {
+                throw new Error(
+                    `Earmarked Funds Document ID not found for ${sRecordId}`
+                );
+            }
+
+            // Call IFAMS to release the budget
+            const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
+
+            // Send admin notification when IFAMS connection fails during budget release
+            await notifyIFAMSConnectionError(aReturn, sRecordId);
+
             const sBudgetError = buildBudgetErrorMessage(aReturn);
             if (sBudgetError) {
-                bStatus = false;
-                throw new Error(`Error encountered during Budget Checking\n${sBudgetError}`)
+                throw new Error(
+                    `Error encountered during IFAMS Budget Release\n${sBudgetError}`
+                );
             }
-            console.log("Budget Checking Status: ", bStatus);
         }
 
-        // update PEDU entitlement usage if action is reject
-        await updateUsedEntitlementAmount(sRecordId, oActionDescriptor.actionValue, oTx);
+        // 6. PEDU entitlement usage
+        await updateUsedEntitlementAmount(sRecordId, sActionValue, oTx);
 
-        // Update ZCLAIM_HEADER / ZREQUEST_HEADER with the status, timestamp and Reject Reason if necessary
-        if (oActionDescriptor.actionValue == Constant.Status.REJECTED || oActionDescriptor.actionValue == Constant.Status.PUSH_BACK || (oLastLevelApproverStatus.SUCCESS && oLastLevelApproverStatus.ISLASTLEVEL)) {
-            const sStatus = await UpdateHeader.updateApproverActionToHeader(sRecordId, oActionDescriptor.actionValue, oTx);
-            console.log("Header table update: ", sStatus);
+        // 7. Header status update (final stage only)
+        if (bFinalStage) {
+            await UpdateHeader.updateApproverActionToHeader(sRecordId, sActionValue, oTx);
         }
 
-        // Notify claimant/next level approver
-        // If action is REJECT/PUSH BACK, notify claimant
-        // If action is APPROVE, notify next level approver
-        // If action is APPROVE and there are no next level approver, notify claimant
-        // Retrieve Reject reason description if rejection reason is provided
+        // 8. Follow-up actions
+        const bIsRejectOrPushBack = sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK;
+        const bIsFinalApprove = sAction === Constant.Status.APPROVED && oLastLevel.ISLASTLEVEL;
         let sRejectionReasonDesc = null;
-        if (sAction === Constant.Status.REJECTED || sAction === Constant.Status.PUSH_BACK) {
-            sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
-            if (!sRejectionReasonDesc) {
-                throw new Error('Rejection reason is required for rejection or push back action');
+
+        try {
+            if (bIsRejectOrPushBack) {
+                sRejectionReasonDesc = await retrieveRejectReasonDesc(sRejectionReason);
+                if (!sRejectionReasonDesc) {
+                    throw new Error('Rejection reason is required for rejection or push back action');
+                }
+                await updateCorpoCardAdvanceSafe(oTx, sRecordId, sActionValue);
+
+            } else if (bIsFinalApprove) {
+                await updateCorpoCardAdvanceSafe(oTx, sRecordId, sActionValue);
+                await sendClaimBatch(sRecordId);
+
+                if (sRecordId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
+                    await handleCCCFinalApproval(oTx, sRecordId, sUserId);
+                }
             }
-            console.log("sRejectionReasonDesc: ", sRejectionReasonDesc);
-            try {
-                await updateCorpoCardAdvance(oTx, sRecordId, oActionDescriptor.actionValue);
-            } catch (oAdvErr) {
-                console.error("Failed to update corpo card advance:", oAdvErr);
-                throw new Error('Error encountered during Corporate Card Advance update');
-            }
-            bStatus = await sendEmailToClaimant(sRecordId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
-        }
-        else if (sAction === Constant.Status.APPROVED && oLastLevelApproverStatus.ISLASTLEVEL) {
-            try {
-                await updateCorpoCardAdvance(oTx, sRecordId, oActionDescriptor.actionValue);
-            } catch (oAdvErr) {
-                console.error("Failed to update corpo card advance:", oAdvErr);
-                throw new Error('Error encountered during Corporate Card Advance update');
-            }
-
-            //trigger final approval process to send batch claim to IS 
-            console.log("Final approval Start");
-            const oSendClaimBatch = await sendClaimBatch(sRecordId);
-            console.log("Final Approval: ", oSendClaimBatch);
-
-            // Once a Corporate Credit Card request is fully approved, notify the cardholder(s)
-            if (sAction === Constant.Status.APPROVED && sRecordId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
-                console.log("Sending final approve CCC email")
-                await notifyCardholdersOfRequestApproval(oTx, sRecordId);
-                await notifyCCCMakerOfApproval(oTx, sRecordId, sUserId);
-
-                const aFinalApprovalPayload = await buildFinalApprovalPayloadForCCC(oTx, sRecordId);
-                console.log("Final approval payload:", JSON.stringify(aFinalApprovalPayload));
-
-            }
-            bStatus = await sendEmailToClaimant(sRecordId, sUserId, oDescriptor, oActionDescriptor.emailAction, sComments, sRejectionReasonDesc);
-        }
-        else {
-            const aApproversContext = await getApproverContextByLevel(sRecordId, oDescriptor, oLastLevelApproverStatus.NEXTLEVEL)
-            console.log("Approver context for next level approver: ", aApproversContext);
-            bStatus = await sendEmailToApprover(aApproversContext, sRecordId, oDescriptor, Constant.ApprovalEmailAction.ACTION_NOTIFY, oLastLevelApproverStatus.NEXTLEVEL)
-        }
-        if (!bStatus) {
-            throw new Error('Error encountered during Email Notification');
-        }
-        console.log("Approver Action Status: ", bStatus);
-
-        const mActionText = {
-            APPROVE: "approved",
-            REJECT: "rejected",
-            PUSHBACK: "pushed back"
-        };
-
-        if (bStatus) {
-            const oUser = await oTx.run(
-                SELECT.one
-                    .from('ZEMP_MASTER')
-                    .where({ EEID: sUserId })
-                    .columns('EEID', 'NAME')
-            );
-
-            const sActionText = Constant.UIAction[oActionDescriptor.approverActionValue] ?? oActionDescriptor.approverActionValue?.toLowerCase();
-            const sCommentText = sComments
-                ? ` with comment: ${sComments}`
-                : '';
-
-            const sMessage = `${sRecordId} is ${sActionText} by ${oUser?.NAME ?? sUserId}${sCommentText}.`;
-
-            await oTx.run(
-                INSERT.into("ZLOG").entries({
-                    TIMESTAMP: new Date(),
-                    RECORD_ID: sRecordId,
-                    PROGRAM: 'WORKFLOW',
-                    MESSAGE_TYPE: 'A',
-                    STATUS_CODE: Constant.StatusCode.SUCCESS,
-                    MESSAGE: sMessage
-                })
-            );
+        } catch (oError) {
+            throw new Error(`Follow-up action failed for ${sRecordId}: ${oError.message}`);
         }
 
-        return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Approver Process Completed');
+        // 9. Email notification
+        try {
+            await sendApprovalNotification({
+                sRecordId, sUserId, oDescriptor, oActionDescriptor, oLastLevel,
+                sComments, sRejectionReasonDesc, bIsRejectOrPushBack, bIsFinalApprove
+            });
+        } catch (oError) {
+            await logWorkflowHistory(oTx, sRecordId, `Notification failed for ${sRecordId}: ${oError.message}`, Constant.MessageType.ERROR, Constant.StatusCode.ERROR);
+        }
+
+        // 10. Workflow history
+        const sLogMessage = await buildApprovalLogMessage(oTx, sRecordId, sUserId, oActionDescriptor, sComments);
+        await logWorkflowHistory(oTx, sRecordId, sLogMessage, Constant.MessageType.WORKFLOW, Constant.StatusCode.SUCCESS);
+
+        return generateReturnMessage(true, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, 'Approver Process Completed');
     });
 }

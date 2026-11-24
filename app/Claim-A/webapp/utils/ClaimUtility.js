@@ -80,9 +80,7 @@ sap.ui.define([
 			} catch (oError) {
 				MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
 				return false;
-			} finally {
-				BusyIndicator.hide();
-			}
+			} 
 		},
 
 		/**

@@ -1183,29 +1183,24 @@ sap.ui.define([
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 
-				//get internal order by project code
-				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-				var sInternalOrder = await Utility.getInternalOrderByProjectCode(this.getOwnerComponent().getModel(),sProjectCode);
-				oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
-
-				var glAccount;
+				var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
+				let sGLAccount;
 
 				if (sProjectCode) {
-					glAccount = await Utility.getGLAccountByProjectCode(
+					sGLAccount = await Utility.getGLAccountByProjectCode(
 						oModel,
 						sProjectCode
 					);
 				} else {
-					glAccount = await this._getGLAccount(
+					sGLAccount = await this._getGLAccount(
 						oModel,
 						oInputModel.getProperty("/claim_item/claim_type_id")
 					);
 				}
 
-				oInputModel.setProperty("/claim_item/gl_account", glAccount);
+				oInputModel.setProperty("/claim_item/gl_account", sGLAccount);
 				//// get cost center
 				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || oClaimSubmissionModel.getProperty("/claim_header/cost_center") || null;
 				oInputModel.setProperty("/claim_item/cost_center", itemCc);
@@ -2625,9 +2620,7 @@ sap.ui.define([
 		*                                Child (02) aged 18 and below;
 		*                                Child (02) aged 19 to 25 who is a student
 		*  - LAUT                      : Spouse (01), Child (02), Additional Spouse (07)
-		*  - INSURANCE / MED_ADVANCE   : Spouse (01) / Additional Spouse (07) who is a medical beneficiary;
-		*                                Child (02) aged 25 and below who is a medical beneficiary and a student;
-		*                                Child (02) who is a medical beneficiary and disabled (student and age checks bypassed)
+		*  - INSURANCE / MED_ADVANCE   : dependents who are a medical beneficiary (MEDICAL_BENEFICIARY = true)
 		*  - KEMATIAN                  : Spouse (01), Additional Spouse (07);
 		*                                Child (02) below 18 (17 and below) who is not employed;
 		*                                Child (02) below 24 (23 and below) who is a student
@@ -2725,94 +2718,14 @@ sap.ui.define([
 
 				case this._oConstant.ClaimTypeItem.INSURANCE:
 				case this._oConstant.ClaimTypeItem.MED_ADVANCE:
-					var s25YearsAndBelow = DateUtility.getDateNYearsAgo(25);
-
-					// Spouse / Additional Spouse
-					var oSpouseFilter = new Filter({
-						filters: [
-							new Filter({
-								filters: [
-									new Filter(
-										this._oConstant.EntitiesFields.RELATIONSHIP,
-										FilterOperator.EQ,
-										this._oConstant.Relationship.SPOUSE
-									),
-									new Filter(
-										this._oConstant.EntitiesFields.RELATIONSHIP,
-										FilterOperator.EQ,
-										this._oConstant.Relationship.ADDITIONAL_SPOUSE
-									)
-								],
-								and: false
-							}),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							)
-						],
-						and: true
-					});
-
-					// Child - Normal Rule
-					var oEligibleChildFilter = new Filter({
-						filters: [
-							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
-								FilterOperator.EQ,
-								this._oConstant.Relationship.CHILD
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.STUDENT,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.DOB,
-								FilterOperator.GE,
-								s25YearsAndBelow
-							)
-						],
-						and: true
-					});
-
-					// Child - Disabled (bypass Student & DOB checks)
-					var oDisabledChildFilter = new Filter({
-						filters: [
-							new Filter(
-								this._oConstant.EntitiesFields.RELATIONSHIP,
-								FilterOperator.EQ,
-								this._oConstant.Relationship.CHILD
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY,
-								FilterOperator.EQ,
-								true
-							),
-							new Filter(
-								this._oConstant.EntitiesFields.DISABLED,
-								FilterOperator.EQ,
-								true
-							)
-						],
-						and: true
-					});
-
+					// Only dependents flagged as medical beneficiary
 					var aMedicalFilters = [
 						oEmpFilter,
-						new Filter({
-							filters: [
-								oSpouseFilter,
-								oEligibleChildFilter,
-								oDisabledChildFilter
-							],
-							and: false
-						})
+						new Filter(
+							this._oConstant.EntitiesFields.MEDICAL_BENEFICIARY, 
+							FilterOperator.EQ, 
+							true
+						)
 					];
 
 					// Medical Advance with Pre-Approval Request: only the dependent(s) selected in the PAR
@@ -3232,14 +3145,6 @@ sap.ui.define([
 				var oModel = this.getOwnerComponent().getModel();
 				var oListBinding = null;
 
-				// Ensure Internal Order is populated before save
-				if (!oInputModel.getProperty("/claim_item/internal_order")) {
-					var sProjectCode = oClaimSubmissionModel.getProperty("/claim_header/project_code");
-					var sInternalOrder = await Utility.getInternalOrderByProjectCode(oModel,sProjectCode);
-
-					oInputModel.setProperty("/claim_item/internal_order", sInternalOrder);
-				}
-
 				// "Charged to CCC" is only offered on travel claims of corporate card holders
 				const bCccAllowed = this._isTravelClaimWithCard(
 					oClaimSubmissionModel.getProperty("/claim_header/card_no"),
@@ -3358,7 +3263,7 @@ sap.ui.define([
 					EXCLUDE_TIPS: oInputModel.getProperty("/claim_item/exclude_tips"),
 					TOTAL_TRAVELLER: oInputModel.getProperty("/claim_item/number_of_travellers"),
 					DEPENDENT_TYPE_ID: oInputModel.getProperty("/claim_item/dependent_type"),
-					INTERNAL_ORDER: oInputModel.getProperty("/claim_item/internal_order"),
+					INTERNAL_ORDER: oClaimSubmissionModel.getProperty("/claim_header/project_code"),
 					COURSE_DURATION: oInputModel.getProperty("/claim_item/course_duration"),
 					CHARGED_TO_CCC: (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PERSONAL_EXP ||
 									oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POTONGAN_ELAUN)

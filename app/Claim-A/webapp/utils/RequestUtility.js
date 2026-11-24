@@ -550,20 +550,15 @@ sap.ui.define([
             switch(oReqHeader.claimtype){
                 case Constants.ClaimType.WILAYAH_ASAL:
                    
-                    var d18YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.EIGHTEEN);
-                    var d19YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.NINETEEN);
-                    var d25YearsFromCurrentDate = DateUtility.today().getFullYear() - Number(Constants.Age.TWENTY_FIVE);
-
-                    d18YearsFromCurrentDate = new Date(d18YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-                    d19YearsFromCurrentDate = new Date(d19YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
-                    d25YearsFromCurrentDate = new Date(d25YearsFromCurrentDate, 0, 1).toLocaleDateString("en-CA");
+                    var s18YearsAgo = DateUtility.getDateNYearsAgo(18);
+                    var s25YearsAgo = DateUtility.getDateNYearsAgo(25);
 
                     var oSpouseFilter = new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.SPOUSE);
 
                     var oChildBelow18 = new Filter({
                         filters: [
                             new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
-                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GT, d18YearsFromCurrentDate)
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GE, s18YearsAgo)
                         ],
                         and: true
                     })
@@ -571,7 +566,8 @@ sap.ui.define([
                     var oChildStudying = new Filter({
                         filters: [
                             new Filter(Constants.EntitiesFields.RELATIONSHIP, FilterOperator.EQ, Constants.Relationship.CHILD),
-                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.BT, d25YearsFromCurrentDate, d19YearsFromCurrentDate),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.GE, s25YearsAgo),
+                            new Filter(Constants.EntitiesFields.DOB, FilterOperator.LT, s18YearsAgo),
                             new Filter(Constants.EntitiesFields.STUDENT, FilterOperator.EQ, true),
                         ],
                         and: true
@@ -613,102 +609,15 @@ sap.ui.define([
 					})
 
                 case Constants.ClaimType.MEDICAL_ADVANCE:
-
-                    var d25YearsAndBelow = DateUtility.today();
-                    d25YearsAndBelow.setFullYear(
-                        d25YearsAndBelow.getFullYear() - 25
-                    );
-
-                    var s25YearsAndBelow =
-                        d25YearsAndBelow.toLocaleDateString("en-CA");
-
-                    // Spouse / Additional Spouse
-                    var oSpouseFilter = new Filter({
-                        filters: [
-                            new Filter({
-                                filters: [
-                                    new Filter(
-                                        Constants.EntitiesFields.RELATIONSHIP,
-                                        FilterOperator.EQ,
-                                        Constants.Relationship.SPOUSE
-                                    ),
-                                    new Filter(
-                                        Constants.EntitiesFields.RELATIONSHIP,
-                                        FilterOperator.EQ,
-                                        Constants.Relationship.ADDITIONAL_SPOUSE
-                                    )
-                                ],
-                                and: false
-                            }),
-                            new Filter(
-                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
-                                FilterOperator.EQ,
-                                true
-                            )
-                        ],
-                        and: true
-                    });
-
-                    // Child - Normal Rule
-                    var oEligibleChildFilter = new Filter({
-                        filters: [
-                            new Filter(
-                                Constants.EntitiesFields.RELATIONSHIP,
-                                FilterOperator.EQ,
-                                Constants.Relationship.CHILD
-                            ),
-                            new Filter(
-                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
-                                FilterOperator.EQ,
-                                true
-                            ),
-                            new Filter(
-                                Constants.EntitiesFields.STUDENT,
-                                FilterOperator.EQ,
-                                true
-                            ),
-                            new Filter(
-                                Constants.EntitiesFields.DOB,
-                                FilterOperator.GE,
-                                s25YearsAndBelow
-                            )
-                        ],
-                        and: true
-                    });
-
-                    // Child - Disabled (bypass Student & DOB checks)
-                    var oDisabledChildFilter = new Filter({
-                        filters: [
-                            new Filter(
-                                Constants.EntitiesFields.RELATIONSHIP,
-                                FilterOperator.EQ,
-                                Constants.Relationship.CHILD
-                            ),
-                            new Filter(
-                                Constants.EntitiesFields.MEDICAL_BENEFICIARY,
-                                FilterOperator.EQ,
-                                true
-                            ),
-                            new Filter(
-                                Constants.EntitiesFields.DISABLED,
-                                FilterOperator.EQ,
-                                true
-                            )
-                        ],
-                        and: true
-                    });
-
+                    // Only dependents flagged as medical beneficiary
                     return new Filter({
                         filters: [
                             oEmpFilter,
-                            new Filter({
-                                filters: [
-                                    oSpouseFilter,
-                                    oEligibleChildFilter,
-                                    oDisabledChildFilter
-                                ],
-                                and: false
-                            })
+                            new Filter(
+                                Constants.EntitiesFields.MEDICAL_BENEFICIARY, 
+                                FilterOperator.EQ,
+                                true
+                            )
                         ],
                         and: true
                     })
