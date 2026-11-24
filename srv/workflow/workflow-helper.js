@@ -103,7 +103,8 @@ async function retrieveEmployeeDetails(sId, sEmail){
                 Constant.EntitiesFields.EMAIL,
                 Constant.EntitiesFields.DIRECT_SUPERIOR,
                 Constant.EntitiesFields.ROLE,
-                Constant.EntitiesFields.DIVISION
+                Constant.EntitiesFields.DIVISION,
+                Constant.EntitiesFields.UNIT_SECTION
             )
     )
     if(!oEmployeeContext) {
@@ -121,7 +122,8 @@ async function retrieveEmployeeDetails(sId, sEmail){
         [Constant.EntitiesFields.EMAIL]             : oEmployeeContext[Constant.EntitiesFields.EMAIL],
         [Constant.EntitiesFields.DIRECT_SUPERIOR]   : oEmployeeContext[Constant.EntitiesFields.DIRECT_SUPERIOR],
         [Constant.EntitiesFields.ROLE]              : oEmployeeContext[Constant.EntitiesFields.ROLE],
-        [Constant.EntitiesFields.RANK]              : oRoleRankContext[Constant.EntitiesFields.RANK]
+        [Constant.EntitiesFields.RANK]              : oRoleRankContext[Constant.EntitiesFields.RANK],
+        [Constant.EntitiesFields.UNIT_SECTION]      : oEmployeeContext[Constant.EntitiesFields.UNIT_SECTION]
     };
 }
 async function retrieveRoleRank(sRole) {
@@ -401,20 +403,44 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
         // determine posting date for EMF
         var sPostingDate = determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting.oFlexiPostingRecord);
 
-        const aItems =
-            aBudgetContext.map((oBudgetContext, iIndex) => ({
-                ...Constant.EarmarkedFundPosting_Item,
-                EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
-                FundsCenter: String(oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER).trim(),
-                CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
-                DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
-                ...(oBudgetContext.INTERNAL_ORDER !== Constant.Wildcard.NA &&
-                    oBudgetContext.INTERNAL_ORDER && {
-                    InternalOrder: String(oBudgetContext.INTERNAL_ORDER).trim()
-                })
-            }));
+        const sProjectCode = String(aBudgetContext[0]?.INTERNAL_ORDER ?? '').trim();
+        const sIoWbsInd = aBudgetContext[0]?.IO_WBS_IND;
 
-        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate);
+        const bHasProject = !!sProjectCode && sProjectCode !== Constant.Wildcard.NA;
+
+        // Validate IO/WBS indicator when project code is provided
+        if ( bHasProject && ![Constant.ProjectCodeIndicator.IO, Constant.ProjectCodeIndicator.WBS].includes(sIoWbsInd)) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_MESSAGE: `Project ${sProjectCode} has no valid IO/WBS indicator`
+            }];
+        }
+
+        const sProjectField = {[Constant.ProjectCodeIndicator.IO]: 'InternalOrder',
+            [Constant.ProjectCodeIndicator.WBS]: 'WBSElementExternalID'}[sIoWbsInd];
+
+        // Determine document type based on whether project code is used
+        const sDocumentType = bHasProject
+            ? Constant.EarmarkedFundsDocumentType.PROJECT
+            : Constant.EarmarkedFundsDocumentType.NON_PROJECT;
+
+        const aItems = aBudgetContext.map((oBudgetContext, iIndex) => ({
+            ...Constant.EarmarkedFundPosting_Item,
+            EmrkdFndsAmountInTransCrcy: Number(oBudgetContext.AMOUNT),
+            CommitmentItem: String(oBudgetContext.COMMITMENT_ITEM).trim(),
+            DocumentItemText: String(oBudgetContext.MATERIAL_GROUP).trim(),
+            ...(bHasProject? {
+                    [sProjectField]: sProjectCode
+                }
+                : {
+                    FundsCenter: String(
+                        oResolvedFC[iIndex] || oBudgetContext.FUND_CENTER
+                    ).trim()
+                })
+        }));
+
+        let oBudgetRecord = await processEarmarkedFunds(aItems, sId, null, sPostingDate, sDocumentType);
 
         if (oBudgetRecord?.Error) {
             bError = true;
@@ -440,7 +466,7 @@ async function lockClaimBudget(oTx, aBudgetContext, sId, aCheckResults = []) {
             // update claim header/item based on the new cost center (in case of roll up cost center)
             // skip if alternate cost center available as the budget check/lock will always take alternate if available
             var sFundCenter = oBudgetRecord?.oEarmarkedFundsDocument?._EarmarkedFundsDocumentItem?.[0]?.FundsCenter;
-            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER) {
+            if (sFundCenter && !aBudgetContext[0].ALTERNATE_COST_CENTER && !bHasProject) {
                 for (const sEntity of [Constant.Entities.ZCLAIM_HEADER, Constant.Entities.ZCLAIM_ITEM]) {
                     await oTx.run(UPDATE(sEntity).set({ [Constant.EntitiesFields.COST_CENTER]: sFundCenter }).where({ CLAIM_ID: sId }));
                 }
@@ -514,7 +540,7 @@ function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
 }
 
 /**
- * Build roll-up levels (EMP -> HOS -> HOB -> HOD), skipping levels without a fund center.
+ * Build roll-up levels (EMP -> BRANCH -> DEPARTMENT), skipping levels without a fund center.
  * @param {object} oRollup - Employee roll-up cost centers
  * @returns {Array<object>} Levels to check
  */
@@ -524,9 +550,8 @@ function buildRollUpLevels(oRollup = {}) {
 
     return [
         { LEVEL: L.EMP, FUND_CENTER: null },
-        { LEVEL: L.HOS, FUND_CENTER: norm(oRollup[CC.HOS_COSTCENTER]) },
-        { LEVEL: L.HOB, FUND_CENTER: norm(oRollup[CC.HOB_COSTCENTER]) },
-        { LEVEL: L.HOD, FUND_CENTER: norm(oRollup[CC.HOD_COSTCENTER]) }
+        { LEVEL: L.BRANCH, FUND_CENTER: norm(oRollup[CC.BRANCH_COSTCENTER]) },
+        { LEVEL: L.DEPARTMENT, FUND_CENTER: norm(oRollup[CC.DEPARTMENT_COSTCENTER]) }
     ].filter(l => l.LEVEL === L.EMP || l.FUND_CENTER);
 }
 
@@ -916,7 +941,7 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
 
-    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.HOD, Constant.Role.CXO];
+    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.CXO];
     if (aNoRollUpRoles.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE])) return oSkipped;
 
     return rollUpCostCenter(oEmployeeDetails);
