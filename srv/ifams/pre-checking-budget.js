@@ -102,8 +102,6 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  * @returns {String} Posting Date (YYYY-MM-DD)
  */
 function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
-    const dCurrentDate = new Date();
-
     // 1. Determine latest receipt date from the budget context
     const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
         const dReceipt = new Date(oBudgetContext.RECEIPT_DATE);
