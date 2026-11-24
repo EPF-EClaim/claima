@@ -119,7 +119,7 @@ async function retrieveBudgetOwnerDetails(sCostCenter, sClaimTypeId) {
     }
 
     // Owner not maintained or position vacant: keep empty values, same as the old sEEID = ""
-    const oOwner = oCostCenter.BUDGET_OWNER || {};
+    const oOwner = oCostCenter.BUDGET_OWNER;
 
     // Return only the required fields
     return oOwner;
