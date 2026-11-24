@@ -50,7 +50,7 @@ async function getBudgetRecord(oCondition, sFundCenter, oCache = {}) {
         }
 
         const sPath = Constant.IFAMS_API_PATH.BUDGET_SF.replace('{YEAR}', esc(oCondition.YEAR))
-                        + (aFilters.length ? ` and ${aFilters.join(' and ')}` : '');
+            + (aFilters.length ? ` and ${aFilters.join(' and ')}` : '');
 
         if (!oCache[sPath]) {
             const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
@@ -211,54 +211,53 @@ async function rollUpCostCenter(oEmployeeDetails) {
     let sParentCC;
 
     try {
-        const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
-        while (iCounter > 0) {
-            iCounter--;
+        if (oEmployeeDetails.ROLE === Constant.Role.HOB ||
+            oEmployeeDetails.ROLE === Constant.Role.HOD) {
+            oEmployeeRollupCC.HOB = oEmployeeDetails.ROLE === Constant.Role.HOB ? true : false;
+            oEmployeeRollupCC.HOD = oEmployeeDetails.ROLE === Constant.Role.HOD ? true : false;
+        } else {
+            const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
+            while (iCounter > 0) {
+                iCounter--;
 
-            if (oEmployeeDetails.ROLE === Constant.Role.HOB || 
-                oEmployeeDetails.ROLE === Constant.Role.HOD) {
-                oEmployeeRollupCC.HOB = oEmployeeDetails.ROLE === Constant.Role.HOB? true: false; 
-                oEmployeeRollupCC.HOD = oEmployeeDetails.ROLE === Constant.Role.HOD? true: false;
-                break;
-            }
+                var oDirectSuperior = await cds.run(SELECT.one.from(sEmpMasterTable).
+                    where({ [Constant.EntitiesFields.EEID]: sDirectSuperior }));
 
-            var oDirectSuperior = await cds.run(SELECT.one.from(sEmpMasterTable).
-                where({ [Constant.EntitiesFields.EEID]: sDirectSuperior }));
+                if (!oDirectSuperior) break;
 
-            if (!oDirectSuperior) break;
+                sRank = (aRoleHierarchy.find(role => role.ROLE === oDirectSuperior.ROLE))?.RANK;
 
-            sRank = (aRoleHierarchy.find(role => role.ROLE === oDirectSuperior.ROLE))?.RANK;
-
-            if (sRank > (aRoleHierarchy.find(role => role.ROLE === Constant.Role.HOD)).RANK) {
-                break;
-            }
-
-            switch (oDirectSuperior.ROLE) {
-                case (Constant.Role.HOB):
-                    oEmployeeRollupCC.HOB = true;
+                if (sRank > (aRoleHierarchy.find(role => role.ROLE === Constant.Role.HOD)).RANK) {
                     break;
-                case (Constant.Role.HOD):
-                    oEmployeeRollupCC.HOD = true;
-                    break;
-                default:
-                    break;
-            }
+                }
 
-            sDirectSuperior = oDirectSuperior[Constant.EntitiesFields.DIRECT_SUPERIOR];
-            
-            if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) break;
+                switch (oDirectSuperior.ROLE) {
+                    case (Constant.Role.HOB):
+                        oEmployeeRollupCC.HOB = true;
+                        break;
+                    case (Constant.Role.HOD):
+                        oEmployeeRollupCC.HOD = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                sDirectSuperior = oDirectSuperior[Constant.EntitiesFields.DIRECT_SUPERIOR];
+
+                if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) break;
+            }
         }
 
         if (oEmployeeRollupCC.HOD || oEmployeeRollupCC.HOB) sParentCC = await retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails);
         var sMessage = !sParentCC ? 'No roll up cost center found' : 'Roll up cost center available';
-        
+
         if (sParentCC) {
             if (oEmployeeRollupCC.HOD) {
                 oEmployeeRollupCC.DEPARTMENT_CC = sParentCC;
-            } else if(oEmployeeRollupCC.HOB) {
+            } else if (oEmployeeRollupCC.HOB) {
                 oEmployeeRollupCC.BRANCH_CC = sParentCC;
             }
-        }   
+        }
 
         return { error: false, message: sMessage, oEmployeeRollupCC };
     } catch (oError) {
@@ -408,10 +407,10 @@ async function syncBudgetReport(sYear) {
     const oResponse = await executeIFAMSRequest(Constant.API_REQUEST_METHOD.GET, sPath);
 
     if (oResponse.error) {
-        throw new Error(`Failed to retrieve budget report from IFAMS: ${oResponse.message}`);   
+        throw new Error(`Failed to retrieve budget report from IFAMS: ${oResponse.message}`);
     }
 
-    const oData = oResponse.data; 
+    const oData = oResponse.data;
     const aIFAMSRecords = Array.isArray(oData)
         ? oData
         : (oData?.d?.results || oData?.results || oData?.value || []);
@@ -504,46 +503,46 @@ async function syncBudgetReport(sYear) {
  *
  * @param {object} oEmployeeRollupCC - Employee roll up data
  * @param {object} oEmployeeDetails - Employee data
- * @returns {string} Department/Branch cost center
+ * @returns {string | null} Department/Branch cost center
  */
 async function retrieveParentCostCenter(oEmployeeRollupCC, oEmployeeDetails) {
     let sPath;
-    
-        if (oEmployeeRollupCC.HOD) {
-            sPath = Constant.SF_API_PATH.DEPARTMENT.replace('{DEPARTMENT}', oEmployeeDetails.DEP);
-        } else if (oEmployeeRollupCC.HOB) {
-            var sEmployeeBranchCode = oEmployeeDetails[Constant.EntitiesFields.UNIT_SECTION];
-            sPath = Constant.SF_API_PATH.UNIT_BRANCH
-                    .replace('{BRANCH_CODE}', sEmployeeBranchCode);
-        }
-        
-        const SFConnection = await getSFConnection();
-        var aParentCostCenter = await SFConnection.send({
-            method: Constant.API_REQUEST_METHOD.GET,
-            path: sPath
-        });
 
-        if (Array.isArray(aParentCostCenter) && aParentCostCenter.length > 0) {
-            const aRecords = aParentCostCenter.map(oRecord => ({
-                ...oRecord,
-                effectiveStartDate: parseODataDate(oEmployeeRollupCC.HOB? oRecord.effectiveStartDate: oRecord.startDate)
-            }));
+    if (oEmployeeRollupCC.HOD) {
+        sPath = Constant.SF_API_PATH.DEPARTMENT.replace('{DEPARTMENT}', oEmployeeDetails.DEP);
+    } else if (oEmployeeRollupCC.HOB) {
+        var sEmployeeBranchCode = oEmployeeDetails[Constant.EntitiesFields.UNIT_SECTION];
+        sPath = Constant.SF_API_PATH.UNIT_BRANCH
+            .replace('{BRANCH_CODE}', sEmployeeBranchCode);
+    }
 
-            // get latest record based on effective start date
-            const oParentCostCenter = aRecords.filter(oRecord => oRecord.effectiveStartDate)
-                .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
-            
-            if (oParentCostCenter) {
-                switch (true) {
-                    case oEmployeeRollupCC.HOB === true:
-                    case oEmployeeRollupCC.HOD === true:
-                        return oParentCostCenter.cust_CostCenter_eClaim;
-                    default:
-                        break;
-                }
+    const SFConnection = await getSFConnection();
+    var aParentCostCenter = await SFConnection.send({
+        method: Constant.API_REQUEST_METHOD.GET,
+        path: sPath
+    });
+
+    if (Array.isArray(aParentCostCenter) && aParentCostCenter.length > 0) {
+        const aRecords = aParentCostCenter.map(oRecord => ({
+            ...oRecord,
+            effectiveStartDate: parseODataDate(oEmployeeRollupCC.HOB ? oRecord.effectiveStartDate : oRecord.startDate)
+        }));
+
+        // get latest record based on effective start date
+        const oParentCostCenter = aRecords.filter(oRecord => oRecord.effectiveStartDate)
+            .sort((a, b) => b.effectiveStartDate - a.effectiveStartDate)[0];
+
+        if (oParentCostCenter) {
+            switch (true) {
+                case oEmployeeRollupCC.HOB === true:
+                case oEmployeeRollupCC.HOD === true:
+                    return oParentCostCenter.cust_CostCenter_eClaim;
+                default:
+                    break;
             }
-        } 
-        
+        }
+    }
+    return null;
 }
 module.exports = {
     getBudgetRecord,
