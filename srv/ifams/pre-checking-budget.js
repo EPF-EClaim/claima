@@ -102,23 +102,21 @@ function determineBudgetYear(dReceiptDate, oClaimFlexiPosting) {
  * @returns {String} Posting Date (YYYY-MM-DD)
  */
 function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
-    const dPostingDate;
     const dCurrentDate = new Date();
 
-        // 1. Determine latest receipt date from the budget context
-        const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
-            const dReceipt = new Date(oBudgetContext.RECEIPT_DATE);
-            return dReceipt > dLatest ? dReceipt : dLatest;
-        }, new Date(aBudgetContext[0].RECEIPT_DATE));
+    // 1. Determine latest receipt date from the budget context
+    const dLatestReceiptDate = aBudgetContext.reduce((dLatest, oBudgetContext) => {
+        const dReceipt = new Date(oBudgetContext.RECEIPT_DATE);
+        return dReceipt > dLatest ? dReceipt : dLatest;
+    }, new Date(aBudgetContext[0].RECEIPT_DATE));
 
-        // 2. Check if the latest receipt date falls within the Flexi Posting range date
-        if (dLatestReceiptDate >= oClaimFlexiPosting.cust_Validity_Start && dLatestReceiptDate <= oClaimFlexiPosting.cust_Validity_End) {
-            dPostingDate = dLatestReceiptDate;
-        } else {
-            // 3. If not, use Flexible Posting Date from Flexi Posting Configuration (Cut off Date)
-            // In case Flexible Posting Date is blank, use current date as default
-            dPostingDate = oClaimFlexiPosting.cust_Flexi_Posting_Date ? oClaimFlexiPosting.cust_Flexi_Posting_Date : dCurrentDate;
-        }
+    const { cust_Validity_Start: dStart, cust_Validity_End: dEnd, cust_Flexi_Posting_Date: dFlexiPosting } = oClaimFlexiPosting;
+
+    // 2. Latest receipt date within the Flexi Posting range -> use it
+    // 3. Otherwise use the Flexible Posting Date (cut-off), default to current date if not maintained
+    const dPostingDate = (dLatestReceiptDate >= dStart && dLatestReceiptDate <= dEnd)
+        ? dLatestReceiptDate
+        : (dFlexiPosting ?? new Date());
 
     return dPostingDate.toLocaleDateString('en-CA');
 }
