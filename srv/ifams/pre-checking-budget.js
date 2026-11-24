@@ -2,6 +2,19 @@ const cds = require('@sap/cds');
 const { Constant } = require("../utils/constant");
 
 /**
+ * Retrieve SF Connection
+ * 
+ * @returns {Promise<cds.Connection>} SF Connection
+ */
+let _sfConnection;
+async function getSFConnection() {
+    if (!_sfConnection) {
+        _sfConnection = await cds.connect.to('Conn_SF_API');
+    }
+    return _sfConnection;
+}
+
+/**
  * Retrieve Claim Flexi Posting from SF API to decide the budget year
  * 
  * @returns {Promise<{error: boolean, message: string, oFlexiPostingRecord: object}>} 
@@ -9,7 +22,7 @@ const { Constant } = require("../utils/constant");
 async function retrieveClaimFlexiPosting() {
     var oFlexiPostingRecord;
     try {
-        const SFConnection = await cds.connect.to('Conn_SF_API');
+        const SFConnection = await getSFConnection();
         const dCurrentDate = new Date();
 
         var aFlexiPostingRecords = await SFConnection.send({
@@ -117,13 +130,15 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
 function parseODataDate(sDate) {
     if (!sDate) return null;
 
-    const aMatch = sDate.match(/\/Date\((\d+)(?:[+-]\d+)?\)\//);
+    const aMatch = sDate.match(/\/Date\(([+-]?\d+)(?:[+-]\d+)?\)\//);
 
     return aMatch ? new Date(Number(aMatch[1])) : null;
 }
 
 module.exports = {
+    getSFConnection,
     retrieveClaimFlexiPosting,
     determineBudgetYear,
-    determineClaimPostingDate
+    determineClaimPostingDate,
+    parseODataDate
 }

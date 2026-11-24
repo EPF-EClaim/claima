@@ -340,6 +340,7 @@ const Constant = {
         "PROJECT_OWNER_EMAIL": "PROJECT_OWNER_EMAIL",
         "PROJECT_CODE_IO": "PROJECT_CODE_IO",
         "IO_WBS_IND": "IO_WBS_IND",
+        "UNIT_SECTION": "UNIT_SECTION",
         "CTS_APPROVER_POSITION_ID": "CTS_APPROVER_POSITION_ID",
         "CTS_APPROVER_EEID": "CTS_APPROVER_EEID",
         "CTS_APPROVER_NAME": "CTS_APPROVER_NAME",
@@ -655,15 +656,13 @@ const Constant = {
         MESSAGE_TYPE: "B"
     },
     RollUp_CostCenter: {
-        HOS_COSTCENTER: "HOS_CC",
-        HOB_COSTCENTER: "HOB_CC",
-        HOD_COSTCENTER: "HOD_CC"
+        DEPARTMENT_COSTCENTER: "DEPARTMENT_CC", 
+        BRANCH_COSTCENTER: "BRANCH_CC"
     },
     RollUp_Level: {
         EMP: "EMP",
-        HOS: "HOS",
-        HOB: "HOB",
-        HOD: "HOD"
+        BRANCH: "BRANCH",
+        DEPARTMENT: "DEPARTMENT"
     },
     BudgetReport: {
         DEFAULT_CURRENCY: "MYR",
@@ -696,7 +695,9 @@ const Constant = {
         IO: "IO"
     },
     SF_API_PATH: {
-        FLEXI_POSTING_CONFIG: '/cust_eClaim_Flexi_Posting_Config'
+        FLEXI_POSTING_CONFIG: '/cust_eClaim_Flexi_Posting_Config',
+        UNIT_BRANCH: "/cust_Unit_Branch" + "?$filter=externalCode eq '{BRANCH_CODE}'",
+        DEPARTMENT: "/FODivision" + "?$filter=externalCode eq '{DEPARTMENT}'"
     },
     ProjectStatus: {
         ACTIVE: 'ACTIVE'
