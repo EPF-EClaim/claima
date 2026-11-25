@@ -10,7 +10,7 @@ const GetDependentData = require('./utils/GetDependentData');
 const UpdateHeader = require('./utils/UpdateHeader');
 const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
-const { logWorkflowHistory } = require('./workflow/workflow-helper');
+const { logWorkflowHistory, releaseCccServiceTaxBudget, buildBudgetErrorMessage } = require('./workflow/workflow-helper');
 const { syncBudgetReport } = require('./ifams/ifams-budget');
 const sfLib = require('./utils/getSFData');
 
@@ -5085,7 +5085,25 @@ module.exports = (srv) => {
 
         if (!oEmp) return req.reject(404, "Employee record not found");
         if (!sRecordId) return req.reject(400, "Document ID is required for cancellation");
-        
+
+        if (sRecordId.slice(0, 3) === Constant.WorkflowType.REQUEST) {
+            try {
+                const oRequest = await oTx.run(
+                    SELECT.one.from(Constant.Entities.ZREQUEST_HEADER)
+                        .columns(Constant.EntitiesFields.STATUS)
+                        .where({ REQUEST_ID: sRecordId })
+                );
+                if (oRequest?.STATUS === Constant.Status.PENDING_APPROVAL) {
+                    const aReturn = await releaseCccServiceTaxBudget(oTx, sRecordId, Constant.Status.REJECTED);
+                    const sBudgetError = buildBudgetErrorMessage(aReturn);
+                    if (sBudgetError) throw new Error(sBudgetError);
+                }
+            } catch (error) {
+                await oTx.rollback();
+                return req.reject(500, `Failed to release Service Tax budget for ${sRecordId}: ${error.message}`);
+            }
+        }
+
         // update header status
         try {
             await UpdateHeader.updateHeaderStatus(sRecordId, Constant.Status.CANCELLED, oTx);
