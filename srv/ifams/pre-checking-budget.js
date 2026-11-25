@@ -63,7 +63,6 @@ async function retrieveClaimFlexiPosting() {
  * Else, Flexible Posting Date will be blank (Defaulted to Current Date) 
  * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
  * is configured in SF and the fields are made as mandatory
- *  
  * @param {string} sReceiptDate - Receipt date
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
  * @returns {string} Year
