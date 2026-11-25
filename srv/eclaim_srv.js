@@ -5265,59 +5265,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ---------------------------------------------------------------- */
-    /*  getEmpJob: by userId, email or positionId                       */
-    /* ---------------------------------------------------------------- */
-    srv.on('getEmpJob', async (req) => {
-        const { userId, email, positionId, asOfDate } = req.data;
-
-        // First one provided wins
-        const [by, key] = [['userId', userId], ['email', email], ['position', positionId]]
-            .find(([, v]) => v) ?? [];
-
-        if (!by) return req.reject(400, 'userId, email or positionId is required');
-
-        let result;
-        try {
-            result = await sfLib.getSFEmpJob(key, { by, asOfDate });
-        } catch (error) {
-            return req.reject(502, error.message);
-        }
-
-        // Outside try/catch so the 404 is not turned into a 502
-        if (!result) {
-            const message = asOfDate
-                ? `No job record found for ${by} '${key}' as of ${asOfDate}. The employee may not have been active in SuccessFactors on this date.`
-                : `Employee not found for ${by} '${key}'.`;
-            return req.reject(404, message);
-        }
-
-        return result;
-    });
-
-    /* ---------------------------------------------------------------- */
-    /*  getCostCenter: cost centers with the employee in each owner     */
-    /*  position                                                        */
-    /* ---------------------------------------------------------------- */
-    srv.on('getCostCenter', async (req) => {
-        const { costCenter, status, asOfDate } = req.data;
-
-        let result;
-        try {
-            result = await sfLib.getSFCostCenter({ costCenter, status }, { asOfDate });
-        } catch (error) {
-            return req.reject(502, error.message);
-        }
-
-        // Outside try/catch so the 404 is not turned into a 502
-        if (!result.length) {
-            const target = costCenter ? `cost center '${costCenter}'` : 'cost centers';
-            return req.reject(404, `No ${target} found${asOfDate ? ` as of ${asOfDate}` : ''}.`);
-        }
-
-        return result;
-    });
-
     srv.before(["CREATE", "UPDATE"], "ZCLAIM_TYPE", async (req) => {
         const sPositionId = req.data.CTS_APPROVER_POSITION_ID;
         if (!sPositionId) return;
