@@ -144,6 +144,12 @@ entity ZREQUEST_HEADER : managed {
         ATTACHMENT3                   : String         @Common.Label: 'Attachment 3';
         ATTACHMENT4                   : String         @Common.Label: 'Attachment 4';
         PAYMENT_DUE_DATE              : Date           @Common.Label: 'Payment Due Date';
+        EARMARKED_FUNDS_DOC_ID        : String(10)     @Common.Label: 'Earmarked Funds Document ID';
+        EARMARKED_FUNDS_DOC_YEAR      : String(4)      @Common.Label: 'Earmarked Funds Document Year';
+        EARMARKED_FUNDS_DOC_COMP_CODE : String(4)      @Common.Label: 'Earmarked Funds Company Code';
+        FI_DOCUMENT_NUMBER            : String(10)     @Common.Label: 'FI Document Number';
+        FI_DOCUMENT_YEAR              : String(4)      @Common.Label: 'FI Document Year';
+        FI_DOCUMENT_COMP_CODE         : String(4)      @Common.Label: 'FI Company Code';
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -257,6 +263,7 @@ entity ZREQUEST_ITEM : managed {
         INSURANCE_MEDICAL_PROVIDER_ID   : String(3)      @Common.Label: 'Insurance Medical Provider';
         INSURANCE_MEDICAL_PROVIDER_NAME : String         @Common.Label: 'Insurance Medical Provider Name';
         ATTACHMENT4                     : String         @Common.Label: 'Attachment 4';
+        EARMARKED_FUNDS_DOC_ITEM_ID     : String(3)      @Common.Label: 'Earmarked Funds Document Item ID';
         ZREQUEST_HEADER                 : Association to one ZREQUEST_HEADER
                                               on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT                    : Association to one ZMARITAL_CAT

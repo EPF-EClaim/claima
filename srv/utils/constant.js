@@ -161,6 +161,7 @@ const Constant = {
         "PINDAH": "PINDAH",
         "PKN_PANAS": "PKN_PANAS",
         "PUNSIAN_BG": "PUNSIAN_BG",
+        "SERV_TAX": "SERV_TAX",
         "SERVICES": "SERVICES",
         "SEWA": "SEWA",
         "SUMPAH": "SUMPAH",
@@ -341,7 +342,12 @@ const Constant = {
         "PROJECT_CODE_IO": "PROJECT_CODE_IO",
         "IO_WBS_IND": "IO_WBS_IND",
         "UNIT_SECTION": "UNIT_SECTION",
-        "MODIFIEDAT":"modifiedAt"
+        "EARMARKED_FUNDS_DOC_ID": "EARMARKED_FUNDS_DOC_ID",
+        "EARMARKED_FUNDS_DOC_YEAR": "EARMARKED_FUNDS_DOC_YEAR",
+        "EARMARKED_FUNDS_DOC_COMP_CODE": "EARMARKED_FUNDS_DOC_COMP_CODE",
+        "EARMARKED_FUNDS_DOC_ITEM_ID": "EARMARKED_FUNDS_DOC_ITEM_ID",
+        "GL_CODE": "GL_CODE",
+        "SERVICE_TAX": "SERVICE_TAX"
     },
     Wildcard: {
         "All": "*",
