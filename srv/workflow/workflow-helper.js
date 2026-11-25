@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { SELECT, UPDATE } = require('@sap/cds/lib/ql/cds-ql');
+const { SELECT, UPDATE, INSERT } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("../utils/constant");
 const { getBudgetRecord, processEarmarkedFunds, rollUpCostCenter, updateEarmarkedFundDetails } = require('../ifams/ifams-budget');
 const { retrieveClaimFlexiPosting, determineBudgetYear, determineClaimPostingDate } = require('../ifams/pre-checking-budget');
@@ -41,7 +41,8 @@ const aEntityTableByPrefix = {
         entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC',
         entityAmount        : Constant.EntitiesFields.EST_AMOUNT,
         statusField         : Constant.EntitiesFields.STATUS,
-        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM']
+        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM'],
+        entityCccPart       : cds.entities['eclaim_srv.ZREQ_ITEM_CCC_PART']
     }
 }
 
@@ -236,7 +237,16 @@ async function retrieveBudgetContext(sId, oDescriptor) {
 
     const sIoWbsInd = await getIoWbsIndicator(sInternalOrder);
 
+    // CCC request: the Service Tax item is checked and locked separately against its own
+    // fixed budget line (see retrieveCccServiceTaxBudgetContext), not with the other items
+    const bIsCccRequest = isCccRequestHeader(oHeaderContext, oDescriptor);
+
     for(const oItemContext of aItemsContext) {
+
+        if (bIsCccRequest &&
+            oItemContext[Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID] === Constant.ClaimTypeItem.SERV_TAX) {
+            continue;
+        }
 
         aBudgetContexts.push({
             INTERNAL_ORDER  : sInternalOrder,
@@ -1029,6 +1039,286 @@ async function getIoWbsIndicator(sInternalOrder) {
         : null;
 }
 
+// ============================================================
+// Corporate Credit Card request - Service Tax budget lock
+// ------------------------------------------------------------
+// Same IFAMS flow as claims (check -> earmark on submit -> release on
+// reject / push back / cancel), applied only to the SERV_TAX item of a
+// CCC request (RT0007). Service Tax is charged to its own fixed budget
+// line (taken from ZREQ_ITEM_CCC_PART, the same values sent for payment),
+// so it is checked without cost center validation or roll-up.
+// ============================================================
+
+/**
+ * True when the header belongs to a Corporate Credit Card request.
+ * @param {object} oHeader - header record containing the type field
+ * @param {object} oDescriptor - document descriptor
+ * @returns {boolean}
+ */
+function isCccRequestHeader(oHeader, oDescriptor) {
+    return !!oHeader &&
+        oDescriptor?.entityPrefix === Constant.WorkflowType.REQUEST &&
+        String(oHeader[oDescriptor.typeField]) === String(Constant.RequestType.CORP_CC);
+}
+
+/**
+ * Builds the budget context for the Service Tax item of a CCC request.
+ * Amount = sum of SERVICE_TAX across the cards (ZREQ_ITEM_CCC_PART);
+ * budget line = GL_CODE / MATERIAL_CODE / COST_CENTER of those card rows.
+ * EMP_ID is left empty on purpose so checkRequestBudget does not roll up.
+ *
+ * @param {object} oTx - cds transaction (all reads run in the caller's transaction)
+ * @param {string} sId - Request ID
+ * @returns {Promise<object|null>} budget context, or null when the request is not CCC
+ *                                 or has no service tax to lock
+ */
+async function retrieveCccServiceTaxBudgetContext(oTx, sId) {
+    const oDescriptor = aEntityTableByPrefix[Constant.WorkflowType.REQUEST];
+
+    const oHeader = await oTx.run(
+        SELECT.one
+            .from(oDescriptor.entityHeader)
+            .columns(
+                oDescriptor.idField,
+                oDescriptor.typeField,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.TRIP_START_DATE
+            )
+            .where({ [oDescriptor.idField]: sId })
+    );
+    if (!isCccRequestHeader(oHeader, oDescriptor)) return null;
+
+    const aServTaxItems = await oTx.run(
+        SELECT.from(oDescriptor.entityItem)
+            .columns(
+                Constant.EntitiesFields.REQUEST_SUB_ID,
+                Constant.EntitiesFields.CLAIM_TYPE_ID,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ITEM_ID
+            )
+            .where({
+                [oDescriptor.idField]: sId,
+                [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: Constant.ClaimTypeItem.SERV_TAX
+            })
+    );
+    if (!aServTaxItems.length) return null;
+    if (aServTaxItems.length > 1) {
+        throw new Error(`Request ${sId} has more than one Service Tax item`);
+    }
+    const oServTaxItem = aServTaxItems[0];
+    const sSubId = oServTaxItem[Constant.EntitiesFields.REQUEST_SUB_ID];
+
+    const aParts = await oTx.run(
+        SELECT.from(oDescriptor.entityCccPart)
+            .columns(
+                Constant.EntitiesFields.GL_CODE,
+                Constant.EntitiesFields.MATERIAL_CODE,
+                Constant.EntitiesFields.COST_CENTER,
+                Constant.EntitiesFields.SERVICE_TAX
+            )
+            .where({ [oDescriptor.idField]: sId, [Constant.EntitiesFields.REQUEST_SUB_ID]: sSubId })
+    );
+    const aTaxedParts = aParts.filter(oPart => toNum(oPart.SERVICE_TAX) !== 0);
+    if (!aTaxedParts.length) return null;
+
+    // all cards share one fixed Service Tax line - one earmark item covers the total
+    const aLines = [...new Set(aTaxedParts.map(oPart =>
+        [oPart.COST_CENTER, oPart.GL_CODE, oPart.MATERIAL_CODE].map(v => String(v ?? '').trim()).join('|')))];
+    if (aLines.length > 1) {
+        throw new Error(`Service Tax for ${sId} is spread over different budget lines (${aLines.join(', ')})`);
+    }
+    const [sFundCenter, sCommitmentItem, sMaterialGroup] = aLines[0].split('|');
+
+    const oTypeItem = await oTx.run(
+        SELECT.one
+            .from(oDescriptor.entityClaimTypeItem)
+            .columns(Constant.EntitiesFields.CLAIM_TYPE_ITEM_DESC)
+            .where({
+                CLAIM_TYPE_ID: oServTaxItem[Constant.EntitiesFields.CLAIM_TYPE_ID],
+                CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.SERV_TAX
+            })
+    );
+
+    return {
+        INTERNAL_ORDER  : Constant.Wildcard.NA,
+        FUND_CENTER     : sFundCenter,
+        MATERIAL_GROUP  : sMaterialGroup,
+        COMMITMENT_ITEM : sCommitmentItem,
+        CLAIM_TYPE_ITEM : oTypeItem?.CLAIM_TYPE_ITEM_DESC || 'Service Tax',
+        AMOUNT          : round2(aTaxedParts.reduce((fSum, oPart) => fSum + toNum(oPart.SERVICE_TAX), 0)),
+        INDICATOR       : Constant.WorkflowType.REQUEST,
+        EMP_ID          : null,     // no roll-up for the fixed Service Tax line
+        ALTERNATE_COST_CENTER : null,
+        HEADER_COST_CENTER    : oHeader[Constant.EntitiesFields.COST_CENTER],
+        // CCC has no receipt date: trip start date if set, otherwise today (submission) -
+        // drives the budget year and the earmark posting date
+        RECEIPT_DATE    : oHeader[Constant.EntitiesFields.TRIP_START_DATE] || new Date().toLocaleDateString('en-CA'),
+        IO_WBS_IND      : null,
+        REQUEST_SUB_ID  : sSubId,
+        EARMARKED_FUNDS_DOC_ITEM_ID : oServTaxItem.EARMARKED_FUNDS_DOC_ITEM_ID
+    };
+}
+
+/**
+ * Locks the CCC Service Tax amount by creating an IFAMS earmarked funds document
+ * (one item) and stores the document on ZREQUEST_HEADER / the SERV_TAX ZREQUEST_ITEM.
+ *
+ * @param {object} oTx - cds transaction
+ * @param {string} sId - Request ID
+ * @param {object} oContext - result of retrieveCccServiceTaxBudgetContext
+ * @returns {Promise<Array<object>>} [{STATUS: SUFFICIENT}] on success, error results otherwise
+ */
+async function lockCccServiceTaxBudget(oTx, sId, oContext) {
+    try {
+        const oClaimFlexiPosting = await retrieveClaimFlexiPosting();
+        if (oClaimFlexiPosting.error) {
+            return [{ STATUS: Constant.BudgetCheckStatus.ERROR, MESSAGE: oClaimFlexiPosting.message }];
+        }
+
+        // same posting date rule as claims (header-level PostingDate)
+        const sPostingDate = determineClaimPostingDate([oContext], oClaimFlexiPosting.oFlexiPostingRecord);
+
+        const aItems = [{
+            ...Constant.EarmarkedFundPosting_Item,
+            EmrkdFndsAmountInTransCrcy: Number(oContext.AMOUNT),
+            FundsCenter: String(oContext.FUND_CENTER).trim(),
+            CommitmentItem: String(oContext.COMMITMENT_ITEM).trim(),
+            DocumentItemText: String(oContext.MATERIAL_GROUP).trim()
+        }];
+
+        const oResult = await processEarmarkedFunds(
+            aItems, sId, null, sPostingDate, Constant.EarmarkedFundsDocumentType.NON_PROJECT
+        );
+        const oDocument = oResult?.oEarmarkedFundsDocument;
+        const sItemNo = oDocument?._EarmarkedFundsDocumentItem?.[0]?.EarmarkedFundsDocumentItem;
+
+        if (oResult?.Error || !oDocument || !sItemNo) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+                LOCK_BUDGET: true,
+                ERROR_CODE: oResult?.errorCode,
+                ERROR_MESSAGE: oResult?.Message || 'Failed to lock Service Tax budget in IFAMS.'
+            }];
+        }
+
+        await oTx.run(
+            UPDATE(Constant.Entities.ZREQUEST_HEADER)
+                .set({
+                    EARMARKED_FUNDS_DOC_COMP_CODE: oDocument.CompanyCode,
+                    EARMARKED_FUNDS_DOC_ID: oDocument.EarmarkedFundsDocument,
+                    EARMARKED_FUNDS_DOC_YEAR: oDocument.EmrkdFndsDocCreationDate?.substring(0, 4) ?? null
+                })
+                .where({ REQUEST_ID: sId })
+        );
+        await oTx.run(
+            UPDATE(Constant.Entities.ZREQUEST_ITEM)
+                .set({ EARMARKED_FUNDS_DOC_ITEM_ID: String(sItemNo) })
+                .where({ REQUEST_ID: sId, REQUEST_SUB_ID: oContext.REQUEST_SUB_ID })
+        );
+        await insertBudgetLog(oTx, sId, Constant.BudgetLog.PROGRAM.SUBMISSION_LOCK, oResult.Message);
+
+        return [{ STATUS: Constant.BudgetCheckStatus.SUFFICIENT }];
+
+    } catch (oError) {
+        return [{
+            STATUS: Constant.BudgetCheckStatus.LOCK_ERROR,
+            LOCK_BUDGET: true,
+            ERROR_MESSAGE: oError.message
+        }];
+    }
+}
+
+/**
+ * Releases the CCC Service Tax earmark (reject / push back / cancel) and clears the
+ * stored document. Returns [] when there is nothing to release: not a CCC request,
+ * no service tax, or no earmark stored (e.g. submitted before the lock went live).
+ *
+ * @param {object} oTx - cds transaction
+ * @param {string} sId - Request ID
+ * @param {string} sAction - Constant.Status.REJECTED or Constant.Status.PUSH_BACK
+ * @returns {Promise<Array<object>>} [] / [{STATUS: RELEASED}] on success, error results otherwise
+ */
+async function releaseCccServiceTaxBudget(oTx, sId, sAction) {
+    try {
+        const oHeader = await oTx.run(
+            SELECT.one
+                .from(Constant.Entities.ZREQUEST_HEADER)
+                .columns(Constant.EntitiesFields.REQUEST_TYPE_ID, Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ID)
+                .where({ REQUEST_ID: sId })
+        );
+        if (!oHeader ||
+            String(oHeader.REQUEST_TYPE_ID) !== String(Constant.RequestType.CORP_CC) ||
+            !oHeader.EARMARKED_FUNDS_DOC_ID) {
+            return [];
+        }
+
+        const oContext = await retrieveCccServiceTaxBudgetContext(oTx, sId);
+        if (!oContext?.EARMARKED_FUNDS_DOC_ITEM_ID) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+                RELEASE_ERROR: true,
+                ERROR_MESSAGE: `Earmarked Funds Document item for the Service Tax of ${sId} not found`
+            }];
+        }
+
+        const oResult = await processEarmarkedFunds([{
+            EarmarkedFundsDocumentItem: String(oContext.EARMARKED_FUNDS_DOC_ITEM_ID).trim(),
+            FundsCenter: String(oContext.FUND_CENTER).trim(),
+            CommitmentItem: String(oContext.COMMITMENT_ITEM).trim()
+        }], oHeader.EARMARKED_FUNDS_DOC_ID, sAction);
+
+        if (oResult?.Error) {
+            return [{
+                STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+                RELEASE_ERROR: true,
+                ERROR_CODE: oResult?.errorCode,
+                ERROR_MESSAGE: oResult?.Message
+            }];
+        }
+
+        await oTx.run(
+            UPDATE(Constant.Entities.ZREQUEST_HEADER)
+                .set({
+                    EARMARKED_FUNDS_DOC_COMP_CODE: null,
+                    EARMARKED_FUNDS_DOC_ID: null,
+                    EARMARKED_FUNDS_DOC_YEAR: null
+                })
+                .where({ REQUEST_ID: sId })
+        );
+        await oTx.run(
+            UPDATE(Constant.Entities.ZREQUEST_ITEM)
+                .set({ EARMARKED_FUNDS_DOC_ITEM_ID: null })
+                .where({ REQUEST_ID: sId })
+        );
+        await insertBudgetLog(oTx, sId, Constant.BudgetLog.PROGRAM.RELEASE, oResult?.Message);
+
+        return [{ STATUS: Constant.BudgetCheckStatus.RELEASED }];
+
+    } catch (oError) {
+        return [{
+            STATUS: Constant.BudgetCheckStatus.RELEASE_ERROR,
+            RELEASE_ERROR: true,
+            ERROR_MESSAGE: oError.message
+        }];
+    }
+}
+
+/**
+ * Writes a budget entry to ZLOG (same format as the claim earmark log).
+ */
+async function insertBudgetLog(oTx, sId, sProgram, sMessage) {
+    await oTx.run(
+        INSERT.into(Constant.Entities.ZLOG)
+            .entries({
+                TIMESTAMP: new Date(),
+                RECORD_ID: sId,
+                PROGRAM: sProgram,
+                MESSAGE_TYPE: Constant.BudgetLog.MESSAGE_TYPE,
+                STATUS_CODE: Constant.StatusCode.SUCCESS,
+                MESSAGE: sMessage
+            })
+    );
+}
+
 module.exports = {
     resolveDocDescriptor,
     retrieveHeaderDetails,
@@ -1046,5 +1336,8 @@ module.exports = {
     releaseClaimBudget,
     validateCostCenter,
     updateRequestBudget,
-    getIoWbsIndicator
+    getIoWbsIndicator,
+    retrieveCccServiceTaxBudgetContext,
+    lockCccServiceTaxBudget,
+    releaseCccServiceTaxBudget
 };
