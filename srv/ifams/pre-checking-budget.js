@@ -65,7 +65,7 @@ async function retrieveClaimFlexiPosting() {
  * is configured in SF and the fields are made as mandatory
  * @param {string} sReceiptDate - Receipt date
  * @param {object} oClaimFlexiPosting - Claim Flexi Posting
- * @returns {string} Year
+ * @returns {Integer} Year
  */
 function determineBudgetYear(sReceiptDate, oClaimFlexiPosting) {
     const dStartDate = oClaimFlexiPosting.cust_Validity_Start;
