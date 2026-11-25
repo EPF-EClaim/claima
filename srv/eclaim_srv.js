@@ -5124,7 +5124,7 @@ module.exports = (srv) => {
     });
 
     srv.on('batchUpdateFIDoc', async (req) => {
-        const { ZCLAIM_HEADER } = srv.entities;
+        const { ZCLAIM_HEADER, ZREQUEST_HEADER } = srv.entities;
         try {
             const { aDocument } = req.data;
             if (!aDocument || aDocument.length === 0) {
@@ -5136,14 +5136,19 @@ module.exports = (srv) => {
                 var oFIDocument = aDocument[i];
                 if (!oFIDocument.FI_DOC_ID) continue;
 
+                // CCC requests (REQ...) are posted through the same callback - store on the request header
+                const bIsRequest = String(oFIDocument.CLAIM_ID).slice(0, 3) === Constant.WorkflowType.REQUEST;
+
                 aClaimUpdates.push(
-                    UPDATE(ZCLAIM_HEADER)
+                    UPDATE(bIsRequest ? ZREQUEST_HEADER : ZCLAIM_HEADER)
                         .set({
                             FI_DOCUMENT_COMP_CODE: oFIDocument.FI_DOC_COCODE,
                             FI_DOCUMENT_NUMBER: oFIDocument.FI_DOC_ID,
                             FI_DOCUMENT_YEAR: oFIDocument.FI_DOC_YEAR
                         })
-                        .where({ CLAIM_ID: oFIDocument.CLAIM_ID })
+                        .where(bIsRequest
+                            ? { REQUEST_ID: oFIDocument.CLAIM_ID }
+                            : { CLAIM_ID: oFIDocument.CLAIM_ID })
                 );
             }
             if (aClaimUpdates.length > 0) {
