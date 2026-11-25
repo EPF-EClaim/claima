@@ -16,7 +16,8 @@ const {
     getApproverContextByLevel,
     retrieveRejectReasonDesc,
     logWorkflowHistory,
-    releaseClaimBudget
+    releaseClaimBudget,
+    releaseCccServiceTaxBudget
 } = require('./workflow/workflow-helper');
 const {
     sendEmailToClaimant
@@ -291,6 +292,23 @@ module.exports = (srv) => {
             const aReturn = await releaseClaimBudget(oTx, aBudgetContext, sRecordId, sEarmarkedFundsDocId, oActionDescriptor.actionValue);
 
             // Send admin notification when IFAMS connection fails during budget release
+            await notifyIFAMSConnectionError(aReturn, sRecordId);
+
+            const sBudgetError = buildBudgetErrorMessage(aReturn);
+            if (sBudgetError) {
+                throw new Error(
+                    `Error encountered during IFAMS Budget Release\n${sBudgetError}`
+                );
+            }
+        } else if (
+            oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST &&
+            (
+                oActionDescriptor.actionValue === Constant.Status.REJECTED ||
+                oActionDescriptor.actionValue === Constant.Status.PUSH_BACK
+            )
+        ) {
+            const aReturn = await releaseCccServiceTaxBudget(oTx, sRecordId, oActionDescriptor.actionValue);
+
             await notifyIFAMSConnectionError(aReturn, sRecordId);
 
             const sBudgetError = buildBudgetErrorMessage(aReturn);

@@ -659,7 +659,13 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     const oRequest = await oTx.run(
         SELECT.one.from('ZREQUEST_HEADER')
             .where({ REQUEST_ID: sRequestId })
-            .columns('REQUEST_ID', 'REQUEST_TYPE_ID')
+            .columns(
+                Constant.EntitiesFields.REQUESTID,
+                Constant.EntitiesFields.REQUEST_TYPE_ID,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ID,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_YEAR,
+                Constant.EntitiesFields.EARMARKED_FUNDS_DOC_COMP_CODE
+            )
     );
 
     if (!oRequest || String(oRequest.REQUEST_TYPE_ID) !== String(Constant.RequestType.CORP_CC)) {
@@ -804,6 +810,24 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
                 }
             });
         }
+    });
+
+    const oServiceTaxItem = await oTx.run(
+        SELECT.one.from(Constant.Entities.ZREQUEST_ITEM)
+            .columns(Constant.EntitiesFields.REQUEST_SUB_ID, Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ITEM_ID)
+            .where({ REQUEST_ID: sRequestId, CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.SERV_TAX })
+    );
+    const bHasServiceTaxEarmark = !!(oRequest.EARMARKED_FUNDS_DOC_ID && oServiceTaxItem?.EARMARKED_FUNDS_DOC_ITEM_ID);
+
+    aPayload.forEach((oLine) => {
+        const bIsServiceTaxLine = bHasServiceTaxEarmark &&
+            oLine.REQUEST_SUB_ID === oServiceTaxItem.REQUEST_SUB_ID &&
+            Number(oLine.SERVICE_TAX) !== 0;
+
+        oLine.EARMARKED_FUNDS_DOC_ID        = bIsServiceTaxLine ? oRequest.EARMARKED_FUNDS_DOC_ID : null;
+        oLine.EARMARKED_FUNDS_DOC_YEAR      = bIsServiceTaxLine ? oRequest.EARMARKED_FUNDS_DOC_YEAR : null;
+        oLine.EARMARKED_FUNDS_DOC_COMP_CODE = bIsServiceTaxLine ? oRequest.EARMARKED_FUNDS_DOC_COMP_CODE : null;
+        oLine.EARMARKED_FUNDS_DOC_ITEM_ID   = bIsServiceTaxLine ? oServiceTaxItem.EARMARKED_FUNDS_DOC_ITEM_ID : null;
     });
 
     // Total Payment Due Amount for the whole request - matches the
