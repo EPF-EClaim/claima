@@ -108,7 +108,6 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         return dReceipt > dLatest ? dReceipt : dLatest;
     }, new Date(aBudgetContext[0].RECEIPT_DATE));
 
-
     const { cust_Validity_Start: dStart, cust_Validity_End: dEnd, cust_Flexi_Posting_Date: dFlexiPosting } = oClaimFlexiPosting;
 
     // 2. Check if current date (submission date) is within the Flexi Posting range and receipt year match - use flexible posting date
