@@ -206,7 +206,9 @@ async function rollUpCostCenter(oEmployeeDetails) {
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
     const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
     const aBranchSuperior = [Constant.Role.HOB, Constant.Role.RD];
-
+    const sRole = oEmployeeDetails[Constant.EntitiesFields.ROLE];
+    const bIsHOD = sRole === Constant.Role.HOD;
+    const bIsBranchHead = aBranchSuperior.includes(sRole);
     let sDirectSuperior = oEmployeeDetails[Constant.EntitiesFields.DIRECT_SUPERIOR];
     let iCounter = 20;
     var oEmployeeRollupCC = {};
@@ -214,11 +216,10 @@ async function rollUpCostCenter(oEmployeeDetails) {
     let sParentCC;
 
     try {
-        if (oEmployeeDetails.ROLE === Constant.Role.HOB ||
-            oEmployeeDetails.ROLE === Constant.Role.HOD ||
-            oEmployeeDetails.ROLE === Constant.Role.RD) {
-            oEmployeeRollupCC.HOB_RD = aBranchSuperior.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE]) ? true : false;
-            oEmployeeRollupCC.HOD = oEmployeeDetails.ROLE === Constant.Role.HOD ? true : false;
+        
+        if (bIsHOD || bIsBranchHead) {
+            oEmployeeRollupCC.HOB_RD = bIsBranchHead;
+            oEmployeeRollupCC.HOD = bIsHOD;
         } else {
             const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
             while (iCounter > 0) {
