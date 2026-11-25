@@ -932,8 +932,7 @@ async function getRollUpCostCenter(sEmpID, sAlternateCostCenter, sIOWBSInd) {
     let oEmployeeDetails = await retrieveEmployeeDetails(sEmpID);
     if (!oEmployeeDetails) return oSkipped;
 
-    const aNoRollUpRoles = [Constant.Role.RD, Constant.Role.CXO];
-    if (aNoRollUpRoles.includes(oEmployeeDetails[Constant.EntitiesFields.ROLE])) return oSkipped;
+    if (oEmployeeDetails[Constant.EntitiesFields.ROLE] === Constant.Role.CXO) return oSkipped;
 
     return rollUpCostCenter(oEmployeeDetails);
 }
