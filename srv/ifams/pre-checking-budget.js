@@ -78,12 +78,12 @@ function determineBudgetYear(sReceiptDate, oClaimFlexiPosting) {
     // 2.If all condition matches, get flexible posting date (year)
     // 3.If no match, blank (default fallback to current year)
     const iYear =
-    dCurrentDate >= dStartDate &&
-    dCurrentDate <= dEndDate &&
-    sReceiptYear === oClaimFlexiPosting.cust_Receipt_Year &&
-    oClaimFlexiPosting.cust_Flexi_Posting_Date
-        ? oClaimFlexiPosting.cust_Flexi_Posting_Date.getFullYear()
-        : dCurrentDate.getFullYear();
+        dCurrentDate >= dStartDate &&
+            dCurrentDate <= dEndDate &&
+            sReceiptYear === oClaimFlexiPosting.cust_Receipt_Year &&
+            oClaimFlexiPosting.cust_Flexi_Posting_Date
+            ? oClaimFlexiPosting.cust_Flexi_Posting_Date.getFullYear()
+            : dCurrentDate.getFullYear();
 
     return iYear;
 }
@@ -108,12 +108,15 @@ function determineClaimPostingDate(aBudgetContext, oClaimFlexiPosting) {
         return dReceipt > dLatest ? dReceipt : dLatest;
     }, new Date(aBudgetContext[0].RECEIPT_DATE));
 
-    const { cust_Validity_Start: dStart, cust_Validity_End: dEnd, cust_Flexi_Posting_Date: dFlexiPosting } = oClaimFlexiPosting;
+    const { cust_Validity_Start: dStart,
+        cust_Validity_End: dEnd,
+        cust_Flexi_Posting_Date: dFlexiPosting,
+        cust_Receipt_Year: sReceiptYear } = oClaimFlexiPosting;
 
     // 2. Check if current date (submission date) is within the Flexi Posting range and receipt year match - use flexible posting date
     // 3. Otherwise, flexible posting date is blank (default to current date)
     const dPostingDate = ((new Date() >= dStart && new Date() <= dEnd) &&
-                            String(dLatestReceiptDate.getFullYear()) === oClaimFlexiPosting.cust_Receipt_Year)
+        String(dLatestReceiptDate.getFullYear()) === sReceiptYear)
         ? (dFlexiPosting ?? new Date())
         : new Date();
 
