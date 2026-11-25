@@ -196,19 +196,16 @@ async function processEarmarkedFunds(aEarmarkedFundItems, sRecordID, sAction, sP
  * Roll up cost center based on the employee's role hierarchy.
  * Upon checking on HOB/HOD level, retrieve main Cost Center (Parent CC) that belongs to the Department/Branch
  * The Parent CC will be maintained in SF 
- * HOB, HOD and RD also need to roll up to their respective Branch/Department
- * RD will roll up to their respective Branch cost center
- * Certain employee is directly reporting to RD instead of HOB, roll up these employees to their respective branch CC
+ * HOD need to roll up to their respective Department
+ * HOB/RD will not go through roll up since their cost center is already at the parent level
  * @param {Object} oEmployeeDetails - Employee details object
  * @returns {Promise<{error: boolean, message: string, oEmployeeRollupCC: Object}>} - Result of the roll up cost center 
  */
 async function rollUpCostCenter(oEmployeeDetails) {
     const sEmpMasterTable = cds.entities['eclaim_srv.ZEMP_MASTER'];
     const sRoleHierarchyTable = cds.entities['eclaim_srv.ZROLEHIERARCHY'];
-    const aBranchSuperior = [Constant.Role.HOB, Constant.Role.RD];
     const sRole = oEmployeeDetails[Constant.EntitiesFields.ROLE];
     const bIsHOD = sRole === Constant.Role.HOD;
-    const bIsBranchHead = aBranchSuperior.includes(sRole);
     let sDirectSuperior = oEmployeeDetails[Constant.EntitiesFields.DIRECT_SUPERIOR];
     let iCounter = 20;
     var oEmployeeRollupCC = {};
@@ -217,8 +214,7 @@ async function rollUpCostCenter(oEmployeeDetails) {
 
     try {
         
-        if (bIsHOD || bIsBranchHead) {
-            oEmployeeRollupCC.HOB_RD = bIsBranchHead;
+        if (bIsHOD) {
             oEmployeeRollupCC.HOD = bIsHOD;
         } else {
             const aRoleHierarchy = await cds.run(SELECT.from(sRoleHierarchyTable));
