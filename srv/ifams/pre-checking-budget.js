@@ -57,8 +57,8 @@ async function retrieveClaimFlexiPosting() {
 }
 
 /**
- * Determine Budget Year based on Last Modified and Claim Flexi Posting range date
- * If above condition passed, check if Receipt year (Config) match with receipt year in Receipt Date
+ * Determine Budget Year based on Submission Date (Current Date) and Claim Flexi Posting range date
+ * If above condition passed, check if Receipt year (in Config) match with receipt year in Receipt Date
  * If all condition match, get the Flexible Posting Date
  * Else, Flexible Posting Date will be blank (Defaulted to Current Date) 
  * Claim Flexi Posting Range Date (cust_Validity_Start and cust_Validity_End) 
@@ -78,8 +78,8 @@ function determineBudgetYear(sReceiptDate, oClaimFlexiPosting) {
     // 2.If all condition matches, get flexible posting date (year)
     // 3.If no match, blank (default fallback to current year)
     const iYear =
-    new Date() >= dStartDate &&
-    new Date() <= dEndDate &&
+    dCurrentDate >= dStartDate &&
+    dCurrentDate <= dEndDate &&
     sReceiptYear === oClaimFlexiPosting.cust_Receipt_Year &&
     oClaimFlexiPosting.cust_Flexi_Posting_Date
         ? oClaimFlexiPosting.cust_Flexi_Posting_Date.getFullYear()
