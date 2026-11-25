@@ -813,7 +813,7 @@ async function buildFinalApprovalPayloadForCCC(oTx, sRequestId) {
     });
 
     const oServiceTaxItem = await oTx.run(
-        SELECT.one.from('ZREQUEST_ITEM')
+        SELECT.one.from(Constant.Entities.ZREQUEST_ITEM)
             .columns(Constant.EntitiesFields.REQUEST_SUB_ID, Constant.EntitiesFields.EARMARKED_FUNDS_DOC_ITEM_ID)
             .where({ REQUEST_ID: sRequestId, CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.SERV_TAX })
     );

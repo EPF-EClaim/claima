@@ -41,7 +41,8 @@ const aEntityTableByPrefix = {
         entityTypeDescField : 'ZREQUEST_TYPE_REQUEST_TYPE_DESC',
         entityAmount        : Constant.EntitiesFields.EST_AMOUNT,
         statusField         : Constant.EntitiesFields.STATUS,
-        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM']
+        entityClaimTypeItem : cds.entities['eclaim_srv.ZCLAIM_TYPE_ITEM'],
+        entityCccPart       : cds.entities['eclaim_srv.ZREQ_ITEM_CCC_PART']
     }
 }
 
@@ -998,17 +999,13 @@ async function updateRequestBudget(oTx, sId, aCheckResults) {
         );
         if (!oRolledUp) return [];
 
-        await oTx.run(
-            UPDATE(oDescriptor.entityHeader)
-                .set({ [Constant.EntitiesFields.COST_CENTER]: oRolledUp.RESOLVED_FUND_CENTER })
-                .where({ [oDescriptor.idField]: sId })
-        );
-        // CCC Service Tax keeps its own fixed budget line - leave that item's cost center alone
-        await oTx.run(
-            UPDATE(oDescriptor.entityItem)
-                .set({ [Constant.EntitiesFields.COST_CENTER]: oRolledUp.RESOLVED_FUND_CENTER })
-                .where`REQUEST_ID = ${sId} and (CLAIM_TYPE_ITEM_ID is null or CLAIM_TYPE_ITEM_ID != ${Constant.ClaimTypeItem.SERV_TAX})`
-        );
+        for (const oEntity of [oDescriptor.entityHeader, oDescriptor.entityItem]) {
+            await oTx.run(
+                UPDATE(oEntity)
+                    .set({ [Constant.EntitiesFields.COST_CENTER]: oRolledUp.RESOLVED_FUND_CENTER })
+                    .where({ [oDescriptor.idField]: sId })
+            );
+        }
 
         return [];
     } catch (oError) {
@@ -1112,7 +1109,7 @@ async function retrieveCccServiceTaxBudgetContext(oTx, sId) {
     const sSubId = oServTaxItem[Constant.EntitiesFields.REQUEST_SUB_ID];
 
     const aParts = await oTx.run(
-        SELECT.from(cds.entities['eclaim_srv.ZREQ_ITEM_CCC_PART'])
+        SELECT.from(oDescriptor.entityCccPart)
             .columns(
                 Constant.EntitiesFields.GL_CODE,
                 Constant.EntitiesFields.MATERIAL_CODE,
