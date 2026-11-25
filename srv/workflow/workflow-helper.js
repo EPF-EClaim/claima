@@ -227,7 +227,6 @@ async function retrieveBudgetContext(sId, oDescriptor) {
     if(!oHeaderContext) {
         return null;
     }
-    const sSubmittedDate = oHeaderContext[Constant.EntitiesFields.SUBMITTED_DATE];
     const sInternalOrder = oHeaderContext[Constant.EntitiesFields.PROJECT_CODE] || Constant.Wildcard.NA;
     const aItemsContext = await retrieveItems(sId, oDescriptor);
 
@@ -499,13 +498,13 @@ function groupBudgetItems(aBudgetContext, oFlexiPostingRecord) {
     const oGroups = {};
 
     for (const [iIndex, entry] of aBudgetContext.entries()) {
-        const sYear = determineBudgetYear(entry.RECEIPT_DATE, oFlexiPostingRecord);
+        const iYear = determineBudgetYear(entry.RECEIPT_DATE, oFlexiPostingRecord);
         const bIO = entry.INTERNAL_ORDER !== Constant.Wildcard.NA;
 
         const oCondition = bIO
-            ? { YEAR: sYear, INTERNAL_ORDER: entry.INTERNAL_ORDER, IOWBS_IND: entry.IO_WBS_IND }
+            ? { YEAR: iYear, INTERNAL_ORDER: entry.INTERNAL_ORDER, IOWBS_IND: entry.IO_WBS_IND }
             : {
-                YEAR: sYear,
+                YEAR: iYear,
                 INTERNAL_ORDER: entry.INTERNAL_ORDER,
                 FUND_CENTER: entry.FUND_CENTER,
                 COMMITMENT_ITEM: entry.COMMITMENT_ITEM,
