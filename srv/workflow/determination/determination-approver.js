@@ -221,8 +221,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         }
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
-    //console.log("aUniqueApproversDetails", aUniqueApproversDetails);
-    var test = ["MED_REVIEWER", "MED_APPROVER", "WILAYAH_ASAL_VERIFIER" , "ELAUN_PINDAH_VERIFIER"];
     // Retrieve substitute for approvers
     for (const [iIndex, oApprover] of aUniqueApproversDetails.entries()){
 
