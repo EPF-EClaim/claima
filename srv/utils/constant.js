@@ -117,7 +117,9 @@ const Constant = {
         "CERAMAH" : "CERAMAH",
         "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
         "MEDICAL_ADVANCE": "MEDICAL_ADVANCE",
-        "CORPO_CRED_CARD": "CORPO_CRED_CARD"
+        "CORPO_CRED_CARD": "CORPO_CRED_CARD",
+        "TAMBANG_DLM_NEGARA" : "TAMBANG_DLM_NEGARA",
+        "TAMBANG_LUAR_NEGARA" : "TAMBANG_LUAR_NEGARA"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -193,7 +195,8 @@ const Constant = {
         "CASH_REPAY": "CASH_REPAY",
         "MERCH_RETURN": "MERCH_RETURN",
         "STATMENT_DUE": "STATMENT_DUE",
-        "CASH_BACK": "CASH_BACK"
+        "CASH_BACK": "CASH_BACK",
+        "FLIGHT_KURSUS" : "FLIGHT_KURSUS"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",

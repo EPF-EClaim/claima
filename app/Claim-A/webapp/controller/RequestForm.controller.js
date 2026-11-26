@@ -2612,6 +2612,14 @@ sap.ui.define([
 								this._oReqModel.setProperty("/req_item/roundtrip_km", this._oReqModel.getProperty("/req_item/kilometer") * 2);
 							}
 							break;
+						
+						// remove business class option for FLIGHT_KURSUS (Tambang Dalam Negara only)
+						case Constants.ClaimTypeItem.FLIGHT_KURSUS:
+							if (this._oReqModel.getProperty("/req_header/claimtype") === Constants.ClaimType.TAMBANG_DLM_NEGARA) {
+								this._removeBusinessClass();
+							}
+							break;
+
 						default:
 							break;
 					}
