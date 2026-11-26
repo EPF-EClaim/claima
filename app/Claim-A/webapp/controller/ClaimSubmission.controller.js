@@ -2817,7 +2817,9 @@ sap.ui.define([
 			var oControl = this.byId(sId);
 			if (!oControl || !oControl.getVisible()) return;
 			var oClaimItemModel = this.getView().getModel("claimitem_input");
+			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var sClaimTypeItemId = oClaimItemModel.getProperty("/claim_item/claim_type_item_id");
+			var sClaimTypeId = oInputModel.getProperty("/claim_header/claim_type_id");
 
 			if (!sField) {
 				sField = sTable.slice(1);
@@ -2844,7 +2846,9 @@ sap.ui.define([
 					)
 				);
 			}
-			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L) {
+			if (sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_L ||
+				(sClaimTypeItemId === this._oConstant.ClaimTypeItem.FLIGHT_KURSUS &&
+					sClaimTypeId === this._oConstant.ClaimType.TAMBANG_DLM_NEGARA)) {
 				aFilters.push(
 					new Filter(
 						this._oConstant.EntitiesFields.FLIGHT_CLASS_ID,

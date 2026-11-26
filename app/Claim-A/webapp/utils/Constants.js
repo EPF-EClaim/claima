@@ -28,7 +28,9 @@ sap.ui.define([
             "WILAYAH_ASAL": "WILAYAH_ASAL",
             "CERAMAH": "CERAMAH",
             "CORPO_CRED_CARD" : "CORPO_CRED_CARD",
-            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE"
+            "MEDICAL_ADVANCE": "MEDICAL_ADVANCE",
+            "TAMBANG_DLM_NEGARA" : "TAMBANG_DLM_NEGARA",
+            "TAMBANG_LUAR_NEGARA" : "TAMBANG_LUAR_NEGARA"
         },
         "ClaimTypeKursus": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -107,7 +109,8 @@ sap.ui.define([
             "MERCH_RETURN" : "MERCH_RETURN",
             "PERSONAL_EXP" : "PERSONAL_EXPENSE",
             "POTONGAN_ELAUN" : "POTONGAN_ELAUN",
-            'SEWAPETAK': "SEWAPETAK"
+            "SEWAPETAK": "SEWAPETAK",
+            "FLIGHT_KURSUS" : "FLIGHT_KURSUS"
         },
         "ClaimTypeItemOverseas": {
             "MAKAN_O": "MAKAN_O",

@@ -21,6 +21,8 @@ const KeahlianKelab = require("./KeahlianKelab");
 const TravelInsurance = require("./TravelInsurance");
 const PostEducation = require("./PostEducation");
 const Medical = require("./Medical");
+const TambangKursusDalam = require("./TambangKursusDalam");
+const TambangKursusLuar = require("./TambangKursusLuar");
 
 module.exports = {
   /**
@@ -306,6 +308,20 @@ module.exports = {
             aEmpData[0],
             aFilteredEligibility,
             tx
+          );
+          break;
+
+        case Constant.ClaimType.TAMBANG_DLM_NEGARA:
+          oReturnPayload = TambangKursusDalam.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility
+          );
+          break;
+
+        case Constant.ClaimType.TAMBANG_LUAR_NEGARA:
+          oReturnPayload = TambangKursusLuar.onEligibleCheck(
+            aPayload[i],
+            aFilteredEligibility
           );
           break;
 
