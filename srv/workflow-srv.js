@@ -49,12 +49,12 @@ module.exports = (srv) => {
         let bStatus = false;    // default to false, will be set to true
 
         if (!sRecordId) {
-            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Document ID is required to start workflow", false);
+            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_GENERAL, "Error: Document ID is required to start workflow", false);
         }
 
         const oDescriptor = resolveDocDescriptor(sRecordId);
         if (!oDescriptor) {
-            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Prefix not found for document: ${sRecordId}`, false);
+            return generateReturnMessage(bStatus, sRecordId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error: Prefix not found for document: ${sRecordId}`, false);
         }
 
         // Steps 1-5: eligibility, budget locking, workflow determination,

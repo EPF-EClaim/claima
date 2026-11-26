@@ -94,7 +94,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                         if(sFinalCC){
                             oBudgetOwnerDetails = await retrieveBudgetOwnerDetails(sFinalCC, sClaimTypeId);
                             if(!oBudgetOwnerDetails){
-                                return false;
+                                throw new Error(`No Active Budget Owner Found for ${sFinalCC}. Kindly reach out to DTD Team for assistance.`);
                             }
                             oPopulatedEmployee = populateApproverDetails(oBudgetOwnerDetails, iIndex);
                             if(oPopulatedEmployee){
@@ -108,7 +108,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                         if(sProjectCode){
                             oProjectOwnerDetails = await retrieveProjectOwnerDetails(sProjectCode);
                             if(!oProjectOwnerDetails){
-                                return false;
+                                throw new Error(`No Active Project Owner Found for ${sProjectCode}. Kindly reach out to DTD Team for assistance.`);
                             }
                             oPopulatedEmployee = populateApproverDetails(oProjectOwnerDetails, iIndex);
                             if(oPopulatedEmployee){

@@ -4509,7 +4509,12 @@ sap.ui.define([
 											break;
 
 										default:
-											MessageBox.error(oResponse.Message);
+											MessageBox.error(
+												oResponse.Message.split(": ")[1], 
+												{
+													title: oResponse.Message.split(": ")[0]
+												}
+											);
 											break;
 									}
 									return;
