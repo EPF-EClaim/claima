@@ -136,7 +136,7 @@
                             icon="sap-icon://payment-approval"
                             text="{i18n>nav_paymentreconreport}"
                             enabled="true"
-                            visible="{roleModel>/isAdminSystem}"
+                            visible="{roleModel>/JKEW_role}"
                         >
                         <tnt:items>
                                 <tnt:NavigationListItem
@@ -198,7 +198,7 @@
                             text="{i18n>nav_masterdata}"
                             enabled="true"
                             expanded="false"
-                            visible="{= ${roleModel>/Admin_role} || ${roleModel>/CCC_Admin} }"
+                            visible="{= ${roleModel>/DTDAdmin_role} || ${roleModel>/CCC_Admin} }"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -347,11 +347,6 @@
                                     key="ZMOBILE_CATEGORY_PURPOSE"
                                     text="{i18n>nav_mobilecat}"
                                     visible="{roleModel>/DTDAdmin_role}"
-                                />
-                                <tnt:NavigationListItem
-                                    key="ZBUDGET"
-                                    text="{i18n>nav_budget_data}"
-                                    visible="{roleModel>/JKEW_role}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"

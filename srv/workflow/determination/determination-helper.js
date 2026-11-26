@@ -4,6 +4,7 @@ const { Constant } = require("../../utils/constant");
 const {
     retrieveEmployeeDetails
 } = require("../../workflow/workflow-helper");
+const sfLib = require('../../utils/getSFData');
 
 const WORKFLOW_RULE_COLUMNS = [
     Constant.EntitiesFields.CLAIM_TYPE_ID,
@@ -84,51 +85,84 @@ async function retrieveApprover(sEEID, iApproverRank, idepth = 0) {
     // Otherwise recurse deeper up the chain
     return await retrieveApprover(oDirectSuperior[Constant.EntitiesFields.EEID], iApproverRank, idepth + 1);
 }
-async function retrieveBudgetDetails(sCostCenter, sYear) {
-    let oBudgetContext = null;
-
-    // Main table path
-    const sBudgetTablePath = cds.entities['eclaim_srv.ZBUDGET'];
-    const sCostCenterSafe = String(sCostCenter);
-    const sYearSafe = String(sYear);
-    let sEEID = "";
-
-    // Fetch data
-    console.log("Start Budget check");
-    oBudgetContext = await cds.run(
-        SELECT
-            .one
-            .from(sBudgetTablePath)
-            .where({
-                [Constant.EntitiesFields.FUND_CENTER]   : sCostCenterSafe,
-                [Constant.EntitiesFields.YEAR]          : sYearSafe
-            })
-            .columns(
-                Constant.EntitiesFields.YEAR,
-                Constant.EntitiesFields.INTERNAL_ORDER,
-                Constant.EntitiesFields.COMMITMENT_ITEM,
-                Constant.EntitiesFields.FUND_CENTER,
-                Constant.EntitiesFields.MATERIAL_GROUP,
-                Constant.EntitiesFields.BUDGET_OWNER_ID
-            )
-    )
-    if(!oBudgetContext){
+/**
+ * Retrieve the budget owner of a cost center from SuccessFactors.
+ * Mirrors the old ZBUDGET behaviour:
+ *  - returns null if the cost center is not found
+ *  - returns empty values if the budget owner is not maintained or the position is vacant
+ *  - SF call errors are thrown to the caller (same as DB errors in the old method)
+ * @param {string} sCostCenter  Cost center external code
+ * @param {string} [sAsOfDate]  YYYY-MM-DD. Defaults to today in Malaysia time (MYT)
+ * @returns {Promise<{BUDGET_OWNER_EMAIL: string, BUDGET_OWNER_ID: string} | null>}
+ */
+async function retrieveBudgetOwnerDetails(sCostCenter, sClaimTypeId) {
+    const sCC = String(sCostCenter ?? "").trim();
+    if (!sCC) {
         return null;
     }
-    const oBudgetOwnerContext = await retrieveEmployeeDetails(null, oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase())
-    if (oBudgetOwnerContext){
-        sEEID = oBudgetOwnerContext[Constant.EntitiesFields.EEID];
+
+    const sAsOfDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // this part will override cost center owner with claim type specific approver if exist, otherwise will use cost center owner
+    // Check if claim type specific approver details exist
+    const oCTSApproverDetails = await retrieveClaimTypeSpecificApproverDetails(sClaimTypeId);
+    if(oCTSApproverDetails && oCTSApproverDetails.EEID){
+        return oCTSApproverDetails;
     }
-    
+
+    // costCenter, asOfDate is SF fields name
+    const aBudgetOwnerContext = await sfLib.getSFCostCenter({ costCenter: sCC }, { asOfDate: sAsOfDate });
+
+    const oCostCenter = aBudgetOwnerContext?.[0];
+    if (!oCostCenter) {
+        return null;
+    }
+
+    // Owner not maintained or position vacant: keep empty values, same as the old sEEID = ""
+    const oOwner = oCostCenter.BUDGET_OWNER;
+
+    // Return only the required fields
+    return oOwner;
+}
+/**
+ * Retrieve claim type specific approver details.
+ * @param {string} sClaimType  Claim type
+ * @returns {Promise<{EEID: string, NAME: string, EMAIL: string} | null>}
+ */
+async function retrieveClaimTypeSpecificApproverDetails(sClaimTypeId) {
+    const sClaimType = String(sClaimTypeId ?? "").trim();
+    if (!sClaimType) {
+        return null;
+    }
+
+    // Main table path
+    const sClaimTypeTable = cds.entities['eclaim_srv.ZCLAIM_TYPE'];
+
+    const oCTSApproverContext = await cds.run(
+        SELECT
+            .one
+            .from(sClaimTypeTable)
+            .where({
+                [Constant.EntitiesFields.CLAIM_TYPE_ID]: sClaimType
+            })
+            .columns(
+                Constant.EntitiesFields.CTS_APPROVER_POSITION_ID,
+                Constant.EntitiesFields.CTS_APPROVER_EEID,
+                Constant.EntitiesFields.CTS_APPROVER_NAME,
+                Constant.EntitiesFields.CTS_APPROVER_EMAIL
+            )
+    )
+
+    if (!oCTSApproverContext){
+        return null;
+    } 
+
     // Return only the required fields
     return {
-        YEAR:               oBudgetContext[Constant.EntitiesFields.YEAR],
-        INTERNAL_ORDER:     oBudgetContext[Constant.EntitiesFields.INTERNAL_ORDER],
-        COMMITMENT_ITEM:    oBudgetContext[Constant.EntitiesFields.COMMITMENT_ITEM],
-        FUND_CENTER:        oBudgetContext[Constant.EntitiesFields.FUND_CENTER],
-        MATERIAL_GROUP:     oBudgetContext[Constant.EntitiesFields.MATERIAL_GROUP],
-        BUDGET_OWNER_EMAIL: oBudgetContext[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase(),
-        BUDGET_OWNER_ID:    sEEID
+        POS: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_POSITION_ID] || "",
+        EEID: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_EEID] || "",
+        NAME: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_NAME] || "",
+        EMAIL: oCTSApproverContext[Constant.EntitiesFields.CTS_APPROVER_EMAIL] || ""
     };
 }
 async function retrieveProjectOwnerDetails(sProjectCode) {
@@ -139,7 +173,6 @@ async function retrieveProjectOwnerDetails(sProjectCode) {
     const sProjectCodeSafe = String(sProjectCode);
 
     // Fetch data
-    console.log("Start Project Code check");
     oBudgetContext = await cds.run(
         SELECT
             .one
@@ -148,43 +181,13 @@ async function retrieveProjectOwnerDetails(sProjectCode) {
                 [Constant.EntitiesFields.PROJECT_CODE_IO]: sProjectCodeSafe
             })
             .columns(
-                Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID,
-                Constant.EntitiesFields.PROJECT_OWNER_EEID,
-                Constant.EntitiesFields.PROJECT_OWNER_NAME,
-                Constant.EntitiesFields.PROJECT_OWNER_EMAIL
+                Constant.EntitiesFields.COST_CENTER,
             )
-    );
-
-    // Project code not found
-    if (!oBudgetContext) {
-        console.warn(`Project Code '${sProjectCodeSafe}' not found`);
+    )
+    if(!oBudgetContext){
         return null;
     }
-
-    const sPositionId = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_POSITION_ID] || null;
-    const sEEID       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EEID] || null;
-    const sName       = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_NAME] || null;
-    const sEmail      = oBudgetContext[Constant.EntitiesFields.PROJECT_OWNER_EMAIL] || null;
-
-    // check if position id is maintained
-    if (!sPositionId) {
-        console.warn(`Project Code '${sProjectCodeSafe}' has no Project Owner Position ID`);
-        return null;
-    }
-
-    // check if there is a employee associated with the position id
-    if (!sEEID) {
-        console.warn(`Position ID '${sPositionId}' for Project Code '${sProjectCodeSafe}' has no associated employee`);
-        return null;
-    }
-
-    // Return only the required fields
-    return {
-        BUDGET_OWNER_EMAIL:       sEmail ? String(sEmail).toLowerCase() : null,
-        BUDGET_OWNER_ID:          sEEID,
-        BUDGET_OWNER_POSITION_ID: sPositionId,
-        BUDGET_OWNER_NAME:        sName
-    };
+    return await retrieveBudgetOwnerDetails(oBudgetContext[Constant.EntitiesFields.COST_CENTER]);
 }
 function populateApproverDetails(oApproverDetails, iLevel) {
     if(!oApproverDetails) return null;
@@ -640,7 +643,7 @@ module.exports = {
     determineWorkflowStepContext,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails,
+    retrieveBudgetOwnerDetails,
     retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,

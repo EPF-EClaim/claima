@@ -5,7 +5,7 @@ const {
     determineWorkflowStepContext,
     retrieveFromConstantTable,
     retrieveApprover,
-    retrieveBudgetDetails,
+    retrieveBudgetOwnerDetails,
     retrieveProjectOwnerDetails,
     populateApproverDetails,
     normalizeApproversByGroup,
@@ -18,7 +18,6 @@ const {
     retrieveRoleRank
 } = require("../../workflow/workflow-helper");
 const oauthConfiguration = require('@sap/approuter/lib/passport/oauth-configuration');
-
 
 async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescriptor) {
     // Variable declarations for Approver Determination logic
@@ -44,6 +43,7 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
     
     const oHeader = await retrieveHeaderDetails(sId, oDescriptor)
     const sFinalCC = oHeader[Constant.EntitiesFields.ALTERNATE_COST_CENTER] ?? oHeader[Constant.EntitiesFields.COST_CENTER] ?? null;
+    const sClaimTypeId = oHeader[Constant.EntitiesFields.CLAIM_TYPE_ID];
     const sProjectCode = oHeader[Constant.EntitiesFields.PROJECT_CODE]
     const oClaimantDetails = await retrieveEmployeeDetails(oHeader[Constant.EntitiesFields.EMP_ID], );
     //console.log(oClaimantDetails);
@@ -92,39 +92,28 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
                 switch(oWorkflowApprStep){
                     case Constant.Role.BUDGET:  
                         if(sFinalCC){
-                            console.log("FinalCC: ", sFinalCC);
-                            console.log("System Year: ", sSystemYear);
-                            oBudgetDetails = await retrieveBudgetDetails(sFinalCC, sSystemYear);
-                            console.log("Budget Details: ", oBudgetDetails);
-                            if(!oBudgetDetails){
-                                return false;
+                            oBudgetOwnerDetails = await retrieveBudgetOwnerDetails(sFinalCC, sClaimTypeId);
+                            if(!oBudgetOwnerDetails){
+                                throw new Error(`No Active Budget Owner Found for ${sFinalCC}. Kindly reach out to DTD Team for assistance.`);
                             }
-                            oApproverDetails = await retrieveEmployeeDetails(oBudgetDetails[Constant.EntitiesFields.BUDGET_OWNER_ID].toLowerCase());
-                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            oPopulatedEmployee = populateApproverDetails(oBudgetOwnerDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Budget Approver: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
                         break;
                     case Constant.Role.PROJECT_OWNER:
                         if(sProjectCode){
-                            console.log("Project Code: ", sProjectCode);
-                            oProjectDetails = await retrieveProjectOwnerDetails(sProjectCode);
-                            console.log("Project Details: ", oProjectDetails);
-
-                            if(!oProjectDetails?.BUDGET_OWNER_ID) return false;      // project owner is not found, return false to stop the workflow
-
-                            oApproverDetails = await retrieveEmployeeDetails(oProjectDetails[Constant.EntitiesFields.BUDGET_OWNER_ID]);
-                            oPopulatedEmployee = populateApproverDetails(oApproverDetails, iIndex);
+                            oProjectOwnerDetails = await retrieveProjectOwnerDetails(sProjectCode);
+                            if(!oProjectOwnerDetails){
+                                throw new Error(`No Active Project Owner Found for ${sProjectCode}. Kindly reach out to DTD Team for assistance.`);
+                            }
+                            oPopulatedEmployee = populateApproverDetails(oProjectOwnerDetails, iIndex);
                             if(oPopulatedEmployee){
                                 aApproversDetails.push(oPopulatedEmployee);
                             }
-                            
-                            console.log("Project Owner: ", oPopulatedEmployee);
                         }else{
                             return false;
                         }
@@ -232,8 +221,6 @@ async function runApproverDetermination(oTx, sId, oWorkflowStepContext, oDescrip
         }
         aUniqueApproversDetails = normalizeApproversByGroup(aApproversDetails, oClaimantDetails);
     }
-    //console.log("aUniqueApproversDetails", aUniqueApproversDetails);
-    var test = ["MED_REVIEWER", "MED_APPROVER", "WILAYAH_ASAL_VERIFIER" , "ELAUN_PINDAH_VERIFIER"];
     // Retrieve substitute for approvers
     for (const [iIndex, oApprover] of aUniqueApproversDetails.entries()){
 

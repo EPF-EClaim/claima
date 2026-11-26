@@ -69,7 +69,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
 
         if (!oWorkflowContext) {
             await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No workflow rule matched for ${sId}`, false);
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error: No workflow rule matched for ${sId}`, false);
         }
     } catch (oError) {
         await oTx.rollback();
@@ -83,7 +83,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
 
         if (!aApproversContext?.length) {
             await oTx.rollback();
-            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `No approvers determined for ${sId}`, false);
+            return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error: No approvers determined for ${sId}`, false);
         }
     } catch (oError) {
         await oTx.rollback();
@@ -165,7 +165,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
     const aApproversContextNew = setApproversContext(oDescriptor, sId, aApproversContext);
     if (!aApproversContextNew?.length) {
         await oTx.rollback();
-        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error encountered during Approver Normalization for ${sId}`, false);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_DETERMINATION, `Error: Error encountered during Approver Normalization for ${sId}`, false);
     }
 
     try {
@@ -173,7 +173,7 @@ async function runPreWorkflowChecks(oTx, sId, oDescriptor) {
         await insertRecords(oDescriptor.entityApprovers, aApproversContextNew, oTx);
     } catch (oError) {
         await oTx.rollback();
-        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error encountered while saving approver details: ${oError.message}`, false);
+        return generateReturnMessage(false, sId, Constant.WorkflowArea.WORKFLOW_GENERAL, `Error: Error encountered while saving approver details: ${oError.message}`, false);
     }
 
     return { oWorkflowContext, aApproversContext, aApproversContextNew };

@@ -18,7 +18,9 @@ sap.ui.define([
     "claima/utils/ExcelExport",
     "sap/ui/export/Spreadsheet",
     "sap/ui/export/library",
-    "claima/utils/Constants"
+    "claima/utils/Constants",
+    "sap/m/SelectDialog",
+    "sap/m/StandardListItem"
 ], (Controller,
     Sorter,
     Filter,
@@ -38,7 +40,9 @@ sap.ui.define([
     ExcelExport,
     Spreadsheet,
     exportLibrary,
-    Constants
+    Constants,
+    SelectDialog,
+    StandardListItem
 ) => {
     "use strict";
 
@@ -171,6 +175,7 @@ sap.ui.define([
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
+                            if (oControl.data("computed")) continue;
 
                             var sFieldName = oControl.getName();
                             var sNewInput;
@@ -179,7 +184,7 @@ sap.ui.define([
                                     oControl.getSelectedKey() === 'false' ? false :
                                         oControl.getSelectedKey() === 'true' ? true :
                                             oControl.getSelectedKey() === 'none' ? null :
-                                            oControl.getSelectedKey();
+                                                oControl.getSelectedKey();
                             } else {
                                 sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                             }
@@ -224,7 +229,6 @@ sap.ui.define([
             const aContexts = aSelectedItems.map(item =>
                 item.getBindingContext()
             );
-
 
             MessageBox.confirm(
                 Utility.getText("msg_zclaim_delete_record"),
@@ -287,6 +291,7 @@ sap.ui.define([
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
+                            if (oControl.data("computed")) continue;
 
                             var sFieldName = oControl.getName();
                             var sNewInput;
@@ -348,7 +353,6 @@ sap.ui.define([
             const oNewData = { ...oOriginalData };
             let bKeyChanged = false;
 
-
             const oDialog = new Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
@@ -367,6 +371,8 @@ sap.ui.define([
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
+                            if (oControl.data("computed")) continue;
+
                             const sFieldName = oControl.getName();
                             var sNewInput;
                             if (oControl.isA("sap.m.Select")) {
@@ -374,7 +380,7 @@ sap.ui.define([
                                     oControl.getSelectedKey() === 'false' ? false :
                                         oControl.getSelectedKey() === 'true' ? true :
                                             oControl.getSelectedKey() === 'none' ? null :
-                                            oControl.getSelectedKey();
+                                                oControl.getSelectedKey();
                             } else {
                                 sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                             }
@@ -404,12 +410,17 @@ sap.ui.define([
                                 } else {
                                     oListBinding = oModel.bindList(sPath);
                                 }
+
+                                // Approver details are derived by the backend; never send them
+                                oVBox.getItems().filter((c) => c.data("computed")).forEach((c) => delete oNewData[c.getName()]);
+
                                 await oListBinding.create(oNewData);
                                 await oContext.delete();
 
                             } else {
                                 for (let i = 1; i < oInputs.length; i += 2) {
                                     const oControl = oInputs[i];
+                                    if (oControl.data("computed")) continue;
 
                                     var sFieldName = oControl.getName();
                                     var sNewInput;
@@ -418,7 +429,7 @@ sap.ui.define([
                                             oControl.getSelectedKey() === 'false' ? false :
                                                 oControl.getSelectedKey() === 'true' ? true :
                                                     oControl.getSelectedKey() === 'none' ? null :
-                                                    oControl.getSelectedKey();
+                                                        oControl.getSelectedKey();
                                     } else {
                                         sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                                     }
@@ -451,13 +462,18 @@ sap.ui.define([
                 const oControl = oInputs[i];
                 const sFieldName = oControl.getName();
                 if (oControl.isA("sap.m.Select")) continue;
+                if (oControl.data("computed")) continue;
+
                 const sValue = oControl.getValue();
                 const bRequired = oDataType?.[sFieldName]?.$Nullable === false;
+                const bLookupError = oControl.data("valueList") && oControl.getValueState() === "Error";
 
                 if (bRequired && (!sValue || sValue.trim() === '')) {
                     oControl.setValueState("Error");
                     oControl.setValueStateText(Utility.getText("msg_requiredfield"));
                     bValid = false;
+                } else if (bLookupError) {
+                    bValid = false; // keep the "not found" error from the lookup
                 } else {
                     oControl.setValueState("None");
                 }
@@ -503,16 +519,20 @@ sap.ui.define([
             });
             oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom");
 
-            oLineItems.forEach(function (item) {
+            oLineItems.forEach((item) => {
                 const fieldName = item.Value.$Path;
                 const oFieldMeta = oDataType[fieldName];
                 const fieldType = oFieldMeta?.$Type;
+                const oMeta = oModel.getMetaModel();
+                const sPropPath = `${sPath}/${fieldName}`;
+                const bComputed = !!oMeta.getObject(`${sPropPath}@Org.OData.Core.V1.Computed`);
+                const oValueList = oMeta.getObject(`${sPropPath}@com.sap.vocabularies.Common.v1.ValueList`);
 
                 oVBox.addItem(new Label({
                     text: item.Label,
                     width: "100%",
                     labelFor: fieldName,
-                    required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
+                    required: !bComputed && !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
                 }));
                 oVBox.addStyleClass("sapUiSmallMarginTopBottom");
 
@@ -554,9 +574,9 @@ sap.ui.define([
                     oInput = new Select({
                         name: fieldName,
                         width: "130%",
-                        selectedKey: oData[fieldName] === true  ? "true"  :
-                                     oData[fieldName] === false ? "false" :
-                                     "",
+                        selectedKey: oData[fieldName] === true ? "true" :
+                            oData[fieldName] === false ? "false" :
+                                "",
                         items: [
                             new ListItem({ key: "", text: Utility.getText("none") }),
                             new ListItem({ key: false, text: Utility.getText("no") }),
@@ -568,8 +588,17 @@ sap.ui.define([
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
                         width: "130%",
-                        enabled: true
+                        enabled: true,
+                        editable: !bComputed,
+                        showValueHelp: !!oValueList
                     });
+                    oInput.data("computed", bComputed);
+
+                    if (oValueList) {
+                        oInput.data("valueList", this._parseValueList(oValueList));
+                        oInput.attachValueHelpRequest(this.onValueListRequest, this);
+                        oInput.attachChange(this.onValueListChange, this);
+                    }
                 }
                 oVBox.addItem(oInput);
             });
@@ -577,8 +606,21 @@ sap.ui.define([
         },
 
         onClickBack: function () {
-            var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("Dashboard");
+            const oConfigModel = this.getView().getModel("config");
+
+            // Object page -> back to list
+            if (oConfigModel.getProperty("/mode") === "object") {
+                oConfigModel.setProperty("/mode", "list");
+                oConfigModel.setProperty("/selectedHeader", null);
+
+                // Reset table selection so Edit/Copy/Delete stay in sync
+                this.byId("claimTable").removeSelections(true);
+                this.getView().getModel("view").setProperty("/hasSelection", false);
+                return;
+            }
+
+            // List page -> Dashboard
+            this.getOwnerComponent().getRouter().navTo("Dashboard");
         },
 
         onOpenViewSettings: function () {
@@ -686,9 +728,10 @@ sap.ui.define([
                 { id: "filterRequestType", property: "REQUEST_TYPE" },
                 { id: "filterIndOrGroup", property: "IND_OR_GROUP" },
                 { id: "filterProjectClaim", property: "PROJECT_CLAIM" },
-                { id: "filterStartDate", property: "START DATE" },
-                { id: "filterEndDate", property: "END DATE" },
-                { id: "filterStatus", property: "STATUS" }
+                { id: "filterStartDate", property: "START_DATE" },
+                { id: "filterEndDate", property: "END_DATE" },
+                { id: "filterStatus", property: "STATUS" },
+                { id: "filterCtsApproverPositionId", property: "CTS_APPROVER_POSITION_ID" }
             ];
 
             var aItemFilters = [
@@ -719,5 +762,183 @@ sap.ui.define([
 
             oBinding.filter(aFilters, "Application");
         },
+
+        /* ---------------------------------------------------------------- */
+        /* CTS Approver: auto-populate EEID / NAME / EMAIL from position     */
+        /* ---------------------------------------------------------------- */
+        onCtsApproverPositionChange: async function (oEvent) {
+            const oInput = oEvent.getSource();
+            const oVBox = oInput.getParent();
+            const sPositionId = (oEvent.getParameter("value") || "").trim();
+
+            const fnFill = (oEmp) => {
+                oVBox.getItems().forEach((oCtrl) => {
+                    const sName = oCtrl.getName ? oCtrl.getName() : null;
+                    if (sName && CTS_APPROVER_MAP[sName]) {
+                        oCtrl.setValue(oEmp?.[CTS_APPROVER_MAP[sName]] ?? "");
+                    }
+                });
+            };
+
+            oInput.setValueState("None");
+            fnFill(null);
+            if (!sPositionId) return;
+
+            try {
+                oInput.setBusy(true);
+                const oEmp = await this._getEmployeeByPosition(sPositionId);
+
+                // Skip the result if the value changed during the lookup
+                if (oInput.getValue().trim() !== sPositionId) return;
+
+                if (!oEmp) {
+                    this._setPositionNotFound(oInput, sPositionId);
+                    return;
+                }
+                fnFill(oEmp);
+            } catch (oError) {
+                oInput.setValueState("Error");
+                oInput.setValueStateText(oError.message);
+            } finally {
+                oInput.setBusy(false);
+            }
+        },
+
+        _getEmployeeByPosition: async function (sPositionId) {
+            if (!sPositionId) return null;
+
+            const oListBinding = this.getView().getModel().bindList(
+                "/ZEMP_MASTER",
+                null,
+                null,
+                [new Filter("POS", FilterOperator.EQ, sPositionId)],
+                { $select: "EEID,NAME,EMAIL" }
+            );
+            const [oCtx] = await oListBinding.requestContexts(0, 1);
+            return oCtx ? oCtx.getObject() : null;
+        },
+
+        _setPositionNotFound: function (oInput, sPositionId) {
+            const oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            oInput.setValueState("Error");
+            oInput.setValueStateText(oBundle.getText("cts_appr_not_found", [sPositionId]));
+        },
+
+        /* ---------------------------------------------------------------- */
+        /* Generic Common.ValueList support (annotation-driven)              */
+        /* ---------------------------------------------------------------- */
+        _parseValueList: function (oVL) {
+            const NS = "com.sap.vocabularies.Common.v1.";
+            const aParams = oVL.Parameters || [];
+            const oKey = aParams.find((p) => p.$Type === NS + "ValueListParameterInOut");
+
+            return {
+                label: oVL.Label,
+                collection: "/" + oVL.CollectionPath,
+                keyProp: oKey.ValueListProperty,
+                outs: aParams
+                    .filter((p) => p.$Type === NS + "ValueListParameterOut")
+                    .map((p) => ({ local: p.LocalDataProperty.$PropertyPath, remote: p.ValueListProperty })),
+                select: aParams.map((p) => p.ValueListProperty)
+            };
+        },
+
+        onValueListRequest: function (oEvent) {
+            const oInput = oEvent.getSource();
+            const oVL = oInput.data("valueList");
+
+            const oDialog = new SelectDialog({
+                title: oVL.label,
+                growing: true,
+                growingThreshold: 50,
+                search: (e) => this._onValueListSearch(e, oVL),
+                liveChange: (e) => this._onValueListSearch(e, oVL),
+                confirm: (e) => {
+                    const oItem = e.getParameter("selectedItem");
+                    if (oItem) {
+                        const oRow = oItem.getBindingContext().getObject();
+                        oInput.setValue(oRow[oVL.keyProp]);
+                        oInput.setValueState("None");
+                        this._fillOutFields(oInput.getParent(), oVL, oRow);
+                    }
+                    oDialog.destroy();
+                },
+                cancel: () => oDialog.destroy()
+            });
+            oDialog.setModel(this.getView().getModel());
+
+            oDialog.bindAggregation("items", {
+                path: oVL.collection,
+                parameters: { $select: oVL.select.join(",") },
+                filters: [
+                    new Filter(oVL.keyProp, FilterOperator.NE, null),
+                    new Filter(oVL.keyProp, FilterOperator.NE, "")
+                ],
+                sorter: new Sorter(oVL.keyProp),
+                template: new StandardListItem({
+                    title: `{${oVL.keyProp}}`,
+                    description: oVL.outs.map((o) => `{${o.remote}}`).join(" · ")
+                }),
+                templateShareable: false
+            });
+            oDialog.open("");
+        },
+
+        _onValueListSearch: function (oEvent, oVL) {
+            const sValue = (oEvent.getParameter("value") || "").trim();
+            const aFilters = sValue ? [new Filter({
+                filters: oVL.select.map((sPath) => new Filter({
+                    path: sPath,
+                    operator: FilterOperator.Contains,
+                    value1: sValue,
+                    caseSensitive: false
+                })),
+                and: false
+            })] : [];
+            oEvent.getSource().getBinding("items").filter(aFilters);
+        },
+
+        onValueListChange: async function (oEvent) {
+            const oInput = oEvent.getSource();
+            const oVL = oInput.data("valueList");
+            const oVBox = oInput.getParent();
+            const sValue = (oEvent.getParameter("value") || "").trim();
+
+            oInput.setValueState("None");
+            this._fillOutFields(oVBox, oVL, null);
+            if (!sValue) return;
+
+            try {
+                oInput.setBusy(true);
+                const oListBinding = this.getView().getModel().bindList(
+                    oVL.collection, null, null,
+                    [new Filter(oVL.keyProp, FilterOperator.EQ, sValue)],
+                    { $select: oVL.select.join(",") }
+                );
+                const [oCtx] = await oListBinding.requestContexts(0, 1);
+
+                // Skip the result if the value changed during the lookup
+                if (oInput.getValue().trim() !== sValue) return;
+
+                if (!oCtx) {
+                    oInput.setValueState("Error");
+                    oInput.setValueStateText(Utility.getText("cts_appr_not_found", [sValue]));
+                    return;
+                }
+                this._fillOutFields(oVBox, oVL, oCtx.getObject());
+            } catch (oError) {
+                oInput.setValueState("Error");
+                oInput.setValueStateText(oError.message);
+            } finally {
+                oInput.setBusy(false);
+            }
+        },
+
+        _fillOutFields: function (oVBox, oVL, oRow) {
+            oVL.outs.forEach(({ local, remote }) => {
+                const oCtrl = oVBox.getItems().find((c) => c.getName?.() === local);
+                oCtrl?.setValue(oRow?.[remote] ?? "");
+            });
+        }
     });
 });

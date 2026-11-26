@@ -12,6 +12,7 @@ const { sendEmailInternal } = require('./utils/EmailHelper');
 const UpdateDependent = require('./utils/UpdateDependent');
 const { logWorkflowHistory, releaseCccServiceTaxBudget, buildBudgetErrorMessage } = require('./workflow/workflow-helper');
 const { syncBudgetReport } = require('./ifams/ifams-budget');
+const sfLib = require('./utils/getSFData');
 
 module.exports = (srv) => {
 
@@ -5266,6 +5267,20 @@ module.exports = (srv) => {
 
         } catch (oError) {
             req.reject(400, `Fail updating records: ${oError.message}`);
+        }
+    });
+
+    srv.before(["CREATE", "UPDATE"], "ZCLAIM_TYPE", async (req) => {
+        const sPositionId = req.data.CTS_APPROVER_POSITION_ID;
+        if (!sPositionId) return;
+
+        const oEmp = await SELECT.one
+            .from("ECLAIM.ZEMP_MASTER")
+            .columns("EEID")
+            .where({ POSITION_ID: sPositionId });
+
+        if (!oEmp) {
+            req.error(400, `No employee found for position ${sPositionId}`, "CTS_APPROVER_POSITION_ID");
         }
     });
 }

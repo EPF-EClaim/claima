@@ -58,7 +58,8 @@ async function retrieveHeaderDetails(sId, oDescriptor) {
         Constant.EntitiesFields.EMP_ID,
         Constant.EntitiesFields.COST_CENTER,
         Constant.EntitiesFields.ALTERNATE_COST_CENTER,
-        Constant.EntitiesFields.PROJECT_CODE
+        Constant.EntitiesFields.PROJECT_CODE,
+        Constant.EntitiesFields.CLAIM_TYPE_ID
     ];
 
     if (oDescriptor.entityPrefix === Constant.WorkflowType.REQUEST) aColumns.push(Constant.EntitiesFields.TRIP_START_DATE);  // to be used for cross budget checking

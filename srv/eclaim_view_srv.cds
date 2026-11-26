@@ -1033,7 +1033,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         key CLAIM_ID,
         key ZCLAIM_ITEM.CLAIM_SUB_ID,
             EMP_ID,
-            LAST_MODIFIED_DATE,
+            LAST_APPROVED_DATE as LAST_MODIFIED_DATE,
             SUBMITTED_DATE,
             FINAL_AMOUNT_TO_RECEIVE,
             ZCLAIM_ITEM.RECEIPT_DATE,

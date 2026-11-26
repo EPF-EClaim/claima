@@ -672,7 +672,7 @@ sap.ui.define([
                         return 'ReadOnly';
                     }
                     else{
-                        return 'Editable';
+                        return 'EditableDisplay';
                     }
                 case Constants.EntitiesFields.PROJECT_CODE:
                     if(sAltCC || (!bEmailApprove && bIsRestrictedType)){
