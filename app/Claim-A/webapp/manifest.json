@@ -741,6 +741,11 @@
                     "pattern": "ZJOB_CODE_MAPPING",
                     "name": "ZJOB_CODE_MAPPING",
                     "target": "ZJOB_CODE_MAPPING"
+                },
+                {
+                    "pattern": "ZCOST_CENTER",
+                    "name": "ZCOST_CENTER",
+                    "target": "ZCOST_CENTER"
                 }
             ],
             
@@ -5848,6 +5853,51 @@
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCOST_CENTER": {
+                    "type": "Component",
+                    "id": "ZCOST_CENTER",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCOST_CENTER",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "COST_CENTER_ID,COST_CENTER_DESC,PARENT_COST_CENTER_ID,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true
                                     }
                                 }
                             },

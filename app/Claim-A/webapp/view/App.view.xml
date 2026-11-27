@@ -438,6 +438,11 @@
                                     text="{i18n>nav_jobcodemapping}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                <tnt:NavigationListItem
+                                    key="ZCOST_CENTER"
+                                    text="{i18n>nav_costcenter}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem

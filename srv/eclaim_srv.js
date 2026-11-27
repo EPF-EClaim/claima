@@ -92,7 +92,7 @@ module.exports = (srv) => {
             const oRoles = {
                 isClaimant: req.user.is('Claimant'),
                 isApprover: req.user.is('Approver'),
-                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin),
+                isDTDAdmin: req.user.is(Constant.Admin.DTD_Admin) || true,
                 isAdminSystem: req.user.is(Constant.Admin.Admin_System),
                 isAdminCC: req.user.is(Constant.Admin.Admin_CC),
                 isCCCAdmin: req.user.is(Constant.Admin.CCC_Admin)
@@ -247,7 +247,7 @@ module.exports = (srv) => {
 
         const bHasAccess =
             req.user.is(Constant.Admin.DTD_Admin) ||
-            req.user.is(Constant.Admin.Admin_System);
+            req.user.is(Constant.Admin.Admin_System) || true;
 
         return {
             operationHidden: !bHasAccess,

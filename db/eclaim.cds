@@ -695,13 +695,16 @@ entity ZLODGING_CAT : managed {
 }
 
 entity ZCOST_CENTER : managed {
-    key COST_CENTER_ID   : String     @Common.Label: 'Cost Center';
-        COST_CENTER_DESC : String;
-        EXTERNAL_OBJ_ID  : String     @Common.Label: 'External Object ID';
-        DEPARTMENT       : String     @Common.Label: 'Department';
-        START_DATE       : Date       @Common.Label: 'Start Date';
-        END_DATE         : Date       @Common.Label: 'End Date';
-        STATUS           : String(10) @Common.Label: 'Status';
+    key COST_CENTER_ID          : String     @Common.Label: 'Cost Center';
+        COST_CENTER_DESC        : String     @Common.Label: 'Cost Center Description'; 
+        EXTERNAL_OBJ_ID         : String     @Common.Label: 'External Object ID';
+        DEPARTMENT              : String     @Common.Label: 'Department';
+        START_DATE              : Date       @Common.Label: 'Start Date';
+        END_DATE                : Date       @Common.Label: 'End Date';
+        STATUS                  : String(10) @Common.Label: 'Status';
+        PARENT_COST_CENTER_ID   : String(10) @Common.Label: 'Parent Cost Center';
+        ZPARENTCOST_CENTER      : Association to ZCOST_CENTER
+                                    on ZPARENTCOST_CENTER.COST_CENTER_ID = PARENT_COST_CENTER_ID;
 }
 
 entity ZRISK : managed {

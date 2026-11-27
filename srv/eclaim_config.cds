@@ -9290,3 +9290,57 @@ annotate eclaim_srv.ZJOB_CODE_MAPPING with {
     JOB_CODE_ID     @Search.fuzzinessThreshold: 1;
     JOB_GROUP_ID    @Search.fuzzinessThreshold: 1;
 };
+
+annotate service.ZCOST_CENTER with @(
+    UI.HeaderInfo : {
+        TypeName       : 'Cost Center',
+        TypeNamePlural : 'Cost Centers',
+        Title          : { Value: COST_CENTER_ID },
+        Description    : { Value: COST_CENTER_DESC }
+    },
+
+    UI.LineItem : [
+        { Value: COST_CENTER_ID,          Label: 'Cost Center',                    @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: COST_CENTER_DESC,        Label: 'Cost Center Description',        @HTML5.CssDefaults: { width: '20rem' } },
+        { Value: PARENT_COST_CENTER_ID,   Label: 'Parent Cost Center',             @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: PARENT_COST_CENTER_DESC, Label: 'Parent Cost Center Description', @HTML5.CssDefaults: { width: '20rem' } },
+        { Value: DEPARTMENT,              Label: 'Department',                     @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: EXTERNAL_OBJ_ID,         Label: 'External Object ID',             @HTML5.CssDefaults: { width: '12rem' } },
+        { Value: START_DATE,              Label: 'Start Date',                     @HTML5.CssDefaults: { width: '9rem' } },
+        { Value: END_DATE,                Label: 'End Date',                       @HTML5.CssDefaults: { width: '9rem' } },
+        { Value: STATUS,                  Label: 'Status',                         @HTML5.CssDefaults: { width: '8rem' } }
+    ],
+
+    UI.PresentationVariant : {
+        SortOrder      : [{ Property: COST_CENTER_ID, Descending: false }],
+        Visualizations : ['@UI.LineItem']
+    }
+);
+
+annotate service.ZCOST_CENTER with {
+    COST_CENTER_ID          @Core.Immutable;
+    PARENT_COST_CENTER_DESC @Core.Computed;
+    EXTERNAL_OBJ_ID         @Core.Computed;
+    DEPARTMENT              @Core.Computed;
+
+    PARENT_COST_CENTER_ID
+        @Common.Text                    : PARENT_COST_CENTER_DESC
+        @Common.TextArrangement         : #TextOnly
+        @Common.ValueListWithFixedValues: false
+        @Common.ValueList               : {
+            Label          : 'Parent Cost Center',
+            CollectionPath : 'ZCOST_CENTER',
+            Parameters     : [
+                { $Type: 'Common.ValueListParameterInOut',       LocalDataProperty: PARENT_COST_CENTER_ID, ValueListProperty: 'COST_CENTER_ID' },
+                { $Type: 'Common.ValueListParameterDisplayOnly', ValueListProperty: 'COST_CENTER_DESC' },
+                { $Type: 'Common.ValueListParameterDisplayOnly', ValueListProperty: 'STATUS' }
+            ]
+        };
+};
+
+annotate service.ZCOST_CENTER with @(
+    Common.SideEffects #ParentCostCenter : {
+        SourceProperties : [PARENT_COST_CENTER_ID],
+        TargetProperties : ['PARENT_COST_CENTER_DESC']
+    }
+);
