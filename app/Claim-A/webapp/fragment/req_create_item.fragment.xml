@@ -339,12 +339,6 @@
                                                     &amp;&amp;
                                                     ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}
                                                 )
-                                                ||
-                                                (
-                                                    parseFloat(${request>/req_item/toll_amt}) > 0.00
-                                                    &amp;&amp;
-                                                    ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}
-                                                )
                                             )
                                         }" 
                                         maximumFileSize="{constant>/AttachmentConfig/MAX_FILE_SIZE}"
