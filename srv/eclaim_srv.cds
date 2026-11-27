@@ -190,6 +190,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZVEHICLE_OWNERSHIP            as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
+    @odata.draft.enabled
+    @cds.search: { COST_CENTER_ID, PARENT_COST_CENTER_ID }
     entity ZCOST_CENTER                  as projection on ECLAIM.ZCOST_CENTER;
 
     entity ZEMP_RELATIONSHIP             as projection on ECLAIM.ZEMP_RELATIONSHIP;

@@ -5889,6 +5889,10 @@
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
                                         "selectionMode": "Multi",
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "COST_CENTER_ID,COST_CENTER_DESC,PARENT_COST_CENTER_ID,START_DATE,END_DATE,STATUS"
+                                        },
                                         "personalization": {
                                             "column": false,
                                             "filter": true,

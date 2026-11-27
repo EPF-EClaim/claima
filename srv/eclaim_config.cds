@@ -9300,15 +9300,14 @@ annotate service.ZCOST_CENTER with @(
     },
 
     UI.LineItem : [
-        { Value: COST_CENTER_ID,          Label: 'Cost Center',                    @HTML5.CssDefaults: { width: '10rem' } },
-        { Value: COST_CENTER_DESC,        Label: 'Cost Center Description',        @HTML5.CssDefaults: { width: '20rem' } },
-        { Value: PARENT_COST_CENTER_ID,   Label: 'Parent Cost Center',             @HTML5.CssDefaults: { width: '10rem' } },
-        { Value: PARENT_COST_CENTER_DESC, Label: 'Parent Cost Center Description', @HTML5.CssDefaults: { width: '20rem' } },
-        { Value: DEPARTMENT,              Label: 'Department',                     @HTML5.CssDefaults: { width: '10rem' } },
-        { Value: EXTERNAL_OBJ_ID,         Label: 'External Object ID',             @HTML5.CssDefaults: { width: '12rem' } },
-        { Value: START_DATE,              Label: 'Start Date',                     @HTML5.CssDefaults: { width: '9rem' } },
-        { Value: END_DATE,                Label: 'End Date',                       @HTML5.CssDefaults: { width: '9rem' } },
-        { Value: STATUS,                  Label: 'Status',                         @HTML5.CssDefaults: { width: '8rem' } }
+        { Value: COST_CENTER_ID,        Label: 'Cost Center',             @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: COST_CENTER_DESC,      Label: 'Cost Center Description', @HTML5.CssDefaults: { width: '20rem' } },
+        { Value: PARENT_COST_CENTER_ID, Label: 'Parent Cost Center',      @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: DEPARTMENT,            Label: 'Department',              @HTML5.CssDefaults: { width: '10rem' } },
+        { Value: EXTERNAL_OBJ_ID,       Label: 'External Object ID',      @HTML5.CssDefaults: { width: '12rem' } },
+        { Value: START_DATE,            Label: 'Start Date',              @HTML5.CssDefaults: { width: '9rem' } },
+        { Value: END_DATE,              Label: 'End Date',                @HTML5.CssDefaults: { width: '9rem' } },
+        { Value: STATUS,                Label: 'Status',                  @HTML5.CssDefaults: { width: '8rem' } }
     ],
 
     UI.PresentationVariant : {
@@ -9318,14 +9317,11 @@ annotate service.ZCOST_CENTER with @(
 );
 
 annotate service.ZCOST_CENTER with {
-    COST_CENTER_ID          @Core.Immutable;
-    PARENT_COST_CENTER_DESC @Core.Computed;
-    EXTERNAL_OBJ_ID         @Core.Computed;
-    DEPARTMENT              @Core.Computed;
+    COST_CENTER_ID  @Core.Immutable;
+    EXTERNAL_OBJ_ID @Core.Computed;
+    DEPARTMENT      @Core.Computed;
 
     PARENT_COST_CENTER_ID
-        @Common.Text                    : PARENT_COST_CENTER_DESC
-        @Common.TextArrangement         : #TextOnly
         @Common.ValueListWithFixedValues: false
         @Common.ValueList               : {
             Label          : 'Parent Cost Center',
@@ -9337,10 +9333,3 @@ annotate service.ZCOST_CENTER with {
             ]
         };
 };
-
-annotate service.ZCOST_CENTER with @(
-    Common.SideEffects #ParentCostCenter : {
-        SourceProperties : [PARENT_COST_CENTER_ID],
-        TargetProperties : ['PARENT_COST_CENTER_DESC']
-    }
-);
